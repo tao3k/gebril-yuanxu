@@ -69,6 +69,8 @@
                              (opposite (string->symbol
                                         (string-append (if (char=? (string-ref text 0) #\+) "-" "+")
                                                        (substring text 1 (string-length text))))))
+                        (unless (init-name? (string->symbol (substring text 1 (string-length text))))
+                          (error "invalid init feature name" flag source-path))
                         (when (or (memq flag result) (memq opposite result))
                           (error "conflicting init feature decisions" row source-path))
                         (flags-loop (cdr rest) (cons flag result) disable-seen?)))

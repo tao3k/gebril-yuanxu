@@ -3,9 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .get .ref .slot?)
+        (only-in :clan/poo/object .o .+ .get .ref .slot?)
         (only-in :core/observability/testing-case poo-flow-test-case)
         (only-in :core/types poo-flow-predicate-contract)
+        :core/feature-system/model
         :core/module-system/source/objects
         :core/module-system/source/init
         :core/module-system/selection/init-syntax
@@ -36,7 +37,7 @@
      (lambda () (test root))
      (lambda () (remove-tree root)))))
 (def (fixture-publication id)
-  (.o identity: id features: (.o)
+  (.o identity: id features: (.o smoke: (error "negative Feature descriptor forced"))
       core: (.o requires: (if (eq? id 'custom/guestbook)
                             (.o Schema: (.o module-id: 'core/schema contract: DirectoryScope)) (.o))
                 scope-contract: DirectoryScope
@@ -51,6 +52,29 @@
       (check-equal? (.get poo-flow-module-init mode) 'explicit)
       (check-equal? (.get poo-flow-module-init root) "./modules")
       (check-equal? (.get (.ref (car (.get poo-flow-module-init decisions)) 'selection) selection-flags) '(-smoke)))
+    (poo-flow-test-case "filesystem init feeds the same Core and Feature selected Graph"
+      (with-sources
+       (lambda (root)
+         (let (init-path (path-expand "init.ss" root))
+           (write-source init-path "(poo-flow! :custom (guestbook +smoke -cold) :unused (bomb disable: #t))")
+           (let* ((v (poo-flow-load-modules init-path
+                       read-publication:
+                       (lambda (source)
+                         (let (id (cdr (assq 'module-id (poo-flow-module-source-ref-metadata source))))
+                           (.+ (fixture-publication id)
+                               (.o features:
+                                   (.o smoke: (feature-descriptor
+                                               (.o feature-id: 'custom/guestbook/smoke
+                                                   owner-module-id: 'custom/guestbook
+                                                   projections: '(smoke)))
+                                       cold: (error "negative payload forced"))))))))
+                  (graph (.get v selected-graph)))
+             (check-equal? (.get graph module-order) '(core/schema custom/guestbook))
+             (check-equal? (.get graph feature-order) '(custom/guestbook/smoke))
+             (check-equal? (.get graph denied-features) '(custom/guestbook/cold))
+             (check-equal? (.get graph feature-contributions projections) '(smoke))
+             (write-source init-path "(poo-flow! :custom (guestbook disable: #t))")
+             (check-exception ((.get graph admit-current)) error?))))))
     (poo-flow-test-case "negative init probes and source edits invalidate old views"
       (with-sources
        (lambda (root)

@@ -144,6 +144,7 @@
     "module-system/source/projection"
     "module-system/source/init"
     "module-system/source/directory"
+    "module-system/source/selection"
     "module-system/source/link"
     "module-system/interface"
     "module-system/source/imports"

@@ -7,6 +7,7 @@
         :core/module-system/source/objects
         :core/module-system/source/publication
         :core/module-system/source/admission
+        :core/module-system/source/selection
         :core/module-system/source/preparation
         :core/module-system/source/directory)
 (export poo-flow-load-modules)
@@ -37,8 +38,9 @@
   (admit-module-value! ModuleScopeContextContract context-value context-value)
   (let ((cache (make-hash-table))
         (prepared (make-hash-table))
+        (publications (make-hash-table))
+        (graphs (make-hash-table))
         (active (make-hash-table))
-        (order '())
         (failed? #f)
         (generation-value (.ref context-value 'generation)))
     (def (current!)
@@ -54,6 +56,31 @@
       (unless (or (memq id (.ref context-value 'module-ids))
                   (and (.slot? context-value 'eligible?) ((.ref context-value 'eligible?) id)))
         (error "module is outside selected source policy" (reverse (cons id path)))))
+    (def (publication-for id)
+      (eligible! id '())
+      (if (hash-key? publications id) (hash-ref publications id)
+        (let* ((source-value ((.ref context-value 'locate) id))
+               (_source-admitted
+                (unless (poo-flow-module-source-ref? source-value)
+                  (error "module scope requires an admitted SourceRef" id source-value)))
+               (publication-value ((.ref context-value 'read-publication) source-value))
+               (evidence-value (admit-module-publication! source-value id publication-value context-value))
+               (record (.o source: source-value publication: publication-value evidence: evidence-value)))
+          (current!)
+          (hash-put! publications id record)
+          record)))
+    (def (resolve-selection-graph roots)
+      (with-catch
+       (lambda (exception) (set! failed? #t) (raise exception))
+       (lambda ()
+         (current!)
+         (if (hash-key? graphs roots) (hash-ref graphs roots)
+           (let (graph (select-module-graph
+                         context-value roots
+                         (lambda (id) (.ref (publication-for id) 'publication)) current!))
+             (current!)
+             (hash-put! graphs roots graph)
+             graph)))))
     (def (link id path)
       (eligible! id path)
       (cond
@@ -64,13 +91,10 @@
         (dynamic-wind
          void
          (lambda ()
-           (let* ((source-value ((.ref context-value 'locate) id))
-                  (_source-admitted
-                   (unless (poo-flow-module-source-ref? source-value)
-                     (error "module scope requires an admitted SourceRef" id source-value)))
-                  (publication-value ((.ref context-value 'read-publication) source-value))
-                  (publication-evidence-value
-                   (admit-module-publication! source-value id publication-value context-value)))
+           (let* ((published (publication-for id))
+                  (source-value (.ref published 'source))
+                  (publication-value (.ref published 'publication))
+                  (publication-evidence-value (.ref published 'evidence)))
              (let* ((baseline (.ref publication-value 'core))
                     (requirements (.ref baseline 'requires))
                     (records
@@ -95,13 +119,17 @@
                                 dependency-records: records scope: scope-value scope-evidence: scope-evidence-value)))
                (current!)
                (hash-put! cache id record)
-               (set! order (cons id order))
                record)))
          (lambda () (hash-remove! active id))))))
     (def (resolve id)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
-       (lambda () (link id '()))))
+       (lambda ()
+         ;; Auto discovery adds only this demand root; selected init roots still
+         ;; participate in the same admission, conflict and ordering policy.
+         (let (roots (.ref context-value 'selected))
+           (resolve-selection-graph (if (memq id roots) roots (append roots (list id)))))
+         (link id '()))))
     (def (prepare id)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
@@ -129,6 +157,10 @@
                    ((.ref context-value 'namespace) resolve-scope))
               (scope-tree (map (lambda (id) (cons (module-id-parts id) id))
                                (.ref context-value 'selected)) resolve-scope)))
-        selected-records: (map resolve (.ref context-value 'selected))
+        ;; This immutable snapshot has exactly the init roots. Auto namespace
+        ;; reads admit an additional bounded demand; they do not rewrite init.
+        selected-graph: (resolve-selection-graph (.ref context-value 'selected))
+        selected-records: (begin (resolve-selection-graph (.ref context-value 'selected))
+                                 (map resolve (.ref context-value 'selected)))
         dependency-order:
-        (begin (map resolve (.ref context-value 'selected)) (reverse order)))))
+        (.ref (resolve-selection-graph (.ref context-value 'selected)) 'module-order))))
