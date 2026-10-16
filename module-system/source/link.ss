@@ -4,16 +4,11 @@
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash)
         (only-in :clan/poo/object .o .ref .slot? .all-slots object<-alist object<-fun)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
         :core/module-system/source/objects
         :core/module-system/source/publication
+        :core/module-system/source/admission
         :core/module-system/source/directory)
 (export poo-flow-load-modules)
-(def (admit-module-value! contract candidate context-value)
-  (let (evidence (poo-flow-contract-admit contract candidate context-value))
-    (unless (poo-flow-validation-evidence-accepted? evidence)
-      (error "module scope admission refused" (.ref contract 'identity) evidence))
-    evidence))
 (def (module-id-parts id)
   (let (parts (string-split (symbol->string id) #\/))
     (unless (and (pair? parts)
@@ -71,9 +66,7 @@
                      (error "module scope requires an admitted SourceRef" id source-value)))
                   (publication-value ((.ref context-value 'read-publication) source-value))
                   (publication-evidence-value
-                   (admit-module-value! ModulePublicationContract publication-value context-value)))
-             (unless (eq? id (.ref publication-value 'identity))
-               (error "publication source owner mismatch" id source-value))
+                   (admit-module-publication! source-value id publication-value context-value)))
              (let* ((baseline (.ref publication-value 'core))
                     (requirements (.ref baseline 'requires))
                     (records

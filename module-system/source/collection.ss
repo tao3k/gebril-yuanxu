@@ -7,21 +7,9 @@
 ;;; and user module trees. Selection declarations remain separate POO values.
 
 (import (only-in :clan/poo/object .o .ref .slot? object?)
-        (only-in :std/list/list any filter)
-        (only-in :core/utilities/algorithms
-                 poo-flow-directory-files-recursive)
+        (only-in :std/list/list every)
         :core/module-system/loader/load-path
-        (only-in :core/module-system/authoring/import-policy
-                 SourceInspectionPolicy.
-                 poo-flow-module-owner-import-file-observations)
-        (only-in :core/module-system/source/interface
-                 poo-flow-module-interface)
-        (only-in :core/module-system/authoring/admission
-                 poo-flow-module-authoring-admit-port
-                 poo-flow-module-authoring-admission-accepted?
-                 poo-flow-module-authoring-admission-diagnostics)
-        (only-in :core/module-system/authoring/roles
-                 poo-flow-default-module-authoring-profile)
+        :core/module-system/source/admission
         :core/module-system/source/objects)
 
 (export poo-flow-module-source-collection-prototype
@@ -95,6 +83,9 @@
      'local entrypoint
      (list (cons 'kind 'module-tree)
            (cons 'module-key module-key)
+           (cons 'module-id (string->symbol
+                            (string-append (symbol->string (car module-key)) "/"
+                                           (symbol->string (cdr module-key)))))
            (cons 'source-collection
                  (poo-flow-module-source-collection-identity collection))
            (cons 'source-owner
@@ -109,6 +100,10 @@
 ;;; flat <modules-root>/<module-name> repository convention.
 (def (poo-flow-module-source-collection-default-locate collection module-key
                                                        entrypoint-roles)
+  (unless (and (pair? module-key) (symbol? (car module-key)) (symbol? (cdr module-key))
+               (module-source-name? (symbol->string (car module-key)))
+               (module-source-name? (symbol->string (cdr module-key))))
+    (error "invalid source collection module key" module-key))
   (let (module-name (cdr module-key))
     (if (eq? module-name
              (poo-flow-module-source-collection-identity collection))
@@ -117,172 +112,16 @@
       (let* ((module-root
               (path-expand
                (symbol->string module-name)
-               (poo-flow-module-source-collection-modules-root collection)))
-             (interface-path (path-expand "interface.ss" module-root)))
-        (if (file-exists? interface-path)
-          (map (lambda (entrypoint-role)
+               (poo-flow-module-source-collection-modules-root collection))))
+        (if (module-source-type module-root)
+          (begin
+            ((.ref (.ref collection 'style-policy) 'validate)
+             (.ref collection 'style-policy) module-name module-root module-source-read)
+            (map (lambda (entrypoint-role)
                  (poo-flow-module-source-entrypoint
                   collection module-key module-root entrypoint-role))
-               entrypoint-roles)
+               entrypoint-roles))
           '())))))
-
-;;; Collection discovery is independent from consumer selection.
-;;; Each direct modules/<module-name>/ directory contributes one conventional
-;;; entrypoint; no contributor-owned init list or registry is involved.
-(def poo-flow-module-required-role-files
-  '("interface.ss"))
-
-;;; The loader constrains stable module roles while leaving domain authors free
-;;; to add focused implementation files. syntax.ss is optional and may expose
-;;; thin hygienic projections; it is never required for data-only modules.
-(def poo-flow-module-allowed-entrypoint-roles
-  '(types objects funs config interface syntax))
-
-;;; Style policy constrains the stable module shell and dependency direction.
-;;; Domain code remains free to choose gerbil-poo Type/MOP, POO CLOS, native
-;;; Gerbil methods, functional combinators, and thin hygienic syntax according
-;;; to the semantics it actually needs.
-(def (poo-flow-module-read-datums path)
-  (call-with-input-file path read-all))
-
-(def (poo-flow-module-role-reference? datum module-name role)
-  (let ((leaf (string-append role ".ss"))
-        (relative (string-append "./" role))
-        (suffix (string-append "/" module-name "/" role)))
-    (cond
-     ((symbol? datum)
-      (let (reference (symbol->string datum))
-        (or (string=? reference relative)
-            (string-suffix? suffix reference))))
-     ((string? datum)
-      (or (string=? datum leaf) (string-suffix? suffix datum)))
-     ((pair? datum)
-      (or (poo-flow-module-role-reference? (car datum) module-name role)
-          (poo-flow-module-role-reference? (cdr datum) module-name role)))
-     ((vector? datum)
-      (poo-flow-module-role-reference? (vector->list datum) module-name role))
-     (else #f))))
-
-(def (poo-flow-module-top-form-references-role? datums head module-name role)
-  (and (any (lambda (form)
-              (and (pair? form)
-                   (eq? (car form) head)
-                   (poo-flow-module-role-reference?
-                    (cdr form) module-name role)))
-            datums)
-       #t))
-
-(def (poo-flow-module-interface-validate! module-name module-root)
-  (let* ((interface-path (path-expand "interface.ss" module-root))
-         (datums (poo-flow-module-read-datums interface-path))
-         (public-roles
-          (filter
-           (lambda (role)
-             (file-exists?
-              (path-expand
-               (string-append (symbol->string role) ".ss") module-root)))
-           '(types objects funs config syntax))))
-    (for-each
-     (lambda (role)
-       (unless (and (poo-flow-module-top-form-references-role?
-                     datums 'import module-name (symbol->string role))
-                    (poo-flow-module-top-form-references-role?
-                     datums 'export module-name (symbol->string role)))
-         (error "POO-FLOW-MODULE-E006 interface must import and re-export role"
-                module-name role)))
-     public-roles)))
-
-(def (poo-flow-module-dependency-direction-validate! module-name module-root)
-  (let ((layers '((types objects funs syntax config interface)
-                  (objects funs syntax config interface)
-                  (funs config interface)
-                  (syntax config interface)
-                  (config interface))))
-    (for-each
-     (lambda (layer)
-       (let* ((source-role (car layer))
-              (path (path-expand
-                     (string-append (symbol->string source-role) ".ss")
-                     module-root)))
-         (when (file-exists? path)
-           (let (datums (poo-flow-module-read-datums path))
-             (for-each
-              (lambda (forbidden-role)
-                (when (poo-flow-module-top-form-references-role?
-                       datums 'import module-name
-                       (symbol->string forbidden-role))
-                  (error "POO-FLOW-MODULE-E007 reversed module role dependency"
-                         module-name source-role forbidden-role)))
-              (cdr layer))))))
-     layers)))
-
-(def (poo-flow-module-owner-imports-validate! collection module-name module-root)
-  (for-each
-   (lambda (path)
-     (let (observations
-           (poo-flow-module-owner-import-file-observations
-            (string->symbol path) path
-            (.ref (.ref collection 'style-policy) 'source-policy)))
-       (when (pair? observations)
-         (error "POO-FLOW-MODULE-E008 module owner imports aggregate facade"
-                module-name path (car observations)))))
-   (filter (lambda (path) (string-suffix? ".ss" path))
-           (poo-flow-directory-files-recursive module-root))))
-
-;;; The loader applies the Interface-owned authoring Profile to each stable
-;;; role before exposing any entrypoint.  Admission reads inert datums only;
-;;; it neither expands nor evaluates module source.
-(def (poo-flow-module-role-authoring-validate! collection module-name
-                                                 module-root)
-  (let* ((style-policy (.ref collection 'style-policy))
-         (authoring (.ref style-policy 'authoring))
-         (interface
-          (poo-flow-module-interface
-           module-name (.o)
-           (list (cons 'source-owner
-                       (poo-flow-module-source-collection-owner collection)))
-           authoring: authoring)))
-    (for-each
-     (lambda (role)
-       (let* ((path
-               (path-expand
-                (string-append (symbol->string role) ".ss") module-root))
-              (admission
-               (call-with-input-file
-                path
-                (lambda (port)
-                  (poo-flow-module-authoring-admit-port
-                   interface role port)))))
-         (unless (poo-flow-module-authoring-admission-accepted? admission)
-           (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
-                  module-name role path
-                  (car (poo-flow-module-authoring-admission-diagnostics
-                        admission))))))
-     (filter
-      (lambda (role)
-        (file-exists?
-         (path-expand
-          (string-append (symbol->string role) ".ss") module-root)))
-      '(types objects funs config interface)))))
-
-(def (poo-flow-module-default-style-validate! collection module-name module-root)
-  (when (file-exists? (path-expand "init.ss" module-root))
-    (error "POO-FLOW-MODULE-E005 init.ss belongs to the collection selection root"
-           module-name))
-  (poo-flow-module-interface-validate! module-name module-root)
-  (poo-flow-module-dependency-direction-validate! module-name module-root)
-  (poo-flow-module-owner-imports-validate! collection module-name module-root)
-  (poo-flow-module-role-authoring-validate! collection module-name module-root)
-  module-root)
-
-(def poo-flow-module-style-policy-prototype
-  (.o (module-style-policy? #t)
-      (authoring (poo-flow-default-module-authoring-profile))
-      source-policy: SourceInspectionPolicy.
-      (validate poo-flow-module-default-style-validate!)))
-
-(def poo-flow-default-module-style-policy
-  (.o (:: @ poo-flow-module-style-policy-prototype)))
 
 (def (poo-flow-module-source-collection-directory-names collection)
   (let (modules-root
@@ -304,17 +143,9 @@
         (poo-flow-module-source-collection-modules-root collection))
     (for-each
      (lambda (module-name)
-       (let* ((module-root (path-expand module-name modules-root))
-              (missing
-               (filter
-                (lambda (role)
-                  (not (file-exists? (path-expand role module-root))))
-                poo-flow-module-required-role-files)))
-         (unless (null? missing)
-           (error "POO-FLOW-MODULE-E001 module is missing required roles"
-                  module-name missing))
+       (let ((module-root (path-expand module-name modules-root)))
          ((.ref (.ref collection 'style-policy) 'validate)
-          collection module-name module-root)))
+          (.ref collection 'style-policy) module-name module-root module-source-read)))
      module-names))
   collection)
 

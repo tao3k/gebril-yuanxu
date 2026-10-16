@@ -68,8 +68,8 @@
 
 (def InterfaceSourceRole.
   (poo-flow-module-source-role
-   'interface '(import export) '(add remove replace delete) '()
-   'reexport-only))
+   'interface '(import export .def .o) '(add remove replace delete) '()
+   'module-assembly))
 
 (def (poo-flow-default-module-authoring-profile)
   (validate ModuleAuthoringProfileContract

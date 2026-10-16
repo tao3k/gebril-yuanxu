@@ -76,8 +76,12 @@
                     'contributions "t/fixtures/source-admission" style-policy: style)))
         (check-exception
          (poo-flow-module-source-collection-locate root '(custom . example))
-         error?)))
-    (poo-flow-test-case "source graph and plan projection never activate a backend"
+         (lambda (exception)
+           (and (error? exception)
+                (string-contains
+                 (call-with-output-string (lambda (port) (display-exception exception port)))
+                 "POO-FLOW-MODULE-E008"))))))
+    (poo-flow-test-case "source graph and deferred projection never activate a backend"
       (let* ((calls 0)
              (source (make-poo-flow-module-local-source "example/interface.ss"))
              (backend (make-poo-flow-module-loader-backend
