@@ -22,11 +22,11 @@ No module production code, Loader or dependency pins were changed.
 | Artifact | Meaning |
 |----------+---------|
 | [[file:19-native-parent-validation/probe.ss][Complete probe]] | Exact executed test program, not an installed module or user interface |
-| [[file:19-native-parent-validation/receipt.json][Receipt and SHA identities]] | Dependency, interpreter scope, native and Lean outcomes |
-| [[file:19-native-parent-validation/native-final.log][Final native output]] | PASS native-parent probe assertions=44 |
-| [[file:19-native-parent-validation/installed-import.log][Installed-package failure]] | Exit 70: support/base compiled module incompatible; not repaired or counted as pass |
-| [[file:19-native-parent-validation/native-run-2.log][Incorrect nested-identity expectation]] | Retained failure that exposed a real design boundary |
-| [[file:19-native-parent-validation/draft-incomplete.log][Initial probe draft syntax failure]] | Incomplete form; corrected before successful qualification |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/receipt.json][Receipt and SHA identities]] | Dependency, interpreter scope, native and Lean outcomes |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/native-final.log][Final native output]] | PASS native-parent probe assertions=44 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/installed-import.log][Installed-package failure]] | Exit 70: support/base compiled module incompatible; not repaired or counted as pass |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/native-run-2.log][Incorrect nested-identity expectation]] | Retained failure that exposed a real design boundary |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/draft-incomplete.log][Initial probe draft syntax failure]] | Incomplete form; corrected before successful qualification |
 
 The program uses /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc,
 and direct isolated source import from /tmp/pooflow-pipeline-receiver-pin.

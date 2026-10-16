@@ -91,9 +91,9 @@ clean-host portability. External system dylibs remain packaging dependencies.
 
 * Historical prompted experiment: not design acceptance
 
-[[file:evidence/python-scheme-runtime-20261003/plan.json][Frozen plan]],
+[[file:../../t/evidence/module-system/design/evidence/python-scheme-runtime-20261003/plan.json][Frozen plan]],
 [[file:evidence/python-scheme-runtime-20261003/calls.jsonl][48 raw outputs and token usage]],
-[[file:evidence/python-scheme-runtime-20261003/analysis.json][reproducible analysis]].
+[[file:../../t/evidence/module-system/design/evidence/python-scheme-runtime-20261003/analysis.json][reproducible analysis]].
 
 The approved batch was DeepSeek Flash, 48 calls, zero retries, maximum 384
 output tokens each, USD 1 ceiling. All 48 responses completed with distinct IDs.
@@ -150,7 +150,7 @@ Runtime: supplying a solved answer does not qualify direct comprehension.
 =SemanticRuntime.validate_model_answer= remains available for inert archived
 responses; direct model IO uses the task-first prediction/observation APIs.
 
-[[file:evidence/python-scheme-runtime-20261003/final-gate.json][Offline final-answer gate]]
+[[file:../../t/evidence/module-system/design/evidence/python-scheme-runtime-20261003/final-gate.json][Offline final-answer gate]]
 replays all 48 archived answers without a provider call. The gate records
 accepted accuracy separately from coverage and retains every rejection. It
 must not report abstention as a correct full-task answer. A source withdrawal
@@ -158,7 +158,7 @@ changes the binding and invalidates the old model answer.
 
 * Executable qualification
 
-[[file:evidence/python-scheme-runtime-20261003/qualification.json][Qualification receipt]]
+[[file:../../t/evidence/module-system/design/evidence/python-scheme-runtime-20261003/qualification.json][Qualification receipt]]
 and accompanying logs bind the final artifact to actual tests:
 
 - Full Python Runtime suite: 325 passed, zero skips and zero failures. Testing

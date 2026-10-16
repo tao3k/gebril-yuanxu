@@ -51,7 +51,7 @@ Guard 在收到候选后重新执行当前任务，确认计算仍绑定原任�
 
 * 新批次冻结计划
 
-[[file:evidence/direct-scheme-understanding-20261003/plan.json][计划与源/输入/实现哈希]]：
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/plan.json][计划与源/输入/实现哈希]]：
 =910359b8a90c29ea77485f4dcff80fa7cc63ac0af1f8870b501848701ef27506=。
 
 | 条件 | 次数 | 模型输入 |
@@ -106,7 +106,7 @@ usage、Reasoning 事件、原生复算、观察、耗时与结果分别保存�
 
 * 24 次真实调用的结果与接口失败
 
-[[file:evidence/direct-scheme-understanding-20261003/live/report.json][原始严格评分]]：
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/live/report.json][原始严格评分]]：
 24 次中 21 次完成，3 次在输出/Reasoning 共用的 4096 token 上限处
 incomplete。没有重试这些模型请求。供应商上报的 Reasoning token
 共 36101；none 六次为 0。每项原始请求、流事件、完整响应和 usage
@@ -123,7 +123,7 @@ Markdown/解释而非单独 datum；还有空输出与未填占位符。旧 read
 把两次 EOF 错标为 readable，但 correct 均为 false，无误接受；后续
 reader 已明确拒绝 EOF，冻结评分器及原结果另存快照以保留可复现性。
 
-[[file:evidence/direct-scheme-understanding-20261003/transport-replay/report.json][补充原生复核]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/transport-replay/report.json][补充原生复核]]
 是看到输出后新增的惰性预测提取分析。只提取唯一明确断言；相同 token
 序列的重复展示可合并，冲突答案不选择，不查私有真值选择候选，不执行
 模型代码，不修正结果。它不替换预先冻结的严格评分，也不是一轮新的
@@ -173,7 +173,7 @@ feedback 答对。这两个变化相抵，不证明独立教学因果收益。�
 
 * 新生产接口的工程资格
 
-[[file:evidence/direct-scheme-understanding-20261003/production-qualification.json][新接口资格回执]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/production-qualification.json][新接口资格回执]]
 绑定 AOT、源码、wheel 和检查日志。Runtime 全套 332 项通过，零失败、
 零跳过；测试工具 37 项通过。测试覆盖当前源变更、候选格式、状态/行
 反例、同步及异步观察交付、回调篡改隔离和没有模型自动重试。
@@ -196,7 +196,7 @@ scorer 独立快照保留。新协议必须使用新冻结计划并单独实测�
 
 * 原始 0/24 的根因审计
 
-[[file:evidence/direct-scheme-understanding-20261003/acceptance-root-cause.json][24 项逐条审计与哈希]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/acceptance-root-cause.json][24 项逐条审计与哈希]]
 逐条绑定请求、响应 ID、原始输出 SHA256、原始观察和补充原生观察。
 本次审计没有新增模型调用，也不改写冻结评分。0/24 是旧接口的
 “接受并正确”联合指标，不是 Scheme 理解正确率，也不是晋升收益。
@@ -253,12 +253,12 @@ withdrawal 的文字推导和重复引用 datum 与原生真值一致，但同�
 不带版本后缀，版本用独立 =abiVersion: 1= 或 =version: 1= 字段表达。
 未升级项目 VERSION。原始历史制品/哈希保留，不追改已执行实验。
 
-[[file:evidence/direct-scheme-understanding-20261003/naming-qualification/qualification.json][命名修正资格]]：新名称 AOT/CFFI 重建，Runtime 332 项通过、零跳过；
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/naming-qualification/qualification.json][命名修正资格]]：新名称 AOT/CFFI 重建，Runtime 332 项通过、零跳过；
 测试工具 37 项通过、4 项原生集成测试因未配置 ASCENT_TEST_ROOT 跳过。
 安装的新 wheel 不含旧语义库文件名，脱离 Gerbil 可执行文件完成
 真实原生观察、控制会话、图准入与 Python IO；predictor 仍为离线夹具。
 
-[[file:evidence/direct-scheme-understanding-20261003/next-plan/plan-before-naming-correction.json][已撤销的待执行计划快照]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/next-plan/plan-before-naming-correction.json][已撤销的待执行计划快照]]
 SHA256 =40c55c12cc1c02f77d47a4b02f01ef6d87224aeea86163431f35297dc3a3e54b=
 因版本命名与当前实现不符，撤销其作为执行计划的资格，模型调用 0。
 新计划须在当前代码与依赖闭包/transport 边界核验后重新冻结。
@@ -327,14 +327,14 @@ none/high 与 fresh/history/feedback 观察，迁移条件次序覆盖六种
 
 ** 当前冻结验收计划：待明确付费/源码外发授权
 
-[[file:evidence/direct-scheme-understanding-20261003/current-plan/plan.json][Version 1 冻结计划]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/current-plan/plan.json][Version 1 冻结计划]]
 SHA256 =cb1715f709ba428cc7dee3d6850eb8f569a6a673baa797a9d8850895360d2f4f=；实现提交 =93239d600f9a24e2c8122e08116f927b5e39989d=。
 17 个实际项目模块、12 个任务、30 次调用（6 none、24 high）、
 零重试；最大输出含 Reasoning 8192 token，新增费用上限 USD 4，
 高峰单价保守估算上界 USD 3.833856。提交头及说明元数据从已通过的
 预检计划刷新；源码、任务、producer、scorer、worker 字节未改变。
 
-[[file:evidence/direct-scheme-understanding-20261003/current-plan/qualification.json][工程资格与失败日志哈希]]
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/current-plan/qualification.json][工程资格与失败日志哈希]]
 及原始完整输入/回放/SDK 夹具输出在 MRR ignored archive 中保存。
 本计划 Provider 调用 0；原有授权不复用。
 

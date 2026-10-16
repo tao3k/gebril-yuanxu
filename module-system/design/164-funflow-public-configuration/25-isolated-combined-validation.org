@@ -24,12 +24,12 @@ proposed Module resolver, automatic provenance collector or Loader.
 | Artifact | Evidence |
 |----------+----------|
 | [[file:25-isolated-combined-validation/probe.ss][probe.ss]] | Complete executed objects, public Contracts, counters, receipt checks and negative controls |
-| [[file:25-isolated-combined-validation/native.log][native.log]] | Final output, including assertions=30 |
-| [[file:25-isolated-combined-validation/native-receipt.json][native-receipt.json]] | Exact pinned source hashes, interpreter, fresh environment, command, timeout, output/probe/runner hashes and exit |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/native.log][native.log]] | Final output, including assertions=30 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/native-receipt.json][native-receipt.json]] | Exact pinned source hashes, interpreter, fresh environment, command, timeout, output/probe/runner hashes and exit |
 | [[file:25-isolated-combined-validation/run.py][run.py]] | Fresh-environment replay from the pinned archive, refusing to overwrite evidence |
-| [[file:25-isolated-combined-validation/lean-reference.log][Lean reference check]] | Separate successful recheck of module 24's five theorems and two controls |
-| [[file:25-isolated-combined-validation/qualification.json][Qualification summary]] | Links native and reference evidence by source hashes, without claiming interpreter correspondence |
-| [[file:25-isolated-combined-validation/development-attempts.json][Development attempts]] | Four original failed logs and preliminary success; draft source snapshots reconstructed from the edits and labeled as such |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/lean-reference.log][Lean reference check]] | Separate successful recheck of module 24's five theorems and two controls |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/qualification.json][Qualification summary]] | Links native and reference evidence by source hashes, without claiming interpreter correspondence |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/development-attempts.json][Development attempts]] | Four original failed logs and preliminary success; draft source snapshots reconstructed from the edits and labeled as such |
 
 * Exact reconstruction boundary
 

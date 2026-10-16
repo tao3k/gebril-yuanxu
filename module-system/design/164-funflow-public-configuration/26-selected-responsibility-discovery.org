@@ -317,4 +317,4 @@ code is changed.
 Validation on 2026-10-15: the new Lean file checks directly, and the existing
 PooFlowProfileAssociationProof target builds successfully (48 jobs). Five new
 theorems and two controls use no sorry or custom axioms. See
-[[file:26-selected-responsibility-discovery/lean-build.log][build/axiom output]] and [[file:26-selected-responsibility-discovery/receipt.json][source-bound receipt]].
+[[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/26-selected-responsibility-discovery/lean-build.log][build/axiom output]] and [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/26-selected-responsibility-discovery/receipt.json][source-bound receipt]].

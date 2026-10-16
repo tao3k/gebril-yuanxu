@@ -31,9 +31,9 @@ The new non-default library target is PooFlowProfileAssociationProof:
 |--------+----------------|
 | [[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/Model.lean][Model.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
 | [[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/Checks.lean][Checks.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
-| [[file:20-lean-profile-association/receipt.json][Receipt]] | Exact source hashes, dependency identity and verification scope |
-| [[file:20-lean-profile-association/build.log][Target build]] | lake build PooFlowProfileAssociationProof, exit 0 |
-| [[file:20-lean-profile-association/axioms.log][All-theorem axiom audit]] | No sorryAx or new custom axioms; standard propext, Quot.sound and Classical.choice only where reported |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/receipt.json][Receipt]] | Exact source hashes, dependency identity and verification scope |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/build.log][Target build]] | lake build PooFlowProfileAssociationProof, exit 0 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/axioms.log][All-theorem axiom audit]] | No sorryAx or new custom axioms; standard propext, Quot.sound and Classical.choice only where reported |
 
 The initial check found a missing compiled ContractConsequence dependency, which
 was built from the already locked source. Development elaboration/control failures

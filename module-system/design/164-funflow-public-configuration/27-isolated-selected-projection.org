@@ -28,12 +28,12 @@ Loader integration. No object construction provenance hook is implemented.
 | [[file:27-isolated-selected-projection/probe.ss][probe.ss]] | Entry point, canonical imports and test includes |
 | [[file:27-isolated-selected-projection/setup.ss][setup.ss]] | Upstream defaults, user .def, counters and commands Contracts |
 | [[file:27-isolated-selected-projection/selected-admission.ss][selected-admission.ss]] | Module-26 design blocks 2--5, extracted verbatim after corrections |
-| [[file:27-isolated-selected-projection/projection-extraction.json][Extraction record]] | Design/source/block hashes and exact extraction boundary |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/projection-extraction.json][Extraction record]] | Design/source/block hashes and exact extraction boundary |
 | [[file:27-isolated-selected-projection/controls.ss][controls.ss]] | Positive, negative, receipt-corruption and matched laziness controls |
-| [[file:27-isolated-selected-projection/native.log][native.log]] / [[file:27-isolated-selected-projection/native-receipt.json][native receipt]] | Final output, pinned source hashes, interpreter, fresh environment, fixture/runner hashes, timeout and exit |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/native.log][native.log]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/native-receipt.json][native receipt]] | Final output, pinned source hashes, interpreter, fresh environment, fixture/runner hashes, timeout and exit |
 | [[file:27-isolated-selected-projection/run.py][run.py]] | Replay into a fresh empty project/package source environment |
-| [[file:27-isolated-selected-projection/qualification.json][Qualification summary]] | Source-bound separation of native observations and Lean reference evidence |
-| [[file:27-isolated-selected-projection/lean-reference.log][Lean reference recheck]] | Separate recheck of SelectedResponsibilities.lean |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/qualification.json][Qualification summary]] | Source-bound separation of native observations and Lean reference evidence |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/lean-reference.log][Lean reference recheck]] | Separate recheck of SelectedResponsibilities.lean |
 
 * Exact source and environment
 
