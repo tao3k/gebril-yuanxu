@@ -3,10 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash)
-        (only-in :clan/poo/object .o .ref .slot? .all-slots object<-alist object<-fun)
+        (only-in :clan/poo/object .o .+ .ref .slot? .all-slots object<-alist object<-fun)
         :core/module-system/source/objects
         :core/module-system/source/publication
         :core/module-system/source/admission
+        (only-in :core/module-system/source/build module-build-graph)
         :core/module-system/source/selection
         :core/module-system/source/preparation
         :core/module-system/source/directory)
@@ -137,8 +138,9 @@
          (eligible! id '())
          (let (value
                (if (hash-key? prepared id) (hash-ref prepared id)
-                 (let (value (poo-flow-prepare-module-publication
-                              ((.ref context-value 'locate) id) admit-context: current!))
+                 (let (value (.+ (poo-flow-prepare-module-publication
+                                  ((.ref context-value 'locate) id) admit-context: current!)
+                                (.o generation: generation-value)))
                    (unless (eq? id (.ref value 'identity))
                      (error "prepared publication source owner mismatch" id value))
                    (hash-put! prepared id value) value)))
@@ -159,6 +161,7 @@
                                (.ref context-value 'selected)) resolve-scope)))
         ;; This immutable snapshot has exactly the init roots. Auto namespace
         ;; reads admit an additional bounded demand; they do not rewrite init.
+        build-graph: (module-build-graph selected-graph prepare)
         selected-graph: (resolve-selection-graph (.ref context-value 'selected))
         selected-records: (begin (resolve-selection-graph (.ref context-value 'selected))
                                  (map resolve (.ref context-value 'selected)))

@@ -6,7 +6,8 @@
         (only-in :gerbil/expander core-read-module/sexp core-library-package-plist)
         :core/module-system/source/objects
         :core/module-system/source/admission)
-(export poo-flow-prepare-module-publication poo-flow-write-module-publication)
+(export poo-flow-prepare-module-publication poo-flow-write-module-publication
+        poo-flow-prepare-module-build-source)
 (def (source-metadata source key)
   (let (entry (assq key (poo-flow-module-source-ref-metadata source)))
     (and entry (cdr entry))))
@@ -86,6 +87,13 @@
           (context-current!))
         (.o source: source-value identity: owner binding: name
             compiler-identity: (cadr compiler-info)
+            source-inputs:
+            (append package-sources
+                    (map (lambda (role)
+                           (let (file (path-expand (string-append (symbol->string role) ".ss") root))
+                             (cons file (and (hash-key? texts file) (hash-ref texts file)))))
+                         poo-flow-module-allowed-entrypoint-roles))
+            role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             namespace: (caddr compiler-info)
             admit-current: current!
             ;; Include preserves the author's syntax locations and native reader.
@@ -113,3 +121,29 @@
       (for-each (lambda (form) (write form port) (newline port)) (.ref prepared 'compiler-forms))))
   ((.ref prepared 'admit-current))
   output)
+
+;;; Native reader projection, not an evaluator or a compiler dependency scanner.
+;;; A relocatable build tree retains native identity/namespace and the reader's
+;;; headers. Internal native inclusion retains the original source locations.
+(def (poo-flow-prepare-module-build-source source-path context-current!)
+  (context-current!)
+  (let* ((text (module-source-read source-path))
+         (packages (package-source-snapshot source-path))
+         (compiler-info (module-compiler-identity source-path)))
+    (let-values (((prelude id namespace _body) (core-read-module/sexp source-path)))
+      (def (current!)
+        (context-current!)
+        (unless (and (equal? text (module-source-read source-path))
+                     (package-snapshot-current? packages)
+                     (equal? compiler-info (module-compiler-identity source-path)))
+          (error "stale prepared build source" source-path))
+        (context-current!))
+      (.o path: source-path compiler-identity: id admit-current: current!
+          source-inputs: (cons (cons source-path text) packages)
+          compiler-forms:
+          (append (if prelude (list 'prelude: prelude) '())
+                  (list 'package: (path-strip-trailing-directory-separator
+                                   (path-directory (symbol->string id)))
+                        'namespace: namespace)
+                  (list '(import (only-in :core/module-system/source/declaration include-module-body))
+                        `(include-module-body ,source-path)))))))
