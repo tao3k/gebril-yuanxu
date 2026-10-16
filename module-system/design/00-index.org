@@ -14,7 +14,7 @@ owned here; concrete POO Flow Modules and runtime adapters remain downstream.
 ** 10.06.10 Purpose
 This document pack defines the module-system layer for =poo-flow=. The package is not a port of Doom Emacs and not a copy of Marlin's Gerbil module API. POO Flow is a consumer of the shared Core mechanisms. External systems are reference material for interface shape, diagnostics, and modular organization.
 
-Public consumers import the precise owner: shared POO Module mechanisms from =core/module-system/=, product authoring and UI policy from =src/authoring/= and =src/user-interface/=, and concrete workflow or sandbox modules from =modules/*=. No aggregate Module System facade is installed.
+Public consumers import the precise owner: shared POO Module mechanisms from =core/module-system/=, product authoring and UI policy from =modules/module-authoring/= and =modules/user-interface/=, and concrete workflow or sandbox modules from =modules/*=. No aggregate Module System facade is installed.
 ** 10.06.15 Agentic Control Plane RFC Suite
 - [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][90 POO Flow Agentic Control Plane Architecture RFC]]
 - [[file:91-canonical-organization-bundle-rfc.org][91 Canonical Organization Bundle RFC]]
@@ -60,7 +60,7 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:35-next-loop-engine-delivery-plan.org][35 Next Loop Engine Delivery Plan]]
 - [[file:36-session-user-interface-ladder.org][36 Session User Interface Ladder]]
 [[file:36-session-user-interface-ladder.org][36 Session User Interface Ladder]]
-- [[file:37-session-core-module.org][37 Session Core Module]]
+- [[file:37-session-module.org][37 Session Core Module]]
 - [[file:38-openrath-session-core-next-plan.org][38 OpenRath Session Core Next Plan]]
 - [[file:39-gerbil-build-optimization-audit.org][39 Gerbil Build Optimization Audit]]
 - [[file:40-module-registry-scale-architecture.org][40 Module Registry Scale Architecture]]
@@ -69,6 +69,11 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:42-openrath-session-multi-agent-audit.org][42 OpenRath Session Multi-Agent Audit]]
 - [[file:43-session-memory-recovery-rfc.org][43 Session Memory Durable Policy RFC]]
 - [[file:43-session-memory-recovery/01-agent-context-lifecycle.org][43.01 AI Agentic Context Lifecycle — shared design, SDLC consumers separate]]
+- [[file:167-temporal-revisit-evidence-design.org][167 Revisiting Evidence Across Time]]
+- [[file:ai-agentic-context-session-memory-contracts.org][AI Agentic-context Module Roles, Session and Memory Contracts]]
+- [[file:session-org-id-subagent-scheduling-design.org][Session IDs, Org Property Anchors and Subagent Scheduling]]
+- [[file:session-scheduling-granularity-design.org][Session Scheduling Granularity and Incremental Context]]
+- [[file:context-delta-lean-quint-model-design.org][Context Delta Lean/Quint Model Design]]
 - [[file:44-current-project-programming-style.org][44 Current Project Programming Style]]
 - [[file:164-capability-gradient-and-default-expression-surface.org][164 POO Flow Capability Gradient and Default Expression Surface]]
 - [[file:164-core-functional-and-extend-interface-audit.org][164 Core Functional and Extend Interface Audit with Scheme Forms]]
