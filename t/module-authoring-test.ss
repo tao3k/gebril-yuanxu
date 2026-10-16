@@ -59,6 +59,12 @@
       (check-equal?
        (length (poo-flow-build-bootstrap-datum-observations
                 'test '(parallel-build) RepositoryPolicy)) 1)
+      (let (rows (poo-flow-authoring-build-bootstrap-datum-observations
+                   'test '(parallel-build) RepositoryPolicy))
+        (check-equal? (length rows) 1)
+        (check-equal? (.ref (car rows) 'form) 'parallel-build)
+        (check-equal? (.ref (car rows) 'owner) 'parallel-build)
+        (check-equal? (.ref (car rows) 'runtime-executed?) #f))
       (check-equal?
        (poo-flow-build-bootstrap-datum-observations 'test '(parallel-build)) '())
       (check-equal?

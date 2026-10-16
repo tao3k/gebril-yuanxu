@@ -1,0 +1,56 @@
+;;; -*- Gerbil -*-
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Source capabilities supply generation-qualified declarations, never user syntax.
+(import (only-in :std/list/list delete-duplicates/hash)
+        (only-in :clan/poo/object .o .ref .slot? .all-slots object?)
+        (only-in :clan/poo/mop Type element?)
+        (only-in :core/types poo-flow-predicate-contract))
+(export ModulePublicationContract ModuleScopeContextContract
+        module-publication? module-scope-context?)
+(def (no-publication-obligations _value _context) '())
+(def (has-slots? value names)
+  (and (object? value) (andmap (cut .slot? value <>) names)))
+(def (contract-descriptor? value)
+  (and (has-slots? value '(identity .classify .obligations .admit))
+       (element? Type value)
+       (symbol? (.ref value 'identity))
+       (andmap (lambda (name) (procedure? (.ref value name)))
+               '(.classify .obligations .admit)) #t))
+(def (scope-requirement? value)
+  (and (has-slots? value '(module-id contract))
+       (symbol? (.ref value 'module-id))
+       (contract-descriptor? (.ref value 'contract))))
+(def (module-publication? value)
+  (and (has-slots? value '(identity core features))
+       (symbol? (.ref value 'identity))
+       (object? (.ref value 'features))
+       (let (baseline (.ref value 'core))
+         (and (has-slots? baseline '(requires scope-contract link))
+              (object? (.ref baseline 'requires))
+              (andmap (lambda (alias)
+                        (and (symbol? alias)
+                             (scope-requirement? (.ref (.ref baseline 'requires) alias))))
+                      (.all-slots (.ref baseline 'requires)))
+              (contract-descriptor? (.ref baseline 'scope-contract))
+              (procedure? (.ref baseline 'link))))))
+(def ModulePublicationContract
+  (poo-flow-predicate-contract 'module/publication module-publication?
+                              no-publication-obligations))
+(def (symbol-set? value)
+  (and (list? value) (andmap symbol? value)
+       (= (length value) (length (delete-duplicates/hash value from-end?: #t)))))
+(def (module-scope-context? value)
+  (and (has-slots? value '(generation module-ids selected denied-modules
+                          locate read-publication current?))
+       (let (generation (.ref value 'generation))
+         (and (string? generation) (> (string-length generation) 0)))
+       (andmap (lambda (slot) (symbol-set? (.ref value slot)))
+               '(module-ids selected denied-modules))
+       (andmap (lambda (slot) (procedure? (.ref value slot)))
+               '(locate read-publication current?))
+       (andmap (lambda (id) (memq id (.ref value 'module-ids)))
+               (.ref value 'selected)) #t))
+(def ModuleScopeContextContract
+  (poo-flow-predicate-contract 'module/scope-context module-scope-context?
+                              no-publication-obligations))

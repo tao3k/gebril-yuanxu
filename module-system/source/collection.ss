@@ -38,8 +38,8 @@
         poo-flow-module-required-role-files
         poo-flow-module-allowed-entrypoint-roles
         poo-flow-module-source-collection-validate!
+        poo-flow-module-source-collection-interfaces
         poo-flow-module-source-collection-role-entrypoints
-        poo-flow-load-modules
         poo-flow-module-load-path-prototype
         make-poo-flow-module-load-path
         extend-poo-flow-module-load-path
@@ -356,14 +356,6 @@
           entrypoint-role)))
      module-names)))
 
-;;; A module collection has one public entrypoint. The hygienic form accepts
-;;; exactly one collection expression and lowers to the POO source projection;
-;;; callers cannot turn public loading into a role or build-topology selector.
-(defrules poo-flow-load-modules ()
-  ((_ collection)
-   (poo-flow-module-source-collection-role-entrypoints
-    collection 'interface)))
-
 (def (make-poo-flow-module-source-collection identity-value owner-value
                                               source-root-value
                                               modules-directory-value
@@ -439,3 +431,6 @@
      identity-value user-interface-root-value)
     (poo-flow-module-load-path-collections base-load-path))))
 
+
+(def (poo-flow-module-source-collection-interfaces collection)
+  (poo-flow-module-source-collection-role-entrypoints collection 'interface))
