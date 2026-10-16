@@ -63,3 +63,15 @@ benchmark-redefinition:
 proofs:
     cd proofs/lean && timeout 120s lake build
     cd proofs/lean-poo && timeout 120s lake build
+
+# Source-level ownership controls; heap fence applies before any imports.
+test-module-ownership:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    log="$(mktemp)"
+    trap 'rm -f "$log"' EXIT
+    timeout --foreground --signal=TERM --kill-after=5s 120s gxi {{ gerbil_test_runtime_options }} t/qualification/module-ownership/run.ss 2>&1 | tee "$log"
+    if grep -E 'ERROR (CASE|CHECK|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
+    grep -F 'MODULE-OK t/qualification/module-ownership/run.ss' "$log" >/dev/null
+    grep -F 'HARNESS-OK module-ownership' "$log" >/dev/null
+    grep -x 'OK' "$log" >/dev/null

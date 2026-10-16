@@ -7,7 +7,7 @@
 ;;; Invariant: this owner stores small constraint metadata and compiles it into
 ;;; predicates; it does not parse full schemas or emit object contracts.
 
-(import (only-in "../utilities/functional.ss"
+(import (only-in :core/utilities/functional
                  poo-flow-predicate-and)
         (only-in "./functional.ss"
                  poo-flow-contract-json-object?

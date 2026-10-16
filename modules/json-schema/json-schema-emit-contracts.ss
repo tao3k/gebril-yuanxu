@@ -20,7 +20,7 @@
                  poo-flow-contract-slot
                  poo-flow-contract-value-type
                  poo-flow-native-contract)
-        (only-in "../utilities/functional.ss"
+        (only-in :core/utilities/functional
                  poo-flow-all?
                  poo-flow-find
                  poo-flow-predicate-and
@@ -56,7 +56,7 @@
                  poo-flow-json-schema-pattern-property->alist))
 
 
-(import :core/json-schema/json-schema-emit-runtime)
+(import :core/modules/json-schema/json-schema-emit-runtime)
 
 (export #t)
 

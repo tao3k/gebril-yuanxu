@@ -65,4 +65,22 @@ owners. No compatibility re-export tree is introduced.
 The directory Loader adapter, stronger role-file admission, init selection
 integration and selected build entry generation remain proposals where their
 own design identifies gaps. Moving documents does not implement those APIs.
-No Loader is connected and no submodule commit or gitlink is changed here.
+No directory Loader adapter is connected by this migration.
+
+* Repository-local module publication
+
+Core, POO Flow and each contributing repository own their module directory and
+init declaration. The shared Module System specifies one publication and
+selection protocol: a repository exports its collection through its own
+interface; =poo-flow-load-modules= consumes that declared collection. No parent
+repository copies another repository's module implementation or maintains a
+second per-file catalog. JSON Schema is a Core-provided module under
+=modules/json-schema/=; generic schema/contract machinery remains under the
+Module System schema owner. Public JSON Schema operations are collected by its
+=interface.ss=; there is no old-path forwarding implementation.
+
+The current collection projection does not implement arbitrary directory
+recognition, init-source resolution, feature selection or selected-build graph
+generation. Those integrations remain proposed. Existing explicit build entries
+are the honest transitional build mechanism, not a claim that the directory
+Loader has been connected. This distinction applies equally to all repositories.

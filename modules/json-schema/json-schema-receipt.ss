@@ -7,7 +7,7 @@
 
 (import (only-in :core/module-system/schema/slot-contracts
                  poo-flow-native-contract->alist)
-        (only-in "../type-facts/objects.ss"
+        (only-in :core/type-facts/objects
                  poo-flow-type-fact-contract->alist
                  poo-flow-lean-fact-contract->alist
                  poo-flow-native-contract->type-facts
