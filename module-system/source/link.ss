@@ -7,6 +7,7 @@
         :core/module-system/source/objects
         :core/module-system/source/publication
         :core/module-system/source/admission
+        :core/module-system/source/preparation
         :core/module-system/source/directory)
 (export poo-flow-load-modules)
 (def (module-id-parts id)
@@ -35,6 +36,7 @@
 (def (link-module-context context-value)
   (admit-module-value! ModuleScopeContextContract context-value context-value)
   (let ((cache (make-hash-table))
+        (prepared (make-hash-table))
         (active (make-hash-table))
         (order '())
         (failed? #f)
@@ -44,14 +46,16 @@
       (unless ((.ref context-value 'current?) generation-value)
         (set! failed? #t)
         (error "stale module scope generation" generation-value)))
-    (def (link id path)
+    (def (eligible! id path)
       (current!)
       (when (memq id (.ref context-value 'denied-modules))
         (error "required module disabled" (reverse (cons id path))
                (and (.slot? context-value 'init-source) (.ref context-value 'init-source))))
       (unless (or (memq id (.ref context-value 'module-ids))
                   (and (.slot? context-value 'eligible?) ((.ref context-value 'eligible?) id)))
-        (error "module is outside selected source policy" (reverse (cons id path))))
+        (error "module is outside selected source policy" (reverse (cons id path)))))
+    (def (link id path)
+      (eligible! id path)
       (cond
        ((hash-key? active id) (error "module dependency cycle" (reverse (cons id path))))
        ((hash-key? cache id) (hash-ref cache id))
@@ -98,11 +102,27 @@
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
        (lambda () (link id '()))))
+    (def (prepare id)
+      (with-catch
+       (lambda (exception) (set! failed? #t) (raise exception))
+       (lambda ()
+         (eligible! id '())
+         (let (value
+               (if (hash-key? prepared id) (hash-ref prepared id)
+                 (let (value (poo-flow-prepare-module-publication
+                              ((.ref context-value 'locate) id)))
+                   (unless (eq? id (.ref value 'identity))
+                     (error "prepared publication source owner mismatch" id value))
+                   (hash-put! prepared id value) value)))
+           ((.ref value 'admit-current))
+           (current!)
+           value))))
     ;; Slot caching belongs to this immutable generation. Consumers must call
-    ;; admit-current before publishing/using a plan; cached slots are not live IO.
+    ;; admit-current before publishing/using a Graph; cached slots are not live IO.
     (.o generation: generation-value
         context: context-value
         admit-current: current!
+        prepare-publication: prepare
         modules:
         (let (resolve-scope (lambda (id) (.ref (resolve id) 'scope)))
           (or (and (.slot? context-value 'namespace)

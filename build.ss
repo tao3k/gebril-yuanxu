@@ -138,6 +138,8 @@
     "module-system/authoring/admission"
     "module-system/source/publication"
     "module-system/source/admission"
+    "module-system/source/declaration"
+    "module-system/source/preparation"
     "module-system/source/collection"
     "module-system/source/projection"
     "module-system/source/init"
