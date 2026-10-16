@@ -5,11 +5,19 @@
 
 ;;; Inert Profile selection and lexical binding values used by composition.
 
-(import (only-in :clan/poo/object .o .ref))
+(import (only-in :clan/poo/object .o .ref object?))
 
-(export poo-flow-profile-ref
+(export poo-flow-module-scope
+        poo-flow-profile-ref
         poo-flow-scenario-module-binding
         poo-flow-scenario-profile-binding)
+
+;; A bounded declaration binds an existing native scope, without copying it,
+;; forcing publication/source slots, or manufacturing source admission evidence.
+(def (poo-flow-module-scope value)
+  (unless (object? value)
+    (error "use-module bounded body requires a native POO scope" value))
+  value)
 
 (def (poo-flow-profile-ref module slot)
   (.ref module slot))

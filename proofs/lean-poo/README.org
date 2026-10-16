@@ -1,0 +1,36 @@
+#+title: Core Profile Association Proofs
+
+This Core-owned Lake package uses Lean 4.34.0 and LeanPoo v0.1.1,
+locked at d8adf138948c854e7564234bc046387b4a5ee63b. It has no POO Flow
+source dependency. Run =lake build= in this directory. The existing Lean module
+names are retained; their physical and build owner is Core, not a compatibility
+source copy in the product package.
+
+The following migrated notes retain the distinction between a conditional model,
+native fixture evidence and unimplemented Loader/provenance adaptation.
+
+* Profile association reference model
+
+=PooFlowProfileAssociationProof= adds a narrow parent-root/final-value/provider
+requirement model using the same locked LeanPoo v0.1.1 dependency. Its 19 theorems
+and 21 finite guards reuse =ContextSlot= and =ContractConsequence=; they do not
+implement a Scheme Module adapter or Loader. The native 44-assertion probe remains
+an independent execution receipt, not a theorem about the whole runtime.
+
+Run =lake build PooFlowProfileAssociationProof= in this directory. See
+[[file:../../module-system/design/164-funflow-public-configuration/20-lean-profile-association.org][the correspondence boundary and executed proof receipt]] for premises, all-theorem
+axiom audit, preserved failure attempts and the unresolved Scheme projection.
+
+* DFS, identity and actual Core admission correspondence
+
+The same =PooFlowProfileAssociationProof= target now also includes =DFS=,
+=Projection=, =Bridge= and generated =NativeFixtures=. It builds 39 named theorems
+and 91 guards plus 70 generated kernel-checked instance proofs, retaining the
+original reference controls. A separate 61-assertion
+Scheme probe calls the actual Core .admit kernel and emits the graphs/receipts
+used by the generated checks. Generic bridge laws retain explicit identity,
+source-index, protocol-law and stable-view premises; they do not verify a whole
+Scheme interpreter or install a Module adapter/Loader.
+
+See [[file:../../module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence.org][the executed correspondence receipt]] for source hashes, public-API limitations,
+RHS-loss counterexamples, all-theorem axiom audit and reproducible generation.

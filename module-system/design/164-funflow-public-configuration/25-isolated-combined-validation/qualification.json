@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-15",
+  "scope": "finite-native-combination-and-test-local-closure-with-separate-reference-proofs",
+  "native": {
+    "exit": 0,
+    "assertions": 30,
+    "receipt_sha256": "4966c6d099e96b31ce88420adb8de6b28653b11c4fdfd5a0985a15d44cf0065c",
+    "probe_sha256": "420005f955605c9753e59af896b53a424c4dbd604cda78d00a23a4e34b3607a5",
+    "log_sha256": "ee047563e92f563d50d3c14252e23bd6b0a2b785f49535cc420ef41a0e465e9e"
+  },
+  "lean_reference": {
+    "command": "lake env lean PooFlowProfileAssociationProof/UnifiedConstruction.lean",
+    "exit": 0,
+    "source_sha256": "2d81e182c535d7a1b474ea3011bb045073dea6ec09c501e01f2c1e4c3d3a5dec",
+    "log_sha256": "823b713025eb14d98428680299b08a64d9622c091baf5de8b0caff60f80c6e0e",
+    "named_theorems": 5,
+    "controls": 2
+  },
+  "new_transcript_projected_to_lean": false,
+  "provenance_hook_implemented": false,
+  "module_adapter_implemented": false,
+  "loader_called": false,
+  "remaining_premises": [
+    "native-construction-capture-and-source-authentication",
+    "universal-native-identity-and-view-projection",
+    "complete-selected-dependency-discovery-and-multilevel-closure",
+    "immutable-generation-enforcement-and-mutation-invalidation",
+    "custom-contract-protocol-laws-and-plan-publication-view-stability"
+  ]
+}

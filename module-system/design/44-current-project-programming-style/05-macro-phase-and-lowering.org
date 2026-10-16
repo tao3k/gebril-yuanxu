@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 05 - Macro Phase And Lowering
+
+* Admission
+
+Use a macro only when repetition is structural, the call site names domain
+facts, expansion produces ordinary POO/functional code, errors retain source
+locations, and no effect or authority is hidden.
+
+Use the smallest tier: =defrules= for direct frames; =defsyntax= for validated
+shape/default generation; syntax-time metadata only for shared static facts;
+macro objects only when the expander itself has classed behavior.
+
+* Phase law
+
+Syntax owners preserve syntax objects, lexical context and binding-aware
+identifier comparison.  Runtime owners construct POO values and perform
+policy behavior.  Import syntax support with =for-syntax=; never load source or
+maintain a mutable runtime registry during expansion.
+
+Parse each declaration once and lower once.  Work and generated form count
+should be =O(n + m)= for =n= declarations and =m= clauses.  Repeated scans,
+=map= plus =apply append=, temporary runtime objects and source evaluation in
+the expander are forbidden.
+
+* Static lowering exception
+
+A bounded static declaration may lower directly to =object<-alist= when the
+public result remains a native POO object and same-source A/B evidence proves
+the benefit.  This does not authorize a public alist DSL.  Keep =.o= for
+inheritance, dynamic composition, computed methods, =self= or =next-method=.
+
+* Implemented bounded path-slot authoring
+
+=:core/object-syntax/path-slots= provides explicit .def/.o/brace authoring
+bindings for dotted existing-object =>.+ refinements. Shared prefixes lower to
+one native ancestor method, retaining native outer-slot lexical references and
+receiver-local caches. Primitive gerbil-poo bindings retain literal dotted slots.
+The expansion-time ordered trie never resolves sources or evaluates payloads.
+Duplicate leaf paths and ancestor/descendant overlaps are errors; an intentional
+ancestor refinement contains relative paths inside its own refinement body.
+See the [[file:../../../object-syntax/README.org][Core path-slot contract]] and [[file:../164-pipeline-receiver-cache-validation.org][executed receiver/cache controls]].
+This syntax authorization does not implement or widen Loader/source admission.
+
+* Implemented bounded Module alias
+
+Core use-module accepts one compound body after =Module as alias= and lowers to
+an ordinary lexical let over the unchanged native scope. It does not resolve a
+registry key or force source/prototype/Profile slots. Source/value and body are
+evaluated once; body syntax and helper references preserve hygiene. Identifier-only
+tails retain indexed ProfileBundle selection. See the [[file:../../../profile-composition/README.org][scope contract]].
+Use distinct lexical source and slot names (Funflow versus funflow:). The path
+object frame diagnoses a direct same-name initializer; it does not hoist sources
+or introduce a hidden namespace. Result-specific admission and Loader activation
+remain separate owners. Retaining a source handle is not authenticating it.

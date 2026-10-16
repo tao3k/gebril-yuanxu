@@ -1,0 +1,30 @@
+PooFlowProfileAssociationProof/Model.lean:107:43: warning: This simp argument is unused:
+  List.contains_iff_mem
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [requirementGate, List.all_eq_true]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PooFlowProfileAssociationProof/Model.lean:115:61: error: unsolved goals
+mandatory retained : List Nat
+right : Nat
+required : right ∈ mandatory
+missing : ¬right ∈ retained
+fails : ¬(mandatory.all fun requirement => retained.contains requirement) = true
+⊢ ∃ x, x ∈ mandatory ∧ ¬x ∈ retained
+PooFlowProfileAssociationProof/Model.lean:120:25: warning: This simp argument is unused:
+  fails
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [requirementGate]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]

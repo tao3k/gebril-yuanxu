@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Published Module Source Roles
+#+date: [2026-10-16]
+#+property: STATUS target-source-contract-not-yet-enforced
+
+* Standard source Contract
+
+The target shell for an independently published reusable Module has four required
+roles and one optional algorithm role. This is a shared Module System design,
+not a POO Flow-specific configuration language rule.
+
+#+begin_example
+<namespace>/<module>/
+  types.ss       # required: Types/Contracts and public invariants
+  objects.ss     # required: reusable objects/prototypes/receiver behavior
+  configs.ss     # required: configuration and default objects
+  interface.ss   # required: assemble/publish the detailed Module object
+  func.ss        # optional: named pure algorithms when actually needed
+#+end_example
+
+Contracts live with Types; configs consumes them. interface may define a thin
+native Module assembly object referring to these owners. It must not contain
+business algorithms, source scans or hidden runtime activation. Object defaults
+and configured selections have distinct owners; do not independently repeat the
+same default. Reuse schema-generated Contract bindings rather than copying fields.
+
+An absent configuration vocabulary must have an explicit closed no-options
+Contract, not an unexplained empty file. Before creating a four-file wrapper with
+no meaningful responsibility, consider whether it is a compilation unit inside an
+existing Module. Ordinary values, functions, Profiles and Scenarios do not each
+become independently published Modules.
+
+* Source direction and publication
+
+Expected direction is types -> objects -> optional func -> configs -> interface;
+unneeded edges are omitted. Lower roles cannot import the assembled interface to
+retrieve their own definitions. Existing third-party/Core implementation owners
+may be referenced directly; a function does not need a new wrapper merely to fit
+a role file.
+
+Publish one closed public Module object or explicitly declared additional values.
+Do not require flat re-export of every private role binding. Do not reconstruct
+Module metadata in init, source registration and build scripts. A native core
+slot grouping, if adopted, maps to the existing Module descriptor authority once;
+it does not create a second parallel descriptor model.
+
+* Admission is more than checking file names
+
+Source resolution records the requested directory and regular role files without
+initializing every Module. Source-role admission then checks ownership, direction,
+public association and required real content. The interpreter/compiler's ordinary
+import graph supplies phase information; arbitrary source computation cannot be
+assumed statically knowable. Generated metadata must retain generation/source
+identity and cannot become a second handwritten catalog.
+
+This is a target for published Modules, not an already enforced rule for every
+Core compilation unit. Existing config/funs roles and consumer checkers must
+migrate in a coordinated implementation. Do not create empty compatibility files
+or enforce a half-migrated checker. No current files are renamed by this design.
+
+* Conclusion
+
+The shell supports stable Agent/maintainer navigation at ecosystem scale. Its
+benefit must be evaluated through wrong-role edits, repeated definitions, source
+admission quality and bounded selected work. Four files alone establish neither
+correctness nor runtime performance. Public configuration should remain small.

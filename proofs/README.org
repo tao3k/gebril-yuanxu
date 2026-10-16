@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Proof Ownership
+
+* Independent proof packages
+
+| Package | Scope | Dependency boundary |
+|---------+-------+---------------------|
+| [[file:lean/lakefile.lean][lean]] | Module composition, source identity, slot demand, cache and publication laws | Lean 4.31.0; no external library or product source |
+| [[file:lean-poo/README.org][lean-poo]] | Parent association, construction requirements and selected-responsibility projection | Lean 4.34.0; immutable LeanPoo v0.1.1 lock |
+| [[file:tla/NativeSemanticQuery.tla][tla]] | Native semantic query admission/result boundary | Finite TLC model; distinct from universal Lean laws |
+
+Run =just proofs= in Core or =just check-core-lean= in the consuming workspace.
+Core file/module paths use =PooFlowCoreProof= to avoid Lake assigning shared
+modules to the product library. Existing theorem namespaces remain unchanged,
+so statements and callers retain their logical identities. Imports target the
+single Core-owned Lake dependency; no forwarding source files are needed. Product Cedar/runtime/FFI, temporal, Context, Funflow and Healthcare
+proofs remain consumer-owned. Core must not acquire those dependencies merely
+because a historical proof collection grouped them together.
+
+* Migration and evidence
+
+53 shared Lean 4.31 models, nine Profile association Lean 4.34 models and the
+NativeSemanticQuery TLA/CFG pair moved from the product proof tree. All 64
+source files retain the same proof statements and bodies. 24 files are byte-identical;
+40 files only change imports to the new Core module paths. Theorems, guards,
+premises and historical theorem namespace names are unchanged. The complete transitive local
+import closure is owned by Core, rather than copied back into the product.
+
+The product's Lake lock now records a local Core dependency. Its Cedar and
+batteries pins are unchanged. The association package retains the exact existing
+LeanPoo revision and toolchain; temporal and Context consumers retain their own
+independent lock. Generated .lake caches are not published source or new evidence.
+
+Native Scheme correspondence remains subject to each theorem's explicit premises.
+These models do not prove Loader integration, source authentication or deployment
+execution. No Loader or module adaptation is implemented by this migration.
+
+* Local migration validation
+
+| Check | Result |
+|-------+--------|
+| Standalone Core Lean 4.31 package | Passed, 55 jobs |
+| Standalone Core association package | Passed, 48 jobs |
+| Product governance and temporal consumers through the Core dependency | Passed, 25 jobs |
+| Complete product PooFlowProof aggregate through the Core dependency | Passed, 598 jobs |
+| Relocated NativeSemanticQuery TLC model | Model checking completed without error |
+| Core-only source import closure | All 53 shared models resolve within Core |
+
+These are local migration checks, not remote CI or production acceptance.
+The association build reused the already-installed immutable LeanPoo dependency;
+no dependency revision was upgraded. The first TLC attempt was refused by the
+sandbox's local socket restriction; a bounded rerun with local port permission
+completed. Historical validation artifacts were not rewritten.
+
+Core CI now owns standalone Lean proof builds. Product CI initializes Core and
+builds its consumer libraries; the independent product FFI smoke remains covered.
+Publishing this work still requires a coordinated Core commit and product gitlink
+update. Neither is performed by this local migration.

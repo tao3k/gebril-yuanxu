@@ -21,6 +21,7 @@ a =gerbil.pkg= dependency.
 | Area | Shared mechanism |
 |------+------------------|
 | =object-family/=, =types.ss= | POO object families and Types |
+| =object-syntax/path-slots= | Bounded dotted-path declarations lowered to native POO refinements |
 | =extension-graph/=, =composition/lineage.ss= | Extension fixed points and pure lineage analysis |
 | =contribution/= | Contribution values, capability admission, receipt issuance and revocation |
 | =module-system/= | Native Module values, schemas, inheritance, SourceRef, static Loader and Catalog |
@@ -71,3 +72,33 @@ just test-file t/module-interface-test.ss
 
 Core's =t/= tests cover shared semantics. POO Flow retains product selection
 and cross-package integration tests.
+
+* Module System design proposals
+
+[[file:module-system/design/README.org][The shared Module System design]] owns proposed directory/source-role Contracts,
+interface publication versus init selection, selected Module Core/optional extension
+boundaries and pure build contribution views. These are design documents, not
+runtime migrations. The complete former product Module System chapter, including
+its expansions and validation material, is now maintained here; see the
+[[file:module-system/design/ownership-and-migration.org][ownership and migration boundary]]. POO Flow keeps actual business Modules,
+Profiles, Scenarios, reference checkouts and product integration adapters.
+
+* Feature System migration design
+
+[[file:feature-system/design/README.org][The Feature System extraction design]] assigns the reusable feature framework
+to Core and records current product dependencies, the Bundle writer adapter split,
+source-role organization and acceptance requirements. The shared implementation now resides in Core. Scenario/Plan conversion remains
+a downstream adapter; no compatibility source tree is retained.
+
+* Configuration language design
+
+[[file:design/config-languages/00-index.org][The Core-owned configuration language design]] contains expression, Contract,
+Module organization and extension discussions, including source-backed ecosystem
+comparisons. POO Flow keeps its actual product consumption and application examples.
+These documentation changes do not update the pinned submodule revision.
+
+* Core proof ownership
+
+[[file:proofs/README.org][The Core proof packages]] own shared Module System and Profile contract
+projection models. Product proofs depend on Core in one direction. No duplicate
+source tree or Core-to-product proof dependency is maintained.

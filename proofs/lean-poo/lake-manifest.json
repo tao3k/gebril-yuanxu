@@ -1,0 +1,21 @@
+{
+ "version": "1.2.0",
+ "packagesDir": ".lake/packages",
+ "packages": [
+  {
+   "url": "https://github.com/tao3k/lean-poo.git",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "d8adf138948c854e7564234bc046387b4a5ee63b",
+   "name": "LeanPoo",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "v0.1.1",
+   "inherited": false,
+   "configFile": "lakefile.toml"
+  }
+ ],
+ "name": "PooFlowCoreAssociationProof",
+ "lakeDir": ".lake",
+ "fixedToolchain": false
+}

@@ -1,0 +1,168 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Public Configuration: Defaults, Contracts and Native Extension
+#+date: [2026-10-15]
+#+property: STATUS design-only-no-loader-change
+
+* Decision and reading order
+
+For actual automatic projection without completion lists read
+[[file:164-funflow-public-configuration/27-isolated-selected-projection.org][module 27]]. Its 41-assertion isolated fixture covers new smoke, missing slots,
+omitted evidence, warm-parent final identities and a matched unselected/selected
+thunk control. This executes the reference path, not a production Module adapter.
+
+For discovery without user completion lists read
+[[file:164-funflow-public-configuration/26-selected-responsibility-discovery.org][module 26]]. Fixed schema responsibilities plus final selected-checks determine
+the required child Contracts; native responsibility evidence determines actual
+work. The adapter remains design-only, with five checked reference laws.
+
+For the rebuilt complete native combination and concrete omission controls read
+[[file:164-funflow-public-configuration/25-isolated-combined-validation.org][module 25]]. Its 30 assertions qualify the native value/receiver path and a
+test-local selected-child Contract, not the proposed provenance hook or Loader.
+
+For the concrete unified constructor and selected admission laws read
+[[file:164-funflow-public-configuration/24-unified-construction-and-admission-laws.org][module 24]]. Its five additional reference theorems cover arbitrary source
+unions and correlated receipts under explicit selected-dependency closure.
+
+For the complete construction/copy/mutation source audit read
+[[file:164-funflow-public-configuration/23-construction-entrypoint-audit.org][module 23]]. One constructor-owned provenance protocol replaces per-operation
+recording. Native .+ and .cc must still supply consumed source identities;
+ordinary declarations and =>.+ require no separate hook. The document separates
+immutable-generation admission from the currently missing mutation invalidation.
+
+For automatic RHS requirement retention read
+[[file:164-funflow-public-configuration/22-construction-requirement-preservation.org][module 22]]. It replaces user-maintained mandatory RHS lists in the TARGET
+design with private construction provenance, preserves native slot precedence,
+and names the pending native integration and selected-candidate closure premises.
+Its three proved reference laws are not a claim that construction capture is
+already implemented.
+
+For publication/Contract association and intent-based disclosure read
+[[file:164-funflow-public-configuration/16-profile-publication-and-contract-resolution.org][module 16]]. It specifies the pending resolver that supplies module 15's
+internal bindings through package-interface export associations, without
+per-Profile publication wrappers or repeated user policy declarations.
+
+For complete current deep Profile admission and dynamic plan projection read
+[[file:164-funflow-public-configuration/15-open-profile-composition.org][module 15]] and its three Scheme source modules. Module 14's fixed participant
+pair and receipt-only Profile check are superseded. Seven tasks are a fixture,
+not a limit or the framework's user interface.
+
+Read [[file:164-funflow-public-configuration/13-independent-profiles-and-scenario-composition.org][module 13]] first for the corrected ownership and interface/instance model.
+Modules publish clean functionality and Feature extension. Profiles are
+independent reusable configurations; Scenarios compose independent Profiles.
+Neither Module.profiles nor Scenario.Profiles is the target ownership structure.
+The earlier complete listing/context adapter is retained as an earlier design,
+not a current implementation of this correction. Current instance examples use
+Scenario.<profile-binding>.<module-binding>, such as ReleaseCI.gerbil.funflow.
+
+Keep one native POO value model. Upstream owns configuration prototypes with
+defaults, separate Contract objects with responsibilities and obligations, and
+the projection consumed by planning. Downstream inherits values and refines
+declared attributes. A Contract validates a value; the value does not inherit
+from its Contract. No options declaration language, imports language, or new
+configuration macro is introduced.
+
+This is the concrete response to the [[file:164-module-interface-comparison.org][configuration-interface comparison]].
+It specifies a new design over the [[file:164-funflow-local-publication.org][implemented local publication]], rather than
+claiming that local publication already implements closed configuration or
+dynamic Check selection. Read the following modules in order:
+
+| Module | Question |
+|--------+----------|
+| [[file:164-funflow-public-configuration/01-surface-and-schema.org][01 Public surface and schema]] | Which attributes are ordinary configuration, defaults, advanced policy or derived output? Where is the authoritative schema? |
+| [[file:164-funflow-public-configuration/02-complete-cicd-case.org][02 Earlier complete CI/CD recipe]] | Which complete default fields are retained? Module-local Profile publication/context is superseded by module 13. |
+| [[file:164-funflow-public-configuration/03-admission-order-and-demand.org][03 Admission, order and demand]] | How do typos, composition conflicts, dependencies, caches and lazy demand behave? What remains unimplemented? |
+| [[file:164-funflow-public-configuration/04-selection-probe.org][04 Native receiver probe]] | Which selected-name and parent-cache semantics were actually executed, independently of the proposed domain adapter? |
+| [[file:164-funflow-public-configuration/05-field-contracts-and-capabilities.org][05 Concrete field Contracts]] | Which structural predicates exist in the design, and what can the selected recipe actually consume? |
+| [[file:164-funflow-public-configuration/06-admission-algorithms.org][06 Native admission algorithms]] | What precisely do selection, the three obligations and inherited .admit guards check, in which order? |
+| [[file:164-funflow-public-configuration/07-admission-source.org][07 Complete native Scheme design source]] | What are the actual proposed bodies of all three obligations, .admit adapters and their internal helpers? |
+| [[file:164-funflow-public-configuration/08-leanpoo-reuse-and-performance.org][08 LeanPoo reuse and performance]] | Which exact upstream PR laws/implementations can inform reuse, and what do the retained timing results actually show? |
+| [[file:164-funflow-public-configuration/09-consolidation-and-ecosystem-gaps.org][09 Consolidation and ecosystem gaps]] | Which of the 31 functions can share work, what do actual Omnibus/HiveBus libraries already provide, and which six UX/publication gaps remain? |
+| [[file:164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][10 Discovery, conflicts and plan preview]] | What concrete native descriptors, diagnostics and effective-plan views connect adding smoke to selected admission and publication? |
+| [[file:164-funflow-public-configuration/11-direct-path-assignment-and-refinement.org][11 Direct assignment and native refinement]] | How do ordinary deep-path assignments lower to shared inherited prefixes, and which syntax/admission capabilities remain proposed? |
+| [[file:164-funflow-public-configuration/12-ecosystem-organization-and-demand.org][12 Ecosystem organization and demand]] | How do contributions, modules, Profiles and Scenarios remain navigable and demand-bounded at large scale? |
+| [[file:164-funflow-public-configuration/13-independent-profiles-and-scenario-composition.org][13 Independent Profiles and Scenario composition]] | How do complete independent Gerbil/Rust recipes support multiple Scenarios, user assignment/append/smoke and two-parent-cache identity checks under the corrected ownership/reuse model? |
+| [[file:164-funflow-public-configuration/14-cicd-composition-contract-and-plan.org][14 CICD Composition Contract and plan]] | How do explicit cross-Profile relations form a qualified overall candidate from final Pipeline values, and where do admission, preview, publication and execution differ? |
+| [[file:164-funflow-public-configuration/15-open-profile-composition.org][15 Open Profile composition and complete admission]] | How are arbitrary selected Profiles actually admitted through their feature Contracts and projected without fixed language names or task counts? |
+| [[file:164-funflow-public-configuration/16-profile-publication-and-contract-resolution.org][16 Profile publication and Contract resolution]] | Which concrete Contracts admit which objects, and how do selected exports carry their requirements without user policy repetition? |
+
+| [[file:164-funflow-public-configuration/17-export-index-and-derived-resolution.org][17 Concrete export index and resolution]] | How do package-level POO indexes, recorded native derivations and interface/protocol methods resolve and admit final selected Profiles? |
+
+| [[file:164-funflow-public-configuration/18-mop-derived-profile-association.org][18 Native parent graph association]] | How does existing object-supers eliminate manual child origin records while retaining selected publication roots and final-value admission? |
+
+| [[file:164-funflow-public-configuration/19-native-parent-validation.org][19 Executed native parent/cache controls]] | What do the 44 native assertions actually establish, what does right-hand .+ lose, and which LeanPoo premises can be reused? |
+
+| [[file:164-funflow-public-configuration/20-lean-profile-association.org][20 LeanPoo association reference model]] | Which root, final-value and mandatory RHS requirement laws are proved using the existing dependency, and which native correspondence is still required? |
+
+| [[file:164-funflow-public-configuration/21-scheme-dfs-admission-correspondence.org][21 DFS, identity and real admission correspondence]] | Which conditional bridge laws and same-transcript native/Lean checks connect DFS roots to final Core receipts, and which premises remain? |
+
+* What is learned from Nickel and NixOS
+
+For the complete documented dmerge operation inventory, small-function definitions
+and shared/Funflow/user scope publication, see
+[[file:164-funflow-public-configuration/29-functions-and-overlay-use-cases.org][29 Functions and overlay use cases]]. It separates native function application
+from proposed library exports, final admission/preview and Loader work.
+
+The primary product comparison is the actual Omnibus NCL CI/matrix and sandbox
+libraries and HiveBus host/POP consumers, not language feature lists alone.
+[[file:164-funflow-public-configuration/09-consolidation-and-ecosystem-gaps.org][Module 09]] connects their concrete authoring/output paths to this design;
+the linked comparison modules retain full source extractions. Language manuals
+below explain mechanisms, not evidence of delivered ecosystem behavior.
+
+Nickel separates reusable record contracts from configurations and integrates
+field documentation, contracts and defaults into its merge model. NixOS options
+give maintainers a discoverable declaration of types, defaults and descriptions.
+We adopt the separation of authority and the discoverability, while retaining
+POO inheritance semantics. We do not claim that POO composition is Nickel's
+commutative merge or NixOS's typed definition merge.
+
+References: [[https://nickel-lang.org/user-manual/types-vs-contracts/][Nickel types and contracts]],
+[[https://nickel-lang.org/user-manual/merging/][Nickel merging and field metadata]], and
+[[https://nixos.org/manual/nixos/stable/#sec-writing-modules][NixOS module/option declarations]].
+
+Defaults have one executable owner: the value prototype/Profile. Contract field
+metadata describes them through that owner; it must not embed a second default
+that can drift. Describing a field is different from forcing its getter. A
+static documented default and an effective computed default must be labelled
+differently in any future inspection UI.
+
+* Scope of the redesign
+
+Ordinary values use direct assignment; inherited-value transformations use native
+refinement. [[file:164-funflow-public-configuration/11-direct-path-assignment-and-refinement.org][Module 11]] specifies the proposed dotted-assignment lowering and
+its shared-prefix/ambiguity rules. Current dotted syntax only accepts =>.+;
+do not describe the new direct path forms as implemented or executed.
+
+That module also owns the user-intent disclosure rule: ordinary replacement,
+deep-field assignment, transformation of an old value, new-object construction
+and core protocol extension expose progressively the native mechanisms needed
+for the task. [[file:164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][Field discovery]] must explain the appropriate operation,
+derived-output boundary, prototype origin and supported/proposed syntax. One
+native value/Contract model serves both configuration and extension authors.
+
+The current public naming decision is commands, with CommandsContract owning its
+representation and constraints. This supersedes command-vector in earlier
+proposed user examples; it does not rename historical source extracts or claim
+a runtime migration. The complete target defaults, Contract and diagnostics use
+the same field. See [[file:164-funflow-public-configuration/01-surface-and-schema.org][module 01]] for the direct-migration boundary and
+[[file:164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][module 10]] for concrete discovery, diagnostic and preview renderings.
+
+The existing build/test/package objects remain the CI/CD example. Public field
+admission, field documentation projection, selected-checks, dynamic Profile
+admission and qualified identity projection are proposed adaptations. Existing
+native slot inheritance, path expansion, bounded module scopes and Contract
+primitives are reused. No Loader, runtime, method registration or executable
+configuration source is changed by this document.
+
+The domain behavior is now specified through concrete structural Contract
+declarations, the narrow recipe capability value, selector source shape and
+normative admission algorithms and complete Scheme design bodies, including
+internal helper definitions. Implementation/consumer qualification remains
+future work. Shape-only field acceptance is explicitly weaker than consumer
+capability admission, and both are weaker than authenticated runtime readiness.
+
+The earlier [[file:164-funflow-cicd-user-authoring-design.org][authoring design]] and local publication remain evidence for their
+implemented paths. For the proposed public schema and Check membership policy,
+this document supersedes their incomplete admission assumptions. It does not
+rewrite historical source examples or their execution receipts.

@@ -1,0 +1,183 @@
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Bounded authoring syntax. The native object kernel keeps literal slot names.
+(import (prefix-in (only-in :clan/poo/object .o .def .o/ctx) native-)
+        (prefix-in (only-in :clan/poo/brace @method) native-)
+        (only-in :core/profile-composition/selection-syntax use-module)
+        (for-syntax :gerbil/expander
+                    :core/profile-composition/scope-declaration))
+(export .def .o @method)
+
+(begin-syntax
+  ;; An ordered trie exists only during expansion: identifier, terminal spec,
+  ;; children table, reverse insertion order. Payload syntax is never evaluated.
+  (def (path-node name) (vector name #f (make-hash-table-eq) '()))
+  (def (path-parts name)
+    (let* ((text (symbol->string (syntax-e name))) (size (string-length text)))
+      (let loop ((start 0) (end 0) (parts '()))
+        (if (or (= end size) (char=? (string-ref text end) #\.))
+          (begin
+            (when (= start end)
+              (raise-syntax-error #f "empty path-slot segment" name))
+            (let ((part (datum->syntax name
+                          (string->symbol (substring text start end))
+                          (stx-source name))))
+              (if (= end size) (reverse (cons part parts))
+                (loop (+ end 1) (+ end 1) (cons part parts)))))
+          (loop start (+ end 1) parts)))))
+
+  (def (insert-path! root parts spec origin)
+    (let loop ((node root) (parts parts))
+      (when (vector-ref node 1)
+        (raise-syntax-error #f "overlapping ancestor and descendant path slots" origin))
+      (if (null? parts)
+        (begin
+          (unless (null? (vector-ref node 3))
+            (raise-syntax-error #f "overlapping ancestor and descendant path slots" origin))
+          (vector-set! node 1 spec))
+        (let* ((name (car parts)) (key (syntax-e name))
+               (table (vector-ref node 2))
+               (child (hash-ref table key #f)))
+          (unless child
+            (set! child (path-node name))
+            (hash-put! table key child)
+            (vector-set! node 3 (cons child (vector-ref node 3))))
+          (when (and (null? (cdr parts)) (vector-ref child 1))
+            (raise-syntax-error #f "duplicate path-slot declaration" origin))
+          (loop child (cdr parts))))))
+
+  (def (lower-path-value value)
+    ;; Only native object constructors in refinement position are traversed.
+    ;; Quoted data, functions, and arbitrary expressions remain untouched.
+    (syntax-case value (.o @method native-.o native-@method)
+      ((.o args ...) (lower-path-object value #'(args ...)))
+      ((@method args ...) (lower-path-object value #'(args ...)))
+      ((native-.o args ...) (lower-path-object value #'(args ...)))
+      ((native-@method args ...) (lower-path-object value #'(args ...)))
+      (_ value)))
+
+  (def (refinement? operator)
+    (and (identifier? operator) (free-identifier=? operator #'=>.+)))
+
+  (def (lower-path-spec name tail dotted? leaf)
+    (if dotted?
+      (syntax-case tail ()
+        ((op value)
+         (if (refinement? #'op)
+           (with-syntax ((name leaf) (op #'op)
+                         (value (lower-path-value #'value)))
+             #'(name op value))
+           (raise-syntax-error #f "path slots require native =>.+" name)))
+        (_ (raise-syntax-error #f "path slots require one =>.+ object expression" name)))
+      (syntax-case tail ()
+        ((value)
+         (let ((bounded (bounded-module-use-parts #'value #'use-module)))
+           (when (and bounded (eq? (syntax-e name) (syntax-e (car bounded))))
+             (raise-syntax-error #f
+               "module source conflicts with lexical slot; use a distinct source binding (for example Funflow)"
+               (car bounded)))
+           (with-syntax ((name name) (value #'value)) #'(name value))))
+        ((op value)
+         (if (refinement? #'op)
+           (with-syntax ((name name) (op #'op)
+                         (value (lower-path-value #'value)))
+             #'(name op value))
+           (with-syntax ((name name) (tail tail)) #'(name . tail))))
+        (_ (with-syntax ((name name) (tail tail)) #'(name . tail))))))
+
+  (def (lower-path-body ctx specs)
+    (def root (path-node #f))
+    ;; Ordinary declarations are grouped by root but left to the native
+    ;; normalizer, including the valid method + default pair for one slot.
+    (def ordinary (make-hash-table-eq))
+    (def order '())
+    (def (add name tail)
+      (let* ((parts (path-parts name)) (dotted? (pair? (cdr parts)))
+             (spec (lower-path-spec name tail dotted? (car (reverse parts))))
+             (key (syntax-e (car parts))))
+        (unless (hash-key? ordinary key)
+          (hash-put! ordinary key '())
+          (set! order (cons key order)))
+        (if dotted?
+          (begin
+            (unless (null? (hash-ref ordinary key))
+              (raise-syntax-error #f "overlapping ancestor and descendant path slots" name))
+            (insert-path! root parts spec name))
+          (begin
+            (when (hash-key? (vector-ref root 2) key)
+              (raise-syntax-error #f "overlapping ancestor and descendant path slots" name))
+            (hash-put! ordinary key (cons spec (hash-ref ordinary key)))))))
+    (let parse ((rest specs))
+      (syntax-case rest ()
+        (() (void))
+        ((arg . more)
+         (let ((datum (syntax-e #'arg)))
+           (cond
+            ((keyword? datum)
+             (let ((name (datum->syntax (stx-car ctx)
+                           (string->symbol (keyword->string datum))
+                           (stx-source #'arg))))
+               (syntax-case #'more (=> =>.+ ?)
+                 ((op value . tail)
+                  (and (identifier? #'op)
+                       (or (free-identifier=? #'op #'=>)
+                           (free-identifier=? #'op #'=>.+)
+                           (free-identifier=? #'op #'?)))
+                  (begin (add name #'(op value)) (parse #'tail)))
+                 ((value . tail) (begin (add name #'(value)) (parse #'tail)))
+                 (_ (raise-syntax-error #f "missing value after slot name" #'arg)))))
+            ((symbol? datum) (add #'arg #'()) (parse #'more))
+            ((pair? datum)
+             (syntax-case #'arg ()
+               ((name . tail)
+                (identifier? #'name)
+                (begin (add #'name #'tail) (parse #'more)))
+               (_ (raise-syntax-error #f "invalid native slot specification" #'arg))))
+            (else (raise-syntax-error #f "invalid path slot specification" #'arg)))))
+        (_ (raise-syntax-error #f "improper slot specification list" rest))))
+    (def (emit node)
+      (or (vector-ref node 1)
+          (with-syntax ((name (vector-ref node 0))
+                        ((child ...) (map emit (reverse (vector-ref node 3)))))
+            #'(name =>.+ (native-.o child ...)))))
+    (foldr
+      (lambda (key tail)
+        (let ((node (hash-ref (vector-ref root 2) key #f)))
+          (if node (cons (emit node) tail)
+            (foldl cons tail (hash-ref ordinary key)))))
+      '() (reverse order)))
+
+  (def (lower-path-object ctx args)
+    (syntax-case args ()
+      ((header . specs)
+       (or (stx-null? #'header)
+           (and (stx-pair? #'header)
+                (eq? (syntax-e (stx-car #'header)) '::)))
+       (with-syntax ((ctx ctx) (header #'header)
+                     ((slot ...) (lower-path-body ctx #'specs)))
+         #'(native-.o/ctx ctx header slot ...)))
+      (_ (with-syntax ((ctx ctx) ((slot ...) (lower-path-body ctx args)))
+           #'(native-.o/ctx ctx slot ...))))))
+
+(defsyntax (.def stx)
+  (syntax-case stx ()
+    ((_ (name options ...) specs ...)
+     (with-syntax ((object (lower-path-object stx #'((:: options ...) specs ...))))
+       #'(def name object)))
+    ((_ name specs ...)
+     (identifier? #'name)
+     (with-syntax ((object (lower-path-object stx #'(specs ...))))
+       #'(def name object)))))
+
+(defsyntax-for-match .o
+  (lambda (stx)
+    (syntax-case stx () ((_ args ...) #'(native-.o args ...))))
+  (lambda (stx)
+    (syntax-case stx () ((_ args ...) (lower-path-object stx #'(args ...))))))
+
+(defsyntax-for-match @method
+  (lambda (stx)
+    (syntax-case stx () ((_ args ...) #'(native-.o args ...))))
+  (lambda (stx)
+    (syntax-case stx () ((_ args ...) (lower-path-object stx #'(args ...))))))

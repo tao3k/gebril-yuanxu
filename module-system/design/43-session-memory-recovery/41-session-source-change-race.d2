@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+trace: "Competing change proposals · stale acceptance is forbidden" {
+  shape: sequence_diagram
+  b: "Proposal P\nA → B"
+  registry: "Module acceptance\nmanager / epochs / local cut"
+  c: "Proposal Q\nA → C"
+  consumer: "Session consumers"
+  captured: "SAME CAPTURED CUT · neither receipt reserves the registry" {
+    b -> registry: P captures selected A / epoch A / local r
+    c -> registry: Q captures selected A / epoch A / local r
+  }
+  winner: "P PUBLISHES FIRST · either contender may win" {
+    b -> registry: current scoped receipt + final guards
+    registry -> registry: "select B · advance epochs / local cut\nclear lease · keep Project knowledge and cursors"
+    registry -> consumer: old Query / review no longer current
+  }
+  loser: "Q ARRIVES AT THE NEW CUT" {
+    c -> registry: replay Q's original receipt / captured cut
+    registry -> c: "REFUSE · old manager / epoch / local cut\nQ's pending obligation reopens" {style.stroke: "#AE3E3E"}
+    b -> registry: replay consumed P receipt
+    registry -> b: REFUSE · completed history is not reusable authority {style.stroke: "#AE3E3E"}
+  }
+}

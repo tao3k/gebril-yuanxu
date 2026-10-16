@@ -32,7 +32,7 @@ test-file path:
 test:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=(t/core-test.ss t/poo-clos-*-test.ss t/extension-graph-*-test.ss t/contribution-*-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
+    files=(t/core-test.ss t/path-slots-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/extension-graph-*-test.ss t/contribution-*-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     log="$(mktemp)"
     trap 'rm -f "$log"' EXIT
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxtest "${files[@]}" 2>&1 | tee "$log"
@@ -58,3 +58,8 @@ benchmark-effective-slots:
 # Dependent class redefinition includes native C4 preflight and live commit.
 benchmark-redefinition:
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi t/poo-clos-redefinition-benchmark.ss
+
+# Proof consumers retain separate Lean versions; no product dependency.
+proofs:
+    cd proofs/lean && timeout 120s lake build
+    cd proofs/lean-poo && timeout 120s lake build

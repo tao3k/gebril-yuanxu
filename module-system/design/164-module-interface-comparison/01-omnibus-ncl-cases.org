@@ -1,0 +1,406 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Omnibus NCL: Actual Configuration, Contracts and Higher-order Composition
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* Case A: an actual ordinary sandbox configuration
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/web-scraper.ncl#L1-L45][sandbox/examples/web-scraper.ncl, lines 1-45]]. Original repository license: MIT.
+
+#+begin_src nickel
+# web-scraper.ncl - Web Scraper Sandbox
+#
+# Provides:
+# - Full network access for HTTP requests
+# - Access to project files and output
+# - Python environment for scraping
+let Sandbox = import "../seatbelt/interface.ncl" in
+let User = import "user-config.ncl" in
+
+Sandbox.build {
+  id = "web-scraper",
+  backend = 'seatbelt,
+  cmd = ["/usr/local/bin/python3", User.projects ++ "/scraper/run.py"],
+
+  network = { enabled = true, mode = 'full },
+
+  fs = {
+    mode = 'whitelist,
+    allowed_paths = [
+      # Project directories
+      User.projects,
+      User.projects ++ "/scraper/data",
+      User.projects ++ "/scraper/output",
+
+      # Python runtime
+      "/usr/local/lib",
+      "/usr/lib/python3.*",
+
+      # Temp
+      "/tmp",
+      "/var/folders",
+
+      # Downloads
+      User.downloads,
+    ],
+  },
+
+  env = {
+    HOME = User.home,
+    PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    PYTHONPATH = User.projects ++ "/scraper",
+    PYTHONUNBUFFERED = "1",
+  },
+}
+|> Sandbox.to_profile
+#+end_src
+
+The user supplies a command, network/filesystem policy and environment. The
+builder and output conversion remain upstream. The source reference is explicit
+once, and derived project paths refer to the User configuration. This is already
+programmable configuration; neither object prototypes nor a separate user DSL
+are necessary for this case.
+
+The code also exposes costs. Several environment/filesystem paths remain local
+boilerplate. Selecting an existing user configuration and selecting an existing
+sandbox policy are different operations, and the example does not make every
+path portable. These are product-interface choices, not failures of Nickel's
+expressiveness.
+
+** The corresponding POO authoring operation
+
+The following is a self-contained native-object illustration, not a shipped
+SandboxModule or a claim that it emits a Seatbelt profile:
+
+#+begin_src scheme
+(.def User
+  home-dir: "/home/user"
+  projects: (string-append home-dir "/projects"))
+
+(.def Scraper
+  user: User
+  command-vector:
+  (list "/usr/local/bin/python3"
+        (string-append (.get user projects) "/scraper/run.py"))
+  network: (.o enabled: #t mode: 'full)
+  output-directory: (string-append (.get user projects) "/scraper/output"))
+
+(.def (ProjectUser @ User)
+  home-dir: "/workspace")
+
+(.def (ProjectScraper @ Scraper)
+  user: ProjectUser
+  network: =>.+ {enabled: #f mode: 'deny})
+#+end_src
+
+The useful property is that derived fields can retain native receiver-aware
+relationships after inheritance. The cost is equally visible: this example
+provides no domain contract, schema documentation, platform adaptation or
+Seatbelt projection. Omnibus already has a concrete consumer path. A POO object
+with plausible fields is not a replacement for that product behavior.
+
+Improvement: maintain reusable default policy objects and a checked projection
+upstream, so an ordinary user refines an existing object instead of constructing
+network/filesystem internals. Acceptance requires the same business input to
+produce an admitted sandbox policy and useful errors. This is future domain
+work; the illustration is not newly implemented sandbox support.
+
+* Case B: defaults and derived values already belong together
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/user-config.ncl#L12-L35][sandbox/examples/user-config.ncl, lines 12-35]]. Original repository license: MIT.
+
+#+begin_src nickel
+{
+  # Environment-based overrides
+  _env = {
+    HOME_DIR | default = "/home/user",
+    USER_NAME | default = "user",
+  },
+
+  # Derived values
+  home_dir = _env.HOME_DIR,
+  username = _env.USER_NAME,
+
+  home = _env.HOME_DIR,
+  downloads = _env.HOME_DIR ++ "/Downloads",
+  projects = _env.HOME_DIR ++ "/projects",
+  data = _env.HOME_DIR ++ "/data",
+  documents = _env.HOME_DIR ++ "/Documents",
+  config = _env.HOME_DIR ++ "/.config",
+  cache = _env.HOME_DIR ++ "/.cache",
+  mozilla = _env.HOME_DIR ++ "/.mozilla",
+  ssh = _env.HOME_DIR ++ "/.ssh",
+
+  macos_library = _env.HOME_DIR ++ "/Library",
+  macos_fonts = _env.HOME_DIR ++ "/Library/Fonts",
+}
+#+end_src
+
+The file comment describes environment variables, but the shown implementation
+contains an overridable _env record. It does not itself read a process environment.
+That distinction matters for reproducibility and evidence. A source comment is
+not an executed capability.
+
+The default root drives several paths. In POO, an inherited home-dir slot can
+similarly drive other lexical slots. We should not require users to repeat all
+derived paths after changing a root, or replace the relationship with an eagerly
+captured parent value. Neither language is uniquely capable of this dependency.
+
+Reflection: POO's slot binding removes explicit self references in some bodies,
+but its implicit lexical scope can be less obvious to a new author than a named
+record. Examples must explain which values remain dependent and which are frozen.
+
+* Case C: inspect the contract actually applied, not its name
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/backends/interface.ncl#L1-L35][sandbox/backends/interface.ncl, lines 1-35]]. Original repository license: MIT.
+
+#+begin_src nickel
+# backends/interface.ncl - Backend Interface
+let NonEmptyStringArray =
+  std.contract.from_predicate (fun value =>
+    std.is_array value
+    && std.array.all (fun x => std.is_string x && std.string.length x > 0) value
+  )
+in
+let ValidTimeout =
+  std.contract.from_predicate (fun x =>
+    std.is_number x && x > 0 && x <= 3600
+  )
+in
+{
+  BackendContract = {
+    name | String,
+    supported_platforms | NonEmptyStringArray,
+    supported_profiles | NonEmptyStringArray,
+    supported_features = {
+      seccomp | Bool,
+      cgroups | Bool,
+      namespaces | Bool,
+      network_isolation | Bool,
+    },
+    default_timeout_seconds | ValidTimeout,
+  },
+  BackendInstance = {
+    id | String,
+    contract | BackendContract,
+    state | String,
+  },
+  BackendParams = {
+    config | { _ | Dyn },
+    profile | { _ | Dyn },
+  },
+}
+#+end_src
+
+Here the timeout predicate is a real domain constraint, beyond a scalar type.
+This is a stronger configuration boundary than our current bounded use-module
+helper, which only checks object?. Native prototype identity and rich predicates
+solve different problems; having the former does not imply having the latter.
+
+Now inspect the actual Seatbelt builder:
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/seatbelt/interface.ncl#L24-L64][sandbox/seatbelt/interface.ncl, lines 24-64]]. Original repository license: MIT.
+
+#+begin_src nickel
+  # ============================================
+  NetworkConfig = {
+    enabled | Bool,
+    mode | [| 'deny, 'full |],
+    allowed_hosts,
+  },
+
+  # ============================================
+  # Filesystem Config
+  # ============================================
+  FsConfig = {
+    mode | [| 'chroot, 'ro, 'whitelist |],
+    mounts,
+    allowed_paths,
+  },
+
+  # ============================================
+  # Builder - Validate and merge with defaults
+  # ============================================
+  build = fun config =>
+    {
+      id | String,
+      backend | [| 'nsjail, 'seatbelt, 'hyperlight |],
+      cmd,
+
+      # Network
+      network = {
+        enabled | Bool | default = false,
+        mode | default = 'deny,
+        allowed_hosts | default = [],
+      },
+
+      # Filesystem
+      fs = {
+        mode | default = 'ro,
+        mounts | default = [],
+        allowed_paths | default = [],
+      },
+    }
+    & config,
+#+end_src
+
+NetworkConfig and FsConfig are declared, while the build expression shown uses
+its own nested records rather than explicitly attaching those named contracts.
+Its enabled field is checked; not every declared named constraint is visibly
+applied by this builder. This is a source-level observation, not an interpreter
+failure reproduction or a claim about every call path.
+
+Reflection: a language can support excellent contracts while a framework fails
+to attach the intended one. We have the same risk with define-type and
+responsibilities: declaring a Contract must not be reported as validating the
+selected Profile unless the actual admission path invokes it.
+
+The same interface's to_profile begins by calling build again, even though the
+web-scraper pipeline has already called build. That may be an intentional
+normalization boundary; source inspection alone does not measure duplicate
+runtime work. It does raise a useful ownership question: which stage validates,
+which stage normalizes, and which stage only emits? POO should answer that
+question explicitly rather than validating a whole catalog at every crossing.
+
+Improvement: give every public boundary an executable contract-attachment test,
+including negative controls. Derive attribute descriptions from the same owner,
+and identify the selected boundary at which obligations force values. Avoid a
+second schema maintained solely for documentation.
+
+* Case D: real CI composition uses higher-order functions
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/github/nix/ci.ncl#L1-L50][github/nix/ci.ncl, lines 1-50]]. Original repository license: MIT.
+
+#+begin_src nickel
+# SPDX-FileCopyrightText: 2023 The omnibus-ncl Authors
+# SPDX-FileCopyrightText: 2023 tf-ncl
+#
+# SPDX-License-Identifier: MIT
+{
+  name = "CI",
+  on = {
+    push = {
+      branches = ["main"]
+    },
+    pull_request = {
+      branches = ["main"]
+    }
+  },
+
+  configs = [
+    { os = "ubuntu-latest" },
+    # See https://github.blog/2023-10-02-introducing-the-new-apple-silicon-powered-m1-macos-larger-runner-for-github-actions/
+    { os = "macos-latest-large" }
+  ],
+
+  concurrency = {
+    group = "ci-${{ github.ref }}",
+    cancel-in-progress = true
+  },
+
+  matrix = {
+    config | default = { os = "" },
+
+    name = "Build and Test",
+
+    job = {
+      steps =
+        (import "setup-steps.ncl")
+        @ [
+          {
+            run = m%"
+              nix flake check --print-build-logs
+            "%,
+            name = "Run flake check"
+          },
+        ],
+      runs-on = config.os,
+    }
+  },
+}
+& (import "../matrix.ncl")
+|> std.serialize 'Json
+|> std.deserialize 'Json
+  | (import "../github-workflow.schema.ncl")
+#+end_src
+
+Verbatim extraction: [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/github/matrix.ncl#L1-L48][github/matrix.ncl, lines 1-48]]. Original repository license: MIT.
+
+#+begin_src nickel
+# SPDX-FileCopyrightText: 2023 The omnibus-ncl Authors
+# SPDX-FileCopyrightText: 2023 tf-ncl
+#
+# SPDX-License-Identifier: MIT
+let name_of_config = fun config =>
+  config
+  |> std.record.values
+  |> std.array.filter std.is_string
+  |> std.string.join ", "
+in
+let sanitize = fun x =>
+  std.function.pipe
+    x
+    [
+      std.string.replace_regex "[^A-Za-z0-9-_]" "-",
+      std.string.lowercase
+    ]
+in
+{
+  configs
+    | Array { .. }
+    | not_exported,
+  matrix
+    | not_exported
+    | {
+      name | String,
+      job
+        | {
+          steps | Array { .. },
+          ..
+        },
+      ..
+    },
+  jobs =
+    configs
+    |> std.array.map (fun config' =>
+      {
+        "%{sanitize "%{matrix.name}-%{name_of_config config'}"}" =
+          (
+            matrix & { config = config' }
+          ).job
+          & {
+            name = "%{matrix.name} / (%{name_of_config config'})",
+          }
+      }
+    )
+    |> std.record.merge_all
+}
+#+end_src
+
+This pair keeps local workflow intent separate from reusable matrix generation.
+The latter validates intermediate shape, maps configurations to jobs, derives
+names and combines records. Internal helper fields are excluded from output;
+the CI expression crosses a JSON/schema boundary explicitly.
+
+Scheme can implement the same kind of reuse with named pure functions and
+collection combinators. Merely spelling those functions in Scheme is not an
+advantage. The possible POO benefit is that the input remains an inherited
+object graph whose strategy objects can be refined, then projected once. The
+cost is additional obligations: selected-check identity, ordering, collisions
+and output errors must still be specified. C4 is not a matrix deduplicator.
+
+** Concrete design lesson for Funflow
+
+The actual Funflow Profile computes checks from lexical build/test/package
+slots. This fixes inherited values without a user collector. It does not yet
+infer arbitrary matrix expansion or automatically add a newly declared smoke
+Check to that three-member list. A reusable transformation should own those
+relations explicitly. Do not hide that missing product behavior behind the word
+composition.
+
+Upstream owns defaults, validators and transforms. First-layer users supply
+business values. Second-layer authors replace/refine a strategy or create a new
+prototype-derived object. The same separation is already visible in these NCL
+cases and should be preserved, rather than claimed as a POO invention.

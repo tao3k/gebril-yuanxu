@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Pure Selected Module and Build Contribution Views
+#+date: [2026-10-16]
+#+property: STATUS design-code-not-implemented-or-executed
+
+* Boundaries
+
+These are proposed adapters over admitted data. Existing [[file:../graph/funs.ss][module-closure]] remains
+the traversal owner. A target core field layout must map to existing Module values
+once; it is not currently an exported descriptor schema. Consumer init lowering,
+source resolution and feature providers are not reimplemented here.
+
+catalog is an admitted keyed native Module view. root-ids and disabled-module-ids
+are normalized identities; the source-qualified decision records remain retained
+outside these lookup inputs. A production implementation must add full requester
+chains/currentness evidence to the bounded errors below.
+
+#+begin_src scheme
+(def (selected-module-closure catalog root-ids disabled-module-ids)
+  (def (lookup id)
+    (when (memq id disabled-module-ids)
+      (error "required module is explicitly disabled" id))
+    (unless (.slot? catalog id)
+      (error "required module source is missing" id))
+    (.ref catalog id))
+  (module-closure
+   (map lookup root-ids)
+   (lambda (module) (.get module identity))
+   (lambda (module)
+     (map lookup (.get module core requires)))))
+#+end_src
+
+This closure de-duplicates; it does not itself prove topological/cycle or complete
+compiler-dependency validity. Callback source lookup must not initialize unrelated
+modules. Exposing a namespace still requires source/selection admission.
+
+* Join admitted baseline and optional build contributions
+
+build-projections contains only admitted build contribution objects from the same
+selected extension graph. Other kinds must be routed to their owners; malformed
+unknown objects cannot be silently accepted as build roots. Contribution/source
+Contracts and the mapping to a particular build provider remain pending.
+
+#+begin_src scheme
+(def (selected-build-entries modules build-projections)
+  (let ((seen (make-hash-table)) (entries '()))
+    (def (add-entries values)
+      (for-each
+       (lambda (entry)
+         (unless (hash-key? seen entry)
+           (hash-put! seen entry #t)
+           (set! entries (cons entry entries))))
+       values))
+    (for-each
+     (lambda (module) (add-entries (.get module core build-entries)))
+     modules)
+    (for-each
+     (lambda (projection) (add-entries (.get projection roots)))
+     build-projections)
+    (reverse entries)))
+#+end_src
+
+The consumer supplies selected optional contributions through a protocol; Core
+must not import POO Flow's feature model/resolver or ASP build APIs. A build provider
+then closes phase imports, macro/for-syntax dependencies, FFI and generated assets.
+Native entry strings in this bounded example are not a qualified complete build
+manifest. Avoid repeating one manually maintained source list in several layers.
+
+* Lazy generic composition view
+
+The optional plan is supplied by an admitted provider capability. It is not a new
+Core Feature resolver. Its minimal target shape has accepted?, diagnostics and
+build-projections. This input protocol needs its own Contract in implementation.
+
+#+begin_src scheme
+(def (module-build-view catalog roots denied-modules optional-plan)
+  (.o
+   selected-modules: (selected-module-closure catalog roots denied-modules)
+   build-entries:
+   (begin
+     (unless (.get optional-plan accepted?)
+       (error "optional contribution plan refused" (.get optional-plan diagnostics)))
+     (selected-build-entries selected-modules
+                             (.get optional-plan build-projections)))))
+#+end_src
+
+The view does not read directories, parse consumer syntax, run a provider or compile
+sources. Its native slots defer work until demanded. Reject stale/mismatched
+optional plans and module graph generations before exposing results. Source/schema
+and executor-specific evidence remain additional required boundaries.
+
+* Conclusion
+
+The reusable Core contribution is a precise shared data/protocol boundary and
+pure composition, not an eager umbrella loader. Qualify disabled dependencies,
+shared entries, graph generation, complete phase closure and selected/unselected
+work. No adapter or Loader is implemented by this design code.

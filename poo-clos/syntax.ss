@@ -5,7 +5,8 @@
 
 ;;; Thin hygienic declaration surface for the POO-native CLOS kernel.
 
-(import "objects.ss" "classes.ss" "lifecycle.ss" "dispatch.ss"
+(import :std/stxparam
+        "objects.ss" "classes.ss" "lifecycle.ss" "dispatch.ss"
         "lambda-list.ss"
         (for-syntax :gerbil/expander
                     "declaration-ir.ss"
@@ -15,12 +16,16 @@
         .define-method-combination
         .with-slots .with-accessors)
 
-;;; Thin declaration sugar: expansion is one ordinary checked POO bundle.
+;;; A lexical declaration context defers method registration without inspecting
+;;; or manually expanding private helper macros in the bundle's expressions.
+(defsyntax-parameter %method-declaration-only #f)
+
 ;;; Protocol identity and all method admission remain runtime-owned by objects.ss.
 (defrules .defmethod-bundle ()
   ((_ name protocol method ...)
    (def name
-     (poo-clos-method-bundle 'name protocol (list method ...)))))
+     (syntax-parameterize ((%method-declaration-only (quote-syntax #t)))
+       (poo-clos-method-bundle 'name protocol (list method ...))))))
 
 (begin-syntax
   ;; : (-> Syntax Syntax)
@@ -221,6 +226,7 @@
            (combination
             (lower-method-combination-reference
              (clos-generic-declaration-ir-method-combination ir)))
+           (protocol (clos-generic-declaration-ir-protocol ir))
            (documentation (clos-generic-declaration-ir-documentation ir))
            (generic-class
             (clos-generic-declaration-ir-generic-function-class ir))
@@ -245,6 +251,7 @@
            ((key-name ...) (map clos-key-declaration-ir-name keys))
            ((precedence-index ...) precedence)
            (combination combination)
+           (protocol (or protocol #'#f))
            (documentation (or documentation #'#f))
            (generic-class
             (if generic-class (syntax->datum generic-class)
@@ -269,6 +276,7 @@
                 allow-other-keys?: allow-other?
                 argument-precedence-order: (list precedence-index ...)
                 method-combination: combination
+                protocol: protocol
                 documentation: documentation
                 generic-function-class: 'generic-class
                 method-class: 'method-class
@@ -284,6 +292,9 @@
       ((class)
        (with-syntax ((target (clos-parameter-declaration-ir-target parameter)))
          #'(poo-clos-class-specializer target)))
+      ((prototype)
+       (with-syntax ((target (clos-parameter-declaration-ir-target parameter)))
+         #'(poo-clos-prototype-specializer target)))
       ((eql)
        (with-syntax ((target (clos-parameter-declaration-ir-target parameter)))
          #'(poo-clos-eql-specializer target)))
@@ -330,7 +341,7 @@
             (list value-binding))))))
 
   ;; : (-> ClosMethodDeclarationIR Syntax Syntax)
-  (def (lower-poo-clos-method ir source)
+  (def (lower-poo-clos-method ir source (deferred? #f))
     (let* ((name (clos-method-declaration-ir-name ir))
            (binding (clos-generic-binding-identifier name))
            (qualifier (clos-method-declaration-ir-qualifier ir))
@@ -399,25 +410,32 @@
            (key? (if (or (pair? keys) allow-other?) #t #f))
            ((key-name ...) (map clos-key-declaration-ir-name keys))
            (allow-other? allow-other?))
-        (syntax/loc source
-          (poo-clos-generic-binding-add-method!
-           binding
-           (poo-clos-method
-            'name (list specializer ...)
-            (lambda (frame . arguments)
-              (let* (parameter-binding ...)
-                (let ((call-next
-                       (lambda replacement-arguments
-                         (apply poo-clos-call-next-method
-                                frame replacement-arguments)))
-                      (next-method-p
-                       (lambda () (poo-clos-next-method? frame))))
-                  body ...)))
-            qualifier: 'qualifier
-            lambda-list:
-            (poo-clos-lambda-list
-             required-count optional-count rest? key?
-             (list 'key-name ...) allow-other?)))))))
+        (let (method-value
+              (syntax/loc source
+                (poo-clos-method
+                 'name (list specializer ...)
+                 (lambda (frame . arguments)
+                   ;; A nested method declaration in the method's executable
+                   ;; body retains normal immediate-registration semantics.
+                   (syntax-parameterize ((%method-declaration-only #f))
+                     (let* (parameter-binding ...)
+                       (let ((call-next
+                              (lambda replacement-arguments
+                                (apply poo-clos-call-next-method
+                                       frame replacement-arguments)))
+                             (next-method-p
+                              (lambda () (poo-clos-next-method? frame))))
+                         body ...))))
+                 qualifier: 'qualifier
+                 lambda-list:
+                 (poo-clos-lambda-list
+                  required-count optional-count rest? key?
+                  (list 'key-name ...) allow-other?))))
+          (if deferred?
+            method-value
+            (with-syntax ((method-value method-value))
+              (syntax/loc source
+                (poo-clos-generic-binding-add-method! binding method-value))))))))
 
   ;;; The short-form declaration emits one POO descriptor binding; invocation
   ;;; remains in the shared dispatch factor and never in macro-generated DSL data.
@@ -869,31 +887,32 @@
 ;;       ```scheme
 ;;       (.defmethod (render (object Point) &key format) object)
 ;;       ;; => ClosMethod
+;;       (.defmethod (render (object (prototype Point.)) &key format) object)
+;;       ;; => native POO prototype dispatch, without a shadow CLOS class
 ;;       ```
 ;;     %
 (defsyntax (.defmethod stx)
+  (def (lower ir)
+    (lower-poo-clos-method
+     ir stx (if (syntax-parameter-value #'%method-declaration-only) #t #f)))
   (syntax-case stx (qualifier)
     ((_ (name parameter ...) (qualifier method-qualifier) body ...)
-     (lower-poo-clos-method
+     (lower
       (parse-poo-clos-method-declaration-ir
        #'name #'method-qualifier #'(parameter ...)
-       (syntax->list #'(body ...)) stx)
-      stx))
+       (syntax->list #'(body ...)) stx)))
     ((_ (name parameter ...) body ...)
-     (lower-poo-clos-method
+     (lower
       (parse-poo-clos-method-declaration-ir
-       #'name #'primary #'(parameter ...) (syntax->list #'(body ...)) stx)
-      stx))
+       #'name #'primary #'(parameter ...) (syntax->list #'(body ...)) stx)))
     ((_ name (parameter ...) body ...)
-     (lower-poo-clos-method
+     (lower
       (parse-poo-clos-method-declaration-ir
-       #'name #'primary #'(parameter ...) (syntax->list #'(body ...)) stx)
-      stx))
+       #'name #'primary #'(parameter ...) (syntax->list #'(body ...)) stx)))
     ((_ name qualifier lambda-list body ...)
-     (lower-poo-clos-method
+     (lower
       (parse-poo-clos-method-declaration-ir
-       #'name #'qualifier #'lambda-list (syntax->list #'(body ...)) stx)
-      stx))))
+       #'name #'qualifier #'lambda-list (syntax->list #'(body ...)) stx)))))
 
 ;; .define-method-combination
 ;;   : (-> Identifier (short Operator) MethodCombinationOption ...)

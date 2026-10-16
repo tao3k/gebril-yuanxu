@@ -1,0 +1,115 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+direction: down
+architecture: Architecture / ownership {link: layers.architecture}
+protocol: Publication lifecycle {link: layers.lifecycle}
+success: Authorized replacement {link: layers.accepted_trace}
+competition: Competing proposals {link: layers.competing_trace}
+states: Same topology / different source cuts {link: layers.source_cuts}
+contended: Three sources / two independent tickets {link: layers.competition_cuts}
+architecture -> protocol: responsibility → state boundary
+protocol -> success: one admitted interaction
+protocol -> competition: one rejected competing interaction
+architecture -> states: inherited scene objects
+competition -> contended: both executable publication orders
+layers: {
+  architecture: {...@41-session-source-change-topology}
+  lifecycle: {...@41-session-source-change-lifecycle}
+  accepted_trace: {...@41-session-source-change-sequence}
+  competing_trace: {...@41-session-source-change-race}
+  competition_cuts: {
+    direction: down
+    sources: Issued sources {
+      a: "A · SELECTED\nepoch 0 / cursor 5"
+      b: "B · CANDIDATE\nepoch 0 / cursor -1" {style.stroke-dash: 5}
+      c: "C · CANDIDATE\nepoch 0 / cursor -1" {style.stroke-dash: 5}
+    }
+    p: "P · A → B\napproved receipt P / captured r1"
+    q: "Q · A → C\napproved receipt Q / captured r1"
+    registry: "Selected A · revision 1\nlease / old Query and review current" {shape: hexagon}
+    project: "Project knowledge 7 retained\nindependent admission stays current" {shape: document; style.fill: "#E6F3EF"}
+    sources.a -> registry: exact selected issuer
+    p -> registry: eligible is not authorization
+    q -> registry: no reservation or priority
+    scenarios: {
+      b_first: {
+        sources.a.label: "A · RETIRED\nepoch 1 / cursor 5"
+        sources.a.style.opacity: 0.4
+        sources.b.label: "B · SELECTED\nepoch 1 / cursor -1"
+        sources.b.style.stroke-dash: 0
+        sources.b.style.fill: "#E6F3EF"
+        registry.label: "Selected B · revision 2\nNO lease / old Query and review stale"
+        p.label: "P · COMPLETED\nreplay refused / not reopened"
+        q.label: "Q · NOT completed\nold cut refused / obligation reopened"
+        (sources.a -> registry)[0].style.opacity: 0
+        sources.b -> registry: exact accepted target
+        (p -> registry)[0].label: published once
+        (q -> registry)[0].label: REFUSED · stale cut
+        (q -> registry)[0].style.stroke: "#AB4646"
+      }
+      c_first: {
+        sources.a.label: "A · RETIRED\nepoch 1 / cursor 5"
+        sources.a.style.opacity: 0.4
+        sources.c.label: "C · SELECTED\nepoch 1 / cursor -1"
+        sources.c.style.stroke-dash: 0
+        sources.c.style.fill: "#E6F3EF"
+        registry.label: "Selected C · revision 2\nNO lease / old Query and review stale"
+        q.label: "Q · COMPLETED\nreplay refused / not reopened"
+        p.label: "P · NOT completed\nold cut refused / obligation reopened"
+        (sources.a -> registry)[0].style.opacity: 0
+        sources.c -> registry: exact accepted target
+        (q -> registry)[0].label: published once
+        (p -> registry)[0].label: REFUSED · stale cut
+        (p -> registry)[0].style.stroke: "#AB4646"
+      }
+      swapped_receipt: {
+        p.label: "P · A → B\nsubmission supplies receipt Q"
+        q.label: "Q · A → C\nsubmission supplies receipt P"
+        (p -> registry)[0].label: REFUSED · wrong subject
+        (q -> registry)[0].label: REFUSED · wrong subject
+        (p -> registry)[0].style.stroke: "#AB4646"
+        (q -> registry)[0].style.stroke: "#AB4646"
+      }
+      missing_receipt: {
+        p.label: "P · A → B\nsubmission omits receipt"
+        (p -> registry)[0].label: REFUSED · no current receipt
+        (p -> registry)[0].style.stroke: "#AB4646"
+      }
+      unapproved: {
+        p.label: "P · A → B\nNO authorization issued yet"
+        (p -> registry)[0].label: REFUSED · eligible is not permission
+        (p -> registry)[0].style.stroke: "#AB4646"
+      }
+    }
+  }
+  source_cuts: {
+    direction: right
+    a: "Provider A · SELECTED\nepoch 0 / cursor 5" {style.fill: "#E6F3EF"}
+    registry: "Selected A · local revision 1\nlease from accepted generation 5" {shape: hexagon}
+    b: "Provider B · CANDIDATE\nepoch 0 / empty cursor" {style.stroke-dash: 5}
+    a -> registry: selected issuer
+    scenarios: {
+      replaced: {
+        a.label: "Provider A · RETIRED\nepoch 1 / cursor 5 retained"
+        a.style.opacity: 0.4
+        registry.label: "Selected B · local revision 2\nNO lease / fresh review required"
+        b.label: "Provider B · SELECTED\nepoch 1 / empty cursor"
+        b.style.stroke-dash: 0
+        b.style.fill: "#E6F3EF"
+        (a -> registry)[0].style.opacity: 0
+        b -> registry: governed replacement
+      }
+      forged_name: {
+        impostor: "Name A · NOT issued A\nno private issuer identity" {style: {fill: "#FBECEC"; stroke: "#AB4646"}}
+        impostor -> registry: REFUSED · same name is not authority {style: {stroke: "#AB4646"; stroke-dash: 5}}
+      }
+      retired: {
+        a.label: "Provider A · RETIRED\nepoch 1 / cursor 5 retained"
+        a.style.opacity: 0.4
+        registry.label: "Retired A pin · local revision 2\nNO lease / raw sync still disabled"
+        (a -> registry)[0].label: manager pin retained, not permission
+        (a -> registry)[0].style.stroke-dash: 5
+      }
+    }
+  }
+}

@@ -1,0 +1,129 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Configuration Language Design: User Intent, Data Overlays and Native Extension
+#+date: [2026-10-16]
+#+filetags: :config-language:research:comparison:
+#+property: STATUS research-router-no-runtime-or-loader-change
+
+* Core design ownership
+
+This chapter is owned by poo-flow-core. It contains configuration expression,
+contract/default views, native inheritance/refinement, module source organization,
+publication/selection, and design reasoning from ecosystem comparisons. The
+[[file:../../module-system/design/README.org][Module System protocol documents]] and
+[[file:../../feature-system/design/README.org][Feature System migration design]] own shared mechanism boundaries.
+
+POO Flow retains runnable/source-backed business cases and its product adapters.
+Examples here may cite that consumer, but no such citation creates a Core runtime
+dependency. Workspace-only links to unpublished consumer design notes are marked
+by their location outside this Core checkout; pinned ecosystem code references
+use direct upstream URLs. These are design sources, not a second dependency lock.
+
+The existing Feature System source citations below identify its current POO Flow
+implementation. Its [[file:../../feature-system/design/README.org][migration target and design ownership are Core]]; these
+references do not prescribe a Core -> product dependency.
+
+The [[file:20-jsonschema-guestbook-role-examples.org][four-role JsonSchema/Guestbook review]] prints the proposed source contents and
+records duplicate-authority, publication and dependency gaps instead of hiding
+them behind helper names.
+
+* Purpose and organization
+
+Treat configuration-language design as a distinct research track, with evidence,
+reflection and acceptance criteria, not a collection of incidental Scheme syntax
+examples. Start from a maintained Profile, its consumer and a real change. Choose
+ordinary assignment, data transformation, object construction or protocol extension
+only after stating that intent. Native POO is an available abstraction, not an
+obligation imposed on every configuration author.
+
+This configuration-language track complements the Core-owned
+[[file:../../module-system/design/00-index.org][Module System design chapter]].
+KCL comparison and scope-binding research live here; existing ecosystem evidence
+remains linked at its original location. Use :config-language: for this track, plus
+:comparison: for external evidence, :data-overlays: for value transformations,
+and :design: for proposed POO interfaces. These are documentation tags, not runtime
+module/category metadata or a new package catalog schema.
+
+| Question | Owner document |
+|----------+----------------|
+| Pinned actual KCL, Omnibus AWS/Sandbox and HiveBus source cases | [[file:../../../docs/10-19-design/10.08-config-languages/scenarios/README.org][Scenario reference submodules and provenance]] |
+| What actual user/model/renderer source changes in the POO design | [[file:../../../docs/10-19-design/10.08-config-languages/10-source-scenario-research.org][Source scenario research and acceptance]] |
+| Concrete Scenario responsibilities, per-Profile admission and required-role evidence | [[file:09-application-scenario-admission.org][Application Scenario admission design code]] |
+| Contract-directed declarations and Web/API/database relationships | [[file:08-contract-directed-service-scenarios.org][Typed service Profiles and final Scenario references]] |
+| When upstream/downstream reuse Profiles and how selected service graphs differ from inheritance | [[file:07-profile-families-and-service-composition.org][Profile families and selected service graphs]] |
+| Platform-only defaults and concrete Server/Port Contracts behind simple contribution values | [[file:05-platform-server-contracts.org][Internal Server defaults and Contracts]] |
+| Concrete Deployment/Service projection and effective-object link admission | [[file:06-server-resource-projection.org][Internal Server resource projection]] |
+| Real multi-environment Server defaults, user differences and Kubernetes projection boundary | [[file:04-kcl-kubernetes-multi-environment.org][KCL and Scheme multi-environment Scenario UX]] |
+| Existing POO slot bindings instead of repeated let/.get | [[file:02-native-slot-binding.org][Native slot binding comparison]] |
+| Same assignment/append/prepend/index/keyed operation in each language | [[file:03-common-operations-comparison.org][Matched common operations and data overlays]] |
+| Research purpose, method and actual ecosystem evidence | [[file:../../module-system/design/164-module-interface-comparison.org][Modular configuration comparison]] |
+| Concrete directory Contract, native lazy tree and Guestbook scope | [[file:15-directory-contract-and-native-tree.org][Directory projection design code]] |
+| Standard Module directory roles, Agent UX and actual ecosystem tradeoffs | [[file:19-module-structure-contract-and-authoring-ux.org][Module structure design decision and research controls]] |
+| interface.ss publication, init.ss selection and one load-modules facade | [[file:18-feature-system-guestbook-selection.org][Module/Feature integration, full Guestbook init and graph]] |
+| Complete Guestbook auto/explicit init, negative decisions and build closure | [[file:17-guestbook-auto-explicit-init-examples.org][Guestbook init examples and diagnostics]] |
+| init.ss discovery/selection, Core/features, disable policy and build graph | [[file:16-init-selection-core-features-and-build.org][Init and selected graph design]] |
+| Typed directory sources, init.ss entrypoints and selected lazy module trees | [[file:../../../docs/10-19-design/10.08-config-languages/14-directory-module-tree-design.org][Directory module tree design]] |
+| Module-scoped Schema capability, native responsibilities and Guestbook admission | [[file:13-guestbook-module-contract-admission.org][Module-scoped integration design code]] |
+| Existing schema bridge through Guestbook defaults, final admission and resources | [[file:../../../docs/10-19-design/10.08-config-languages/12-guestbook-schema-profile-plan-chain.org][Schema-to-plan integration design]] |
+| Guestbook frontend/Redis Profiles, environment values and final resources | [[file:../../../docs/10-19-design/10.08-config-languages/11-guestbook-source-comparison.org][Source-grounded Guestbook comparison]] |
+| Actual Nickel library configuration | [[file:../../module-system/design/164-module-interface-comparison/01-omnibus-ncl-cases.org][Omnibus NCL cases]] |
+| Actual Nix deployment and advanced extension | [[file:../../module-system/design/164-module-interface-comparison/02-hivebus-nixos.org][HiveBus and NixOS]] |
+| Matched language semantics, including Jsonnet and Dhall | [[file:../../module-system/design/164-module-interface-comparison/03-config-language-semantics.org][Language semantics]] |
+| KCL replacement, insertion and merge distinctions | [[file:01-kcl-data-overlays.org][KCL and data overlays]] |
+| Native functions, publication and four matched CI examples | [[file:../../module-system/design/164-funflow-public-configuration/29-functions-and-overlay-use-cases.org][Scoped data operations]] |
+| User intent and ordinary assignment | [[file:../../module-system/design/164-funflow-public-configuration/11-direct-path-assignment-and-refinement.org][Assignment and refinement]] |
+| Final validation, discovery and plan preview | [[file:../../module-system/design/164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][Discovery and preview]] |
+| Current programming constraints | [[file:../../module-system/design/44-current-project-programming-style/02-poo-dispatch-and-extension.org][POO programming style]] |
+
+* Public names and Gerbil syntax
+
+Use PooFlowObjectContract. for the object Contract in design examples. POO is the
+normal object semantics; Native is not a second public category. The current
+[[file:../../types.ss][Core export]] still uses its earlier name, so these examples describe a pending
+API rename, not an already available binding. Migrate the owning definition and
+consumers directly when implementation is authorized; do not add an alias layer.
+
+Keep Gerbil/Scheme syntax: boolean #t/#f and keyword disable: #t. Emacs Lisp t
+and Doom :disable are reference-language syntax, not substitutes for Scheme
+booleans/keywords. Existing poo-flow! is the bounded declaration surface; its
+new mode/root/disable interpretation remains a proposed extension, not a reason
+to create a second package DSL.
+
+* Required comparison discipline
+
+Compare both library maintainers and downstream authors using the same task and
+defaults. Record operation semantics, identity/conflict rules, diagnostics, demand
+and effective output. Do not compare an elaborate POO implementation with only
+another language's minimal syntax, or claim superiority merely from supporting
+higher-order functions. Use actual library consumers where evidence is available;
+label language-only examples and pending ecosystem research explicitly.
+
+Every comparison must end with a conclusion answering: (1) what POO Flow could
+improve for the matched real task, (2) where it is worse or incomplete, (3) why the
+additional abstraction is needed, and (4) what evidence would establish the gain.
+Separate native mechanism, proposed ecosystem capability and measured result.
+Relate Scheme functions, POO, Contracts, generics and MOP to a maintenance problem;
+do not treat expressiveness itself as proof of a better user interface. The
+[[file:../../../docs/10-19-design/10.08-config-languages/11-guestbook-source-comparison.org][Guestbook conclusions]] apply this format to the three-service baseline.
+
+Distinguish three layers: data operations describe transformations over ordinary
+values; business functions encode maintained task policy; POO inheritance and
+Contracts preserve object behavior and validate admissible extensions. Namespaces
+organize exports. Do not repeat the namespace in each function name or create a
+new DSL to select procedures that normal lexical binding can already select.
+
+* Reflection and next evidence
+
+Scheme can express general transformations, but that alone does not supply field
+discovery, stable-key conventions, conflict diagnostics, pure execution, bounded
+cost or source-qualified previews. The design must supply those deliberately.
+KCL demonstrates the value of making operation intent visible; dmerge demonstrates
+collection-update needs beyond append. We must retain both clarity and familiar
+Scheme composition instead of hiding merge policies behind arbitrary functions.
+
+Next qualification needs matched executable cases for replacement versus update,
+missing/duplicate identities, order-sensitive composition, final-field rejection,
+and unselected-demand controls. The new function publication/preview examples are
+designs, not executed results. Existing native POO receipts retain their narrower
+scope. Loader implementation is excluded.

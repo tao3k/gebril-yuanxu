@@ -1,0 +1,330 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Superseded Domain Scope Expression Reference
+#+date: [2026-10-15]
+#+property: STATUS historical-reference-not-user-interface
+
+* Boundary
+
+The old domain helper expansions/direct policy examples below are superseded.
+They are migration research, not a recommended alternate user interface. Use
+[[file:164-bounded-domain-module-scope-examples.org][the complete bounded module scope examples]] for the current target design.
+None is a macro/runtime receipt or implemented domain API.
+
+** LangGraph: Contract initialization and native lowering
+
+*** Contract initialization: name the domain Contract directly
+
+#+begin_src scheme
+(.def (FreshLangGraphScenario @ LangGraphCompositionContract)
+  Profiles: =>.+
+  {production: =>.+
+   {graph: (use-module LangGraphModule)}})
+#+end_src
+
+Native configured-slot expansion for this fresh value:
+
+#+begin_src scheme
+(.def (FreshLangGraphScenario @ (.get LangGraphCompositionContract proto))
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for LangGraphCompositionContracts 'production)))
+          (.+ (inherited)
+              (.o graph: (%configured-module
+                            profile-contract 'graph LangGraphModule
+                            '(session state router agent-node tool-node bounded-loop runtime-handoff)))))))))
+#+end_src
+
+The user names the domain Contract; the native expansion obtains its shared
+proto. This is proposed contextual parent recognition, not native descriptor
+inheritance. Generated Module values use
+slot-owned instance names and inherit their concrete responsibility proto plus
+the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
+it inherits an already configured Scenario value and preserves owner additions.
+
+*** Native objectification and refinement
+
+#+begin_src scheme
+(.def (MyLangGraphScenario @ LangGraphScenario)
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for LangGraphCompositionContracts 'production)))
+          (.+ (inherited)
+              (.o graph: (%configured-module
+                            profile-contract 'graph LangGraphModule
+                            '(session state router agent-node tool-node bounded-loop runtime-handoff)))))))))
+
+(.def (LongerGraphScenario @ MyLangGraphScenario)
+  (Profiles => .+
+    (.o (production => .+
+          (.o (stages => .+
+                (.o (production => .+
+                      (.o (loop => .+ (.o fuel: 12)))))))))))
+#+end_src
+
+The resolved proto inherits LangGraphProductionProfile and effective projection behavior.
+The inherited production object already has that concrete proto. Refinement
+keeps it, including default stages and internal projection context. No
+scenario-profile slot or second composition call is emitted. Helpers remain
+proposed named pure functions, not an executed expansion receipt. %configured-module retains every selection.
+
+** CrewAI: Contract initialization and native lowering
+
+*** Contract initialization: name the domain Contract directly
+
+#+begin_src scheme
+(.def (FreshCrewScenario @ CrewAICompositionContract)
+  Profiles: =>.+
+  {production: =>.+
+   {crew: (use-module CrewAIModule)}})
+#+end_src
+
+Native configured-slot expansion for this fresh value:
+
+#+begin_src scheme
+(.def (FreshCrewScenario @ (.get CrewAICompositionContract proto))
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for CrewAICompositionContracts 'production)))
+          (.+ (inherited)
+              (.o crew: (%configured-module
+                            profile-contract 'crew CrewAIModule
+                            '(agent task crew planning memory knowledge sequential-process flow-state flow-router flow-persist guardrail human-input observability runtime-handoff)))))))))
+#+end_src
+
+The user names the domain Contract; the native expansion obtains its shared
+proto. This is proposed contextual parent recognition, not native descriptor
+inheritance. Generated Module values use
+slot-owned instance names and inherit their concrete responsibility proto plus
+the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
+it inherits an already configured Scenario value and preserves owner additions.
+
+*** Native objectification and refinement
+
+#+begin_src scheme
+(.def (MyCrewScenario @ CrewAIScenario)
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for CrewAICompositionContracts 'production)))
+          (.+ (inherited)
+              (.o crew: (%configured-module
+                            profile-contract 'crew CrewAIModule
+                            '(agent task crew planning memory knowledge sequential-process flow-state flow-router flow-persist guardrail human-input observability runtime-handoff)))))))))
+
+(.def (BoundedCrewScenario @ MyCrewScenario)
+  (Profiles => .+
+    (.o (production => .+
+          (.o (stages => .+
+                (.o (production => .+
+                      (.o (loop => .+ (.o fuel: 4)))))))))))
+#+end_src
+
+The resolved proto inherits CrewAIProductionProfile and effective projection behavior.
+The inherited production object already has that concrete proto. Refinement
+keeps it, including default stages and internal projection context. No
+scenario-profile slot or second composition call is emitted. Helpers remain
+proposed named pure functions, not an executed expansion receipt. %configured-module retains every selection.
+
+** Tool Calling: Contract initialization and native lowering
+
+*** Contract initialization: name the domain Contract directly
+
+#+begin_src scheme
+(.def (FreshToolScenario @ ToolCallingCompositionContract)
+  Profiles: =>.+
+  {production: =>.+
+   {tool: (use-module ToolCallingModule)}})
+#+end_src
+
+Native configured-slot expansion for this fresh value:
+
+#+begin_src scheme
+(.def (FreshToolScenario @ (.get ToolCallingCompositionContract proto))
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for ToolCallingCompositionContracts 'production)))
+          (.+ (inherited)
+              (.o tool: (%configured-module
+                            profile-contract 'tool ToolCallingModule
+                            '(tool-request tool-schema tool-permission sandbox-scope argument-validation untrusted-observation tool-cooldown result-contract runtime-binding receipt-gate observability)))))))))
+#+end_src
+
+The user names the domain Contract; the native expansion obtains its shared
+proto. This is proposed contextual parent recognition, not native descriptor
+inheritance. Generated Module values use
+slot-owned instance names and inherit their concrete responsibility proto plus
+the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
+it inherits an already configured Scenario value and preserves owner additions.
+
+*** Native objectification and refinement
+
+#+begin_src scheme
+(.def (MyToolScenario @ ToolCallingScenario)
+  (Profiles => .+
+    (.o
+      (production (inherited)
+        (let ((profile-contract
+               (scenario-profile-contract-for ToolCallingCompositionContracts 'production)))
+          (.+ (inherited)
+              (.o tool: (%configured-module
+                            profile-contract 'tool ToolCallingModule
+                            '(tool-request tool-schema tool-permission sandbox-scope argument-validation untrusted-observation tool-cooldown result-contract runtime-binding receipt-gate observability)))))))))
+
+(.def (ShortToolScenario @ MyToolScenario)
+  (Profiles => .+
+    (.o (production => .+
+          (.o (stages => .+
+                (.o (production => .+
+                      (.o (loop => .+ (.o fuel: 3)))))))))))
+#+end_src
+
+The resolved proto inherits ToolCallingAgentLoopProfile and effective projection behavior.
+The inherited production object already has that concrete proto. Refinement
+keeps it, including default stages and internal projection context. No
+scenario-profile slot or second composition call is emitted. Helpers remain
+proposed named pure functions, not an executed expansion receipt. %configured-module retains every selection.
+
+
+
+** Complete user configuration with inline native policy refinement
+
+This complete example inherits the maintained Scenario's existing default Module
+binding. No repeated use-module or one-off named policy object is necessary.
+The responsibilities and defaults described above are proposed, not current
+exports. The explicit default-binding variant is explained below.
+
+#+begin_src scheme
+(.def (PriorityGraphScenario @ LangGraphScenario)
+  Profiles: =>.+
+  {production: =>.+
+   {graph: =>.+
+    {checkpoint-key: "review-session-42"
+     resume?: #t
+     routing-policy: =>.+
+     {selection: 'priority}}}})
+#+end_src
+
+** Corresponding explicit native POO refinement
+
+This is a structural desugaring, not a captured macro-expansion or execution
+receipt. It replaces brace object notation and the =>.+ abbreviation with
+ordinary .o and (slot => .+ ...) forms, retaining the same inherited objects.
+
+#+begin_src scheme
+(.def (PriorityGraphScenario @ LangGraphScenario)
+  (Profiles => .+
+    (.o
+      (production => .+
+        (.o
+          (graph => .+
+            (.o
+              checkpoint-key: "review-session-42"
+              resume?: #t
+              (routing-policy => .+
+                (.o selection: 'priority)))))))))
+#+end_src
+
+** Complete user configuration with inline native policy refinement
+
+This complete example inherits the maintained Scenario's existing default Module
+binding. No repeated use-module or one-off named policy object is necessary.
+The responsibilities and defaults described above are proposed, not current
+exports. The explicit default-binding variant is explained below.
+
+#+begin_src scheme
+(.def (PriorityCrewScenario @ CrewAIScenario)
+  Profiles: =>.+
+  {production: =>.+
+   {crew: =>.+
+    {goal: "Review the release candidate and report blocking issues."
+     max-concurrency: 2
+     scheduling-policy: =>.+
+     {ordering: 'priority}}}})
+#+end_src
+
+** Corresponding explicit native POO refinement
+
+This is a structural desugaring, not a captured macro-expansion or execution
+receipt. It replaces brace object notation and the =>.+ abbreviation with
+ordinary .o and (slot => .+ ...) forms, retaining the same inherited objects.
+
+#+begin_src scheme
+(.def (PriorityCrewScenario @ CrewAIScenario)
+  (Profiles => .+
+    (.o
+      (production => .+
+        (.o
+          (crew => .+
+            (.o
+              goal: "Review the release candidate and report blocking issues."
+              max-concurrency: 2
+              (scheduling-policy => .+
+                (.o ordering: 'priority)))))))))
+#+end_src
+
+** Complete user configuration with inline native policy refinement
+
+This complete example inherits the maintained Scenario's existing default Module
+binding. No repeated use-module or one-off named policy object is necessary.
+The responsibilities and defaults described above are proposed, not current
+exports. The explicit default-binding variant is explained below.
+
+#+begin_src scheme
+(.def (StrictToolScenario @ ToolCallingScenario)
+  Profiles: =>.+
+  {production: =>.+
+   {tool: =>.+
+    {allowed-tools: '(read-file search)
+     timeout-ms: 5000
+     argument-validator: =>.+
+     {maximum-depth: 16}}}})
+#+end_src
+
+** Corresponding explicit native POO refinement
+
+This is a structural desugaring, not a captured macro-expansion or execution
+receipt. It replaces brace object notation and the =>.+ abbreviation with
+ordinary .o and (slot => .+ ...) forms, retaining the same inherited objects.
+
+#+begin_src scheme
+(.def (StrictToolScenario @ ToolCallingScenario)
+  (Profiles => .+
+    (.o
+      (production => .+
+        (.o
+          (tool => .+
+            (.o
+              allowed-tools: '(read-file search)
+              timeout-ms: 5000
+              (argument-validator => .+
+                (.o maximum-depth: 16)))))))))
+#+end_src
+
+* Explicit default binding is optional when the Scenario already owns it
+
+When introducing or rebinding a Module, retain the proposed explicit declaration:
+
+#+begin_src scheme
+(.def (MyCrewBinding @ CrewAIScenario)
+  Profiles: =>.+
+  {production: =>.+
+   {crew: (use-module CrewAIModule)}})
+#+end_src
+
+The combined crew example can then inherit MyCrewBinding instead of CrewAIScenario.
+The analogous graph/tool bindings use their corresponding Modules. This changes
+neither the native inline policy refinement nor the responsibility chain.
+No-selection use-module and local-slot identity remain proposed contextual
+adapters, so they are not disguised as an existing native loader expansion.
+
