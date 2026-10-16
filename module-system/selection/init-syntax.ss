@@ -6,7 +6,8 @@
 ;;; Boundary: lightweight Doom-style init declaration syntax.
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
-(import :core/module-system/selection/syntax
+(import (only-in :core/module-system/source/init module-init-intent)
+        :core/module-system/selection/syntax
         (only-in :core/profile-composition/user-profile
                  pooFlowUserProfile
                  pooFlowUserProfileSet
@@ -20,6 +21,14 @@
 ;;; doctor, presentation, sandbox, and runtime configuration facade.
 (defsyntax (poo-flow! stx)
   (syntax-case stx (profile extends)
+    ((ctx option value init-clause ...)
+     (memq (syntax->datum (syntax option)) '(mode: source:))
+     (with-syntax ((init-binding (datum->syntax (syntax ctx) 'poo-flow-module-init)))
+       (syntax
+        (begin
+          (def init-binding
+            (module-init-intent '((poo-flow! option value init-clause ...)) #f))
+          (export init-binding)))))
     ((_ profile-binding
         profile-set-binding
         (profile profile-name (extends base-profile))

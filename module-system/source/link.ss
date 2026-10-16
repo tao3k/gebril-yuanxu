@@ -1,12 +1,13 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Generation-local linking over admitted source capabilities. No filesystem backend.
+;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash)
-        (only-in :clan/poo/object .o .ref .all-slots object<-alist object<-fun)
+        (only-in :clan/poo/object .o .ref .slot? .all-slots object<-alist object<-fun)
         (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
         :core/module-system/source/objects
-        :core/module-system/source/publication)
+        :core/module-system/source/publication
+        :core/module-system/source/directory)
 (export poo-flow-load-modules)
 (def (admit-module-value! contract candidate context-value)
   (let (evidence (poo-flow-contract-admit contract candidate context-value))
@@ -33,7 +34,10 @@
           (else (scope-tree (map (lambda (row) (cons (cdar row) (cdr row))) children)
                             resolve)))))
      keys: names)))
-(def (poo-flow-load-modules context-value)
+(def (poo-flow-load-modules source read-publication: (publication-reader #f))
+  (link-module-context
+   (if (string? source) (module-directory-context source publication-reader) source)))
+(def (link-module-context context-value)
   (admit-module-value! ModuleScopeContextContract context-value context-value)
   (let ((cache (make-hash-table))
         (active (make-hash-table))
@@ -48,9 +52,11 @@
     (def (link id path)
       (current!)
       (when (memq id (.ref context-value 'denied-modules))
-        (error "required module disabled" (reverse (cons id path))))
-      (unless (memq id (.ref context-value 'module-ids))
-        (error "module is outside selected source-value policy" (reverse (cons id path))))
+        (error "required module disabled" (reverse (cons id path))
+               (and (.slot? context-value 'init-source) (.ref context-value 'init-source))))
+      (unless (or (memq id (.ref context-value 'module-ids))
+                  (and (.slot? context-value 'eligible?) ((.ref context-value 'eligible?) id)))
+        (error "module is outside selected source policy" (reverse (cons id path))))
       (cond
        ((hash-key? active id) (error "module dependency cycle" (reverse (cons id path))))
        ((hash-key? cache id) (hash-ref cache id))
@@ -105,9 +111,11 @@
         context: context-value
         admit-current: current!
         modules:
-        (scope-tree (map (lambda (id) (cons (module-id-parts id) id))
-                         (.ref context-value 'selected))
-                    (lambda (id) (.ref (resolve id) 'scope)))
+        (let (resolve-scope (lambda (id) (.ref (resolve id) 'scope)))
+          (or (and (.slot? context-value 'namespace)
+                   ((.ref context-value 'namespace) resolve-scope))
+              (scope-tree (map (lambda (id) (cons (module-id-parts id) id))
+                               (.ref context-value 'selected)) resolve-scope)))
         selected-records: (map resolve (.ref context-value 'selected))
         dependency-order:
         (begin (map resolve (.ref context-value 'selected)) (reverse order)))))

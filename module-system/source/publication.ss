@@ -49,6 +49,9 @@
                '(module-ids selected denied-modules))
        (andmap (lambda (slot) (procedure? (.ref value slot)))
                '(locate read-publication current?))
+       (andmap (lambda (slot) (or (not (.slot? value slot))
+                                  (procedure? (.ref value slot))))
+               '(eligible? namespace))
        (andmap (lambda (id) (memq id (.ref value 'module-ids)))
                (.ref value 'selected)) #t))
 (def ModuleScopeContextContract
