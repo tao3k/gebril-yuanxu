@@ -128,4 +128,13 @@
     "poo-clos/method-combination-declaration-ir"
     "poo-clos/declaration-ir"
     "poo-clos/syntax"
-    "poo-clos/interface"))
+    "poo-clos/interface"
+    "module-system/authoring/roles"
+    "module-system/source/interface"
+    "module-system/observability/presentation"
+    "module-system/authoring/observation"
+    "module-system/authoring/import-policy"
+    "module-system/authoring/projection"
+    "module-system/authoring/admission"
+    "module-system/source/collection"
+    "module-system/source/projection"))
