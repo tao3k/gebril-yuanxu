@@ -151,6 +151,15 @@
            (write-file (path-expand "config.ss" module-root) "(def Greeting \"changed\") (export Greeting)")
            (check-exception (poo-flow-write-module-publication prepared (path-expand "stale/interface.ss" root)) error?)
            (check-equal? (module-source-type (path-expand "stale/interface.ss" root)) #f)))))
+    (poo-flow-test-case "init changes invalidate a prepared compiler input held by the caller"
+      (with-publication-source
+       (lambda (root module-root source view)
+         (let ((prepared ((.get view prepare-publication) 'custom/example))
+               (output (path-expand "stale-selection/interface.ss" root)))
+           (write-file (path-expand "init.ss" root)
+                       "(poo-flow! mode: auto source: \"./modules\" :custom (example disable: #t))")
+           (check-exception (poo-flow-write-module-publication prepared output) error?)
+           (check-equal? (module-source-type output) #f)))))
     (poo-flow-test-case "package source edits and disabled Modules refuse compiler preparation"
       (with-publication-source
        (lambda (root module-root source view)

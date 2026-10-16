@@ -110,7 +110,7 @@
          (let (value
                (if (hash-key? prepared id) (hash-ref prepared id)
                  (let (value (poo-flow-prepare-module-publication
-                              ((.ref context-value 'locate) id)))
+                              ((.ref context-value 'locate) id) admit-context: current!))
                    (unless (eq? id (.ref value 'identity))
                      (error "prepared publication source owner mismatch" id value))
                    (hash-put! prepared id value) value)))

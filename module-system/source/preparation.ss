@@ -39,7 +39,8 @@
               (not (module-source-type (car entry))))) entries))
 
 (def (poo-flow-prepare-module-publication source-value
-                                          style-policy: (policy poo-flow-default-module-style-policy))
+                                          style-policy: (policy poo-flow-default-module-style-policy)
+                                          admit-context: (context-current! void))
   (unless (and (poo-flow-module-source-ref? source-value)
                (eq? (poo-flow-module-source-ref-kind source-value) 'local))
     (error "publication preparation requires a selected local SourceRef" source-value))
@@ -72,6 +73,7 @@
         (unless (and (symbol? name) (string-suffix? suffix id-text))
           (error "invalid Module binding or native compiler identity" path name compiler-info))
         (def (current!)
+          (context-current!)
           (unless (and (package-snapshot-current? package-sources)
                        (equal? compiler-info (module-compiler-identity path))
                        (andmap (lambda (role)
@@ -80,7 +82,8 @@
                                      (equal? (hash-ref texts file) (module-source-read file))
                                      (not (module-source-type file)))))
                                poo-flow-module-allowed-entrypoint-roles))
-            (error "stale prepared Module publication" owner path)))
+            (error "stale prepared Module publication" owner path))
+          (context-current!))
         (.o source: source-value identity: owner binding: name
             compiler-identity: (cadr compiler-info)
             namespace: (caddr compiler-info)
