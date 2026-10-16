@@ -48,4 +48,3 @@
     (and (object? value)
          (.slot? value 'kind)
          (eq? (.ref value 'kind) kind-expr))))
-

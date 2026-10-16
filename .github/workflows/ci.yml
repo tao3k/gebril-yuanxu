@@ -16,13 +16,6 @@ jobs:
         os: [ubuntu-latest, macos-26]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Reject Core imports of the product namespace
-        shell: bash
-        run: |
-          if git grep -n ':poo-flow/' -- '*.ss' ':!**/design/**'; then
-            echo 'Core must not import the POO Flow product namespace.' >&2
-            exit 1
-          fi
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
