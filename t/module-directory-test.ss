@@ -24,7 +24,7 @@
            (delete-directory path))
     (delete-file path)))
 (def (with-sources test)
-  (let (root (make-temporary-file-name "/private/tmp/module-directory-"))
+  (let (root (make-temporary-file-name "module-directory-"))
     (dynamic-wind
      (lambda ()
        (for-each
