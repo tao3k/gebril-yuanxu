@@ -14,7 +14,8 @@
                  make-poo-flow-module-source-collection poo-flow-module-source-collection-locate)
         :core/module-system/source/admission
         :core/module-system/source/preparation
-        :core/module-system/interface)
+        :core/module-system/interface
+        (only-in :core/modules/building/build-projection poo-flow-core-write-build-entry))
 (export module-publication-test)
 (def ScopeContract
   (poo-flow-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
@@ -68,6 +69,53 @@
               (lambda () (thunk) "unexpected success")))
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
+    (poo-flow-test-case "default reader selects and builds source roles without compiled selected modules"
+      (with-publication-source
+       (lambda (root module-root _source _view)
+         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example))")
+         (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+                (graph (.get view build-graph))
+                (output (path-expand "generated" root))
+                (artifact (poo-flow-core-write-build-entry (path-expand "init.ss" root) output)))
+           (check-equal? (.get view selected-graph module-order) '(custom/example))
+           (check-equal? (length (.get graph entries)) 4)
+           (check-equal? (length (.get artifact spec)) 4)
+           (check-equal? (.get view modules custom example greeting) "hello")
+           (check-equal? (.get view modules custom example retained) 'upstream)))))
+    (poo-flow-test-case "metadata selection never invokes domain exports or unselected source"
+      (with-publication-source
+       (lambda (root module-root _source _view)
+         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example) (bomb disable: #t))")
+         (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
+         (write-file (path-expand "interface.ss" module-root)
+           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
+         (let ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+               (output (path-expand "generated" root)))
+           (check-equal? (.get view selected-graph module-order) '(custom/example))
+           (check-equal? (length (.get (poo-flow-core-write-build-entry view output) spec)) 4)))))
+    (poo-flow-test-case "new source sessions do not reuse stale native role namespaces"
+      (with-publication-source
+       (lambda (root module-root _source view)
+         (check-equal? (.get view modules custom example greeting) "hello")
+         (write-file (path-expand "config.ss" module-root) "(def Greeting \"changed\") (export Greeting)")
+         (check-exception ((.get view admit-current)) error?)
+         (let (next (poo-flow-load-modules (path-expand "modules" root)))
+           (check-equal? (.get next modules custom example greeting) "changed")))))
+    (poo-flow-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
+      (with-publication-source
+       (lambda (root module-root _source _view)
+         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example))")
+         (let* ((path (path-expand "interface.ss" module-root))
+                (original (module-source-read path)))
+           (write-file path (string-append "(import \"./interface.ss\") " original))
+           (let (view (poo-flow-load-modules (path-expand "init.ss" root)))
+             (check-equal? (if (string-contains
+                                 (exception-message (lambda () (.get view selected-graph)))
+                                 "bootstrap cannot import its own interface") #t #f) #t))
+           (write-file path
+             "(.def Fixture identity: 'wrong/owner core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o)) features: (.o))")
+           (let (view (poo-flow-load-modules (path-expand "init.ss" root)))
+             (check-exception (.get view build-graph) error?))))))
     (poo-flow-test-case "publication is deferred; native helpers and dependency identifiers are hygienic"
       (let* ((before factory-calls)
              (source (make-poo-flow-module-generated-source 'custom/published))

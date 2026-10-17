@@ -87,6 +87,24 @@
     (eval-syntax name)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (poo-flow-test-case "init to publication to build uses the default reader and never links scopes"
+      (with-source
+       (lambda (root _prefix)
+         (let (path (path-expand "modules/app/web/interface.ss" root))
+           (write-file path
+            (string-append
+             "(import (only-in :core/feature-system/model feature-descriptor)) "
+             "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
+             "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list (.o kind: 'module/build roots: '(\"extra/early\"))))) "
+             "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list (.o kind: 'module/build roots: '(\"extra/late\"))))) "
+             "off: (error \"negative feature must not evaluate\")))")))
+         (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+                (output (path-expand "automatic" root))
+                (artifact (poo-flow-core-write-build-entry view output)))
+           (check-equal? (.get view selected-graph module-order) '(core/schema app/web))
+           (check-equal? (.get view selected-graph feature-order) '(app/web/early app/web/late))
+           (check-equal? (length (.get artifact spec)) 10)
+           (check-exception (.get view modules app web) error?)))))
     (poo-flow-test-case "roles derive once, Core dependency precedes consumer, optional order follows Graph"
       (with-source
        (lambda (root prefix)

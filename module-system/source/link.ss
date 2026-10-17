@@ -10,7 +10,8 @@
         (only-in :core/module-system/source/build module-build-graph)
         :core/module-system/source/selection
         :core/module-system/source/preparation
-        :core/module-system/source/directory)
+        :core/module-system/source/directory
+        :core/module-system/source/reader)
 (export poo-flow-load-modules)
 (def (module-id-parts id)
   (let (parts (string-split (symbol->string id) #\/))
@@ -34,7 +35,14 @@
      keys: names)))
 (def (poo-flow-load-modules source read-publication: (publication-reader #f))
   (link-module-context
-   (if (string? source) (module-directory-context source publication-reader) source)))
+   (if (and (string? source) (not publication-reader))
+     (let* ((reader (module-publication-reader))
+            (context (module-directory-context source (.ref reader 'read)))
+            (original-current? (.ref context 'current?)))
+       (.+ context (.o current?: (lambda (generation)
+                                  ((.ref reader 'admit-current))
+                                  (original-current? generation)))))
+     (if (string? source) (module-directory-context source publication-reader) source))))
 (def (link-module-context context-value)
   (admit-module-value! ModuleScopeContextContract context-value context-value)
   (let ((cache (make-hash-table))
