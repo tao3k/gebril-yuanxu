@@ -13,6 +13,10 @@ gerbil_test_runtime_options := "-:max-heap=" + gerbil_test_max_heap + ",debug=" 
 default:
     @just --list
 
+# Build only the native selected-Graph tool closure, not the whole Core package.
+bootstrap:
+    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi bootstrap.ss
+
 build:
     GERBIL_BUILD_VERBOSE=1 env -u SDKROOT gerbil build
 
@@ -32,7 +36,7 @@ test-file path:
 test:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=(t/core-test.ss t/path-slots-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/extension-graph-*-test.ss t/contribution-*-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
+    files=(t/core-test.ss t/path-slots-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/extension-graph-*-test.ss t/contribution-*-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-configuration-source-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     log="$(mktemp)"
     trap 'rm -f "$log"' EXIT
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxtest "${files[@]}" 2>&1 | tee "$log"
@@ -75,3 +79,7 @@ test-module-ownership:
     grep -F 'MODULE-OK t/qualification/module-ownership/run.ss' "$log" >/dev/null
     grep -F 'HARNESS-OK module-ownership' "$log" >/dev/null
     grep -x 'OK' "$log" >/dev/null
+
+# Source-only qualification: retain installed external dependencies, remove Core.
+test-bootstrap:
+    bash t/qualification/module-bootstrap/run.sh

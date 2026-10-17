@@ -47,9 +47,10 @@
                rows options seen))
        (else
         (let (row (car tail))
-          (unless (and group (list? row) (pair? row) (init-name? (car row)))
-            (error "expected a categorized module row" row source-path))
-          (let* ((id (string->symbol (string-append (symbol->string group) "/" (symbol->string (car row)))))
+          (unless (and (list? row) (pair? row) (init-name? (car row)))
+            (error "expected a literal module row" row source-path))
+          (let* ((id (string->symbol (if group (string-append (symbol->string group) "/" (symbol->string (car row)))
+                                  (symbol->string (car row)))))
                  (disabled-value #f)
                  (disable-specified-value #f)
                  (flags

@@ -3,11 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :clan/poo/object .o .ref)
+        ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
+        (only-in :core/module-system/source/declaration include-module-body)
         (only-in :gerbil/expander core-read-module/sexp core-library-package-plist)
         :core/module-system/source/objects
         :core/module-system/source/admission)
 (export poo-flow-prepare-module-publication poo-flow-write-module-publication
-        poo-flow-prepare-module-build-source)
+        poo-flow-prepare-module-build-source poo-flow-prepare-module-private-source)
 (def (source-metadata source key)
   (let (entry (assq key (poo-flow-module-source-ref-metadata source)))
     (and entry (cdr entry))))
@@ -147,3 +149,34 @@
                         'namespace: namespace)
                   (list '(import (only-in :core/module-system/source/declaration include-module-body))
                         `(include-module-body ,source-path)))))))
+
+;;; The native expander supplies actual imports. Only owner-confined regular
+;;; sources may join the build declaration closure; no directory scan is needed.
+(def (poo-flow-prepare-module-private-source root source-path context-current!)
+  (let* ((base (path-normalize (path-expand root)))
+         (prefix (string-append (path-strip-trailing-directory-separator base) "/"))
+         (raw (path-expand source-path))
+         (path (path-normalize raw)))
+    (unless (and (string-prefix? prefix path) (string=? (path-extension path) ".ss"))
+      (error "private source escapes its Module owner" root source-path))
+    ;; Check the unresolved spelling before normalization can erase a symlink.
+    ;; Native relative imports may retain ./ and internal ../ components.
+    (unless (string-prefix? prefix raw)
+      (error "private source must use its admitted owner path" root source-path))
+    (let walk ((directory base) (parts (string-split (substring raw (string-length prefix) (string-length raw)) #\/)))
+      (unless (pair? parts) (error "invalid private source path" source-path))
+      (let ((part (car parts)))
+        (cond
+         ((string=? part ".") (walk directory (cdr parts)))
+         ((string=? part "..")
+          (let (parent (path-directory (path-strip-trailing-directory-separator directory)))
+            (unless (or (equal? (path-normalize parent) base) (string-prefix? prefix (path-normalize parent)))
+              (error "private source escapes its Module owner" source-path))
+            (walk parent (cdr parts))))
+         (else
+          (unless (module-source-name? part) (error "invalid private source path" source-path))
+          (let (next (path-expand part directory))
+            (unless (eq? (module-source-type next) (if (pair? (cdr parts)) 'directory 'regular))
+              (error "private source is missing, non-regular or a symlink" next))
+            (when (pair? (cdr parts)) (walk next (cdr parts))))))))
+    (poo-flow-prepare-module-build-source path context-current!)))
