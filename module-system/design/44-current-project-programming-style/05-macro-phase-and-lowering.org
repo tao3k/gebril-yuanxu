@@ -56,3 +56,33 @@ Use distinct lexical source and slot names (Funflow versus funflow:). The path
 object frame diagnoses a direct same-name initializer; it does not hoist sources
 or introduce a hidden namespace. Result-specific admission and Loader activation
 remain separate owners. Retaining a source handle is not authenticating it.
+
+* Proposed configuration-source gate (design, not implemented)
+
+The [[file:../../../docs/10-19-design/11-configuration-languages/11.26-schema-discovery-source-lowering-and-macro-governance.org][Guestbook discovery/source design]] applies the existing
+[[file:../45-40-10-poo-constrained-gerbil-macro-governance.org][POO-constrained macro governance]] rather than introducing another macro system.
+A concise ordinary configuration is a product requirement. Native correspondence
+controls belong to maintainers, not users editing two values. Shortness alone
+still does not authorize new merge semantics or hidden runtime authority.
+
+Before adding dotted assignment/source wrappers: preserve original slot/expression
+syntax before trie merging, carry private source metadata through publication,
+keep initializer evaluation single, qualify longest-prefix source fallback and
+bound path depth/generated forms. Native fields/Contracts stay authoritative;
+source metadata cannot become another configuration schema or public value slot.
+The budget must account for total path segments, not just declaration count.
+Do not evaluate user values, load Modules or compile Schemas during expansion.
+The authoring binding now attaches original slot-token locations to native
+computed specifications, retaining them through inheritance and .+ copies.
+The [[file:../../../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][executed source-package controls]] cover JSON baseline association and selected
+field currentness after relocation. Raw native writes without instrumentation,
+dotted direct assignment and AOT source authentication remain separate gaps.
+
+* Implemented internal build-role binding
+
+The source preparer's internal define-module-build-binding expands to a native
+POO lazy slot and an identifier-rules reference with fresh private bindings.
+Expansion performs no IO. The source reader captures an admitted resolver during
+publication; the build graph alone grants the native dynamic phase. Phase checks
+run before cached slot reads, so caching never grants ordinary runtime access.
+This is not public configuration syntax. See the build-role gate in chapter 56.

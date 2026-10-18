@@ -1,0 +1,231 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.48 Config Languages 47: Real AWS, awscc and Null Publication
+#+property: DOCUMENT_ID 11.48
+#+property: STATUS implemented-qualification-no-loader
+
+* Actual package inputs
+
+The [[file:11.49-multi-provider-configuration-admission.org][whole-configuration control]] extends these publications to one selected
+ConfigurationContract and one native admission over provider/resource/data.
+
+This extends the two-version AWS control to three distinct Provider families.
+Each package was fetched with its fixed archive hash by Nix, wrapped with the
+same Nix-packaged OpenTofu 1.11.5 and used to export its actual Schema. The
+public module consumes those outputs without starting a Provider at admission.
+No historical awscc fixture or edited manifest substitutes for these exports.
+
+| Family | Actual version | Selected generated resource Contract |
+|--------+----------------+--------------------------------------|
+| hashicorp/aws | 5.100.0 | aws_security_group |
+| hashicorp/awscc | 1.77.0 | awscc_ec2_security_group |
+| hashicorp/null | 3.2.4 | null_resource |
+
+Product =t/fixtures/opentofu/family-schemas.nix= owns the explicit three-output
+test graph. It reuses the existing AWS package and the small test-only
+=hashicorp-package.nix= for awscc and Null. All three use Core's unchanged
+=modules/opentofu/nix/provider-schema.nix=. This does not replace production
+package locks or install a runtime provider registry.
+
+The awscc archive hash is
+=b9bc0e947d8e04f166c736bec9a06ea07841c95fe7d1caea753bdc5131af3a74=;
+the Null archive hash is
+=c43723e8cc65bcdf5e0c92581dcbbdcbdcf18b8d2037406a5f2033b1e22de442=.
+They were checked against their official historical checksum lists:
+[[https://releases.hashicorp.com/terraform-provider-awscc/1.77.0/terraform-provider-awscc_1.77.0_SHA256SUMS][awscc 1.77.0]],
+[[https://releases.hashicorp.com/terraform-provider-null/3.2.4/terraform-provider-null_3.2.4_SHA256SUMS][Null 3.2.4]]. This is fixed-checksum package qualification, not a newly established
+signature policy. The supported control platform is aarch64-darwin.
+
+* Common module mechanism; domain-specific ordinary values
+
+Build/test composition supplies artifact paths once. Each published scope is a
+normal instance of the same native module prototype:
+
+#+begin_src scheme
+(.def (AWS @ OpenTofuModule.)
+  config: (.o provider-artifact: aws-path))
+(.def (AWSCC @ OpenTofuModule.)
+  config: (.o provider-artifact: awscc-path))
+(.def (Null @ OpenTofuModule.)
+  config: (.o provider-artifact: null-path))
+#+end_src
+
+These declarations belong to upstream package integration. Resource authors
+use only the published scope and native admission:
+
+#+begin_src scheme
+(use-module AWS as cloud
+  (.call (.get cloud types resources aws_security_group) .admit
+    (.o name: "web" ingress:
+      (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+                cidr_blocks: '("10.0.0.0/16")))) #f))
+
+(use-module AWSCC as cloud
+  (.call (.get cloud types resources awscc_ec2_security_group) .admit
+    (.o group_description: "web" security_group_ingress:
+      (list (.o ip_protocol: "tcp" from_port: 443 to_port: 443
+                cidr_ip: "10.0.0.0/16")))) #f))
+
+(use-module Null as cloud
+  (.call (.get cloud types resources null_resource) .admit
+    (.o triggers: (.o release: "smoke")) #f))
+#+end_src
+
+Ordinary values require no inheritance operators. No getenv, artifact-directory
+factory, manually retrieved prototype or user-authored proof enters these
+resource configurations. The existing hygienic =use-module= implementation is
+unchanged. The repeated =cloud= alias is local to each expression and binds that
+expression's original native module object.
+
+All three published resource Contracts retain Provider address, exact package
+version and raw Schema digest. Module source is the existing generated SourceRef
+for its own artifact directory, with matching native metadata. Each native
+admission result identifies the Contract that actually validated its candidate.
+A metadata record remains an association; the package manager owns trust in the
+selected package closure.
+
+* Genuine equal-name controls
+
+The real resource names have different Provider prefixes. Renaming those fields
+or fabricating schemas would not qualify actual same-name isolation. Instead,
+the public scope now lazily publishes the real configuration node shared by all
+three exports as =types.provider=:
+
+#+begin_src scheme
+(use-module AWS as cloud
+  (.call (.get cloud types provider) .admit (.o region: "us-east-1") #f))
+(use-module AWSCC as cloud
+  (.call (.get cloud types provider) .admit (.o region: "us-east-1") #f))
+(use-module Null as cloud
+  (.call (.get cloud types provider) .admit (.o) #f))
+#+end_src
+
+The three =provider= Contract objects and identities are distinct. Their
+Provider/version/digest metadata remains tied to their respective package.
+This is also a behavioral control: the AWS configuration Contract accepts
+=skip_credentials_validation: #t=; the awscc Contract rejects that unknown
+field. Null's empty Provider configuration rejects =region=.
+
+A second unmodified same-name case exists within awscc: both resource and data
+exports contain =awscc_ec2_security_group=. They remain separate native slots:
+
+#+begin_src scheme
+(use-module AWSCC as cloud
+  (.call (.get cloud types data awscc_ec2_security_group) .admit
+    (.o id: "sg-1234") #f))
+#+end_src
+
+The data Contract requires =id= and rejects the resource candidate. The resource
+Contract requires =group_description= and rejects the data candidate. Their
+objects, qualified identities and cached publications remain distinct. Compiling
+the data Contract does not replace the already-cached resource Contract.
+
+This requires only the closed source-format kinds =provider/resource/data= in
+the existing generic publisher. Contract cache keys include kind and name;
+qualified identities include package Provider/version, kind, name and export
+digest. No Provider-name switch, shared global Contract registry, public macro
+or new configuration DSL was added. The private raw-export binding is named
+=provider-schema=, distinct from the new native =provider= slot, so POO lexical
+slot binding cannot capture it while constructing resource catalogs.
+
+* Demand boundaries and error paths
+
+The executed checks establish:
+
+- Construction and bounded aliases leave all three provider slots unforced.
+- AWS resource demand leaves awscc and Null modules unforced; awscc demand
+  still leaves Null unforced.
+- Resource use does not force its Provider configuration Contract. Selecting
+  Null's configuration Contract does not construct its resource catalog.
+- AWS IAM membership and awscc S3 bucket Contracts remain uncompiled while
+  their Security Groups are used.
+- AWS data catalog remains unforced. Other awscc data Contracts remain
+  uncompiled when the Security Group data Contract is selected.
+- Null has exactly one exported resource. Its resource is unforced until it is
+  explicitly selected; its real =null_data_source= branch remains unforced
+  afterwards. There is no invented second Null resource in the fixture.
+
+Port type rejection retains =(ingress 0 from_port)= for AWS and
+=(security_group_ingress 0 from_port)= for awscc. A numeric Null trigger is
+rejected at =(triggers release)=. The real awscc nested_type list is consumed
+by the same shared JSON Schema -> native Contract compiler; no private awscc
+field validator duplicates that owner.
+
+This is compilation/publication laziness, not resource-granular schema IO:
+first demand still reads and decodes that Provider's complete export. There is
+no cold-start or zero-first-use-cost claim. Package-time partitioning/indexing
+and startup/resource cost measurements need separate design and qualification.
+
+* Reproduction and evidence boundary
+
+Build the explicit test graph with a caller-selected package set:
+
+#+begin_src sh
+nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; in import ./t/fixtures/opentofu/family-schemas.nix { inherit pkgs; }'
+just test-opentofu-provider-families AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+#+end_src
+
+The environment-selected =<nixpkgs>= is not a new lock. The recorded local
+control uses the installed package snapshot and exact realized paths in the
+structured receipt. Production callers provide their own locked package set.
+The test requires all three real artifact paths; no synthetic fallback is used.
+The executable owner is =t/opentofu-provider-families-test.ss=, launched through
+the same default-runtime pre-import heap fence as the existing controls.
+
+Successful admission covers selected exported input constraints. It does not
+validate every resource in any Provider, invoke cloud APIs, execute Null
+provisioners, discharge unexported SDK/CIDR rules, plan or deploy infrastructure.
+The three schema exports were produced separately; no combined multi-Provider
+engine plan was executed. No Loader, automatic package acquisition on type
+access, Provider RPC adapter or concurrent-cache guarantee was added.
+
+* Executed default-runtime receipt (2026-10-17)
+
+The three actual Nix outputs built successfully:
+
+- AWS: =/nix/store/2rlwphdsarjzllarlr64vw25y05fl3pv-terraform-provider-aws-5.100.0-schema=.
+- awscc: =/nix/store/bpyna476j06igkilnbvc5pzvkriyhc7m-terraform-provider-awscc-1.77.0-schema=.
+- Null: =/nix/store/3v5v8k15vy11jrshvc5n8vcm2dhwr6py-terraform-provider-null-3.2.4-schema=.
+
+Their raw Schema SHA-256 values are respectively:
+
+- =7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c=.
+- =da2d45cbf066407681bc9b3ead3196277f966fd562bd004411a460ae83cfe7f0=.
+- =da768a39ea9a9c3464288786667f8cd2f6838c7d4a258e3a563bd49eb2466448=.
+
+The three-family gate passed 64 assertions. The previous real AWS upgrade/
+rollback gate retained all 84 passing assertions after the generic provider
+configuration entry was added. Existing module scope, bounded-syntax, artifact,
+Schema and explicit-collection gates also passed serially. All seven processes
+returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK= and no
+case/check/harness errors or heap/stack overflow. Tests used the existing default
+native runtime, not an isolated or compatibility environment.
+
+The structured receipt is product
+=t/fixtures/opentofu/family-publication-control.json=. It records each actual
+package path, version, manifest, raw digest, resource/data counts and focused
+gate results. Full generated schemas, binaries and raw logs remain local Nix or
+temporary artifacts. This is local focused qualification, not complete-suite or
+remote-CI closure.
+
+* Reflection and remaining design work
+
+The reuse is concrete: three different libraries use one package producer,
+one Schema converter and one native publication/admission route, while keeping
+their actual vocabulary and package identity. Ordinary authoring remains plain
+values; no Provider-specific import/factory/source-proof chain is repeated.
+Provider configuration and resource/data Contracts have explicit separate roles.
+
+The UX is still incomplete: raw exported resource names are long, upstream
+integration still supplies each selected package scope, and first demand parses
+a complete export. Domain libraries can publish maintained Profiles to shorten
+ordinary configurations without renaming canonical generated types. Field
+explanations, source-aware errors, supported-keyword coverage indexes and
+package-time partitioning need their own designs and controls. There is no
+justification here for a new public macro or an eager whole-ecosystem registry.
+
+The next scientific questions are whether heterogeneous Profile composition
+preserves these associations, how unsupported selected schemas are diagnosed,
+and whether measured startup/first-demand costs remain bounded for large
+selected graphs. Those questions require additional executable evidence; these
+selected-schema controls do not answer them by extrapolation.

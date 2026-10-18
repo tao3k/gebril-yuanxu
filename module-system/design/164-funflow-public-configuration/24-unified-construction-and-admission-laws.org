@@ -177,7 +177,7 @@ inside arbitrary custom .admit methods remain outside the qualified protocol.
 
 * Five new checked reference laws
 
-[[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/UnifiedConstruction.lean][UnifiedConstruction.lean]] imports the existing receipt/provenance model. It
+[[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/UnifiedConstruction.lean][UnifiedConstruction.lean]] imports the existing receipt/provenance model. It
 encodes a constructor's n-ary source union as a requirement-algebra fold:
 
 #+begin_src lean
@@ -232,12 +232,12 @@ about mutable native heaps.
 * Qualification and implementation boundary
 
 The five new theorems use only ordinary Lean axioms; no sorry or custom axiom is
-introduced. They are included in the existing PooFlowProfileAssociationProof
+introduced. They are included in the existing PooFlowCoreProof.ModuleSystem.Schema.Association
 target. The original three ConstructionRequirements theorems and the historical
 native receipts remain unchanged.
 
 Validation on 2026-10-15: lake env lean on UnifiedConstruction.lean passed;
-lake build PooFlowProfileAssociationProof passed with 47 jobs, including the
+lake build PooFlowCoreProof.ModuleSystem.Schema.Association passed with 47 jobs, including the
 two controls. The axiom output contains only propext, Quot.sound and
 Classical.choice; the missing-dependency theorem needs no axioms. Scheme code
 was reviewed against the source audit but was not compiled or executed.

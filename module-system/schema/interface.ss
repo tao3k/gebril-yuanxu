@@ -68,8 +68,8 @@
         poo-flow-module-field-resolution-result-extension-result
         poo-flow-module-field-resolution-result-contributions
         poo-flow-module-field-resolution-result-root
-        poo-flow-module-field-resolution-result-iterations
-        poo-flow-module-field-resolution-result-stable?
+        poo-flow-module-field-resolution-result-changed-passes
+        poo-flow-module-field-resolution-result-applied?
         poo-flow-module-object
         poo-flow-module-object?
         poo-flow-module-object-identity

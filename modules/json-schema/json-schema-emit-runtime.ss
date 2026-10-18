@@ -58,7 +58,8 @@
                  poo-flow-json-schema-pattern-property->alist))
 
 
-(export #t)
+(import (only-in "./json-schema-values.ss" poo-flow-json-schema-null?))
+(export #t poo-flow-json-schema-null?)
 
 ;; poo-flow-json-schema-any?
 ;;   : (-> JsonSchemaDatum Boolean)
@@ -69,15 +70,6 @@
 (def (poo-flow-json-schema-any? _value)
   #t)
 
-;; poo-flow-json-schema-null?
-;;   : (-> JsonSchemaDatum Boolean)
-;;   | doc m%
-;;       Recognize the null sentinels accepted by the JSON Schema bridge.
-;;     %
-(def (poo-flow-json-schema-null? value)
-  (or (eq? value 'null)
-      (eq? value 'json-null)
-      (void? value)))
 
 ;; poo-flow-json-schema-json-object-value?
 ;;   : (-> JsonSchemaDatum Boolean)
@@ -90,11 +82,11 @@
 ;; poo-flow-json-schema-json-array-value?
 ;;   : (-> JsonSchemaDatum Boolean)
 ;;   | doc m%
-;;       Treat list values that are not JSON-like object alists as array values.
+;;       Array schemas determine list/vector interpretation, including arrays
+;;       of records. Wire producers use vectors/hashes to avoid ambiguity.
 ;;     %
 (def (poo-flow-json-schema-json-array-value? value)
-  (and (list? value)
-       (not (poo-flow-contract-json-object? value))))
+  (or (vector? value) (list? value)))
 
 ;; poo-flow-json-schema-integer-value?
 ;;   : (-> JsonSchemaDatum Boolean)
@@ -166,9 +158,10 @@
          (max-items (poo-flow-json-schema-metadata-ref metadata 'max-items #f)))
     (lambda (value)
       (and (poo-flow-json-schema-json-array-value? value)
-           (or (not min-items) (>= (length value) min-items))
-           (or (not max-items) (<= (length value) max-items))
-           (poo-flow-contract-all? item-predicate value)))))
+           (let (items (if (vector? value) (vector->list value) value))
+             (and (or (not min-items) (>= (length items) min-items))
+                  (or (not max-items) (<= (length items) max-items))
+                  (poo-flow-contract-all? item-predicate items)))))))
 
 ;; : (-> JsonSchemaMetadata Symbol JsonSchemaDatum JsonSchemaDatum)
 (def (poo-flow-json-schema-metadata-ref metadata key default)
@@ -593,10 +586,17 @@
       ((eq? kind 'null) poo-flow-json-schema-null?)
      ((eq? kind 'object) (poo-flow-json-schema-object-predicate node))
       ((eq? kind 'array)
-      (poo-flow-json-schema-array-predicate
-       (poo-flow-json-schema-node-predicate
-        (poo-flow-json-schema-node-value node))
-       (poo-flow-json-schema-node-metadata node)))
+       (let (items (poo-flow-json-schema-node-value node))
+         (if (list? items)
+           (let (predicates (map poo-flow-json-schema-node-predicate items))
+             (lambda (value)
+               (and (or (list? value) (vector? value))
+                    (let loop ((ps predicates) (vs (if (vector? value) (vector->list value) value)))
+                      (or (null? ps) (null? vs)
+                          (and ((car ps) (car vs)) (loop (cdr ps) (cdr vs))))))))
+           (poo-flow-json-schema-array-predicate
+            (poo-flow-json-schema-node-predicate items)
+            (poo-flow-json-schema-node-metadata node)))))
       ((eq? kind 'const)
        (poo-flow-json-schema-const-predicate
         (poo-flow-json-schema-node-value node)))

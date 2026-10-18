@@ -7,7 +7,8 @@
 ;;; Invariant: this owner returns booleans only. Diagnostics and receipts stay
 ;;; in json-schema-validate.ss so the hot path avoids allocation.
 
-(import (only-in :clan/poo/object
+(import (only-in "./json-schema-constraints.ss" poo-flow-json-schema-unique-items?)
+        (only-in :clan/poo/object
                  .all-slots
                  .ref
                  object?)
@@ -36,16 +37,13 @@
                  poo-flow-json-schema-pattern-property-compiled
                  poo-flow-json-schema-pattern-property-schema
                  poo-flow-json-schema-normalization-schema)
-        (only-in "./json-schema-emit.ss"
+        (only-in "./json-schema-values.ss"
                  poo-flow-json-schema-null?)
-        (only-in "./json-schema-receipt.ss"
-                 poo-flow-json-schema-contract-artifact-normalization)
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match))
 
-(export poo-flow-json-schema-node-valid?
-        poo-flow-json-schema-contract-artifact-value-valid?)
+(export poo-flow-json-schema-node-valid?)
 
 ;; : JsonSchemaValidationMissing
 (def +poo-flow-json-schema-validation-missing+
@@ -152,6 +150,10 @@
 ;; : (-> PooFlowJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
 (def (poo-flow-json-schema-array-node-shape-valid? node value)
   (and (poo-flow-json-schema-schema-guided-array? value)
+       (or (not (poo-flow-contract-object-ref
+                 (poo-flow-json-schema-validation-node-constraints node)
+                 'uniqueItems #f))
+           (poo-flow-json-schema-unique-items? value))
        (let (constraints
              (poo-flow-json-schema-validation-node-constraints node))
          (if (null? constraints)
@@ -242,6 +244,7 @@
 (def (poo-flow-json-schema-node-kind-valid? node value)
   (let (kind (poo-flow-json-schema-node-kind node))
     (cond
+     ((eq? kind 'boolean-schema) (poo-flow-json-schema-node-value node))
      ((eq? kind 'always) #t)
      ((eq? kind 'never) #f)
      ((eq? kind 'string) (string? value))
@@ -371,10 +374,14 @@
   (and (poo-flow-json-schema-array-node-shape-valid? node value)
        (let ((item-node (poo-flow-json-schema-node-value node))
              (items (poo-flow-json-schema-schema-guided-array-values value)))
-         (poo-flow-contract-all?
-          (lambda (item)
-            (poo-flow-json-schema-node-valid? item-node item))
-          items))))
+         (if (list? item-node)
+           (let loop ((nodes item-node) (values items))
+             (or (null? nodes) (null? values)
+                 (and (poo-flow-json-schema-node-valid? (car nodes) (car values))
+                      (loop (cdr nodes) (cdr values)))))
+           (poo-flow-contract-all?
+            (lambda (item) (poo-flow-json-schema-node-valid? item-node item))
+            items)))))
 
 ;; : (-> PooFlowJsonSchemaProperty HashTable Boolean)
 (def (poo-flow-json-schema-property-valid/index? property candidate-index)
@@ -512,13 +519,3 @@
                   row
                   declared-index))
                rows))))))
-
-;; : (-> PooFlowJsonSchemaContractArtifact JsonSchemaCandidateObject Boolean)
-(def (poo-flow-json-schema-contract-artifact-value-valid? artifact candidate)
-  (and (or (hash-table? candidate)
-           (poo-flow-contract-json-object? candidate)
-           (object? candidate))
-       (poo-flow-json-schema-node-valid?
-        (poo-flow-json-schema-normalization-schema
-         (poo-flow-json-schema-contract-artifact-normalization artifact))
-        candidate)))

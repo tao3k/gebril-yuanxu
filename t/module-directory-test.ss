@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .+ .get .ref .slot?)
+        (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :core/observability/testing-case poo-flow-test-case)
         (only-in :core/types poo-flow-predicate-contract)
         :core/feature-system/model
@@ -49,6 +49,8 @@
 (def module-directory-test
   (test-suite "Directory and init source preparation without a runtime Loader"
     (poo-flow-test-case "hygienic init declaration lowers without filesystem access"
+      (check-equal? (procedure? init.build-spec) #t)
+      (check-equal? (procedure? init.build-current!) #t)
       (check-equal? (.get poo-flow-module-init mode) 'explicit)
       (check-equal? (.get poo-flow-module-init root) "./modules")
       (check-equal? (.get (.ref (car (.get poo-flow-module-init decisions)) 'selection) selection-flags) '(-smoke)))
@@ -56,7 +58,7 @@
       (with-sources
        (lambda (root)
          (let (init-path (path-expand "init.ss" root))
-           (write-source init-path "(poo-flow! :custom (guestbook +smoke -cold) :unused (bomb disable: #t))")
+           (write-source init-path "(poo-flow! mode: explicit :core (schema) :custom (guestbook +smoke -cold) :unused (bomb disable: #t))")
            (let* ((v (poo-flow-load-modules init-path
                        read-publication:
                        (lambda (source)
@@ -73,7 +75,7 @@
              (check-equal? (.get graph feature-order) '(custom/guestbook/smoke))
              (check-equal? (.get graph denied-features) '(custom/guestbook/cold))
              (check-equal? (.get graph feature-contributions projections) '(smoke))
-             (write-source init-path "(poo-flow! :custom (guestbook disable: #t))")
+             (write-source init-path "(poo-flow! mode: explicit :custom (guestbook disable: #t))")
              (check-exception ((.get graph admit-current)) error?))))))
     (poo-flow-test-case "negative init probes and source edits invalidate old views"
       (with-sources
@@ -100,23 +102,82 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "init.ss" root)
-                       "(poo-flow! mode: explicit source: \"./modules\" :custom (guestbook -smoke) :unused (bomb disable: #t))")
+                       "(poo-flow! mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke) :unused (bomb disable: #t))")
          (let* ((reads '())
                 (view (poo-flow-load-modules (path-expand "init.ss" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
            (check-equal? reads '())
            (check-equal? (.get view context denied-modules) '(unused/bomb))
-           (check-equal? (.get (.ref (car (.get view context intent decisions)) 'selection) selection-flags) '(-smoke))
+           (check-equal? (.get (.ref (find (lambda (row) (eq? (.get row identity) 'custom/guestbook))
+                                        (.get view context intent decisions)) 'selection) selection-flags) '(-smoke))
            (check-equal? (.get view modules custom guestbook owner) 'custom/guestbook)
            (check-equal? (.get view dependency-order) '(core/schema custom/guestbook))
-           (check-equal? reads '(core/schema custom/guestbook))
+           ;; Metadata discovery order is not dependency/link order. Check
+           ;; exact membership and multiplicity; dependency-order is above.
+           (check-equal?
+             (list-sort (lambda (a b) (string<? (symbol->string a) (symbol->string b))) reads)
+             '(core/schema custom/guestbook))
            (check-equal? (.slot? (.get view modules) 'unused) #f)
            ((.get view admit-current))
            (write-source (path-expand "modules/custom/guestbook/config.ss" root) "changed")
            (check-exception ((.get view admit-current)) error?)))))
+    (poo-flow-test-case "module views reuse qualified namespace leaves without forcing scopes"
+      (with-sources
+       (lambda (root)
+         (write-source (path-expand "init.ss" root)
+           "(poo-flow! mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke))")
+         (let* ((reads '())
+                (view
+                  (poo-flow-load-modules (path-expand "init.ss" root)
+                    read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads))))
+                    module-view:
+                    (lambda (id scope!)
+                      (.o identity: id scope: (scope!) tests: 'projection-probe))))
+                (modules (.get view modules))
+                (module (.get modules custom guestbook)))
+           (check-equal? (.get module identity) 'custom/guestbook)
+           (check-equal? (eq? module (.get modules custom guestbook)) #t)
+           (check-equal? (.get module tests) 'projection-probe)
+           (check-equal? reads '())
+           (check-equal? (.ref/cached module 'scope) #f)
+           (check-equal? (.get module scope owner) 'custom/guestbook)
+           (def schema (.get modules core schema))
+           (check-equal? (.get schema scope owner) 'core/schema)
+           (check-equal? (.ref/cached schema 'tests) #f)
+           (check-equal? (.get view dependency-order) '(core/schema custom/guestbook))))))
+    (poo-flow-test-case "automatic namespace reflection discovers keys without resolving leaf values"
+      (with-sources
+       (lambda (root)
+         (write-source (path-expand "init.ss" root)
+           "(poo-flow! mode: auto source: \"./modules\")")
+         (let* ((reads '())
+                (view
+                  (poo-flow-load-modules (path-expand "init.ss" root)
+                    read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads))))
+                    module-view:
+                    (lambda (id scope!)
+                      (.o identity: id scope: (scope!) tests: (error "test projection forced")))))
+                (modules (.get view modules)))
+           (check-equal? (.all-slots/sort modules) '(core custom unused))
+           (check-equal? (.slot? modules 'custom) #t)
+           (check-equal? (.slot? modules 'missing) #f)
+           (check-equal? (.ref/cached modules 'custom) #f)
+           (let (branch (.get modules custom))
+             (check-equal? (.all-slots/sort branch) '(guestbook))
+             (check-equal? (.slot? branch 'guestbook) #t)
+             (check-equal? (.ref/cached branch 'guestbook) #f)
+             (let (module (.get branch guestbook))
+               (check-equal? (.all-slots/sort module) '(identity scope tests))
+               (check-equal? (.slot? module 'tests) #t)
+               (check-equal? (.ref/cached module 'scope) #f)
+               (check-equal? (.ref/cached module 'tests) #f)))
+           (check-equal? reads '())
+           ((.get view admit-current))))))
     (poo-flow-test-case "automatic namespace expands one branch and detects changed directory metadata"
       (with-sources
        (lambda (root)
+         (write-source (path-expand "init.ss" root)
+                       "(poo-flow! mode: auto source: \"./modules\")")
          (let* ((reads '())
                 (view (poo-flow-load-modules (path-expand "modules" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
@@ -132,7 +193,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "modules/init.ss" root)
-                       "(poo-flow! :custom (guestbook) :core (schema disable: #t))")
+                       "(poo-flow! mode: explicit :custom (guestbook) :core (schema disable: #t))")
          (let* ((reads '())
                 (view (poo-flow-load-modules (path-expand "modules" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
@@ -140,7 +201,7 @@
            (check-equal? reads '(custom/guestbook))
            (check-exception ((.get view admit-current)) error?)))))
     (poo-flow-test-case "an explicit false disable is retained rather than omitted"
-      (let* ((intent (module-init-intent '((poo-flow! :custom (guestbook disable: #f))) "init.ss"))
+      (let* ((intent (module-init-intent '((poo-flow! mode: explicit :custom (guestbook disable: #f))) "init.ss"))
              (row (car (.get intent decisions))))
         (check-equal? (.get row disabled?) #f)
         (check-equal? (.get row disable-specified?) #t)
@@ -148,9 +209,10 @@
     (poo-flow-test-case "malformed and computed init are refused, never evaluated"
       (for-each
        (lambda (form) (check-exception (module-init-intent form "init.ss") error?))
-       '(((poo-flow! :custom (guestbook +smoke -smoke)))
-         ((poo-flow! :custom (guestbook disable: t)))
-         ((poo-flow! :custom (guestbook) (guestbook)))
+       '(((poo-flow! mode: explicit :custom (guestbook +smoke -smoke)))
+         ((poo-flow! source: "./modules" (guestbook)))
+         ((poo-flow! mode: explicit :custom (guestbook disable: t)))
+         ((poo-flow! mode: explicit :custom (guestbook) (guestbook)))
          ((def arbitrary (error "must not execute")) (poo-flow!))
          ((poo-flow! mode: unexpected)))))
     (poo-flow-test-case "without a publication capability directory preparation cannot load code"

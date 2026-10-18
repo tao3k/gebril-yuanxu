@@ -15,7 +15,7 @@
         ModuleAuthoringProfile. ModuleAuthoringExecutor.
         TypesSourceRole. ObjectsSourceRole. FunsSourceRole.
         ConfigSourceRole.
-        InterfaceSourceRole.
+        InterfaceSourceRole. BuildSourceRole.
         SemanticModuleContract
         ModuleSourceRoleContract ModuleAuthoringProfileContract
         poo-flow-semantic-module
@@ -71,6 +71,11 @@
    'interface '(import export .def .o) '(add remove replace delete) '()
    'module-assembly))
 
+(def BuildSourceRole.
+  (poo-flow-module-source-role
+   'build '(import def .def .o) '(add remove replace delete) '()
+   'build-publication-only))
+
 (def (poo-flow-default-module-authoring-profile)
   (validate ModuleAuthoringProfileContract
     (.o (:: @ ModuleAuthoringProfile.)
@@ -79,7 +84,8 @@
         objects: ObjectsSourceRole.
         funs: FunsSourceRole.
         config: ConfigSourceRole.
-        interface: InterfaceSourceRole.)))
+        interface: InterfaceSourceRole.
+        build: BuildSourceRole.)))
 
 ;; : (-> ModuleIdentity imports: ModuleImports capabilities: ModuleCapabilities profiles: ModuleProfiles authoring: ModuleAuthoringProfile SemanticModule)
 (def (poo-flow-semantic-module identity-value

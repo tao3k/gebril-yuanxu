@@ -1,0 +1,100 @@
+;;; -*- Gerbil -*-
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import :clan/poo/object "./config.ss" "./types.ss" "./func.ss"
+        (only-in :core/types poo-flow-validation-evidence-accepted?)
+        (only-in :core/module-system/source/admission module-source-admit-current! module-source-type module-source-read))
+(export NixSource. NixFlakeSource. poo-flow-core-nix-admit-generation
+        poo-flow-core-nix-flake-admit-generation)
+(.def (NixSource. source [])
+  expression: #f
+  ;; A configured Source owns its byte observations. Flake Sources override this
+  ;; with their lock/source closure; expression callers may refine it upstream.
+  source-inputs: (if (and (string? expression) (eq? (module-source-type expression) 'regular))
+                  (list (cons expression (module-source-read expression))) '())
+  arguments: (.o)
+  config: NixConfig
+  .instantiate:
+  (lambda ()
+    (unless (poo-flow-validation-evidence-accepted? (.call NixSourceContract .admit source #f))
+      (error "invalid Nix Source"))
+    (poo-flow-core-nix-instantiate
+      (.get config instantiate) expression arguments
+      ;; Readonly guards do not need the realization capability.
+      (lambda () (.get config realize))))
+  .realize:
+  (lambda (derivation)
+    (poo-flow-core-nix-realize (.get config realize) derivation))
+  .guard-form:
+  (lambda (expected)
+    (let ((rows (map (lambda (name) (cons name (.ref arguments name))) (.all-slots arguments)))
+          (tools (map (lambda (name) (cons name (.ref config name))) '(instantiate realize))))
+      `(poo-flow-core-nix-admit-generation ,expression ',rows ,expected ',tools)))
+  ;; A native phase object: derivation and realization are receiver-local lazy
+  ;; slots. Core may write its guarded entry between preparation and validation.
+  ;; This is a candidate until admit-current succeeds; .build keeps the eager
+  ;; public publication boundary for standalone callers.
+  .prepare:
+  (lambda (check-current!)
+    (let (source-value source)
+      (.o (:: publication) source: source-value
+          preflight: (check-current!)
+          derivation: (begin preflight (.call source-value .instantiate))
+          artifact: (.call source-value .realize derivation)
+          admit-current:
+          (lambda ()
+            ;; Preparation may have been demanded earlier. Recheck before any
+            ;; delayed effect, and again after the external realization.
+            (check-current!)
+            ;; A cached artifact read has no realization effect. The cold path
+            ;; still brackets realization; warm calls retain the pre-query and
+            ;; post-query checks without repeating that same source-only guard.
+            (unless (.ref/cached publication 'artifact)
+              artifact
+              (check-current!))
+            (admit-derivation! source-value derivation)
+            (check-current!))
+          guard-imports: '(:core/modules/nix/objects)
+          guard-forms:
+          (list (.call source-value .guard-form derivation)))))
+  .build:
+  (lambda (check-current!)
+    (let (publication (.call source .prepare check-current!))
+      ((.get publication admit-current))
+      publication)))
+(.def (NixFlakeSource. source NixSource. config arguments)
+  reference: #f
+  attribute: #f
+  source-inputs: (poo-flow-core-nix-flake-source-inputs reference)
+  .instantiate:
+  (lambda ()
+    (unless (poo-flow-validation-evidence-accepted?
+              (.call NixFlakeSourceContract .admit source #f))
+      (error "invalid Nix Flake Source"))
+    (module-source-admit-current! source-inputs)
+    (let (result (poo-flow-core-nix-flake-instantiate (.get config nix) reference attribute arguments))
+      (module-source-admit-current! source-inputs)
+      result))
+  .guard-form:
+  (lambda (expected)
+    `(poo-flow-core-nix-flake-admit-generation
+       ,reference ,attribute ,expected ,(.get config nix)
+       ',(map (lambda (key) (cons key (.ref arguments key))) (.all-slots arguments))
+       ',source-inputs)))
+
+(def (admit-derivation! source expected)
+  (unless (equal? (call-with-nix-derivation-query (lambda () (.call source .instantiate))) expected)
+    (error "stale external package derivation; regenerate the selected build graph" expected)))
+
+;; Serialized generated build guard: rows are a private wire boundary, not a DSL.
+(def (poo-flow-core-nix-admit-generation expression-path argument-rows expected (tools #f))
+  (let (source (.cc NixSource. 'expression expression-path 'arguments (object<-alist argument-rows)
+                    'config (if tools (object<-alist tools) NixConfig)))
+    (admit-derivation! source expected)))
+(def (poo-flow-core-nix-flake-admit-generation reference attribute expected executable
+        (argument-rows '()) (observations '()))
+  (admit-derivation!
+    (.cc NixFlakeSource. 'reference reference 'attribute attribute
+      'config (.cc NixConfig 'nix executable)
+      'arguments (object<-alist argument-rows) 'source-inputs observations)
+    expected))

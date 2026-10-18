@@ -130,14 +130,14 @@ rejects a Profile value.
 - [X] This RFC does not redefine conservative extension.
 
 These obligations are checked by
-=PooFlowProof.PooC4.PoofProofAdoption=.  They prove the adoption boundary, not
+=PooFlowCoreProof.PooClos.ProofBoundary=.  They prove the adoption boundary, not
 the still-pending executable correspondence review recorded in the
 implementation checklist.
 
 ** Verification receipts
 
 | Verification surface | State | Receipt |
-| Local Lean module | =accepted= | =lake build PooFlowProof.PooC4.PoofProofAdoption=: 27/27 jobs |
+| Local Lean module | =accepted= | =lake build PooFlowCoreProof.PooClos.ProofBoundary=: 27/27 jobs |
 | Local Lean closure | =accepted= | =lake build=: 100/100 jobs |
 | AXLE independent declaration check | =accepted= | Request =6c99a3b5-402f-4b20-920c-f2cb739bf3d3=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
 | AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =0e9db41f-38d5-48b7-9fe8-9f3f99aff5fe= cannot resolve local module prefix =PooFlowProof= |

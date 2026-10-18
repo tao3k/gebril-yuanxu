@@ -195,3 +195,40 @@ flowchart LR
 - 不建立新的配置 DSL。
 - 不建立兼容性迁移或废弃策略；这是全新架构。
 - 不重新实现 =gerbil-poo= 已有的 POO 语义。
+
+* Guestbook authoring application (English, 2026-10-16)
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.26-schema-discovery-source-lowering-and-macro-governance.org][Schema discovery/source-preserving lowering design]] applies this governance
+to the current .def/path-slot surface. It does not revive the earlier
+user-composition/compose proposal as a required user API. Current Guestbook
+publication and Scenario inheritance remain ordinary native declarations.
+
+Macro governance is an explicit owning design module, not an informal preference.
+Before widening the reviewed surface, require one owner, declared phase imports,
+bounded static syntax, native normal-form expansion, original source-span retention,
+single evaluation and work/generated-form budgets. Use internal defrules or
+procedural lowering where those satisfy the need; no public macro tower or new
+runtime configuration evaluator. Source/publication records remain private data,
+not extra slots in Schema-validated user objects.
+
+The user-facing acceptance target is a small correct edit and an actionable
+field/source diagnostic. Native equivalence and receiver controls remain separate
+maintainer gates. Macros may remove structural boilerplate, but semantic validation,
+Module loading, source discovery and effect authority stay with native Contract,
+Module and runtime owners. This addition is design-only; it implements no macro
+governance runtime, direct path assignment or Loader adapter.
+
+* Guestbook admission evidence gate (English, design-only)
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.27-guestbook-macro-admission-and-minimal-controls.org][minimal Guestbook qualification plan]] is the required design gate for widening
+path assignment/source publication. Before implementation, identify the owner,
+phase imports, native normal form, source/private-publication boundary, actual
+budget policy and typed failure behavior. Acceptance needs shared-prefix merge,
+original source/hygiene, no duplicate evaluation and Schema-revision synchronization
+controls, including negative and manual native comparisons. Existing controls for
+dotted =>.+ do not qualify the proposed direct assignment surface automatically.
+
+The field catalog remains the normalized Schema artifact. Test-only source rows
+and counters must not become public configuration fields or user-facing evidence
+requirements. No unqualified KCL superiority or runtime completion follows from
+this plan. It introduces no implementation, new macro or Loader connection.

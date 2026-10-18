@@ -3,18 +3,26 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :clan/poo/object .o .ref)
+        (only-in :core/module-system/source/role-forms module-publication-role-imports)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
         (only-in :core/module-system/source/declaration include-module-body)
-        (only-in :gerbil/expander core-read-module/sexp core-library-package-plist)
+        (only-in :core/module-system/source/config-prelude)
+        (only-in :gerbil/expander core-read-module/sexp core-library-package-plist syntax->datum)
         :core/module-system/source/objects
         :core/module-system/source/admission)
 (export poo-flow-prepare-module-publication poo-flow-write-module-publication
-        poo-flow-prepare-module-build-source poo-flow-prepare-module-private-source)
+        poo-flow-prepare-module-build-source poo-flow-prepare-module-tool-source
+        poo-flow-prepare-module-retained-source
+        poo-flow-prepare-module-private-source)
 (def (source-metadata source key)
   (let (entry (assq key (poo-flow-module-source-ref-metadata source)))
     (and entry (cdr entry))))
 (def (module-compiler-identity path)
+  (module-source-observe read-module-compiler-identity path))
+(def (read-module-compiler-identity path)
   ;; Native package/header resolution, without core-import-module or expansion.
+  (when (current-module-source-observer)
+    ((current-module-source-observer) 'compiler-identity-reads 1))
   (let-values (((prelude identity namespace body) (core-read-module/sexp path)))
     (list prelude identity namespace)))
 (def (package-source-snapshot path)
@@ -35,10 +43,15 @@
             (reverse (cons (cons file #f) entries))
             (loop (path-directory trimmed) (cons (cons file #f) entries))))))))
 (def (package-snapshot-current? entries)
+  (module-source-observe check-package-snapshot-current? entries))
+(def (check-package-snapshot-current? entries)
   (andmap (lambda (entry)
             (if (cdr entry)
               (and (eq? (module-source-type (car entry)) 'regular)
-                   (equal? (cdr entry) (module-source-read (car entry))))
+                   (equal? (cdr entry) (module-source-read (car entry)))
+                   (let* ((datum (call-with-input-string (cdr entry) read))
+                          (expected (if (eof-object? datum) '() datum)))
+                     (equal? expected (core-library-package-plist (path-directory (car entry)) #t))))
               (not (module-source-type (car entry))))) entries))
 
 (def (poo-flow-prepare-module-publication source-value
@@ -68,47 +81,62 @@
              (name (if (pair? binding) (car binding) binding))
              (package-sources (package-source-snapshot path))
              (compiler-info (module-compiler-identity path))
+             (prelude-inputs
+              (let (prelude (car compiler-info))
+                (if (and (string? prelude) (string=? (path-extension prelude) ".ss"))
+                  (list (cons prelude (module-source-read prelude))) '())))
              (id-text (symbol->string (cadr compiler-info)))
              (suffix "/interface")
-             (roles (filter (lambda (role)
-                              (hash-key? texts (path-expand (string-append (symbol->string role) ".ss") root)))
-                            '(types func objects config))))
+             (imports (module-publication-role-imports root (cut hash-key? texts <>)))
+             (roles (map (lambda (name) (string->symbol (path-strip-extension (path-strip-directory name)))) imports)))
         (unless (and (symbol? name) (string-suffix? suffix id-text))
           (error "invalid Module binding or native compiler identity" path name compiler-info))
         (def (current!)
           (context-current!)
+          (module-source-admit-current! prelude-inputs "stale Module prelude source")
+          ;; Unchanged role/header bytes plus native package lookup determine
+          ;; identity; do not parse interface.ss again on every guard.
           (unless (and (package-snapshot-current? package-sources)
-                       (equal? compiler-info (module-compiler-identity path))
-                       (andmap (lambda (role)
-                                 (let (file (path-expand (string-append (symbol->string role) ".ss") root))
-                                   (if (hash-key? texts file)
-                                     (equal? (hash-ref texts file) (module-source-read file))
-                                     (not (module-source-type file)))))
-                               poo-flow-module-allowed-entrypoint-roles))
+                       (andmap
+                         (lambda (role)
+                           (let (file (path-expand
+                                        (string-append (symbol->string role) ".ss") root))
+                             (if (hash-key? texts file)
+                               (equal? (hash-ref texts file) (module-source-read file))
+                               (not (module-source-type file)))))
+                         poo-flow-module-allowed-entrypoint-roles))
             (error "stale prepared Module publication" owner path))
           (context-current!))
+        ;; The interpreter redirects original sources through its admitted reader;
+        ;; standalone compiler input imports adjacent prepared role projections.
+        (def (publication-forms imports)
+          (append
+           (if (car compiler-info) (list 'prelude: (car compiler-info)) '())
+           (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
+                 'namespace: (caddr compiler-info)
+                 `(import (except-in :clan/poo/object .def)
+                          (only-in :core/module-system/source/declaration .def define-module-build-binding)
+                          ,@imports))
+           (if (hash-key? texts (path-expand "build.ss" root))
+             (list '(define-module-build-binding Build)) '())
+           (list `(include ,path))))
         (.o source: source-value identity: owner binding: name
             compiler-identity: (cadr compiler-info)
             source-inputs:
-            (append package-sources
+            (append package-sources prelude-inputs
                     (map (lambda (role)
                            (let (file (path-expand (string-append (symbol->string role) ".ss") root))
                              (cons file (and (hash-key? texts file) (hash-ref texts file)))))
                          poo-flow-module-allowed-entrypoint-roles))
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
-            namespace: (caddr compiler-info)
+            build-source: (let (file (path-expand "build.ss" root))
+                            (and (hash-key? texts file) file))
+            namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
-            ;; Include preserves the author's syntax locations and native reader.
-            ;; Only the wrapper imports this internal .def binding.
-            compiler-forms:
-            (append
-             (if (car compiler-info) (list 'prelude: (car compiler-info)) '())
-             (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
-                   'namespace: (caddr compiler-info)
-                   `(import (except-in :clan/poo/object .def)
-                            (only-in :core/module-system/source/declaration .def)
-                            ,@(map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
-                   `(include ,path))))))))
+            reader-forms: (publication-forms
+                           (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
+            compiler-forms: (publication-forms
+                             (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles)))))))
 (def (poo-flow-write-module-publication prepared output)
   ;; Materialization belongs to source preparation, never to the syntax expander.
   (unless (string=? (path-strip-directory output) "interface.ss")
@@ -116,6 +144,21 @@
   (when (module-source-type output)
     (error "prepared compiler output must be a fresh artifact" output))
   ((.ref prepared 'admit-current))
+  ;; Materialize the same native role frames used by the reader; never copy
+  ;; bare config.ss into a compiler tree where its role prelude would be lost.
+  (let (roles (map (lambda (path)
+                    (cons (path-expand (path-strip-directory path) (path-directory output))
+                          (poo-flow-prepare-module-build-source path (.ref prepared 'admit-current))))
+                  (.ref prepared 'role-sources)))
+    (for-each (lambda (role)
+                (when (module-source-type (car role))
+                  (error "prepared role output must be a fresh artifact" (car role)))) roles)
+    (create-directory* (path-directory output))
+    (for-each (lambda (role)
+                (call-with-output-file (list path: (car role) truncate: #t)
+                  (lambda (port)
+                    (for-each (lambda (form) (write form port) (newline port))
+                              (.ref (cdr role) 'compiler-forms))))) roles))
   (create-directory* (path-directory output))
   (call-with-output-file (list path: output truncate: #t)
     (lambda (port)
@@ -128,27 +171,54 @@
 ;;; A relocatable build tree retains native identity/namespace and the reader's
 ;;; headers. Internal native inclusion retains the original source locations.
 (def (poo-flow-prepare-module-build-source source-path context-current!)
+  (prepare-build-source source-path context-current! #f))
+;; Only SDK-observed tool sources use native inclusion. In particular the
+;; declaration compiler cannot import its own include-module-body binding.
+(def (poo-flow-prepare-module-tool-source source-path context-current!)
+  (prepare-build-source source-path context-current! #t))
+;; Explicit non-Module roots keep their ordinary Scheme body and exports.
+;; They do not acquire Module role imports or Config semantics by basename.
+(def (poo-flow-prepare-module-retained-source source-path context-current!)
+  (prepare-build-source source-path context-current! #t))
+(def (prepare-build-source source-path context-current! tool?)
   (context-current!)
   (let* ((text (module-source-read source-path))
-         (packages (package-source-snapshot source-path))
-         (compiler-info (module-compiler-identity source-path)))
+         (packages (package-source-snapshot source-path)))
     (let-values (((prelude id namespace _body) (core-read-module/sexp source-path)))
+      (when (and tool? (not (equal? (syntax->datum _body) (call-with-input-string text read-all))))
+        (error "compiler tool inclusion requires a header-free source body" source-path))
+      ;; Native identity is determined by the exact header bytes and ancestor
+      ;; package resolution observed above. Revalidate both (including the native
+      ;; package cache), rather than reparse the entire unchanged module body.
       (def (current!)
         (context-current!)
-        (unless (and (equal? text (module-source-read source-path))
-                     (package-snapshot-current? packages)
-                     (equal? compiler-info (module-compiler-identity source-path)))
-          (error "stale prepared build source" source-path))
+        (unless (equal? text (module-source-read source-path))
+          (error "stale prepared build source" source-path 'source-bytes-changed))
+        (unless (package-snapshot-current? packages)
+          (error "stale prepared build source" source-path 'package-metadata-changed))
         (context-current!))
       (.o path: source-path compiler-identity: id admit-current: current!
           source-inputs: (cons (cons source-path text) packages)
           compiler-forms:
-          (append (if prelude (list 'prelude: prelude) '())
+          (append (cond
+                    ((and (not tool?) (string=? (path-strip-directory source-path) "config.ss")
+                          (or (not prelude) (eq? (syntax->datum prelude) ':gerbil/core)))
+                     '(prelude: :core/module-system/source/config-prelude))
+                    (prelude (list 'prelude: prelude))
+                    (else '()))
                   (list 'package: (path-strip-trailing-directory-separator
                                    (path-directory (symbol->string id)))
                         'namespace: namespace)
-                  (list '(import (only-in :core/module-system/source/declaration include-module-body))
-                        `(include-module-body ,source-path)))))))
+                  (cond
+                    (tool? (list `(include ,source-path)))
+                    ((string=? (path-strip-directory source-path) "config.ss")
+                    (list '(import (only-in :core/module-system/source/declaration
+                                            include-module-body export-role-config))
+                          `(include-module-body ,source-path)
+                          '(export-role-config Config)))
+                    (else
+                     (list '(import (only-in :core/module-system/source/declaration include-module-body))
+                           `(include-module-body ,source-path)))))))))
 
 ;;; The native expander supplies actual imports. Only owner-confined regular
 ;;; sources may join the build declaration closure; no directory scan is needed.

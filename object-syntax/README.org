@@ -71,3 +71,18 @@ pipeline: (.o checks: (list build test package))
 No checks synchronization is added. Reading one target does not evaluate a
 sibling payload. These source-runtime controls do not establish Loader demand
 granularity, native AOT qualification or first-access latency guarantees.
+
+* Field diagnostic provenance
+
+Authoring constructors now retain the original slot token's one-based line and
+column on a private native computed-slot specification subtype. Native .+
+copies retain the right-hand specification's locator. No public metadata slots
+or parallel field registry are added. Diagnostic lookup follows only the
+requested object path and checked native precedence; unknown raw-native writes
+are not attributed to an older inherited declaration. Default-only clauses
+remain native defaults and do not relabel a paired method.
+
+See [[file:../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][10.17]] and =t/slot-origin-test.ss= for JSON baseline retention,
+source-currentness checks, payload laziness, relocated Scenario validation and
+the explicit source-package/AOT boundary. This does not add dotted direct
+assignment or product Loader integration.

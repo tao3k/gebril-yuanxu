@@ -76,9 +76,10 @@
 
 (def (poo-flow-module-source-entrypoint collection module-key module-root
                                          entrypoint-role)
-  (let (entrypoint
-        (path-expand (string-append (symbol->string entrypoint-role) ".ss")
-                     module-root))
+  (let* ((module-root (path-normalize module-root))
+         (entrypoint
+          (path-expand (string-append (symbol->string entrypoint-role) ".ss")
+                       module-root)))
     (make-poo-flow-module-source-ref
      'local entrypoint
      (list (cons 'kind 'module-tree)

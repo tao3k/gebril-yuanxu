@@ -19,18 +19,32 @@
   (let (text (symbol->string flag))
     (values (string->symbol (substring text 1 (string-length text)))
             (char=? (string-ref text 0) #\+))))
-(def (select-module-graph context root-values publication-for current!)
+(def (select-module-graph context root-values read-publication current!)
+  ;; Resolve each selected declaration once for this candidate Graph. Reuse the
+  ;; actual publication object for Core/Feature edges, not a source observation
+  ;; or an admission result across declaration expansion/initialization.
+  (def publications (make-hash-table-eq))
+  (def (publication-for id)
+    (if (hash-key? publications id) (hash-ref publications id)
+      (let (value (read-publication id))
+        (hash-put! publications id value) value)))
   (let* ((intent (and (.slot? context 'intent) (.ref context 'intent)))
          (decision-values (if intent (.ref intent 'decisions) '()))
          (origin (and (.slot? context 'init-source) (.ref context 'init-source)))
+         (selected-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'selected))))
+         (denied-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'denied-modules))))
          (modules
           (module-closure root-values identity
            (lambda (id)
              (let (requirements (.ref (.ref (publication-for id) 'core) 'requires))
                (map (lambda (alias)
                        (let (required (.ref (.ref requirements alias) 'module-id))
-                         (when (memq required (.ref context 'denied-modules))
+                         (when (hash-get denied-index required)
                            (error "required module disabled" id required origin (.ref context 'generation)))
+                         (when (and intent (eq? (.ref intent 'mode) 'explicit)
+                                    (not (hash-get selected-index required)))
+                           (error "required module not explicitly declared" id required origin
+                                  (.ref context 'generation)))
                          required))
                     (.all-slots requirements))))))
          (nodes (make-hash-table))
@@ -125,6 +139,9 @@
                               (cons 'denied? (and (memq required negative) #t))
                               (cons 'detail (.ref diagnostic 'detail))))) diagnostics)))
       (let (ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids)))
+        ;; Slot evaluation above can run author code. Never publish the candidate
+        ;; on the strength of an earlier source check.
+        (current!)
         (.o admit-current: current! status: 'ready generation: (.ref context 'generation) init-source: origin
             roots: root-values decisions: decision-values denied-modules: (.ref context 'denied-modules)
             denied-features: negative

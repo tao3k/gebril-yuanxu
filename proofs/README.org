@@ -3,15 +3,15 @@
 
 #+title: Core Proof Ownership
 
-* Independent proof packages
+* Proof projects
 
 | Package | Scope | Dependency boundary |
 |---------+-------+---------------------|
-| [[file:lean/lakefile.lean][lean]] | Module composition, source identity, slot demand, cache and publication laws | Lean 4.31.0; no external library or product source |
-| [[file:lean-poo/README.org][lean-poo]] | Parent association, construction requirements and selected-responsibility projection | Lean 4.34.0; immutable LeanPoo v0.1.1 lock |
-| [[file:tla/NativeSemanticQuery.tla][tla]] | Native semantic query admission/result boundary | Finite TLC model; distinct from universal Lean laws |
+| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo v0.1.1 is a locked Git dependency |
+| [[file:quint/README.org][quint]] | Unified Graph operations and native semantic Query boundaries | Quint 0.33.0; bounded positive cases and matched negative controls |
 
-Run =just proofs= in Core or =just check-core-lean= in the consuming workspace.
+Run =just proofs= in Core. =just proofs-quint= checks the finite models separately;
+=just check-core-lean= in the consuming workspace checks the Lean packages only.
 Core file/module paths use =PooFlowCoreProof= to avoid Lake assigning shared
 modules to the product library. Existing theorem namespaces remain unchanged,
 so statements and callers retain their logical identities. Imports target the
@@ -54,7 +54,24 @@ no dependency revision was upgraded. The first TLC attempt was refused by the
 sandbox's local socket restriction; a bounded rerun with local port permission
 completed. Historical validation artifacts were not rewritten.
 
-Core CI now owns standalone Lean proof builds. Product CI initializes Core and
+Core CI now owns the single Lean proof project build. Product CI initializes Core and
 builds its consumer libraries; the independent product FFI smoke remains covered.
 Publishing this work still requires a coordinated Core commit and product gitlink
 update. Neither is performed by this local migration.
+
+* Current finite-model owner
+
+The historical TLA/CFG pair has been removed. The already-maintained Quint
+NativeSemanticQuery source moved from the product to =core/proofs/quint/=
+without changing its model. Product query checks consume this exact source.
+GraphOperations and five explicit mutants now live beside it.
+The verifier may generate transient backend TLA internally; maintained model
+authoring and checking entrypoints use Quint only.
+
+* Single Lean project
+
+The former =lean-poo/= source project is merged directly into =lean/=.
+Its nine association modules keep their theorem bodies and namespaces. Both
+libraries build under Lean 4.34.0, with LeanPoo as one pinned Git dependency.
+The preceding migration validation table is historical evidence under the old
+separate toolchains, not a result for this consolidation.

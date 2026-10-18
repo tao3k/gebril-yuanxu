@@ -1,0 +1,93 @@
+#+title: 12.21 Scenario Execution and Configuration Validation
+#+property: DOCUMENT_ID 12.21
+#+language: en
+#+property: STATUS implementation-with-focused-qualification
+
+* Integration limit
+
+Read [[file:12.22-selected-packages-and-scenario-binding.org][the package-binding audit]] before treating these examples as automatic init
+consumers. The test supplies provider paths and an engine; selected realization
+results are not yet joined into Scenario dependency records. The local receipt
+below remains valid for that narrower workflow.
+
+* One boundary, two explicit effects
+
+The maintained [[file:../../../scenarios/null/README.org][Null Scenario]] and [[file:../../../scenarios/aws-validation/README.org][AWS validation Scenario]] replace the former
+test-only local-execution contribution. Ordinary users change message or an AWS
+Profile value. They do not generate Terraform JSON or build a second receipt.
+
+OpenTofuExecution. in [[file:../../../modules/opentofu/execution.ss][the OpenTofu module]] owns a pure resource-to-JSON projection
+and explicit Ops handoff. The selected publication supplies the actual Contract
+and Context. Its existing .publish invokes value checking once and retains the
+checked object; the executor renders that object rather than validating a second
+copy. Runtime slots are outside the provider resource projection. No independent
+Schema inventory, evidence system, macro or runtime Loader is introduced.
+
+The provider object, resource kind and provider name must agree with the selected
+published Scenario. Inheriting a Scenario may change its business values; it may
+not silently substitute a foreign provider under the old Schema evidence.
+A fresh empty workspace prevents clobbering configuration or destroying existing
+state. The Nix package realization supplies the engine and installed provider
+mirror. Runtime binding is an ordinary function over existing publication.
+
+Null explicitly runs init/validate/plan/apply/output/destroy. The only executable
+provisioner is printf with the user's message as data. AWS explicitly runs only
+init/validate. Validation is not remote resource verification, a successful plan,
+or deployment authorization. Its sample AMI is not asserted to exist.
+
+* Final values, freshness and failure
+
+Scenario resource slots refer lexically to effective message/profile slots.
+A demanded parent projection must not become a captured fixed child input.
+Core admission checks the final projection and retains actual Contract references.
+The executor checks selected Context before and after each forward Ops step; a stale
+source or Schema blocks further steps. Local cleanup still attempts destroy after
+entering apply, including failure or source invalidation. A runtime result is not
+an atomic transaction with the filesystem or provider; external failure can leave
+local artifacts and cleanup failure remains visible.
+
+The execution object returns named Ops results, checked value and evidence.
+Existing publication failure semantics preserve the previous value. There is no
+persistent approval cache or claim that a completed process makes old evidence
+current. Input field errors must be caught before writing the Terraform config.
+Unknown runtime extension slots are not all statically diagnosed: the provider
+Schema applies to the explicit resource projection, not arbitrary Scheme slots.
+
+* Qualification scope
+
+The existing focused native test now copies both real Scenario sources and calls
+the framework execution methods. It retains real AWS Schema revision and stale
+publication tests, adds the user-overridden Null message after parent demand,
+and checks AWS validation-only behavior with the real installed provider.
+The executable gate is just test-opentofu-admission-execution from Core. Generated
+JSON, state and process logs remain temporary artifacts. No full build, cloud
+apply, runtime Loader or upstream Standard Library change is part of this work.
+
+The existing provider fixture is specific to aarch64-darwin. Qualification uses
+the repository-pinned packages and bounded native harness, not an ambient provider
+cache. AWS clears standard credentials/shared files and disables metadata lookup.
+Null literal template markers are escaped at the Terraform JSON boundary, and
+its structured output is read as JSON rather than parsed from human log lines.
+
+* Local result (2026-10-17)
+
+The focused gate completed with MODULE-OK, HARNESS-OK, final OK and process exit 0.
+It actually ran Null's provisioner and destroy, preserved literal template markers,
+and validated AWS with the installed provider and standard credentials disabled.
+The AWS result had no apply step and no Terraform state. Typo rejection left the
+fresh workspace untouched; nonempty workspaces and AWS local apply were refused.
+Existing final-child identity, actual descriptor association, changed Schema/source
+and previous-value preservation assertions also passed in that same test.
+
+Only the changed execution library, OpenTofu object surface and reused AWS Type/
+object dependencies were compiled into the existing isolated dependency state.
+The source import boundary was not weakened to accept arbitrary foreign sources.
+No full build or Loader qualification follows from this receipt. Cleanup on an
+injected process failure and adversarial mid-process source mutation were not
+separately exercised; dynamic-wind and pre/post currentness guards implement those
+paths, but this record does not claim their fault-injection acceptance.
+
+The five focused AWS Contract controls also passed MODULE-OK, HARNESS-OK and
+final OK with exit 0. The renderer is qualified here for these POO literal
+resource examples; it is not a complete Terraform expression/cty collection
+renderer, remote-state workflow or cloud execution policy.

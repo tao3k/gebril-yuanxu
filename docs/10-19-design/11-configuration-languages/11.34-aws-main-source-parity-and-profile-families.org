@@ -1,0 +1,162 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.34 Config Languages 33: Real Omnibus AWS Case and Reusable Profile Families
+#+property: DOCUMENT_ID 11.34
+#+date: [2026-10-16]
+#+filetags: :config-language:aws:profiles:source-comparison:design:
+#+property: STATUS source-derived-design-not-executed-no-loader
+
+* Baseline and claim
+
+The reference is the user-designated local
+[[file:/Users/guangtao/ghq/github.com/hardenedlinux/omnibus-ncl/aws/main.ncl][omnibus-ncl/aws/main.ncl]], with modules/aws.ncl, aws-provider.ncl,
+aws-s3-backend.ncl, aws-simple-vpc.ncl, aws-availability-zones.ncl,
+aws-simple-ec2.ncl, utils.ncl, types.ncl and ssh-pubkey.sh, at repository HEAD
+c5d37eb51961fd7bd32f775843044ca7f8191715. This is a source-derived reproduction
+DESIGN, not a successful Nickel export, Scheme execution or Terraform deployment.
+The reference checkout lacks the imported tf-ncl-schema.ncl, so no canonical
+exported JSON was obtained. Do not claim byte-for-byte or complete Contract
+semantic parity without that baseline and a qualified backend.
+
+The earlier office/build/operator placeholder example was not this case. It has
+been replaced. The baseline is now AWSDevelopment in =scenarios/development.ss= (retired design source);
+the unchanged published recipe uses t2.micro. Downstream [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][config.ss]] is a separate
+change of instances.test.type to t3.small. The variants below never alter the
+source-comparison baseline.
+
+* Every main.ncl input and expression has an owner
+
+| Actual source | Scheme design owner and value | Final consumer |
+|---------------+-------------------------------+----------------|
+| ami-id maps eu-central-1 to ami-0f1cf34dcb4057a5f | UbuntuAMIProfile.images plus aws-image-for-region | Final Scenario region selects the AMI for its instance occurrence |
+| private-key-path = ./<placeholder-private-key> | SSHKeyProfile.arguments private-key argument | data.external.ssh_key.program; no file read at configuration time |
+| aws.region = eu-central-1 | AWSDevelopment.region string | AWS provider; default network/state region and selected AMI |
+| state.bucket/key/region | StateProfile bucket/key; Scenario occurrence derives region from its named native receiver | terraform.backend.s3 |
+| credentials.assume_role.role_arn | CredentialsProfile.assume-role | provider.aws[0].assume_role[0].role_arn |
+| Module's default session_name = tf-ncl | AssumeRole. default session-name | provider.aws[0].assume_role[0].session_name |
+| networks.test.cidr_block prefix 10.1.0.0 and length 16 | VPCProfile.cidr-block | VPC/subnet cidr_block = 10.1.0.0/16 |
+| instances.test.ami/type | Region-derived AMI and inherited EC2Profile.type t2.micro | resource.aws_instance.test |
+| instances.test.network = networks.test | Instance occurrence network-ref = test | Resolve test in the FINAL networks map; emit matching VPC/subnet references |
+| instances.test.public_key_name | key-ref = ssh_key | Emit aws_key_pair.ssh_key.key_name interpolation |
+| config.data.external.ssh_key.program | SSHKeyProfile.command references the published entry; arguments holds the key path | data.external.ssh_key |
+| config.resource.aws_key_pair.ssh_key.public_key | Maintained external-key projector | ${data.external.ssh_key.result.public_key} |
+| config.output.instance_ip.value | Scenario outputs.instance_ip = test | ${aws_instance.test.public_ip} |
+| Aws.Simple / Aws.S3Backend application | Native domain Contracts plus pure resource projector | One selected final Scenario; no merge operator or parallel evaluator |
+| final Tf.Config | Future qualified Terraform output Contract via existing JSON Schema bridge | Pending: candidate remains projected-unadmitted |
+
+Core declaration provenance, source-role binding and contribution association are
+shared mechanisms. None is reimplemented in AWS. Native logical references replace
+materialized parent resource objects; this is an intentional representation choice,
+not an assertion that NCL uses the same graph or syntax.
+
+* Selected domain elaborations also reproduced
+
+[[file:../../../scenarios/aws/func.ss][func.ss]] generates these source-derived names and fields from the final Scenario:
+
+| Kind | Baseline entries / important dependency |
+|------+-----------------------------------------|
+| data.external | ssh_key, Scheme aws-public-key program plus the private-key placeholder |
+| data.aws_availability_zones | test_availability_zone, state available |
+| resource.aws_vpc | test_vpc; CIDR and Name tag Tf-Ncl test VPC |
+| resource.aws_subnet | test; test_vpc.id, AZ names[0], subnet tag and CIDR |
+| resource.aws_internet_gateway | test_gw; test_vpc.id and Gateway tag |
+| resource.aws_route_table | test_default_rt; test_vpc.id and Internet Route Table tag |
+| resource.aws_route | test_default_route (0.0.0.0/0), test_default6_route (::/0); same table/gateway |
+| resource.aws_route_table_association | test_public_subnet_association; selected subnet/table |
+| resource.aws_key_pair | ssh_key; external data result.public_key |
+| resource.aws_security_group | test_forwarder; selected VPC, SSH ingress, egress and source default rule fields |
+| resource.aws_instance | test; selected AMI/type/subnet/key/security group, associate_public_ip_address true |
+| output | instance_ip points to test.public_ip |
+
+The source explicitly provides empty rule arrays, false self, ingress description
+${null}, and an IPv6 default route. The projector retains those choices rather
+than silently replacing the source workload with a different recipe. Their AWS
+validity is NOT established by retaining them. Name tags use VPCProfile.tag-prefix
+Tf-Ncl for this baseline; a derived Profile can change naming without copying a
+projector. The source's provider and assume_role arrays are retained as arrays.
+
+The reference uses ssh-pubkey.sh. Our maintained design instead uses
+=a separate Scheme process/JSON adapter= (retired design source) backed by Gerbil run-process. It preserves
+the public_key result protocol, not the original executable path/implementation.
+The target ./aws-public-key executable must be built and located from the admitted
+Module source; the interface command declaration alone does not implement that linkage. No command
+or private-key access was performed. Projection/admission must never execute it.
+
+* Profiles are reusable configurations, not six extra Modules
+
+| Profile | Independent responsibility | Reuse/derivation |
+|---------+----------------------------+-----------------|
+| UbuntuAMIProfile | Region-to-AMI values | Region lookup demands only the selected image value |
+| VPCProfile | CIDR block and Name-tag policy | BuildVPCProfile replaces CIDR and tag-prefix |
+| EC2Profile | Compute defaults, including t2.micro | LargerEC2Profile changes type; RestrictedEC2Profile also restricts SSH CIDRs |
+| SSHKeyProfile | External public-key derivation command and arguments | Multiple instances reuse the same selected key occurrence |
+| CredentialsProfile | Assume-role values and session default | Reusable across Scenarios without copying provider projection |
+| StateProfile | State bucket/key | Scenario occurrence binds region from its final receiver |
+
+Profiles with unresolved contextual fields are partial configurations, not already
+admitted complete deployments. The Scenario supplies AMI, region, network/key
+references before selected admission. AWSDevelopment configures the exact source
+workload. =AWSBuild= (retired design source) inherits it, preserves test, and adds a build network/instance
+using BuildVPCProfile and RestrictedEC2Profile, plus build_ip output. This shows
+independent Profile reuse, sparse Profile inheritance and Scenario extension in
+one source family; it is not a precomputed language/environment matrix.
+
+AWS exports these native values through profiles/scenarios namespace slots once.
+They do not inherit the Module object or acquire per-Profile publication wrappers.
+Core must retain each chosen value's associated Contract/source across supported
+native derivatives. Namespace publication alone does not implement that property.
+
+* Native receiver and final-resource behavior
+
+AWSDevelopment uses native (.def (name self prototype) ...) syntax, choosing
+scenario as the receiver name. Nested state/network/instance slots read that final
+receiver when they need region. This avoids capturing AWSDevelopment as a fixed
+parent value and avoids inner region-slot shadowing. It is not a new DSL or raw
+self/super lambda hook. It remains an unexecuted use of the inspected native form.
+
+The user changes instances.test.type only. Projection reads Production.instances
+and emits t3.small; parent preview continues to describe t2.micro. AMI, state,
+network links, key derivation, route names and output names retain their maintained
+values. Whole-Scenario projection intentionally traverses selected occurrences;
+no automatic incremental invalidation or end-to-end speed claim follows.
+
+* Contract and coverage limits
+
+Native Contracts cover the selected domain shape, closed fields, CIDR syntax,
+external command list, credentials/state and required references. Output names
+must point to selected instances. Missing region-to-AMI data fails when selected.
+The source Region enum is represented as a string here; the full source enum and
+all optional credential modes are not reimplemented. The concrete main.ncl case
+uses the supported assume-role mode. CIDR validation is syntactically stricter
+than the source's String/Number shape; this is not equivalence for arbitrary inputs.
+The reference's per-network region metadata does not create a second provider;
+this reproduction likewise does not claim a cross-region topology implementation.
+
+Target Core names, Module dependency/role injection, automatic provenance and
+policy admission, direct dotted assignment, asset staging and full Terraform
+Schema/backend validation remain pending. An admitted-preview may be published
+only after those required gates, not merely after local application admission.
+
+* Next source-matched controls
+
+- Obtain a qualified reference export with its actual generated Tf.Config asset.
+- Run the Scheme control through the repository's heap-fenced test entrypoints.
+- Compare normalized provider/backend/data/resource/output trees, preserving
+  arrays, rule defaults, symbolic references and resource names.
+- Obtain parent candidate first, then a child changing type; assert retained fields
+  and changed test.instance_type. Use the handwritten native expansion as control.
+- Exercise AWSBuild separately: both test/build remain, refer to different networks,
+  share ssh_key and expose distinct outputs. Test missing key/network/output target.
+- Verify unselected Profile variants do not run commands or force resource consumers;
+  selected external data still waits for explicit runtime handoff.
+
+These are unexecuted acceptance requirements, not passing test receipts.
+
+See [[file:11.35-aws-profile-data-and-scheme-command-publication.org][grouped Profile data and single command publication]] for the revised build boundary.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

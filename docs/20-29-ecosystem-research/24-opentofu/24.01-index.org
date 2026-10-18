@@ -1,0 +1,106 @@
+#+title: 24.01 OpenTofu: Independent Configuration-System Research
+#+language: en
+#+property: DOCUMENT_ID 24.01
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Research scope
+
+Study OpenTofu independently from Terraform: compatible input syntax is not proof of identical releases, features, state semantics or migration behavior. Provider artifacts and lock identities are part of the case.
+
+This dossier is the owner of OpenTofu-specific observations and conclusions.
+See [[file:../../30-39-research-foundations/30-method/30.01-evidence-protocol.org][the evidence protocol]] for claim classes and completion criteria.
+No platform command, deployment or issue reproduction is claimed here.
+
+* Configuration and scenario baseline
+
+Related shared corpus: [[file:../../10-19-design/11-configuration-languages/11.34-aws-main-source-parity-and-profile-families.org][existing source-derived case]]. This link
+provides the workload context, not execution evidence for this platform.
+
+Use the same AWS provider inputs and generated-Contract case. Separate known machine names with an unknown VPC ID from an unknown set of machine names. Keep configuration admission, provider planning and state locking as different observations.
+
+The current baseline is source/document review. A complete version-pinned
+configuration fixture, resolved result and matched negative control remain
+required before calling this an end-to-end case comparison.
+
+* OpenTofu: instance identity must be known before resource actions
+
+Primary sources:
+- [[https://opentofu.org/docs/language/meta-arguments/for_each/][OpenTofu for_each]].
+- [[https://opentofu.org/docs/language/state/locking/][OpenTofu state locking]].
+
+The for_each reference requires known instance keys before remote actions and
+rejects unsuitable sensitive/impure choices. This preserves stable addressing;
+it is not merely a missing collection function. State locking protects applicable
+backends from concurrent writers; the reference notes backend-dependent support.
+
+In our design, rename must not accidentally change a provider's resource identity.
+Module owner, Profile instance and resource address are different identities.
+A lazily obtained VPC ID can remain unknown in a resource input, but it cannot
+silently become the key used to discover a new set of modules during admission.
+
+Controls: a stable named machine with an unknown VPC ID remains representable;
+an unknown machine-name set is rejected or explicitly staged. Two operators
+executing the same plan require a state/execution policy beyond native slot caches.
+
+Reflection: what exactly can a configuration preview promise while some values
+remain unknown? Can a user distinguish omitted, null, unknown and invalid without
+learning provider internals? These distinctions belong in the platform, with
+simple diagnostics at the field path.
+
+Conclusion: continue reusing the existing OpenTofu/provider boundary rather than
+reimplementing state management inside the Module loader. Scheme can improve the
+composition surface without claiming to remove external planning constraints.
+
+
+* Issues and Engineering Limitations
+
+Reference marks: documented restrictions are DOCUMENTED-LIMITATION; user
+reports are ISSUE-REPORTED and NOT-REPRODUCED unless stated otherwise. Upstream
+state and report dates below retain their original observation scope. No new
+CONFIRMED-DEFECT classification is made by this editorial update.
+
+No platform-specific GitHub issue has been independently examined in this
+dossier yet. The current observations are based on the specifically cited
+primary documentation. Do not infer that all documented restrictions are bugs,
+or that absence of an issue review establishes absence of user problems.
+
+The source links above remain the authority for each report. Pin missing versions
+and run an isolated reproduction before promoting an issue-reported observation
+to reproduced behavior.
+
+* Independent reflection and questions
+
+1. Which instance keys must be known before planning, and which input values may remain unknown?
+2. Does removing a configured module imply forgetting, retaining or destroying remote resources?
+3. What identity does a provider lock bind, and what is outside a generated Schema Contract?
+
+* Onwards and evidence status
+
+| Work item | Current status | Required artifact |
+|-----------+----------------+-------------------|
+| Primary sources cited above | Reviewed in the initial research pass | Preserve source URL, access date and version where available |
+| Configuration corpus | Scenario specified; not reproduced | Upstream files/revision and complete required inputs |
+| Issue evidence | Only specifically cited reports are evidence | Version, reported/confirmed behavior, status date and minimal reproduction |
+| Scheme response | Design inference only | Matched user configuration and explicit failure cases |
+| Runtime/performance comparison | Not performed | Separate reproducible receipt and bounded claim |
+
+Do not create placeholder bug IDs or infer that an unreported limit is an
+upstream bug. If no relevant public issue has been examined, record that gap.
+An official documented restriction can be evidence without being a defect.
+
+Continue this dossier when adding OpenTofu-specific source analysis. If it
+grows, extract configuration/source evidence, issue records and reflection into
+separate numbered Org modules under this directory, keeping this file as their
+reading map. Cross-platform documents link conclusions rather than owning copies.
+
+* Conclusion
+
+The reviewed material identifies a concrete design boundary; it does not establish
+Scheme/POO superiority. The questions above and the matched scenario determine
+what must be investigated next. Do not mark this dossier complete merely because
+its organizational structure exists.
+
+Research map: [[file:../README.org][independent dossiers]]. Comparison owner:
+[[file:../../../module-system/design/08-infrastructure-platforms-and-design-gates.org][cross-platform architecture synthesis]].
+

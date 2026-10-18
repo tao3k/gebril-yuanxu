@@ -1,0 +1,92 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Namespace and Build Projection Ownership
+#+date: [2026-10-16]
+#+property: STATUS design-only-package-and-api-migration-pending
+
+* Distinguish repository, compiler namespace and semantic identity
+
+| Layer | Current verified state | Target ownership rule |
+|-------+------------------------+-----------------------|
+| Core repository | tao3k/poo-flow-core, checked out as core/ | Shared mechanisms maintained independently of product |
+| Core Gerbil package | gerbil.pkg declares core; imports use :core/... | Package poo-flow-core; imports :poo-flow-core/... |
+| Product Gerbil package | poo-flow | Product imports remain :poo-flow/... |
+| Core procedure names | Many migrated procedures retain poo-flow- | Core-owned public procedures use poo-flow-core-; migrate by owner |
+| Module identities | Qualified logical keys such as core/json-schema | Source-policy identities; not mechanically rewritten with compiler package names |
+| Native object bindings | JsonSchema, Guestbook, Contracts | Semantic names; no compulsory Core/Module/Native suffix |
+
+A core/ filesystem path is a checkout location, not a compiler namespace. The
+logical core/json-schema id and Gerbil :poo-flow-core/modules/json-schema/interface
+path have different consumers. Their association belongs to admitted source
+publication, not string-prefix guessing. A shared procedure's old poo-flow- name
+is historical naming, not proof that the product owns it.
+
+Current source/API audits must keep actual :core imports and existing procedure
+names until migration. Target examples must label :poo-flow-core and renamed
+procedures as pending. Do not present a package-name change as already installed.
+
+* Guestbook chain naming ledger
+
+The following existing Core-owned procedure names map to target exports. This is
+one coordinated rename plan, not compatibility aliases. Modules 20 and 22 use
+only the target names; module 21 preserves the current implementation audit.
+
+| Existing Core binding | Target Core binding (not yet exported) |
+|-----------------------+----------------------------------------|
+| =poo-flow-contract-admit= | =poo-flow-core-contract-admit= |
+| =poo-flow-force-lazy-load-plan= | =poo-flow-core-force-lazy-load-plan= |
+| =poo-flow-json-schema->contract-artifact= | =poo-flow-core-json-schema->contract-artifact= |
+| =poo-flow-json-schema-contract-artifact-diagnostics= | =poo-flow-core-json-schema-contract-artifact-diagnostics= |
+| =poo-flow-json-schema-contract-artifact-object-contract= | =poo-flow-core-json-schema-contract-artifact-object-contract= |
+| =poo-flow-json-schema-contract-artifact-valid?= | =poo-flow-core-json-schema-contract-artifact-valid?= |
+| =poo-flow-json-schema-contract-artifact-validate= | =poo-flow-core-json-schema-contract-artifact-validate= |
+| =poo-flow-json-schema-object-contract-validation-diagnostics= | =poo-flow-core-json-schema-object-contract-validation-diagnostics= |
+| =poo-flow-lazy-load-plan-receipt= | =poo-flow-core-lazy-load-plan-receipt= |
+| =poo-flow-make-lazy-load-plan= | =poo-flow-core-make-lazy-load-plan= |
+| =poo-flow-predicate-contract= | =poo-flow-core-predicate-contract= |
+| =poo-flow-validation-evidence-accepted?= | =poo-flow-core-validation-evidence-accepted?= |
+
+The new build adapter has no old implementation to rename: its target is
+poo-flow-core-build-spec. The product poo-flow-load-modules name remains a facade;
+Core never calls it. Neutral native bindings such as .def, .admit and with-slots
+remain native library operations, not product APIs to prefix mechanically.
+
+* Build graph projection belongs to Core
+
+The target generic build owner is Core modules/building/build-projection.ss,
+imported as :poo-flow-core/modules/building/build-projection. It publishes the
+proposed poo-flow-core-build-spec adapter. Module declaration publication belongs
+to that module's interface.ss under the standard role shell; the build-script
+adapter is a precise compilation-unit import, not a second Module definition.
+
+Core owns selection/source-generation association, generic build contribution
+Contracts, phase/dependency graph validation and projection boundaries. A Core
+adapter consumes admitted init publication through a shared provider protocol;
+it must not import the product's poo-flow-load-modules facade to implement itself.
+The product facade delegates to these Core owners. Build projection and scope
+projection therefore share one selected graph without reversing dependencies.
+Gerbil-specific spec lowering may live here; ASP PackageSpec policy, product roots,
+runtime execution and product-specific observation remain downstream adapters.
+
+The current product modules/building/build-projection.ss is an observation and
+PackageSpec boundary module. It does not export the proposed build-spec function.
+It must not be mistaken for an implemented generic graph projector or moved
+wholesale without separating generic mechanisms from product policy. Reusable
+observation primitives may move to their corresponding Core owner separately.
+
+* Coordinated direct migration, not aliases
+
+A future implementation must update Core gerbil.pkg, source imports, generated
+wrapper imports, build/test roots, source publication associations, package pins
+and consumer dependencies as one qualified migration. Rename public procedure
+bindings and their real consumers by responsibility; do not globally replace
+poo-flow in receipts, product identities, URLs or historical evidence. No parallel
+:core or :poo-flow compatibility re-export namespace is added for Core APIs.
+
+Acceptance requires Core compiling without importing product implementations,
+consumer imports resolving under the new package, a bootstrap build from an
+independently available tool closure, and selected/unselected controls. Existing
+historical validation remains tied to its recorded namespace and source revision.
+This document and corrected target snippets do not rename a package, move runtime
+source, implement graph projection or connect a Loader.

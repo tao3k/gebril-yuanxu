@@ -1,0 +1,123 @@
+#+title: 10.06 Human-Agent Collaboration as a Module-System Design Goal
+#+language: en
+#+property: DOCUMENT_ID 10.06
+#+date: [2026-10-17]
+#+property: STATUS design-premise-and-review-protocol-not-a-measured-productivity-claim
+
+* Why this framework in the AI era?
+
+The framework is intended for humans and Agents jointly configuring, creating and
+extending systems. It should support a person changing two values, an Agent
+implementing a new maintained Module, and a team reviewing an evolved Scenario.
+The target is more than a shorter handwritten configuration language.
+
+Design premise supplied by the user: model-assisted authoring can reduce the cost
+of producing complex code and abstractions. This motivates examining a broader
+design space; this document supplies no quantified productivity claim. Writing,
+understanding, testing, approving and maintaining an abstraction have different
+costs. More generated code is not itself a successful outcome.
+
+* What changes in the object model and authoring workflow
+
+A maintained object may be proposed or refined by an Agent, derived from installed
+library Profiles, connected to other objects and inspected by a human. Modules
+therefore need discoverable public interfaces, meaningful source-role boundaries
+and stable effective-instance identities. The candidate object can evolve while
+an admitted preview still refers to a particular effective version.
+
+Do not identify an object solely by its printed name or the text that generated
+it. Do not treat an inherited parent Contract result as admission for an edited
+child. Changes to configuration, applicable Contracts or projection code may
+require a new decision even when the Agent describes the change as harmless.
+This is a review requirement, not a new mutable-object or runtime protocol.
+
+* A shared window, different amounts of exposed abstraction
+
+| Intent | Framework support | Human/Agent review surface |
+|--------+-------------------+----------------------------|
+| Change an image or Service port | Ordinary value/path assignment | Changed fields, final values and relevant diagnostics |
+| Retain defaults and transform one inherited value | Native POO plus named functions | Parent/source, transformation order and resulting value |
+| Add a reusable Profile | Existing module scopes and published Contracts | Authored values, requirements and representative consumers |
+| Add a new domain Module | Standard roles and stable dependency interfaces | Public scope, Contract coverage, effects and negative controls |
+| Extend core mechanism | Explicit contracted extension boundary | Semantic change, compatibility and execution implications |
+
+These are intentions, not fixed classes of users or a measured 80/20 split. Agent
+assistance makes complex extension more accessible; it does not justify imposing
+that extension syntax on every ordinary assignment.
+
+* Agent discoverability without a parallel semantic system
+
+Field discovery should use the existing Schema/Contract sources, with source maps,
+defaults, extension guidance and declared connection requirements. Machine-readable
+inspection and human-readable preview should project the same admitted interface.
+Do not maintain an Agent-only duplicate field registry or allow generated wrappers
+to silently weaken normal admission.
+
+The Agent should be able to ask what a module publishes, what remains unknown,
+which dependency was denied, and which source supplied a conflicting value.
+The answer should avoid forcing every implementation or reading every provider
+Schema. What code completion, tool interface and editor integration expose remains
+to be designed and measured; this chapter introduces no new public tool API.
+
+* Guestbook collaboration control
+
+Use [[file:10.05-guestbook-context-and-contribution-design.org][the same Guestbook configuration]] in a reviewable sequence:
+
+1. Human requests a frontend image, one environment label and port 8080.
+2. Agent discovers the actual fields and supported assignment/refinement behavior.
+3. Agent proposes ordinary assignments; it does not reconstruct Redis or create
+   a new policy object merely to change the image.
+4. Framework projects the final objects and validates covered port/selector links.
+5. A targetPort mismatch is reported against the Agent-authored user source, not
+   only the generated wrapper. The Agent can repair and present a fresh preview.
+6. Human reviews the changed values and remaining checks. Loading/preview does
+   not itself deploy or authorize an operation.
+
+A second task asks the Agent to add a new service/Contract. This tests whether
+the framework supports new abstractions rather than only filling fixed templates.
+Retain the original requirements; a repair that deletes a failing requirement or
+narrows the selected checks is not a successful repair.
+
+* Reading earlier research without inheriting its whole design space
+
+Each research source should state whether it discusses Agent-assisted authoring:
+
+- EXPLICIT: the source directly studies the interaction; report its actual scope.
+- NOT-DISCUSSED: the inspected material does not analyze it; do not infer the
+  authors' intentions or declare all conclusions obsolete.
+- UNKNOWN: the question has not been checked.
+
+The [[file:../../30-39-research-foundations/31-papers/31.01-backpack.org][2014 Backpack]] and [[file:../../30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][2018 Build Systems a la Carte]] notes are used for interface,
+identity, demand and reuse reasoning. Our inspected notes do not establish an
+Agent-authoring evaluation. Their semantic distinctions remain useful; human
+authoring-cost assumptions must be revisited for this project.
+
+Do not classify every modern Nix/HCL article as pre-AI. The practitioner sources
+include 2024/2025 material. Their particular reports about dependencies and phase
+constraints do not cease to apply when an Agent writes the configuration. The
+extension workflow and economics are additional questions to evaluate.
+
+* Issues and Engineering Limitations
+
+References: [[file:10.05-guestbook-context-and-contribution-design.org][Guestbook's qualified issue register]] and
+[[file:../../20-29-ecosystem-research/23-terraform/23.07-practitioner-experience-and-restrictions.org][first-person Terraform articles]]. Marks: DESIGN-INFERENCE;
+AGENT-WORKFLOW-NOT-VALIDATED. No upstream defect about Agent authoring is asserted.
+
+Agent-generated code can introduce undeclared dependencies, overbroad interfaces,
+unnecessary abstraction or hidden effects. An Agent may also propose deleting a
+failing validation. Source admission, semantic checks and human review must retain
+their owners; a model's confident explanation is not evidence of acceptance.
+
+* Reflection, evaluation and Onwards
+
+Evaluate completed tasks rather than generated line counts: time to an accepted
+change, review effort, incorrect first attempts, unnecessary definitions, diagnostic
+repair success and maintenance after an upstream default/Contract changes. Compare
+direct edits, assisted edits and new-module creation separately, with equivalent
+requirements and retained failed attempts. No productivity benchmark is claimed.
+
+The opportunity is a framework with a small ordinary surface and a powerful,
+discoverable extension model, where human and Agent can inspect the same effective
+system. Avoid both freezing the design around historical handwriting costs and
+assuming models remove the need for sound interfaces and explicit effects.
+

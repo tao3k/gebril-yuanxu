@@ -1,0 +1,57 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Reader source-authority controls; independent of AWS/provider fixtures.
+(import :std/test :clan/poo/object
+        (only-in :std/error Error? Error-message)
+        (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
+        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
+        (only-in :core/module-system/interface poo-flow-load-modules))
+(export module-public-dependency-test)
+(.def Workspace
+  .acquire: (lambda () (let (path (make-temporary-file-name "module-dependency-"))
+                         (create-directory path) path))
+  .release: clear-temporary-file!)
+(def (write-source path text)
+  (create-directory* (path-directory path))
+  (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
+(def (prepare! root)
+  (write-source (path-expand "project/gerbil.pkg" root) "(package: dependency-test)\n")
+  (write-source (path-expand "project/modules/app/types.ss" root)
+    "(import :clan/poo/object (only-in :core/types poo-flow-predicate-contract)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (poo-flow-predicate-contract 'app object? (lambda (_v _c) '())))\n")
+  (write-source (path-expand "project/modules/app/objects.ss" root)
+    "(import :clan/poo/object) (export Value) (.def Value number: 42)\n")
+  (write-source (path-expand "project/modules/app/config.ss" root)
+    "(import :clan/poo/object) (export Config) (.def Config)\n")
+  (write-source (path-expand "project/modules/app/interface.ss" root)
+    "(.def App identity: 'app core: (.o requires: (.o) scope-contract: Scope exports: Value) features: (.o))\n")
+  (def init (path-expand "project/scenarios/init.ss" root))
+  (write-source init "(poo-flow! mode: explicit source: \"../modules\" (app))\n")
+  init)
+(def module-public-dependency-test
+  (test-suite "Canonical public dependencies and declared package kernels"
+    (poo-flow-test-fixture "registered dependency works; same-name foreign source never executes"
+      (root Workspace)
+      (def init (prepare! root))
+      (check-equal? (.get (poo-flow-load-modules init) modules app number) 42)
+      (def marker (path-expand "executed" root))
+      (def foreign (path-expand "foreign/declarative-metadata.ss" root))
+      (write-source foreign
+        (string-append "package: clan/poo\n(call-with-output-file "
+          (call-with-output-string (cut write marker <>))
+          " (lambda (p) (display \"forbidden\" p)))\n"))
+      (write-source (path-expand "project/modules/app/objects.ss" root)
+        (string-append "(import " (call-with-output-string (cut write foreign <>))
+                       ")\n(export Value) (def Value #f)\n"))
+      (check-exception (.get (poo-flow-load-modules init) modules app)
+        (lambda (exception)
+          (and (Error? exception)
+               (string=? (Error-message exception)
+                         "source import leaves its Module and package kernel"))))
+      (check-equal? (file-exists? marker) #f))
+    (poo-flow-test-fixture "nested init uses its declared modules package; manifest edits invalidate it"
+      (root Workspace)
+      (def init (prepare! root))
+      (def view (poo-flow-load-modules init))
+      (check-equal? (.get view modules app number) 42)
+      (write-source (path-expand "project/gerbil.pkg" root)
+        "(package: changed-package)\n")
+      (check-exception (.call view admit-current) Error?))))

@@ -241,6 +241,12 @@
    ;; receiver is an expression; a same-named path is not a slot dependency.
    ((and (memq (car datum) '(.get .@)) (pair? (cdr datum)))
     (poo-flow-poo-slot-authoring-identifier-reference? identifier (cadr datum)))
+   ;; Native .call quotes a literal method name too. Its receiver and argument
+   ;; expressions still participate; a method spelling is not a free reference.
+   ((and (eq? (car datum) '.call) (pair? (cdr datum))
+         (pair? (cddr datum)) (symbol? (caddr datum)))
+    (or (poo-flow-poo-slot-authoring-identifier-reference? identifier (cadr datum))
+        (poo-flow-poo-slot-authoring-identifier-reference? identifier (cdddr datum))))
    (else
     (or (poo-flow-poo-slot-authoring-identifier-reference? identifier (car datum))
         (poo-flow-poo-slot-authoring-identifier-reference? identifier (cdr datum))))))

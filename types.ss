@@ -21,6 +21,7 @@
                  Type
                  Type.
                  element?
+                 validate
                  raise-type-error)
         (only-in :std/list/list every)
 )
@@ -34,6 +35,7 @@
         poo-flow-predicate-contract
         poo-flow-type-classify
         poo-flow-contract-obligations
+        poo-flow-context-contract-obligations
         poo-flow-contract-admit
         poo-flow-classification-evidence
         poo-flow-classification-evidence?
@@ -52,6 +54,17 @@
 ;;; Protocol boundary: obligation dispatch stays on the contract descriptor.
 (.defgeneric (poo-flow-contract-obligations contract candidate context)
   slot: .obligations)
+
+;; Optional platform policy; domain Contract identity and own methods stay intact.
+(.defgeneric (poo-flow-context-contract-obligations context contract candidate)
+  slot: .contract-obligations)
+
+(def (context-contract-obligations context contract candidate)
+  (if (and (object? context) (.slot? context '.contract-obligations))
+    (let (issues (poo-flow-context-contract-obligations context contract candidate))
+      (unless (list? issues) (error "Context contract obligations must return diagnostics"))
+      issues)
+    '()))
 
 ;;; Protocol boundary: admission returns evidence rather than a bare boolean.
 (.defgeneric (poo-flow-contract-admit contract candidate context)
@@ -87,9 +100,13 @@
 (def (poo-flow-validation-evidence-element? value)
   (and (poo-flow-evidence-object?
         value 'poo-flow.contract.validation-evidence
-        '(kind contract-identity candidate classification obligation-evidence
+        '(kind contract-identity admission-contract candidate classification obligation-evidence
                accepted? diagnostics context))
        (symbol? (.ref value 'contract-identity))
+       (object? (.ref value 'admission-contract))
+       (.slot? (.ref value 'admission-contract) 'identity)
+       (eq? (.ref value 'contract-identity)
+            (.ref (.ref value 'admission-contract) 'identity))
        (element? PooFlowClassificationEvidence (.ref value 'classification))
        (list? (.ref value 'obligation-evidence))
        (equal? (.ref value 'candidate)
@@ -134,12 +151,15 @@
         (cons 'diagnostics (.ref evidence 'diagnostics))
         (cons 'context (.ref evidence 'context))))
 
-;; : (-> Symbol Object PooFlowClassificationEvidence [Alist] Boolean [Alist] Object PooFlowValidationEvidence)
-(def (poo-flow-validation-evidence contract-identity-value candidate-value
+;; The single evidence producer records its actual descriptor, including failure
+;; rows. Symbolic names remain a diagnostic/wire projection, not object identity.
+;; : (-> PooFlowContract Object PooFlowClassificationEvidence [Alist] Boolean [Alist] Object PooFlowValidationEvidence)
+(def (poo-flow-validation-evidence contract-value candidate-value
                                     classification-value obligation-evidence-value
                                     accepted-value diagnostics-value context-value)
   (.o kind: 'poo-flow.contract.validation-evidence
-      contract-identity: contract-identity-value
+      contract-identity: (.ref contract-value 'identity)
+      admission-contract: contract-value
       candidate: candidate-value
       classification: classification-value
       obligation-evidence: obligation-evidence-value
@@ -197,9 +217,11 @@
 (def (poo-flow-contract-empty-obligations _candidate _context)
   '())
 
-;; : (-> PooFlowContract Symbol Object Object PooFlowValidationEvidence)
-(def (poo-flow-contract-admit-evidence contract identity candidate context)
-  (let* ((classification
+;; : (-> PooFlowContract Object Object PooFlowValidationEvidence)
+(def (poo-flow-contract-admit-evidence contract candidate context)
+  (let* ((value-contract (.ref contract 'value-contract))
+         (candidate (if value-contract (validate value-contract candidate) candidate))
+         (classification
           (poo-flow-type-classify contract candidate context))
          (_checked
           (unless (and (poo-flow-classification-evidence? classification)
@@ -208,40 +230,56 @@
             (raise-type-error PooFlowClassificationEvidence classification)))
          (classification-ok?
           (poo-flow-classification-evidence-accepted? classification))
-         (obligation-evidence
+         (responsibilities (.ref contract 'responsibilities))
+         (children
           (if classification-ok?
-            (poo-flow-contract-obligations contract candidate context)
+            (map (cut poo-flow-responsibility-evidence
+                      candidate context responsibilities <>)
+                 (.all-slots responsibilities))
             '()))
-         (obligations-ok? (null? obligation-evidence))
+         (rejections
+          (filter (lambda (child)
+                    (not (poo-flow-validation-evidence-accepted? child))) children))
+         (obligation-evidence
+          (if (and classification-ok? (null? rejections))
+            (let* ((local (poo-flow-contract-obligations contract candidate context))
+                   (platform (context-contract-obligations context contract candidate)))
+              (append local platform))
+            '()))
+         (failures (append rejections obligation-evidence))
          (diagnostics
           (append (.ref classification 'diagnostics)
-                  obligation-evidence)))
-    (poo-flow-validation-evidence
-     identity
-     candidate
-     classification
-     obligation-evidence
-     (and classification-ok? obligations-ok?)
-     diagnostics
-     context)))
+                  failures)))
+    (.cc (poo-flow-validation-evidence
+           contract candidate classification failures
+           (and classification-ok? (null? failures)) diagnostics context)
+      'responsibility-evidence children)))
 
 ;; : (-> PooFlowContract Object Boolean)
 (def (poo-flow-contract-element? contract candidate)
-  (poo-flow-validation-evidence-accepted?
-   (poo-flow-contract-admit contract candidate #f)))
+  (let (value-contract (.ref contract 'value-contract))
+    (and (or (not value-contract) (element? value-contract candidate))
+         (poo-flow-validation-evidence-accepted?
+          (poo-flow-contract-admit contract candidate #f)))))
 
 ;; : (-> PooFlowContract Object Object)
 (def (poo-flow-contract-validate contract candidate)
   (let (evidence (poo-flow-contract-admit contract candidate #f))
     (if (poo-flow-validation-evidence-accepted? evidence)
-      candidate
+      (.ref evidence 'candidate)
       (raise-type-error contract candidate (.ref evidence 'diagnostics)))))
 
 ;;; Contract algebra: combine classification with pure obligations into one admission receipt.
 (define-type (PooFlowContract. @ PooFlowType.
-                               identity .classify .obligations .admit)
+                               identity value-contract responsibilities .classify .obligations .admit)
+  ;; Optional public POO Type. The single producer normalizes once before
+  ;; contextual classification; its result is the evidence/publication subject.
+  value-contract: #f
+  ;; Contextual child Contracts, not a duplicate map of public field Types.
+  ;; Ordinary value responsibilities belong to value-contract/ObjectContract.
+  responsibilities: (.o)
   .obligations: poo-flow-contract-empty-obligations
-  .admit: (cut poo-flow-contract-admit-evidence @ identity <> <>)
+  .admit: (cut poo-flow-contract-admit-evidence @ <> <>)
   .element?: (cut poo-flow-contract-element? @ <>)
   .validate: (cut poo-flow-contract-validate @ <>))
 
@@ -301,53 +339,23 @@
 ;;; The map is a POO value; inherited map slots follow upstream precedence.
 (def (poo-flow-responsibility-evidence candidate context responsibilities slot)
   (if (.slot? candidate slot)
-    (.cc (poo-flow-contract-admit (.ref responsibilities slot)
-                                (.ref candidate slot) context)
-         'responsibility slot)
+    (let* ((descriptor (.ref responsibilities slot))
+           (value (.ref candidate slot))
+           (evidence (poo-flow-contract-admit descriptor value context)))
+      ;; Normalization belongs to the public root value Contract. Contextual
+      ;; admission must describe that root's actual child, not a detached rewrite.
+      (unless (eq? value (.ref evidence 'candidate))
+        (raise-type-error descriptor value
+          (list (.o kind: 'contextual-child-replaced responsibility: slot))))
+      (.cc evidence 'responsibility slot))
     (let (classification
           (poo-flow-classification-evidence
            (.ref (.ref responsibilities slot) 'identity) #f #f
            (list (.o kind: 'missing-responsibility responsibility: slot)) context))
       (.cc (poo-flow-validation-evidence
-            (.ref (.ref responsibilities slot) 'identity) #f classification '()
+            (.ref responsibilities slot) #f classification '()
             #f (.ref classification 'diagnostics) context)
            'responsibility slot))))
-
-(def (poo-flow-object-admit descriptor candidate context)
-  (let* ((classification (poo-flow-type-classify descriptor candidate context))
-         (_checked
-          (unless (and (poo-flow-classification-evidence? classification)
-                       (eq? (.ref descriptor 'identity)
-                            (.ref classification 'type-identity))
-                       (equal? candidate (.ref classification 'candidate))
-                       (equal? context (.ref classification 'context)))
-            (raise-type-error PooFlowClassificationEvidence classification)))
-         (responsibilities (.ref descriptor 'responsibilities))
-         (evidence
-          (if (poo-flow-classification-evidence-accepted? classification)
-            (map (cut poo-flow-responsibility-evidence
-                      candidate context responsibilities <>)
-                 (.all-slots responsibilities))
-            '()))
-         (rejections
-          (filter (lambda (item)
-                    (not (poo-flow-validation-evidence-accepted? item))) evidence))
-         (obligations
-          (if (and (poo-flow-classification-evidence-accepted? classification)
-                   (null? rejections))
-            (poo-flow-contract-obligations descriptor candidate context)
-            '()))
-         (failures (append rejections obligations)))
-    (.cc (poo-flow-validation-evidence
-          (.ref descriptor 'identity) candidate classification failures
-          (and (poo-flow-classification-evidence-accepted? classification)
-               (null? failures))
-          (append (.ref classification 'diagnostics) failures) context)
-         'responsibility-evidence evidence)))
-
-;;; Protocol boundary: responsibility admission walks the descriptor-owned slot map.
-(define-type (PooFlowResponsibilityContract. @ PooFlowContract. responsibilities)
-  .admit: (cut poo-flow-object-admit @ <> <>))
 
 ;;; Domain declarations inherit this native prototype-aware responsibility contract.
 (def (poo-flow-native-classify identity proto candidate context)
@@ -360,6 +368,6 @@
        (list (.o kind: 'prototype-mismatch type-identity: identity))) context)))
 
 ;;; Invariant: native objects must prove prototype ancestry before slot obligations run.
-(define-type (PooFlowNativeObjectContract. @ PooFlowResponsibilityContract.
+(define-type (PooFlowNativeObjectContract. @ PooFlowContract.
                                          identity proto)
   .classify: (cut poo-flow-native-classify identity proto <> <>))

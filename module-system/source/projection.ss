@@ -4,7 +4,7 @@
 ;;; Pure source graph and existing lazy-plan projection; never forces a backend.
 (import :core/module-system/source/objects
         :core/module-system/loader/objects
-        :core/extension-graph/interface)
+        :core/graph/interface)
 (export poo-flow-module-source-refs->lazy-load-plans
         poo-flow-module-auto-import-root-identity
         poo-flow-module-auto-import-entry-node
@@ -52,14 +52,14 @@
     (if entry (cdr entry) default-value)))
 
 ;;; Boundary: each source ref is an importable entrypoint node.
-;; : (-> PooModuleSourceRef PooModuleExtensionNode)
+;; : (-> PooModuleSourceRef PooFlowGraph)
 (def (poo-flow-module-auto-import-entry-node source-ref)
   (let* ((metadata (poo-flow-module-source-ref-metadata source-ref))
          (entrypoint-role
           (poo-flow-loader-alist-ref/default metadata 'entrypoint-role #f))
          (tree-kind
           (poo-flow-loader-alist-ref/default metadata 'kind #f)))
-    (poo-flow-module-extension-node
+    (poo-flow-graph-rooted
      (poo-flow-module-source-ref-value source-ref)
      (list (cons 'source-ref source-ref)
            (cons 'entrypoint-role entrypoint-role)
@@ -78,31 +78,31 @@
      '())))
 
 ;;; Boundary: auto-import roots are POO graphs so extensions can remove entries.
-;; : (-> [PooModuleSourceRef] PooModuleExtensionNode)
+;; : (-> [PooModuleSourceRef] PooFlowGraph)
 (def (poo-flow-module-auto-imports-node source-refs)
-  (poo-flow-module-extension-node
+  (poo-flow-graph-rooted
    poo-flow-module-auto-import-root-identity
    '((namespace . auto-imports))
    (map poo-flow-module-auto-import-entry-node source-refs)))
 
 ;;; Boundary: disabling an auto import is a regular node-remove contribution.
-;; : (-> [PooModuleSourceRef] [PooModuleExtensionContribution] PooModuleExtensionResult)
+;; : (-> [PooModuleSourceRef] [PooGraphContribution] PooGraphResult)
 (def (poo-flow-module-auto-imports-resolve source-refs contributions)
-  (poo-flow-module-extension-resolve
+  (poo-flow-graph-resolve
    (poo-flow-module-auto-imports-node source-refs)
    contributions))
 
-;; : (-> PooModuleExtensionNode MaybePooModuleSourceRef)
+;; : (-> PooFlowGraph MaybePooModuleSourceRef)
 (def (poo-flow-module-auto-import-entry-source-ref entry-node)
   (poo-flow-loader-alist-ref/default
-   (poo-flow-module-extension-node-slots entry-node)
+   (poo-flow-graph-root-payload entry-node)
    'source-ref
    #f))
 
 ;;; Boundary: resolved source refs are read after POO removals/extensions apply.
-;; : (-> PooModuleExtensionResult [PooModuleSourceRef])
+;; : (-> PooGraphResult [PooModuleSourceRef])
 (def (poo-flow-module-auto-imports-result-source-refs result)
-  (let (root (poo-flow-module-extension-result-root result))
+  (let (root (poo-flow-graph-result-root result))
     (map poo-flow-module-auto-import-entry-source-ref
-         (poo-flow-module-extension-node-children root))))
+         (poo-flow-graph-root-children root))))
 

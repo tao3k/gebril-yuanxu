@@ -21,7 +21,7 @@ recursive collection updates, decorate, chainable/chainMerge, collection-spine
 protection and typed-by-precedent. Borrow the user needs, not its DSL. This is
 coverage of documented requirements, not source-level or edge-case equivalence;
 implementation-file fetches were unavailable in this research pass. See the
-[[file:../../../design/config-languages/00-index.org][Configuration Language research entry]] for KCL and the wider comparison.
+[[file:../../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration Language research entry]] for KCL and the wider comparison.
 
 Native syntax was inspected in .data/gerbil-poo/object.ss (normalize-slot-specs,
 %normalize-named-slot-specs, object/slot-spec) and
@@ -153,8 +153,8 @@ namespace once and introduces only the listed lexical slot names; no repeated
 individual let/.get declarations are needed. A project using one alternative
 lists just that function. The four resulting objects below are alternatives,
 returned as ordinary multiple values, not automatically composed or executed.
-See the design-level [[file:../../../design/config-languages/02-native-slot-binding.org][native binding study]] and
-[[file:../../../design/config-languages/03-common-operations-comparison.org][matched dmerge/KCL/Scheme comparison]].
+See the design-level [[file:../../../docs/10-19-design/11-configuration-languages/11.03-native-slot-binding.org][native binding study]] and
+[[file:../../../docs/10-19-design/11-configuration-languages/11.04-common-operations-comparison.org][matched dmerge/KCL/Scheme comparison]].
 
 #+begin_src scheme
 (use-module CIHelpers as ff

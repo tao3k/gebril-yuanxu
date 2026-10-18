@@ -126,7 +126,7 @@ decision for each current owner and the interface that users should see.
 | =contribution/objects= | =contribution?=, diagnostics and =admit-contributions= on supplied values | =Contribution.= / =make-contribution= publication; admission grants no execution authority |
 | =contribution/verification= | consume an already returned host receipt through the product interface | adapter definition is E; verification, validity callbacks, receipt issuance and revocation are R |
 | =composition/lineage= | pure lineage/cycle/productive-recursion analysis on supplied identity lists | lineage result prototype publication is E; this owner takes data, not accessor callbacks |
-| =extension-graph/interface= | consume the effective result through ordinary POO values | every graph operation, contribution and fixed-point resolver stays E; no generic patch language in root config |
+| =graph/interface= | consume the effective result through ordinary POO values | every graph operation, contribution and ordered application stays E; no generic patch language in root config |
 | =object-family/interface= | consume maintained family values and domain accessors | =defpoo-object-family= and indexed-family authoring are E; positional indexes/lenses are I |
 | =observability/objects=, =funcs= | bounded receipt facts, summaries, diagnostics, next-action and pure projections | observation prototypes and overridable protocols are E; custom callbacks retain their contract |
 | =observability/slot-presentation= | =poo-flow-slot-presentation= at default level | provenance/composition use authored source metadata; advanced/source views are opt-in, not causal effect traces |

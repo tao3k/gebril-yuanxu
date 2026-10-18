@@ -46,6 +46,17 @@
 
 ;; : (-> JsonObject Alist Pair)
 (def (poo-flow-json-schema-parse-array-schema schema context)
+  (let ((unique (poo-flow-contract-object-ref schema "uniqueItems" +poo-flow-json-schema-missing+))
+        (parsed (poo-flow-json-schema-parse-array-shape schema context)))
+    (if (or (eq? unique +poo-flow-json-schema-missing+) (boolean? unique))
+      parsed
+      (cons (car parsed)
+            (cons (poo-flow-json-schema-diagnostic
+                    'warning 'invalid-constraint-value
+                    "JSON Schema uniqueItems must be a boolean" unique context)
+                  (cdr parsed))))))
+
+(def (poo-flow-json-schema-parse-array-shape schema context)
   (let ((items (poo-flow-contract-object-ref schema "items" +poo-flow-json-schema-missing+)))
     (cond
      ((eq? items +poo-flow-json-schema-missing+)

@@ -1,0 +1,81 @@
+#+title: Core Lean models
+
+One =PooFlowCoreProof= Lake library owns all Core models and their axiom audit.
+LeanPoo is a dependency, not another local proof implementation. The dependency
+is pinned at v0.1.1 / =d8adf138948c854e7564234bc046387b4a5ee63b=, using Lean 4.34.0.
+
+* Organization follows source ownership
+
+All source modules and theorem namespaces live under =PooFlowCoreProof=.
+Directory names correspond to the Core owner; filenames describe the local
+subject rather than a project-wide slogan or an unrelated inheritance algorithm.
+
+| Proof directory | Core owner and model subject |
+|-----------------+------------------------------|
+| =Composition/= | =composition/=; lexical/runtime/content identity and composition receipts |
+| =ProfileComposition/= | =profile-composition/=; ordered prototypes, bundles, revision and syntax |
+| =ModuleSystem/Source/= | =module-system/source/=; dependency identity and namespaces |
+| =ModuleSystem/Selection/= | =module-system/selection/=; explicit capability requirements |
+| =ModuleSystem/Schema/= | =module-system/schema/=; contracts, staged resolution, demand and queries |
+| =ModuleSystem/Schema/Association/= | Schema ancestry/admission semantics, traversal, correspondence and native fixtures |
+| =ModuleSystem/Graph/= | =module-system/graph/=; module/semantic graph roles and aggregation |
+| =ModuleSystem/Imports.lean=, =Ownership.lean= | Module import and ownership boundaries |
+| =FeatureSystem/DomainCase/= | =feature-system/domain-case/=; indexed resolution |
+| =Graph/= | =graph/=; ordered operations, closure, cache and conclusion revision |
+| =Modules/Funflow/= | =modules/funflow/=; strategy, control, context, observations and continuation contracts |
+| =Admission/= | =admission/=; source/evidence/authority admission, retention and publication obligations |
+| =Contribution/= | =contribution/=; contributor qualification |
+| =PooClos/= | =poo-clos/= and its Gerbil/Gambit boundary; refinement and conservative extension |
+
+The domain protocols include explicit obligations for future adapters and
+publication/runtime integration. Their placement records ownership; it does not
+claim the corresponding Scheme implementation or native refinement already exists.
+The old =PooC4= catch-all, separate Profile proof namespace and forwarding modules
+are gone. C4 appears only where inheritance actually needs it.
+
+* Mechanisms belong to LeanPoo
+
+| Model | Public dependency mechanism |
+|-------+-----------------------------|
+| =ProfileComposition/Prototype= | =Prototype.Chain=, =composeAll= and =Generator.applyProto=; declared operand order and final self |
+| =ModuleSystem/Schema/Contracts= | =ProofObject.withObligation=, =Certificate.withObligation= and =Certified.conjoin=; actual checked obligations and same-family contract joins |
+| =ModuleSystem/Schema/Resolution= | =prepareCertified= and =Certified.consume=; preparation, analytic contract, then explicit authorization/disclosure |
+| =ModuleSystem/Selection/Requirements= | =prepare_origin= and =AbsenceCertificate=; actual declared providers or checked absence |
+| =Graph/Cache= | =ContextSlot= and =Snapshot=; current closure/result contracts at the complete semantic context |
+| =ProfileComposition/Revision= | The same context slot with explicit profile/root revision coordinates |
+| =ModuleSystem/Schema/Demand= | =ContextSlot.readAlong=; certified semantic target separated from request labels |
+| =Graph/ConclusionRevision= | =ProofObject=, =Patch=, =pending= and =closePending=; cut-aligned conclusions, fresh discharge and retained history |
+| =ModuleSystem/Schema/Association/= | Typed requirements, certified context caching and contract consequence; independent Scheme traversal correspondence |
+| =ModuleSystem/Workflow= | Integration of these models with public POO declarations and =Codec= |
+
+LeanPoo usage references are in =.lake/packages/LeanPoo/Examples/=:
+=SpecificationComposition.lean=, =PreparedViews.lean=, =CertifiedContextCache.lean=,
+=IncrementalWorkflow.lean= and =ProofReuse.lean=.
+
+Removed local mechanisms include the projection/cache/codec framework, predicate
+ContractSet accumulation, eight generic phase wrappers, assumed candidate/update
+lists, identity-injectivity schemes and generic cache entries with unrelated
+freshness flags. Ordinary domain values, pure predicates and explicit evidence
+or authority premises remain domain-owned; they are not another object runtime.
+
+The total object-plan resolver is the proof-facing semantics; the partial
+memoized reader is checked separately by executable controls. C4 is inheritance,
+not a workflow SCC scheduler. The Scheme ancestry traversal remains independent
+because replacing it with C4 changes the native admission semantics.
+
+* Validation
+
+From Core run =just proofs-lean= (or =lake build= here). =PooFlowCoreProof.lean=
+imports every model and rejects =sorryAx= and project-specific axioms throughout
+the imported Core closure. Only =propext=, =Classical.choice= and =Quot.sound= are
+allowed. Declaration counts are not counts of independently proved requirements.
+
+Run =just proofs-quint= for finite transition controls. The Graph Lean model binds
+the Quint source digest. Its operation result is a completed ordered pass, not a
+fixed-point claim. Native graph/source-projection and schema inheritance tests
+run serially through the heap-fenced =just test-file= entrypoint. Native receipts,
+conditional Lean laws and finite-model controls are distinct evidence.
+
+The historical Profile association receipts and source correspondence are in
+[[file:../../module-system/design/164-funflow-public-configuration/20-lean-profile-association.org][the association reference receipt]] and
+[[file:../../module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence.org][the Scheme admission correspondence receipt]].

@@ -91,6 +91,74 @@ sources. Its native slots defer work until demanded. Reject stale/mismatched
 optional plans and module graph generations before exposing results. Source/schema
 and executor-specific evidence remain additional required boundaries.
 
+* init-owned build graph and a thin build.ss
+
+The [[file:05-namespace-and-build-ownership.org][namespace/ownership rule]] places this shared adapter in Core. The target
+:poo-flow-core package prefix and poo-flow-core-build-spec name below are pending;
+Core currently declares package core. The existing product build-projection file
+is an observer, not an implementation of this adapter. Core consumes a shared init
+publication protocol; it must not import the product facade to obtain the graph.
+
+
+The root init is the single authority for source ownership, Module selection,
+retained disable decisions and Feature decisions. Its generated publication must
+also expose a lazy selected build graph for that same source/selection generation.
+Authors do not maintain a second module inventory in build.ss. The graph is data;
+init does not invoke defbuild-script or start compilation when imported.
+
+Target consumer spelling (the adapter is proposed, not implemented):
+
+#+begin_src scheme
+;; build.ss -- the only project-specific input is the init source.
+(import (only-in :std/build-script defbuild-script)
+        (only-in :poo-flow-core/modules/building/build-projection
+                 poo-flow-core-build-spec))
+
+(defbuild-script (poo-flow-core-build-spec "./init.ss"))
+#+end_src
+
+poo-flow-core-build-spec is a proposed functional adapter, not a new syntax form or
+second Loader. It requests the init-owned graph through the shared Core orchestration also used by the product
+poo-flow-load-modules facade, checks its admission/currentness and lowers
+it to the existing Gerbil build-spec value. Its spelling/module export is not
+currently available. Resolve the path against the build source, not an arbitrary
+process working directory. The directory/role wrapper prepares init publication;
+the user does not add manual exports or a graph factory to init.ss.
+
+Gerbil's existing defbuild-script accepts a build-spec expression and places it
+inside the generated main procedure. This permits demanding the graph at explicit
+build invocation rather than during macro expansion. No change to that native
+macro is implied. The adapter must not recursively build the modules needed to
+run itself: its minimal bootstrap provider/compiler closure is an independently
+available build tool dependency, not a selected application Module.
+
+The init publication retains one native object with generation/source identity,
+selection decisions, admitted module/feature contribution references and a deferred
+build projection. The namespace and build graph are two views over this same
+selection, not independently resolved graphs. Build projection may inspect selected
+publication metadata without constructing domain scopes, compiling Schemas or
+forcing Profile values. Only dependencies actually required for build-graph
+admission are demanded. A selected interface needed only for metadata must have a
+bounded preparation route; compiling and loading every selected implementation to
+learn its roots would recreate the bootstrap/loading problem.
+
+Build roots come from selected role wrappers and admitted optional contributions;
+compiler closure adds phase imports, native link requirements and generated assets.
+The earlier selected-build-entries example consumes normalized derived entries;
+core.build-entries is not an additional handwritten interface requirement. Disabled
+Module/Feature contributions remain excluded; a hard dependency on one is rejected
+with its requester chain before publishing a build spec. A shared compile-time
+library may still belong to the closure even if no runtime scope is requested.
+
+Changes to init decisions, source generations, role graphs, compiler/provider
+versions or external build inputs invalidate the corresponding graph/spec cache.
+Cache lookup must validate those inputs; SourceRef equality alone is insufficient.
+No measured startup or scalability claim follows from this design.
+
+Current root init exports only PooFlowModules. Product and Core build.ss still
+maintain explicit specifications. Automatic init graph publication, facade build
+projection and this adapter remain pending; this document changes neither file.
+
 * Conclusion
 
 The reusable Core contribution is a precise shared data/protocol boundary and

@@ -1,0 +1,157 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.35 Config Languages 34: Grouped AWS Profile Data and Scheme Command Publication
+#+property: DOCUMENT_ID 11.35
+#+property: STATUS design-only-not-executed-no-loader
+
+* Data organization before extension mechanics
+
+The maintained source is modules/aws, with shared types.ss, objects.ss, config.ss,
+func.ss and interface.ss. scenarios/profiles/network.ss holds CIDR/naming values;
+machines.ss holds AMI and machine specifications; access.ss holds key arguments,
+credentials and state settings. scenarios/development.ss and build-host.ss combine
+these independent values. They are configuration-role fragments, not new Modules.
+The source graph prepares only selected declarations and their dependencies;
+folders must not trigger eager evaluation or recursive runtime imports.
+
+=Network data= (retired design source) is ordinary configuration, for example:
+
+#+begin_src scheme
+(def NetworkConfig
+  (.o vpc: (.o cidr-block: (.o prefix: "10.1.0.0" length: 16)
+               tag-prefix: "Tf-Ncl")))
+(def MachineConfig
+  (.o ec2: (.o type: "t2.micro"
+               ssh-cidrs: '("0.0.0.0/0") public-ip?: #t)))
+#+end_src
+
+Object constructors in objects.ss apply these data values to Contract prototypes;
+configuration fragments do not define another object family. New CIDR data is a new value. A user changing type assigns
+it; only a genuinely derived Profile needs a parent. AWS-assigned public IP is
+not input metadata: it remains output.instance_ip, a Terraform reference. An
+explicit private IP requires a future domain field, Contract and subnet checks;
+do not silently add an unvalidated address field to the present Profile.
+
+* Complete Scheme command and one publication
+
+=The complete Scheme source= (retired design source) imports standard process/JSON APIs, defines
+aws-public-key and aws-public-key-main. No Bash asset is maintained. run-process
+receives argv directly, checks nonzero status, reads the public-key line, and keeps
+stderr out of the JSON result. The private-key path is one argument; its contents
+are never read by configuration projection. This adapter is effectful runtime
+code, not a configuration initializer. No execution was performed.
+
+One declaration in interface.ss publishes the executable entry:
+
+#+begin_src scheme
+commands: (.o ssh-public-key: aws-public-key-main)
+#+end_src
+
+The shared access Profile references the SAME binding:
+
+#+begin_src scheme
+(def AccessConfig
+  (.o ssh-key:
+      (.o command: aws-public-key-main
+          arguments: '("./<placeholder-private-key>"))))
+#+end_src
+
+ExternalKeyContract requires command: AWSCommand and arguments: AWSArguments.
+AWSCommand checks procedure shape only. Core must additionally resolve the entry
+to its admitted owner/export declaration and reject unpublished, disabled or
+unselected entries. A procedure predicate does not authenticate an executable.
+
+* Selected graph derives the executable, not a second asset inventory
+
+The proposed shared Core preparation preserves the export binding's source
+identity, declaration span and imported dependency edges. From the selected
+aws.commands.ssh-public-key export it derives:
+
+#+begin_example
+owner/export: aws / commands.ssh-public-key
+source: modules/aws/runtime/ssh-public-key.ss
+entry binding: aws-public-key-main
+standard dependencies: :std/misc/process, :std/encoding/json
+output identity: selected-generation + owner/export + source/dependency digests
+artifact: generation-qualified executable path
+#+end_example
+
+These are GENERATED observations, not another author-written manifest. The
+compiler may generate the native executable wrapper below in its build area,
+with its import resolved from that admitted source identity:
+
+#+begin_src scheme
+(import :selected-build/aws/runtime/ssh-public-key)
+(export main)
+(def main aws-public-key-main)
+#+end_src
+
+:selected-build is an illustrative generated compilation namespace, NOT a new
+public module or an existing installed path. The dependency unit must expose the
+entry binding through the generated source wrapper; there are no handwritten
+per-role exports. Core feeds the derived executable node and source closure into
+its existing-target defbuild-script adapter. No authored build-entries/assets list
+is copied into interface.ss. The graph compiler must reject source cycles and
+unresolved entry declarations before build, without importing the product Loader.
+
+The same graph's artifact view supplies executable-path to the prepared interface
+boundary. That proposed resolver maps the admitted entry binding to the exact
+artifact path; identity is declaration/source/generation-based, not a serialized
+procedure address. A cache hit must match source/dependency/compiler identities.
+Only selected command exports create executable nodes. Disabling an optional
+command required by the selected Profile is an error, not implicit re-enabling.
+Directory/role discovery may read metadata; it must not evaluate all Profile slots.
+
+* Pure projection and explicit execution
+
+The interface closes its project procedure over the graph's executable-path
+resolver; users do not inject it or extract checks/resources manually. The pure
+projector reads the final selected key and generates:
+
+#+begin_src scheme
+(.o program:
+    (cons (executable-path (.get key command))
+          (.get key arguments)))
+#+end_src
+
+Path resolution reads artifact metadata; it neither builds on demand nor runs a
+process during a slot read. An unavailable artifact reports a required build;
+preview must not fabricate an executable path. Any explicit build operation is
+separate from preview. The resulting Terraform data.external program is an argv
+list. Terraform execution later launches the Scheme executable, which invokes
+ssh-keygen and returns a JSON object containing public_key. Missing/encrypted keys,
+permissions and process failure are runtime outcomes, not proof from Contracts.
+Timeout/cancellation, executable integrity, staging and noninteractive behavior
+must be qualified before runtime use. No runtime execution authority is granted
+by local config admission or projected-unadmitted preview.
+
+* Existing and pending; acceptance questions
+
+Existing source foundations: Gerbil run-process and JSON serialization; native
+POO procedure/value slots and inheritance. The AWS files remain unexecuted design
+source. Pending Core support: export-to-source identity, fragment preparation,
+selected executable graph projection, generated wrapper/linkage, admitted artifact
+resolution, source-aware diagnostics and direct dotted assignment. No Loader
+implementation or new public DSL is introduced here.
+
+Required controls: publishing must not spawn a process; projecting must not build
+or execute; unselected commands must not compile; selected missing artifacts must
+fail clearly; changes to entry/dependency source must invalidate artifacts; parent
+resources must not substitute for reprojection of a changed child Scenario. These
+are requirements, not passing test claims. Does grouped Profile data let a user
+find a machine/address without reading process or build internals? Does a disabled
+entry diagnostic identify both the consuming Profile and its declaration? These
+UX questions must be tested alongside the graph's correctness.
+
+* Role correction and concrete admission
+
+See [[file:11.36-aws-contracts-objects-and-configuration-roles.org][the authoritative role correction and concrete Contract definitions]].
+Named Profile objects live in objects.ss; scenarios/profiles fragments contain
+ordinary config data.
+
+* Current complete deployment-input boundary
+
+See [[file:11.37-aws-complete-consumer-case-and-capability-boundary.org][the complete consumer case and capability correction]].
+The earlier one-value example is an override control, not a deployment configuration.
+Account/backend/key/network/machine inputs belong to the consumer. SSH user input
+is private-key-path; executable selection belongs to the capability.

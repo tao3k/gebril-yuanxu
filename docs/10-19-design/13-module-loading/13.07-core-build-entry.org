@@ -1,0 +1,121 @@
+#+title: 13.07 Repository-Owned Standard Build Script
+#+property: DOCUMENT_ID 13.07
+#+language: en
+
+* Current consumer
+
+The repository owns its SDK dispatcher. Building supplies an ordinary spec;
+it does not replace main, bind a source alias, or generate another build.ss.
+
+#+begin_src scheme
+;; build.ss
+(import (only-in :std/build-script defbuild-script)
+        (only-in "./init.ss" init.build-spec)
+        (only-in "./core-spec.ss" core-spec))
+(defbuild-script (init.build-spec core-spec))
+
+;; init.ss
+(import "./module-system/selection/init-syntax.ss")
+(poo-flow! mode: explicit source: "./modules" (json-schema))
+#+end_src
+
+[[file:../../../core-spec.ss][core-spec.ss]] is the retained non-Module target inventory. The spec function
+merges these roots with the selected Module Graph, deduplicating only matching
+physical sources, compiler identities and options. A conflicting overlap is an
+error. There is no second module-path inventory in core-spec.
+
+init.build-spec returns a standard list of string/gxc targets. Source files stay
+at their original paths. The SDK derives srcdir from the user's build.ss and
+uses its original package metadata for output identities and clean. The thin
+adapter uses the SDK reader to obtain the owning package prefix and checks that
+each target maps back to its admitted source. No std/make copy or patch exists.
+The current adapter requires init.ss and its owning build.ss beside each other.
+
+* One selected source epoch
+
+The existing poo-flow! macro exports init.build-spec and init.build-current!.
+Importing init does not prepare a Graph. The first spec call prepares one Graph
+and caches its ordinary spec list; repeated equal retained roots reuse that same
+list. Different roots require a new init source epoch. The imported init
+statement must still match its source before first preparation.
+
+Each SDK command reevaluates the spec expression and validates init, selected
+roles, package/prelude inputs, compiler tools, retained sources and build.ss.
+Changed init latches refusal of that selected session. Source restoration does
+not authorize reviving a refused selection.
+
+The Standard Library has no post-command hook. A successful command alone is
+not an acceptance receipt. An executor or publisher must call
+init.build-current! after completion and before accepting outputs. The control
+makes that explicit call and verifies rejection after subsequent source drift.
+This check does not roll back filesystem writes or prevent concurrent edits.
+No after-command guarantee is claimed for a user who calls only the SDK main.
+
+Currentness guards share source observations only inside one synchronous pure
+validation boundary. The cache ends before compiler effects; a later command
+or acceptance check reads inputs again. It is not a persistent validity cache.
+
+* Role association and build ownership
+
+[[file:13.10-automatic-role-projection.org][Automatic role association]] keeps interface.ss declarative. One static
+modules/gerbil.pkg supplies the existing Gerbil prelude mechanism; the existing
+Module .def expands adjacent role imports in the declaration's source scope.
+Publication preparation uses the same role inventory. The compilation path
+therefore consumes the original interface, not a manually repaired copy.
+
+Building is SDK-imported Module System infrastructure under module-system/;
+it is not selected through its own Module Graph. Its observed public dependency
+closure is sufficient to start preparation from source, without a Core binary
+cache or independent bootstrap.ss. Graph construction remains separate from
+runtime Module activation.
+
+The direct-source adapter currently rejects external-package and other
+non-source projections requiring a dedicated consumer. Their existing Graph
+representations remain intact; they cannot silently disappear from a successful
+spec. Config implicit exports and Build-phase formats outside the qualified
+JsonSchema path need separate compiler controls.
+
+* Reproduce with locked public dependencies
+
+Run from Core with the installed Gerbil SDK. Use a new scratch directory and
+the revision locked in gerbil.pkg. Paths below are repository-relative or
+computed at execution time. No pre-existing compiled Core cache is used.
+
+#+begin_src sh
+git clone --no-checkout https://github.com/tao3k/gerbil-poo.git .gerbil/qualification/dependencies/gerbil-poo
+git -C .gerbil/qualification/dependencies/gerbil-poo checkout --detach 099b381588360a8a49fd772f666a1a00351366f5
+git -C .gerbil/qualification/dependencies/gerbil-poo diff --exit-code HEAD
+mkdir -p .gerbil/qualification/state/lib .gerbil/qualification/sources/clan
+ln -s ../../dependencies/gerbil-poo .gerbil/qualification/sources/clan/poo
+export GERBIL_PATH="$(pwd)/.gerbil/qualification/state"
+export GERBIL_LOADPATH="$(pwd)/.gerbil/qualification/sources"
+export GERBIL_BUILD_CORES=1
+export CORE_QUALIFICATION_ROOT="$(pwd)/.gerbil/qualification/snapshot/core"
+export CORE_QUALIFICATION_BUILD_ENTRY=1
+just test-file t/module-build-source-snapshot-test.ss
+ln -s ../snapshot/core .gerbil/qualification/sources/core
+just test-file t/module-build-dependency-qualification-test.ss
+export GERBIL_LOADPATH="$CORE_QUALIFICATION_ROOT:$GERBIL_PATH/lib:$(pwd)/.gerbil/qualification/sources"
+just test-file t/module-build-spec-test.ss
+just test-file t/module-source-spec-test.ss
+just test-file t/module-build-process-test.ss
+#+end_src
+
+The source-spec control narrows only the snapshot's retained core-spec to three
+roots, then compiles and cleans the real JsonSchema closure serially. It never
+runs a whole-Core compile. To exercise the actual retained manifest with spec
+and clean only, use a second fresh snapshot/state and run core-build-entry-test
+instead of module-source-spec-test. The rebuild regression deliberately keeps
+the same state across processes. One process-test invocation now includes the
+second compile after clean and the native input-change controls; repeating the
+test manually is not required. [[file:13.12-build-owned-source-registration.org][Building-owned registration]] establishes Core
+source priority in normal init startup. The launcher-only fix in [[file:13.11-same-state-source-reimport.org][10]] is historical;
+normal process controls remove both source environment variables in each child.
+Standard clean is not proof that every compiler auxiliary file was removed.
+
+The old init.build-entry export, returned-main helper, generated preparation
+script and overlay setup tests are removed. Their bounded compile/clean and
+source-identity controls are superseded by module-source-spec-test; conflict,
+symlink and currentness controls remain in module-build-spec-test and
+module-build-graph-test. Earlier experiments remain historical documentation,
+not alternate consumer APIs.

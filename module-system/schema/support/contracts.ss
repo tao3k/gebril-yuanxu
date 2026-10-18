@@ -20,7 +20,7 @@
                  .defgeneric Any Bool Object Type element? raise-type-error)
         (only-in :clan/poo/type List String Symbol)
         (only-in :core/types poo-flow-predicate-type)
-        :core/extension-graph/interface)
+        :core/graph/interface)
 
 (export poo-flow-module-object-kind
         poo-flow-module-field-contract-kind
@@ -148,7 +148,7 @@
 (def PooFlowModuleNodeType
   (poo-flow-module-value-type
    (poo-flow-predicate-type 'PooFlowModuleNode
-                            poo-flow-module-extension-node?)
+                            poo-flow-graph?)
    'Node))
 
 (def (poo-flow-module-value-type? value-type)
@@ -315,37 +315,37 @@
 
 ;;; Field merge names are interpreted once behind the prototype method.  The
 ;;; contribution-to-extension path dispatches through native POO slots.
-;; : (-> Symbol Symbol PooModuleFieldValue PooModuleExtensionOperation)
+;; : (-> Symbol Symbol PooModuleFieldValue PooGraphOperation)
 (def (poo-flow-module-field-operation field-identity merge value)
   (cond
    ((eq? merge 'override)
-    (poo-flow-module-extension-slot-override field-identity value))
+    (poo-flow-graph-slot-override field-identity value))
    ((eq? merge 'append)
-    (poo-flow-module-extension-slot-append field-identity value))
+    (poo-flow-graph-slot-append field-identity value))
    ((eq? merge 'prepend)
-    (poo-flow-module-extension-slot-prepend field-identity value))
+    (poo-flow-graph-slot-prepend field-identity value))
    ((eq? merge 'remove)
-    (poo-flow-module-extension-slot-remove field-identity value))
+    (poo-flow-graph-slot-remove field-identity value))
    ((eq? merge 'node-extend)
-    (poo-flow-module-extension-node-extend value))
+    (poo-flow-graph-node-extend value))
    ((eq? merge 'node-remove)
-    (poo-flow-module-extension-node-remove value))
+    (poo-flow-graph-node-remove value))
    (else
-    (poo-flow-module-extension-slot-override field-identity value))))
+    (poo-flow-graph-slot-override field-identity value))))
 
 ;;; Native generic dispatch lets refined contribution prototypes replace the
 ;;; projection without extending this owner with another representation case.
-;; : (-> PooModuleFieldContribution PooModuleExtensionOperation)
+;; : (-> PooModuleFieldContribution PooGraphOperation)
 (.defgeneric (poo-flow-module-field-contribution-operation contribution)
   slot: .operation)
 
 ;;; Boundary: module field contribution to extension is the policy-visible edge
 ;;; for module-system, object, core behavior, keeping validation, lookup, or
 ;;; projection responsibilities centralized for callers.
-;; : (-> PooModuleFieldContribution PooModuleExtensionContribution)
+;; : (-> PooModuleFieldContribution PooGraphContribution)
 (def (poo-flow-module-field-contribution->extension contribution)
   (if (poo-flow-module-field-contribution-valid? contribution)
-    (poo-flow-module-extension-contribution
+    (poo-flow-graph-contribution
      (poo-flow-module-field-contribution-target contribution)
      (list (poo-flow-module-field-contribution-operation contribution)))
       (error "poo-flow module field contribution violates its POO contract"
@@ -353,7 +353,7 @@
 
 ;;; Field contribution projection is a map because validation happens at each
 ;;; contribution boundary before the generic extension graph sees operations.
-;; : (-> [PooModuleFieldContribution] [PooModuleExtensionContribution])
+;; : (-> [PooModuleFieldContribution] [PooGraphContribution])
 (def (poo-flow-module-field-contributions->extensions contributions)
   (map poo-flow-module-field-contribution->extension contributions))
 

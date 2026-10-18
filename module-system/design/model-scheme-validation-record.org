@@ -13,7 +13,7 @@ Raw logs belong outside documentation. Historical logs removed from the source
 worktree can be recovered at PR #34 commit
 =79f1ec6f205afaf53580a916d858e051264ec38f=. Retained hashes alone cannot
 revalidate those bytes or qualify the current revision. Relocated structured
-receipts are under [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/][Core test evidence]].
+receipts are under [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003][Core test evidence]].
 This English rendering preserves historical results; it does not report a new run.
 
 | Task family | Initial task | Transfer task |

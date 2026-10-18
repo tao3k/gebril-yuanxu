@@ -1,11 +1,13 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Internal compiler binding for one admitted interface declaration. No IO.
+;;; Existing declaration binding; bounded adjacent-role discovery uses SDK file metadata.
 (import (prefix-in (only-in :clan/poo/object
                             .def/ctx .o/ctx .o .ref) native-)
-        (for-syntax :gerbil/expander))
-(export .def include-module-body)
+        (for-syntax :gerbil/expander
+                    :core/module-system/source/role-forms))
+(export .def include-module-body export-role-config define-module-build-binding
+        current-module-build-phase? current-module-build-resolver)
 (begin-syntax
   ;; Project only the direct native fields of a publication frame. Payloads
   ;; remain syntax; .def/ctx and .o/ctx own object semantics and slot binding.
@@ -79,6 +81,15 @@
 (defsyntax (.def stx)
   (syntax-case stx ()
     ((_ binding body ...)
+     (let* ((location (stx-source stx))
+            (file (and location (vector-ref location 0)))
+            (role (and (string? file)
+                       (string->symbol (path-strip-extension (path-strip-directory file))))))
+       (and role (not (eq? role 'interface))
+            (memq role poo-flow-module-allowed-entrypoint-roles)))
+     (with-syntax ((context stx))
+       #'(native-.def/ctx context binding body ...)))
+    ((_ binding body ...)
      (let* ((rows (publication-fields stx #'(body ...)))
             (core-row (slot-row rows 'core))
             (core-value (lower-core (slot-value rows 'core stx)))
@@ -89,11 +100,21 @@
        (slot-value rows 'identity stx)
        (slot-value rows 'features stx)
        (with-syntax ((context stx) (name name)
+                     ((role-import ...)
+                      (let* ((location (stx-source stx))
+                             (file (and location (vector-ref location 0))))
+                        (if (and (string? file) (string=? (path-strip-directory file) "interface.ss"))
+                          (map (lambda (path)
+                                 (datum->syntax (stx-car stx) `(import ,path) location))
+                               (module-publication-role-imports (path-directory file)
+                                                                module-regular-role-file?))
+                          '())))
                      ((row ...) (map (lambda (row)
                                        (if (eq? row core-row)
                                          (with-syntax ((value core-value)) #'(core value)) row)) rows)))
          (syntax/loc stx
            (begin
+             role-import ...
              (native-.def/ctx context binding row ...)
              (export name))))))
     (_ (raise-syntax-error #f "expected one native Module declaration" stx))))
@@ -112,3 +133,41 @@
          (syntax-local-rewrap
           (stx-wrap-source (core-cons 'begin body) (stx-source stx))))))
     (_ (raise-syntax-error #f "expected a literal Module source path" stx))))
+
+;; Internal phase capability, not a runtime Loader or a global binding registry.
+(def current-module-build-phase? (make-parameter #f))
+(def current-module-build-resolver (make-parameter #f))
+(def (module-build-binding-value state)
+  ;; Check outside the cached slot: a previously forced Build is still forbidden
+  ;; to ordinary config/runtime consumers.
+  (unless (current-module-build-phase?)
+    (error "Build is available only in the Module build-publication phase"))
+  (native-.ref state 'value))
+(defsyntax (define-module-build-binding stx)
+  (syntax-case stx ()
+    ((_ name)
+     (identifier? #'name)
+     (with-syntax ((resolver (genident 'build-resolver))
+                   (state (genident 'build-state)))
+       #'(begin
+           (def resolver (current-module-build-resolver))
+           (def state
+             (native-.o value:
+               (if resolver (resolver)
+                   (error "Module Build has no admitted build resolver"))))
+           (defsyntax name
+             (identifier-rules ()
+               ((_ . args) ((module-build-binding-value state) . args))
+               (_ (module-build-binding-value state)))))))
+    (_ (raise-syntax-error #f "expected an internal Build binding" stx))))
+
+;; The native expander decides whether Config is visible after body expansion.
+;; No second parser for Scheme definitions, and no export of private bindings.
+(defsyntax (export-role-config stx)
+  (syntax-case stx ()
+    ((_ name)
+     (identifier? #'name)
+     (if (resolve-identifier #'name)
+       (syntax/loc stx (export name))
+       #'(begin)))
+    (_ (raise-syntax-error #f "expected the internal Config export binding" stx))))

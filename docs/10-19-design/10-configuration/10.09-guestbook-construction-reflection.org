@@ -1,0 +1,135 @@
+#+title: 10.09 Why This Constructor? Research, Tradeoffs and Guestbook Controls
+#+language: en
+#+property: DOCUMENT_ID 10.09
+#+date: [2026-10-17]
+#+property: STATUS research-to-design-argument-not-a-runtime-or-ux-result
+
+* What the prior research changes
+
+Read [[file:10.08-guestbook-construction-protocol.org][the concrete native Scheme design]] as a response to ecosystem evidence,
+not a syntax exercise. JSON/Scheme input simplicity is already common elsewhere.
+The proposed benefit is maintained domain integration and deliberate native
+extension with one effective-value authority. That benefit remains unvalidated.
+
+| Evidence owner and actual mechanism | Decision in this construction design | Tradeoff or counterquestion |
+|-------------------------------------+--------------------------------------+-----------------------------|
+| [[file:../../20-29-ecosystem-research/20-nixos/20.02-official-service-module.org][NixOS official PostgreSQL]] owns options, defaults/migrations and system contributions | Contract/default/policy publication belongs to the maintained Module, not each user | A POO predicate alone does not provide option docs, migrations or activation |
+| [[file:../../20-29-ecosystem-research/21-devenv/21.02-composition-and-postgres.org][devenv PostgreSQL]] owns server and client environment together | Validate connections against final objects and keep resource consumers downstream of construction | Scalar type success does not establish socket reachability or live readiness |
+| [[file:../../20-29-ecosystem-research/22-flox/22.01-index.org][Flox]] specifies different merging per manifest region | Scalar replacement, label-map merge and sequence replacement are explicit native functions | Why this list policy? Other domains need append or identity-based updates; no universal merge |
+| [[file:../../20-29-ecosystem-research/25-nickel/25.01-index.org][Nickel/Tweag]] combines configuration and requirements with local checks | Construction metadata stays associated with the same native Contract; final whole-object admission remains mandatory | Local field acceptance is not proof of cross-object consistency |
+| [[file:../../20-29-ecosystem-research/23-terraform/23.07-practitioner-experience-and-restrictions.org][Terraform practitioners]] describe dependency amplification and nested merge costs | No module-wide operation barrier is inferred from a field reference; use plain Scheme transformations | General functions can hide effects or divergence; scope admission is not a sandbox |
+| [[file:../../30-39-research-foundations/31-papers/31.01-backpack.org][Backpack]] distinguishes interface and instance identity | A configured entry and its effective context are separate from publication/mount names | Dynamic Contract admission is not the paper's static linking theorem |
+| [[file:../../30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][Build Systems a la Carte]] separates demand from reuse | Keep construction forcing, cache reuse and currentness distinct | A native cache hit does not prove the source or consumer is current |
+
+* Concrete Omnibus and KCL controls, not language caricatures
+
+The user's local Omnibus case was inspected at c5d37eb51961fd7bd32f775843044ca7f8191715.
+Its aws/main.ncl has this real dependency and Contract boundary:
+
+#+begin_src nickel
+network = aws.simple.networks.test,
+#+end_src
+
+The enclosing configuration applies Aws.Simple, Aws.S3Backend and Tf.Config.
+The network module elaborates resource references; ordinary input is not forced
+to reproduce the Terraform VPC/subnet implementation. See the
+[[file:../11-configuration-languages/11.34-aws-main-source-parity-and-profile-families.org][complete source mapping]] for credentials, backend, keys, network and instance
+fields. The historical AMI and SSH defaults are research inputs, not production
+recommendations. Our two-field Guestbook edit is not a full AWS deployment comparison.
+
+In the [[file:../11-configuration-languages/11.24-guestbook-effective-services.org][real KCL Guestbook study]], a frontend.Server input overrides image, while
+maintained backend/mixins generate workload/Service resources. We must preserve
+that baseline achievement: a plain name/value input can already be enough. The
+Scheme proposal gains no UX advantage by requiring a new prototype for each image
+edit. The proposed extra value is programmable, reusable domain integration and
+native extension when a real requirement needs inherited behavior.
+
+* Issues and Engineering Limitations
+
+Source records retain their own version/status scope. None was reproduced for
+this chapter; references do not constitute newly verified current defects.
+
+** GC-01: phase visibility is owned by the NixOS research unit
+
+Read [[file:../../20-29-ecosystem-research/20-nixos/20.02-official-service-module.org][NX-01/02 and the official source study]] and
+[[file:../../20-29-ecosystem-research/20-nixos/20.03-module-system-design-reflection.org][the independent architectural reflection]]. Their evidence does not establish
+that all recursive configuration is invalid. The construction decision is narrower:
+input/template binding must not select the sources needed to compute that binding.
+A separate evaluation policy is required for intentional deferred relationships.
+
+** GC-02: consumer compatibility is owned by the devenv research unit
+
+Read [[file:../../20-29-ecosystem-research/21-devenv/21.02-composition-and-postgres.org][DV-01/02 and the service source study]] and
+[[file:../../20-29-ecosystem-research/21-devenv/21.03-maintainer-and-user-interface-reflection.org][the independent maintainer/user reflection]]. The construction consequence is
+that accepted fields and a generated port match cannot establish live connectivity.
+Final domain admission, resource correspondence and runtime readiness stay separate.
+
+** GC-03: recursive merge is a semantic choice, not a missing operator
+
+Reference: [[https://github.com/hashicorp/terraform/issues/31815][Terraform 31815]], reported 2022-09-19 against 1.2.9. Marks:
+CLOSED-ENHANCEMENT; MAINTAINER-EXPLAINED; NOT-REPRODUCED. The May 2024 explanation
+points to differing intended deep-merge semantics. The constructor therefore uses
+explicit function policies on Contracts. It must not silently append every list
+or treat all null values as delete/default/placeholders.
+
+** GC-04: organization convenience can create overly broad dependencies
+
+Reference: [[https://sanderknape.com/2024/11/terraform-data-source-read-during-apply-messages-fix/][Sander Knape's 2024-11-09 worked AWS article]]. Marks:
+PRACTITIONER-ARTICLE; NOT-REPRODUCED; exact runtime lock not established here.
+The article describes how a broad VPC module dependency can defer AMI reads and
+amplify a plan. Our input/Contract dependency must not imply waiting for all effects
+in a module. Removing a real dependency because it probably finishes first is not
+our correctness policy either.
+
+** GC-05: replacement does not cover every exclusion requirement
+
+Reference: [[https://flox.dev/docs/man/manifest.toml][Flox manifest merge semantics]], observed in the earlier 2026-10-17
+reading. Marks: DOCUMENTED-LIMITATION; NOT-REPRODUCED. Lack of subtraction in that
+documented composition model motivates retained disable/deletion distinctions.
+This constructor does not yet implement a deletion marker. Replacing an input
+list is supported by the design; disabling an owner still belongs to Module selection.
+
+* Reflection: are we rebuilding another options language?
+
+The danger is real. input-combine/input-binding are proposed native Contract
+metadata, not an accepted new public DSL. They are justified only if they remove
+independently maintained field lists and reuse native object/slot semantics.
+The kernel delegates replacement/record merging to native values and .+, and
+uses native .admit for requirements. It does not replace original requirements
+with permissive helper predicates.
+
+If an existing Contract lacks structural metadata, do not guess it by sampling
+values or weaken its checks. An adapter must explicitly associate construction
+information, or the constructor must refuse unsupported construction. Generated
+Schema constraints remain authoritative even if additional native metadata exists.
+Interface discovery should explain policy and defaults from the same publication.
+
+The small Guestbook listing deliberately narrows the model. The next design review
+must decide how sequence deletion, keyed records, optional/default fields,
+recursive Types, overlapping multi-party requirements and provider normalization
+fit without exploding this metadata into a second configuration language.
+
+* Human-Agent review and matched validation
+
+AI assistance can reduce code-production effort, but a larger constructor still
+needs an understandable semantic boundary. Compare an ordinary human/Agent edit
+with a new-Module contribution, not only generated line counts. The user should
+never need construction receipts or placeholder dependency bookkeeping to set a port.
+
+Required matched controls:
+
+1. JSON and Scheme inputs yield equivalent effective values and errors.
+2. Ordinary input and template/bindings yield the same frontend image/ports.
+3. Missing replicas follows upstream 2 -> 3; explicit image and replaced services
+   remain supplied; merged labels follow upstream owner changes.
+4. Unknown key, null outside a declared hole, missing required field, wrong binding
+   Type and unused binding are rejected without silently dropping their sources.
+5. After parent resources are forced, child input produces child evidence/resources;
+   stale parent evidence or an entire parent preview fails the expected-child gate.
+6. Selected-document decode/construct counts, required final admission, unused
+   binding forces and external process starts are measured separately.
+
+No runtime, formal proof or productivity result is established by these listings.
+The research gives a reason to test the design and reasons to reject an overbroad
+implementation. It does not predetermine that Scheme/POO wins every comparison.
+

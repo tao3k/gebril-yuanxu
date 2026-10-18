@@ -11,7 +11,7 @@
                  check-equal?
                  test-suite)
         :core/module-system/schema/interface
-        :core/extension-graph/interface)
+        :core/graph/interface)
 
 (export module-object-native-inheritance-test)
 
@@ -91,11 +91,11 @@
              (resolved-child
               (poo-flow-module-objects-ref resolved 'object/child)))
         (check-equal?
-         (cdr (assoc 'namespace (poo-flow-module-extension-node-slots resolved)))
+         (cdr (assoc 'namespace (poo-flow-graph-root-payload resolved)))
          'updated)
         (check-equal?
          (cdr (assoc 'marker
-                     (poo-flow-module-extension-node-slots resolved-child)))
+                     (poo-flow-graph-root-payload resolved-child)))
          'changed)
-        (check-equal? (poo-flow-module-field-resolution-result-stable? result)
+        (check-equal? (poo-flow-module-field-resolution-result-applied? result)
                       #t)))))

@@ -92,6 +92,26 @@
 
 ;; : (-> JsonObject Alist Pair)
 (def (poo-flow-json-schema-parse-non-ref-object schema context)
+  (let* ((parsed (poo-flow-json-schema-parse-non-ref-base schema context))
+         (choices (poo-flow-contract-object-ref schema "enum" +poo-flow-json-schema-missing+)))
+    (if (eq? choices +poo-flow-json-schema-missing+)
+      parsed
+      (let (items (poo-flow-json-schema-array-value choices))
+        ;; Reuse the existing intersection and enum evaluators. Do not silently
+        ;; store enum as metadata while accepting every value of its base type.
+        ;; Composite/null enum equality needs a separate JSON-semantic adapter.
+        (if (and (pair? items)
+                 (andmap (lambda (item) (or (string? item) (number? item) (boolean? item))) items))
+          (poo-flow-json-schema-result
+            (poo-flow-json-schema-node-record 'all-of
+              (list (car parsed) (poo-flow-json-schema-node-record 'enum items context)) context)
+            (cdr parsed))
+          (poo-flow-json-schema-result (car parsed)
+            (cons (poo-flow-json-schema-diagnostic 'warning 'unsupported-enum
+                    "enum requires a nonempty array of supported scalar values." choices context)
+                  (cdr parsed))))))))
+
+(def (poo-flow-json-schema-parse-non-ref-base schema context)
   (let ((logical (poo-flow-json-schema-parse-logical schema context)))
     (if logical
       logical

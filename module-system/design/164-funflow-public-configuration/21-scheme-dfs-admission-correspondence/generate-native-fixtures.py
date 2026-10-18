@@ -44,10 +44,10 @@ def main(source,destination):
     if rows[-1][0]!='pass':raise ValueError('native run did not pass')
     out=['-- SPDX-FileCopyrightText: 2026 tao3k team and Contributors',
          '-- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later',
-         'import PooFlowProfileAssociationProof.Bridge',
+         'import PooFlowCoreProof.ModuleSystem.Schema.Association.Correspondence',
          '-- Generated only from the actual native transcript. Do not hand-edit observations.',
          '-- Transcript SHA-256: '+hashlib.sha256(raw.encode()).hexdigest(),
-         'namespace PooFlowProfileAssociationProof.NativeFixtures',
+         'namespace PooFlowCoreProof.ModuleSystem.Schema.Association.NativeFixtures',
          'open Projection',
          'def insertID (value : Nat) : List Nat → List Nat\n  | [] => [value]\n  | head :: tail => if value ≤ head then value :: head :: tail else head :: insertID value tail',
          'def canonical : List Nat → List Nat\n  | [] => []\n  | head :: tail => insertID head (canonical tail)']
@@ -63,9 +63,9 @@ def main(source,destination):
             out.append(graph(name,edges))
             anchor_text='['+', '.join('⟨'+natural(a)+', '+natural(c)+', 1, 1⟩' for a,c in anchors)+']'
             out.append('def roots'+natural(n)+' : List Anchor := '+anchor_text)
-            out.append('#guard (match DFS.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
+            out.append('#guard (match Traversal.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
                 '  | .error _ => false\n'
-                '  | .ok done => canonical ((DFS.dfsAssociations done roots'+natural(n)+').map Anchor.contract) == canonical '+numbers(found)+')')
+                '  | .ok done => canonical ((Traversal.dfsAssociations done roots'+natural(n)+').map Anchor.contract) == canonical '+numbers(found)+')')
             out.append('#guard finalValueGate (fun _ => '+numbers(expected)+') '
                 '⟨'+natural(root)+', 0, 1, 1, 1⟩ '+numbers(actual)+' == '+boolean(receipt[10]))
             intern(receipt);case_count+=1
@@ -94,7 +94,7 @@ def main(source,destination):
         elif tag=='cycle':
             _,root,edges=row;name='cycleGraph'+str(cycle_count)
             out.append(graph(name,edges))
-            out.append('#guard (match DFS.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
+            out.append('#guard (match Traversal.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
                 '  | .error (.cycle node) => node == '+natural(root)+' | _ => false)')
             cycle_count+=1
         elif tag!='pass':raise ValueError('unknown record '+str(tag))
@@ -117,9 +117,9 @@ def main(source,destination):
         lookup='boundaryReceipts'+str(i)
         out.append('def '+lookup+' : Nat → Receipt\n'+''.join('  | '+natural(key)+' => evidence'+str(row)+'\n' for key,row in mapping)+
             '  | _ => { typed := false, contract := 0, candidate := 0, context := 0, classificationType := 0, classificationCandidate := 0, classificationContext := 0, classified := false, obligations := [], accepted := false }')
-        out.append('#guard (match DFS.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
+        out.append('#guard (match Traversal.visit '+name+' '+natural(len(edges)+2)+' '+natural(root)+' [] [] with\n'
             '  | .error _ => false\n'
-            '  | .ok done => match Bridge.checkedBoundary done boundaryRoots'+str(i)+' '+numbers(rhs)+' '+numbers(retained)+' '+natural(root)+' '+natural(context)+' '+lookup+' with\n'
+            '  | .ok done => match Correspondence.checkedBoundary done boundaryRoots'+str(i)+' '+numbers(rhs)+' '+numbers(retained)+' '+natural(root)+' '+natural(context)+' '+lookup+' with\n'
             '    | .ok _ => true | .error _ => false) == '+boolean(accepted))
     checked=[]
     for item in out:
@@ -128,7 +128,7 @@ def main(source,destination):
             expression=item[len('#guard '):]
             checked.append('example : ('+expression+') = true := by decide')
     out=checked
-    out.append('end PooFlowProfileAssociationProof.NativeFixtures')
+    out.append('end PooFlowCoreProof.ModuleSystem.Schema.Association.NativeFixtures')
     Path(destination).write_text('\n\n'.join(out)+'\n')
     print('Generated',case_count,'native graph cases,',len(evidence),'real Core receipts,',gate_count,'RHS gates,',cycle_count,'cycle control;',sum(x.count('#guard') for x in out),'Lean guards.')
 

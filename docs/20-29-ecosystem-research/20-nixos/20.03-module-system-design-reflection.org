@@ -1,0 +1,71 @@
+#+title: 20.03 NixOS Module System: What Our Architecture Must Account For
+#+language: en
+#+property: DOCUMENT_ID 20.03
+#+property: STATUS analysis-of-existing-source-study-no-new-reproduction
+
+* Question and evidence owner
+
+Can we retain small value-oriented configuration while making phase visibility,
+definition provenance and reusable interfaces easier to understand? This is a
+module-system question, not a contest between Nix and Scheme syntax.
+
+[[file:20.02-official-service-module.org][The official PostgreSQL/lib.modules study]] owns the inspected source,
+release-branch limitations and NX-01/02 records. The follow-up now provides [[file:20.04-discovery-and-dependency-injection.org][discovery/injection]],
+[[file:20.05-contributions-types-and-merge.org][contribution semantics]], [[file:20.06-laziness-admission-and-cache.org][laziness/cache analysis]],
+[[file:20.07-issues-and-evidence.org][refreshed issue records]] and [[file:20.08-real-service-composition-and-design-decisions.org][a real integration case]]. These add
+source-backed analysis, not runtime results.
+
+* Decompose the mechanism before proposing a replacement
+
+| Mechanism | Source-study observation | Consequence for our design |
+|-----------+--------------------------+----------------------------|
+| Catalogue | module-list.nix enumerates available implementations | Availability, selection, forcing and building need separate cost counters |
+| Definition collection | lib.modules collects contributions and locations | Native slot lookup alone cannot explain every contributor or discarded definition |
+| Option evaluation | Declarations supply types and merge semantics | Contract predicates alone are insufficient for merge policy, documentation and migrations |
+| Argument phases | specialArgs and merged _module.args have different visibility | Source selection must not require an effective value produced by the graph being selected |
+| Maintained consumer | PostgreSQL module derives settings and service contributions | Validate generated consumers, not only the user-facing field shape |
+
+* Guestbook counterexample: a short interface can conceal the wrong graph
+
+Consider a user setting frontend.Service.port to 8080. A lexical binding to the
+Kubernetes projection interface should make that interface available; it should
+not make source discovery depend on a generated Service, nor impose a runtime
+barrier on every resource from the provider. Graph-selection inputs, configuration
+reads and effect dependencies have different authorities.
+
+Rejecting all recursion would avoid some loader failures but lose useful deferred
+configuration relationships. Accepting all recursive object reads would leave
+termination unspecified. The design candidate is an acyclic source-linking graph
+plus separately governed domain evaluation. This is deliberately narrower than
+claiming to replace the Nix option fixed point.
+
+* Issues and Engineering Limitations
+
+NX-01 and NX-02 remain owned by the [[file:20.02-official-service-module.org][source study]] and [[file:20.01-index.org][issue record]]. The
+recursion report is not locally reproduced. The relocatability concern is a
+library design warning, not an established defect. Neither supports saying NixOS
+has no type system or that a POO object automatically supplies the whole module
+library.
+
+* Reflection, decision candidates and falsifiers
+
+1. Retain discovery, contribution locations and migration ownership. Falsifier:
+   the proposed field view cannot identify which declaration/default produced a
+   value after two independently maintained Profiles contribute it.
+2. Prefer bounded lexical interface binding over public global args. Falsifier:
+   moving Guestbook to another mount requires rewriting its source references.
+3. Separate source cycles from deferred value demand. Falsifier: an admissible
+   relationship is rejected merely because two services reference each other,
+   or a source-selection cycle survives until process execution.
+4. Define conflicting contribution semantics explicitly. Prototype precedence
+   supplies an order; it does not establish that silently winning is appropriate
+   for incompatible security or ownership requirements.
+
+* Conclusion and Onwards
+
+The potential improvement is inspectable phase and contribution boundaries with
+small ordinary inputs. The cost is maintaining semantics that lib.modules already
+provides. Pin the source revision, reproduce NX-01 and compare one relocated
+module and one conflicting definition before claiming a UX or performance gain.
+These are validation gates, not implemented guarantees.
+

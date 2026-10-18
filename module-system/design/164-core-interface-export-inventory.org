@@ -55,145 +55,143 @@ Source: [[file:../../contribution/verification.ss][core/contribution/verificatio
 | =poo-flow-verification-admission= | R | Host-trusted verification/validity callback, issuance or revocation. |
 | =poo-flow-verification-admission-valid?= | R | Host-trusted verification/validity callback, issuance or revocation. |
 
-* core/extension-graph/interface.ss
+* core/graph/interface.ss
 
-Source: [[file:../../extension-graph/interface.ss][core/extension-graph/interface.ss]].
-
-| Existing export | Surface | Placement reason |
-|-----------------+---------+------------------|
-| =poo-flow-module-extension-node-kind= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-operation-kind= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-contribution-kind= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result-kind= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node?= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-identity= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-slots= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-children= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-child-ref= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-slot-override= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-slot-append= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-slot-prepend= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-slot-remove= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-extend= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-remove= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-contribution= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-contribution?= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-contribution-target= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-contribution-operations= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-apply-contribution= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-apply-contributions= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-resolve= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result?= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result-root= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result-iterations= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-result-stable?= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-| =poo-flow-module-extension-node-snapshot= | E | Explicit topology/contribution resolver; never ordinary root patch syntax. |
-
-* core/extension-graph/support/apply.ss
-
-Source: [[file:../../extension-graph/support/apply.ss][core/extension-graph/support/apply.ss]].
+Source: [[file:../../graph/interface.ss][core/graph/interface.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-extension-apply-operations= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-local-operations?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-reverse-onto= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-flush-coalesced= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-coalesce-local-contributions= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-apply-contribution= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-apply-contributions/coalesced= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-apply-contributions= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-snapshot= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-resolve= | I | Support representation or algorithm; no default import. |
+| =poo-flow-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
-* core/extension-graph/support/data.ss
+* core/graph/rooted.ss
 
-Source: [[file:../../extension-graph/support/data.ss][core/extension-graph/support/data.ss]].
-
-| Existing export | Surface | Placement reason |
-|-----------------+---------+------------------|
-| =poo-flow-module-extension-node-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-contribution-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-kind?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-slots= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-children= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-action= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-slot= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-value= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-target= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-contribution= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-contribution?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-contribution-target= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-contribution-operations= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result-root= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result-iterations= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-result-stable?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-member?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-value-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-append-distinct= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-append-distinct/indexed= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-remove-elements= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-list-value= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-entry-key= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-entry-value= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-entry= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-alist-set= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-alist-ref/default= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-replace-node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-child-ref= | I | Support representation or algorithm; no default import. |
-
-* core/extension-graph/support/node-operations.ss
-
-Source: [[file:../../extension-graph/support/node-operations.ss][core/extension-graph/support/node-operations.ss]].
+Source: [[file:../../graph/rooted.ss][core/graph/rooted.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-extension-slots-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-children-merge-one= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-children-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-children-remove= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-apply-slot-list-op= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-flush-node-extends= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-flush-slot-overrides= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-flush-pending= | I | Support representation or algorithm; no default import. |
+| =poo-flow-graph-rooted= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-id= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-payload= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-children= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-ref= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-replace= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-transform= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-root-snapshot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
-* core/extension-graph/support/operation.ss
+* core/graph/apply.ss
 
-Source: [[file:../../extension-graph/support/operation.ss][core/extension-graph/support/operation.ss]].
+Source: [[file:../../graph/apply.ss][core/graph/apply.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-extension-operation-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-override-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-append-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-prepend-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-remove-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-extend-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-remove-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-override= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-append= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-prepend= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-remove= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-extend= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-remove= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-apply-operation= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-operation-state= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-local-operation?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-node-extend-operation?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-slot-append-operation?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-flush-slot-append= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-extension-coalesce-slot-appends= | I | Support representation or algorithm; no default import. |
+| =poo-flow-graph-apply-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-local-operations?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-reverse-onto= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-flush-coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-coalesce-local-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-contributions/coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+
+* core/graph/contribution.ss
+
+Source: [[file:../../graph/contribution.ss][core/graph/contribution.ss]].
+
+| Existing export | Surface | Placement reason |
+|-----------------+---------+------------------|
+| =poo-flow-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-kind?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-action= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-slot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-node= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-member?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-value-index= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-append-distinct= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-append-distinct/indexed= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-remove-elements= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-list-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-entry-key= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-entry-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-entry= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-alist-set= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-alist-ref/default= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+
+* core/graph/payload-operations.ss
+
+Source: [[file:../../graph/payload-operations.ss][core/graph/payload-operations.ss]].
+
+| Existing export | Surface | Placement reason |
+|-----------------+---------+------------------|
+| =poo-flow-graph-slots-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-children-merge-one= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-children-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-children-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-slot-list-op= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-flush-node-extends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-flush-slot-overrides= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-flush-pending= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+
+* core/graph/operation.ss
+
+Source: [[file:../../graph/operation.ss][core/graph/operation.ss]].
+
+| Existing export | Surface | Placement reason |
+|-----------------+---------+------------------|
+| =poo-flow-graph-operation-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-override-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-append-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-prepend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-extend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-apply-operation= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-operation-state= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-local-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-node-extend-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-slot-append-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-flush-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =poo-flow-graph-coalesce-slot-appends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/module-system/catalog/objects.ss
 
@@ -471,8 +469,8 @@ Source: [[file:../schema/interface.ss][core/module-system/schema/interface.ss]].
 | =poo-flow-module-field-resolution-result-extension-result= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =poo-flow-module-field-resolution-result-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =poo-flow-module-field-resolution-result-root= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-iterations= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-stable?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =poo-flow-module-field-resolution-result-changed-passes= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =poo-flow-module-field-resolution-result-applied?= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =poo-flow-module-object= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =poo-flow-module-object?= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =poo-flow-module-object-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
@@ -623,8 +621,8 @@ Source: [[file:../schema/support/field-resolution.ss][core/module-system/schema/
 | =poo-flow-module-field-resolution-result-extension-result= | I | Support representation or algorithm; no default import. |
 | =poo-flow-module-field-resolution-result-contributions= | I | Support representation or algorithm; no default import. |
 | =poo-flow-module-field-resolution-result-root= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-iterations= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-stable?= | I | Support representation or algorithm; no default import. |
+| =poo-flow-module-field-resolution-result-changed-passes= | I | Support representation or algorithm; no default import. |
+| =poo-flow-module-field-resolution-result-applied?= | I | Support representation or algorithm; no default import. |
 | =poo-flow-module-config-fast-slot-merge/in-order= | I | Support representation or algorithm; no default import. |
 | =poo-flow-module-config-slot-key-hash-ref= | I | Support representation or algorithm; no default import. |
 | =poo-flow-module-config-fast-slot-merge/sparse= | I | Support representation or algorithm; no default import. |

@@ -1,0 +1,31 @@
+#+title: Maintained Core Scenarios
+#+language: en
+
+| Scenario | User change | Explicit effect |
+|----------+-------------+-----------------|
+| [[file:null/README.org][Null local hello-world]] | message | Local provisioner, then destroy |
+| [[file:aws-validation/README.org][AWS configuration validation]] | instance_type | init and validate only |
+| [[file:aws/README.org][AWS Profile contribution]] | instance_type | Pure defaults and contextual publication; no deployment |
+
+[[file:init.ss][init.ss]] selects the two executable examples with the existing module reader.
+The selection root owns init; individual module directories own interface and
+role sources. Package realization supplies their provider-directory config.
+Selection is not execution. The existing tests manually bind an engine at the platform boundary, then let users inherit the maintained Scenario and change values.
+
+[[file:../modules/opentofu/execution.ss][OpenTofu's shared Funflow Job]] owns wire generation and Ops orchestration.
+It is available as prototypes.execution and execution on the OpenTofu scope.
+The focused native gate is just test-opentofu-admission-execution from Core;
+it supplies real pinned provider packages and consumes these maintained sources.
+The existing provider fixture targets aarch64-darwin; that local qualification
+must not be reported as cross-platform or cloud deployment acceptance.
+
+* Package binding is not complete
+
+[[file:../docs/10-19-design/12-contracts-types/12.22-selected-packages-and-scenario-binding.org][The selected-package audit]] is the current architecture reading entry. The
+examples execute, but empty requirements and manually injected paths do not yet
+provide the maintained package-to-Scenario interface demonstrated by devenv/NixOS.
+The target reuses Graph, SelectedPackages., publication and Ops. It adds no user
+wrapper or Loader, and does not make field access an implicit package build.
+
+Both executable examples expose .run workspace. Validation is a DAG node;
+Null cleanup is an after-start finalizer interpreted through Funflow and Ops.

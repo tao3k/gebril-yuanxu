@@ -1,0 +1,109 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.33 Config Languages 32: AWS Modular Configuration After Source Review
+#+property: DOCUMENT_ID 11.33
+#+date: [2026-10-16]
+#+filetags: :config-language:aws:nickel:contracts:ux:design:
+#+property: STATUS converged-design-source-no-runtime-no-loader
+
+* Design question, not syntax translation
+
+Why use Scheme/POO if the result only transliterates a Nickel library? The purpose
+is one extensible native configuration model connected to the existing Module
+System, reusable Profiles and selected Scenario relationships. Ordinary user
+values must stay simple. Native inheritance/functions handle intentional reuse;
+Core owns shared publication/admission/source policy. Copying external merge
+syntax or moving a private framework into every AWS case does not meet that goal.
+
+[[https://www.tweag.io/blog/2024-06-20-nickel-modules/][Tweag's module article]] motivates composing Contract contributions with config
+and making local dependencies explicit. It is a starting point, not our Module
+architecture or a claim that native POO already preserves every policy.
+The [[file:11.32-modular-configurations-core-principle.org][core principle]] remains applicable.
+
+* Current reviewable source: fixed Module roles
+
+Use config.ss (singular) for the configuration role, regardless of how many
+Profiles/Scenarios it defines. Upstream =machine Profiles= (retired design source) and
+=network Profiles= (retired design source) hold grouped reusable values. =AWSDevelopment= (retired design source) and
+=AWSBuild= (retired design source) live in scenarios/ as shared configuration-role fragments. [[file:../../../scenarios/aws/interface.ss][AWS interface.ss]] publishes types, those named values
+and project once. Its physical owner remains modules/aws, without a cloud category.
+
+The managed consumer has [[file:scenarios/modular-configuration/contributions/aws-project/types.ss][types.ss]] for the canonical upstream Contract binding,
+[[file:scenarios/modular-configuration/contributions/aws-project/config.ss][config.ss]] for a single instance-type assignment, and [[file:scenarios/modular-configuration/contributions/aws-project/interface.ss][interface.ss]] for the one
+AWS dependency and public scope. No separate init.ss/main.ss lifecycle is required;
+those source files have been removed. types.Config for this consumer is the domain
+Scenario Contract, whereas the capability's own config is projection options.
+
+See the [[file:11.69-aws-case-index.org][source guide]] for the complete role/publication/native-versus-pending boundary.
+The [[file:11.68-audit.org][audit]] retains the reasons the original 19-file scheme was rejected. Named
+namespace publication is not a second ProfilePublication layer or Module ancestry.
+The =controls= (retired design source) remain separate from ordinary consumer declarations.
+
+* Domain fidelity and deliberate differences
+
+The user-designated source is
+[[file:/Users/guangtao/ghq/github.com/hardenedlinux/omnibus-ncl/aws/main.ncl][hardenedlinux/omnibus-ncl/aws/main.ncl]], inspected with its EC2/VPC implementations
+at c5d37eb51961fd7bd32f775843044ca7f8191715. The Scheme design retains AMI, instance
+type, region/role/state, key references, VPC/subnet/gateway/routing, security group
+and instance public-IP outputs. It is no longer the two-field resource fixture.
+
+A network-ref names the selected Scenario occurrence; final projection resolves
+that name. This permits Profile derivation without whole-object eq? and avoids
+capturing an already materialized parent subnet. The updated baseline restores
+the real CIDR prefix/length input, availability-zone query, both default routes,
+external SSH key data, source resource names and provider list/default structure.
+The [[file:11.34-aws-main-source-parity-and-profile-families.org][complete source mapping and Profile family design]] records values, references
+and deliberate representation differences. It does not establish provider validity
+or live AWS resources.
+
+* Admission and shared ownership
+
+[[file:../../../scenarios/aws/types.ss][Native Contracts]] define field requirements and domain identities;
+[[file:../../../scenarios/aws/func.ss][named functions]] perform selected-child admission, reference checks and resource
+projection. Unknown fields derive from responsibilities, without a second field
+list. Ordinary .admit handles this local domain check; no identical multi-dispatch
+wrappers are added to make the example look more abstract.
+
+Core publication must preserve descriptor/prototype/source association across
+supported derivations and collect every mandatory requirement for final-candidate
+admission. The shared MOP construction design, not an AWS collector, owns the
+remaining .+ RHS/.cc gap. Genuine independent provider/domain behavior may use
+existing .defgeneric/.defmethod and deferred method packages. That is separate
+from universal policy checking and is not required for identical forwarding.
+
+A local project call is not complete policy/provider admission. The result is
+always projected-unadmitted. A qualified external output Schema can reuse the
+existing JSON Schema Contract bridge, but no complete Terraform asset/conversion
+coverage is claimed here. Preview never authorizes runtime execution.
+
+* UX reflection and next acceptance questions
+
+- Can a user understand the maintained recipe and change one value without reading
+  a registry or admission implementation? consumer config.ss is the review surface.
+- Can independently maintained Profiles form multiple Scenarios with named links,
+  without module/component inventories or publication wrappers? Verify selection
+  and association before claiming that automatic contribution path works.
+- Can field discovery/errors come from the same Contract and actual source spans?
+  Native responsibility facts are available; full discovery/origin UX is pending.
+- Does a warmed parent affect a child using final type/network/key values? Run the
+  matched controls; no AWS execution result is inferred from prior Pipeline tests.
+- Does extension improve maintenance without weakening required policies? Verify
+  Core's source-preservation and complete-admission controls, not a dummy Provider.
+
+The possible gain is coherent native reuse from simple values to domain extensions.
+The cost is a larger extension surface to govern, and work still needed for source
+association, diagnostics, backend coverage and demand behavior. Nickel's existing
+merge/Contract/editor experience is not surpassed merely by using Scheme syntax.
+
+This revision changes design source/documentation only. Directory linking, direct
+path assignment, source/copy provenance and backend qualification remain pending.
+No runtime source, build graph, Module adapter or Loader was changed.
+
+See [[file:11.35-aws-profile-data-and-scheme-command-publication.org][grouped Profile data and single command publication]] for the revised build boundary.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

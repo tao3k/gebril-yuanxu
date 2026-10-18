@@ -33,9 +33,9 @@ make the product package a dependency of Core.
 
 - [[file:README.org][Current Module directory/publication/selection/build protocols]].
 - [[file:../../feature-system/design/README.org][Feature System extraction and product-dependent units]].
-- [[file:../../design/config-languages/00-index.org][Configuration language design and comparisons]].
-- [[file:../../design/config-languages/17-guestbook-auto-explicit-init-examples.org][Complete auto/explicit init example and negative selection facts]].
-- [[file:../../design/config-languages/20-jsonschema-guestbook-role-examples.org][JsonSchema and Guestbook source-role review]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration language design and comparisons]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.18-guestbook-auto-explicit-init-examples.org][Complete auto/explicit init example and negative selection facts]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.21-jsonschema-guestbook-role-examples.org][JsonSchema and Guestbook source-role review]].
 
 * Preserve evidence without manufacturing new acceptance
 

@@ -7,7 +7,8 @@
 ;;; Invariant: this owner has no receipt structs and no public validation API;
 ;;; it only normalizes candidate access, paths, shape checks, and regex rows.
 
-(import (only-in :clan/poo/object
+(import (only-in "./json-schema-constraints.ss" poo-flow-json-schema-unique-items?)
+        (only-in :clan/poo/object
                  .all-slots
                  .ref
                  .slot?
@@ -209,6 +210,10 @@
 ;; : (-> PooFlowJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
 (def (poo-flow-json-schema-array-node-shape-valid? node value)
   (and (poo-flow-json-schema-schema-guided-array? value)
+       (or (not (poo-flow-contract-object-ref
+                 (poo-flow-json-schema-validation-node-constraints node)
+                 'uniqueItems #f))
+           (poo-flow-json-schema-unique-items? value))
        (let (constraints
              (poo-flow-json-schema-validation-node-constraints node))
          (if (null? constraints)

@@ -1,0 +1,1 @@
+(package: core/scenarios prelude: :core/module-system/source/module-prelude)

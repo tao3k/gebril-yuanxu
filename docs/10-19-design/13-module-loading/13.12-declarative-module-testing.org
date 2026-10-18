@@ -1,0 +1,747 @@
+#+title: 13.12 Declarative Module Testing and Benchmark Projection
+#+language: en
+
+Named root directory windows now export =init.Modules= and =init.Scenarios=
+through the same namespace accessor, selected Graph and test projection. The
+=init.modules= examples below describe single-directory declarations. See
+[[file:13.13-root-directory-windows.org][root-window syntax, hygiene and migration]] for the maintained Core root;
+it no longer has a separate =scenarios/init.ss=.
+#+date: [2026-10-17]
+#+property: STATUS atomic-projection-implemented
+
+* Implemented atomic slice
+
+=poo-flow!= now exports the lazy module namespace =init.modules=, the executable
+POO value =init.tests=, =init.test-spec= and
+=init.test-current!= alongside
+the unchanged build exports. Both projections share one lazily acquired
+selection object and its cached selected Graph; testing does not request the
+build Graph, compile source, link module export scopes, or execute test bodies.
+Importing init alone does not prepare either projection.
+
+The admitted SourceRef supplies each owner's module root. Its optional flat
+=tests/= directory contains native =*-test.ss= harness inputs; adjacent =.ss=
+helpers are observed but not passed to the harness. Paths are ordered by the
+existing module dependency order, then filename. No repeated owner/path catalog
+is required in =interface.ss=. The two initial real suites live at
+=modules/json-schema/tests/atomic-test.ss= and
+=modules/funflow/tests/atomic-test.ss=.
+
+#+begin_src scheme
+;; init.ss remains the single selection declaration.
+(poo-flow! mode: explicit source: "./modules"
+  (json-schema) (funflow) (ops @ "./ops"))
+
+;; Ordinary file lists, usable by the existing std/test harness.
+(init.test-spec)                 ; selected closure, where suites exist
+(init.test-spec '(json-schema))  ; bounded subset of that same Graph
+(init.test-spec '(funflow))
+(init.test-spec '())             ; no suites
+#+end_src
+
+Unknown, disabled or duplicate requested owners are rejected. An owner filter
+does not activate another module or select a second dependency Graph. Module
+and Feature requirements continue through the existing resolver. Optional
+Feature-specific suites and test-only dependency expansion are not implemented
+by this slice.
+
+The projection snapshots directory presence, entries and top-level Scheme
+bytes, including helpers. Guards also recheck the selected source generation.
+Adding/removing a directory or suite, editing observed source, or changing init
+refuses the old projection. Symlink test directories/files are refused through
+the existing regular-source checks. The projection does not claim to fingerprint
+arbitrary external fixture data or recursively imported test-only helpers.
+
+Execution uses the testing specialization of the maintained Ops Script and the
+original native harness:
+
+#+begin_src scheme
+;; Framework-owned execution object; no caller-defined Atomic prototype.
+(def receipt (.call init.tests .run))
+;; The same guarded owner projection through its module path.
+(.call (.get init.modules json-schema tests) .run)
+#+end_src
+
+The source supplies its owning repository as the default working directory.
+Execution-specific overrides remain ordinary slots of =tests.execution=.
+The testing framework owns completion admission and the pre/post source guard;
+module authors do not repeat marker parsing or boundary calls. Process exit
+zero alone is insufficient. A post-check refuses qualification; it cannot undo
+process effects. No runner or generated dispatch script is introduced.
+
+* One testing execution boundary
+
+=:core/observability/testing-script= provides =TestingScript.=, an ordinary
+prototype inheriting =ProcessScript.=. Its only process implementation is the
+existing Ops =run-script= calling the original =gxtest=. It does not enumerate
+cases, interpret assertions, schedule tests or replace =std/test=.
+
+Init binds =spec= and =admit-current= on the same inert POO source, then
+associates a lazy =execution= slot producing the existing =TestingScript.=.
+The caller
+only selects suites and invokes =.run=. The existing fixture
+boundary brackets the operation: validate explicit nonempty inputs; check the
+guard; execute Ops; admit the receipt; recheck the guard before returning.
+The post-check also runs if Ops or receipt admission raises. If both execution
+and post-check fail, the existing fixture mechanism retains both exceptions.
+An empty spec is rejected before process preparation, because =gxtest= with
+no files means implicit current-directory discovery.
+
+The source is an existing projection-shaped POO value, not an Ops object or
+another Graph. Its lazy slots share init's existing selection and projection
+cache:
+
+#+begin_src scheme
+(.o source-root: (path-directory (path-expand source))
+    selected-graph: (.get (selected!) selected-graph)
+    spec: (test-spec)
+    admit-current: test-current!
+    .select: test-source)
+#+end_src
+
+These closures are installed by the init factory, not by each caller.
+The factory associates execution through ordinary POO composition:
+
+#+begin_src scheme
+(def (executable-tests source-value)
+  (.+ source-value
+      (.o (:: tests) source: source-value
+          execution: (module-test-execution source-value)
+          .run: (lambda () (.call (.get tests execution) .run))
+          .select: test-source)))
+#+end_src
+
+Both the default init source and each cached owner projection use this same
+association. There is no new Script prototype or execution implementation.
+=TestingScript.= obtains both files and guard from =source= and never consults
+independently overridable Script =spec= or =admit-current= slots. Raw file lists
+and source objects missing a guard are rejected. There is no fallback that
+silently disables currentness. The existing =init.test-spec= still returns an
+ordinary list for inspection and standard-library consumers; it is not the
+source capability used by =TestingScript.=.
+
+Bounded suite selection uses the native source method and returns an already
+cached projection with its associated guard:
+
+#+begin_src scheme
+;; Selection returns the cached executable object, including its source guard.
+(def SchemaTests (.call init.tests .select '(json-schema)))
+(.call SchemaTests .run)
+#+end_src
+
+This filters suites inside the selected Graph; it does not activate modules.
+The selected source retains the same init-owned root and automatic guard.
+Importing init or obtaining =init.tests= does not resolve the Graph or enumerate
+test directories. First source-field demand does. The previous static import of
+the testing execution prototype has been removed. Explicit execution uses the
+native Gerbil expander's import in a private top context to obtain the existing
+factory. The factory is delayed; each test object lazily caches its associated
+Script, not a prior execution result. Reading =tests.execution= explicitly also
+demands that library. There is no implementation of a Core runtime Loader here.
+
+* Init export inventory and ownership
+
+The short =poo-flow!= declaration exports these exact bindings. Dotted names
+are Scheme identifiers, not evidence that a separate =init= object tree exists.
+
+| Export | Role | Demand boundary |
+|--------+------+-----------------|
+| =poo-flow-module-init= | Declarative selection intent | Constructed at import |
+| =init.build-spec= | Function accepting retained non-module specs | Resolves selection and prepares build projection |
+| =init.build-current!= | Build-input validity check | Requires prepared build projection |
+| =init.modules= | Read-only computed identifier returning the actual module namespace | First value/reflection demand prepares source metadata; leaf slots stay lazy |
+| =init.tests= | Framework-owned executable test object | Import is inert; =spec= discovers tests, =.run= executes |
+| =init.test-spec= | Function returning ordinary file paths, optionally filtered by owners | Discovers suites in the existing selected Graph |
+| =init.test-current!= | Checks acquired test projections and selected inputs | Requires acquired selection |
+
+=init.tests= and each =.select= result expose =spec=, =source-root=,
+=selected-graph=, =admit-current=, =execution= and =.run=.
+Their =source= slot retains the guarded source object.
+Selection preserves that object association and the same Graph identity.
+An advanced execution-policy override refines the existing =execution= object;
+ordinary users do not import =TestingScript.=.
+
+There is no =init.ops= or =init.modules.<name>.tests.<case>= export in this
+slice. Native cases remain inside =std/test= suites. Current discovery uses
+=<module>/tests/*-test.ss=; it does not interpret an arbitrary =tests.ss= as
+an object catalog. A future case-level tree needs stable suite identities and
+native harness filtering semantics before it can be advertised. Do not
+duplicate existing module scopes just to provide such a tree.
+
+* One namespace, independent leaf demands
+
+The existing directory =namespace= / qualified =scope-tree= resolver accepts a
+leaf-view function. Init uses it to retain one module object at each existing
+leaf, instead of linking a business scope just to reach test metadata:
+
+#+begin_src scheme
+(def (module-view owner scope!)
+  (.o identity: owner
+      scope: (scope!)
+      tests: (test-source (list owner))))
+
+;; The accessor returns the existing namespace; no second path registry.
+(def (module-namespace) (.get (selected!) modules))
+#+end_src
+
+The existing =poo-flow!= hygienic expansion binds this accessor to a private
+generated name and exports =init.modules= as a computed identifier. Its native
+Gerbil =identifier-rules= expansion calls that accessor on an identifier read.
+Core already uses this pattern for the Build role binding in
+=module-system/source/declaration.ss=; no new public macro spelling is added.
+It is explicitly a read-only syntax binding, not an independently mutable
+variable or another POO proxy. Returned root and leaf
+identity are shared with the existing namespace; owner =tests= is identical to the cached
+=init.tests .select= projection. Namespace branch caches and source observations
+remain owned by the existing resolver. Ordinary scope-only consumers of
+=poo-flow-load-modules= keep their existing resolver behavior; init explicitly
+requests the module-object leaf view. Dependency linking still obtains the
+original admitted scope, not a scope with an injected =tests= field.
+
+Reading module.tests never reads module.scope; only an explicit scope demand
+links the business interface. Tests may import their real implementation modules
+through native Gerbil imports. This is not a claim that test processes execute
+no implementation source. A module outside the selected Graph is not activated
+by a test request. Auto-discovered extra demand roots and test-purpose Graph
+expansion remain separate policies, not silently added by this projection.
+
+** Why fallback was removed, rather than patched locally
+
+The inspected public gerbil-poo implementation routes =fallback-to= through
+=no-applicable-method=. Its =.slot?= reads the effective slot-function table;
+=.all-slots= reads effective declaration names. Its current MOP hooks for C3
+precedence and effective slot computation do not add an enumeration hook.
+Consequently a successful fallback value read does not make the delegate's keys
+appear in either reflection operation. That is ordinary fallback semantics,
+not evidence of a broken inheritance engine.
+
+Init has no local slot overrides requiring fallback priority. Removing this
+unnecessary wrapper is simpler than adding public-library hooks or a Core-local
+reflection implementation. The returned namespace uses original =.all-slots=
+and =.slot?= directly; it has no fallback-handler keys, copied slot catalogue or
+parallel path tree. General fallback reflection remains unchanged in gerbil-poo.
+
+#+begin_src scheme
+(.all-slots init.modules)                   ; module/category names
+(.slot? init.modules 'json-schema)           ; #t when declared
+(.slot? init.modules 'missing)               ; #f, no scope demand
+(.all-slots (.get init.modules json-schema)) ; identity, scope, tests
+#+end_src
+
+Reflection forces source metadata needed to determine names, not the selected
+Graph, business scope, test files or test executor. Branch and leaf values retain
+native caching. The accessor checks currentness on every exported identifier
+read, including repeated reflection after keys have been cached. A separately
+captured object remains a snapshot; its direct reflection is not a live watcher.
+Full field documentation, recursive test catalogs, Feature-specific suites and
+automatic test-purpose Graph expansion are not supplied by namespace reflection.
+
+The reflection revision passed the three focused native Just gates
+=t/module-testing-test.ss=, =t/module-testing-isolation-test.ss= and
+=t/module-directory-test.ss=, serially, with MODULE-OK, HARNESS-OK, final OK and
+natural exit zero. The real-module control checks root and leaf names, known
+and missing membership, cold leaf slots and an absent execution-library probe
+before =.run=. The directory control covers automatic root/category/leaf
+reflection with a publication-read counter remaining empty and a test-slot
+poison remaining unforced. The init binding control checks =only-in=,
+=rename-in=, private-name hygiene and repeated namespace identity. Changing
+the isolated init after names are cached refuses subsequent exported-binding
+reflection; the previously captured raw object remains a snapshot. Existing
+source-change rejection and deliberately failing native-suite cleanup controls
+also pass. No gerbil-poo source or dependency revision was modified.
+
+** Compiled export/import boundary
+
+=t/module-testing-compiled-test.ss= is a separate native qualification gate.
+It reuses the source-only selection fixture and Ops Scripts to compile exactly
+the real =init.ss= and two small cross-module consumers with the original
+=gxc=. One consumer uses =only-in=; the other uses =rename-in= and a deliberately
+shadowing local name. They import the generated init =.ssi=, exercising the
+serialized hygienic binding and its private runtime accessor. A negative
+consumer attempts =set!= and must fail during compilation.
+
+The native =.ssi= / =.o1= artifacts are checked, and the two consumer source
+files are then removed. A fresh original =gxtest= process imports those consumers
+and checks their resolved interfaces and loaded native runtime objects. This
+prevents silently accepting a source re-import as compiled-import evidence.
+The original init source stays in place: the accessor must still qualify its
+real source declaration and selected module inputs.
+
+The child checks namespace/test identity, root and leaf enumeration without
+scope or execution-library evaluation, positive test execution, rejection after
+selected test bytes change, and rejection of both compiled accessors after the
+init source changes. A captured ordinary namespace is still a snapshot.
+The fixture releases generated sources and artifacts after completion/failure.
+This is an export/import ABI control, not a full Core AOT build, executable
+deployment, runtime Loader or performance result. Compiler and test subprocesses
+use the existing heap/timeout policy; no independent runner is introduced.
+
+An initial attempt compiled the three positive targets but failed while
+expanding the verification test's keyword-shaped import prefix. That test input
+was corrected to ordinary =rename-in=; the failed attempt is not recorded as
+compiled-import acceptance.
+The first read-only negative-control assertion compared a successful string
+match's offset to =#t= instead of converting it to a boolean. That test defect
+was corrected without removing the compilation refusal or artifact checks;
+the failed run is not acceptance evidence.
+
+The final focused =just test-file t/module-testing-compiled-test.ss= run passed
+on 2026-10-17 with MODULE-OK, HARNESS-OK, final OK and natural exit zero.
+The child checks resolved =.ssi= contexts and actual loaded =~0.o1= runtime
+objects for init and both consumers, with consumer source files absent. It also
+passes compile-time read-only refusal, cross-consumer namespace/test identity,
+unforced scope/test-execution probes during enumeration, positive =.run=,
+selected-test edit refusal and init edit refusal through both compiled accessors.
+The original source snapshot behavior and failure cleanup remain unchanged.
+Exactly three positive units are compiled; the fourth is an expected compile
+refusal. This is not a local full build, a dependency upgrade or Loader work.
+
+* Research-driven decisions and falsifiers
+
+The [[file:../../20-29-ecosystem-research/20-nixos/20.07-issues-and-evidence.org][NixOS issue register]] owns exact sources and evidence status. We use it to
+derive tests, not to claim those issues have been reproduced or solved here.
+
+| Research observation | Design response | Falsifier / cost |
+|----------------------+-----------------+------------------|
+| NX-01: merged arguments can be demanded before module structure exists | Source selection and test metadata do not read business scope values | Asking for tests forces a scope or requires a value produced by that scope |
+| NX-02: ambient root arguments couple reusable modules to mount paths | Use source-owned qualified owner identities, existing namespaces and bounded bindings | Moving a mount changes provider identity or selects different test files silently |
+| NX-03: a lazy language still has discovery/evaluation costs | Delay execution-library import separately from suite discovery and Graph resolution | Import/build-spec demand executes the testing library; first-run costs are omitted from measurements |
+| NX-04: expected validation may not be forced | Existing Ops test boundary checks currentness before/after execution and admits full native completion | Stale input or a zero-exit harness failure returns an accepted receipt |
+
+We are reusing the namespace, selected Graph, source guards, native =std/test=,
+Ops, fixture brackets and POO fallback. The new responsibility is their declared
+association and demand boundaries. This does not replace NixOS's option merge,
+fixed-point evaluation, service integration or VM test framework. No startup or
+thousand-module performance advantage follows from these controls.
+
+The shared semantics now belong to [[file:../../../standards/module-operations.org][Module Operations]], with project-context
+conventions separately tracked in [[file:../../../standards/project-context.org][Project Context]]. =prj-spec= supplies directory
+conventions; it does not define =.run= or license a second execution protocol.
+
+The static outer qualification gate uses =module-test-file-source= with its
+explicit control-test file. This source adapter snapshots regular file bytes
+using the existing =module-source-read= / =module-source-admit-current!=
+authority and binds the guard automatically, so even that gate supplies no
+handwritten currentness callback. It observes explicit top-level files, not
+their entire transitive import closure. Synthetic sources in the policy unit
+tests remain labeled fixtures for exception and receipt controls.
+
+=admit-testing-result= is the shared pure receipt checker. It requires exit
+status zero, a complete MODULE-OK line for each spec entry, the HARNESS-OK line
+for that exact file list, final OK and no failure/overflow markers. Unrelated
+harness output or a prefixed substring is insufficient. Both captured stdout
+and the existing Ops log option use that same admission. Successful execution
+returns the Ops receipt after the post-check, with no new result protocol.
+
+The default child heap ceiling and duration derive from the existing testing
+Case Profile. Init-owned test objects use that default duration; the outer
+source-isolation qualification Script retains its explicit 90-second limit.
+This is per-process fencing, not aggregate memory scheduling.
+The external Just guard remains necessary for failures before Scheme imports;
+it is not copied into module tests. Module test files still declare only
+fixtures, native suites and assertions.
+
+For the source-bound revision, the three focused gates passed separately with
+MODULE-OK, HARNESS-OK, final OK and exit zero on 2026-10-17. They cover inert
+init sources, shared projection identity, automatically guarded explicit files,
+real JsonSchema/Funflow selection, source-root directory defaults, renamed test
+discovery, sibling non-evaluation and stale-source refusal through =.run=.
+An intermediate combined attempt also observed changed =source/reader.ss=
+input and was refused. Splitting the existing isolation cases avoids keeping
+one live init epoch open across unrelated cold-process qualifications; it does
+not relax source checks, remove negative controls or widen timeouts.
+
+The focused =t/testing-script-test.ss= gate covers synthetic receipt positives
+and negatives, exact completion matching, zero-exit harness errors, nonzero
+status, missing inputs, empty-spec refusal, logged output, pre-check refusal
+before command preparation, post-check execution on process failure, and
+identity-preserving retention of both execution and post-check errors. A
+closure changes context during command preparation to verify post-check refusal
+even when Ops succeeds. Synthetic receipts and this closure are policy fixtures,
+not claims of native-harness or real source currentness; the real module gates
+provide that separate evidence.
+This policy gate passed with native completion markers on 2026-10-17. An early
+combined regression attempt refused changed =configuration/json.ss= tool input
+and reached the unchanged 120-second outer fence; it is a failed/stale run,
+not a passing receipt. That source was not edited by this testing change.
+After confirming that input was stable, a fresh focused
+=t/module-testing-test.ss= run passed with MODULE-OK, HARNESS-OK, final OK and
+natural exit zero, retaining the same timeout and refusal policy. This run
+includes both real init selections, renamed test discovery, sibling
+non-evaluation, fixture cleanup and stale-spec refusal through =TestingScript.=
+itself. The later source-bound revision separates live init/projection checks
+from real source-only isolation checks. =just test-modules= runs
+=t/testing-script-test.ss=, =t/module-testing-test.ss= and
+=t/module-testing-isolation-test.ss= and the compiled boundary gate
+=t/module-testing-compiled-test.ss= serially through the existing Just
+entrypoint, without increasing its heap or timeout allowances.
+
+* Hygienic fixture binding
+
+=:core/observability/testing-fixture= exports =poo-flow-test-fixture=,
+=with-poo-flow-fixture= and their functional implementation. A fixture is an
+ordinary POO object with =.acquire= and =.release= methods. The macro introduces
+only the requested local binding and expands to existing test-case observation
+plus a dynamic-wind resource boundary:
+
+#+begin_src scheme
+(poo-flow-test-fixture "module behavior" (workspace Workspace)
+  (check-equal? (.get (.call Release .run workspace) steps build output)
+                "release"))
+
+;; Expansion, using hygienic library bindings:
+(poo-flow-test-case "module behavior"
+  (call-with-poo-flow-fixture Workspace
+    (lambda (workspace)
+      (check-equal? (.get (.call Release .run workspace) steps build output)
+                    "release"))))
+#+end_src
+
+Acquisition is once per invocation, not suite registration. Cleanup executes
+after normal return or an exception from the body. Acquisition must roll back
+its own partially acquired resources if it raises before returning. If both
+body and cleanup fail, both exceptions are retained in the reported error.
+Fixtures must not use continuation re-entry to revive released resources.
+There is no implicit global fixture, provider loading or shared mutable state.
+The macro cannot impose the pre-import heap fence; existing Just/Ops entrypoints
+retain that responsibility.
+
+* Purpose and existing foundation
+
+Module testing is a Core Module System capability, not a product-specific runner.
+At ecosystem scale, a module owner must be able to qualify one contribution,
+selected Features, Contracts and consumer interactions without importing every
+module or executing every provider. Test selection must retain the same admitted
+source identity and positive/negative Feature decisions as build selection.
+
+The existing foundation is Gerbil =std/test= and =gxtest=,
+=core/observability/testing-case.ss=, its POO testing Profiles and watchdog,
+=Selected Graph=, Ops and Funflow. The existing =poo-flow-test-case/with= macro
+already hygienically wraps a native case with an inherited resource Profile.
+It does not replace assertions, discovery or the standard harness.
+
+Actual current syntax, without a new assertion language:
+
+#+begin_src scheme
+(import :std/test :clan/poo/object
+        :core/observability/testing-case
+        (only-in :core/modules/funflow/objects Job. Task.))
+
+(.def (AtomicBudget @ poo-flow-testing-case-profile-prototype)
+  max-duration-milliseconds: 1000)
+(.def (Upstream @ Job.)
+  tasks: (.o build: (.o (:: @ Task.) command: (list "printf" "build")))
+  selected: (quote (build)))
+(.def (Release @ Upstream)
+  tasks: =>.+ (.o build: =>.+ (.o command: (list "printf" "release"))))
+(.def (Invalid @ Upstream)
+  tasks: =>.+ (.o build: =>.+ (.o command: (list "printf" 1))))
+
+(export module-tests)
+(def module-tests
+  (test-suite "module atomic behavior"
+    (poo-flow-test-case/with AtomicBudget "final receiver preserves user value"
+      (check-equal? (.get Release tasks build command) (list "printf" "release")))
+    (poo-flow-test-case "invalid argv is refused without executing a process"
+      (check-exception (.get Invalid graph) error?))))
+#+end_src
+
+The example uses existing native declarations and contracts. The executed
+Funflow/Null/AWS tests additionally exercise context drift, failed processes and
+finalization.
+
+* Further selection and publication design
+
+The proposed Module publication contribution is an inert testing catalog, with
+separate atomic, integration and benchmark entries. Each entry identifies its
+source, module owner, required test dependencies, effect policy and budget.
+The actual enclosing publication supplies source identity; authors do not repeat
+it in each case. Test-only dependencies must not enter ordinary build/runtime
+selection. A disabled required dependency refuses the selected test with its
+module/Feature path; it is never silently re-enabled.
+
+Implemented and proposed =poo-flow!= exports:
+
+- =init.test-spec=: implemented ordinary native file list; callers may append
+  repository-maintained test files with Scheme's =append=.
+- =init.benchmark-spec=: proposed separate benchmark workloads and policies.
+- A richer discovery value (proposed): lists stable module/suite identities and declared effects
+  without importing case bodies or starting a process.
+
+These are projections of the admitted selection, not another scanner, registry
+or selection resolver. Source roots and validity checks belong to existing source
+preparation. Paths must stay within the publication's admitted source closure.
+Editing a suite, fixture, dependency, contract or macro input invalidates its
+qualification identity. Ordinary init/build evaluation does not run tests.
+
+Atomic means an explicitly bounded owner and fixture, not necessarily zero
+dependencies. A test can use an admitted real dependency or an explicitly typed
+fixture replacement. Results label those choices; a fake provider never qualifies
+real provider integration. Per-case resources are fresh by default, cleanup runs
+on assertion failures, and shared mutable fixtures require an explicit policy.
+A module's positive cases do not replace missing-field, wrong-type, stale-context,
+conflict, disabled-dependency and failure-path controls.
+
+* Macro responsibilities and limits
+
+A stronger declaration macro is justified only where hygiene or phase semantics
+remove real repeated work. Its reviewed surface should bind a fresh fixture and
+module scope, generate stable test identities, guarantee cleanup and emit native
+=test-suite= / =poo-flow-test-case/with= forms. Assertions remain =check-equal?=,
+=check-exception= and other std/test operations. Domain case families can use
+internal =defrules= to generate typed positive/negative matrices instead of
+copying fixtures and lambdas throughout downstream tests.
+
+The implemented fixture spelling and expansion above have focused native tests.
+Compile-time declaration cannot discover arbitrary dynamically generated Scheme
+case names without evaluating them. Static discovery lists declared suite or
+parameter-family IDs; actual generated case IDs are reported by the native
+harness. Macro expansion must not load provider catalogs, run init recursively,
+start Nix, spawn Ops processes or inspect user credentials.
+
+The heap fence must exist before the test module is imported. A case-body macro
+cannot provide that protection by itself. Ops and the existing bounded Just
+entrypoints own process launch; no new shell runner or handwritten gxtest
+replacement is needed. Natural exit zero alone is insufficient: MODULE-OK,
+HARNESS-OK and final OK, with no error markers, remain required.
+
+* Functional and domain qualification
+
+Funflow's atomic gates qualify Category/Arrow composition, pair/fanout semantics,
+Kleisli value-dependent binding, local memoization and exception values.
+Job integration qualifies selected dependency closure, Ops handoff and finalizer
+activation. Null integration actually initializes, validates, applies, reads
+output and destroys a local resource. AWS integration qualifies real Schema and
+configuration validation without credentials, not cloud deployment.
+
+Contracts qualify values and relationships; test execution receipts describe
+observed behavior. Neither substitute for the other. Lean/model results remain
+separately labeled assumptions and properties rather than being treated as
+observed process execution.
+
+* Benchmark policy
+
+A benchmark entry identifies workload, input generation, warmup, repetition,
+resource budget and a semantic control. Separate source import, macro expansion,
+Graph construction, contract admission and steady-state execution costs. Report
+cold and warm runs separately; a cache hit is not proof of currentness.
+
+Use the existing observability sampling and Ops timing. Retain wall time, GC/live
+heap metrics where supported, variance and machine/runtime/source identities.
+A comparison requires equivalent workloads and result checks before a regression
+threshold is meaningful. Do not turn one faster run into a performance claim.
+Timeouts, stale inputs and failed cleanup are failures, not benchmark samples.
+Raw logs remain artifacts, not repository documents.
+
+Worker admission uses discovered available CPUs together with aggregate memory
+and effect budgets. A CPU count is an upper bound on CPU capacity, not permission
+to start that many 1-GiB workers or simultaneous writes to a shared workspace.
+Each chosen worker must fit the combined budget. Process-global heap counters
+cannot be represented as independent per-thread allocations.
+
+* Verification and remaining work
+
+The focused =t/module-testing-test.ss= gate exercises actual Core init exports,
+JsonSchema/Funflow native suites through Ops, owner filtering, fresh workspaces,
+failure cleanup and hygienic name collisions. The real Funflow suite exercises
+Ops and a cached parent Graph with final child task values. JsonSchema exercises
+the actual Schema adapter with valid and misspelled input.
+The real, individually selected init scenarios are owned by the separate
+=t/module-testing-isolation-test.ss= gate; it preserves the original cases and
+source-only fixtures. Run =just test-modules= from Core using its locked
+dependencies. Each file uses the existing heap-fenced =just test-file= entrypoint.
+It also generates the ordinary build spec without compilation, checks that
+test suites are absent from production targets, and reuses the cached test and
+build values in one source epoch. The user-owned =defbuild-script= is unchanged.
+On 2026-10-17 this focused gate exited zero with MODULE-OK, HARNESS-OK and
+final OK, without error markers. The standalone JsonSchema atomic gate also
+passed; the final combined gate checked both real module suites through Ops.
+No full build or runtime Loader qualification was performed.
+
+Temporary directory controls use an explicitly supplied inert publication
+fixture with the real source admission, Graph resolver and test projection.
+An unselected poison publication/test is not invoked. Selecting it rejects;
+editing a selected suite, adding a suite and changing init reject old guards.
+These fixtures do not qualify a domain publication reader across repository
+kernel boundaries. Those source authority checks are preserved.
+
+** Real module selection in fresh processes
+
+The unselected-scope claim is now additionally checked against the real
+JsonSchema and Funflow publications. The two isolated source copies have
+different actual =init.ss= declarations:
+
+#+begin_src scheme
+;; JsonSchema copy
+(import "./module-system/selection/init-syntax.ss")
+(poo-flow! mode: explicit source: "./modules" (json-schema))
+
+;; Separate Funflow copy
+(import "./module-system/selection/init-syntax.ss")
+(poo-flow! mode: explicit source: "./modules"
+  (funflow) (ops @ "./ops"))
+#+end_src
+
+| Init root | Actual selected module order | Native atomic suite | Unselected sibling |
+|-----------+------------------------------+---------------------+--------------------|
+| JsonSchema | =(json-schema)= | =modules/json-schema/tests/atomic-test.ss= | Funflow |
+| Funflow | =(ops funflow)= | =modules/funflow/tests/atomic-test.ss= | JsonSchema |
+
+=t/qualification/module-testing/fixtures.ss= reuses the existing source-build
+fixture, excluding compiled Core artifacts. Source-only dependency fallbacks
+are copied from the existing package resolver into that copy; the child search
+path contains the fixture libraries and fixture source tree, not the original
+Core checkout. The child imports its own init before Core test helpers.
+No production declaration, dependency, Contract or exported value is replaced
+with a fixture publication.
+
+The copied =interface.ss= expressions receive evaluation probes around their
+existing =core.exports= values. A selected scope probe writes a marker and
+returns the original export value. A sibling probe writes a marker and raises.
+The unselected sibling's real atomic test also retains its original source,
+with an additional top-level write-and-raise probe. These are fault-injection
+probes in disposable copies, not production behavior or custom readers.
+
+The outer Ops command starts only the standard native harness for
+=t/qualification/module-testing/selection-test.ss= in the isolated copy.
+That native test imports its own init, obtains a nonempty =init.test-spec=,
+and selects its already-bound testing Ops object:
+
+#+begin_src scheme
+(def selected (.call init.tests .select (list owner)))
+(def result (.call selected .run))
+#+end_src
+
+Neither the parent nor the isolated control test constructs an executable test
+path from a module name or maintains an atomic-suite list. The selected spec
+drives both the command and the per-file MODULE-OK checks. Multiple discovered
+suites are supported without changing this declaration. The one outer control
+test path identifies the qualification gate, not a second module-test manifest.
+As a sensitivity control, fixture preparation renames each selected =*-test.ss=
+to =discovered-*= before importing init, preserving its source and exported
+suites. A hard-coded =atomic-test.ss= command would now fail. Only the directory
+projection knows the executable filenames; the sibling's test retains its
+write-and-raise probe.
+The control test runs through =std/test=; its Ops process invokes the original
+=gxtest=, not a generated dispatcher or replacement runner. Parent and control
+harnesses wait while the selected atomic process executes; the processes are
+sequential, with distinct pre-import heap fences rather than shared heap
+accounting. This extra process boundary is test isolation, not a runtime Loader
+or a startup optimization claim.
+
+The control test also rejects a sibling owner request and checks the real
+selected Graph order. A separate canonical scope view of
+that same init verifies that scope discovery/Graph selection leaves exports
+uncached, then explicitly demands the selected scope. Its marker must appear;
+the sibling scope and test markers must remain absent. This scope view has its
+own cache; the test does not claim it is the init projection's private object.
+
+The children use =TestingScript.=, inheriting the ordinary Ops Script, and =.run= with
+the existing pre-import heap fence. They run serially and retain the existing
+timeout; there is no dispatcher script or new runner. The testing framework
+checks MODULE-OK for every spec entry, HARNESS-OK, final OK and absence of error
+markers. The parent uses the same specialization for the control harness;
+nested failure therefore fails the outer qualification. The selected
+atomic cases execute normally, including JsonSchema's spelling rejection and
+Funflow's final child values with an unforced task branch.
+
+Each child also caches its Script's spec, edits its selected real test source,
+checks that =.run= refuses through the bound currentness guard before starting
+the atomic process, and restores the original bytes under
+=dynamic-wind=, then rechecks currentness. This is content-currentness testing,
+not a claim to detect every historical edit after byte-identical restoration.
+The outer POO fixture removes the entire isolated source/dependency tree, and
+the parent asserts it is absent after each process. The retained failure case
+still verifies two distinct workspaces, a real Ops-created marker, deliberate
+body failure, cleanup and hygienic caller bindings.
+
+On 2026-10-17 the original combined =t/module-testing-test.ss= gate passed with
+the complete native success markers and natural exit zero, including the
+spec-fed Ops command and renamed-suite sensitivity control. The former inert
+publication controls remain lower-level source/invalidity tests; the real
+module cases now support the sibling-scope/test non-evaluation claim.
+The source-bound revision additionally passed the extracted
+=t/module-testing-isolation-test.ss= gate using =source: init.tests=, without
+caller-maintained guard bindings. Its explicit outer file source automatically
+tracks the control file. This remains native test code, not a runner.
+
+The executable-init revision removes the inner =Atomic= declaration entirely:
+the same real-module gate selects an init-owned object and calls =.run=.
+It checks cached executor identity, source-root association, selected suite
+execution, sibling non-evaluation and rejection after a selected file changes.
+The executable-init revision passed the three focused Just gates
+=t/testing-script-test.ss=, =t/module-testing-test.ss= and
+=t/module-testing-isolation-test.ss=, serially, with exit zero and the complete
+MODULE-OK / HARNESS-OK / OK markers. Empty owner selection also rejects =.run=
+before process preparation, rather than falling back to directory discovery.
+
+The module-path revision additionally validates the existing qualified namespace
+with =t/module-directory-test.ss=. Its leaf-view control uses inert publications
+and a labeled test projection probe, not domain-module execution evidence.
+Real JsonSchema/Funflow copies validate direct module-path =.run=, guarded source
+identity, positive and deliberately failing native suites, and resource release.
+The execution-library probe is absent after importing init, producing the real
+build spec and discovering suites; explicit execution makes it present. The
+selected business scope probe stays absent until explicit =scope= demand. This
+proves the runtime non-evaluation boundary in these source-only processes; it
+does not quantify every compiler-context allocation or every shared SDK import.
+The final namespace/deferred-execution revision passed
+=t/module-testing-test.ss=, =t/module-testing-isolation-test.ss=,
+=t/module-directory-test.ss= and =t/testing-script-test.ss= through the existing heap-fenced Just entrypoint,
+serially, with all native completion markers and natural exit zero. The directory
+namespace gate also checks that a scope demand leaves the module's tests slot
+unevaluated. The Script gate retains pre/post guard and paired-failure controls.
+
+One intermediate run added repeated native import-closure traversal and reached
+the unchanged 120-second fence with completion markers but exit 124. That run
+is a failure, not acceptance. The redundant traversal was removed; the same
+real-module gate then completed with all markers and natural exit zero. This
+does not establish a general performance advantage or increase the timeout.
+An earlier concurrent =configuration/slot-origin.ss= revision referenced unbound
+=unique= and failed before module testing; that unrelated file was not edited
+by this work. A private-context =only-in= import experiment also failed and was
+replaced with the primitive native whole-module import, isolated from caller
+bindings. Historical failures are not rewritten as passes.
+
+This does not claim zero filesystem reads: fixture preparation copies source
+files before execution, and infrastructure may import shared kernel libraries.
+The observed boundary is demand selection and non-evaluation of module export
+scopes and test bodies. There is no measured thousand-module startup bound,
+runtime Loader qualification, or full build in this gate.
+
+Rich publication catalogs, test-purpose dependencies, Feature-specific test
+contributions, recursive test-helper fingerprints, benchmark admission and
+aggregate worker scheduling remain future work. This atomic slice launches
+selected suites serially through the native harness and makes no throughput
+or thousand-module startup claim. No runtime Loader is connected.
+
+* Concrete catalog shape for review
+
+This is proposed publication data, not syntax accepted by today's declaration:
+
+#+begin_src scheme
+testing:
+(.o atomic:
+    (.o sources: '("tests/atomic.ss") effects: 'pure)
+    integration:
+    (.o sources: '("tests/integration.ss") effects: 'local-process)
+    benchmarks:
+    (.o sources: '("benchmarks/projection.ss") effects: 'pure))
+#+end_src
+
+The declaration layer should derive the owner, source closure and stable module
+identity from the enclosing admitted publication. Common budgets come from
+maintained POO test Profiles; module overrides refine those Profiles. Catalog
+admission checks source existence/confinement and effect/budget compatibility.
+It must not import tests merely to discover this metadata.
+
+At thousands of modules, select the reachable test dependency closure, including
+only explicitly chosen parameter families. Do not generate the Cartesian product
+of every Profile, Scenario and Feature combination. A seed/budget-bound property
+family can test many values while reporting reproducible failures and shrinking
+controls; it remains distinct from a claim of exhaustive verification.
+
+Cached qualifications include test/macro/fixture source closure, actual contracts,
+Schema, selected Features, runtime and policy identity. A passing artifact must
+still be admitted as current before reuse. External-state/effect tests need an
+explicit freshness policy and cannot be skipped because a pure input hash matches.

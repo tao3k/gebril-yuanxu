@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Core Quint Models
+
+All maintained finite models here are Quint. Use Quint 0.33.0, Apalache 0.62.1
+and Java 21 or newer; the TLC backend checks the complete finite reachable state
+space. Generated backend files remain temporary artifacts. No maintained TLA+
+source or alternate TLA checker entrypoint remains in Core.
+
+Run =just prepare-quint= once from Core to install the locked tool and bootstrap
+the backend before checking. Bootstrap has its own bounded preparation deadline
+and never emits an accepted proof receipt.
+Run =just proofs-quint /private/tmp/core-quint-proof.ss= from Core. The runner
+requires exact Quint version, typechecks every source, verifies two positive
+cases and five matched mutants, and writes a =poo-flow.quint-proof.v1= Scheme
+receipt only after every case passes. Each case has a 45-second total deadline,
+a five-second real-output watchdog and a 1GB backend heap. Negative admission
+requires the named invariant violation and state counts; crashes, syntax failures
+and timeouts fail the gate. The receipt binds model and Graph Scheme source
+hashes, selected predicates, tool versions, state counts, exits and output hashes.
+Logs, receipts and backend traces must not be committed.
+
+| Model | Native correspondence | Scope |
+|-------+-----------------------+-------|
+| GraphOperations | graph/types-core, graph/rooted, graph/operation, graph/apply; t/graph-operations-test | Six bounded path identities; nine ordered operations; terminal application receipt |
+| NativeSemanticQuery | native semantic Query contracts and the independent Lean NativeSemanticQueryModel | Admission, revision preservation, Provider/result binding and absence of action authority |
+
+GraphOperations compares each prefix against independent explicit expected
+fixtures. It covers append/prepend ordering, exact path targeting despite equal
+local names, complete subtree deletion, insertion followed by targeting, override
+and value removal. The five mutants reverse append order, select the wrong path,
+leave an orphan, replay earlier operations, and falsely claim convergence.
+Terminal application stutters explicitly; no deadlock suppression is used.
+
+The model abstracts POO dispatch, batching and payload equality. It does not
+prove native code refinement, arbitrary graph cardinality, cyclic containment,
+resource bounds, source authenticity or runtime execution. Native Scheme tests
+and source identity receipts are independent evidence. Native configuration
+inheritance remains gerbil-poo's responsibility, not this operation model.
+
+The unified Lean project's =GraphOperations= module binds the exact Quint source
+digest and proves ordered-fold composition, live deletion endpoints, distinct
+containment paths, the one-pass receipt bound and a concrete non-fixed-point
+example. =check.py= rejects a stale binding. These are pure laws and an explicit
+counterexample, not a theorem that the Scheme implementation refines Quint.

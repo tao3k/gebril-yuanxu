@@ -1,0 +1,87 @@
+#+title: 22.01 Flox: Independent Environment-Composition Research
+#+language: en
+#+property: DOCUMENT_ID 22.01
+#+date: [2026-10-17]
+#+property: STATUS primary-document-review-no-flox-execution
+
+* Scope and actual public interface
+
+Study environment composition, locking and activation as module-system inputs.
+Do not assume the public interface is flox.nix: the current official documentation
+describes a TOML manifest. [[https://flox.dev/docs/concepts/environments][Environment concepts]] places manifest.toml and its lock
+in the environment. This review does not inspect the resolver implementation or
+establish that Flox implements NixOS module semantics.
+
+* Real composition contract
+
+Source: [[https://flox.dev/docs/man/manifest.toml][official manifest reference]], accessed 2026-10-17; documentation may evolve.
+An excerpt preserves the full include object shape:
+
+#+begin_src toml
+[include]
+environments = [
+  { dir = "../path/to/env" },
+  { dir = "../path/to/other/env", name = "myenv" }
+]
+#+end_src
+
+Later includes take precedence and the composing manifest wins. Merge semantics
+vary by section: service/package descriptors replace as units, while hooks append.
+The documented model cannot remove a lower-priority entry. The merged view is
+inspectable with flox list --config. Included updates are pulled deliberately.
+
+This provides a concrete contrast to one universal deep merge. Field-specific
+semantics can simplify expectations but replacement can discard a dependency's
+carefully maintained descriptor. POO's richer extension is useful only if users
+can inspect the final value and understand what was retained.
+
+* Issues and Engineering Limitations
+
+** FX-01: subtraction is a public composition limitation
+
+- Reference: Merge semantics in the manifest reference.
+- Marks: DOCUMENTED-LIMITATION; NOT-REPRODUCED; NOT-A-GITHUB-DEFECT-CLAIM.
+- Version: current online manual, no CLI version pinned; observed 2026-10-17.
+- Layer: environment composition, distinct from Nix evaluator expressiveness.
+
+Replacement and addition do not meet every user's need to exclude an inherited
+entry. For our design, disabling a selected Module/Feature should preserve the
+decision and reject required dependants, rather than treating missing and disabled
+as indistinguishable. This is an architecture requirement, not a Flox bug fix.
+
+** FX-02: process dependencies have a narrower meaning than readiness
+
+- Reference: services section of the same manual.
+- Marks: DOCUMENTED-SEMANTICS; DESIGN-REFLECTION; NOT-REPRODUCED.
+
+Service conditions include process start/completion, and named starts do not
+implicitly start every dependency. Consequently an edge's meaning and start scope
+must be visible. Our Module requires, selected build dependencies and service
+readiness must not share an ambiguous "depends" relation.
+
+No GitHub issue is cited as a verified Flox defect in this pass. That evidence gap
+is explicit; documented semantics suffice for FX-01/02, but not for claims about
+crashes, latency, resolver bugs or current issue status.
+
+* Reflection and conclusion
+
+Flox makes ordinary users manipulate a small environment description. Our design
+can learn from deliberate updates and an effective-config view without copying
+its syntax or assuming its merge policy fits every domain. Discovery should say
+whether a field replaces, refines or transforms an inherited value, and which
+source contributes it. Module origins and mount aliases should remain distinct.
+
+An inspectable config does not prove a safe activation, and a lock does not prove
+fresh remote state. General Scheme functions offer more transformations, while
+also creating termination/effect questions that TOML authors need not face in
+ordinary values. Keep these costs out of basic configuration and make them explicit
+at extension boundaries.
+
+* Onwards
+
+Pin a CLI revision before exercising include conflicts, locked updates and service
+start behavior. Compare a removed inherited service and a replaced descriptor with
+our disable and refinement designs. No benchmark or execution result is claimed.
+
+See [[file:../../10-19-design/10-configuration/10.04-module-system-design-questions.org][the module-system synthesis]]; Flox observations remain owned here.
+

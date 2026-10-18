@@ -1,0 +1,120 @@
+#+title: 23.04 Terraform Module Research 03: Schema, Dependencies, Plan and Execution
+#+language: en
+#+property: DOCUMENT_ID 23.04
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-and-local-artifact-inspection-not-a-provider-run
+
+* A concrete provider artifact
+
+The existing [[file:../../../t/fixtures/opentofu/aws-5.100.0/manifest.json][local artifact manifest]] identifies registry.terraform.io/hashicorp/aws,
+version 5.100.0. The SHA-256 of [[file:../../../t/fixtures/opentofu/aws-5.100.0/schema.json][schema.json]] was recomputed during this audit:
+
+#+begin_example
+30cf1c04c71f30ce3ec366e5ce7e841b333d75d7ce06ae0764a5a22e2fc831b9
+#+end_example
+
+It matches the manifest. This checks agreement between retained bytes and their
+manifest, not a new provider download, signature verification or RPC execution.
+The fixture is owned by OpenTofu tests, but the artifact describes the same AWS
+provider interface used in this Terraform source study; it is not a new Terraform
+engine acceptance result.
+
+The selected [[file:../../../t/fixtures/opentofu/aws-5.100.0/inputs/resource/aws_security_group.json][Security Group type input]] represents ingress as a set of objects. Its
+inner shape includes number-valued ports and list-of-string CIDRs; vpc_id is an
+optional/computed string. Schema availability does not mean the VPC ID is already
+known. Interface shape and effective value availability are distinct.
+
+* Three schemas/checking boundaries
+
+1. Module inputs: variable types, defaults and authored validations constrain the
+   module API, independently of the resource implementation it hides.
+2. Provider exported Schema: machine-readable resource/data/provider shapes allow
+   a front end to compile structural Contracts for selected types.
+3. Provider executable semantics: validation, normalization, defaults, identity,
+   planning and API operations can impose conditions not present in exported data.
+
+The [[https://developer.hashicorp.com/terraform/cli/commands/providers/schema][providers schema reference]] documents a versioned JSON representation with
+provider_schemas, resource_schemas and data_source_schemas. This is JSON data in
+Terraform's Schema representation, not automatically a standard JSON Schema
+document. Our adapter translates it before reusing the JSON Schema Contract system.
+Module-variable Contracts are not generated merely by reading resource Schema.
+
+In the [[https://github.com/hashicorp/terraform-provider-aws/blob/v5.100.0/internal/service/ec2/vpc_security_group.go][AWS 5.100.0 Security Group implementation]], securityGroupRuleSetNestedBlock uses
+custom set identity; the nested CIDR element uses an IPv4 network validator.
+These executable details are not expressed in the retained simple string type.
+The normalized object type also must not be mistaken for an instruction that
+users manually fill every SDK-normalized optional member.
+
+Consequences: structural Contract admission should catch a wrong supported field
+type and report its original input path. It must not reject an entire structurally
+valid Security Group solely because custom hash semantics are not reproduced.
+Report which provider-specific validations remain deferred. Do not claim that
+JSON structural equality equals provider set identity or that a local Contract
+has validated cloud reachability, quotas or credential authority.
+
+* Dependency construction across the real module
+
+Source: [[https://github.com/hashicorp/terraform/blob/v1.9.8/internal/terraform/transform_reference.go][Terraform v1.9.8 transform_reference.go]].
+
+ReferenceTransformer maps references to graph relationships. Module-path handling
+distinguishes where a value is supplied from where it is used; dependency handling
+also records resource relationships needed for later operations. Data-source
+depends_on handling decides when reads must be deferred. This is richer than
+searching the source for a module name or loading one directory before another.
+
+In the AWS case, the VPC output, subnet output, Security Group ID and instance IP
+form value-bearing edges. The module library's output interface preserves those
+edges while hiding its private resources. A broad depends_on can additionally
+require completion of unrelated work; it is not merely documenting a value edge.
+
+* Plan and apply are separate engine operations
+
+Pinned engine source:
+- [[https://github.com/hashicorp/terraform/blob/v1.9.8/internal/terraform/context_plan.go][context_plan.go]]: PlanAndEval and planWalk consume configuration, prior state and options,
+  build/walk the plan graph and produce a plan plus diagnostics. Move/import handling
+  is part of planning; it is not supplied by an object inheritance operator.
+- [[https://github.com/hashicorp/terraform/blob/v1.9.8/internal/terraform/context_apply.go][context_apply.go]]: ApplyAndEval accepts the plan/configuration and options, executes an apply
+  graph and returns state plus diagnostics. Diagnostics and state are separate
+  results, so a partial result is not equivalent to successful convergence.
+
+The [[https://developer.hashicorp.com/terraform/cli/commands/plan][plan CLI reference]] documents reads/comparison and optional saved plans. A
+speculative preview is not identical to a plan retained for execution. The
+[[https://developer.hashicorp.com/terraform/cli/commands/apply][apply CLI reference]] distinguishes applying a saved plan from planning a new
+one. Our local configuration preview is neither of these backend operations.
+
+Provider planning can configure plugins and read data sources. Treating plan as
+a pure syntax query or invoking it automatically while loading a Module would
+cross a meaningful effect boundary. Package loading, local configuration checks,
+provider planning and apply need separately visible entrypoints and observations.
+
+* End-to-end chain and module-system ownership
+
+| Stage | AWS case | Owner | What success establishes |
+|-------+----------+-------+--------------------------|
+| Resolve requirements | VPC module tag, AWS requirement/selection | Package/module installer and lock process | Selected code and artifacts, not valid credentials |
+| Instantiate interfaces | Region, subnet inputs and provider config | Module evaluator | Effective typed inputs and output dependencies |
+| Local Contract check | Port representation, declared field shapes | Generated and domain Contracts | Covered local constraints, not all provider behavior |
+| Build resource graph | Network -> group/subnet -> instance | Terraform reference/expansion machinery | Operation dependencies and instance identities |
+| Provider plan | Remote observations plus desired config/state | Engine and AWS provider | Candidate backend changes and remaining unknowns |
+| Approve | Specific source/provider/plan identity | Operator or policy authority | Permission for that plan, not another future plan |
+| Apply | Execute dependency-ordered operations | Engine/provider/backend | Recorded result and diagnostics, possibly partial |
+| Check readiness | Application/network checks | Domain operations/controller | A stated readiness condition at an observation time |
+
+* Reflection and conclusion
+
+The reusable Module system should own publication, instantiation, selection and
+dependency-interface admission. It should not absorb provider RPC or state
+management just because both consume configuration. An args view can deliver a
+network dependency, but it must preserve whether the dependency is an interface,
+a concrete value, a symbolic external reference or an authorized operation.
+
+The main design improvement to pursue is continuity of identity and diagnostics
+across these boundaries. The backend engine remains necessary. There is no new
+plan/apply result, runtime adapter or Loader implementation in this document.
+
+* Issues and Engineering Limitations
+
+References and qualified issue records: [[file:23.05-issues-and-user-costs.org][TF-01 through TF-04]]. These are
+source/document explanations and reports, not local reproductions. This article's
+architecture response is a DESIGN-INFERENCE; no new upstream defect is claimed.
+

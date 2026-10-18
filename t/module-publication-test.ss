@@ -14,8 +14,7 @@
                  make-poo-flow-module-source-collection poo-flow-module-source-collection-locate)
         :core/module-system/source/admission
         :core/module-system/source/preparation
-        :core/module-system/interface
-        (only-in :core/modules/building/build-projection poo-flow-core-write-build-entry))
+        :core/module-system/interface)
 (export module-publication-test)
 (def ScopeContract
   (poo-flow-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
@@ -58,6 +57,12 @@
               (source ((.get view context locate) 'custom/example)))
          (test root module-root source view)))
      (lambda () (remove-tree root)))))
+(def (domain-entry-count graph root)
+  ;; Compiler-tool inputs now accompany domain roots. Keep the source-role
+  ;; assertion exact without pretending tools are application Module roles.
+  (let (prefix (string-append (path-strip-trailing-directory-separator (path-normalize root)) "/"))
+    (length (filter (lambda (entry) (string-prefix? prefix (path-normalize (.get entry path))))
+                    (.get graph entries)))))
 (def (native-import-value path name)
   ;; Test-only native compiler/interpreter control, not a runtime Loader backend.
   (parameterize ((current-expander-context (make-top-context)))
@@ -69,30 +74,66 @@
               (lambda () (thunk) "unexpected success")))
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
+    (poo-flow-test-case "symbolic owned imports expand the confined role only once"
+      (with-publication-source
+       (lambda (root module-root _source _view)
+         (def package (cadr (call-with-input-file (path-expand "gerbil.pkg" root) read)))
+         (def library
+           (string->symbol (string-append ":" (symbol->string package)
+                                          "/modules/custom/example/objects")))
+         (def marker (path-expand "role-expanded" root))
+         (write-file (path-expand "objects.ss" module-root)
+           (call-with-output-string
+             (lambda (port)
+               ;; A duplicate compiler context must not execute the same macro
+               ;; initializer before redirecting to its admitted private role.
+               (write `(begin-syntax
+                         (when (file-exists? ,marker) (error "role expanded twice"))
+                         (call-with-output-file ,marker (lambda (out) (display "once" out)))) port)
+               (write '(import (only-in :clan/poo/object .o)) port)
+               (write '(def FixtureScope (.o retained: 'upstream)) port)
+               (write '(export FixtureScope) port))))
+         (write-file (path-expand "config.ss" module-root)
+           (call-with-output-string
+             (lambda (port)
+               (write `(import (only-in ,library FixtureScope)) port)
+               (write '(def Greeting "hello") port)
+               (write '(export Greeting) port))))
+         ;; Registration is local to the test; the SDK still resolves package
+         ;; prefixes and the reader still enforces the original owner boundary.
+         (def previous (load-path))
+         (dynamic-wind
+           (lambda () (add-load-path! root))
+           (lambda ()
+             (let (view (poo-flow-load-modules (path-expand "modules" root)))
+               (check-equal? (.get view modules custom example greeting) "hello")
+               (check-equal? (call-with-input-file marker read-line) "once")
+               ;; Negative control: the SDK's independent canonical context
+               ;; really would rerun the initializer, as the old redirect did.
+               (check-exception (core-import-module library) error?)
+               (check-equal? (call-with-input-file marker read-line) "once")))
+           (lambda () (set-load-path! previous))))))
     (poo-flow-test-case "default reader selects and builds source roles without compiled selected modules"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example))")
+         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
          (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
-                (graph (.get view build-graph))
-                (output (path-expand "generated" root))
-                (artifact (poo-flow-core-write-build-entry (path-expand "init.ss" root) output)))
+                (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
-           (check-equal? (length (.get graph entries)) 4)
-           (check-equal? (length (.get artifact spec)) 4)
+           (check-equal? (domain-entry-count graph module-root) 4)
            (check-equal? (.get view modules custom example greeting) "hello")
            (check-equal? (.get view modules custom example retained) 'upstream)))))
     (poo-flow-test-case "metadata selection never invokes domain exports or unselected source"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example) (bomb disable: #t))")
+         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example) (bomb disable: #t))")
          (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
          (let ((view (poo-flow-load-modules (path-expand "init.ss" root)))
                (output (path-expand "generated" root)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
-           (check-equal? (length (.get (poo-flow-core-write-build-entry view output) spec)) 4)))))
+           (check-equal? (domain-entry-count (.get view build-graph) module-root) 4)))))
     (poo-flow-test-case "new source sessions do not reuse stale native role namespaces"
       (with-publication-source
        (lambda (root module-root _source view)
@@ -104,7 +145,7 @@
     (poo-flow-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! :custom (example))")
+         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
          (let* ((path (path-expand "interface.ss" module-root))
                 (original (module-source-read path)))
            (write-file path (string-append "(import \"./interface.ss\") " original))
@@ -190,6 +231,26 @@
             (let (message (exception-message (lambda () (poo-flow-prepare-module-publication source))))
               (check-equal? (if (string-contains message "interface.ss must contain one Module .def") #t #f) #t)))))
        '(" (export Fixture)" " (begin (error \"must not evaluate\"))")))
+    (poo-flow-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"
+      (with-publication-source
+       (lambda (_root module-root source _view)
+         (def identity-reads 0)
+         (parameterize ((current-module-source-observer
+                         (lambda (kind amount)
+                           (when (eq? kind 'compiler-identity-reads)
+                             (set! identity-reads (+ identity-reads amount))))))
+           (def prepared (poo-flow-prepare-module-publication source))
+           (check-equal? identity-reads 1)
+           (for-each (lambda (_) ((.get prepared admit-current))) '(1 2 3 4 5))
+           (check-equal? identity-reads 1)
+           (def file (path-expand "interface.ss" module-root))
+           (write-file file (string-append "namespace: changed\n" (module-source-read file)))
+           (check-exception ((.get prepared admit-current)) error?))))
+      (with-publication-source
+       (lambda (_root module-root source _view)
+         (def prepared (poo-flow-prepare-module-publication source))
+         (write-file (path-expand "gerbil.pkg" module-root) "(package: closer)")
+         (check-exception ((.get prepared admit-current)) error?))))
     (poo-flow-test-case "source preparation does not initialize role values and stale sources refuse output"
       (with-publication-source
        (lambda (root module-root source view)

@@ -6,6 +6,7 @@
 (import :clan/poo/object
         (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
         "./json-schema-receipt.ss"
+        (only-in "./contracts.ss" SchemaContract.)
         (only-in "./json-schema-ir.ss" poo-flow-json-schema-normalization-schema)
         (only-in "./json-schema-validate.ss" poo-flow-json-schema-node-validate))
 (export poo-flow-json-schema->contract)
@@ -24,4 +25,6 @@
                  (poo-flow-classification-evidence identity candidate
                    (null? failures) failures context)))))
       (.cc PooFlowContract. 'identity identity
-           '.classify classify 'schema schema 'sexp identity))))
+           '.classify classify 'schema schema 'sexp identity
+           'schema-artifact artifact
+           'value-type (.cc SchemaContract. 'identity identity 'node node)))))

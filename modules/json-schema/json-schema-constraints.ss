@@ -7,9 +7,10 @@
 ;;; Invariant: this owner stores small constraint metadata and compiles it into
 ;;; predicates; it does not parse full schemas or emit object contracts.
 
-(import (only-in :core/utilities/functional
-                 poo-flow-predicate-and)
+(import (only-in :clan/poo/object object? .all-slots .ref)
         (only-in "./functional.ss"
+                 poo-flow-contract-all?
+                 poo-flow-contract-key->string
                  poo-flow-contract-json-object?
                  poo-flow-contract-object-ref
                  poo-flow-contract-project-list
@@ -26,7 +27,8 @@
 
 (export +poo-flow-json-schema-constraint-keywords+
         poo-flow-json-schema-parse-result-with-constraints
-        poo-flow-json-schema-apply-node-constraints)
+        poo-flow-json-schema-apply-node-constraints
+        poo-flow-json-schema-unique-items?)
 
 ;; +poo-flow-json-schema-constraint-keywords+
 ;;   : [Symbol]
@@ -42,6 +44,7 @@
     exclusiveMaximum
     minItems
     maxItems
+    uniqueItems
     minProperties
     maxProperties
     pattern))
@@ -74,6 +77,7 @@
         (eq? key 'exclusiveMinimum)
         (eq? key 'exclusiveMaximum))
     (number? value))
+   ((eq? key 'uniqueItems) (boolean? value))
    ((eq? key 'pattern)
     (and (string? value)
          (with-catch
@@ -188,6 +192,43 @@
    'constraints
    '()))
 
+;; JSON equality is recursive, numeric, and insensitive to object key order.
+;; Empty objects should use a POO object/hash and empty arrays a vector at
+;; ambiguous wire boundaries. Never use Scheme equal? as provider set identity.
+(def (poo-flow-json-schema-equality-rows value)
+  (cond ((hash-table? value) (hash->list value))
+        ((object? value) (map (lambda (key) (cons key (.ref value key)))
+                               (.all-slots value)))
+        ((and (pair? value) (poo-flow-contract-json-object? value)) value)
+        (else #f)))
+
+(def (poo-flow-json-schema-value=? left right)
+  (let ((a (poo-flow-json-schema-equality-rows left))
+        (b (poo-flow-json-schema-equality-rows right)))
+    (cond
+     ((and a b)
+      (and (= (length a) (length b))
+           (every (lambda (entry)
+                    (let (other (find (lambda (row)
+                                        (equal? (poo-flow-contract-key->string (car row))
+                                                (poo-flow-contract-key->string (car entry)))) b))
+                      (and other (poo-flow-json-schema-value=? (cdr entry) (cdr other))))) a)))
+     ((or a b) #f)
+     ((and (number? left) (number? right)) (= left right))
+     ((and (or (list? left) (vector? left)) (or (list? right) (vector? right)))
+      (let ((xs (if (vector? left) (vector->list left) left))
+            (ys (if (vector? right) (vector->list right) right)))
+        (and (= (length xs) (length ys))
+             (every identity (map poo-flow-json-schema-value=? xs ys)))))
+     (else (equal? left right)))))
+
+(def (poo-flow-json-schema-unique-items? values)
+  (let loop ((rest (if (vector? values) (vector->list values) values)))
+    (or (null? rest)
+        (and (not (find (lambda (other)
+                         (poo-flow-json-schema-value=? (car rest) other)) (cdr rest)))
+             (loop (cdr rest))))))
+
 ;; poo-flow-json-schema-constraint-predicate
 ;;   : (-> Procedure Pair JsonSchemaPredicate)
 ;;   | doc m%
@@ -222,14 +263,18 @@
       (lambda (value)
         (or (not (number? value))
             (< value bound))))
+     ((eq? key 'uniqueItems)
+      (lambda (value)
+        (or (not bound) (not (array-value? value))
+            (poo-flow-json-schema-unique-items? value))))
      ((eq? key 'minItems)
       (lambda (value)
         (or (not (array-value? value))
-            (>= (length value) bound))))
+            (>= (length (if (vector? value) (vector->list value) value)) bound))))
      ((eq? key 'maxItems)
       (lambda (value)
         (or (not (array-value? value))
-            (<= (length value) bound))))
+            (<= (length (if (vector? value) (vector->list value) value)) bound))))
      ((eq? key 'minProperties)
       (lambda (value)
         (or (not (poo-flow-contract-json-object? value))
@@ -252,11 +297,13 @@
 ;;       Combine normalized constraints into one predicate closure.
 ;;     %
 (def (poo-flow-json-schema-constraints-predicate array-value? constraints)
-  (poo-flow-predicate-and
-   (poo-flow-contract-project-list
-    (lambda (constraint)
-      (poo-flow-json-schema-constraint-predicate array-value? constraint))
-    constraints)))
+  (let (predicates
+         (poo-flow-contract-project-list
+          (lambda (constraint)
+            (poo-flow-json-schema-constraint-predicate array-value? constraint))
+          constraints))
+    (lambda (value)
+      (poo-flow-contract-all? (lambda (predicate) (predicate value)) predicates))))
 
 ;; poo-flow-json-schema-apply-node-constraints
 ;;   : (-> PooFlowJsonSchemaNode JsonSchemaPredicate Procedure JsonSchemaPredicate)
@@ -270,9 +317,5 @@
         (poo-flow-json-schema-node-constraints node))
     (if (null? constraints)
       base-predicate
-      (poo-flow-predicate-and
-       (list
-        base-predicate
-        (poo-flow-json-schema-constraints-predicate
-         array-value?
-         constraints))))))
+      (let (additional (poo-flow-json-schema-constraints-predicate array-value? constraints))
+        (lambda (value) (and (base-predicate value) (additional value)))))))

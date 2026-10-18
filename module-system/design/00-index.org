@@ -79,7 +79,7 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:164-core-functional-and-extend-interface-audit.org][164 Core Functional and Extend Interface Audit with Scheme Forms]]
 - [[file:164-core-interface-export-inventory.org][164 Core Per-Export Surface Inventory]]
 - [[file:164-module-interface-comparison.org][164 Modular Configuration Research: NCL, HiveBus, NixOS, Jsonnet, Dhall and POO]]
-- [[file:../../design/config-languages/00-index.org][164 Configuration Language Design: User Intent, Data Overlays and Comparisons]]
+- [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][164 Configuration Language Design: User Intent, Data Overlays and Comparisons]]
 - [[file:164-funflow-public-configuration-contract-design.org][164 Funflow Public Configuration: Defaults, Contracts and Native Extension (Design)]]
 - [[file:164-funflow-local-publication.org][164 Implemented Local Native Funflow Publication]]
 - [[file:164-config-language-case-research.org][164 Scheme Config Language: omnibus-ncl, HiveBus and Emacs Cases]]

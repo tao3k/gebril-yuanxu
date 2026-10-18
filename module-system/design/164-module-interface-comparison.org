@@ -19,7 +19,7 @@ systems-language comparison. No Loader or runtime implementation is added here.
 
 * Read by question
 
-The dedicated [[file:../../design/config-languages/00-index.org][Configuration Language design entry]] organizes user-intent,
+The dedicated [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration Language design entry]] organizes user-intent,
 data-overlay and comparison work, including KCL, without relocating source evidence.
 
 | Module | Research question | Concrete material |
@@ -38,7 +38,7 @@ data-overlay and comparison work, including KCL, without relocating source evide
 * Findings that change the design
 
 For KCL's documented replacement/insertion/merge distinctions and the associated
-POO UX obligations, see [[file:../../design/config-languages/01-kcl-data-overlays.org][10 KCL and data overlays]]. This official-language
+POO UX obligations, see [[file:../../docs/10-19-design/11-configuration-languages/11.02-kcl-data-overlays.org][10 KCL and data overlays]]. This official-language
 comparison is distinguished from the actual library/ecosystem cases above.
 
 NixOS complexity is partly language/framework layering and partly the real cost

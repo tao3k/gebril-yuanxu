@@ -194,7 +194,7 @@ separate boundaries.
 
 * Corresponding Lean laws and proof status
 
-[[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/ConstructionRequirements.lean][ConstructionRequirements.lean]] adds a narrow reference trace, with an index
+[[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/ConstructionRequirements.lean][ConstructionRequirements.lean]] adds a narrow reference trace, with an index
 fixed for one view. At every trace node, own requirements remain discoverable:
 
 #+begin_src lean
@@ -233,7 +233,7 @@ not execution order. The reference list permits duplicates; deduplication must
 preserve membership and canonical identity in a future native correspondence.
 
 Validation: lake env lean on the new file passes, and the existing
-lake build PooFlowProfileAssociationProof target passes (46 jobs) with this file
+lake build PooFlowCoreProof.ModuleSystem.Schema.Association target passes (46 jobs) with this file
 included as a root. The two preservation lemmas
 use no axioms; accepted_right_receipt uses only the existing ordinary Lean
 axioms propext, Classical.choice and Quot.sound. No sorry or custom axiom was

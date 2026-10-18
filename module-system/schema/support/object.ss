@@ -15,7 +15,7 @@
                  $constant-slot-spec?
                  $constant-slot-spec-value
                  $computed-slot-spec)
-        :core/extension-graph/interface
+        :core/graph/interface
         :core/module-system/schema/support/contracts
         :core/module-system/schema/support/field-resolution)
 
@@ -409,16 +409,16 @@
 
 ;;; Object nodes are extension nodes seeded with field defaults; downstream
 ;;; contributions only need to provide changed slots.
-;; : (-> PooModuleObject PooModuleSlotMap [PooModuleExtensionNode] PooModuleExtensionNode)
+;; : (-> PooModuleObject PooModuleSlotMap [PooFlowGraph] PooFlowGraph)
 (def (poo-flow-module-object-node/default-slots object default-slots slots children)
-  (poo-flow-module-extension-node
+  (poo-flow-graph-rooted
    (poo-flow-module-object-identity object)
    (poo-flow-module-object-slots-merge
     default-slots
     slots)
    children))
 
-;; : (-> PooModuleObject PooModuleSlotMap [PooModuleExtensionNode] PooModuleExtensionNode)
+;; : (-> PooModuleObject PooModuleSlotMap [PooFlowGraph] PooFlowGraph)
 (def (poo-flow-module-object-node object slots children)
   (poo-flow-module-object-node/default-slots
    object
@@ -469,40 +469,40 @@
 
 ;;; The object namespace is a regular extension graph root; object schemas
 ;;; project independently into child nodes before runtime contributions merge.
-;; : (-> [PooModuleObject] [PooModuleExtensionNode])
+;; : (-> [PooModuleObject] [PooFlowGraph])
 (def (poo-flow-module-object-nodes objects)
   (map (lambda (object)
          (poo-flow-module-object-node object '() '()))
        objects))
 
-;; : (-> [PooModuleObject] PooModuleExtensionNode)
+;; : (-> [PooModuleObject] PooFlowGraph)
 (def (poo-flow-module-objects-node objects)
-  (poo-flow-module-extension-node
+  (poo-flow-graph-rooted
    poo-flow-module-objects-root-identity
    '((namespace . objects))
    (poo-flow-module-object-nodes objects)))
 
 ;;; Object indexes materialize the catalog identity boundary once so inherit and
 ;;; merge callers can resolve child nodes without repeated child scans.
-;; : (-> PooModuleExtensionNode HashTable)
+;; : (-> PooFlowGraph HashTable)
 (def (poo-flow-module-objects-index objects-node)
   (let (index (make-hash-table))
     (for-each
      (lambda (child)
        (hash-put! index
-                  (poo-flow-module-extension-node-identity child)
+                  (poo-flow-graph-root-id child)
                   child))
-     (poo-flow-module-extension-node-children objects-node))
+     (poo-flow-graph-root-children objects-node))
     index))
 
-;; : (-> HashTable Symbol MaybePooModuleExtensionNode)
+;; : (-> HashTable Symbol MaybePooFlowGraph)
 (def (poo-flow-module-objects-ref/index objects-index identity)
   (poo-flow-module-object-identity-hash-ref objects-index identity))
 
-;; : (-> PooModuleExtensionNode Symbol MaybePooModuleExtensionNode)
+;; : (-> PooFlowGraph Symbol MaybePooFlowGraph)
 (def (poo-flow-module-objects-ref objects-node identity)
-  (poo-flow-module-extension-child-ref
-   (poo-flow-module-extension-node-children objects-node)
+  (poo-flow-graph-root-ref
+   (poo-flow-graph-root-children objects-node)
    identity))
 
 ;; poo-flow-module-objects-contributions-by-target
@@ -536,12 +536,12 @@
 
 ;;; Fast child state updates only children that have grouped contributions while
 ;;; preserving untouched child nodes and tracking whether any merge changed.
-;; : (-> HashTable MaybeFastExtensionChildState PooModuleExtensionNode MaybeFastExtensionChildState)
+;; : (-> HashTable MaybeFastExtensionChildState PooFlowGraph MaybeFastExtensionChildState)
 (def (poo-flow-module-objects-fast-extension-child-state groups state child)
   (and state
        (let* ((next-children (car state))
               (changed? (cdr state))
-              (target (poo-flow-module-extension-node-identity child))
+              (target (poo-flow-graph-root-id child))
               (target-contributions (hash-get groups target)))
          (if target-contributions
            (let (child-result
@@ -550,16 +550,16 @@
                   (reverse target-contributions)))
              (and child-result
                   (let ((next-child
-                         (poo-flow-module-extension-result-root child-result))
+                         (poo-flow-graph-result-root child-result))
                         (child-changed?
-                         (> (poo-flow-module-extension-result-iterations
+                         (> (poo-flow-graph-result-changed-passes
                              child-result)
                             0)))
                     (cons (cons next-child next-children)
                           (or changed? child-changed?)))))
           (cons (cons child next-children) changed?)))))
 
-;; : (-> HashTable [PooModuleExtensionNode] MaybeFastExtensionChildState MaybeFastExtensionChildState)
+;; : (-> HashTable [PooFlowGraph] MaybeFastExtensionChildState MaybeFastExtensionChildState)
 (def (poo-flow-module-objects-fast-extension-child-state/fold
       groups
       children
@@ -577,23 +577,23 @@
 ;;; Fast extension result is valid only for contributions to direct children.
 ;;; A root-targeted operation must run through the extension graph so it can
 ;;; update root slots (or extend/remove children) before child contributions.
-;; : (-> PooModuleExtensionNode [PooModuleFieldContribution] MaybePooModuleExtensionResult)
+;; : (-> PooFlowGraph [PooModuleFieldContribution] MaybePooGraphResult)
 (def (poo-flow-module-objects-fast-extension-result objects-node contributions)
-  (and (equal? (poo-flow-module-extension-node-identity objects-node)
+  (and (equal? (poo-flow-graph-root-id objects-node)
                poo-flow-module-objects-root-identity)
        (let* ((groups
                (poo-flow-module-objects-contributions-by-target contributions))
               (slots
-               (poo-flow-module-extension-node-slots objects-node))
+               (poo-flow-graph-root-payload objects-node))
               (state
                (poo-flow-module-objects-fast-extension-child-state/fold
                 groups
-                (poo-flow-module-extension-node-children objects-node)
+                (poo-flow-graph-root-children objects-node)
                 (cons '() #f))))
          (and (not (hash-get groups poo-flow-module-objects-root-identity))
               state
-              (poo-flow-module-extension-result
-               (poo-flow-module-extension-node
+              (poo-flow-graph-result
+               (poo-flow-graph-rooted
                 poo-flow-module-objects-root-identity
                 slots
                 (reverse (car state)))
@@ -602,7 +602,7 @@
 
 ;;; Object contribution resolution prefers the objects-root fast path and
 ;;; delegates to the generic extension graph outside that proven boundary.
-;; : (-> PooModuleExtensionNode [PooModuleFieldContribution] PooModuleFieldResolutionResult)
+;; : (-> PooFlowGraph [PooModuleFieldContribution] PooModuleFieldResolutionResult)
 (def (poo-flow-module-objects-resolve-contributions/node
       objects-node contributions)
   (let (fast-result

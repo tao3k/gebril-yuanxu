@@ -1,0 +1,288 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Core Ops Module
+
+* One selected publication
+
+Ops is a Core Module maintained at core/ops. The existing explicit source
+binding selects this directory without copying it into modules/. This uses the
+same SourceRef tree, role admission, dependency linking and scope Contract as
+other Core Modules. The sole public publication is interface.ss; it no longer
+re-exports implementation bindings as an unrelated library API.
+
+#+begin_src scheme
+;; core/init.ss
+(import :core/module-system/selection/init-syntax)
+(poo-flow! mode: explicit source: "./modules" (json-schema)
+  (ops @ "./ops"))
+
+;; core/build.ss is unchanged.
+(import (only-in :std/build-script defbuild-script)
+        (only-in "./init.ss" init.build-spec)
+        (only-in "./core-spec.ss" core-spec))
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+There is no separate ops/interface root in core-spec.ss. The selected Module
+projects its admitted role sources and their actual source dependencies. Core's
+ordinary infrastructure roots and the selected Module projection are combined
+by the existing build entry. Ops itself never reloads root init.ss while running
+an operation or while a Module build phase is active.
+
+* Source roles
+
+| File | Responsibility |
+|------+----------------|
+| types.ss | ProcessScriptContract, OpsConfigContract and OpsScopeContract |
+| gerbil.pkg | The existing Module prelude for the external Core-owned source directory |
+| config.ss | Inert defaults for directory, environment, timeout, log and status handling |
+| func.ss | Named native process execution and output adaptation |
+| objects.ss | ProcessScript. using receiver-local config; imports SelectedPackages. |
+| selected-packages.ss | Implementation helper for selected external-package execution |
+| interface.ss | One declarative Ops Module publication |
+
+#+begin_src scheme
+;; config.ss
+(def Config
+  (.o directory: #f environment: (.o) timeout: #f log: #f check-status: #t))
+
+;; interface.ss: existing role wrapping supplies imports and the publication export.
+(.def Ops
+  identity: 'ops
+  core:
+  (.o requires: (.o)
+      scope-contract: OpsScopeContract
+      exports:
+      (.o config: Config
+          types: (.o ProcessScript: ProcessScriptContract Config: OpsConfigContract)
+          prototypes:
+          (.o Script: (.cc ProcessScript. 'config config)
+              SelectedPackages: SelectedPackages.)))
+  features: (.o))
+#+end_src
+
+OpsScopeContract checks the actual execution-default shape, published Contract
+identities and the native execution prototypes. Resolving .run only checks that
+it is a procedure; admission never invokes it. The default Script has no command
+and cannot execute until a caller supplies one. ProcessScriptContract admits the
+final effective command and options immediately before execution.
+
+The Script prototype reads directory/environment/timeout/log/check-status through
+its config slot. The published prototype binds the enclosing scope's lexical
+config. A derived scope therefore obtains its own defaults even if the parent's
+prototype has already been demanded; parent defaults remain unchanged.
+
+* Resolve once, bind once, execute explicitly
+
+The project catalog in t/qualification/opentofu/objects.ss is the one integration
+point. It uses the actual maintained Core init; it has no second Ops selection
+file or direct import of the old execution-object export surface.
+
+#+begin_src scheme
+(def OpsScope
+  (.get (poo-flow-load-modules
+          (path-expand "../../../init.ss" (path-directory (this-source-file))))
+        modules ops))
+
+(def Ops
+  (use-module OpsScope as ops
+    (with-slots (Script) (.get ops prototypes)
+      (.o prototypes: (.get ops prototypes)
+          types: (.get ops types)
+          tests:
+          (.o SelectedFlake:
+              (.o (:: @ Script)
+                command: '("/usr/bin/time" "-p" "just" "test-opentofu-selected-flake")
+                timeout: 145 check-status: #f))))))
+#+end_src
+
+The catalog also defines the other selected-graph/flake test and sampling
+commands. It contains no process invocation. Native with-slots binds the existing
+Script prototype; bounded use-module binds an admitted scope without reloading
+it or adding another module DSL. Its alias stays inside the compound body.
+
+#+begin_src scheme
+;; Coordinator: specialize the existing declaration for one round.
+(def script (.cc base 'directory root 'environment env 'log log))
+;; Only this explicit call starts the operation.
+(apply (.get script .run) arguments)
+#+end_src
+
+Loading sources, admitting the scope, constructing a script and resolving .run
+start no operational process. Loading may read/evaluate admitted source; it is
+not a promise of zero source preparation work. A .run closure remains a procedure
+until explicitly called; Ops does not auto-run it through init or scope demand.
+
+* Process behavior and build boundary
+
+run-script calls std/misc/process#run-process with literal argv. There is no
+implicit shell interpretation. Environment is a native POO object of string
+overrides over the inherited environment. Directory, log and timeout are
+ordinary configuration values. A supplied log streams merged stdout/stderr to
+a fresh/truncated per-operation file; otherwise output is captured in the result.
+Native results contain normalized status, raw Gambit wait-status, seconds,
+output and log.
+
+Timeout currently uses GNU timeout: TERM at the declared deadline, then KILL
+five seconds later if necessary. This is an explicit runtime tool dependency,
+not a new Scheme scheduler. check-status defaults to true and raises on nonzero
+exit. Qualification declarations use false so the coordinator can retain logs
+and host observations before rejecting the round.
+
+Ops is distinct from defbuild-script. Core/std/make owns source compilation and
+native dependency scheduling. SelectedPackages. is an explicit operational
+consumer of selected external contributions: it writes admitted package inputs,
+performs native package handoffs and requires final configuration admission
+before returning success. It emits a normal guard.ss, never a defbuild-script.
+Unsupported projections, edited guards, stale inputs and failed admission reject.
+Source checks before and after external effects use fresh validation scopes.
+
+* One qualification entry
+
+#+begin_src sh
+just ops-help
+just test-file t/ops-module-publication-test.ss
+just test-file t/ops-process-script-test.ss
+just test-file t/ops-selected-packages-test.ss
+just test-file t/ops-rounds-test.ss
+just test-opentofu-selected-flake-rounds /private/tmp/fresh-results /private/tmp/locked-flake 3
+#+end_src
+
+The Scheme coordinator runs serial Just children and retains the original
+60-second Case, 120-second outer test and 145-second operational envelope. It
+checks exit zero, MODULE-OK, HARNESS-OK, final OK and absence of error/overflow
+markers. std/test remains the assertion authority; Ops is not another test runner.
+Source digests are checked before every round and at completion. Each round
+retains its log, metrics, trace and host observations. A failure writes a failed
+summary with the last control log and currentness result, then rethrows.
+Raw logs remain outside source control; JSON receipts are output projections.
+
+The Module control covers real Core init selection, inert declaration/method
+resolution followed by marker creation only on invocation, receiver-local
+configured defaults after parent demand, disabled selection and stale init
+rejection. Other focused controls cover literal arguments, failed status,
+timeout 124, streamed logs, tampered guard rejection and failed final admission.
+Historical failed attempts remain local artifacts rather than rewritten passes.
+The old direct-export and separate compilation-root controls are historical;
+current qualification uses the selected Ops Module end to end.
+
+* Core test ownership
+
+Provider fixtures and structured receipts belong to t/fixtures/opentofu inside
+Core. All OpenTofu, Nix flake and Ops controls and their qualification catalog
+also belong to Core/t; they run through Core/Justfile. The parent POO Flow tree
+holds neither a second fixture tree nor these specialized recipes. A caller may
+supply an installed Gerbil dependency environment without making Core depend on
+the product's source tree.
+
+Historical receipts are preserved byte-for-byte, including their original source
+paths and failed outcomes. They are historical observations, not claims about
+the relocated checkout. Executable fixtures use Core-relative paths. The package
+fixture preparation command accepts an explicit pinned package-set reference;
+it no longer reads the product's devenv.lock. The three-round Scheme entry owns
+only Core source/fixture hashes and the explicitly supplied locked test flake.
+
+Because the selected directory is outside modules/, ops/gerbil.pkg declares the
+same existing Module prelude explicitly. This lets native gxc expand the one
+interface publication and adjacent role imports without adding compilation roots
+or custom script syntax. The Loader observes this package declaration too.
+
+Scope-session currentness, executable configuration admission and process launch
+are distinct checks. Generic Script.run admits the effective command/options;
+it does not manufacture a fresh Loader session for a retained closure. The
+Loader view owns its session check, the rounds coordinator checks its retained
+source set before each round and after completion, and SelectedPackages. checks
+the supplied graph around effects. This migration does not claim automatic
+per-method source leases for arbitrary retained scope values.
+
+* Recorded acceptance
+
+The selected-Module implementation compiled with the existing native Module
+prelude; the generated interface export contains Ops only. Six focused native
+controls passed (publication, process execution, selected packages, round
+validation, bootstrap selection and provider Schema conversion). The final
+three-round AWS-to-Null control passed 82 assertions per round and immediate
+publication matched 130 source hashes. Its structured record is
+[[file:../t/fixtures/opentofu/currentness-ops-control.json][the Core currentness receipt]]. The 60/120/145-second bounds are unchanged.
+Prior concurrent-source refusal, the timed-out cohort and the passed-but-later-
+stale cohort remain historical records. This qualifies the recorded source
+epoch; arbitrary later edits require a fresh currentness decision.
+
+* Functional First API and the two publication responsibilities
+
+func.ss owns named functions and exports compiler bindings needed by the other
+roles. Those exports do not make every helper a public Module API. The existing
+role wrapper imports the file once; it does not execute its functions or invent
+a second registry. Private process adaptation helpers remain unexported.
+
+interface.ss owns the second boundary: it explicitly binds the chosen functions
+to the admitted Module scope. OpsScopeContract checks their presence and procedure
+shape without calling them. Consumers resolve that one scope through the Loader
+and bind only the functions needed with native use-module and with-slots. No
+funcs container, task macro or independent public library facade is introduced.
+
+| Module slot | Implementation in func.ss | Result and effect boundary |
+|-------------+---------------------------+----------------------------|
+| validate | validate-script | Returns the same valid Script; rejects invalid input without ambient IO |
+| prepare-command | prepare-script-command | Literal argv, including declared timeout wrapper; no executable lookup |
+| merge-environment | merge-script-environment | Native POO overlay of explicit inherited values and overrides; neither input mutated |
+| preview | preview-script | Native inspection value with argv, directory, explicit environment, timeout and output policy |
+| run | run-script | Validates/prepares once, samples the inherited environment, then explicitly executes |
+
+Native Contract admission remains available through types.ProcessScript and
+its .admit method for callers that need detailed admission results. The ordinary
+validate function does not require the user to inspect or maintain evidence.
+
+Preview defaults to an empty explicit inherited environment. It does not read
+getenv, create a log, start a process, sample a clock or guess currentness. Supply
+an inherited environment object when a concrete environment preview is needed.
+Its argv field distinguishes the inspection value from a runnable declaration;
+it cannot silently become a second executable API or receive a double timeout
+wrapper. Pure behavior assumes inert input values, as elsewhere in native POO.
+
+#+begin_src scheme
+;; One Loader-resolved scope; the alias and function bindings stay in this body.
+(use-module OpsScope as ops
+  (with-slots (validate prepare-command merge-environment preview run) ops
+    (with-slots (Script) (.get ops prototypes)
+      (.def (Check @ Script)
+        command: '("printf" "%s")
+        timeout: 5)
+      (def checked (validate Check))
+      (def environment
+        (merge-environment (.o PATH: "/usr/bin:/bin") (.o CI: "true")))
+      (def inspection (preview checked '("ready") environment))
+      ;; Inspection and command preparation above are inert.
+      (run checked '("ready")))))
+#+end_src
+
+The native Script .run delegates to the same run-script function. Arguments are
+an explicit list in the functional API, while the bound .run method collects
+its positional arguments into that list. Both paths retain timeout behavior,
+normalized exit status, streamed failure output and native exceptions. Process
+elapsed time is captured before constructing the lazy POO result, so delayed
+inspection cannot extend the recorded runtime.
+
+The Core qualification catalog now inherits the admitted scope rather than
+re-exporting each function and prototype. Its coordinator binds run through
+use-module/with-slots. Thus real three-round qualification exercises the function
+entry, while focused controls cover equivalence with the bound native method.
+Source-currentness checks remain at the existing Loader, graph and qualification
+boundaries. Pure preview is not admission of a source epoch or execution authority.
+
+Services lifecycle is a separate design-only concern, described in
+[[file:services.org][Services lifecycle boundaries]]. No Service prototype or supervisor is implemented.
+
+These functions are independent entrypoints, not mandatory manual stages.
+Ordinary execution needs only (run Script arguments): it validates and prepares
+internally. Calling validate or preview first is optional inspection; it neither
+starts a process nor authorizes later execution. run samples its own runtime
+environment and rechecks its input, rather than silently executing a preview.
+
+Functional First acceptance: the native publication compiled, all six focused
+regressions (including ops-functional-test.ss) passed, and three serial real
+AWS-to-Null rounds passed 82 assertions each through the public run function.
+Immediate publication matched all 131 retained source digests. The original
+Case/outer/process budgets and failure-log checks were unchanged. The structured
+currentness receipt records this function API and preserves the previous Module
+control as historical evidence. Services remain design only.

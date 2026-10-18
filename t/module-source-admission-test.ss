@@ -51,6 +51,65 @@
     (check-equal? reads 0)))
 (def module-source-admission-test
   (test-suite "One source-role admission for directory and collection"
+    (poo-flow-test-case "source guards require exact Unicode content and EOF"
+      (with-module
+        (lambda (root)
+          (def file (path-expand "modules/custom/example/types.ss" root))
+          (def text "aλ\nb")
+          (write-role root "types" text)
+          (call-with-module-source-read-cache
+            (lambda ()
+              (module-source-admit-current! (list (cons file text)))
+              (check-equal? (module-source-read file) text)))
+          (for-each (lambda (expected)
+                      (check-exception (module-source-admit-current! (list (cons file expected))) error?))
+                    '("aλ" "aλ\nb!" "aλ\nc" ""))
+          (write-role root "types" "")
+          (check-exception (module-source-admit-current! (list (cons file text))) error?)
+          (module-source-admit-current! (list (cons file ""))))))
+    (poo-flow-test-case "nested pure guards reuse reads but independent validation observes changes"
+      (with-module
+       (lambda (root)
+         (let ((file (path-expand "modules/custom/example/types.ss" root))
+               (reads 0) (events (make-hash-table)))
+           (parameterize ((current-module-source-observer
+                           (lambda (kind amount)
+                             (hash-update! events kind (cut + <> amount) 0)
+                             (when (eq? kind 'reads) (set! reads (+ reads 1)))))
+                          (current-module-source-phase 'nested-guard))
+             (let (original
+                   (call-with-module-source-read-cache
+                     (lambda ()
+                       (let (first (module-source-read file))
+                         (call-with-module-source-read-cache
+                           (lambda () (check-equal? (module-source-read file) first)))
+                         first))))
+               (check-equal? reads 1)
+               (check-equal? (hash-ref events (list 'file-read 'nested-guard file)) 1)
+               (check-equal? (hash-ref events (list 'file-request 'nested-guard file)) 2)
+               ;; Mutation is an effect BETWEEN validation scopes, never inside.
+               (write-role root "types" "(def PublicContract 'updated)")
+               (check-exception
+                (call-with-module-source-read-cache
+                  (lambda () (module-source-admit-current! (list (cons file original)))))
+                error?)
+               (check-equal? reads 2)))))))
+    (poo-flow-test-case "file-kind observations expire before a later validation"
+      (with-module
+       (lambda (root)
+         (def file (path-expand "modules/custom/example/types.ss" root))
+         (def original
+           (call-with-module-source-read-cache (lambda () (module-source-read file))))
+         (delete-file file)
+         (create-directory file)
+         (check-exception
+           (call-with-module-source-read-cache
+             (lambda () (module-source-admit-current! (list (cons file original)))))
+           error?)
+         (delete-directory file)
+         (create-symbolic-link (path-expand "modules/custom/example/objects.ss" root) file)
+         (check-exception
+           (call-with-module-source-read-cache (lambda () (module-source-read file))) error?))))
     (poo-flow-test-case "one public Module object needs no flat private re-exports"
       (with-module
        (lambda (root)

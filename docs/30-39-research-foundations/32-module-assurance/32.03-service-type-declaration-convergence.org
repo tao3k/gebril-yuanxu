@@ -1,0 +1,376 @@
+#+title: 32.03 Service Type Declarations: ObjectContract, Meta and Prototype Types
+#+language: en
+#+property: DOCUMENT_ID 32.03
+#+property: STATUS source-reviewed-unexecuted-design-no-dependency-migration
+
+* Scope and exact evidence boundary
+
+The subsequent maintained service implementation is recorded in
+[[file:32.05-maintained-service-object-contracts.org][32.05]]. This article retains the earlier source-review and isolated native
+receipts as historical evidence; its proposed snippets are not that later receipt.
+
+This is a proposed replacement of the repeated service shape predicates in
+[[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQL]] and [[file:../../../scenarios/gitea-postgresql/gitea/types.ss][Gitea]], covering the complete data envelope of the maintained
+port Scenario, not all Gitea/PostgreSQL server settings. It does not change code,
+dependency pins, Loader integration or previous execution receipts.
+
+Core currently pins gerbil-poo =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
+Updated source reviewed here is feature-branch commit
+=a2525126cb91c98e2ef50e302e39243c7c633913=, not the default branch:
+[[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/object-contract.ss][ObjectContract]],
+[[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/declaration.ss][Meta declaration protocol]],
+[[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/prototype-types.ss][Prototype Types]],
+[[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/type-syntax.ss][finite Type grammar]].
+ObjectContract and IntegerRange already exist at Core's pin; the bounded
+Prototype Types implementation is beyond that pin. Examples below use real
+upstream APIs but their service composition has NOT been executed.
+
+* Complete value declarations for the maintained Scenario
+
+The role wrapper supplies the native library bindings. These are types.ss
+declarations, not new user configuration syntax. Config/default values remain in
+config.ss and its JSON assets. No optional/default policy is guessed by the
+required-field ObjectContract.
+
+#+begin_src scheme
+(def Port (IntegerRange min: 1 max: 65535))
+
+(def PostgreSQLSettingsContract
+  (.cc ObjectContract. identity: 'postgresql/settings
+    responsibilities: (.o port: Port)))
+(def PostgreSQLValueContract
+  (.cc ObjectContract. identity: 'postgresql/config
+    responsibilities:
+    (.o settings: PostgreSQLSettingsContract allowed-ports: (List Port))))
+
+;; This is the EFFECTIVE config after construction, not the raw JSON input.
+(def GiteaDatabaseContract
+  (.cc ObjectContract. identity: 'gitea/database
+    responsibilities: (.o port: Port)))
+(def GiteaValueContract
+  (.cc ObjectContract. identity: 'gitea/config
+    responsibilities:
+    (.o database: GiteaDatabaseContract allowed-ports: (List Port))))
+
+(def ApplicationConfigContract
+  (.cc ObjectContract. identity: 'gitea-postgresql/config
+    responsibilities:
+    (.o postgresql: PostgreSQLValueContract gitea: GiteaValueContract)))
+(def PostgreSQLPlanContract
+  (.cc ObjectContract. responsibilities: (.o port: Port)))
+(def GiteaPlanContract
+  (.cc ObjectContract. responsibilities: (.o database-port: Port)))
+(def ApplicationPlanContract
+  (.cc ObjectContract. identity: 'gitea-postgresql/plan
+    responsibilities:
+    (.o configuration: Object
+        postgresql: PostgreSQLPlanContract gitea: GiteaPlanContract)))
+(def ApplicationValueContract
+  (.cc ObjectContract. identity: 'gitea-postgresql/application
+    responsibilities:
+    (.o config: ApplicationConfigContract plan: ApplicationPlanContract)))
+
+;; Shape of a policy payload, not authentication of its claimed origin.
+(def PortRequirementContract
+  (.cc ObjectContract. identity: 'gitea-postgresql/port-requirement
+    responsibilities: (.o allowed-ports: (List Port) origin: Any)))
+#+end_src
+
+Public ObjectContract rejects unknown fields by default. These exact shapes
+must therefore be applied to data envelopes, not indiscriminately to module
+scopes with additional exports or hidden declaration metadata. Open extension
+points need an explicit policy; do not disable typo checks for ordinary config.
+The repeated use of Port and nested Contracts is composition, not redefinition.
+
+Raw gitea.json contains =database: {}=. Construction supplies a missing port from
+the final PostgreSQL receiver BEFORE this effective-value Contract is checked.
+Explicit null remains an invalid database/port value; it is not absence. Apply
+raw input/default policy before the effective Contract, rather than requiring
+the user to type the derived port. Current allowed-ports defaults are =[5432]=;
+a successful 5433 case must explicitly allow 5433 in both policies.
+
+* Meta: publish descriptors once, without a new field language
+
+The updated declaration protocol consumes existing Slot metadata. It can expose
+a discoverable typed catalog using the already implemented public/private forms.
+This is a library-maintained types catalog, not an extra table of config fields:
+
+#+begin_src scheme
+(def PostgreSQLTypes
+  (.declare Declaration. (.o)
+    (public port (.o type: Type constant: Port))
+    (public Config (.o type: Type constant: PostgreSQLValueContract))))
+(def GiteaTypes
+  (.declare Declaration. (.o)
+    (public Config (.o type: Type constant: GiteaValueContract))
+    (public Application (.o type: Type constant: ApplicationValueContract))))
+
+;; Checked public access; no demand of unrelated module config or processes.
+(read-slot PostgreSQLTypes 'Config)
+(reflect-slots PostgreSQLTypes)
+#+end_src
+
+Native lowering is =object<-declaration-forms= over =declaration-forms=;
+the inherited expander emits ordinary Slot descriptors and the finalizer checks
+duplicate/reserved names. No custom service Meta root or property macro is needed.
+The public metadata catalogs do not require fetching instance config values.
+The read itself demands the selected descriptor and validates it as a Type.
+This supplies visibility/reflection, not a complete field-discovery UI, source
+authentication or publication authority. The scope interface would publish this
+catalog once; wiring it into today's service scope remains a proposed migration.
+Module-scope Contracts still own callable/document export checks; this catalog
+does not replace those Contracts or describe all source-document internals.
+
+* Prototype Types: a reusable functional protocol, not a second field table
+
+The updated finite grammar accepts Integer but does NOT accept the arbitrary
+IntegerRange descriptor Port as a ground Type expression. Do not invent a
+=Port= grammar atom or claim arbitrary predicate subtyping. A reusable membership
+function provides a genuine parameterized use, separate from field declarations:
+
+#+begin_src scheme
+(def Membership.
+  (.o .parameters: '(Item)
+    contains: (lambda (items item) (and (member item items) #t))))
+(def MembershipType
+  (prototype-type Membership. '(Item)
+    '(Function (Bool) ((List Item) Item)) '()))
+(def IntegerMembership
+  (instantiate-prototype MembershipType '(Integer)))
+(def contains-port?
+  (validate (.get IntegerMembership descriptor)
+            (.get IntegerMembership prototype contains)))
+#+end_src
+
+The native expansion substitutes Integer, compiles the existing Function/List
+descriptors, then calls ordinary persistent =specialize= on Membership.; Function
+validation wraps the selected procedure. It does not change how service objects
+are built or prove that every Integer is a Port. The value and requirement
+Contracts above establish the narrower domain first. Result order in Function
+syntax is outputs then inputs, matching upstream constructors.
+
+This is an optional shared functional-library declaration: maintain it once and
+publish the checked function, never repeat prototype instantiation per service
+or request. For this single concrete service, an existing named membership
+function is simpler. Prototype Types justify their authoring cost when the same
+library supports multiple admitted element Types or higher-order protocols.
+Finite inference is unnecessary for a known Integer substitution.
+
+* Relationship and plan obligations that remain domain-owned
+
+After successful shape validation, these checks contain domain meaning rather
+than object?/slot?/integer boilerplate. The following proposed pure obligation
+returns native diagnostic objects. It receives the FINAL checked candidate and
+the complete rows already bound by the existing publication protocol:
+
+#+begin_src scheme
+(def (application-relations candidate rows)
+  (def config (.get candidate config))
+  (def plan (.get candidate plan))
+  (def database-port (.get config postgresql settings port))
+  (def client-port (.get config gitea database port))
+  (append
+    (if (= client-port database-port) '()
+      (list (.o kind: 'connection-mismatch
+                path: '(config gitea database port)
+                actual: client-port expected: database-port)))
+    (if (and (eq? (.get plan configuration) config)
+             (= (.get plan postgresql port) database-port)
+             (= (.get plan gitea database-port) client-port))
+      '()
+      (list (.o kind: 'stale-parent-plan path: '(plan))))
+    (append-map
+      (lambda (row)
+        (if (contains-port? (.get row payload allowed-ports) database-port)
+          '()
+          (list (.o kind: 'unsatisfied-port-requirement
+                    path: '(config postgresql settings port)
+                    actual: database-port origin: (.get row origin)))))
+      rows)))
+#+end_src
+
+Row payloads must pass PortRequirementContract before this function; the bound
+publication protocol must establish complete row coverage/currentness first.
+Calling this function with an empty hand-built row list is not admission.
+Production diagnostics must reuse config-field-origin for actual/expected
+fields and retain payload origins, as the current application-issues does.
+The compact function intentionally shows value relationships, not a replacement
+for those source diagnostics, row admission or the contextual .admit adapter.
+
+Use ApplicationValueContract as the contextual Contract's =value-contract=.
+Core's current admission normalizes before classification; subsequent obligations
+and publication must operate on that final receiver. The plan.configuration
+field above is deliberately Object, not ApplicationConfigContract: the config
+has one canonical normalization owner. The mandatory domain identity check then
+establishes that this reference is exactly that already-checked config. Object
+alone is not sufficient admission. Revalidating the alias independently creates
+a second normalized config and can cause a false stale-plan refusal.
+See the native controls below. The service migration and production diagnostics
+still need integration qualification; the compact type code is not yet shipped.
+
+* Native normalization controls: final receiver versus repeated validation
+
+The executable owner is [[file:../../../t/object-contract-plan-identity-test.ss][object-contract-plan-identity-test.ss]]. It uses native
+ObjectContract, List/Function Types and the CURRENT Core .admit implementation,
+compiled locally from types.ss, without modifying it. ApplicationFixture. is a
+source-matched copy of the maintained pure Gitea constructor, not a generated
+Module or an authenticated publication. A function-valued port-policy is an
+explicit test extension, not a new public service field. This probe does not
+test Loader, source currentness, JSON provenance or contribution collection.
+
+The effective native correction is:
+
+#+begin_src scheme
+;; Configuration remains the full domain Contract.
+(def AliasPlan
+  (.o (:: @ Plan)
+    responsibilities: =>.+ (.o configuration: Object)))
+(def ScalarApplication
+  (.o (:: @ Application)
+    responsibilities: =>.+ (.o plan: AliasPlan)))
+
+;; base is a maintained-style application fixture with both policies
+;; allowing 5432 and 5433. Cache the parent before deriving the child.
+(def cached (.get base plan))
+(.def (Release @ base)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(def evidence
+  (.call (.cc Admission value-contract: ScalarApplication) .admit Release #f))
+;; Obligation reads evidence.candidate, the final checked receiver.
+#+end_src
+
+The plan's native =configuration: config= lexical slot reads the checked outer
+receiver. There is no manual plan extraction/reinsertion. A fresh checked receiver
+does not copy the parent's old computed-slot cache. A captured raw config/parent
+plan remains a value, and the identity/port obligation refuses it. This is the
+reason to distinguish receiver-bound formulas from captured object references.
+
+| Control | Required observation |
+|---------+----------------------|
+| Revalidate config through plan.configuration | List normalization alone can produce distinct configs; ports are both 5433 but admission refuses stale-parent-plan |
+| Canonical config, alias typed Object | child final config/plan reference identities match; both service ports 5433; cached parent remains 5432 |
+| Explicit client remains 5432 | final .admit refuses connection-mismatch; it does not silently rebind the explicit value |
+| Function-valued config validated twice | wrappers further demonstrate changed identities; matching scalar ports do not authorize the second config |
+| Function-valued config validated canonically | lexical plan follows final config; wrapped function still rejects a string port |
+| Cached parent or captured raw-child plan | refuses stale-parent-plan even when a captured child's scalar ports equal 5433 |
+
+This is a counterexample to an unconditional no-change assumption, not evidence
+that every scalar validation allocates. List fields already make the maintained
+config a useful nontrivial case. The candidate need not remain eq? to the raw
+child; the plan/config relationship must hold WITHIN the admitted final value.
+
+The initial run expecting the repeated-validation path to succeed failed and is
+retained locally. Its result was converted into an explicit negative control,
+not used to remove the identity assertion. Environment/import and stale compiled
+artifact failures also remain in /private/tmp/poo-plan-identity-native and the
+poo-object-contract-plan-identity-20261017 logs. No compatibility runtime was added.
+The actual module prelude could not be reused against the newly installed POO
+artifact exports; the fixture boundary above is intentional and reported.
+
+The host Gerbil runtime was retained. Current Core types and the five required
+observability modules were compiled to /private/tmp/poo-plan-identity-native/lib
+to avoid mixing stale object-layout artifacts from the repository build cache.
+Tests use =just test-file t/object-contract-plan-identity-test.ss= with the normal
+1 GiB/120-second fences, GERBIL_PATH=/Users/guangtao/.gerbil and a load path ordered
+as the temporary compiled Core, host native libraries, then repository libraries.
+This is a scoped native control, not a clean default-path build or proof that
+installed POO artifacts correspond exactly to Core's dependency pin.
+
+Source identity at compilation: types.ss SHA-256
+=2b6a6f84955a9ea9cf21d44c60af89bf950488d7a5b33dc6f83f693182a98a33=;
+the maintained constructor source SHA-256
+=c9973152b2fb9c20fa7b19de35a0e7aa5ead7c9bd995be3863874cdcaa573270=.
+Installed native generated object-contract~0.scm SHA-256
+=e0bfb4fdfbdd58f053416b384da4e8186b80d39dd9d5ade4a297693325d41d0a=;
+validation-rebinding~0.scm SHA-256
+=1805e40263fb091d9413ef3a7f1347db2efe031c2624e54eaf6ffa2c988a6daf=.
+These are bounded source/generated-code observations, not a complete binary
+closure attestation. They do not qualify Meta/Prototype Types integration.
+
+On 2026-10-17 all six controls completed with MODULE-OK, HARNESS-OK and final OK,
+with no ERROR CASE/CHECK/HARNESS or heap/stack overflow markers. A second run
+removed the repository library cache from the load path entirely and passed the
+same six controls, using only freshly compiled Core dependencies and host native
+libraries. Its local receipt is
+=/private/tmp/poo-plan-identity-native/test-no-repository-cache.log=.
+The source/generated-code hashes above were unchanged after both runs. No full
+suite, generated Module prelude, real publication or three-platform runtime
+comparison was executed for this qualification. The equal-scope source comparison
+is [[file:32.04-equal-scope-complex-service-comparison.org][32.04]].
+
+* NixOS mkOption / submodule comparison
+
+The following is an ANALYSIS EXAMPLE using existing NixOS APIs, not a copy of
+the official Gitea/PostgreSQL module. It shows the same bounded field domain and
+late-bound client default. The outer declarations are fragments of one module:
+
+#+begin_src nix
+{ lib, config, ... }:
+let
+  inherit (lib) mkOption types;
+  port = types.ints.between 1 65535;
+  postgres = types.submodule {
+    options.settings.port = mkOption { type = port; default = 5432; };
+    options.allowed-ports = mkOption { type = types.listOf port; default = [ 5432 ]; };
+  };
+  gitea = types.submodule {
+    options.database.port = mkOption {
+      type = port;
+      default = config.application.postgresql.settings.port;
+    };
+    options.allowed-ports = mkOption { type = types.listOf port; default = [ 5432 ]; };
+  };
+in {
+  options.application = {
+    postgresql = mkOption { type = postgres; default = {}; };
+    gitea = mkOption { type = gitea; default = {}; };
+  };
+  config.assertions = [{
+    assertion = config.application.gitea.database.port
+             == config.application.postgresql.settings.port;
+    message = "application.gitea.database.port must match PostgreSQL";
+  }];
+}
+#+end_src
+
+Fixed source: [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix][lib/types.nix]] and [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix][lib/modules.nix]]. The real
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix][Gitea module]] already defaults database.port from final pg.settings.port when
+PostgreSQL is selected; it does not contain the invented application namespace.
+Its types.port includes zero, hence the explicit 1..65535 comparison Type above.
+The analysis fragment does not implement our policy coverage or detached-plan
+checks; those remain additional application-library concerns on both sides.
+
+| Concern | NixOS | Proposed native POO ownership |
+|---------+-------+-------------------------------|
+| Scalar range | ints.between | IntegerRange |
+| Nested required structure | types.submodule/options | ObjectContract responsibilities |
+| Default values | mkOption defaults, merged definitions | config/JSON and maintained object construction |
+| Metadata inspection | option declarations and documentation machinery | Slot metadata/reflection; discovery consumer still needed |
+| Reusable typed functions | Nix functions plus explicit checking | Function Types and optional bounded Prototype Types |
+| Endpoint equality | application assertion | domain obligation |
+| Independent requirements | separately maintained assertion/library policy | complete published rows plus domain obligation |
+| Final detached plan association | application-specific projection policy | normalized receiver/plan check, integration not yet qualified |
+
+* Reflection and next validation questions
+
+What actually disappears? Repeated object?, .slot?, exact-integer? guards and
+nested shape branching in service predicates. Field paths and unknown-field
+policy are supplied by one descriptor graph. The same Port is shared by config,
+policy and plan declarations. Meta can inspect those descriptors without another
+field schema. Prototype Types are a shared functional-library capability, not
+an obligatory wrapper around every field.
+
+What remains? Domain relationships, independent-policy conjunction, source
+authority/currentness, default construction, exact plan association and actual
+effects. NixOS already provides useful nested validation, merging, option
+metadata and final-config defaults. No evidence here establishes fewer total
+maintainer lines than an equivalent NixOS library.
+
+The design improvement is to make structure declarative while keeping domain
+semantics explicit. Do not force Meta declarations, parameter inference or
+publication metadata into ordinary user configuration. Before migration, test
+closed-field diagnostics, raw absence/null handling, Type identity across module
+scope publication, normalization/alias preservation, final-receiver defaults,
+parent-prepared descriptor caches and independent contribution refusal. The
+existing publication tests protect their current path, not this unexecuted rewrite.

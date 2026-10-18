@@ -3,10 +3,21 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: lightweight Doom-style init declaration syntax.
+;;; Boundary: declarative init selection and hygienic namespace bindings.
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
+(import (for-syntax (only-in :std/source this-source-file)
+                    (only-in "../building/source-package.ss" register-module-build-source!)
+                    (only-in :clan/poo/object .ref .slot?)
+                    (only-in :core/module-system/source/init module-init-intent)))
+(begin-syntax
+  (register-module-build-source!
+    (path-expand "../.." (path-directory (this-source-file))) 'core))
+
 (import (only-in :core/module-system/source/init module-init-intent)
+        (only-in :clan/poo/object .ref)
+        (only-in :std/source this-source-file)
+        (only-in :core/module-system/building/interface poo-flow-core-init-build)
         :core/module-system/selection/syntax
         (only-in :core/profile-composition/user-profile
                  pooFlowUserProfile
@@ -16,19 +27,78 @@
                  poo-flow-default-user-setting-keys))
 (export poo-flow!)
 
+;; One hygienic projection rule for every mount; no generated getter catalogue.
+(defrules define-init-namespace ()
+  ((_ binding getter)
+   (begin
+     (defsyntax binding
+       (identifier-rules ()
+         (id (identifier? #'id)
+             (getter))))
+     (export binding)))
+  ((_ binding getter mount)
+   (begin
+     (defsyntax binding
+       (identifier-rules ()
+         (id (identifier? #'id)
+             (.ref (getter) 'mount))))
+     (export binding))))
+
 ;;; The short form is the normal user entry. The two explicit binding forms
 ;;; remain available for profile registries without importing the full UI
 ;;; doctor, presentation, sandbox, and runtime configuration facade.
 (defsyntax (poo-flow! stx)
   (syntax-case stx (profile extends)
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source:))
-     (with-syntax ((init-binding (datum->syntax (syntax ctx) 'poo-flow-module-init)))
-       (syntax
-        (begin
-          (def init-binding
-            (module-init-intent '((poo-flow! option value init-clause ...)) #f))
-          (export init-binding)))))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
+     ;; Normalize literal data only. One private getter is shared by all mounts;
+     ;; expansion does not demand a Module scope or a test executor.
+     (let* ((intent
+             (module-init-intent
+               (list (cons 'poo-flow! (cdr (syntax->datum stx)))) #f))
+            (mounts
+             (if (.slot? intent 'windows)
+               (map (cut .ref <> 'mount) (.ref intent 'windows))
+               '(#f)))
+            (getter (genident 'init-modules-getter)))
+       ;; Public names use the declaration site's context. The accessor keeps
+       ;; its fresh private identity, including through only-in and rename-in.
+       (def (namespace-binding mount)
+         (with-syntax
+           ((binding
+             (datum->syntax (syntax ctx)
+               (string->symbol
+                 (string-append "init."
+                   (if mount (symbol->string mount) "modules")))))
+            (get getter)
+            (key (datum->syntax (syntax ctx) mount)))
+           (if mount
+             (syntax (define-init-namespace binding get key))
+             (syntax (define-init-namespace binding get)))))
+       (with-syntax
+         ((init-binding (datum->syntax (syntax ctx) 'poo-flow-module-init))
+          (build-spec-binding (datum->syntax (syntax ctx) 'init.build-spec))
+          (build-current-binding (datum->syntax (syntax ctx) 'init.build-current!))
+          (test-spec-binding (datum->syntax (syntax ctx) 'init.test-spec))
+          (test-current-binding (datum->syntax (syntax ctx) 'init.test-current!))
+          (test-source-binding (datum->syntax (syntax ctx) 'init.tests))
+          ((namespace-definition ...) (map namespace-binding mounts))
+          (module-source-getter getter))
+         (syntax
+           (begin
+             (def init-binding
+               (module-init-intent
+                 '((poo-flow! option value init-clause ...)) #f))
+             ;; All projections close over this one init-owned selection.
+             (defvalues (build-spec-binding build-current-binding
+                         test-spec-binding test-current-binding
+                         test-source-binding module-source-getter)
+               (poo-flow-core-init-build
+                 (this-source-file ctx)
+                 '(poo-flow! option value init-clause ...)))
+             namespace-definition ...
+             (export init-binding build-spec-binding build-current-binding
+                     test-spec-binding test-current-binding test-source-binding))))))
     ((_ profile-binding
         profile-set-binding
         (profile profile-name (extends base-profile))

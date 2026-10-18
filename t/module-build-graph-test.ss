@@ -11,9 +11,9 @@
         (only-in :core/feature-system/model feature-descriptor)
         (only-in :core/feature-system/capability-model feature-projection-request)
         (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
-        (only-in :core/module-system/source/admission module-source-type module-source-read)
+        (only-in :core/module-system/source/admission module-source-type module-source-read current-module-source-observer)
         (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/modules/building/build-projection poo-flow-core-write-build-entry poo-flow-core-admit-build-inputs))
+        (only-in :core/module-system/building/build-projection poo-flow-core-project-source-spec poo-flow-core-admit-build-inputs))
 (export module-build-graph-test)
 (def Scope (poo-flow-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
 (def (write-file path text)
@@ -30,7 +30,7 @@
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root) (string-append "(package: " prefix ")"))
        (write-file (path-expand "init.ss" root)
-                   "(poo-flow! :app (web +late +early -off) :unused (bomb disable: #t))")
+                   "(poo-flow! mode: explicit :core (schema) :app (web +late +early -off) :unused (bomb disable: #t))")
        (for-each
         (lambda (id)
           (let (directory (path-expand (string-append "modules/" id) root))
@@ -76,20 +76,11 @@
                      link: (lambda (_deps) (error "build must not link domain scopes"))))))))
 (def (entry-names graph)
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
-(def (script-main file)
-  ;; Test-only native expansion of the generated build script; no Module Loader.
-  (parameterize ((current-expander-context (make-top-context)))
-    (for-each eval-syntax (syntax->list (read-syntax-from-file file)))
-    (eval-syntax 'main)))
-(def (native-binding file name)
-  (parameterize ((current-expander-context (make-top-context)))
-    (eval-syntax `(import ,file))
-    (eval-syntax name)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
     (poo-flow-test-case "init to publication to build uses the default reader and never links scopes"
       (with-source
-       (lambda (root _prefix)
+       (lambda (root prefix)
          (let (path (path-expand "modules/app/web/interface.ss" root))
            (write-file path
             (string-append
@@ -99,11 +90,25 @@
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list (.o kind: 'module/build roots: '(\"extra/late\"))))) "
              "off: (error \"negative feature must not evaluate\")))")))
          (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
-                (output (path-expand "automatic" root))
-                (artifact (poo-flow-core-write-build-entry view output)))
+                (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(core/schema app/web))
            (check-equal? (.get view selected-graph feature-order) '(app/web/early app/web/late))
-           (check-equal? (length (.get artifact spec)) 10)
+           (let (names (map symbol->string (entry-names graph)))
+             ;; Contribution targets belong to the contribution package. SDK
+             ;; tools stay guarded, but must not become its compiler targets.
+             (check-equal? (length (filter (lambda (name)
+                                            (string-prefix? (string-append prefix "/") name)) names)) 10)
+             (check-equal? (ormap (cut string-prefix? "core/" <>) names) #f)
+             (def reads '())
+             (parameterize ((current-module-source-observer
+                             (lambda (key _amount)
+                               (when (and (pair? key) (eq? (car key) 'file-read))
+                                 (set! reads (cons (caddr key) reads))))))
+               ((.get graph compiler-current)))
+             (for-each
+               (lambda (suffix)
+                 (check-equal? (ormap (cut string-suffix? suffix <>) reads) #t))
+               '("/module-system/source/declaration.ss" "/types.ss")))
            (check-exception (.get view modules app web) error?)))))
     (poo-flow-test-case "roles derive once, Core dependency precedes consumer, optional order follows Graph"
       (with-source
@@ -174,61 +179,27 @@
           (.get (fixture-view root
                   (.o early: (optional 'early '("extra/link"))
                       late: (optional 'late '("extra/late") '(app/web/early)) off: #f)) build-graph) error?))))
-    (poo-flow-test-case "native build script and make compile only the selected artifact tree"
+    (poo-flow-test-case "direct projection preserves targets and never writes a prepared tree"
       (with-source
        (lambda (root prefix)
+         (write-file (path-expand "build.ss" root) "(export #t)")
          (let* ((v (fixture-view root))
-                (out (path-expand "artifact" root))
-                (artifact (poo-flow-core-write-build-entry v out))
-                (spec (.get artifact spec))
-                (lib (path-expand "lib" root)))
-           (check-equal? (length spec) 10)
-           (check-equal? (.get (poo-flow-core-write-build-entry v out) spec) spec)
-           (check-equal? (module-source-type (path-expand "build.ss" out)) 'regular)
-           (check-equal? (module-source-type (path-expand (string-append prefix "/modules/unused/bomb/interface.ss") out)) #f)
-           (check-equal? (module-source-type (path-expand (string-append prefix "/modules/app/web/extra/off.ss") out)) #f)
-           (let* ((main (script-main (.get artifact build-entry)))
-                  (output (call-with-output-string
-                           (lambda (port) (parameterize ((current-output-port port)) (main "spec"))))))
-             (check-equal? (call-with-input-string output read) spec))
-           (check-equal?
-            (native-binding (path-expand (string-append prefix "/modules/app/web/config.ss") out) 'Origin)
-            (path-normalize (path-expand "modules/app/web/config.ss" root)))
-           ;; Native executor only; no new scheduler, Module runtime Loader or full build.
-           (make spec srcdir: out libdir: lib bindir: (path-expand "bin" root)
-                 parallelize: 1 optimize: #f debug: #t)
-           (for-each
-            (lambda (entry)
-              (check-equal? (module-source-type
-                            (path-expand (string-append (cadr entry) ".ssi") lib)) 'regular)) spec)
-           (let (output
-                 (call-with-output-string
-                  (lambda (port)
-                    (parameterize ((current-output-port port))
-                      (make spec srcdir: out libdir: lib bindir: (path-expand "bin" root)
-                            parallelize: 1 optimize: #f debug: #t)))))
-             (when (string-contains output "... compile") (display output))
-             (check-equal? (and (string-contains output "... compile") #t) #f))
-           (write-file (path-expand "init.ss" root) ";; selection changed")
-           (check-exception ((script-main (.get artifact build-entry)) "spec") error?)))))
-    (poo-flow-test-case "destination tampering and unowned directories refuse before overwriting"
+                (artifact (poo-flow-core-project-source-spec v '() root (path-expand "build.ss" root)))
+                (names (map cadr (.get artifact spec))))
+           (check-equal? (eq? (.get artifact build-graph) (.get v build-graph)) #t)
+           (check-equal? (length names) 10)
+           (check-equal? (andmap (cut string-prefix? "modules/" <>) names) #t)
+           (check-equal? (file-exists? (path-expand ".gerbil" root)) #f)
+           (write-file (path-expand "modules/app/web/config.ss" root) ";; changed")
+           (check-exception ((.get artifact admit-current)) error?)))))
+    (poo-flow-test-case "unconsumed generated contributions cannot silently disappear from spec"
       (with-source
        (lambda (root _prefix)
-         (let* ((v (fixture-view root)) (out (path-expand "artifact" root))
-                (artifact (poo-flow-core-write-build-entry v out))
-                (script (module-source-read (.get artifact build-entry)))
-                (target (path-expand (string-append (cadar (.get artifact spec)) ".ss") out)))
-           (write-file target ";; foreign content")
-           (check-exception (poo-flow-core-write-build-entry v out) error?)
-           (check-exception ((.get artifact admit-current)) error?)
-           (check-exception ((script-main (.get artifact build-entry)) "spec") error?)
-           (check-equal? (module-source-read target) ";; foreign content")
-           (check-equal? (module-source-read (.get artifact build-entry)) script))
-         (let (out (path-expand "unowned" root))
-           (write-file (path-expand "foreign.ss" out) ";; foreign input")
-           (check-exception (poo-flow-core-write-build-entry (fixture-view root) out) error?)
-           (check-equal? (module-source-type (path-expand "build.ss" out)) #f)))))
-    (poo-flow-test-case "stale init, role and contribution inputs refuse materialization"
+         (write-file (path-expand "build.ss" root) "(export #t)")
+         (let (v (fixture-view root #f (list (feature-projection-request 'r 'runtime 'v1))))
+           (check-exception
+            (poo-flow-core-project-source-spec v '() root (path-expand "build.ss" root)) error?)))))
+    (poo-flow-test-case "stale init, role and contribution inputs refuse reuse"
       (for-each
        (lambda (file)
          (with-source
@@ -237,6 +208,6 @@
               (write-file (path-expand file root) ";; changed")
               (check-exception ((.get graph admit-current)) error?)
               (check-exception (poo-flow-core-admit-build-inputs (.get graph source-inputs)) error?)
-              (check-exception (poo-flow-core-write-build-entry v out) error?)
+              (check-exception (poo-flow-core-project-source-spec v '() root (path-expand "init.ss" root)) error?)
               (check-equal? (module-source-type (path-expand "build.ss" out)) #f)))))
        '("init.ss" "modules/app/web/config.ss" "modules/app/web/extra/late.ss" "modules/app/web/func.ss" "modules/app/web/extra/gerbil.pkg")))))

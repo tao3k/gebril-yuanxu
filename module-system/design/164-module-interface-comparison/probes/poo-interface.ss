@@ -1,6 +1,6 @@
 (import :core/object-syntax/path-slots
         :core/profile-composition/selection-syntax
-        (only-in :poo-flow/modules/funflow/native-scope Funflow)
+        (only-in :core/scenarios/funflow/scope Funflow)
         (only-in :clan/poo/object .get .+ .slot?))
 (.def ProjectCI funflow: (use-module Funflow as ff (.o (:: @ ff))))
 (def (with-release-manifest inherited-artifacts)

@@ -1,0 +1,42 @@
+#+title: 27.03 Crossplane: Issue Evidence and User Observations
+#+language: en
+#+property: DOCUMENT_ID 27.03
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Issues and Engineering Limitations
+
+Status observations below belong to the initial 2026-10-17 research pass;
+they have not been refreshed by this document reorganization. Reported behavior
+is not a confirmed or reproduced defect in our environment.
+
+| Source | Reported | Version scope | Observation | Evidence status |
+|--------+----------+---------------+-------------+-----------------|
+| [[https://github.com/crossplane/crossplane/issues/2072][Issue 2072]] | 2021-01-12 | Historical version not pinned | Ordered resource creation versus readiness | Closed as not planned in initial review; not reproduced here |
+| [[https://github.com/crossplane/crossplane/issues/4616][Issue 4616]] | 2023-09-13 | Historical version not pinned | Function pipeline readiness responsibility | Closed in initial review; not reproduced here |
+| [[https://github.com/crossplane/crossplane/issues/6139][Issue 6139]] | 2024-11-27 | Version not captured in the initial notes | Composition/function revision association | Open in initial review; not reproduced here |
+
+The source links above remain the authority for each report. Pin missing versions
+and run an isolated reproduction before promoting an issue-reported observation
+to reproduced behavior.
+
+Reference marks: all three records are ISSUE-REPORTED and NOT-REPRODUCED.
+The first two are historical closed reports; the third's open status is the
+initial observation, not a refreshed finding. None is relabelled CONFIRMED-DEFECT.
+
+* Interpretation of the reports
+
+Issue 2072 asks for dependency/readiness ordering: submitting one resource is not
+proof that another can use it. Issue 4616 discusses who should determine readiness
+and whether that logic belongs in a function rather than accumulating core rules.
+Both are historical design evidence; do not present them as untouched current bugs.
+
+Issue 6139 describes a rollout problem when composition revisions do not bind the
+function revision that interprets them. Its lesson for us is that pinning config
+alone is insufficient if a projector, Contract or execution implementation changes.
+The issue's exact status may change; its reported scenario remains the evidence.
+
+These are distinct requirements: ordering/readiness, ownership of readiness logic,
+and versioned interpretation of configuration. A single generic dependency edge
+should not be assumed to solve all three. See [[file:27.04-case-reflection-and-onwards.org][the proposed case controls]].
+

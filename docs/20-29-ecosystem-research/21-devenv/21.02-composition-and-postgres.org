@@ -1,0 +1,101 @@
+#+title: 21.02 devenv Modules: Composition, PostgreSQL and Hidden Maintenance
+#+language: en
+#+property: DOCUMENT_ID 21.02
+#+date: [2026-10-17]
+#+property: STATUS moving-source-and-primary-documents-not-a-service-run
+
+* Composition is part of the public interface
+
+The [[https://devenv.sh/composing-using-imports/][official import guide]] shows a project combining frontend and backend
+configurations through devenv.yaml imports; imported configurations contribute to
+one environment and its processes. A small example fragment is:
+
+#+begin_src yaml
+imports:
+  - ./frontend
+  - ./backend
+#+end_src
+
+This is an environment/module composition interface. Package overlays are a
+different mechanism: the [[https://devenv.sh/overlays/][overlay guide]] describes changing the package set through
+final/prev. Do not equate package replacement, module configuration merging and
+process orchestration merely because all are written in Nix.
+
+* Real maintained module: services.postgres
+
+Source: [[https://github.com/cachix/devenv/blob/main/src/modules/services/postgres.nix][PostgreSQL module on main]], inspected 2026-10-17. This is moving source,
+not a pinned released version or an immutable benchmark input.
+
+The module declares options and uses cfg for effective values. It contributes
+packages, PGDATA/PGHOST/PGPORT, generated settings and a process. PGHOST depends
+on listen_addresses or the runtime directory; the port comes from allocation.
+Readiness checks initialization and database responsiveness. Shutdown selects
+SIGINT. User/database conditions are asserted upstream. These observations show
+why server and client configuration cannot be maintained as unrelated constants.
+
+An analyst-written ordinary consumer of the observed fields is:
+
+#+begin_src nix
+{ ... }: {
+  services.postgres = {
+    enable = true;
+    listen_addresses = "127.0.0.1";
+    initialDatabases = [{ name = "guestbook"; }];
+  };
+}
+#+end_src
+
+No execution is claimed. The consumer need not reproduce launch commands, socket
+paths or readiness logic. A custom Profile may change public values; maintaining
+a whole new process implementation for that change would defeat the abstraction.
+
+* Issues and Engineering Limitations
+
+** DV-01: a default change broke a client connection assumption
+
+- Reference: [[https://github.com/cachix/devenv/issues/1374][Issue 1374]].
+- Marks: ISSUE-REPORTED; HISTORICAL-CLOSED; NOT-REPRODUCED.
+- Reported: 2024-08-10; versions discussed: 1.0.7 and 1.0.8.
+- Observed state: closed on the page read 2026-10-17; closure alone proves no fix.
+- Layer: service environment/default compatibility, not expression syntax.
+
+The reporter traces CI failures to PGHOST changing from a listen-address-derived
+value to a runtime socket directory, with nested NixOS/devenv environment effects.
+The inspected current source computes PGHOST from addresses/runtime context; this
+does not establish a versioned fix or reproduce the report. A scalar field change
+can affect downstream clients even when every field remains well typed.
+
+Our response should connect server exports and client requirements through final
+values, and explain which default/source won. A field Contract alone cannot
+establish that a socket exists or that the database is ready.
+
+** DV-02: configuration composition does not define all process relationships
+
+- References: import guide and current PostgreSQL process contribution above.
+- Marks: SOURCE-OBSERVED; DESIGN-INFERENCE; NO-NEW-UPSTREAM-BUG-CLAIM.
+
+Combining frontend/backend configurations makes contributions available. It does
+not by itself prove an application's migration ordering, database readiness or
+failure recovery. These must be specified at the runtime boundary. Our own
+prototype inheritance order must likewise not imply service execution order.
+
+* Reflection: what to preserve and what to improve
+
+Preserve maintained domain defaults, small user interfaces, reusable modules and
+an explicit process boundary. Improve our proposal by treating exported connection
+values, dependencies and lifecycle contracts as separate published responsibilities.
+Do not expose runtime directory bookkeeping to ordinary configuration authors.
+
+Scheme functions and POO may reduce duplicated projection code and support
+deliberate behavior refinement. They cannot infer the intended readiness condition
+or prevent compatibility regressions without tests of real consumers. Before
+claiming an improvement, change a port/default in a parent and verify both the
+child service and its clients, including a previously forced parent projection.
+
+* Conclusion and Onwards
+
+The user sees few fields because maintainers own substantial integration work.
+The design objective is to organize and test that work, not erase it from the
+architecture. Next evidence should pin one released revision and exercise startup,
+connection and shutdown; this study establishes no runtime/performance result.
+

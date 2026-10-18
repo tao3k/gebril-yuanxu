@@ -1,0 +1,72 @@
+#+title: Configuration-System Research Agenda
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS research-agenda-independent-dossiers-not-complete
+
+* Research question
+
+Human-Agent collaboration is a primary motivation: see [[file:../../docs/10-19-design/10-configuration/10.06-human-agent-module-authoring.org][the authoring study]].
+Assess both ordinary configuration and assisted creation of new abstractions.
+Historical authoring-cost assumptions are not binding framework constraints, while
+their semantic results still need to be addressed. [[file:../../docs/10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][Guestbook]] supplies the shared
+case without freezing a Nix-style public args interface.
+
+Can ordinary configuration stay as small as assigning values while maintainers
+independently publish thousands of reusable, contract-bearing objects? The goal
+is to separate package identity, selected dependencies, effective configuration,
+Contract admission and explicit effects, while retaining Scheme functions and
+native POO refinement as extension mechanisms.
+
+The organization of research must support independent review. Read the
+[[file:../../docs/20-29-ecosystem-research/README.org][research library]] and its [[file:../../docs/30-39-research-foundations/30-method/30.01-evidence-protocol.org][evidence protocol]]. Each platform owns its own
+configuration/source observations, issue records, reflection and conclusions.
+The previous mixed platform sections have been moved into those dossiers;
+this agenda does not repeat them or substitute for their further research.
+
+* Independent platform and paper owners
+
+| Subject | Research owner |
+|---------+----------------|
+| Terraform | [[file:../../docs/20-29-ecosystem-research/23-terraform/23.01-index.org][Configuration, lifecycle and planning]] |
+| OpenTofu | [[file:../../docs/20-29-ecosystem-research/24-opentofu/24.01-index.org][Provider inputs, identities and state]] |
+| Pulumi | [[file:../../docs/20-29-ecosystem-research/26-pulumi/26.01-index.org][Components and dependency-bearing values]] |
+| Spacelift | [[file:../../docs/20-29-ecosystem-research/28-spacelift/28.01-index.org][Run dependencies and governance]] |
+| env0 | [[file:../../docs/20-29-ecosystem-research/29-env0/29.01-index.org][Templates, environments and workflows]] |
+| Crossplane | [[file:../../docs/20-29-ecosystem-research/27-crossplane/27.01-index.org][Composition, observations and reconciliation]] |
+| NixOS | [[file:../../docs/20-29-ecosystem-research/20-nixos/20.01-index.org][Arguments, options and fixed points]] |
+| devenv | [[file:../../docs/20-29-ecosystem-research/21-devenv/21.01-index.org][Development modules and lifecycle integration]] |
+| Flox | [[file:../../docs/20-29-ecosystem-research/22-flox/22.01-index.org][Environment composition, locking and activation]] |
+| Nickel | [[file:../../docs/20-29-ecosystem-research/25-nickel/25.01-index.org][Contracts, merging and ecosystem configurations]] |
+| Backpack | [[file:../../docs/30-39-research-foundations/31-papers/31.01-backpack.org][Independent paper reading record]] |
+| Build Systems a la Carte | [[file:../../docs/30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][Independent paper reading record]] |
+
+* Cross-platform synthesis and outstanding work
+
+[[file:08-infrastructure-platforms-and-design-gates.org][Architecture and design gates]] owns comparisons across these subjects.
+[[file:../../docs/10-19-design/10-configuration/10.02-review-controls.org][Review controls]] and [[file:../../docs/10-19-design/10-configuration/10.03-outcome-states.org][outcome-state boundaries]] retain shared questions without
+mixing platform-specific research records.
+
+[[file:../../docs/10-19-design/10-configuration/10.04-module-system-design-questions.org][The module-system design study]] compares the public interface, contextual
+instantiation, contribution semantics, dependency granularity and phase ownership.
+The object of design is the Module System; Scheme/POO supplies mechanisms and does
+not by itself answer these architectural questions. Each research article includes
+an Issues and Engineering Limitations section with qualified original references.
+
+A Module/args design is still a proposal in
+[[file:06-directory-windows-and-context-args.org][directory windows and contextual arguments]]. No syntax or implementation is
+frozen by the reading agenda. A small Ops/checks/release example cannot establish
+large-ecosystem performance or correctness of AWS/Kubernetes consumers.
+
+* Issues and Engineering Limitations
+
+The [[file:../../docs/30-39-research-foundations/30-method/30.01-evidence-protocol.org][research protocol]] defines reference marks and version/status obligations.
+Original reports belong to each independent dossier; the agenda makes no new
+CONFIRMED-DEFECT or runtime claim. The [[file:../../docs/10-19-design/10-configuration/10.04-module-system-design-questions.org][module-system study]] links architectural
+questions back to those qualified records.
+
+* Research status
+
+The current dossiers preserve initial reading and explicit research gaps. Their
+creation is an organizational correction, not completion of a platform study.
+Substantive source analysis, complete cases, negative controls and independent
+conclusions must precede claims that Scheme/POO improves on a platform.

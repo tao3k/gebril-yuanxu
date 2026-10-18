@@ -16,7 +16,8 @@
                  walist->list))
 
 (export poo-flow-json-schema-source->json-like
-        poo-flow-json-schema-read-file)
+        poo-flow-json-schema-read-file
+        poo-flow-json-schema-read-port)
 
 ;; : (-> Pair Pair)
 (def (poo-flow-json-schema-source-row->json-like row)
@@ -39,9 +40,13 @@
 ;;; Boundary: the bridge consumes symbol-key walists so downstream contract
 ;;; logic stays independent from hash-table iteration order and string/symbol
 ;;; key drift.
-;; : (-> PathString JsonLikeSchema)
-(def (poo-flow-json-schema-read-file path)
+;; : (-> InputPort JsonLikeSchema)
+(def (poo-flow-json-schema-read-port port)
   (parameterize ((current-json-read-options
                   (JSONReadOptions key-as-symbol: #t)))
     (poo-flow-json-schema-source->json-like
-     (call-with-input-file path read-json))))
+     (read-json port))))
+
+;; : (-> PathString JsonLikeSchema)
+(def (poo-flow-json-schema-read-file path)
+  (call-with-input-file path poo-flow-json-schema-read-port))

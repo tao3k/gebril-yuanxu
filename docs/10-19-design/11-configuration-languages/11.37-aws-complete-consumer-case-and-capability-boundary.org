@@ -1,0 +1,282 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.37 Config Languages 36: Complete AWS Consumer Inputs and Capability Ownership
+#+property: DOCUMENT_ID 11.37
+#+property: STATUS design-only-not-executed-no-loader
+
+* Correction: one override is not a deployable configuration
+
+The inspected omnibus-ncl/aws/main.ncl at c5d37eb51961fd7bd32f775843044ca7f8191715
+supplies region, AMI selection, backend bucket/key/region, assumed role, VPC CIDR,
+instance type/network/key references, private-key input and output selection.
+A derivative changing one type only illustrates replacement AFTER complete
+configuration exists. It does not remove any of those deployment inputs.
+
+The AWS Module maintains capability Contracts/prototypes, pure resource elaboration,
+SSH support and operation defaults. It must not pretend to know a customer's AWS
+role, backend, key, network or machine choices. Optional maintained reference
+Profiles/Scenarios are now published under AWS.examples, not the default capability
+configuration. That namespace is a deliberate opt-in source example, not an
+admitted deployable baseline or a mandatory Module requirement.
+
+The design now separates capability objects.ss/config.ss from optional reference
+recipe objects in scenarios/objects.ss and their data in scenarios/profiles/.
+The complete consuming Module owns its own config.ss, reusable Profiles and
+Development/Build compositions. A team's contributed Profile may supply some
+inputs, but its completeness/preconditions must be discoverable before selection.
+
+* Same workload; explicit non-equivalence and missing deployment proof
+
+The consumer below covers every input responsibility in the real main.ncl. Its
+source-derived AMI and placeholder role/private-key/state values are retained for
+comparison and must be replaced/verified before real use. The machine stores the
+selected AMI directly instead of hard-coding a one-region lookup in every Scenario;
+for another region the user must supply a qualified matching AMI or explicitly
+reuse a maintained region-image Profile/lookup. No current AMI availability is
+claimed. The role predicate currently checks text, NOT ARN/account authorization.
+
+The explicit SSH range 192.0.2.0/24 is documentation data, not a usable access range
+or the reference's broad SSH default. The consumer must configure its actual range.
+The change is intentional and is not semantic parity on all security inputs.
+Build adds a second host/network; it is a variation beyond the original main.ncl.
+The original backend bucket must exist/bootstrap separately, credentials must
+permit the assumed role, the key must be available at the execution boundary,
+and output Schema/provider/runtime checks remain outstanding. Complete input
+coverage is not proof that this design can deploy today.
+
+* Four source roles, one complete consuming Module
+
+config.ss contains ordinary data, including access and machine details. objects.ss
+applies Contract prototypes to those values and names reusable objects. Domain
+Contract aliases stay in types.ss; its field definitions come from AWS. The one
+AWS dependency is declared in interface.ss; generated typed cross-file injection
+remains pending Core work. No user-written import/export list or link factory.
+
+The complete source is [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][consumer config.ss]] with
+[[file:scenarios/modular-configuration/contributions/aws-project/types.ss][types.ss]], [[file:scenarios/modular-configuration/contributions/aws-project/objects.ss][objects.ss]] and
+[[file:scenarios/modular-configuration/contributions/aws-project/interface.ss][interface.ss]]:
+
+** types.ss
+
+#+begin_src scheme
+;;; Reuse canonical domain Contracts; do not repeat the AWS field vocabulary.
+(def NetworkContract (.get AWS types Network))
+(def InstanceContract (.get AWS types Instance))
+(def ConfigContract (.get AWS types Scenario))
+#+end_src
+
+** config.ss
+
+#+begin_src scheme
+;;; Complete INPUT COVERAGE for the inspected Omnibus main.ncl.
+;;; Reference AMI/account/key/state values must be replaced/verified before real use.
+;;; This is data, not executable deployment authority.
+(def Config
+  (.o region: "eu-central-1"
+      credentials:
+      (.o assume-role: (.o role-arn: "placeholder_iam_role"
+                           session-name: "tf-ncl"))
+      state: (.o bucket: "tf-ncl-aws-example"
+                 key: "aws-demo.tfstate"
+                 region: "eu-central-1")
+      keys:
+      (.o ssh_key: (.o private-key-path: "./<placeholder-private-key>"))
+      networks:
+      (.o test: (.o cidr-block: (.o prefix: "10.1.0.0" length: 16)
+                   tag-prefix: "Tf-Ncl"))
+      instances:
+      (.o test: (.o ami: "ami-0f1cf34dcb4057a5f"
+                   type: "t2.micro"
+                   network-ref: 'test key-ref: 'ssh_key
+                   ssh-cidrs: '("192.0.2.0/24")
+                   public-ip?: #t))
+      outputs: (.o instance_ip: 'test)))
+
+;;; Additional deployment inputs for the build-host Scenario; no Scheme build script.
+(def BuildConfig
+  (.o network: (.o cidr-block: (.o prefix: "10.2.0.0" length: 16)
+                  tag-prefix: "Build")
+      machine: (.o type: "t3.small" network-ref: 'build)))
+;;; 192.0.2.0/24 is documentation data; replace with the user's actual access range.
+;;; Unlike the Omnibus broad SSH default, access intent is explicit in user data.
+#+end_src
+
+** objects.ss
+
+#+begin_src scheme
+;;; Native construction of user-owned Profiles from their configuration values.
+;;; These explicit proto expansions do NOT establish automatic Contract association.
+(.def (TestNetworkProfile @
+       (.+ (.get NetworkContract proto) (.get Config networks test))))
+(.def (TestMachineProfile @
+       (.+ (.get InstanceContract proto) (.get Config instances test))))
+(.def (BuildNetworkProfile @ (.+ TestNetworkProfile (.get BuildConfig network))))
+(.def (BuildMachineProfile @ (.+ TestMachineProfile (.get BuildConfig machine))))
+
+;;; Apply the Scenario Contract prototype to the complete user configuration.
+;;; Bind context on occurrences; named reusable Profiles remain independent.
+(.def (Development scenario (.+ (.get ConfigContract proto) Config))
+  networks: =>.+
+  (.o test: (.o (:: @ TestNetworkProfile) region: (.get scenario region)))
+  instances: =>.+ (.o test: TestMachineProfile))
+
+(.def (Build scenario Development)
+  networks: =>.+
+  (.o build: (.o (:: @ BuildNetworkProfile) region: (.get scenario region)))
+  instances: =>.+ (.o build: BuildMachineProfile)
+  outputs: =>.+ (.o build_ip: 'build))
+
+;;; An OPTIONAL later specialization, after the complete inputs above are supplied.
+;;; Target path assignment is still pending; the equivalent native form is below.
+(.def (Production @ Build)
+  instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
+#+end_src
+
+** interface.ss
+
+#+begin_src scheme
+;;; One typed Module dependency; no per-file imports, Loader calls or registry.
+;;; The canonical AWSInterfaceContract comes from selected publication metadata.
+;;; Its source/type binding and the injected AWS scope remain pending in Core.
+;;; Standard config/types.Config/project scope admission is Core-owned defaulting
+;;; (pending); absence of a custom scope-contract must not mean no scope check.
+(.def Deployment
+  identity: 'deployment
+  core:
+  (.o requires:
+      (.o AWS: (.o module-id: 'aws contract: AWSInterfaceContract))
+      exports:
+      (.o types: (.o Config: ConfigContract)
+          config: Production
+          profiles: (.o test-network: TestNetworkProfile
+                        test-machine: TestMachineProfile
+                        build-network: BuildNetworkProfile
+                        build-machine: BuildMachineProfile)
+          scenarios: (.o development: Development build: Build
+                         production: Production)
+          project: (.get AWS project)))
+  features: (.o))
+;;; Common preview code applies project to THIS scope's final config; the user
+;;; does not manually extract config, collect policies, or register methods.
+#+end_src
+
+* Contract-directed declaration versus current native expansion
+
+The desired shape is:
+
+#+begin_src scheme
+;; A partial reusable object definition, NOT a complete deployment.
+(.def (MachineVariant @ InstanceContract)
+  type: "t3.medium")
+#+end_src
+
+Contract-directed parent recognition must select the descriptor's proto and
+retain its mandatory association. Current .def does not do that substitution.
+The current native CONSTRUCTION expansion is:
+
+#+begin_src scheme
+(.def (MachineVariant @ (.get InstanceContract proto))
+  type: "t3.medium")
+#+end_src
+
+This native expression creates a partial object; it does not automatically admit
+it, preserve every associated policy, or fill missing deployment information.
+For the complete ordinary Config data, the actual objects.ss uses .+ to apply
+the Contract proto to the data object before naming it. This is internal object
+construction, not a patch DSL and not another public syntax. Complete mandatory
+policy/source preservation, including .+ RHS requirements, still belongs to Core.
+
+* Key inputs are data; runtime selection stays inside the capability
+
+ExternalKeyContract now requires private-key-path: AWSString. Users no longer
+select the Scheme entry procedure or construct process argv in their config.
+The AWS Module's command publication selects its own SSH implementation once;
+its pure projector generates data.external using that entry and the final path:
+
+#+begin_src scheme
+(.o program:
+    (list (executable-path aws-public-key-main)
+          (.get key private-key-path)))
+#+end_src
+
+The preceding command-handle examples in module 34 are superseded by this public
+input boundary. Selected graph/artifact resolution is still pending and still
+must not compile or execute during projection. No SSH process or private-key read
+was performed here. Source role preparation must avoid importing the runtime
+entry as a side effect merely to find declaration metadata.
+
+* Final-value admission, resource readout and failure paths
+
+The operation first calls the public .admit protocol on operation options and
+final Scenario through aws-require. ApplicationContract checks final credentials,
+state, keys, network/instance entries and outputs; child Contracts reject unknown
+fields. Relationship checks then resolve network-ref/key-ref/output targets in
+the SAME final Scenario. Full code is in the module 35 study and func.ss.
+
+The resulting expected readout is:
+
+#+begin_example
+Development: networks.test = 10.1.0.0/16; instances.test.type = t2.micro
+Build:       retains test; adds networks.build = 10.2.0.0/16 and build type t3.small
+Production:  retains all configured inputs; replaces build type with t3.medium
+all:         explicit account/backend/key inputs come from the consuming Config
+#+end_example
+
+The projector uses the final instance's AMI/type and network/key references,
+final network CIDR/naming, final credentials/state and final selected key path.
+It emits VPC/subnet/routing/security group/instance/keypair/output candidates.
+A parent plan cannot stand in for a changed child: admit and project the child
+again. No automatic incremental invalidation or successful runtime is claimed.
+
+#+begin_example
+instances.build.tyep              -> unknown-field, even if inherited type exists
+instances.build.network-ref=absent -> missing-network, before resource generation
+keys.ssh_key.private-key-path=""   -> key field rejection, before resource generation
+placeholder_iam_role              -> may pass present String Contract; NOT AWS authorization
+#+end_example
+
+The last limitation is a concrete Contract gap, not a user task to copy internal
+validation logic. Improve upstream ARN/region/state/key discovery and diagnostics;
+then separately qualify provider/runtime checks. Candidate status remains
+projected-unadmitted until all required downstream gates are actually satisfied.
+
+* UX reflection and next evidence
+
+The normal user's job is to describe their deployment, not reconstruct AWS resource
+boilerplate. Ordinary assignments must cover region, backend, access and machines
+without requiring POO extension operators. A reusable Profile can reduce repeated
+values across Scenarios; inheritance is appropriate for Build's shared machine
+policy and a later Production variant. Neither replaces ownership of real inputs.
+
+Native .def/.+/.admit foundations exist. The files here remain design source.
+Pending: Contract-parent normalization/association, typed source injection,
+optional example source selection, artifact resolution, source diagnostics,
+direct path assignment and full AWS input/output qualification. No runtime code,
+Loader or build integration was implemented. No AWS/native controls executed.
+
+* Shared and private value-type refinement
+
+[[file:11.38-shared-value-types-and-private-domain-contracts.org][The value-type library design]] records why current AWSString/map predicates are
+insufficient, which native Gerbil address structures/parsers can be reused, and
+which field/type/Contract refinements remain unimplemented.
+
+* Provider-schema-first refinement
+
+[[file:11.39-provider-schema-first-aws-contracts.org][The provider-schema-first design]] is authoritative for generated field constraints,
+shared semantic additions, bridge coverage and the still-unverified tf-ncl PR 83.
+Do not interpret the earlier field-type list as a requirement to hand-rewrite
+provider schemas or as already implemented rich diagnostics.
+
+* OpenTofu module ownership
+
+[[file:11.40-opentofu-module-and-complete-aws-contract-flow.org][The OpenTofu capability design]] assigns provider conversion/generation upstream
+and connects concrete mapping, generated field Contracts and the complete
+consumer role files. OpenTofu is the target engine; prior Terraform terminology
+identifies the reference wire format, not a requirement to run Terraform.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

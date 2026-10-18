@@ -1,0 +1,97 @@
+#+title: 23.05 Terraform Module Research 04: Issues and Engineering Limitations
+#+language: en
+#+property: DOCUMENT_ID 23.05
+#+date: [2026-10-17]
+#+property: STATUS primary-reports-reviewed-not-locally-reproduced
+
+* Reading the evidence
+
+Issue state below was observed on 2026-10-17 and can change. GitHub labels are
+upstream triage metadata, not our verdict. A closed report can expose a continuing
+design tradeoff; an open enhancement is not necessarily a confirmed defect.
+The mechanisms are analyzed in [[file:23.03-arguments-types-and-phase-boundaries.org][arguments and phases]] and
+[[file:23.04-schema-plan-and-execution.org][Schema, planning and execution]]. No issue was reproduced by this study.
+
+* Issues and Engineering Limitations
+
+** TF-01: broad module dependencies produce unexpectedly broad plans
+
+- Reference: [[https://github.com/hashicorp/terraform/issues/28377][Issue 28377 and maintainer discussion]].
+- Marks: ISSUE-REPORTED; MAINTAINER-EXPLAINED; DESIGN-TRADEOFF; NOT-REPRODUCED.
+- Reported: 2021-04-15; reporter lists 0.14.9/0.15.0 in shorthand.
+- Observed state: closed; upstream bug label does not override the explanation.
+- Layer: module dependency semantics and plan UX, not HCL parsing.
+
+The reporter describes an unrelated IAM change causing a large plan. On April 21,
+jbardin explains the chain: whole-module depends_on delays a VPC data read; its ID
+becomes unknown; a Security Group using that ID must then be replanned. The
+maintainer treats this as the configured behavior. Other participants describe
+the onboarding and debugging cost. These are distinct perspectives on one case.
+
+Design consequence: distinguish a value dependency from a broad operation
+barrier. Do not translate every modules.foo reference into "wait for all effects
+of foo". A useful preview should identify the edge that propagated uncertainty.
+Hidden behavioral dependencies still require a way to express a barrier.
+
+** TF-02: open object conversion conflicts with typo detection
+
+- Reference: [[https://github.com/hashicorp/terraform/issues/33570][Issue 33570 and type-system explanation]].
+- Marks: ISSUE-REPORTED; MAINTAINER-EXPLAINED; OPEN-ENHANCEMENT; NOT-REPRODUCED.
+- Reported: 2023-07-24 against 1.5.1; observed state: open.
+- Layer: object conversion and authoring diagnostics.
+
+The reporter expects an undeclared nested attribute to fail. On July 25,
+apparentlymart explains that extra attributes are intentionally discarded so
+producers and consumers can evolve independently. The request is therefore not
+evidence that Terraform has no types. It identifies tension between structural
+interface compatibility and strict authored input.
+
+Our response must preserve both use cases: a closed user-authored configuration
+can reject instnace_type, while an explicitly open network dependency interface
+can accept a larger object. Contract composition must retain the declared policy;
+silently changing all objects to closed would create a different usability defect.
+
+Related report: [[https://github.com/hashicorp/terraform/issues/37300][Issue 37300]], opened 2025-07-07, reports 1.2.0/1.9.0 and is
+closed as a duplicate of 33570. Mark: RELATED-REPORT, not independent reproduction.
+
+** TF-03: lifecycle policy is constrained by an earlier phase
+
+- References: [[https://github.com/hashicorp/terraform/issues/22544][Issue 22544]] and [[https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle][official lifecycle reference]].
+- Marks: HISTORICAL-REPORT; DOCUMENTED-RESTRICTION; NOT-REPRODUCED.
+- Reported: 2019-08-21 against 0.12.6; observed issue state: open.
+- Layer: graph/lifecycle processing; historical initialization symptoms are separate.
+
+The report attempts a nonliteral prevent_destroy and describes confusing init
+behavior. The documented early processing explains the restriction; it does not
+establish that every historical symptom persists. Scheme can compute a concrete
+policy before backend handoff. It cannot make Terraform accept an apply-time
+unknown in a phase that requires a known decision. Organizational deletion policy
+also needs an authority boundary, not merely a more convenient expression.
+
+** TF-04: historical absence of module depends_on is not a current limitation
+
+- References: [[https://github.com/hashicorp/terraform/issues/21418][Issue 21418]] and [[https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on][current dependency reference]].
+- Marks: HISTORICAL-RESOLVED; NEGATIVE-CONTROL; NOT-REPRODUCED.
+- Reported: 2019-05-23 against 0.11.13; observed issue state: closed.
+- Layer: engine feature evolution.
+
+This controls our research method: old discussions cannot support a present-day
+claim that Terraform cannot declare module dependencies: the current official
+reference explicitly supports them. The interesting current
+question is their granularity and cost, covered by TF-01, not their existence.
+
+* Reflection and conclusion
+
+The most consequential findings are tradeoffs across module boundaries, not
+missing punctuation. A more expressive front end could reproduce TF-01 by
+overconnecting its args graph and TF-02 by silently dropping fields. Our design
+must demonstrate better edge explanations and explicit open/closed boundaries.
+
+* Onwards
+
+The source audit supports the causal explanations above. A local acceptance
+study still needs pinned installations, a safe plan-only AWS environment, and
+matched narrow/broad dependency controls. No performance or deployment result is
+inferred from these reports. Architecture proposals remain in
+[[file:23.06-module-system-reflection.org][the module-system reflection]].
+

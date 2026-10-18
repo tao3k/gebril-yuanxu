@@ -16,13 +16,18 @@ ASP Scheme, or a product runtime. POO Flow includes Core as a Git submodule and
 builds its sources before its own modules. It does not repeat that submodule as
 a =gerbil.pkg= dependency.
 
+* Documentation
+
+[[file:docs/README.org][Core documentation]] separates independent platform research from our design
+proposals. The existing engineering/style chapter keeps its current ownership.
+
 * Responsibility map
 
 | Area | Shared mechanism |
 |------+------------------|
 | =object-family/=, =types.ss= | POO object families and Types |
 | =object-syntax/path-slots= | Bounded dotted-path declarations lowered to native POO refinements |
-| =extension-graph/=, =composition/lineage.ss= | Extension fixed points and pure lineage analysis |
+| =graph/=, =composition/lineage.ss= | Unified graph topology, ordered POO operations and pure lineage analysis |
 | =contribution/= | Contribution values, capability admission, receipt issuance and revocation |
 | =module-system/= | Native Module values, schemas, inheritance, SourceRef, static Loader and Catalog |
 | =profile-composition/= | Indexed Module Profile selection and pure ProfileBundle composition |
@@ -38,8 +43,9 @@ leaf owners directly.
 Semantic Module imports use native POO prototype composition. Gerbil POO's C4
 orders and de-duplicates ancestors; the =contributions= slot rule places local
 values before inherited values. Core does not add a general-purpose merge
-evaluator. Removal, conflict admission, and extension fixed points remain
-explicit, separately named policies.
+evaluator. Explicit graph contributions execute once in declaration order.
+Their receipts record application and whether that pass changed the graph; they
+do not assert idempotence or fixed-point convergence.
 
 The CLOS layer adds multiple dispatch, method combination, lifecycle, and
 other CLOS semantics absent from the base MOP. Object identity, slot lookup,
@@ -92,7 +98,7 @@ a downstream adapter; no compatibility source tree is retained.
 
 * Configuration language design
 
-[[file:design/config-languages/00-index.org][The Core-owned configuration language design]] contains expression, Contract,
+[[file:docs/10-19-design/11-configuration-languages/11.01-index.org][The Core-owned configuration language design]] contains expression, Contract,
 Module organization and extension discussions, including source-backed ecosystem
 comparisons. POO Flow keeps its actual product consumption and application examples.
 These documentation changes do not update the pinned submodule revision.

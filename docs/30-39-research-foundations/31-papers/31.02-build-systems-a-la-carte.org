@@ -1,0 +1,42 @@
+#+title: 31.02 Build Systems a la Carte: demand and reuse are separate decisions
+#+language: en
+#+property: DOCUMENT_ID 31.02
+#+property: STATUS paper-reading-notes-not-a-correspondence-proof
+#+property: AGENT_AUTHORING_COVERAGE not-discussed-in-current-reading-notes-not-a-full-paper-audit
+
+* Build Systems a la Carte: demand and reuse are separate decisions
+
+Primary source: [[https://simon.peytonjones.org/build-systems-a-la-carte/][Build Systems a la Carte]], ICFP 2018, by Mokhov, Mitchell and Peyton Jones.
+
+The paper systematically separates build-system scheduling and rebuilding
+choices. For this design, knowing that an object was cached is different from
+knowing that its observed inputs remain current; selecting dependencies is
+different from deciding which artifacts can be reused. This is inspiration for
+qualification, not proof that the Core graph implements the paper's framework.
+
+Our response: generation-local POO caches retain values, while source/package
+currentness guards authorize reuse/publication. Build contributions remain a
+separate explicit phase. Unselected sources should incur neither compilation
+nor runtime initialization, although selected metadata may need inspection.
+
+Conclusion: measure directory observations, role reads, scope instantiations,
+Contract forcing and external processes separately. Cold/hot timing without
+these counts cannot establish the cause of an apparent improvement.
+
+
+* Further reading and qualification
+
+The initial reading supports the design motivation above. A full account of the
+paper's formal model, assumptions and correspondence to Core is not yet written.
+Keep such work in this paper's own modules; do not treat a citation as a proof.
+See [[file:../30-method/30.01-evidence-protocol.org][the research protocol]].
+
+* Issues and Engineering Limitations
+
+Reference: the original paper linked above. Marks: PAPER-INSPIRATION;
+DESIGN-INFERENCE; CORRESPONDENCE-NOT-PROVED. No GitHub defect is asserted.
+Our open obligation is to specify what a task observes, how dependency changes
+invalidate reuse and which operations are outside a pure build model. Remote
+drift and provider effects cannot be certified merely by a source-cache hit.
+These are Core adaptation questions, not demonstrated shortcomings of the paper.
+

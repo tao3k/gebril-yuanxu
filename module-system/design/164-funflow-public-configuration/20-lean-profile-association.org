@@ -11,7 +11,7 @@ and real Core-admission correspondence. Its current target has 39 theorems and
 
 * Current proof owner
 
-The Profile association library now lives in =core/proofs/lean-poo= and is
+The Profile association library now lives in =core/proofs/lean= and is
 built there with =lake build=. It is no longer a library of the product's
 =packages/proofs/lean-poo= workspace. Its exact LeanPoo pin and Lean 4.34.0
 version are retained. The dependency and run description below records the
@@ -25,14 +25,14 @@ verified against both lake-manifest.json and the dependency checkout HEAD.
 Lean is leanprover/lean4:v4.34.0. No lake update, dependency upgrade or new proof
 project was needed. Pre-existing edits elsewhere in this workspace were retained.
 
-The new non-default library target is PooFlowProfileAssociationProof:
+The new non-default library target is PooFlowCoreProof.ModuleSystem.Schema.Association:
 
 | Source | Responsibility |
 |--------+----------------|
-| [[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/Model.lean][Model.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
-| [[file:../../../proofs/lean-poo/PooFlowProfileAssociationProof/Checks.lean][Checks.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
+| [[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/Model.lean][Model.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
+| [[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/Checks.lean][Checks.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/receipt.json][Receipt]] | Exact source hashes, dependency identity and verification scope |
-| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/build.log][Target build]] | lake build PooFlowProfileAssociationProof, exit 0 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/build.log][Target build]] | lake build PooFlowCoreProof.ModuleSystem.Schema.Association, exit 0 |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/axioms.log][All-theorem axiom audit]] | No sorryAx or new custom axioms; standard propext, Quot.sound and Classical.choice only where reported |
 
 The initial check found a missing compiled ContractConsequence dependency, which
@@ -153,7 +153,7 @@ historical gate; isolated dependency-pin execution was the passing native lane.
 
 #+begin_src sh
 cd packages/proofs/lean-poo
-lake build PooFlowProfileAssociationProof
+lake build PooFlowCoreProof.ModuleSystem.Schema.Association
 lake env lean ../../../docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/20-lean-profile-association/axiom-audit.lean
 #+end_src
 

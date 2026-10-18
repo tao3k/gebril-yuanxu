@@ -1,0 +1,429 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.68 AWS Source Audit: Over-Splitting, Native Reuse and Convergence
+#+property: DOCUMENT_ID 11.68
+#+property: STATUS source-reviewed-design-requires-convergence-not-executed
+
+The source tree moved to [[file:../../../scenarios/aws/README.org][Core scenarios/aws]]. The public Contract layers
+and selected-publication resolution are recorded in
+[[file:../12-contracts-types/12.19-selected-publication-contract-resolution.org][the current implementation record]]. Statements below describe the earlier
+design audit and must not be read as current interface exports or fresh results.
+
+* Current role convergence
+
+The managed example now uses config.ss (singular) consistently. Upstream
+[[file:../../../scenarios/aws/config.ss][AWS config.ss]] maintains projection defaults;
+=machine= (retired design source), =network= (retired design source) and =access= (retired design source) fragments maintain independent Profiles;
+=development.ss= (retired design source) and =build-host.ss= (retired design source) own Scenario composition;
+[[file:../../../scenarios/aws/interface.ss][AWS interface.ss]] publishes them as ordinary named values alongside Contracts
+and project. Downstream [[file:scenarios/modular-configuration/contributions/aws-project/types.ss][types.ss]] reuses the exact Scenario Contract;
+[[file:scenarios/modular-configuration/contributions/aws-project/config.ss][config.ss]] changes only instances.test.type; [[file:scenarios/modular-configuration/contributions/aws-project/interface.ss][interface.ss]] declares AWS
+once and publishes the result. The repeated init.ss/main.ss entry files have
+been removed. This is a source-role correction, not Loader implementation.
+
+The namespace's profiles/scenarios fields do not introduce Module inheritance
+or per-value publication wrappers. Core still owes named-export association,
+hygienic cross-file dependency injection and complete mandatory-policy admission.
+The body below records earlier audit phases, not alternative current entrypoints.
+
+The source-matched baseline and Profile families are now documented in
+[[file:11.34-aws-main-source-parity-and-profile-families.org][the main.ncl reproduction study]]. It restores external key derivation, AZ lookup,
+provider/session arrays/defaults, routes/tags, source names and outputs, with
+separate reusable image/network/instance/key/credentials/state Profiles. The
+larger/restricted/build variants remain separate from the original workload.
+
+* Earlier design convergence after review
+
+Consumer-role correction: a configuration already managed by the Module System
+uses types.ss/config.ss. The main.ss and root init.ss shown below are audit/source-
+selection artifacts, not a second required consumer lifecycle. Reusing an upstream
+Contract must not require copying its definition into the user's types.ss.
+
+The current source is organized by responsibility, not by copying Omnibus's
+module taxonomy. Start with [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][the downstream config.ss]] and the shared Module source-selection boundary.
+All AWS Scheme source now belongs under modules/aws, including the attached
+main/controls audit examples. The root init.ss selects aws without an invented
+cloud category. The [[file:../../../scenarios/aws/interface.ss][AWS capability]] uses the established Module role shell;
+the example files are not automatically compiled/activated as role inputs.
+There is no per-case admission Module, publication wrapper,
+empty Scope/Provider, or empty Scenario alias. =Semantic/failure controls= (retired design source) are separate.
+
+main.ss uses independent VPCProfile/EC2Profile objects and a Scenario containing
+named occurrences, provider/state values and explicit network/key references.
+The references are set by the Scenario occurrence, not baked into EC2Profile.
+The user changes only instances.build.type. References resolve against the final
+Scenario; resources are a pure projection of that value. The two-field cache
+fixture is no longer presented as a complete AWS example.
+
+The new draft covers AMI/type, region/role/state, keys, VPC/subnet/gateway/routes,
+SSH security groups, instance network/key links and public-IP output. It deliberately
+uses a semantic network-ref instead of copying a previously materialized resource
+object. This choice supports deriving a Network Profile without failing an
+object-equality check. It does not authenticate a live subnet or support arbitrary
+cross-account references.
+
+This is still design source. The ordinary dotted assignment in main.ss is a
+pending adapter; controls.ss gives its existing-native =>.+ expansion. project
+performs local domain admission only, returns projected-unadmitted, and cannot
+certify retained external policies or Terraform provider validity. Common Core
+publication/provenance/diagnostic ownership remains pending outside AWS.
+
+The line counts and 19-row table below describe the removed draft, not the
+current source tree. Historical file labels are intentionally not live links.
+
+* Review verdict of the superseded 19-file draft
+
+The audited 19 Scheme files (365 lines including comments) were an over-split
+semantic sketch, not a usable AWS configuration library. The normal user edit is
+small, but understanding its maintained baseline requires too many forwarding
+objects, scopes and incomplete infrastructure assumptions. Do not accept this
+tree as the target contribution structure. The subsequent design-only revision
+removes those 19 fragments; their historical names and findings remain in the ledger below.
+No runtime Module, build entry or Loader was changed.
+
+The appropriate distinction is between a reusable library's internal source
+organization and the consumer's configuration entry. A scenario fixture should
+not contain a miniature Module System and a private admission subsystem just
+to change an instance type. Retain native POO where it owns real behavior;
+remove boundaries that merely relay values or repeat existing admission.
+
+* Inspected sources and evidence boundary
+
+- Workspace: research/ascent-poo-flow at
+  =aab11571d1a68cf7eeb28c1b1ba8f5fb462d9b10=; Core:
+  refactor/module-feature-ownership at =06fe336bc67105e817613427d5adcef49ca3d446=.
+  These identify checkout bases; the design files include uncommitted changes.
+- User-designated local reference:
+  [[file:/Users/guangtao/ghq/github.com/hardenedlinux/omnibus-ncl/aws/main.ncl][hardenedlinux/omnibus-ncl/aws/main.ncl]], at repository HEAD
+  =c5d37eb51961fd7bd32f775843044ca7f8191715=. Read main.ncl, modules/aws.ncl,
+  modules/aws-simple-ec2.ncl, modules/aws-simple-vpc.ncl and utils.ncl directly.
+- Native reference corpus: .data/gerbil-poo at
+  =240695a7461ec2d7fbbad4b83cab86508ec9c748=; inspect object.ss :init!, .def,
+  .+, .cc and precedence traversal. This is a research source, not a runtime
+  dependency or proof of the installed package revision.
+- Actual Core: [[file:../../../types.ss][types.ss]], [[file:../../../poo-clos/objects.ss][CLOS bundle composition]],
+  [[file:../../../poo-clos/syntax.ss][CLOS declarations]], [[file:../../../t/poo-clos-method-bundle-test.ss][existing bundle controls]],
+  [[file:../../../profile-composition/selection-syntax.ss][bounded use-module]] and [[file:../../../object-syntax/path-slots.ss][path-slot lowering]].
+
+This is static source review. No Scheme example, Terraform deployment or Loader
+was executed. In the inspected Omnibus checkout, aws/tf-ncl-schema.ncl is not
+present; the import demonstrates the intended final Contract boundary, not a
+fresh successful run of that example. Unrelated local changes were not modified.
+
+* What the actual Omnibus organization teaches
+
+The user-facing AWS configuration is one main.ncl. It imports the maintained
+AWS interface and the Terraform Contract; aws/modules/aws.ncl joins several
+domain implementations. EC2's field Contract, defaults and resource elaboration
+are together in aws-simple-ec2.ncl. VPC's derived references and resources are
+together in aws-simple-vpc.ncl. Thus the lesson is one understandable domain
+entry with maintained internals, not literally one file for the entire library.
+
+#+begin_src nickel
+aws.simple.ec2.instances = {
+  test = {
+    ami = ami-id aws.region,
+    type = "t2.micro",
+    network = aws.simple.networks.test,
+    public_key_name = "${resource.aws_key_pair.ssh_key.key_name}",
+  },
+},
+#+end_src
+
+These are actual fields from main.ncl. The EC2 implementation later reads
+=cfg.type= for instance_type and =cfg.network.subnet.id= for subnet_id, generates
+a security group using network.vpc.id, and carries the key and AMI into output.
+Our two-field object omits those essential parts. It is a receiver/Contract
+control, not an equivalent AWS case, and should be labelled accordingly.
+
+The useful comparison is whether a user can understand input, its maintained
+Contract, selected references and output without opening admission infrastructure.
+File count alone proves neither simplicity nor correctness; 19 fragments for
+this reduced control nevertheless introduce no demonstrated maintenance benefit.
+
+* File-by-file findings
+
+| File | Finding and convergence recommendation |
+|------+----------------------------------------|
+| =modules/vpc/objects.ss= | Subnet./Network. support the chosen ancestry Contracts. VPCScope. is empty and adds no behavior. Keep domain identity only where required; do not create a scope prototype solely to wrap slots. |
+| =modules/vpc/types.ss= | Mixes domain Contracts with generic string/closed-field utilities and a scope predicate. The scope predicate checks one descriptor identity, not the complete exported surface or source authenticity. Reuse Core primitives/Schema projections where qualified; keep actual network invariants here. |
+| =modules/vpc/configs.ss= | A placeholder subnet is not VPC provisioning. Typed constructors are coherent with the native ancestry check, but this is a test default, not the AWS network from Omnibus. Label it a fixture, or supply a real network contribution in a later design. |
+| =modules/vpc/interface.ss= | Exposes String through VPC solely so EC2 can obtain a generic primitive. That creates artificial domain coupling. Keep the network capability public; generic types belong to Core. |
+| =modules/ec2/objects.ss= | Native resource expressions have a real purpose and should remain receiver-aware. EC2Scope. is another empty wrapper. The two-field resource is incomplete Terraform output. |
+| =modules/ec2/types.ss= | Repeats closed-field and empty-obligation helpers. The allowed-field list duplicates responsibilities plus a computed resource name. VPC supplies even String. Reuse the Contract/IR field model and a common closure rule; separate computed output from accepted input. |
+| =modules/ec2/configs.ss= | InstanceDefaults adds one scalar while retaining an invalid network placeholder. Partial defaults are legitimate, but this extra object need not become a separately navigated publication layer. Do not admit it as a complete instance. |
+| =modules/ec2/interface.ss= | Explicit requires is useful for this VPC-backed recipe. It is too broad as a universal EC2 rule: EC2 can use an existing or another supported network provider. Put the specific VPC requirement on the recipe, or require a genuine network capability. Source/scope resolution is still missing. |
+| =modules/admission/objects.ss= | AWSAdmission. has no behavior; Provider is currently a dummy axis. A Generic protocol plus a private admission-view are introduced just for this fixture. A standalone fallback .defmethod registers immediately; only bundle declarations are deferred. Remove this AWS-specific forwarding layer from the normal path. |
+| =modules/admission/func.ss= | Reimplements publication indexing, provenance DFS, receipt wrapping, dependency and preview plumbing inside AWS. Kernel provenance is absent. Root-presence checks cannot establish completeness; repeated roots can cause repeated validation. The network eq? check is overly restrictive. Move shared ownership out of the case; retain only real AWS relationship/projector logic. |
+| =modules/admission/methods.ss= | All methods forward unchanged to the same public Contract admission. No distinct Provider behavior justifies this two-axis Generic today. Native .admit already dispatches on the descriptor. Reuse that; retain CLOS for demonstrated independent crossings. |
+| =modules/admission/interface.ss= | activate! and preview expose provider/view/context plumbing. Registration is sequential and stateful, with no whole-set transaction. An AWS consumer must not operate these steps. Common owner-side assembly should bind context and govern activation. |
+| =profiles/configs.ss= | AWSDefaults supplies the useful network reference. InstanceProfiles repeats a config/types wrapper around one Profile: it effectively reintroduces the publication wrapper previously removed. Associate exports once through contribution publication; keep the Profile itself. |
+| =policies/types.ss= | A genuine simultaneous-requirement counterexample. Each policy must admit the same final candidate; unrelated closed schemas must not be applied to the whole object. Keep the counterexample in controls, not the basic AWS user walkthrough. |
+| =policies/configs.ss= | Empty BudgetDefaults/TeamDefaults exist to attach policies through configuration ancestry. This conflates a required policy with a configuration recipe. Prefer owner-maintained Contract requirements; no dummy default object solely for registration. |
+| =policies/interface.ss= | Repeats config/types/methods wrappers for two scalar constraints. Maintain selected policy contributions through the shared publication mechanism; do not require users to navigate these wrappers. |
+| =policies/methods.ss= | Again only delegates to existing .admit. Keep deferred bundle machinery where actual cross-provider methods differ; it contributes no domain behavior in this fixture. |
+| =scenarios/configs.ss= | AWSScenario is an empty alias for one instance, not a Scenario combining named Profiles and relationships. BudgetScenario/ConflictingScenario add ancestry but no actual application graph. Keep policy composition controls separate; define a real Scenario only when it owns selected occurrences/relations. |
+| =user/configs.ss= | Production.type is the correct ordinary assignment. The same file also warms caches, defines negative controls and tests .cc/.+. Split those controls out of the normal user entry when converging; do not publish them as required user setup. |
+
+* Native reuse: what reflection and dispatch can actually do
+
+** Reuse current native responsibilities and .admit
+
+Actual Core types.ss defines descriptor-owned .admit, recursive responsibility
+admission, classification and obligation evidence. Iterating the retained
+descriptor set and invoking that public entry is enough for the present
+independent policies. A second AWS Provider parameter, Generic and identical
+forwarding methods do not make universal admission stronger.
+
+This is not a rejection of multiple dispatch. Keep .defgeneric/.defmethod and
+deferred method bundles when two real independent families need different
+behavior, such as a qualified provider/backend crossed with domain kinds.
+Name those actual owners and distinct methods first. Do not manufacture a dummy
+AWSAdmission. prototype to satisfy the two-axis rule. call-next-method still
+cannot substitute for checking every retained requirement.
+
+** Reuse semantic parent reflection within its boundary
+
+In the inspected native source, .def expands to an ordinary .o construction.
+object-supers and compute-precedence-list! can inspect the semantic ancestry of
+.def and native multiple inheritance. With a complete trusted association index,
+that graph can find associated ancestor requirements for those operations.
+It does not itself create that index, authenticate source or conjoin descriptors.
+
+The inspected mop.ss also has descriptor-owned slot Generics, optional dispatch
+through an object's .type, and define-type lowering to .def/.cc. These are useful
+existing declaration mechanisms. They do not make every .def automatically record
+a mandatory Contract or source location. An ordinary overridable .type slot cannot
+replace protected requirement retention. Also distinguish the native slot
+.defgeneric binding from Core CLOS's multi-dispatch .defgeneric: generated source
+wrappers must import the intended binding, not rely on identical printed names.
+
+Native .+ copies RHS slots/defaults and uses the RHS parents plus the base as
+supers. The RHS object itself can disappear. Native .cc copies the original's
+slots while retaining its parents, losing the original as a semantic parent.
+Neither later reflection nor a CLOS method can reconstruct those missing source
+identities. A source-preservation gap remains genuine; it is not solved by
+inserting policy objects as extra semantic parents or wrapping a local .+ name.
+
+If universal preservation is required, reuse the existing unified constructor
+design at the common Core/native owner, with explicit source operands from .+
+and .cc. Do not copy its provenance protocol, token registry or per-object
+metadata into AWS. The read path must distinguish declaration origin, resolved
+value origin and mandatory policy origin; one undifferentiated origin token does
+not answer all three questions.
+
+** Keep evidence collection independent of conflict resolution
+
+Native parent precedence determines values; it must not silently resolve
+mandatory policy contradictions. Preserve every required descriptor and evaluate
+the final value. Avoid running an identical Contract repeatedly just because
+EC2 config and an alias Profile both published it: execution can deduplicate by
+canonical descriptor and relevant policy/view identity while retaining all
+origins for diagnostics. Never deduplicate by display symbol alone.
+
+index-publications currently reads every selected scope.config to register a
+root. This can construct selected default objects before the final Profile is
+requested. It is not a scan of every eligible module, but it does not establish
+the stronger intended demand boundary either. Audit publication metadata demand
+separately from config construction, Schema compilation and resource projection.
+
+* Trace the real user task: replace one instance type
+
+#+begin_src scheme
+(.def (Production @ AWSDefaults)
+  type: "t3.small")
+#+end_src
+
+This is the intended user task, with AWSDefaults supplied by a maintained
+contribution. Removing the empty AWSScenario alias changes no business intent.
+The following trace exposes what the current draft does and still cannot do:
+
+| Step | Reviewed result / gap |
+|------+-----------------------|
+| Obtain maintained defaults | In the draft, injected EC2Scope/VPCScope and role wrappers are assumptions. No linked scope is actually produced by these files. Do not call this an end-to-end chain. |
+| Establish network dependency | The reference comes from the selected VPC config; that recipe can legitimately require VPC. The pure EC2 capability need not universally require this provider. Required-disabled rejection must occur before implementation realization. |
+| Construct Production | Native .def and direct scalar replacement suffice. No new macro, source row or policy list belongs in this user declaration. |
+| Resolve associated Contracts | For this ancestry-only path, native parent traversal is useful. Automatic trusted association is still missing. Full .+/.cc preservation needs the common construction extension; the sketch's private functions do not exist. |
+| Admit the candidate | Existing native .admit recursively checks type and network through responsibilities. Additional selected mandatory policies are checked against Production too. The collector cannot certify that an omitted policy never existed. |
+| Read final resource | Native lexical type/network references are the correct relationship. Parent resource evaluation must not freeze the child. No AWS execution control was run, so the comments remain expected values. |
+| Check correspondence | instance_type/subnet_id comparisons can detect the changed-type stale resource. In instance-preview, the eq? check re-reads the resource it just obtained and adds little independent assurance. Two fields cannot validate a full Terraform resource. |
+| Explain a failure | Existing evidence gives structured classification/responsibility/obligation facts. The draft's error strings do not provide suggestions, exact spans or dependency chains. Those need actual origin linkage and formatting, not the printed sample messages. |
+
+selected-network? compares whole-object identity. A legitimately refined Network
+with the same selected subnet is therefore rejected. The domain should instead
+define which qualified provider/account/region/network/subnet reference is valid,
+then check the appropriate identity and Contract. Equality of a bare subnet id
+alone is also insufficient; do not replace eq? with an unqualified string match.
+
+A parent-derived object is not automatically invalid just because it was cached.
+Distinguish wrong effective inputs, stale admission evidence and a harmless reuse
+of equal output. Cache qualification needs final input/Contract/view dependencies;
+object identity alone is neither all of that evidence nor a universal ban on reuse.
+
+* A simpler organization to review next
+
+Keep this case directory as a scenario reference, not a self-contained framework.
+The proposed reading structure is:
+
+#+begin_example
+scenarios/modular-configuration/aws/
+  main.ss       maintained recipe and normal user change, read together
+  controls.ss   optional policy, typo and parent-cache controls
+  audit.org     actual source comparison, defects and unresolved decisions
+
+Reusable AWS library, outside the scenario fixture:
+  types.ss / objects.ss / configs.ss / interface.ss
+  func.ss only where projection/relationship algorithms need it
+
+Shared Core owners, outside AWS:
+  contribution association and selected dependency policy
+  native construction provenance, where new source capture is required
+  public admission/evidence and common source diagnostic projection
+#+end_example
+
+This was the source-audit recommendation. The subsequent design-only revision
+uses main.ss/controls.ss/init.ss and a shared Module role shell outside the case. A small module-shell library can cover AWS initially; separate VPC and
+EC2 published Modules only when independent ownership/reuse/loading justifies
+them. A feature name or domain subrecord is not automatically a Module boundary.
+Existing role organization remains useful at library scale, without making each
+Profile, reference object, policy or test case acquire that shell.
+
+The normal main entry should show real Omnibus-equivalent fields and consumers:
+AMI, named instances/networks, key references and generated resources, not just
+type plus a placeholder subnet. Native POO can retain relationships in that
+ordinary configuration; it should not require the reader to learn a private
+publication registry before changing a value. A compact path assignment may
+improve the future named-instance surface, but direct dotted assignment is still
+pending and must not be shown as current native support.
+
+* Required convergence and validation, without implementation
+
+1. Agree on the real AWS input/output case and one normal user entry first.
+   Keep current small receiver controls as controls, not deployment examples.
+2. Retain useful Instance. lexical behavior and domain Contracts. Remove empty
+   alias/scope/policy objects unless a concrete invariant needs their identity.
+3. Reuse current .admit directly for these identical forwarding paths. Reserve
+   multiple dispatch for real heterogeneous behavior, using existing declarations.
+4. Put association/provenance/selected-view ownership in Core once. Document the
+   exact MOP information-loss boundaries; reject unsupported source-preserving
+   operations rather than pretending the registry is complete.
+5. Reuse Contract metadata for discovery and closure checking. Eliminate the
+   repeated String/empty-obligation/field-list authorities where existing native
+   or generated Contract facilities apply; retain domain-specific invariants.
+6. Make diagnostics resolve actual value, constraint and dependency origins.
+   Field typo, unsatisfied policy and disabled dependency are different failures.
+7. Later controls must compare direct parent derivation, shared ancestors, .+
+   RHS, .cc, demanded nested refinement, warmed parent, legitimate network
+   refinement, missing publication association and omitted mandatory policy.
+   No such control was executed in this review.
+
+The source audit rejected that architecture. The subsequent design-only revision
+below replaces the drafts; the ledger retains the reasons for each removal.
+It does not reorganize production packages or implement any Loader.
+
+* Earlier draft expectations (not passed tests or design approval)
+
+The retained checklist below predates this source review. Its proposed wrapper
+and Provider architecture is superseded by the findings above; the useful failure
+cases remain requirements. Exact-network eq? and blanket parent-cache rejection
+are specifically subject to the corrections above.
+
+** Expected admission path
+
+1. Select/authenticate publication scopes; retain disables and dependency chains.
+2. Admit VPC scope shape and its final config through VPCConfigContract. Scope
+   shape alone is insufficient. Inject that exact scope into EC2/Profile context.
+3. Build the complete private publication index from selected scopes. Preserve
+   policy origins even when several contributions refer to one root.
+4. Explicitly compose AWSAdmissionMethods into the matching Generic protocol.
+5. User .def constructs Production with ordinary native semantics. Pending kernel
+   construction metadata links it to AWSScenario, InstanceProfiles.config and
+   EC2Scope.config. All these roots may contribute requirements.
+6. admit-all collects every retained requirement, invokes multi-dispatch separately
+   for each, then checks evidence correlation against Production and its context.
+7. Validate the exact selected network and demand Production.resource. A complete
+   AWS output Contract/renderer is absent: return projected-unadmitted only.
+
+Steps 1--3 and kernel integration are explicit prerequisites, not implementations
+hidden behind an init.ss or a fake source registry. instance-preview explicitly
+admits the VPC root before admitting the final instance, using the same protocol.
+Selected child closure and complete-index certification remain open: a root guard
+cannot detect an omitted Budget binding by itself. The selected graph must prove
+its index complete before this collector can safely interpret absent entries.
+
+** Cases to review before implementation
+
+| Case | Required result |
+|------+-----------------|
+| Production | InstanceConfigContract accepts final type/network; resource type is t3.small |
+| Parent resource warmed first | Production has final-receiver resource; parent remains t2.micro |
+| Explicit parent-resource substitution | resource-corresponds? rejects wrong receiver/value |
+| Typo | InstanceConfigContract closed-fields rejects tyep |
+| PolicyFailure | Budget fails, Team passes; retain both origins and EC2 result |
+| .cc Production | Requirement history survives semantic slot copying |
+| RightPolicyProduction | Budget RHS requirement retained or construction refused |
+| Shared ancestor | Visit each node once; never drop distinct publication requirements |
+| VPC disabled | Reject required edge before scope realization; no automatic re-enable |
+| Unselected policy/Module | No configuration/projection demand or method activation |
+| Index generation differs | Reject the view; no reuse of old evidence |
+
+These are expectations, not passed tests. Deferred nested =>.+ uses the same
+constructor only WHEN its slot is demanded. The collector does not force every
+child to compensate for missing metadata. Nested selected-child discovery uses
+Contract responsibilities; it remains a separate required adapter.
+
+** User-facing diagnostics, not fabricated source records
+
+#+begin_example
+Unknown field: Typo.tyep
+  Did you mean type?
+  Value location: actual user/configs.ss syntax span
+  Constraint location: actual EC2 types.ss syntax span
+
+Requirement failed: PolicyFailure.type = "t3.small"
+  BudgetContract requires "t2.micro"; TeamContract requires "t3.small".
+  Budget: rejected; Team: accepted. Neither requirement was overwritten.
+  Locations: both actual publication/Contract origins.
+
+Dependency rejected: aws/ec2 requires disabled aws/vpc
+  Request location: EC2 interface.ss syntax span
+  Disable location: user's init.ss syntax span
+#+end_example
+
+Only the first two admission results are computable from the proposed bodies;
+friendly formatting, suggestions and actual source spans are pending. They must
+come from emitted syntax origins and sealed publication associations, not manual
+origin rows. The disabled edge belongs to the selected-graph resolver, NOT a
+predicate that loads the disabled Module in order to discover its failure.
+
+** Existing versus pending
+
+Existing syntax/source foundations: native .def/.o/.+/ .cc, lazy lexical slots,
+responsibilities and public admission, prototype specializers, Generic protocol
+identity, deferred method bundles and internal defrules. Prior bounded controls
+are referenced by the parent design documents; no fresh Scheme test was run here.
+
+Pending: target Core naming, module role wrappers, typed source/scope linking,
+automatic publication association and complete sealed indexes, unified constructor
+provenance (especially .+ RHS/.cc), nested selected closure, source diagnostics,
+full AWS projection/output Contract and production cache invalidation. Arbitrary
+Scheme code can forge public-looking evidence: trusted admission/provider ownership
+and private view integrity are prerequisites, not authentication proved by eq?.
+
+The activation sketch composes bundles sequentially. It is not a transaction over
+the whole selected bundle set. A later failure must block scope/plan publication;
+production activation needs preflight plus isolated Generic generations or an
+equivalent qualified rollback boundary. No all-or-nothing registration claim is
+made for this sketch. A mere shared protocol display name is not identity.
+
+Native POO remains the configuration model. The private provenance DAG preserves
+obligations without altering native precedence; multi-dispatch extends behavior
+without replacing universal admission with "the most specific policy wins".
+
+* Current correction: ordinary configuration, no mandatory Deployment wrapper
+
+The current [[file:11.69-aws-case-index.org][role split]] supersedes the earlier handwritten domain vocabulary and
+Deployment Module. Resource fields reuse generated Provider Contracts. Independent
+network/machine/access data and an ordinary user contribution are maintained as
+source files; no second metadata syntax or deployment registry is introduced.
+These design sources are not an executed cloud deployment.

@@ -7,7 +7,7 @@
 
 (import :gerbil/core
         (only-in :clan/poo/object .o .ref)
-        :core/extension-graph/interface
+        :core/graph/interface
         :core/module-system/schema/support/contracts
         :core/module-system/schema/support/slot-policy)
 
@@ -16,8 +16,8 @@
         poo-flow-module-field-resolution-result-extension-result
         poo-flow-module-field-resolution-result-contributions
         poo-flow-module-field-resolution-result-root
-        poo-flow-module-field-resolution-result-iterations
-        poo-flow-module-field-resolution-result-stable?
+        poo-flow-module-field-resolution-result-changed-passes
+        poo-flow-module-field-resolution-result-applied?
         poo-flow-module-config-fast-slot-merge/in-order
         poo-flow-module-config-slot-key-hash-ref
         poo-flow-module-config-fast-slot-merge/sparse
@@ -28,7 +28,7 @@
 
 ;;; Field resolution results preserve the original contributions so diagnostics can
 ;;; explain both the final graph and the inputs that produced it.
-;; : (-> PooModuleExtensionResult [PooModuleFieldContribution] PooModuleFieldResolutionResult)
+;; : (-> PooGraphResult [PooModuleFieldContribution] PooModuleFieldResolutionResult)
 (def (poo-flow-module-field-resolution-result extension-result contributions)
   (let ((extension-result-value extension-result)
         (contributions-value contributions))
@@ -40,23 +40,23 @@
 (def (poo-flow-module-field-resolution-result? value)
   (poo-flow-module-object-kind? value poo-flow-module-field-resolution-result-kind))
 
-;; : (-> PooModuleFieldResolutionResult PooModuleExtensionResult)
+;; : (-> PooModuleFieldResolutionResult PooGraphResult)
 (def (poo-flow-module-field-resolution-result-extension-result result)
   (.ref result 'extension-result))
 ;; : (-> PooModuleFieldResolutionResult [PooModuleFieldContribution])
 (def (poo-flow-module-field-resolution-result-contributions result)
   (.ref result 'contributions))
-;; : (-> PooModuleFieldResolutionResult PooModuleExtensionNode)
+;; : (-> PooModuleFieldResolutionResult PooFlowGraph)
 (def (poo-flow-module-field-resolution-result-root result)
-  (poo-flow-module-extension-result-root
+  (poo-flow-graph-result-root
    (poo-flow-module-field-resolution-result-extension-result result)))
 ;; : (-> PooModuleFieldResolutionResult Integer)
-(def (poo-flow-module-field-resolution-result-iterations result)
-  (poo-flow-module-extension-result-iterations
+(def (poo-flow-module-field-resolution-result-changed-passes result)
+  (poo-flow-graph-result-changed-passes
    (poo-flow-module-field-resolution-result-extension-result result)))
 ;; : (-> PooModuleFieldResolutionResult Boolean)
-(def (poo-flow-module-field-resolution-result-stable? result)
-  (poo-flow-module-extension-result-stable?
+(def (poo-flow-module-field-resolution-result-applied? result)
+  (poo-flow-graph-result-applied?
    (poo-flow-module-field-resolution-result-extension-result result)))
 
 ;; poo-flow-module-config-fast-slot-merge/in-order
@@ -386,11 +386,11 @@
 
 ;;; The fast extension result is valid only for childless nodes; child graphs
 ;;; require the general contribution resolver to preserve nested semantics.
-;; : (-> PooModuleExtensionNode [PooModuleFieldContribution] MaybePooModuleExtensionResult)
+;; : (-> PooFlowGraph [PooModuleFieldContribution] MaybePooGraphResult)
 (def (poo-flow-module-config-fast-extension-result base contributions)
-  (let ((children (poo-flow-module-extension-node-children base))
-        (node-identity (poo-flow-module-extension-node-identity base))
-        (slots (poo-flow-module-extension-node-slots base)))
+  (let ((children (poo-flow-graph-root-children base))
+        (node-identity (poo-flow-graph-root-id base))
+        (slots (poo-flow-graph-root-payload base)))
     (if (null? children)
       (let (merged-slots
             (poo-flow-module-config-fast-slot-merge
@@ -398,18 +398,18 @@
              slots
              contributions))
         (if merged-slots
-          (poo-flow-module-extension-result
-           (poo-flow-module-extension-node node-identity merged-slots '())
+          (poo-flow-graph-result
+           (poo-flow-graph-rooted node-identity merged-slots '())
            (if (equal? merged-slots slots) 0 1)
            #t)
           #f))
       #f)))
 
-;; : (-> PooModuleExtensionNode [PooModuleFieldContribution] PooModuleFieldResolutionResult)
+;; : (-> PooFlowGraph [PooModuleFieldContribution] PooModuleFieldResolutionResult)
 (def (poo-flow-module-field-contributions-resolve base contributions)
   (poo-flow-module-field-resolution-result
    (or (poo-flow-module-config-fast-extension-result base contributions)
-       (poo-flow-module-extension-resolve
+       (poo-flow-graph-resolve
         base
         (poo-flow-module-field-contributions->extensions contributions)))
    contributions))

@@ -40,8 +40,8 @@ the downstream proof-impact gate stale until that binding is refreshed.
   authority.
 - Provider results bind Query, Provider and revision identities.
 
-The focused owners are =packages/proofs/quint/NativeSemanticQuery.qnt= and
-=PooFlowProof.PooC4.NativeSemanticQueryModel=.
+The focused owners are =core/proofs/quint/NativeSemanticQuery.qnt= and
+=PooFlowCoreProof.ModuleSystem.Schema.Query=.
 
 Current verifier versions, cases and receipt boundaries are documented in
 =packages/proofs/quint/README.org=.
