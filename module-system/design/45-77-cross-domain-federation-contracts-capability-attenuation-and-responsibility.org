@@ -5,6 +5,12 @@
 #+title: Cross-Domain Federation Contracts, Capability Attenuation, and Responsibility
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted cross-organization federation semantics for POO
@@ -85,11 +91,11 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =federationNeverCreatesGlobalRoot=
-- [X] =agreedFederationMayEnterLocalAdmission=
-- [X] =candidateFederationFailsClosed=
-- [X] =expiredFederationFailsClosed=
-- [X] =revokedFederationFailsClosed=
+- [ ] =federationNeverCreatesGlobalRoot=
+- [ ] =agreedFederationMayEnterLocalAdmission=
+- [ ] =candidateFederationFailsClosed=
+- [ ] =expiredFederationFailsClosed=
+- [ ] =revokedFederationFailsClosed=
 - [X] =domainRetainsAllOwnershipRoles=
 - [X] =agreementCarriesEveryCompatibilityCheck=
 - [X] =attenuationNeverAmplifiesScope=
@@ -100,7 +106,7 @@ flowchart LR
 - [X] =federationProjectionDoesNotImportRemoteCapabilities=
 - [X] =federationResponsibilityIsExplicit=
 - [X] =federationRevocationFailsClosed=
-- [X] =ownershipTransferRequiresExactContractAndAuthority=
+- [ ] =ownershipTransferRequiresExactContractAndAuthority=
 - [X] =requirementChangeCreatesNewAgreementIdentity=
 - [X] =offerChangeCreatesNewAgreementIdentity=
 - [X] =federationCutChangeCreatesNewAgreementIdentity=

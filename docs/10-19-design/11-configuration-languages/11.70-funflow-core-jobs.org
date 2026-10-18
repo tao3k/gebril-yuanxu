@@ -88,11 +88,16 @@ sampling, working directory adaptation, timeouts, output and exit-status handlin
 
 * Verification boundary
 
-=t/funflow-job-test.ss= covers the maintained init publication, inert projection,
+=t/Modules/funflow/funflow-job-test.ss= covers inert projection,
 selected closure, failure blocking, invalid dependency graphs, unselected task
 laziness and a parent-cached Graph followed by a child command replacement.
-=t/funflow-profile-test.ss= retains the independent Gerbil Profile's original
+=t/Modules/funflow/funflow-profile-test.ss= retains the independent Gerbil Profile's original
 build/test/package/Pipeline defaults and final-receiver/cache controls.
+
+The init publication and Ops dependency order are qualified by
+=t/module-testing-isolation-test.ss= on the same init-owned Graph. Module
+qualification is selected through =tests.qualification= rather than a second
+root selection inside the Job suite.
 
 Neither test establishes runtime Loader integration, automatic realized-package
 rebinding, deployment authorization or distributed execution. Those capabilities

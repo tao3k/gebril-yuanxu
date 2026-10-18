@@ -18,7 +18,7 @@
         (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization-schema)
         (only-in :core/modules/json-schema/contracts SchemaContract.)
         (only-in "./qualification/contract-adaptation/checked-publication-test.ss"
-          make-scenario make-admission allow replay WebContract ConfigContract ScenarioContract))
+          make-scenario make-admission allow WebContract ConfigContract ScenarioContract))
 (export admission-checked-publication-test test-cleanup!)
 
 (def completed 0)
@@ -144,12 +144,21 @@
           (defvalues (old next failure) (.call pub .publish parent parent))
           (check-equal? failure #f)
           (check-equal? (.get view admission identity) (.get other-view admission identity))
+          (def different-contract
+            (.cc pub contract: (.get other-view admission) context: (.get pub context)))
           (defvalues (bad kept refusal)
-            (replay next next (.get other-view admission) (.get pub context) old))
+            (metadata.publish (.call different-contract .bind-evidence next)
+              next (lambda (checked) (values old checked)) next))
           (refused next bad kept refusal)
+          (check-equal? (metadata.failure-phase refusal) 'logic)
+          (check-equal? (metadata.failure-cause refusal) #f)
+          (def different-context (.cc pub context: (.get other-pub context)))
           (defvalues (bad2 kept2 refusal2)
-            (replay next next (.get view admission) (.get other-pub context) old))
+            (metadata.publish (.call different-context .bind-evidence next)
+              next (lambda (checked) (values old checked)) next))
           (refused next bad2 kept2 refusal2)
+          (check-equal? (metadata.failure-phase refusal2) 'logic)
+          (check-equal? (metadata.failure-cause refusal2) #f)
           (check-equal? (vector-ref (.get other-view checks) 0) 0)
           ;; A faulty custom .admit cannot smuggle the old descriptor's receipt
           ;; through the actual production publisher either.
@@ -172,7 +181,8 @@
               (write-file (if (eq? which 'source) source schema)
                 (if (eq? which 'source) "; publication source v2\n" (string-append SchemaText "\n")))
               (defvalues (bad kept refusal)
-                (replay next next (.get view admission) (.get pub context) old))
+                (metadata.publish (.call pub .bind-evidence next)
+                  next (lambda (checked) (values old checked)) next))
               (refused next bad kept refusal)
               (defvalues (bad2 kept2 refusal2) (.call pub .publish next parent))
               (refused next bad2 kept2 refusal2)

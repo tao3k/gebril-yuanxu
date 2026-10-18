@@ -5,6 +5,12 @@
 #+title: Multi-Scope Publication Barriers and Proven Atomicity
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted semantics for publication across multiple cohort
@@ -96,23 +102,23 @@ transactional adapter capability.
 
 ** Proof obligations
 
-- [X] =barrierEstablishesReadiness=: the barrier carries readiness witnesses
+- [ ] =barrierEstablishesReadiness=: the barrier carries readiness witnesses
   for every declared scope.
-- [X] =barrierDoesNotEstablishAtomicity=: readiness evidence does not create a
+- [ ] =barrierDoesNotEstablishAtomicity=: readiness evidence does not create a
   shared commit boundary.
-- [X] =independentCommitsDoNotEstablishAtomicity=: independent scope progress
+- [ ] =independentCommitsDoNotEstablishAtomicity=: independent scope progress
   is not a multi-head transaction.
-- [X] =orderingDoesNotEstablishAtomicity=: causal ordering does not imply
+- [ ] =orderingDoesNotEstablishAtomicity=: causal ordering does not imply
   atomic visibility.
-- [X] =compensationDoesNotEstablishAtomicity=: sequential writes followed by
+- [ ] =compensationDoesNotEstablishAtomicity=: sequential writes followed by
   reverse writes are not atomic rollback.
-- [X] =runtimeWitnessEstablishesAtomicity=: only the runtime adapter witness
+- [ ] =runtimeWitnessEstablishesAtomicity=: only the runtime adapter witness
   establishes multi-head atomicity in this proof slice.
-- [X] =barrierAloneFailsClosedForCoupledPolicy=: an atomicity-requiring policy
+- [ ] =barrierAloneFailsClosedForCoupledPolicy=: an atomicity-requiring policy
   rejects barrier-only evidence.
-- [X] =coupledAdmissionRequiresRuntimeAtomicityWitness=: every admitted coupled
+- [ ] =coupledAdmissionRequiresRuntimeAtomicityWitness=: every admitted coupled
   transition carries its runtime atomicity witness.
-- [X] =atomicHeadSetProjectionComesFromConditionalCommits=: every after-entry
+- [ ] =atomicHeadSetProjectionComesFromConditionalCommits=: every after-entry
   in the atomic head set is projected from an RFC 45-59 conditional
   active-head commit witness.
 - [ ] Refine barriers and relation modes through native =gerbil-poo=

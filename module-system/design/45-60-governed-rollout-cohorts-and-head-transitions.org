@@ -5,6 +5,12 @@
 #+title: Governed Rollout Cohorts and Active-Head Transitions
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted semantic boundary for staged rollout and canary
@@ -107,23 +113,23 @@ between cohorts.
 
 ** Proof obligations
 
-- [X] =pureDefinitionDoesNotAuthorizeTransition=: rollout definition is a
+- [ ] =pureDefinitionDoesNotAuthorizeTransition=: rollout definition is a
   declarative value, not runtime publication authority.
-- [X] =assignmentReceiptDoesNotAuthorizeTransition=: immutable assignment
+- [ ] =assignmentReceiptDoesNotAuthorizeTransition=: immutable assignment
   evidence cannot move an active head.
-- [X] =authorizedTransitionCarriesLiveAuthority=: only the authorized
+- [ ] =authorizedTransitionCarriesLiveAuthority=: only the authorized
   transition evidence kind carries live authority in this proof slice.
 - [X] =cohortAssignmentStableAcrossReplay=: equal admitted inputs yield the
   same cohort across replay or restart.
 - [X] =assignmentIdentityStableAcrossReplay=: equal admitted inputs yield the
   same semantic assignment identity.
-- [X] =ruleChangeCreatesNewAssignmentIdentity=: a new rule does not reinterpret
+- [ ] =ruleChangeCreatesNewAssignmentIdentity=: a new rule does not reinterpret
   prior cohort receipts.
-- [X] =revisionChangeCreatesNewAssignmentIdentity=: a new rule revision creates
+- [ ] =revisionChangeCreatesNewAssignmentIdentity=: a new rule revision creates
   a new semantic assignment identity.
-- [X] =rolloutDefinitionCarriesExplicitHeadTransitions=: rollout semantics
+- [ ] =rolloutDefinitionCarriesExplicitHeadTransitions=: rollout semantics
   contain an explicit sequence of scoped head transitions.
-- [X] =authorizedRolloutTransitionCarriesConditionalHeadCommit=: every live
+- [ ] =authorizedRolloutTransitionCarriesConditionalHeadCommit=: every live
   rollout transition couples its immutable cohort assignment receipt to the
   RFC 45-59 conditional active-head commit witness.
 - [ ] Refine rollout definitions and assignment receipts through native

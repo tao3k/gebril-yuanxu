@@ -8,6 +8,7 @@
         (only-in :std/encoding/hex hex-encode)
         (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source)
         (only-in :core/module-system/building/build-projection poo-flow-core-admit-build-inputs)
+        (only-in :core/module-system/source/admission call-with-module-source-read-cache)
         ;; Build-tool native owners, not a second runtime facade or Loader.
         (only-in :core/modules/nix/types NixFlakeSourceContract)
         (only-in :core/types poo-flow-validation-evidence-accepted?)
@@ -26,6 +27,8 @@
     (let* ((source (.cc (.get module config source)))
            (flake? (poo-flow-validation-evidence-accepted?
                      (.call NixFlakeSourceContract .admit source #f)))
+           (selection-input (and (.slot? (.get module config) 'selection-input)
+                                 (.get module config selection-input)))
            (path (path-expand "config.ss" root))
            (configuration-input (poo-flow-core-configuration-source path 'Config context-current!
                                   role-sources: (.get publication role-sources)))
@@ -43,8 +46,13 @@
                              (cons 'binding "Config")
                              (cons 'source-inputs (poo-flow-core-nix-source-inputs observed)))))))))
       (def (current!)
-        ((.get configuration-input admit-current))
-        (poo-flow-core-admit-build-inputs observed))
+        ;; Both are source-only observations of this same prepared request.
+        ;; Keep its full requirements while sharing bytes inside this check;
+        ;; Nix realization and validators remain outside the window.
+        (call-with-module-source-read-cache
+          (lambda ()
+            ((.get configuration-input admit-current))
+            (poo-flow-core-admit-build-inputs observed))))
       (current!)
       (.o identity: 'opentofu source-inputs: observed
           configuration: (.get configuration-input value) demand: projected-demand
@@ -54,8 +62,15 @@
           (lambda (directory check-current!)
             (let* ((selection (path-expand "selection.json" directory))
                    (nix-source
-                     (.cc source 'source-inputs observed
-                       'arguments (.cc (.get source arguments) 'selection (if flake? wire selection))))
+                     (if selection-input
+                       (begin
+                         (unless (and flake? (symbol? selection-input)
+                                      (null? (.all-slots (.get source arguments))))
+                           (error "final OpenTofu package requires a flake data input, not function arguments"))
+                         (.cc source 'source-inputs observed
+                           'inputs (.cc (.get source inputs) selection-input directory)))
+                       (.cc source 'source-inputs observed
+                         'arguments (.cc (.get source arguments) 'selection (if flake? wire selection)))))
                    (publication (.call nix-source .prepare check-current!)))
               ;; Inherit Nix provenance/guards; specialize only domain values.
               (.+ publication

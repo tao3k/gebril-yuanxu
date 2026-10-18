@@ -5,6 +5,12 @@
 #+title: Explicit Requirement, Contribution, and Resolution Policy
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted semantic-requirement resolution model inside one
@@ -101,12 +107,12 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =exactContributionAdmitsResolution=
-- [X] =aggregateAdmitsResolution=
-- [X] =admittedAbsenceAdmitsResolution=
-- [X] =missingRequirementFailsClosed=
-- [X] =incompleteEvidenceFailsClosed=
-- [X] =ambiguousCandidatesFailClosed=
+- [ ] =exactContributionAdmitsResolution=
+- [ ] =aggregateAdmitsResolution=
+- [ ] =admittedAbsenceAdmitsResolution=
+- [ ] =missingRequirementFailsClosed=
+- [ ] =incompleteEvidenceFailsClosed=
+- [ ] =ambiguousCandidatesFailClosed=
 - [X] =requirementIsImmutablePooObject=
 - [X] =contributionCarriesNoLiveCapabilityToken=
 - [X] =resolutionPolicyIsPurePooObject=

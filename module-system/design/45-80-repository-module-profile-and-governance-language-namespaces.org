@@ -5,6 +5,12 @@
 #+title: Repository, Module, Profile, and Governance-Language Namespaces
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted namespace separation among the
@@ -89,12 +95,12 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =repositoryCannotSubstituteForModuleNamespace=
-- [X] =repositoryCannotSubstituteForProfileBinding=
-- [X] =moduleCannotSubstituteForGovernanceLanguage=
-- [X] =profileBindingCannotSubstituteForGovernanceLanguage=
-- [X] =proposedProjectionCannotClaimImportableModule=
-- [X] =verifiedProjectionMayClaimImportableModule=
+- [ ] =repositoryCannotSubstituteForModuleNamespace=
+- [ ] =repositoryCannotSubstituteForProfileBinding=
+- [ ] =moduleCannotSubstituteForGovernanceLanguage=
+- [ ] =profileBindingCannotSubstituteForGovernanceLanguage=
+- [ ] =proposedProjectionCannotClaimImportableModule=
+- [ ] =verifiedProjectionMayClaimImportableModule=
 - [X] =sourceRepositoryProvidesNoModulePath=
 - [X] =sourceRepositoryProvidesNoPackageIdentity=
 - [X] =sourceRepositoryProvidesNoLexicalBinding=

@@ -4,13 +4,50 @@
 (import :std/test :clan/poo/object "./qualification/opentofu/objects.ss"
         (only-in :core/ops/func run-script)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :core/observability/testing-case poo-flow-test-case
+                 poo-flow-default-testing-case-profile)
+        (only-in :core/observability/memory PooFlowDebugDurationAnomaly?)
+        (only-in :std/os/signal kill)
+        (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/misc/ports read-all-as-string))
 (export ops-process-script-test)
 (def ProcessScript. (.get Ops prototypes Script))
+(def (process-gone? pid)
+  (with-catch
+    (lambda (failure)
+      (if (and (os-error? failure) (= (OSError-errno failure) ESRCH)) #t
+        (raise failure)))
+    (lambda () (kill pid 0) #f)))
 (def ops-process-script-test
   (test-suite "POO declarative operational scripts"
+    (poo-flow-test-case "Case cancellation terminates the owned Ops descendants"
+      (call-with-temporary-directory "ops-cancel"
+        (lambda (root)
+          (def child-pid (path-expand "child.pid" root))
+          (def program
+            `(let ((child (open-process
+                            '(path: "sleep" arguments: ("10")
+                              stdin-redirection: #f stdout-redirection: #f))))
+               (call-with-output-file ,child-pid
+                 (lambda (port) (write (process-pid child) port)))
+               (thread-sleep! 10)))
+          (.def (Waiting @ ProcessScript.)
+            command: (list "gxi" "-:max-heap=2G,debug=q" "-e" (object->string program))
+            timeout: 10)
+          (def policy (.cc poo-flow-default-testing-case-profile
+                         'max-duration-milliseconds 1000))
+          (check-exception
+            (.call policy .run policy "controlled Ops cancellation"
+                   (lambda () (.call Waiting .run))) PooFlowDebugDurationAnomaly?)
+          (check-equal? (file-exists? child-pid) #t)
+          (def pid (call-with-input-file child-pid read))
+          ;; Permit launchd to reap the killed orphan; never signal a PID read
+          ;; from a file. Only execute-script signals its owned process group.
+          (let wait ((remaining 100))
+            (cond ((process-gone? pid) (check-equal? #t #t))
+                  ((zero? remaining) (check-equal? (process-gone? pid) #t))
+                  (else (thread-sleep! 0.01) (wait (- remaining 1))))))))
     (poo-flow-test-case "failed process retains captured diagnostic output"
       (call-with-temporary-directory "ops-failure-output"
         (lambda (root)
@@ -69,6 +106,9 @@
           (.def (Timed @ ProcessScript.) command: '("sleep" "5") timeout: 0.1 check-status: #f
             log: (path-expand "timeout.log" root))
           (check-equal? (.get (.call Timed .run) status) 124)
+          (check-equal? (and (string-contains
+                             (call-with-input-file (.get Timed log) read-all-as-string)
+                             "sending signal TERM") #t) #t)
           (check-equal? (file-exists? (.get Timed log)) #t)
           (.def (LoggedFailure @ ProcessScript.)
             command: (list "ls" (path-expand "missing-input" root))

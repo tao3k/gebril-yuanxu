@@ -1,354 +1,103 @@
--- SPDX-FileCopyrightText: 2026 tao3k team and Contributors
---
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-
-import PooFlowCoreProof.Modules.Funflow.Control
+import LeanPoo.Functional.Validation
 
 namespace PooFlowCoreProof.Modules.Funflow.Policy
+open LeanPoo.Functional
 
-open PooFlowCoreProof.Modules.Funflow.Control (TerminalEffect)
+/-! `control-plane/{policy,strategy,runner-support/validation}.ss`.
+Symbols are projected as strings. Registry lookup supplies the task capability
+and routing bit; this model checks their use, not registry completeness. -/
+structure Strategy where
+  name : String
+  capabilities : List String
+  cachePolicy : String
+  failurePolicy : String
+  deriving Repr, DecidableEq
 
-inductive HardStopKind where
-  | veto
-  | cancellation
-  deriving DecidableEq, Repr
+structure ExecutionPolicy extends Strategy where
+  frontier : List Nat
+  deriving Repr, DecidableEq
 
-inductive ResolutionOutcome (Decision Conflict : Type) where
-  | finalDecision (decision : Decision)
-  | conflict (conflict : Conflict)
-  | noCandidate
-  deriving DecidableEq, Repr
+/-- Freeze precisely the strategy metadata at the requested frontier. -/
+def snapshot (strategy : Strategy) : Factory (List Nat) (fun _ => ExecutionPolicy) :=
+  Factory.map (fun frontier value => ⟨value, frontier⟩) (fun _ => strategy)
 
-abbrev DecisionPriority := Int
+def allows (policy : ExecutionPolicy) (capability : String) : Bool :=
+  policy.capabilities.contains capability
 
-def defaultPriority : DecisionPriority := 0
+def cacheEnabled (policy : ExecutionPolicy) : Bool := policy.cachePolicy != "no-cache"
 
-def strongerPriority
-    (left right : DecisionPriority) : Prop :=
-  left > right
+structure Task where
+  capability : String
+  adapterRouted : Bool
+  locallyRunnable : Bool
+  deriving Repr, DecidableEq
 
-structure ControlPolicy (PolicyIdentity ConditionFamily Candidate : Type) where
-  policyIdentity : PolicyIdentity
-  conditionFamily : ConditionFamily
-  produceCandidate : Candidate → Prop
-  immutablePooObject : Prop
-  immutabilityEstablished : immutablePooObject
-  candidateProductionPure : Prop
-  purityEstablished : candidateProductionPure
-  installsExceptionHandler : Prop
-  noHandlerInstallation : ¬ installsExceptionHandler
-  returnsProfileValue : Prop
-  noProfileValue : ¬ returnsProfileValue
-  weakensAuthorityRequirement : Prop
-  noAuthorityWeakening : ¬ weakensAuthorityRequirement
+inductive Failure where
+  | strategyCapability | adapterCapability | frontier
+  deriving Repr, DecidableEq
 
-structure DecisionCandidate
-    (ConditionIdentity PolicyIdentity Scope Authority Evidence : Type) where
-  conditionIdentity : ConditionIdentity
-  policyIdentity : PolicyIdentity
-  scope : Scope
-  effect : TerminalEffect
-  priority : DecisionPriority
-  authority : Authority
-  evidence : Evidence
-  containsProfileValue : Prop
-  noProfileValue : ¬ containsProfileValue
-  containsLiveContinuation : Prop
-  noLiveContinuation : ¬ containsLiveContinuation
+/-- Preserve the runner's order: strategy check precedes adapter check;
+non-adapter tasks do not require adapter support. -/
+def validateTask (strategy : Strategy) (adapter : List String) (task : Task) : Except Failure Task :=
+  if task.capability ∈ strategy.capabilities then
+    if task.adapterRouted && !adapter.contains task.capability then .error .adapterCapability
+    else .ok task
+  else .error .strategyCapability
 
-structure CandidateAdmission where
-  conditionIdentityMatches : Prop
-  policyAdmittedInScope : Prop
-  issuerWitnessValid : Prop
-  effectClosed : Prop
-  priorityCanonicalInteger : Prop
-  authorityNoBroaderThanCapability : Prop
-  constraintsPureAndBounded : Prop
-  evidencePureAndBounded : Prop
-  containsNoProfileOrContinuation : Prop
+def validatePlan (strategy : Strategy) (adapter : List String) :=
+  Validation.traverse (validateTask strategy adapter)
 
-def CandidateAdmitted (admission : CandidateAdmission) : Prop :=
-  admission.conditionIdentityMatches ∧
-    admission.policyAdmittedInScope ∧
-    admission.issuerWitnessValid ∧
-    admission.effectClosed ∧
-    admission.priorityCanonicalInteger ∧
-    admission.authorityNoBroaderThanCapability ∧
-    admission.constraintsPureAndBounded ∧
-    admission.evidencePureAndBounded ∧
-    admission.containsNoProfileOrContinuation
+theorem validated_has_capability (s : Strategy) (a : List String) (t output : Task)
+    (accepted : validateTask s a t = .ok output) :
+    t.capability ∈ s.capabilities ∧ (t.adapterRouted = true → t.capability ∈ a) ∧ output = t := by
+  unfold validateTask at accepted
+  split at accepted
+  · rename_i supported
+    split at accepted
+    · contradiction
+    · rename_i routed
+      simp only [Except.ok.injEq] at accepted
+      refine ⟨supported, ?_, accepted.symm⟩
+      intro yes
+      simpa [yes] using routed
+  · contradiction
 
-structure HardStopAdmission where
-  kind : HardStopKind
-  capabilityValid : Prop
-  scopeMatches : Prop
-  principalAdmitted : Prop
-  rootAndGenerationMatch : Prop
-  authorityLive : Prop
+theorem missing_strategy_rejected (s : Strategy) (a : List String) (t : Task)
+    (missing : t.capability ∉ s.capabilities) :
+    validateTask s a t = .error .strategyCapability := by simp [validateTask, missing]
 
-def HardStopAdmitted (admission : HardStopAdmission) : Prop :=
-  admission.capabilityValid ∧
-    admission.scopeMatches ∧
-    admission.principalAdmitted ∧
-    admission.rootAndGenerationMatch ∧
-    admission.authorityLive
+theorem local_task_ignores_adapter (s : Strategy) (a : List String) (t : Task)
+    (supported : t.capability ∈ s.capabilities) (localRoute : t.adapterRouted = false) :
+    validateTask s a t = .ok t := by simp [validateTask, supported, localRoute]
 
-structure PriorityBoundary where
-  priorityBypassesCapability : Prop
-  noCapabilityBypass : ¬ priorityBypassesCapability
-  priorityErasesConstraint : Prop
-  noConstraintErasure : ¬ priorityErasesConstraint
-  priorityDefeatsVeto : Prop
-  noVetoDefeat : ¬ priorityDefeatsVeto
-  priorityCrossesIdentityFence : Prop
-  noFenceCrossing : ¬ priorityCrossesIdentityFence
-  unlimitedPrioritySentinelExists : Prop
-  noUnlimitedSentinel : ¬ unlimitedPrioritySentinelExists
+/-- A batch cannot publish a successful prefix when a later node is rejected. -/
+theorem plan_error_has_rejected_node (s : Strategy) (a : List String) (tasks : List Task) (e : Failure)
+    (rejected : validatePlan s a tasks = .error e) :
+    ∃ before task after values, tasks = before ++ task :: after ∧
+      validatePlan s a before = .ok values ∧ validateTask s a task = .error e :=
+  (Validation.traverse_error_iff _ _ _).mp rejected
 
-structure ResolutionOrder where
-  constraintsIntersectedBeforePriority : Prop
-  constraintOrderEstablished : constraintsIntersectedBeforePriority
-  hardStopsAppliedBeforePriority : Prop
-  hardStopOrderEstablished : hardStopsAppliedBeforePriority
-  lowerPriorityConstraintsPreserved : Prop
-  lowerConstraintsEstablished : lowerPriorityConstraintsPreserved
-  emptyIntersectionFailsClosed : Prop
-  emptyIntersectionClosureEstablished : emptyIntersectionFailsClosed
+def admitFrontier (s : Strategy) (frontier : List Nat) : Except Failure (List Nat) :=
+  if "graph-frontier" ∈ s.capabilities then .ok frontier else .error .frontier
 
-structure EqualPriorityMerge (Candidate : Type) where
-  merge : Candidate → Candidate → Candidate
-  commutative : ∀ left right, merge left right = merge right left
-  associative :
-    ∀ left middle right,
-      merge (merge left middle) right =
-        merge left (merge middle right)
-  idempotent : ∀ candidate, merge candidate candidate = candidate
-  sameTerminalEffectRequired : Prop
-  sameEffectEstablished : sameTerminalEffectRequired
-  conflictingEffectsFailClosed : Prop
-  conflictClosureEstablished : conflictingEffectsFailClosed
+theorem frontier_requires_capability (s : Strategy) (frontier output : List Nat)
+    (accepted : admitFrontier s frontier = .ok output) :
+    "graph-frontier" ∈ s.capabilities ∧ output = frontier := by
+  unfold admitFrontier at accepted
+  split at accepted
+  · exact ⟨by assumption, (Except.ok.inj accepted).symm⟩
+  · contradiction
 
-structure DeterministicResolution (Input Decision Receipt : Type) where
-  resolve : Input → Decision
-  receipt : Input → Receipt
-  candidatePermutationInvariant : Prop
-  permutationEstablished : candidatePermutationInvariant
-  completionOrderInvariant : Prop
-  completionOrderEstablished : completionOrderInvariant
-  stableDecisionIdentity : Prop
-  decisionIdentityEstablished : stableDecisionIdentity
-  stableReceiptDigest : Prop
-  receiptDigestEstablished : stableReceiptDigest
+theorem snapshot_preserves_checks (s : Strategy) (frontier : List Nat) (capability : String) :
+    allows (snapshot s frontier) capability = s.capabilities.contains capability ∧
+    (snapshot s frontier).frontier = frontier := ⟨rfl, rfl⟩
 
-structure PolicyCompositionLaw where
-  permutationInvariant : Prop
-  permutationEstablished : permutationInvariant
-  groupingInvariant : Prop
-  groupingEstablished : groupingInvariant
-  duplicateDoesNotAmplifyAuthority : Prop
-  noDuplicateAmplification : duplicateDoesNotAmplifyAuthority
-  stricterConstraintCannotExpandResult : Prop
-  monotonicRestrictionEstablished : stricterConstraintCannotExpandResult
-  unauthorizedCandidateCannotChangeDecision : Prop
-  unauthorizedCandidateIgnored : unauthorizedCandidateCannotChangeDecision
-  validHardStopOnlyRestricts : Prop
-  hardStopRestrictionEstablished : validHardStopOnlyRestricts
-  erasurePreservesNativeOutcome : Prop
-  erasureEstablished : erasurePreservesNativeOutcome
-
-structure ResolverBoundary where
-  finiteCandidateSet : Prop
-  finitenessEstablished : finiteCandidateSet
-  introducesGlobalFixedPoint : Prop
-  noGlobalFixedPoint : ¬ introducesGlobalFixedPoint
-  discoversRecursiveControllers : Prop
-  noRecursiveDiscovery : ¬ discoversRecursiveControllers
-  readsProviderRegistry : Prop
-  noProviderRegistry : ¬ readsProviderRegistry
-  cyclicDependencyRecursivelySignals : Prop
-  cycleProducesBoundedConflict : ¬ cyclicDependencyRecursivelySignals
-  sourceOrderBreaksTie : Prop
-  noSourceOrderTieBreak : ¬ sourceOrderBreaksTie
-
-structure EvidenceReceiptBoundary where
-  containsIssuerWitness : Prop
-  noIssuerWitness : ¬ containsIssuerWitness
-  containsLiveContinuation : Prop
-  noLiveContinuation : ¬ containsLiveContinuation
-  containsSecretCapabilityMaterial : Prop
-  noSecretCapabilityMaterial : ¬ containsSecretCapabilityMaterial
-  containsProfileValue : Prop
-  noProfileValue : ¬ containsProfileValue
-  orderingCanonicalByPolicyIdentity : Prop
-  canonicalOrderEstablished : orderingCanonicalByPolicyIdentity
-
-structure ResolutionAdmissionClosure where
-  pooObjectFamiliesEstablished : Prop
-  candidateProductionPureAndFinite : Prop
-  authorityIntersectionBeforePriority : Prop
-  hardStopsBeforePriority : Prop
-  exactIntegerPriorityOrdering : Prop
-  equalPriorityConflictsFailClosed : Prop
-  lowerPriorityConstraintsSurvive : Prop
-  mergeLawsEstablished : Prop
-  deterministicOrderingEstablished : Prop
-  noUnlimitedPriority : Prop
-  noNewCompositionDsl : Prop
-  governanceOwnerResolved : Prop
-  priorRfcObligationsSatisfied : Prop
-
-def ImplementationAdmitted
-    (closure : ResolutionAdmissionClosure) : Prop :=
-  closure.pooObjectFamiliesEstablished ∧
-    closure.candidateProductionPureAndFinite ∧
-    closure.authorityIntersectionBeforePriority ∧
-    closure.hardStopsBeforePriority ∧
-    closure.exactIntegerPriorityOrdering ∧
-    closure.equalPriorityConflictsFailClosed ∧
-    closure.lowerPriorityConstraintsSurvive ∧
-    closure.mergeLawsEstablished ∧
-    closure.deterministicOrderingEstablished ∧
-    closure.noUnlimitedPriority ∧
-    closure.noNewCompositionDsl ∧
-    closure.governanceOwnerResolved ∧
-    closure.priorRfcObligationsSatisfied
-
-theorem defaultPriorityIsZero :
-    defaultPriority = 0 := by
-  rfl
-
-theorem largerIntegerIsStronger
-    (left right : DecisionPriority)
-    (larger : left > right) :
-    strongerPriority left right :=
-  larger
-
-theorem negativePriorityIsOrdinaryInteger
-    (priority : DecisionPriority)
-    (negative : priority < 0) :
-    priority < defaultPriority := by
-  simpa [defaultPriority] using negative
-
-theorem missingConditionIdentityRejectsCandidate
-    (admission : CandidateAdmission)
-    (missing : ¬ admission.conditionIdentityMatches) :
-    ¬ CandidateAdmitted admission := by
-  intro admitted
-  exact missing admitted.1
-
-theorem invalidIssuerRejectsCandidate
-    (admission : CandidateAdmission)
-    (invalid : ¬ admission.issuerWitnessValid) :
-    ¬ CandidateAdmitted admission := by
-  intro admitted
-  exact invalid admitted.2.2.1
-
-theorem noncanonicalPriorityRejectsCandidate
-    (admission : CandidateAdmission)
-    (invalid : ¬ admission.priorityCanonicalInteger) :
-    ¬ CandidateAdmitted admission := by
-  intro admitted
-  exact invalid admitted.2.2.2.2.1
-
-theorem profileOrContinuationRejectsCandidate
-    (admission : CandidateAdmission)
-    (invalid : ¬ admission.containsNoProfileOrContinuation) :
-    ¬ CandidateAdmitted admission := by
-  intro admitted
-  exact invalid admitted.2.2.2.2.2.2.2.2
-
-theorem invalidHardStopAuthorityRejectsClaim
-    (admission : HardStopAdmission)
-    (invalid : ¬ admission.capabilityValid) :
-    ¬ HardStopAdmitted admission := by
-  intro admitted
-  exact invalid admitted.1
-
-theorem lowerPriorityConstraintsSurvive
-    (order : ResolutionOrder) :
-    order.lowerPriorityConstraintsPreserved :=
-  order.lowerConstraintsEstablished
-
-theorem emptyIntersectionFailsClosed
-    (order : ResolutionOrder) :
-    order.emptyIntersectionFailsClosed :=
-  order.emptyIntersectionClosureEstablished
-
-theorem equalPriorityMergeIsCommutative
-    {Candidate : Type}
-    (merge : EqualPriorityMerge Candidate)
-    (left right : Candidate) :
-    merge.merge left right = merge.merge right left :=
-  merge.commutative left right
-
-theorem equalPriorityMergeIsAssociative
-    {Candidate : Type}
-    (merge : EqualPriorityMerge Candidate)
-    (left middle right : Candidate) :
-    merge.merge (merge.merge left middle) right =
-      merge.merge left (merge.merge middle right) :=
-  merge.associative left middle right
-
-theorem equalPriorityMergeIsIdempotent
-    {Candidate : Type}
-    (merge : EqualPriorityMerge Candidate)
-    (candidate : Candidate) :
-    merge.merge candidate candidate = candidate :=
-  merge.idempotent candidate
-
-theorem resolutionHasStableDecisionAndReceipt
-    {Input Decision Receipt : Type}
-    (resolution : DeterministicResolution Input Decision Receipt) :
-    resolution.stableDecisionIdentity ∧
-      resolution.stableReceiptDigest :=
-  ⟨resolution.decisionIdentityEstablished,
-    resolution.receiptDigestEstablished⟩
-
-theorem stricterConstraintCannotExpandResult
-    (law : PolicyCompositionLaw) :
-    law.stricterConstraintCannotExpandResult :=
-  law.monotonicRestrictionEstablished
-
-theorem unauthorizedCandidateCannotChangeDecision
-    (law : PolicyCompositionLaw) :
-    law.unauthorizedCandidateCannotChangeDecision :=
-  law.unauthorizedCandidateIgnored
-
-theorem receiptContainsNoSecretAuthority
-    (receipt : EvidenceReceiptBoundary) :
-    ¬ receipt.containsIssuerWitness ∧
-      ¬ receipt.containsLiveContinuation ∧
-      ¬ receipt.containsSecretCapabilityMaterial ∧
-      ¬ receipt.containsProfileValue :=
-  ⟨receipt.noIssuerWitness, receipt.noLiveContinuation,
-    receipt.noSecretCapabilityMaterial, receipt.noProfileValue⟩
-
-theorem missingAuthorityOrderingBlocksImplementation
-    (closure : ResolutionAdmissionClosure)
-    (missing : ¬ closure.authorityIntersectionBeforePriority) :
-    ¬ ImplementationAdmitted closure := by
-  intro admitted
-  exact missing admitted.2.2.1
-
-theorem missingHardStopOrderingBlocksImplementation
-    (closure : ResolutionAdmissionClosure)
-    (missing : ¬ closure.hardStopsBeforePriority) :
-    ¬ ImplementationAdmitted closure := by
-  intro admitted
-  exact missing admitted.2.2.2.1
-
-theorem missingMergeLawsBlocksImplementation
-    (closure : ResolutionAdmissionClosure)
-    (missing : ¬ closure.mergeLawsEstablished) :
-    ¬ ImplementationAdmitted closure := by
-  intro admitted
-  exact missing admitted.2.2.2.2.2.2.2.1
-
-theorem missingGovernanceOwnerBlocksImplementation
-    (closure : ResolutionAdmissionClosure)
-    (missing : ¬ closure.governanceOwnerResolved) :
-    ¬ ImplementationAdmitted closure := by
-  intro admitted
-  exact missing admitted.2.2.2.2.2.2.2.2.2.2.2.1
-
+#guard match validateTask ⟨"s", [], "no-cache", "fail-fast"⟩ [] ⟨"external", true, false⟩ with
+  | .error .strategyCapability => true | _ => false
+#guard match validateTask ⟨"s", ["external"], "no-cache", "fail-fast"⟩ [] ⟨"external", true, false⟩ with
+  | .error .adapterCapability => true | _ => false
+#guard (validateTask ⟨"s", ["pure"], "no-cache", "fail-fast"⟩ [] ⟨"pure", false, true⟩).toOption ==
+  some ⟨"pure", false, true⟩
+#guard (admitFrontier ⟨"s", [], "no-cache", "fail-fast"⟩ [1]).toOption == none
 end PooFlowCoreProof.Modules.Funflow.Policy

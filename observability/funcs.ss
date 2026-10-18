@@ -5,10 +5,12 @@
 
 ;;; Boundary: pure bounded inspection of existing Contract evidence.
 ;;; Never re-evaluates the observed candidate, reads a clock, or prints a value.
+;;; Canonical library imports retain one descriptor/prototype identity when
+;;; source consumers and compiled owners share the same process.
 (import (only-in :clan/poo/object .o .ref .slot? object?)
         (only-in :clan/poo/mop validate raise-type-error)
-        (only-in "../types.ss" PooFlowValidationEvidence)
-        "types.ss")
+        (only-in :core/types PooFlowValidationEvidence)
+        :core/observability/types)
 (export poo-flow-observation-admission-facts
         poo-flow-observation-admission-explanation
         poo-flow-observation-admission-summary
@@ -23,7 +25,8 @@
         poo-flow-debug-memory-policy?
         poo-flow-debug-memory-sample
         poo-flow-debug-memory-receipt
-        poo-flow-debug-memory-receipt-sexp)
+        poo-flow-debug-memory-receipt-sexp
+        poo-flow-debug-allocation-current?)
 
 ;;; Stable contract prototypes are resolved at module load, outside every
 ;;; constructor and receipt path.
@@ -367,13 +370,22 @@
 
 ;;; Only bounded scalar diagnostics reach DDT or a terminal. The policy and raw
 ;;; samples remain available as native objects for local drill-down.
+(def (poo-flow-debug-allocation-current? current? previous observed)
+  ;; Once a native counter moves backwards, later increases cannot repair the
+  ;; allocation evidence for that Case. Capacity/currentness gates are separate.
+  (and current? (>= observed previous)))
+
 (def (poo-flow-debug-memory-receipt-sexp receipt)
   (validate PooFlowDebugMemoryReceiptContract receipt)
   (list 'debug-memory-observation
+        (list 'policy (.ref (.ref receipt 'policy) 'label))
         (list 'phase (.ref receipt 'phase))
         (list 'accepted? (.ref receipt 'accepted?))
         (list 'reason (.ref receipt 'reason))
         (list 'heap-size-bytes (.ref (.ref receipt 'after) 'heap-size-bytes))
         (list 'heap-growth-bytes (.ref receipt 'heap-growth-bytes))
         (list 'live-bytes (.ref (.ref receipt 'after) 'live-bytes))
-        (list 'live-growth-bytes (.ref receipt 'live-growth-bytes))))
+        (list 'live-growth-bytes (.ref receipt 'live-growth-bytes))
+        (list 'allocated-bytes (.ref (.ref receipt 'after) 'allocated-bytes))
+        (list 'movable-bytes (.ref (.ref receipt 'after) 'movable-bytes))
+        (list 'still-bytes (.ref (.ref receipt 'after) 'still-bytes))))

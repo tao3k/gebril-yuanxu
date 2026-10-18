@@ -6,7 +6,7 @@
 ;;; Checked construction and identity-preserving generic-function evolution.
 
 (import (only-in :clan/poo/object .o .ref .put!)
-        (only-in :clan/poo/mop element?)
+        (only-in :clan/poo/mop element? .defgeneric)
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list iota)
         "types.ss" "funcs.ss")
@@ -45,7 +45,18 @@
 ;; : POOObject
 (def ClosMethod. (.ref ClosMethod 'proto))
 ;; : POOObject
-(def ClosMethodCombination. (.ref ClosMethodCombination 'proto))
+(def ClosMethodCombination.
+  (.o (:: @ (.ref ClosMethodCombination 'proto) kind identity)
+    ;; This is one receiver policy, not an independently extensible argument
+    ;; crossing. Use upstream slot dispatch; derived policies can refine this
+    ;; method without adding a CLOS registry or editing the generic caller.
+    .admits-qualifier?:
+    (lambda (qualifier)
+      (case kind
+        ((standard) (if (memq qualifier '(around before primary after)) #t #f))
+        ((short) (or (eq? qualifier 'around) (eq? qualifier identity)))
+        ((long) #t)
+        (else #f)))))
 ;; : POOObject
 (def ClosMethodGroup. (.ref ClosMethodGroup 'proto))
 ;; : POOObject
@@ -397,13 +408,8 @@
    (else (clos-fail 'unsupported-method-combination))))
 
 ;; : (-> ClosMethodCombination SchemeValue Boolean)
-(def (poo-clos-method-combination-admits-qualifier? combination qualifier)
-  (case (.ref combination 'kind)
-    ((standard) (if (memq qualifier '(around before primary after)) #t #f))
-    ((short) (or (eq? qualifier 'around)
-                 (eq? qualifier (.ref combination 'identity))))
-    ((long) #t)
-    (else #f)))
+(.defgeneric (poo-clos-method-combination-admits-qualifier? combination qualifier)
+  slot: .admits-qualifier?)
 
 ;;; A default protocol has no override procedures; dispatch therefore follows
 ;;; its closed built-in path and emits typed terminal failures.

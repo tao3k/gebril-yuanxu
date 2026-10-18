@@ -18,10 +18,10 @@
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT)
         (only-in :std/error deferror-class)
-        (only-in "types.ss"
+        (only-in :core/observability/types
                  PooFlowDebugSlotPolicyContract
                  PooFlowDebugSlotReceiptContract)
-        (only-in "funcs.ss"
+        (only-in :core/observability/funcs
                  poo-flow-debug-slot-policy
                  poo-flow-debug-slot-receipt
                  poo-flow-debug-slot-receipt-sexp))
@@ -163,8 +163,8 @@
 ;;   : (-> PooFlowDebugSlotPolicy Symbol PooObject port: OutputPort emit?: Boolean PooObject)
 ;;   | doc m%
 ;;       Create a POO proxy whose inherited slots are admitted before lazy
-;;       resolution.  Re-entering an active slot or crossing the depth budget
-;;       raises a typed anomaly before the upstream cache can recurse.
+;;       resolution. Crossing the guard's depth budget raises a typed anomaly;
+;;       native POO cycle failures propagate unchanged when detected first.
 ;;       Successful values retain ordinary POO object-local caching.  Clan's
 ;;       tracer receives only a zero-argument resolver returning `resolved`.
 ;;

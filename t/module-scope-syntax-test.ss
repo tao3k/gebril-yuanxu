@@ -157,7 +157,9 @@
               (lambda () (expand-scope form) "unexpected success")))
           (check-equal? (if (string-contains message "conflicts with lexical slot") #t #f) #t))
         '((.o funflow: (use-module funflow as ff (.o (:: @ ff))))
-          (.o funflow: (with-module funflow as ff (.o (:: @ ff)))))))
+          (.o funflow: (with-module funflow as ff (.o (:: @ ff))))
+          (.o providers.funflow: (use-module funflow as ff (.o (:: @ ff))))
+          (.o providers.funflow: (with-module funflow as ff (.o (:: @ ff)))))))
 
     (test-case "identifier-only selections preserve the existing Bundle grammar"
       (.def (Role @ ModuleSourceRole.)

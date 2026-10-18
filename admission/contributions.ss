@@ -185,21 +185,42 @@
     (.o (:: @ base)
       contributions: (map values rows)
       admit-current: (lambda () (current! @))
+      ;; Analysis retains registered descriptor and contribution observations.
+      ;; Root current! still certifies the complete selection before/after open
+      ;; callbacks and at return. No source-byte cache spans child obligations.
+      .responsibility-obligations:
+      (lambda (actual candidate)
+        (unless (hash-get contracts actual)
+          (error "admission descriptor differs from selected publication"))
+        (observations-current! observations)
+        (if (or (.slot? base '.contract-obligations) (eq? actual descriptor)
+                (not (eq? (.get @ .contract-obligations) platform-obligations)))
+          (poo-flow-context-contract-obligations @ actual candidate)
+          '()))
       .contract-obligations:
       (lambda (actual candidate)
         (unless (hash-get contracts actual)
           (error "admission descriptor differs from selected publication"))
+        (def inherited? (.slot? base '.contract-obligations))
+        (def contributed? (and (eq? actual descriptor) handles?))
         (current! @)
-        (def inherited
-          (if (.slot? base '.contract-obligations)
-            (poo-flow-context-contract-obligations base actual candidate) '()))
-        (def contributed
-          (if (and (eq? actual descriptor) handles?)
-            (poo-flow-contract-contribution-obligations
-              actual candidate (.get @ contributions) @) '()))
-        (unless (list? contributed)
-          (error "contribution obligations must return diagnostics"))
-        (when handles? (current! @))
-        (append inherited contributed))))
+        ;; A registered child with no platform callback has no intervening
+        ;; obligation/effect here. Its own domain obligation already ran in
+        ;; the kernel. Do not repeat the identical source guard before return.
+        (if (not (or inherited? contributed?)) '()
+          (let* ((inherited (if inherited?
+                             (poo-flow-context-contract-obligations base actual candidate) '()))
+                 (contributed (if contributed?
+                                (poo-flow-contract-contribution-obligations
+                                  actual candidate (.get @ contributions) @) '())))
+            (unless (list? contributed)
+              (error "contribution obligations must return diagnostics"))
+            ;; Real callbacks retain a fresh post-call guard, including the
+            ;; inherited-only case. No byte window spans either callback.
+            (current! @)
+            (append inherited contributed))))))
+  ;; A derived/replaced platform handler is an open callback, not the bound
+  ;; analytic entry. It must run with its original guard semantics.
+  (def platform-obligations (.get context .contract-obligations))
   (current! context)
   (.cc publication context: context))

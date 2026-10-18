@@ -2,7 +2,7 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-import PooFlowCoreProof.Graph.ConclusionRevision
+import PooFlowCoreProof.Modules.Funflow.ConclusionRevision
 
 namespace PooFlowCoreProof.Admission.Decision
 
@@ -29,44 +29,70 @@ def GovernanceEvidenceCarriesActionAuthority :
   | .revoked => False
   | .invalid => False
 
+/-- Concrete decision inputs. These are observations, not assertions of admission.
+Identity checks compare full projected identities; signature authenticity is external. -/
 structure GovernanceChecks where
-  exactProposal : Prop
-  exactEvidenceCut : Prop
-  quorumSatisfied : Prop
-  separationSatisfied : Prop
-  scopeMatches : Prop
-  versionPreconditionHolds : Prop
-  policyMatches : Prop
-  temporalRequirementsHold : Prop
-  notRevoked : Prop
+  proposal : Nat
+  expectedProposal : Nat
+  evidenceCut : Nat
+  expectedEvidenceCut : Nat
+  approvers : List Nat
+  threshold : Nat
+  proposer : Nat
+  executor : Nat
+  scope : Nat
+  expectedScope : Nat
+  version : Nat
+  expectedVersion : Nat
+  policy : Nat
+  expectedPolicy : Nat
+  observedAt : Nat
+  expiresAt : Nat
+  revoked : Bool
+  deriving DecidableEq, Repr
 
 def GovernanceChecksHold (checks : GovernanceChecks) : Prop :=
-  checks.exactProposal ∧
-    checks.exactEvidenceCut ∧
-    checks.quorumSatisfied ∧
-    checks.separationSatisfied ∧
-    checks.scopeMatches ∧
-    checks.versionPreconditionHolds ∧
-    checks.policyMatches ∧
-    checks.temporalRequirementsHold ∧
-    checks.notRevoked
+  checks.proposal = checks.expectedProposal ∧
+  checks.evidenceCut = checks.expectedEvidenceCut ∧
+  checks.threshold ≤ checks.approvers.eraseDups.length ∧
+  checks.proposer ∉ checks.approvers ∧ checks.executor ∉ checks.approvers ∧
+  checks.scope = checks.expectedScope ∧
+  checks.version = checks.expectedVersion ∧
+  checks.policy = checks.expectedPolicy ∧
+  checks.observedAt ≤ checks.expiresAt ∧ checks.revoked = false
 
-structure GovernanceDecisionReceipt
-    (ProposalIdentity EvidenceCutIdentity PolicyIdentity ScopeIdentity
-      DecisionIdentity : Type) where
-  proposalIdentity : ProposalIdentity
-  evidenceCutIdentity : EvidenceCutIdentity
-  policyIdentity : PolicyIdentity
-  scopeIdentity : ScopeIdentity
-  checks : GovernanceChecks
-  checksHold : GovernanceChecksHold checks
-  decisionIdentity : DecisionIdentity
+instance (checks : GovernanceChecks) : Decidable (GovernanceChecksHold checks) :=
+  inferInstanceAs (Decidable (_ ∧ _))
 
+def admitGovernance (checks : GovernanceChecks) : Option {c : GovernanceChecks // GovernanceChecksHold c} :=
+  if valid : GovernanceChecksHold checks then some ⟨checks, valid⟩ else none
+
+theorem revokedCannotBeAdmitted (checks : GovernanceChecks) (revoked : checks.revoked = true) :
+    admitGovernance checks = none := by
+  have invalid : ¬ GovernanceChecksHold checks := by
+    intro valid
+    have := valid.2.2.2.2.2.2.2.2.2
+    simp [revoked] at this
+  simp [admitGovernance, invalid]
+
+/-- Approval identities are normalized before counting. There is no caller-supplied
+threshold proposition or certificate of a count that was never computed. -/
 structure QuorumEvidence (PrincipalIdentity : Type) where
   approvingPrincipals : List PrincipalIdentity
-  principalsDistinct : approvingPrincipals.Nodup
-  thresholdSatisfied : Prop
-  thresholdEstablished : thresholdSatisfied
+  threshold : Nat
+
+def quorumSatisfied (quorum : QuorumEvidence PrincipalIdentity) [DecidableEq PrincipalIdentity] : Prop :=
+  quorum.threshold ≤ quorum.approvingPrincipals.eraseDups.length
+
+instance (quorum : QuorumEvidence PrincipalIdentity) [DecidableEq PrincipalIdentity] :
+    Decidable (quorumSatisfied quorum) := inferInstanceAs (Decidable (_ ≤ _))
+
+def admitQuorum [DecidableEq PrincipalIdentity] (quorum : QuorumEvidence PrincipalIdentity) :
+    Option {q : QuorumEvidence PrincipalIdentity // quorumSatisfied q} :=
+  if valid : quorumSatisfied quorum then some ⟨quorum, valid⟩ else none
+
+#guard admitQuorum (⟨[1, 1], 2⟩ : QuorumEvidence Nat) |>.isNone
+#guard admitQuorum (⟨[1, 2], 2⟩ : QuorumEvidence Nat) |>.isSome
 
 structure SeparationOfDuties
     (PrincipalIdentity : Type) where
@@ -75,50 +101,6 @@ structure SeparationOfDuties
   executor : PrincipalIdentity
   proposerNotApprover : proposer ≠ approver
   approverNotExecutor : approver ≠ executor
-
-structure OneShotScopedCapability
-    (ProposalIdentity ScopeIdentity ActionRole CapabilityIdentity : Type) where
-  proposalIdentity : ProposalIdentity
-  scopeIdentity : ScopeIdentity
-  actionRole : ActionRole
-  capabilityIdentity : CapabilityIdentity
-  consumptionCount : Nat
-  atMostOnce : consumptionCount ≤ 1
-
-structure CapabilityConsumptionReceipt
-    (CapabilityIdentity ActionReceiptIdentity : Type) where
-  capabilityIdentity : CapabilityIdentity
-  actionReceiptIdentity : ActionReceiptIdentity
-  consumptionCount : Nat
-  consumedExactlyOnce : consumptionCount = 1
-
-structure GovernanceRevocation
-    (DecisionIdentity RevocationIdentity : Type) where
-  decisionIdentity : DecisionIdentity
-  revocationIdentity : RevocationIdentity
-  capabilityIssuanceAllowed : Prop
-  issuanceFailsClosed : ¬ capabilityIssuanceAllowed
-
-structure BreakGlassDecision
-    (ProposalIdentity ScopeIdentity PolicyIdentity TimeObservationIdentity
-      ReceiptIdentity : Type) where
-  proposalIdentity : ProposalIdentity
-  scopeIdentity : ScopeIdentity
-  policyIdentity : PolicyIdentity
-  timeObservationIdentity : TimeObservationIdentity
-  receiptIdentity : ReceiptIdentity
-  policyAllowsBreakGlass : Prop
-  policyEstablished : policyAllowsBreakGlass
-  scopeIsExplicit : Prop
-  scopeEstablished : scopeIsExplicit
-  expiryIsExplicit : Prop
-  expiryEstablished : expiryIsExplicit
-  reasonRecorded : Prop
-  reasonEstablished : reasonRecorded
-  postActionReviewRequired : Prop
-  reviewObligationEstablished : postActionReviewRequired
-  carriesGlobalAuthority : Prop
-  noGlobalAuthority : ¬ carriesGlobalAuthority
 
 theorem candidateApprovalIsNotCapabilityAuthority :
     ¬ GovernanceEvidenceCarriesActionAuthority .candidateEvidence := by
@@ -144,18 +126,6 @@ theorem invalidDecisionFailsClosed :
     ¬ MayRequestScopedCapability .invalid := by
   simp [MayRequestScopedCapability]
 
-theorem quorumCarriesDistinctPrincipals
-    {PrincipalIdentity : Type}
-    (quorum : QuorumEvidence PrincipalIdentity) :
-    quorum.approvingPrincipals.Nodup :=
-  quorum.principalsDistinct
-
-theorem quorumCarriesThresholdEvidence
-    {PrincipalIdentity : Type}
-    (quorum : QuorumEvidence PrincipalIdentity) :
-    quorum.thresholdSatisfied :=
-  quorum.thresholdEstablished
-
 theorem proposerAndApproverAreSeparated
     {PrincipalIdentity : Type}
     (separation : SeparationOfDuties PrincipalIdentity) :
@@ -167,15 +137,5 @@ theorem approverAndExecutorAreSeparated
     (separation : SeparationOfDuties PrincipalIdentity) :
     separation.approver ≠ separation.executor :=
   separation.approverNotExecutor
-
-theorem breakGlassRequiresExplicitScopeAndExpiry
-    {ProposalIdentity ScopeIdentity PolicyIdentity TimeObservationIdentity
-      ReceiptIdentity : Type}
-    (decision :
-      BreakGlassDecision
-        ProposalIdentity ScopeIdentity PolicyIdentity TimeObservationIdentity
-        ReceiptIdentity) :
-    decision.scopeIsExplicit ∧ decision.expiryIsExplicit :=
-  ⟨decision.scopeEstablished, decision.expiryEstablished⟩
 
 end PooFlowCoreProof.Admission.Decision

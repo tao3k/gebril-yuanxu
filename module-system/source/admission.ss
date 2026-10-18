@@ -13,7 +13,7 @@
         (only-in :core/module-system/authoring/import-policy
                  SourceInspectionPolicy. poo-flow-module-owner-import-datum-observations)
         (only-in :core/module-system/authoring/admission
-                 poo-flow-module-authoring-admit-port
+                 poo-flow-module-authoring-admit-datums
                  poo-flow-module-authoring-admission-accepted?
                  poo-flow-module-authoring-admission-diagnostics)
         (only-in :core/module-system/authoring/roles poo-flow-default-module-authoring-profile))
@@ -23,6 +23,7 @@
         call-with-module-source-read-cache call-with-module-source-fresh-reads
         call-with-collected-module-sources
         module-source-observe current-module-source-observer current-module-source-phase
+        current-module-process-trace-budget
         admit-module-value! admit-module-publication!)
 
 (def poo-flow-module-required-role-files '("types.ss" "objects.ss" "config.ss" "interface.ss"))
@@ -33,6 +34,10 @@
        (andmap (lambda (c) (not (memv c '(#\/ #\\ #\:)))) (string->list name))))
 
 (def current-module-source-observer (make-parameter #f))
+;; A Case-owned logging allowance, never a query/currentness cache. The testing
+;; adapter binds a fresh box only for detailed observation; execution consumes
+;; it solely to add the provider's diagnostic flags to a bounded set of calls.
+(def current-module-process-trace-budget (make-parameter #f))
 ;; Observer keys remain numeric counters: symbols for totals, or
 ;; (file-request/file-read phase path) for attribution. No observer, no path keys.
 (def current-module-source-phase (make-parameter 'source))
@@ -49,12 +54,18 @@
 ;; observations only inside that boundary; every read requires regular-file
 ;; status. No cache survives an effect or an independent currentness call.
 (def source-read-cache (make-parameter #f))
+;; Pure-query reuse must also preserve enrollment in an enclosing admission.
+;; Each nested collector is a distinct demand even when bytes are unchanged.
+(def source-collectors (make-parameter '()))
 (def (call-with-module-source-fresh-reads thunk)
   ;; Admission is an authority boundary even when a caller has an outer pure
   ;; observation window. Restore that window afterwards; never inherit its bytes.
   (parameterize ((source-read-cache #f)) (thunk)))
 (def (call-with-module-source-read-cache thunk)
   (observe-source 'checks)
+  ;; Requests include nested guards. Count actual fresh observation windows
+  ;; separately so attribution cannot mistake cache hits for filesystem passes.
+  (unless (source-read-cache) (observe-source 'read-windows))
   ;; Nested pure source guards share the outer validation's observations. The
   ;; owner MUST end this scope before expansion, writes or external effects.
   (cond
@@ -70,7 +81,11 @@
   ;; Pure observations only, within the same validation boundary as file bytes.
   (let (cache (source-read-cache))
     (if cache
-      (let (key (cons query arguments))
+      ;; File-kind lookup has no collector enrollment. Share that physical
+      ;; query across collectors in this same pure window; byte guards and
+      ;; arbitrary queries still rerun for each collector and enroll normally.
+      (let (key (cons query (cons (if (eq? query read-module-source-type)
+                                   '() (source-collectors)) arguments)))
         (if (hash-key? cache key)
           (begin (observe-source 'query-hits) (hash-ref cache key))
           (let (value (apply query arguments))
@@ -98,13 +113,31 @@
 
 ;; Private per-admission observations; neither a field table nor a global log.
 (defstruct source-observation (input message) final: #t)
-(def source-collectors (make-parameter '()))
 (def (check-source-current! entry message)
-  (unless (if (cdr entry)
-            (and (eq? (module-source-type (car entry)) 'regular)
-                 (equal? (cdr entry) (module-source-read (car entry))))
-            (not (module-source-type (car entry))))
-    (error message (car entry))))
+  ;; Keep comparison reuse inside the EXISTING pure read window. Index by path,
+  ;; then expected-text identity: hashing complete source texts on every hit
+  ;; would replace a linear comparison with another linear operation. Distinct
+  ;; expected revisions (including equal copies) must be checked independently.
+  ;; Windows already require stable bytes/inputs; callbacks must end them.
+  (def cache (source-read-cache))
+  (def key (and cache (cons check-source-current! (car entry))))
+  (def checked (and cache (hash-get cache key)))
+  (if (and checked (hash-key? checked (cdr entry)))
+    (observe-source 'source-comparison-hits)
+    (begin
+      (observe-source 'source-comparisons)
+      (unless (if (cdr entry)
+                (and (eq? (module-source-type (car entry)) 'regular)
+                     (equal? (cdr entry) (module-source-read (car entry))))
+                (not (module-source-type (car entry))))
+        (error message (car entry)))
+      ;; A failed check never enrolls a comparison result. Observation collection
+      ;; remains in module-source-admit-current!, outside this memoized work.
+      (when cache
+        (unless checked
+          (set! checked (make-hash-table-eq))
+          (hash-put! cache key checked))
+        (hash-put! checked (cdr entry) #t)))))
 (def (call-with-collected-module-sources consume)
   (def by-path (make-hash-table))
   (def observed '())
@@ -124,11 +157,16 @@
     ;; Only actual admission checks enroll observations, not this final pass.
     (call-with-module-source-fresh-reads
       (lambda ()
-        (for-each
-          (lambda (item)
-            (check-source-current! (source-observation-input item)
-                                  (source-observation-message item)))
-          (reverse observed)))))
+        ;; The replay itself only checks retained observations. Start with
+        ;; fresh bytes, then share physical reads within this one pure pass.
+        ;; Never inherit an enclosing admission's pre-effect observations.
+        (call-with-module-source-read-cache
+          (lambda ()
+            (for-each
+              (lambda (item)
+                (check-source-current! (source-observation-input item)
+                                      (source-observation-message item)))
+              (reverse observed)))))))
   (parameterize ((source-collectors (cons collect! (source-collectors))))
     (consume current!)))
 (def (module-source-admit-current! observations
@@ -168,7 +206,7 @@
             datums)
        #t))
 
-(def (poo-flow-module-dependency-direction-validate! module-name module-root reader)
+(def (poo-flow-module-dependency-direction-validate! module-name module-root read-datums)
   (let ((layers '((types objects func config interface build)
                   (func objects config interface build)
                   (objects config interface build)
@@ -180,8 +218,8 @@
               (path (path-expand
                      (string-append (symbol->string source-role) ".ss")
                      module-root)))
-         (when (reader path #f)
-           (let (datums (call-with-input-string (reader path) read-all))
+         (when (read-datums path)
+           (let (datums (read-datums path))
              (for-each
               (lambda (forbidden-role)
                 (when (poo-flow-module-top-form-references-role?
@@ -195,7 +233,7 @@
 ;;; The loader applies the Interface-owned authoring Profile to each stable
 ;;; role before exposing any entrypoint.  Admission reads inert datums only;
 ;;; it neither expands nor evaluates module source.
-(def (poo-flow-module-role-authoring-validate! policy module-name module-root reader)
+(def (poo-flow-module-role-authoring-validate! policy module-name module-root reader read-datums)
   (let* ((authoring (.ref policy 'authoring))
          (interface
           (poo-flow-module-interface
@@ -208,11 +246,8 @@
                (path-expand
                 (string-append (symbol->string role) ".ss") module-root))
               (admission
-               (call-with-input-string
-                (reader path)
-                (lambda (port)
-                  (poo-flow-module-authoring-admit-port
-                   interface (if (eq? role 'func) 'funs role) port)))))
+               (poo-flow-module-authoring-admit-datums
+                 interface (if (eq? role 'func) 'funs role) (read-datums path))))
          (unless (poo-flow-module-authoring-admission-accepted? admission)
            (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
                   module-name role path
@@ -231,7 +266,7 @@
     (error "POO-FLOW-MODULE-E005 init.ss belongs to the selection root" module-name))
   ;; Read each selected role once. The caller may record these exact bytes in
   ;; its generation; all checks consume the same inert source snapshot.
-  (let (texts (make-hash-table))
+  (let ((texts (make-hash-table)) (parsed (make-hash-table)))
     (for-each
      (lambda (role)
        (let* ((path (path-expand (string-append (symbol->string role) ".ss") module-root))
@@ -239,16 +274,23 @@
          (when (or required? (module-source-type path))
            (unless (eq? (module-source-type path) 'regular)
              (error "module role must be a regular file" module-name role path))
-           (let (text (reader path))
-             (unless (pair? (call-with-input-string text read-all))
+           (let* ((text (reader path))
+                  (datums (call-with-input-string text read-all)))
+             (observe-source 'role-parses)
+             (unless (pair? datums)
                (error "module role cannot be empty" module-name role path))
-             (hash-put! texts path text)))))
+             (hash-put! texts path text)
+             (hash-put! parsed path datums)))))
      poo-flow-module-allowed-entrypoint-roles)
     (def (read-role path (required? #t))
       (if (hash-key? texts path) (hash-ref texts path)
         (if required? (error "source role was not admitted" path) #f)))
+    (def (read-datums path) (hash-get parsed path))
+    ;; One private parse per role/policy invocation. Structural checks and the
+    ;; authoring protocol inspect the SAME source datums. Discard this snapshot
+    ;; after the call; re-read/reparse and re-dispatch on the next invocation.
     (poo-flow-module-dependency-direction-validate!
-     (path-strip-directory (path-strip-trailing-directory-separator module-root)) module-root read-role)
+     (path-strip-directory (path-strip-trailing-directory-separator module-root)) module-root read-datums)
     (hash-for-each
      (lambda (path text)
        (for-each
@@ -258,8 +300,8 @@
             (when (pair? findings)
               (error "POO-FLOW-MODULE-E008 module owner imports aggregate facade"
                      module-name path (car findings)))))
-        (call-with-input-string text read-all))) texts)
-    (poo-flow-module-role-authoring-validate! policy module-name module-root read-role))
+        (read-datums path))) texts)
+    (poo-flow-module-role-authoring-validate! policy module-name module-root read-role read-datums))
   module-root)
 
 (def poo-flow-module-style-policy-prototype

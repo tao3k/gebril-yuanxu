@@ -5,9 +5,10 @@
 (import (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
+        (only-in :std/list/list find)
         (only-in :clan/poo/object .o .cc .ref .slot? .all-slots object?)
         (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache)
+        (only-in :core/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe)
         (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
         (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
         (only-in :core/feature-system/capability-model feature-projection-request?)
@@ -70,11 +71,16 @@
                 (when (eq? (.ref node 'kind) 'module-core)
                   (hash-put! cores (.ref node 'owner) (.ref (.ref node 'publication) 'core))))
               (.ref selected-value 'nodes))
+    (def (check-current! observed-checks)
+      ((.ref selected-value 'admit-current))
+      (for-each (lambda (check) (check)) observed-checks))
     (def (current!)
       (call-with-module-source-read-cache
         (lambda ()
-          ((.ref selected-value 'admit-current))
-          (for-each (lambda (check) (check)) checks))))
+          ;; Cache only this pure traversal in the enclosing observation
+          ;; window. Adding an input changes the key; effects and independent
+          ;; currentness calls start fresh windows, never reuse this approval.
+          (module-source-observe check-current! checks))))
     (def (owner-preparation owner)
       (if (hash-key? prepared owner) (hash-ref prepared owner)
         (let (value (prepare-publication owner))
@@ -113,10 +119,11 @@
     ;; current! validates the selected context once before these local guards.
     ;; Capturing it again per entry makes each check recursively rewalk all Modules.
     ;; Local guards still re-read bytes/package identity on every boundary.
-    (def (add-source! path options-value owner contributor)
+    (def (add-source! path options-value owner contributor (observed-input #f))
       (if (hash-key? by-path path)
         (add! 'source (.ref (hash-ref by-path path) 'input) options-value owner contributor)
-        (add! 'source (poo-flow-prepare-module-build-source path void) options-value owner contributor)))
+        (add! 'source (or observed-input (poo-flow-prepare-module-build-source path void))
+              options-value owner contributor)))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -198,7 +205,15 @@
                    (core (.ref (.ref node 'publication) 'core)))
               (when (.slot? core 'build-entries)
                 (error "Core build entries are derived from roles; declare only additional projections" owner))
-              (for-each (lambda (path) (add-source! path '() owner contributor))
+              ;; Preserve the existing compiler order and identity checks. The
+              ;; reader has already prepared these roles under its source guard;
+              ;; reuse that exact input instead of parsing/retaining it twice.
+              (for-each (lambda (path)
+                          (add-source! path '() owner contributor
+                            (and (.slot? publication 'source-dependencies)
+                                 (find (lambda (input)
+                                         (equal? (.ref input 'path) path))
+                                       (.ref publication 'source-dependencies)))))
                         (.ref publication 'role-sources))
               (when (.slot? publication 'source-dependencies)
                 (for-each (lambda (input)

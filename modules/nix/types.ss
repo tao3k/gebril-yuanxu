@@ -34,6 +34,9 @@
            ;; Empty arguments select a package; nonempty string arguments apply
            ;; an exported native Nix function through --apply, never --argstr.
            (.slot? value 'arguments) (nix-arguments? (.get value arguments))
+           (.slot? value 'inputs) (nix-arguments? (.get value inputs))
+           (every (lambda (key) (string-prefix? "/" (.ref (.get value inputs) key)))
+                  (.all-slots (.get value inputs)))
            (.slot? value 'source-inputs) (source-inputs? (.get value source-inputs))))
     (lambda (_v _c) '())))
 

@@ -6,7 +6,9 @@
 ;;; reuse; it is not provider authentication. package management owns artifact provenance.
 ;;; No provider execution, persistent certificate, or Loader is implied.
 (import :clan/poo/object
-        :core/poo-clos/interface
+        ;; Only declaration syntax is required. Reflection, class evolution and
+        ;; load-form publication are not collection-evidence dependencies.
+        (only-in :core/poo-clos/generic-syntax .defgeneric .defmethod)
         (only-in :clan/poo/mop element?)
         "./types.ss" "./aws-hash.ss"
         (only-in :std/crypto/digest sha256)

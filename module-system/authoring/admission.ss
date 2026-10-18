@@ -20,7 +20,14 @@
         (only-in :core/module-system/observability/presentation
                  poo-flow-poo-slot-authoring-datum-bindings
                  poo-flow-poo-slot-authoring-self-reference?)
-        :core/poo-clos/interface
+        ;; Role admission needs dispatch and immutable method declarations, not
+        ;; the aggregate class evolution/reflection/load-form publication.
+        (only-in :core/poo-clos/objects
+                 poo-clos-generic-protocol
+                 poo-clos-generic-binding-current poo-clos-compose-method-bundle)
+        (only-in :core/poo-clos/generic-syntax .defgeneric .defmethod)
+        (only-in :core/poo-clos/dispatch poo-clos-call)
+        (only-in :core/poo-clos/method-bundle-syntax .defmethod-bundle)
         (only-in :core/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
 (export ModuleAuthoringAdmissionProtocol
@@ -30,6 +37,7 @@
         PooFlowModuleAuthoringAdmission
         poo-flow-module-authoring-role
         poo-flow-module-authoring-admit-datum
+        poo-flow-module-authoring-admit-datums
         poo-flow-module-authoring-admit-port
         poo-flow-module-authoring-admission?
         poo-flow-module-authoring-admission-accepted?
@@ -349,35 +357,29 @@
 (def ModuleAuthoringAdmissionProtocol
   (poo-clos-generic-protocol 'module-system/authoring-admission))
 
+(.defgeneric module-authoring-admit (executor role interface datum)
+  (protocol ModuleAuthoringAdmissionProtocol))
+
+;; Keep the exported generic object: contributor bundles compose with this
+;; exact protocol owner, rather than a separately constructed lookalike.
 (def ModuleAuthoringAdmissionGeneric
-  (poo-clos-generic-function
-   'module-authoring-admit 4
-   protocol: ModuleAuthoringAdmissionProtocol))
+  (poo-clos-generic-binding-current module-authoring-admit$poo-clos-generic))
 
-(def ModuleAuthoringCommonMethod
-  (poo-clos-method
-   'module-authoring/common
-   (list (poo-clos-prototype-specializer ModuleAuthoringExecutor.)
-         (poo-clos-prototype-specializer ModuleSourceRole.)
-         (poo-clos-prototype-specializer poo-flow-module-interface-prototype)
-         (poo-clos-any-specializer))
-   (lambda (_frame _executor role interface datum)
-     (poo-flow-module-authoring-admit/common interface role datum))))
-
-(def ModuleAuthoringConfigMethod
-  (poo-clos-method
-   'module-authoring/config
-   (list (poo-clos-prototype-specializer ModuleAuthoringExecutor.)
-         (poo-clos-prototype-specializer ConfigSourceRole.)
-         (poo-clos-prototype-specializer poo-flow-module-interface-prototype)
-         (poo-clos-any-specializer))
-   (lambda (_frame _executor role interface datum)
-     (poo-flow-module-authoring-admit/config interface role datum))))
+;; One source-level rule owns the shared crossing; normal .defmethod lowering
+;; supplies the specializers, lexical frame and lambda-list contract.
+(defrules authoring-method ()
+  ((_ role-prototype admit)
+   (.defmethod (module-authoring-admit
+                 (executor (prototype ModuleAuthoringExecutor.))
+                 (role (prototype role-prototype))
+                 (interface (prototype poo-flow-module-interface-prototype))
+                 datum)
+     (admit interface role datum))))
 
 (.defmethod-bundle ModuleAuthoringCoreMethods
   ModuleAuthoringAdmissionProtocol
-  ModuleAuthoringCommonMethod
-  ModuleAuthoringConfigMethod)
+  (authoring-method ModuleSourceRole. poo-flow-module-authoring-admit/common)
+  (authoring-method ConfigSourceRole. poo-flow-module-authoring-admit/config))
 
 (poo-clos-compose-method-bundle
  ModuleAuthoringAdmissionGeneric
@@ -402,6 +404,20 @@
     (poo-clos-call ModuleAuthoringAdmissionGeneric
                    executor role interface datum)))
 
+;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
+(def (poo-flow-module-authoring-admit-datums interface role-name datums)
+  ;; Consume the caller's inert source snapshot. Dispatch and validation still
+  ;; run for every datum; neither method selection nor acceptance is cached.
+  (poo-flow-module-authoring-admission
+   interface
+   (poo-flow-module-authoring-role interface role-name)
+   (foldr append '()
+     (map (lambda (datum)
+            (.ref (poo-flow-module-authoring-admit-datum interface role-name datum)
+                  'diagnostics))
+          datums))))
+
+;; The public port API keeps its original streaming reader semantics.
 ;; : (-> PooModuleInterface Symbol InputPort PooModuleAuthoringAdmission)
 (def (poo-flow-module-authoring-admit-port interface role-name port)
   (poo-flow-module-authoring-admission

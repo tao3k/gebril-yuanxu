@@ -5,11 +5,12 @@
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
         (only-in :core/types PooFlowContract. poo-flow-classification-evidence
-                 poo-flow-validation-evidence)
+                 poo-flow-validation-evidence call-with-contract-analysis-root)
         (only-in :core/configuration/slot-origin admit-field-sources!)
         (only-in :core/module-system/source/admission
                  module-source-admit-current! call-with-module-source-read-cache
-                 call-with-module-source-fresh-reads call-with-collected-module-sources))
+                 call-with-module-source-fresh-reads call-with-collected-module-sources
+                 current-module-source-phase))
 (export SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
 
 ;; Consume MOP observations; the object engine owns recording and cache replay.
@@ -27,7 +28,15 @@
     ;; before return, rather than walking every transitive prefix on every hit.
     (hash-put! roots read #t))
   (def result (call-with-slot-read-observer observe action before: check-source))
-  (replay-slot-reads! (hash-keys roots) check-source)
+  ;; Replay checks only recorded one-slot source metadata: it cannot execute a
+  ;; getter or a Contract obligation. Share bytes within this pure pass only.
+  ;; Start fresh even inside an enclosing validation window; never carry this
+  ;; cache across action, nested admission, or the independent return check.
+  (parameterize ((current-module-source-phase 'slot-replay))
+    (call-with-module-source-fresh-reads
+      (lambda ()
+        (call-with-module-source-read-cache
+          (cut replay-slot-reads! (hash-keys roots) check-source)))))
   result)
 
 ;; Domain-owned stages run inside SourceAdmissionContract's MOP observer.
@@ -46,7 +55,10 @@
   (def failures ((.get contract .preflight) candidate '()))
   (def evidence
     (if (null? failures)
-      (call-with-module-source-read-cache (cut next candidate context))
+      ;; The inherited kernel includes arbitrary obligations. Do not keep a
+      ;; source-byte window open across their calls or nested admissions.
+      (call-with-contract-analysis-root contract candidate context
+        (cut next candidate context))
       (let (classification
              (poo-flow-classification-evidence
                (.get contract identity) candidate #f failures context))
@@ -64,6 +76,8 @@
     (.cc evidence
       classification: (.cc (.get evidence classification) diagnostics: classification-issues)
       diagnostics: issues))
+  ;; This protocol slot is replaceable: do not classify it as a pure inspector
+  ;; or carry its source bytes into the independent final collector check.
   (when (and (null? failures) (object? context) (.slot? context 'admit-current))
     ((.get context admit-current)))
   (sources-current!)
@@ -83,5 +97,6 @@
               (def evidence
                 (call-with-source-slot-reads
                   (cut source-contract-admit @ (inherited) candidate context)))
-              (sources-current!)
+              (parameterize ((current-module-source-phase 'return-currentness))
+                (sources-current!))
               evidence)))))))

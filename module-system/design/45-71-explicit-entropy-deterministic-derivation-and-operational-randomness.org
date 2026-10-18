@@ -5,6 +5,12 @@
 #+title: Explicit Entropy, Deterministic Derivation, and Operational Randomness
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted treatment of deterministic derivation, semantic
@@ -82,11 +88,11 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =deterministicDerivationNeedsNoEntropy=
-- [X] =explicitSemanticEntropyAdmitsDerivation=
-- [X] =missingSemanticEntropyFailsClosed=
-- [X] =missingSemanticEntropyRequiresSuspension=
-- [X] =implicitLiveRandomnessIsRejected=
+- [ ] =deterministicDerivationNeedsNoEntropy=
+- [ ] =explicitSemanticEntropyAdmitsDerivation=
+- [ ] =missingSemanticEntropyFailsClosed=
+- [ ] =missingSemanticEntropyRequiresSuspension=
+- [ ] =implicitLiveRandomnessIsRejected=
 - [X] =semanticEntropyCarriesImmutableIdentity=
 - [X] =sameSemanticCutReplaysSameResult=
 - [X] =sameSemanticCutReplaysSameResultIdentity=

@@ -11,6 +11,11 @@
         :core/module-system/source/projection
         :core/module-system/loader/objects
         :core/module-system/authoring/admission
+        (only-in :core/module-system/authoring/roles ModuleAuthoringExecutor.)
+        (only-in :core/poo-clos/objects
+                 poo-clos-generic-protocol poo-clos-generic-function
+                 poo-clos-compose-method-bundle)
+        (only-in :core/poo-clos/dispatch poo-clos-call)
         :core/module-system/authoring/import-policy
         :core/module-system/authoring/projection)
 (export module-authoring-test)
@@ -22,6 +27,49 @@
       forbidden-projections: '(parallel-build)))
 (def module-authoring-test
   (test-suite "Core source admission without product imports or activation"
+    (poo-flow-test-case "declarative authoring bundle retains its owner and both dispatch axes"
+      ;; Methods have already been composed by the production declaration.
+      ;; Do not replay its owned descriptors into a second generic registry.
+      (def generic ModuleAuthoringAdmissionGeneric)
+      (check-equal? (eq? (.ref generic 'protocol) ModuleAuthoringAdmissionProtocol) #t)
+      (check-equal? (length (.ref generic 'methods)) 2)
+      (def interface (poo-flow-module-interface "example" (.o) '()))
+      (def executor (.o (:: @ ModuleAuthoringExecutor.)))
+      (def ordinary-role
+        (.o (:: @ (poo-flow-module-authoring-role interface 'objects))))
+      (def config-role
+        (.o (:: @ (poo-flow-module-authoring-role interface 'config))))
+      (check-equal?
+        (poo-flow-module-authoring-admission-accepted?
+          (poo-clos-call generic executor ordinary-role interface '(stage build)))
+        #t)
+      (check-equal?
+        (poo-flow-module-authoring-admission-accepted?
+          (poo-clos-call generic executor config-role interface '(stage build)))
+        #f)
+      ;; Different protocol objects sharing a label never authorize composition.
+      (check-exception
+        (poo-clos-compose-method-bundle
+          (poo-clos-generic-function 'wrong-owner 4
+            protocol: (poo-clos-generic-protocol 'module-system/authoring-admission))
+          ModuleAuthoringCoreMethods)
+        (lambda (failure)
+          (eq? (.ref failure 'code) 'method-bundle-protocol-mismatch))))
+    (poo-flow-test-case "inert datum batches preserve native port diagnostics and order"
+      (def interface (poo-flow-module-interface "example" (.o) '()))
+      (def text "(.o pipeline: (.get ff prototypes pipeline))\n(.o pipeline: (.ref ff pipeline))\n(.o add-profile: #t)\n")
+      (def from-port
+        (call-with-input-string text
+          (cut poo-flow-module-authoring-admit-port interface 'objects <>)))
+      (def from-datums
+        (poo-flow-module-authoring-admit-datums interface 'objects
+          (call-with-input-string text read-all)))
+      (def (codes result)
+        (map (cut .ref <> 'code)
+             (poo-flow-module-authoring-admission-diagnostics result)))
+      (check-equal? (poo-flow-module-authoring-admission-accepted? from-port) #f)
+      (check-equal? (poo-flow-module-authoring-admission-accepted? from-datums) #f)
+      (check-equal? (codes from-datums) (codes from-port)))
     (poo-flow-test-case "native Interface and final role admission"
       (let (interface (poo-flow-module-interface "example" (.o) '()))
         (check-equal? (poo-flow-module-interface? interface) #t)

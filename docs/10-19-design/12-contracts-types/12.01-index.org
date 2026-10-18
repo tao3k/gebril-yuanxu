@@ -113,3 +113,7 @@ remaining available through the same integrated Module System to authors.
 Do not add =Native= to new Contract, object, module or file names. Existing
 identifiers containing that word are cited only to locate current code; this
 design does not rename implementation symbols or add compatibility aliases.
+
+The [[file:12.28-gerbil-poo-clos-alignment.org][gerbil-poo and Core CLOS alignment audit]] distinguishes upstream receiver
+generics and contribution interpreters from Core multi-argument dispatch,
+and records the dependency qualification and refactoring gates.

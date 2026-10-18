@@ -4,14 +4,16 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/make make)
+        (only-in :std/list/list find)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
-        (only-in :clan/poo/object .o .+ .ref .get object?)
+        (only-in :clan/poo/object .o .+ .ref .get .call object?)
         (only-in :core/observability/testing-case poo-flow-test-case)
         (only-in :core/types poo-flow-predicate-contract)
         (only-in :core/feature-system/model feature-descriptor)
         (only-in :core/feature-system/capability-model feature-projection-request)
         (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
-        (only-in :core/module-system/source/admission module-source-type module-source-read current-module-source-observer)
+        (only-in :core/module-system/source/admission module-source-type module-source-read current-module-source-observer
+                 call-with-module-source-read-cache)
         (only-in :core/module-system/interface poo-flow-load-modules)
         (only-in :core/module-system/building/build-projection poo-flow-core-project-source-spec poo-flow-core-admit-build-inputs))
 (export module-build-graph-test)
@@ -78,6 +80,43 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (poo-flow-test-case "package handoff retains the selected source Graph without linking scopes"
+      (with-source
+       (lambda (root _prefix)
+         (def view (fixture-view root))
+         (def graph (.get view build-graph))
+         (def selected (.get view selected-graph))
+         ;; Package effects are probes here; real Nix remains in the AWS gate.
+         (def packages
+           (.o build-graph: graph packages: (.o)
+             sources-current: (lambda () #t) admit-current: (lambda () #t)))
+         (def realized (.call view .with-packages packages))
+         (check-equal? (eq? (.get realized build-graph) graph) #t)
+         (check-equal? (eq? (.get realized selected-graph) selected) #t)
+         (write-file (path-expand "modules/app/web/config.ss" root) "(def Config 'changed)")
+         (check-exception ((.get realized admit-current)) error?))))
+    (poo-flow-test-case "one pure window shares a Graph traversal but independent calls recheck"
+      (with-source
+       (lambda (root _prefix)
+         (def view (fixture-view root))
+         (def graph (.get view build-graph))
+         (def checks 0)
+         (parameterize ((current-module-source-observer
+                         (lambda (key amount)
+                           (when (eq? key 'checks) (set! checks (+ checks amount))))))
+           (call-with-module-source-read-cache
+             (lambda ()
+               ((.get graph compiler-current))
+               (def first checks)
+               ((.get graph compiler-current))
+               ;; Only the public request remains; its retained entry guards
+               ;; are not traversed again in this same stable byte window.
+               (check-equal? (- checks first) 1)))
+           (def previous checks)
+           ((.get graph compiler-current))
+           (check-equal? (> (- checks previous) 1) #t))
+         (write-file (path-expand "modules/app/web/config.ss" root) "(def Config 'changed)")
+         (check-exception ((.get graph admit-current)) error?))))
     (poo-flow-test-case "init to publication to build uses the default reader and never links scopes"
       (with-source
        (lambda (root prefix)
@@ -93,6 +132,16 @@
                 (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(core/schema app/web))
            (check-equal? (.get view selected-graph feature-order) '(app/web/early app/web/late))
+           ;; The compiler projection consumes the reader's exact role input,
+           ;; including its guard; it must not create a duplicate source object.
+           (let* ((prepared (.call view prepare-publication 'app/web))
+                  (path (path-normalize (path-expand "modules/app/web/config.ss" root)))
+                  (observed (find (lambda (input) (equal? (.get input path) path))
+                                  (.get prepared source-dependencies)))
+                  (entry (find (lambda (entry) (equal? (.get entry path) path))
+                               (.get graph entries))))
+             (check-equal? (object? observed) #t)
+             (check-equal? (eq? (.get entry input) observed) #t))
            (let (names (map symbol->string (entry-names graph)))
              ;; Contribution targets belong to the contribution package. SDK
              ;; tools stay guarded, but must not become its compiler targets.

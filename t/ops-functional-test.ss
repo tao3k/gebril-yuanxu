@@ -19,7 +19,7 @@
                                'command (list "touch" marker) 'log log 'timeout 2
                                'environment (.o KEEP: "override")))
                      (base (.o KEEP: "base" BASE_ONLY: "present"))
-                     (expected (append '("timeout" "--foreground" "--signal=TERM" "--kill-after=5s" "2s")
+                     (expected (append '("timeout" "--verbose" "--signal=TERM" "--kill-after=5s" "2s")
                                        (list "touch" marker "literal $ argument")))
                      (view (preview Script '("literal $ argument") base)))
                 (check-equal? (eq? (validate Script) Script) #t)

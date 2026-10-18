@@ -5,6 +5,12 @@
 #+title: Persistent-State Compatibility and Expand-Migrate-Contract
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted persistent-state compatibility and migration
@@ -115,24 +121,24 @@ POO fixed point.
 
 ** Proof obligations
 
-- [X] =symmetricSummaryDoesNotAdmitActivation=: a symmetric summary cannot
+- [ ] =symmetricSummaryDoesNotAdmitActivation=: a symmetric summary cannot
   replace directional role evidence.
-- [X] =missingRoleEvidenceFailsClosed=: activation rejects incomplete
+- [ ] =missingRoleEvidenceFailsClosed=: activation rejects incomplete
   compatibility evidence.
-- [X] =hiddenLiveReadIsNotAdmittedInPureFixedPoint=: live migration state
+- [ ] =hiddenLiveReadIsNotAdmittedInPureFixedPoint=: live migration state
   cannot enter pure composition.
-- [X] =activationRequiresExpandReceipt=: activation is downstream of expand.
+- [ ] =activationRequiresExpandReceipt=: activation is downstream of expand.
 - [X] =activationRequiresEveryDirectionalRole=: every required role has
   explicit evidence.
-- [X] =migrationRequiresActivation=: migration is downstream of activation.
+- [ ] =migrationRequiresActivation=: migration is downstream of activation.
 - [X] =migrationCarriesReversionCompatibility=: migration preserves the
   reversion role until contract.
-- [X] =contractRequiresMigration=: contract is downstream of migration.
+- [ ] =contractRequiresMigration=: contract is downstream of migration.
 - [X] =contractRequiresNoOldReaders= and =contractRequiresNoOldWriters=: old
   access has drained before contract.
 - [X] =contractRequiresClosedReversionWindow=: contract cannot occur while
   reversion remains admissible.
-- [X] =contractDrainRequiresQuiescence=: contract drain carries the RFC 45-63
+- [ ] =contractDrainRequiresQuiescence=: contract drain carries the RFC 45-63
   quiescence witness.
 - [X] =contractReadersProjectFromQuiescentPins=: old readers project from the
   quiescent live-pin set.

@@ -175,11 +175,11 @@
        (fields? candidate
                 '(identity kind operator order identity-with-one-argument?
                            groups effective-builder configurer configuration
-                           documentation)
+                           documentation .admits-qualifier?)
                 (list symbol? combination-kind? operator-or-false?
                       combination-order? boolean? method-groups?
                       procedure-or-false? procedure-or-false? list?
-                      string-or-false?))))
+                      string-or-false? procedure?))))
 
 ;;; A method-combination descriptor is inert POO policy data.  Dispatch owns
 ;;; invocation, and a long-form builder can only return a checked effective method.

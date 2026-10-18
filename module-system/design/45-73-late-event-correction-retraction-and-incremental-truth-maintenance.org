@@ -5,6 +5,12 @@
 #+title: Late-Event Correction, Retraction, and Incremental Truth Maintenance
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted truth-maintenance semantics for late events,
@@ -81,10 +87,10 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =historicalConclusionIsNotActive=
-- [X] =supersededConclusionIsNotActive=
-- [X] =retractedConclusionIsNotActive=
-- [X] =selectedConclusionIsActive=
+- [ ] =historicalConclusionIsNotActive=
+- [ ] =supersededConclusionIsNotActive=
+- [ ] =retractedConclusionIsNotActive=
+- [ ] =selectedConclusionIsActive=
 - [X] =historicalProofRemainsImmutable=
 - [X] =lateEventCreatesNewCausalCutIdentity=
 - [X] =lateEventPreservesPreviousCutImmutability=
@@ -102,7 +108,7 @@ flowchart LR
 - [ ] Project truth-maintenance policy through native =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
-The Lean anchor is =PooFlowCoreProof.Graph.ConclusionRevision=.  It
+The Lean anchor is =PooFlowCoreProof.Modules.Funflow.ConclusionRevision=.  It
 imports RFC 45-72 directly, so correction starts from an admitted new causal
 cut rather than mutating transport arrivals or historical evidence in place.
 

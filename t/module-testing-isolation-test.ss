@@ -1,39 +1,114 @@
-;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Real source-only selection controls, separated from live init epoch tests.
-(import "../init.ss" :std/test :clan/poo/object
-        (only-in :std/source this-source-file)
-        (only-in :core/module-system/building/test-projection module-test-file-source)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
-        (only-in :core/observability/testing-script TestingScript.)
-        "./qualification/module-testing/fixtures.ss")
+;;; Real module qualifications share init selection, guards and Ops execution.
+(import :std/test :core/object-syntax/path-slots
+        (only-in :clan/poo/object .get .call .ref/cached)
+        (only-in "../init.ss" init.Modules init.Scenarios init.tests)
+        (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
+        (only-in :std/misc/ports read-all-as-string)
+        (only-in :core/module-system/source/admission current-module-source-observer)
+        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-checkpoint
+                 poo-flow-test-observe)
+        (only-in :core/observability/testing-fixture poo-flow-test-fixture with-poo-flow-fixture))
 (export module-testing-isolation-test)
-(def root (path-expand ".." (path-directory (this-source-file))))
-(def (check-real-selection owner)
-  (def scratch #f)
-  (with-poo-flow-fixture (fixture (selection-fixture root))
-    (set! scratch (path-normalize (path-expand "../.." (.get fixture root))))
-    (prepare-selection! fixture root owner)
-    (def other (if (eq? owner 'json-schema) "funflow" "json-schema"))
-    (check-equal? (file-exists? (path-expand "lib/core" (.get fixture state))) #f)
-    (.def (AtomicSelection @ TestingScript.)
-      source: (module-test-file-source
-                (list (path-expand "t/qualification/module-testing/selection-test.ss" (.get fixture root))))
-      directory: (.get fixture root)
-      environment: (.o GERBIL_PATH: (.get fixture state)
-                       GERBIL_LOADPATH:
-                       (string-append (path-expand "lib" (.get fixture state)) ":"
-                                      (path-expand ".." (.get fixture root)))
-                       CORE_TEST_SELECTION_OWNER: (symbol->string owner))
-      timeout: 90)
-    (.call AtomicSelection .run)
-    (check-equal? (file-exists? (path-expand (string-append other ".scope") (.get fixture root))) #f)
-    (check-equal? (file-exists? (path-expand (string-append other ".test") (.get fixture root))) #f))
-  (check-equal? (file-exists? scratch) #f))
+(.def Workspace
+  .acquire: (lambda ()
+              (let (root (make-temporary-file-name "module-qualifications-"))
+                (create-directory root) root))
+  .release: (lambda (root)
+              ;; Preserve the existing Ops observation stream before removing
+              ;; its fixture. A failed Case must not erase its last phase.
+              (dynamic-wind void
+                (lambda ()
+                  (let (log (path-expand "harness.log" root))
+                    (when (file-exists? log)
+                      (display (call-with-input-file log read-all-as-string) (current-error-port))
+                      (force-output (current-error-port)))))
+                (lambda ()
+                  (clear-temporary-file! root)
+                  (check-equal? (file-exists? root) #f)))))
 (def module-testing-isolation-test
-  (test-suite "Real module source isolation"
-    (test-case "JsonSchema-only init runs its real atomic suite without Funflow scope or tests"
-      (check-real-selection 'json-schema))
-    (test-case "Funflow-only init runs its real atomic suite without JsonSchema scope or tests"
-      (check-real-selection 'funflow))))
+  (test-suite "JsonSchema, Funflow and AWS init-owned qualifications"
+    (poo-flow-test-fixture "multi-owner selection and publication share one bounded Case"
+      (workspace Workspace)
+      (poo-flow-test-checkpoint 'selection-start)
+      (def json (.get init.Modules json-schema))
+      (def flow (.get init.Modules funflow))
+      (def aws (.get init.Scenarios aws))
+      (def unused (.get init.Scenarios null))
+      (def reads 0)
+      (def funflow-read? #f)
+      (def aws-read? #f)
+      (def previous-observer (current-module-source-observer))
+      (def (observe key amount)
+        (when (and (pair? key) (eq? (car key) 'file-read))
+          (set! reads (+ reads 1))
+          (let (name (path-strip-directory (caddr key)))
+            (when (string=? name "funflow-job-test.ss") (set! funflow-read? #t))
+            (when (string=? name "context-publication-test.ss") (set! aws-read? #t))))
+        (when previous-observer (previous-observer key amount)))
+      (def all
+        (parameterize ((current-module-source-observer observe))
+          (.get init.tests qualification)))
+      (check-equal? reads 0)
+      (check-equal? (.ref/cached all 'selected-graph) #f)
+      (check-equal? (.ref/cached all 'execution) #f)
+      (check-equal? (.ref/cached all 'spec) #f)
+      (check-equal? (.ref/cached (.get flow tests) 'qualification) #f)
+      (check-equal? (.ref/cached (.get aws tests) 'qualification) #f)
+      (def json-tests
+        (parameterize ((current-module-source-observer observe))
+          (.get json tests qualification)))
+      (check-equal? funflow-read? #f)
+      (check-equal? aws-read? #f)
+      (check-equal? (eq? json-tests (.call all .select '(json-schema))) #t)
+      (check-equal? (.ref/cached (.get flow tests) 'qualification) #f)
+      (check-equal? (.ref/cached (.get aws tests) 'qualification) #f)
+      (def flow-tests (.get flow tests qualification))
+      (def aws-tests (.get aws tests qualification))
+      (def selected (.call all .select '(json-schema funflow aws)))
+      (check-equal? (eq? selected (.call selected .select '(json-schema funflow aws))) #t)
+      (check-equal? (.get selected spec)
+        (append (.get json-tests spec) (.get flow-tests spec) (.get aws-tests spec)))
+      (check-equal? (eq? (.get json-tests selected-graph) (.get selected selected-graph)) #t)
+      (check-equal? (eq? (.get flow-tests selected-graph) (.get selected selected-graph)) #t)
+      (check-equal? (eq? (.get aws-tests selected-graph) (.get selected selected-graph)) #t)
+      (check-equal? (.ref/cached (.get unused tests) 'qualification) #f)
+      (let (dependencies (memq 'ops (.get selected selected-graph module-order)))
+        (check-equal? (and dependencies (memq 'funflow (cdr dependencies)) #t) #t))
+      (check-equal? (.ref/cached selected 'execution) #f)
+      (poo-flow-test-checkpoint 'selection-verified)
+      (check-equal? (.ref/cached all 'spec) #f)
+      (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
+        (list json flow aws unused))
+      (check-equal?
+        (eq? selected (.call all .select '(json-schema funflow aws))) #t)
+      (def source (.get selected source))
+      (def guard (.get selected admit-current))
+      (.def (Run @ selected)
+        execution.environment.TMPDIR: workspace
+        execution.log: (path-expand "harness.log" workspace))
+      (check-equal? (eq? (.get Run execution source) source) #t)
+      (check-equal? (eq? (.get Run admit-current) guard) #t)
+      (poo-flow-test-checkpoint 'qualification-run)
+      (def receipt (.call Run .run))
+      (poo-flow-test-observe 'test-worker-milliseconds
+        (inexact->exact (round (* 1000 (.get receipt seconds)))))
+      (poo-flow-test-checkpoint 'qualification-complete)
+      (check-equal? (directory-files workspace) '("harness.log"))
+      ;; Shared child runtime imports are dependencies, not sibling suite runs.
+      (check-equal? (.ref/cached (.get init.Scenarios null tests) 'qualification) #f)
+      (check-equal? (.ref/cached all 'spec) #f)
+      (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
+        (list (.get init.Modules json-schema) (.get init.Modules funflow)
+              (.get init.Scenarios aws) (.get init.Scenarios null))))
+    (test-case "Ops failure unwinds the existing fixture"
+      (def acquired #f)
+      (check-exception
+        (with-poo-flow-fixture (workspace Workspace)
+          (set! acquired workspace)
+          (.def (Failed @ (.get init.Modules funflow tests qualification))
+            execution.command: '("false")
+            execution.environment.TMPDIR: workspace)
+          (.call Failed .run)) error?)
+      (check-equal? (file-exists? acquired) #f))))

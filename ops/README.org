@@ -2,6 +2,55 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: Core Ops Module
 
+* Progress-aware execution
+
+The existing =ProcessScript.= retains =timeout= as a finite total budget.
+=idle-timeout= independently limits time without completed work; =progress=
+is a named reader factory supplied by the framework at the execution boundary.
+It is not a shell-expression language or a second runner. Scripts that do not
+request an idle policy preserve their existing execution semantics.
+
+The shared execution policy in =progress.ss= supplies 60 seconds of inactivity
+and 600 seconds total for testing and Nix operations. Case memory/growth guards
+remain unchanged. TestingScript derives both budgets from its Case Profile;
+the focused Just recipe reads the same total from this ordinary Scheme module
+for its outer hard ceiling. No environment-variable probe or log heartbeat
+extends the total budget.
+
+The Nix reader consumes native =internal-json= activity events. Increasing
+=resProgress.done=, a new native build phase, and completion of a tracked
+activity count as progress. Merely starting an activity, changing an expected
+amount, build-log lines, diagnostic messages, repeated counters and replayed
+completion messages do not. Unknown activity/event formats do not renew time.
+Unsupported builder-internal progress is not inferred from arbitrary text.
+
+Nested Ops and Case spans receive the same advancing events. Bounded,
+monotonic progress records relay genuine child work to the supervising
+TestingScript independently of =emit?=; emission is coalesced to at most one
+record per second and never occurs from a timer alone. Bookkeeping is bounded
+to 4096 scalar keys per span and does not retain source or candidate objects.
+An expired span cannot be revived by a late event.
+
+Ops continues to use =std/run-process= and its existing owned timeout process
+group. Idle/Case interruption kills that group before std/run-process waits;
+fixture cleanup and source guards remain active. The outer total watchdog is
+an emergency ceiling, including native import time; it is not an inactivity
+detector and cannot be renewed by child output. Pre-Case imports currently
+have that finite total ceiling rather than a separate inactivity detector.
+
+#+begin_src scheme
+;; Module authors keep declaring fixtures and assertions. init supplies this.
+(.def (Observed @ (.get init.Scenarios aws tests qualification))
+  execution.profile.emit?: #t)
+(.call Observed .run)
+#+end_src
+
+Qualification: =just test-file t/execution-progress-test.ss= exercises native
+counter decoding, replay rejection, inherited parent/child liveness, idle
+failure with emission disabled, a non-renewable total, and descendant cleanup.
+Synthetic Nix records in these narrow tests are explicit protocol probes;
+the AWS integration consumes actual Nix activity and real provider packages.
+
 * One selected publication
 
 Ops is a Core Module maintained at core/ops. The existing explicit source

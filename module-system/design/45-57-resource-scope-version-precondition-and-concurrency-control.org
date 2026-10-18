@@ -6,6 +6,12 @@
 #+subtitle: Pure conflict analysis, TOCTOU safety, optimistic updates, leases, fencing, and multi-resource commits
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * RFC status
 
 - Status :: Accepted design
@@ -114,21 +120,21 @@ atomic runtime relation can authorize a mutation.
 
 ** Proof obligations
 
-- [X] =versionObservationDoesNotGrantCommitAuthority=: a content-addressed
+- [ ] =versionObservationDoesNotGrantCommitAuthority=: a content-addressed
   observation is evidence, not mutation authority.
-- [X] =preconditionDoesNotGrantCommitAuthority=: a pure precondition is not a
+- [ ] =preconditionDoesNotGrantCommitAuthority=: a pure precondition is not a
   lock, lease, transaction, or fencing token.
-- [X] =atomicEnforcementGrantsCommitAuthority=: the runtime atomic relation is
+- [ ] =atomicEnforcementGrantsCommitAuthority=: the runtime atomic relation is
   the sole authority constructor in this proof slice.
-- [X] =commitRequiresAtomicEnforcement=: every admitted mutation commit carries
+- [ ] =commitRequiresAtomicEnforcement=: every admitted mutation commit carries
   its atomic enforcement witness.
-- [X] =staleVersionCannotCommit= and =staleGenerationCannotCommit=: stale
+- [ ] =staleVersionCannotCommit= and =staleGenerationCannotCommit=: stale
   observations cannot inhabit the admitted commit relation.
-- [X] =wrongResourceCannotCommit= and =wrongScopeCannotCommit=: identity and
+- [ ] =wrongResourceCannotCommit= and =wrongScopeCannotCommit=: identity and
   scope mismatches cannot inhabit the admitted commit relation.
 - [X] =committedMutationAdvancesGeneration=: a successful commit advances the
   authoritative generation.
-- [X] =detachedCheckThenWriteDoesNotEstablishSafety=: check-then-write without
+- [ ] =detachedCheckThenWriteDoesNotEstablishSafety=: check-then-write without
   an atomic relation does not establish TOCTOU safety.
 - [ ] Refine these propositions through native =gerbil-poo= resource-scope
   objects and runtime lock, lease, transaction, or fencing implementations.

@@ -5,6 +5,12 @@
 #+title: Governance Decisions, Quorum, Revocation, and Break-Glass
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted governance intervention semantics for human and
@@ -100,15 +106,15 @@ flowchart LR
 - [X] =revokedDecisionFailsClosed=
 - [X] =invalidDecisionFailsClosed=
 - [X] =decisionReceiptCarriesAllGovernanceChecks=
-- [X] =quorumCarriesDistinctPrincipals=
-- [X] =quorumCarriesThresholdEvidence=
+- [ ] =quorumCarriesDistinctPrincipals=
+- [ ] =quorumCarriesThresholdEvidence=
 - [X] =proposerAndApproverAreSeparated=
 - [X] =approverAndExecutorAreSeparated=
 - [X] =scopedCapabilityIsAtMostOnce=
 - [X] =capabilityReceiptRecordsSingleConsumption=
 - [X] =revocationPreventsCapabilityIssuance=
 - [X] =breakGlassRequiresExplicitPolicy=
-- [X] =breakGlassRequiresExplicitScopeAndExpiry=
+- [ ] =breakGlassRequiresExplicitScopeAndExpiry=
 - [X] =breakGlassCarriesPostActionReviewObligation=
 - [X] =breakGlassCarriesNoGlobalAuthority=
 - [X] =proposalChangeCreatesNewDecisionIdentity=

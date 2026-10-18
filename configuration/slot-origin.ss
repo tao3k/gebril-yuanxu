@@ -4,7 +4,8 @@
 (import :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash every)
         (only-in :core/module-system/source/admission
-                 module-source-type module-source-read module-source-admit-current!))
+                 module-source-type module-source-read module-source-admit-current!
+                 call-with-module-source-read-cache))
 (export source-object-slots field-slot-origins/value admit-field-sources!)
 (defstruct (located-slot $computed-slot-spec) (location inputs) final: #t)
 
@@ -73,12 +74,19 @@
           (walk (.ref value name) (cdr tail) next))))))
 
 (def (admit-origins! origins)
-  (for-each
-    (lambda (spec)
-      (unless (every (lambda (entry) (string? (cdr entry))) (located-slot-inputs spec))
-        (error "Scheme configuration source unavailable" (located-slot-location spec)))
-      (module-source-admit-current! (located-slot-inputs spec)
-        "Scheme configuration source changed")) origins))
+  ;; A specification's retained inputs are data. Share physical observations
+  ;; across inherited specifications here, ending BEFORE any slot getter runs.
+  ;; In particular, the recursive path walker below must stay outside this
+  ;; window: an intermediate getter may mutate source or perform other effects.
+  (unless (null? origins)
+    (call-with-module-source-read-cache
+      (lambda ()
+        (for-each
+          (lambda (spec)
+            (unless (every (lambda (entry) (string? (cdr entry))) (located-slot-inputs spec))
+              (error "Scheme configuration source unavailable" (located-slot-location spec)))
+            (module-source-admit-current! (located-slot-inputs spec)
+              "Scheme configuration source changed")) origins)))))
 (def (admit-field-sources! object paths)
   (for-each
     (lambda (path)

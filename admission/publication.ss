@@ -9,7 +9,8 @@
         (only-in :std/string/path path-absolute?)
         (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
         (only-in :core/module-system/source/admission
-          module-source-read module-source-admit-current! call-with-module-source-read-cache)
+          module-source-read module-source-admit-current! call-with-module-source-read-cache
+          current-module-source-observer)
         (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-port)
         (only-in :core/modules/json-schema/json-schema-normalize poo-flow-json-schema-normalize)
         (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization->alist)
@@ -135,7 +136,9 @@
   (unless (and (.slot? core 'admissions) (.slot? (.get core admissions) name))
     (error "unknown publication admission" (.get publication identity) name))
   (def declaration (.ref (.get core admissions) name))
-  (def descriptor (scope-path scope (.get declaration contract-path)))
+  (def descriptor
+    (publication-stage 'resolve-descriptor
+      (lambda () (scope-path scope (.get declaration contract-path)))))
   (unless (and (object? descriptor)
                (element? Type descriptor)
                (every (cut .slot? descriptor <>) '(identity .admit value-contract))
@@ -143,7 +146,8 @@
                (element? Type (.get descriptor value-contract)))
     (error "publication admission path requires a checked Core Contract" name))
   (.cc AdmissionPublication.
-    'graph graph 'contract descriptor 'schemas (contract-schemas descriptor)
+    'graph graph 'contract descriptor
+    'schemas (publication-stage 'resolve-schemas (lambda () (contract-schemas descriptor)))
     'configuration-inputs (if (.slot? descriptor 'source-inputs) (.get descriptor source-inputs) '())
     'value (scope-path scope (.get declaration export-path))))
 
@@ -152,8 +156,10 @@
   (let ((selected (.get build-graph selected-graph))
         (generation (.get build-graph generation))
         (sources (copy-inputs (unique-build-inputs (append (.get build-graph source-inputs) inputs))))
-        (schemas (unique-build-inputs
-                   (foldr append '() (map schema-observations artifacts)))))
+        (schemas (publication-stage 'schema-associations
+                   (lambda ()
+                     (unique-build-inputs
+                       (foldr append '() (map schema-observations artifacts)))))))
     (def (current!)
       ;; The build Graph guard is source-only; package checks live separately
       ;; at publication's effect boundaries. Do not encompass Contract callbacks
@@ -183,26 +189,47 @@
     (lambda (_key _request _evidence) #t)
     (metadata.atom 'context-current)))
 
-(def (publish-current previous candidate descriptor context-value package-current)
-  (let ((current-call
-           (metadata.with-meaning AdmissionCall
-             (lambda (_key _request _evidence)
-               ((.get context-value admit-current)) #t) #f)))
+(def (publication-stage name thunk)
+  ;; Passive attribution only: never share observations across these callbacks.
+  (let (observer (current-module-source-observer))
+    (if (not observer) (thunk)
+      (dynamic-wind
+        (lambda () (observer (list 'admission-stage-start name) 1))
+        thunk
+        (lambda () (observer (list 'admission-stage-end name) 1))))))
+
+(def (publication-invocation context-value)
+  (metadata.with-meaning AdmissionCall
+    (lambda (_key _request _evidence)
+      (publication-stage 'meaning-current (.get context-value admit-current)) #t) #f))
+
+(def (publish-current publication previous candidate)
+  (let ((descriptor (.get publication contract))
+        (context-value (.get publication context))
+        (package-current (.get publication package-current))
+        (current-call (.get publication invocation)))
     (metadata.publish current-call previous
       (lambda (value)
         ;; Runs on every invocation, including a previously demanded context.
-        ((.get context-value admit-current))
+        (publication-stage 'entry-current (.get context-value admit-current))
         ;; Nix/package effects must not run under the source-read cache used by
         ;; contextual child checks. Recheck the package before and after admission.
-        (when package-current (package-current))
-        ((.get context-value admit-current))
-        (def evidence (poo-flow-contract-admit descriptor value context-value))
+        (when package-current (publication-stage 'package-before package-current))
+        (publication-stage 'post-package-current (.get context-value admit-current))
+        (def evidence
+          (publication-stage 'contract-admit
+            (cut poo-flow-contract-admit descriptor value context-value)))
         (def checked (.get evidence candidate))
         (def bound
-          (metadata.bind-evidence current-call checked descriptor context-value evidence-view))
+          (publication-stage 'bind-evidence
+            (cut .call publication .bind-evidence checked)))
         (metadata.invoke bound
           (lambda (_checked)
-            (when package-current (package-current))
+            ;; Rejected evidence cannot publish. Let the public invocation
+            ;; Contract report its output refusal without a second external
+            ;; package query. Accepted evidence still crosses this effect boundary.
+            (when (and package-current (poo-flow-validation-evidence-accepted? evidence))
+              (publication-stage 'package-after package-current))
             ;; The bound invocation checks currentness in its dependent meaning
             ;; after this source returns. Checking here would misclassify a
             ;; post-admission Context refusal as an executor/source failure.
@@ -211,16 +238,26 @@
 
 ;; The platform supplies the selected build Graph and its published Schema
 ;; contracts (or file-backed artifacts). Users do not pass version/Context records.
-(define-type (AdmissionPublication. @ [] graph schemas contract context configuration-inputs package-current)
+(define-type (AdmissionPublication. @ [] graph schemas contract context invocation configuration-inputs package-current)
   .for-export:
   (lambda (selection owner name)
-    (let (record (.call selection .selected-record owner))
-      (bind-publication-contributions selection owner name
-        (.cc (module-admission-publication (.get selection build-graph)
-                (.get record publication) (.get record scope) name)
-          'package-current (.get selection package-current)))))
+    (let (record (publication-stage 'selected-record
+                   (lambda () (.call selection .selected-record owner))))
+      (publication-stage 'bind-contributions
+        (lambda ()
+          (bind-publication-contributions selection owner name
+            (.cc (module-admission-publication (.get selection build-graph)
+                    (.get record publication) (.get record scope) name)
+              'package-current (.get selection package-current)))))))
   package-current: #f
   configuration-inputs: '()
   context: (admission-context graph schemas configuration-inputs)
+  invocation: (publication-invocation context)
+  ;; Return the existing public invocation Contract, with this publication's
+  ;; actual references. Binding neither admits a value nor runs package effects;
+  ;; full Core publication continues to use .publish below.
+  .bind-evidence:
+  (lambda (subject)
+    (metadata.bind-evidence invocation subject contract context evidence-view))
   .publish: (lambda (previous candidate)
-              (publish-current previous candidate contract context package-current)))
+              (publish-current @ previous candidate)))

@@ -2,171 +2,47 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-import PooFlowCoreProof.Admission.KeyLifecycle
 
 namespace PooFlowCoreProof.Admission.Federation
 
-inductive FederationOutcomeKind where
-  | candidate
-  | agreed
-  | incompatible
-  | expired
-  | revoked
-  deriving DecidableEq, Repr
+/-- Capability projection uses explicit sets and bounded numeric lifetime/depth.
+The constructor computes attenuation; callers cannot choose its laws. -/
+structure Capability (CapabilityIdentity Scope ActionRole : Type) where
+  identity : CapabilityIdentity
+  scopes : List Scope
+  actions : List ActionRole
+  expiresAt : Nat
+  delegationDepth : Nat
 
-def MayEnterLocalFederationAdmission : FederationOutcomeKind → Prop
-  | .agreed => True
-  | .candidate => False
-  | .incompatible => False
-  | .expired => False
-  | .revoked => False
+structure CapabilityAttenuation (CapabilityIdentity Scope ActionRole : Type) where
+  source : Capability CapabilityIdentity Scope ActionRole
+  requested : Capability CapabilityIdentity Scope ActionRole
 
-def CreatesGlobalRootAuthority : FederationOutcomeKind → Prop
-  | .candidate => False
-  | .agreed => False
-  | .incompatible => False
-  | .expired => False
-  | .revoked => False
+def attenuate [DecidableEq Scope] [DecidableEq ActionRole]
+    (request : CapabilityAttenuation CapabilityIdentity Scope ActionRole) :
+    Capability CapabilityIdentity Scope ActionRole :=
+  { identity := request.requested.identity
+    scopes := request.requested.scopes.filter (· ∈ request.source.scopes)
+    actions := request.requested.actions.filter (· ∈ request.source.actions)
+    expiresAt := min request.requested.expiresAt request.source.expiresAt
+    delegationDepth := min request.requested.delegationDepth request.source.delegationDepth }
 
-structure DomainOwnership
-    (DomainIdentity OwnershipEvidenceIdentity : Type) where
-  domainIdentity : DomainIdentity
-  ownershipEvidenceIdentity : OwnershipEvidenceIdentity
-  retainsIdentityOwnership : Prop
-  retainsPolicyOwnership : Prop
-  retainsResourceOwnership : Prop
-  retainsCapabilityIssuance : Prop
-  retainsGovernance : Prop
-  ownershipRetained :
-    retainsIdentityOwnership ∧
-      retainsPolicyOwnership ∧
-      retainsResourceOwnership ∧
-      retainsCapabilityIssuance ∧
-      retainsGovernance
+theorem attenuationCannotAmplify [DecidableEq Scope] [DecidableEq ActionRole]
+    (request : CapabilityAttenuation CapabilityIdentity Scope ActionRole) :
+    (∀ scope ∈ (attenuate request).scopes, scope ∈ request.source.scopes) ∧
+    (∀ action ∈ (attenuate request).actions, action ∈ request.source.actions) ∧
+    (attenuate request).expiresAt ≤ request.source.expiresAt ∧
+    (attenuate request).delegationDepth ≤ request.source.delegationDepth := by
+  refine ⟨?_, ?_, Nat.min_le_right _ _, Nat.min_le_right _ _⟩
+  · intro scope member
+    simpa [attenuate] using (List.mem_filter.mp member).2
+  · intro action member
+    simpa [attenuate] using (List.mem_filter.mp member).2
 
-structure FederationCompatibilityChecks where
-  requirementMatchesOffer : Prop
-  contractIdentitiesMatch : Prop
-  trustAnchorsAccepted : Prop
-  disclosureAllowed : Prop
-  evidenceRequirementsMet : Prop
-  capabilityConstraintsMet : Prop
-  responsibilityAllocated : Prop
-  temporalRequirementsHold : Prop
+#guard (attenuate (⟨⟨1, [1], [2], 10, 1⟩, ⟨2, [1, 3], [2, 4], 20, 9⟩⟩ :
+  CapabilityAttenuation Nat Nat Nat)).scopes == [1]
+#guard (attenuate (⟨⟨1, [1], [2], 10, 1⟩, ⟨2, [3], [4], 20, 9⟩⟩ :
+  CapabilityAttenuation Nat Nat Nat)).actions == []
 
-def FederationChecksHold (checks : FederationCompatibilityChecks) : Prop :=
-  checks.requirementMatchesOffer ∧
-    checks.contractIdentitiesMatch ∧
-    checks.trustAnchorsAccepted ∧
-    checks.disclosureAllowed ∧
-    checks.evidenceRequirementsMet ∧
-    checks.capabilityConstraintsMet ∧
-    checks.responsibilityAllocated ∧
-    checks.temporalRequirementsHold
-
-structure FederationAgreement
-    (ImportingDomain RemoteDomain RequirementIdentity OfferIdentity
-      PolicyIdentity EvidenceCutIdentity AgreementIdentity : Type) where
-  importingDomain : ImportingDomain
-  remoteDomain : RemoteDomain
-  requirementIdentity : RequirementIdentity
-  offerIdentity : OfferIdentity
-  policyIdentity : PolicyIdentity
-  evidenceCutIdentity : EvidenceCutIdentity
-  checks : FederationCompatibilityChecks
-  checksHold : FederationChecksHold checks
-  agreementIdentity : AgreementIdentity
-
-structure CapabilityAttenuation
-    (CapabilityIdentity Scope ActionRole Expiry DelegationDepth : Type) where
-  sourceCapabilityIdentity : CapabilityIdentity
-  attenuatedCapabilityIdentity : CapabilityIdentity
-  sourceScope : Scope
-  attenuatedScope : Scope
-  sourceActionRole : ActionRole
-  attenuatedActionRole : ActionRole
-  sourceExpiry : Expiry
-  attenuatedExpiry : Expiry
-  sourceDelegationDepth : DelegationDepth
-  attenuatedDelegationDepth : DelegationDepth
-  scopeNotAmplified : Prop
-  actionNotAmplified : Prop
-  expiryNotExtended : Prop
-  delegationDepthNotIncreased : Prop
-  attenuationEstablished :
-    scopeNotAmplified ∧
-      actionNotAmplified ∧
-      expiryNotExtended ∧
-      delegationDepthNotIncreased
-
-structure FederationDisclosureProjection
-    (RemoteEvidenceIdentity ProjectionIdentity : Type) where
-  remoteEvidenceIdentity : RemoteEvidenceIdentity
-  projectionIdentity : ProjectionIdentity
-  importsRemoteInternalGraph : Prop
-  noImplicitGraphImport : ¬ importsRemoteInternalGraph
-  importsRemoteCapabilities : Prop
-  noImplicitCapabilityImport : ¬ importsRemoteCapabilities
-
-structure ResponsibilityAllocation
-    (RequirementOwner OfferOwner IncidentOwner RevocationOwner
-      RetentionOwner ResponsibilityIdentity : Type) where
-  requirementOwner : RequirementOwner
-  offerOwner : OfferOwner
-  incidentOwner : IncidentOwner
-  revocationOwner : RevocationOwner
-  retentionOwner : RetentionOwner
-  responsibilityIdentity : ResponsibilityIdentity
-  allocationComplete : Prop
-  completenessEstablished : allocationComplete
-
-structure FederationRevocation
-    (AgreementIdentity RevocationIdentity : Type) where
-  agreementIdentity : AgreementIdentity
-  revocationIdentity : RevocationIdentity
-  continuedLocalUseAllowed : Prop
-  revokedAgreementFailsClosed : ¬ continuedLocalUseAllowed
-
-structure OwnershipTransferAttempt
-    (DomainIdentity TransferContractIdentity AuthorityIdentity : Type) where
-  domainIdentity : DomainIdentity
-  transferContractIdentity : TransferContractIdentity
-  authorityIdentity : AuthorityIdentity
-  exactTransferContract : Prop
-  transferAuthorityValid : Prop
-  ownershipTransferred : Prop
-  transferRequiresContractAndAuthority :
-    ownershipTransferred →
-      exactTransferContract ∧ transferAuthorityValid
-
-theorem federationNeverCreatesGlobalRoot
-    (outcome : FederationOutcomeKind) :
-    ¬ CreatesGlobalRootAuthority outcome := by
-  cases outcome <;> simp [CreatesGlobalRootAuthority]
-
-theorem agreedFederationMayEnterLocalAdmission :
-    MayEnterLocalFederationAdmission .agreed := by
-  simp [MayEnterLocalFederationAdmission]
-
-theorem candidateFederationFailsClosed :
-    ¬ MayEnterLocalFederationAdmission .candidate := by
-  simp [MayEnterLocalFederationAdmission]
-
-theorem expiredFederationFailsClosed :
-    ¬ MayEnterLocalFederationAdmission .expired := by
-  simp [MayEnterLocalFederationAdmission]
-
-theorem revokedFederationFailsClosed :
-    ¬ MayEnterLocalFederationAdmission .revoked := by
-  simp [MayEnterLocalFederationAdmission]
-
-theorem ownershipTransferRequiresExactContractAndAuthority
-    {DomainIdentity TransferContractIdentity AuthorityIdentity : Type}
-    (attempt :
-      OwnershipTransferAttempt
-        DomainIdentity TransferContractIdentity AuthorityIdentity)
-    (transferred : attempt.ownershipTransferred) :
-    attempt.exactTransferContract ∧ attempt.transferAuthorityValid :=
-  attempt.transferRequiresContractAndAuthority transferred
 
 end PooFlowCoreProof.Admission.Federation

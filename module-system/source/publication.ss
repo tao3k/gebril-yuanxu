@@ -78,7 +78,7 @@
                '(locate read-publication current?))
        (andmap (lambda (slot) (or (not (.slot? value slot))
                                   (procedure? (.ref value slot))))
-               '(eligible? namespace))
+               '(eligible? namespace publication-preparation))
        (andmap (lambda (id) (memq id (.ref value 'module-ids)))
                (.ref value 'selected)) #t))
 (def ModuleScopeContextContract

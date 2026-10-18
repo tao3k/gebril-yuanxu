@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .call)
-        (only-in "./testing-case.ss" poo-flow-test-case))
+        (only-in "./testing-case.ss" poo-flow-test-case poo-flow-test-case/with))
 (export call-with-poo-flow-fixture with-poo-flow-fixture poo-flow-test-fixture)
 
 ;; Acquisition owns rollback if it fails before returning a resource. Cleanup
@@ -25,6 +25,9 @@
   ((_ (binding fixture) body ...)
    (call-with-poo-flow-fixture fixture (lambda (binding) body ...))))
 (defrules poo-flow-test-fixture ()
+  ((_ description profile: profile (binding fixture) body ...)
+   (poo-flow-test-case/with profile description
+     (with-poo-flow-fixture (binding fixture) body ...)))
   ((_ description (binding fixture) body ...)
    (poo-flow-test-case description
      (with-poo-flow-fixture (binding fixture) body ...))))

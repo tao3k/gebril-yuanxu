@@ -89,10 +89,14 @@
     "observability/slot-debug"
     "observability/slot-presentation"
     "observability/debug"
+    "observability/memory"
     "observability/output"
     "observability/testing-case"
+    "observability/testing-fixture"
+    "observability/testing-script"
     "poo-clos/types"
     "poo-clos/objects"
+    "poo-clos/method-bundle-syntax"
     "poo-clos/funcs"
     "poo-clos/lambda-list"
     "poo-clos/method-combination"
@@ -143,6 +147,8 @@
     "module-system/building/build-projection"
     "module-system/building/source-closure"
     "module-system/building/configuration-source"
+    "module-system/building/test-projection"
+    "module-system/building/test-observation"
     "module-system/building/interface"
     "module-system/building/source-package"
     "module-system/source/imports"
@@ -155,5 +161,7 @@
     "profile-composition/policy"
     "module-system/catalog/values"
     "module-system/authoring/syntax"
-    "module-system/selection/init-syntax"))
+    "module-system/selection/init-syntax"
+    "scenarios/funflow/gerbil-scheme"
+    "scenarios/funflow/scope"))
 

@@ -35,18 +35,36 @@ The child lowers to one native refinement of module:
 
 * Expansion law
 
-Only existing-object ==>.+= paths are admitted. An ordered expansion-time trie
+Paths admit a direct leaf assignment or an explicit native ==>.+= refinement.
+Direct assignment replaces the complete leaf value, including an object-valued
+leaf; it does not implicitly merge that leaf. Every intermediate path segment
+still lowers to native ==>.+=, retaining the inherited intermediate object.
+An ordered expansion-time trie
 merges shared prefixes, including interleaved roots, and emits one native slot
 method per prefix. Work is linear in declarations plus path segments and emitted
 syntax, excluding the native expander's own work. No source or payload is
 executed during lowering. Native payload expressions retain their syntax and
 lexical scope; generated ancestor objects use the native object constructor.
 
+#+begin_src scheme
+(.def (Observed @ tests)
+  execution.profile.emit?: #t
+  execution.environment.TMPDIR: workspace)
+
+;; Equivalent primitive POO expansion, with one shared execution refinement.
+(.def (Expanded @ tests)
+  execution: =>.+
+  (.o profile: =>.+ (.o emit?: #t)
+      environment: =>.+ (.o TMPDIR: workspace)))
+#+end_src
+
 Explicit =.o= and brace refinement bodies support relative paths. Arbitrary
 expressions and quoted data are opaque to the lowering. Native headers, defaults,
 shared slots and ordinary methods retain native normalization; object/brace
 match patterns delegate to the native matcher. This adapter reserves dotted
 slot names for paths; use the primitive binding to author a literal dotted slot.
+Leading-dot method names such as =.run=, =.acquire= and =.release= remain ordinary
+slots in this entry, so native fixture and execution objects need no aliases.
 
 Duplicate paths, empty segments, unsupported path operators and ancestor/descendant
 overlaps in one body fail during expansion. Express an intentional ancestor
@@ -56,7 +74,9 @@ Missing/non-object intermediates fail on native demand; they are not created.
 * Receiver and lazy cache evidence
 
 =t/path-slots-test.ss= executes the actual adapter, not only a handwritten
-expansion. Its eleven cases include simultaneous build/test/package/Pipeline
+expansion. Its cases include direct leaf assignment with shared prefixes,
+inherited intermediate fields, lazy payloads and whole-object leaf replacement,
+as well as simultaneous build/test/package/Pipeline
 refinement after the parent Pipeline/list are cached, exact child Check identities,
 parent cache and sibling isolation, warm-cache identity, a fixed-parent-list stale
 negative control, native-expansion parity, aliases/payload hygiene, relative paths,

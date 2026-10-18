@@ -26,8 +26,8 @@ Historical timings are not re-labelled as measurements of the new mounted root.
 * Test ownership is not another Scenario model
 
 AWS atomic controls belong to [[file:../../../scenarios/aws/tests/atomic-test.ss][scenarios/aws/tests/atomic-test.ss]]. Real package qualification belongs to
-[[file:../../../scenarios/aws/tests/integration/context-publication-test.ss][tests/integration/context-publication-test.ss]]. Its private
-[[file:../../../scenarios/aws/tests/integration/fixtures.ss][fixtures.ss]] prepares a temporary version input and an explicit upstream Nix
+[[file:../../../t/Scenarios/aws/context-publication-test.ss][Core publication qualification]]. Its private
+[[file:../../../t/Scenarios/aws/fixtures.ss][fixtures.ss]] prepares a temporary version input and an explicit upstream Nix
 Source over the real module publications. It imports no other test suite,
 bootstrap fixture, copied Module implementation or test runner.
 
@@ -40,8 +40,16 @@ Ops execution boundary:
 (import :clan/poo/object
         (only-in "./init.ss" init.Scenarios))
 (.call (.get init.Scenarios aws tests) .run)
-(.call (.get init.Scenarios aws tests integration) .run)
+(.call (.get init.Scenarios aws tests qualification) .run)
 #+end_src
+
+Publication fault injection is Core mechanism qualification, not an AWS suite.
+=t/aws-context-publication-test.ss= directly selects the existing init test
+object's =qualification= projection. Discovery automatically binds the Core
+qualification source to its selection guard and invokes the same =.run= / Ops
+path. AWS authors maintain neither that file list nor boundary
+callbacks. The ordinary AWS integration projection is empty after relocation.
+See [[file:../13-module-loading/13.12-declarative-module-testing.org][automatic qualification discovery and table-driven controls]].
 
 [[file:../../../t/aws-module-test.ss][The atomic caller]] checks cold/warm execution and independent scope/integration demand.
 [[file:../../../t/aws-context-publication-test.ss][The integration caller]] retains its original real-package assertions via the explicit endpoint.

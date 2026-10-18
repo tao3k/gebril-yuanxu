@@ -24,6 +24,17 @@ theorem extensionRetainsAndChecksContracts (object : ProofObject Key Value)
     Certificate (object.withObligation obligation) :=
   Certificate.withObligation object existing obligation checked
 
+/-- Repeating an already owned contract changes neither the logical admission
+condition nor the state; no second set/deduplication implementation is needed. -/
+theorem repeatedObligationPreservesValidity (object : ProofObject Key Value)
+    (obligation : Obligation Key Value) (owned : obligation ∈ object.obligations) :
+    Certificate (object.withObligation obligation) ↔ Certificate object := by
+  constructor
+  · intro certificate candidate member
+    exact certificate candidate (List.mem_append.mpr (Or.inl member))
+  · intro certificate
+    exact Certificate.withObligation object certificate obligation (certificate obligation owned)
+
 /-- Same-family contract composition retains the exact factories and data.
 Equal claim shapes are insufficient: conjoin requires actual function equality. -/
 theorem accumulatedResultPreservesValues
@@ -48,20 +59,6 @@ theorem unknownCompatibilityIsNotConflict :
     ¬ IsCompositionConflict Compatibility.unknown := by
   intro conflict
   exact conflict
-
-theorem compositionConflictRequiresEvidence
-    (compatibility : Compatibility)
-    (conflict : IsCompositionConflict compatibility) :
-    ∃ evidenceIdentity,
-      compatibility =
-        Compatibility.provenIncompatible evidenceIdentity := by
-  cases compatibility with
-  | canonicallyCompatible =>
-      exact False.elim conflict
-  | provenIncompatible evidenceIdentity =>
-      exact ⟨evidenceIdentity, rfl⟩
-  | unknown =>
-      exact False.elim conflict
 
 structure WeakeningAuthorization (Authority : Type u) where
   authority : Authority

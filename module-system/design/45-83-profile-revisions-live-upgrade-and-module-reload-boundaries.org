@@ -5,6 +5,12 @@
 #+title: Profile Revisions, Live Upgrade, and Module-Reload Boundaries
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted profile-revision and live-upgrade semantics.
@@ -91,9 +97,9 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =immutableRevisionUpgradeIsAdmitted=
-- [X] =inPlaceProfileMutationIsRejected=
-- [X] =moduleReloadRootRewriteIsRejected=
+- [ ] =immutableRevisionUpgradeIsAdmitted=
+- [ ] =inPlaceProfileMutationIsRejected=
+- [ ] =moduleReloadRootRewriteIsRejected=
 - [X] =exportedProfileRevisionIsImmutable=
 - [X] =runningRootDoesNotResolveNewestBinding=
 - [X] =overlappingArtifactsRemainIsolated=

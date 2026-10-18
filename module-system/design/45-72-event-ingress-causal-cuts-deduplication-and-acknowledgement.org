@@ -5,6 +5,12 @@
 #+title: Event Ingress, Causal Cuts, Deduplication, and Acknowledgement
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted semantics for external event and message ingress
@@ -92,23 +98,23 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =transportArrivalIsNotPureInput=
-- [X] =admittedEnvelopeMayBecomePureInput=
-- [X] =suspendedIngressFailsClosed=
-- [X] =rejectedIngressFailsClosed=
-- [X] =quarantinedIngressFailsClosed=
+- [ ] =transportArrivalIsNotPureInput=
+- [ ] =admittedEnvelopeMayBecomePureInput=
+- [ ] =suspendedIngressFailsClosed=
+- [ ] =rejectedIngressFailsClosed=
+- [ ] =quarantinedIngressFailsClosed=
 - [X] =admittedEnvelopeCarriesAllIngressChecks=
 - [X] =duplicateDeliveryPreservesEventIdentity=
 - [X] =causalCutIsImmutable=
 - [X] =causalCutCoversEveryParent=
 - [X] =missingCausalParentsSuspendEvaluation=
 - [X] =causalSuspensionNamesMissingParents=
-- [X] =watermarkClosureRequiresCoverage=
-- [X] =transportReceiptDoesNotClaimEffectCommit=
-- [X] =admissionAckDoesNotClaimEffectCommit=
-- [X] =durableRecordAckDoesNotClaimEffectCommit=
-- [X] =effectCommitAckClaimsEffectCommit=
-- [X] =lateEventNeverSilentlyMutatesClosedCut=
+- [ ] =watermarkClosureRequiresCoverage=
+- [ ] =transportReceiptDoesNotClaimEffectCommit=
+- [ ] =admissionAckDoesNotClaimEffectCommit=
+- [ ] =durableRecordAckDoesNotClaimEffectCommit=
+- [ ] =effectCommitAckClaimsEffectCommit=
+- [ ] =lateEventNeverSilentlyMutatesClosedCut=
 - [X] =admittedEventSetChangeCreatesNewCutIdentity=
 - [X] =sameCausalCutReplayIsStable=
 - [ ] Project ingress and causal-cut policy through native =gerbil-poo=.

@@ -11,6 +11,7 @@
 | Read module.tests | Demand the guarded test projection for its owner | Link the business scope |
 | Read tests.spec | Inspect native harness input files | Start a process |
 | Read tests.integration | Select tests/integration on the same Graph | Run external package qualification during atomic testing |
+| Read tests.qualification | Discover init-owned t/<owner> on the same selection | Read unrelated owners or link business scope |
 | Call tests .run | Execute those inputs through the existing testing Ops boundary | Accept stale input or infer success from exit zero alone |
 | Call init.build-spec | Produce ordinary std/build-script inputs | Execute tests or substitute a second build protocol |
 
@@ -32,6 +33,30 @@ otherwise unchanged atomic projection. This is workload classification, not
 permission to weaken integration assertions or describe a skipped gate as green.
 Existing scope-linking consumers retain their admitted business objects;
 adding test metadata does not mutate a previously admitted scope.
+
+Core mechanism qualification belongs in =t/<qualified identity>/=
+relative to the file-backed init directory, and is selected through the same
+module's =tests.qualification= slot. It is not a module author's test manifest.
+Only an explicit request reads that owner's immediate directory. Helpers are
+guarded source inputs; only =*-test.ss= files are native harness inputs.
+Qualification shares the existing projection cache, =.select=, selected Graph,
+fixture macros and lazy Ops executor. Callers supply no file list or extra
+currentness callback. Atomic/integration discovery does not inspect this tree.
+Missing owner directories produce guarded empty specs; =.run= still rejects an
+empty harness input instead of falling back to directory-wide discovery.
+Directory kinds/membership and Scheme source bytes are guarded, including
+helpers and newly added/renamed tests. Existing ancestors must be real
+directories; symlinked ancestors and disabled owners are rejected. Unselected
+owner contents are neither enumerated nor observed. These rules describe test
+selection and source admission, not cached execution or a second Graph.
+
+The aggregate =init.tests.qualification= facade is inert. Narrow =.select= must
+not discover all owners before applying its filter; only aggregate =.spec= or
+=.run= requests the complete selected owner set. Its narrow results are the
+same cached projections returned by each module's =tests.qualification=.
+Requested owner order determines harness input order, not Module inheritance
+precedence or a Funflow Job's execution order. Shared SDK/library imports are
+valid dependencies and do not prove that an unselected suite or scope ran.
 
 * Namespace reflection and binding
 
@@ -137,14 +162,18 @@ record. No timeout or dependency-version change was needed.
 3. The existing Ops implementation owns process invocation, timeout and receipt.
    The existing test policy owns native harness completion admission.
    Its default command uses the original =gerbil test= tool, with the same heap
-   options. At each execution the policy checks the effective GERBIL_PATH and
-   package-bin PATH priority, including Ops environment overrides. If setup is
-   incomplete it delegates to =gerbil OPTIONS env gerbil OPTIONS test=; it does not duplicate Gerbil's
-   package lookup. Explicitly different commands remain unchanged. This choice
+   options. At each execution the policy snapshots the effective GERBIL_PATH
+   and PATH, including Ops environment overrides. An existing package root gets
+   its bin priority in that request; no env-dispatcher child is needed just to
+   prepend PATH. Missing package context still delegates discovery to the SDK.
+   Explicitly different commands remain unchanged. This choice
    is not cached across executions and adds no runner or caller-side binding.
-   The environment dispatcher spawns its command, so its own VM options do not
-   fence the child. Both the Justfile and delegated Ops route explicitly pass
-   the original options to the actual test VM. Qualification must check the
+   The Justfile calls the original test VM directly; gxtest owns package setup.
+   The missing-context fallback repeats VM options for the SDK-spawned child.
+   Batch watchdogs must signal their owned process group, not use foreground
+   terminal mode. On Scheme cancellation Ops terminates its own child/group
+   before std/run-process closes and waits; ESRCH is the only ignored signal
+   race. Qualification must check the
    child's =##get-max-heap=, not infer a heap fence from the parent argv.
    The profile stores bytes, whereas Gambit's unsuffixed heap size denotes
    KiB. Convert the budget to an explicit =K= suffix, rounding down; reject
@@ -161,8 +190,53 @@ record. No timeout or dependency-version change was needed.
 7. Reading =scope= and reading =tests= have independent demand boundaries.
    Calling =.run= is repeatable execution, not cached proof of a prior run.
 
+Qualification directories follow init namespace mounts:
+=t/<rename>/<publication-identity>/=. For example, the root
+init's =Modules= and =Scenarios= windows select =Modules/json-schema/=,
+=Modules/funflow/= and =Scenarios/aws/=. Any valid rename works; these are not
+reserved categories. An unmounted selection has no mount segment. The source
+reference carries the mount, while dependency and =.select= identities retain
+their original publication names. There is no flat-directory fallback and no
+second test registry. Changing the init mount invalidates the old projection.
+Qualification is a test purpose, not an extra directory hierarchy. Existing
+standalone mechanism fixtures are not automatically enrolled by this selector.
+
 These rules do not prescribe one universal =.run= signature or receipt for all
 domains. A Funflow Job and a native test Script retain their own Contracts.
+
+** Atomic Case observation
+
+Case summaries and per-event trace are separate. =emit?= enables the existing
+watchdog receipts and bounded work totals; optional Boolean =trace-enabled?=
+defaults false and requests internal stage lines. =just test-file <path> true=
+selects summaries; =just test-file <path> trace= selects detailed trace through
+the original comma-separated native =-D= feature channel. Disabled observation
+must not load the adapter, even when trace is requested. Captured features are
+read before entering a private import context. Automatic stage handling must
+perform zero POO slot reads inside domain observation; explicit checkpoints
+retain their existing memory receipt API. Trace is diagnostic work, not free
+execution or evidence that an aggregate meets its performance budget.
+
+The existing fixture/Case macros own observation scope as well as resource
+cleanup. Contributors select a POO Case Profile; they do not supply a source
+observer, runner, memory sampler or environment-variable probe. A Profile
+expression is evaluated once, hygienically, for method lookup and its receiver.
+=ModuleTestingProfile.= adapts existing module-source events only when emission
+is enabled; the default fixture import must not load that optional adapter.
+
+Work totals contain bounded symbolic categories and natural numbers. They must
+not retain source contexts, syntax, business objects or evidence. Source check
+duration is explicitly converted from seconds to microseconds, never counted
+as an integer operation. Final totals and observer restoration cover failures.
+Raw VM allocation data that moves backwards invalidates allocation evidence
+for the remainder of that Case; it must not become a clamped speedup claim.
+
+The approved default native test ceiling is 2 GiB before imports and in Ops
+child options. The Case live-growth guard remains half its declared heap budget.
+These limits do not change the existing worker or qualification deadlines and
+do not confer deployment authority. Historical tests at other budgets remain
+separate evidence. Details and executable controls belong to
+[[file:../docs/10-19-design/13-module-loading/13.12-declarative-module-testing.org][the testing design record]].
 The shared rule is explicit effects with owned context and failure semantics.
 
 * Examples

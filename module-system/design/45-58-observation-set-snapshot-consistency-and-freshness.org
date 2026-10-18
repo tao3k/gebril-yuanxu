@@ -6,6 +6,12 @@
 #+subtitle: Multi-source semantic inputs, version vectors, watermarks, partial collection, and honest consistency claims
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * RFC status
 
 - Status :: Accepted design
@@ -107,26 +113,26 @@ view of the world.
 
 ** Proof obligations
 
-- [X] =contentAddressedObservationsDoNotEstablishConsistency=: content
+- [ ] =contentAddressedObservationsDoNotEstablishConsistency=: content
   addressing proves observation identity, not cross-resource consistency.
-- [X] =identicalTimestampsDoNotEstablishConsistency=: timestamp coincidence
+- [ ] =identicalTimestampsDoNotEstablishConsistency=: timestamp coincidence
   does not construct a snapshot relation.
-- [X] =contractAloneDoesNotEstablishConsistency=: a declared relation without
+- [ ] =contractAloneDoesNotEstablishConsistency=: a declared relation without
   witnesses for the actual observations does not establish consistency.
-- [X] =contractAloneDoesNotEstablishFreshness=: a declared freshness bound is
+- [ ] =contractAloneDoesNotEstablishFreshness=: a declared freshness bound is
   not evidence that observations satisfy it.
-- [X] =validatedSetEstablishesConsistency= and
+- [ ] =validatedSetEstablishesConsistency= and
   =validatedSetEstablishesFreshness=: only the validated-set evidence kind
   establishes both properties in this proof slice.
-- [X] =validatedSetCarriesExplicitContract=: every admitted observation set
+- [ ] =validatedSetCarriesExplicitContract=: every admitted observation set
   carries its explicit consistency contract.
 - [X] =validatedSetCarriesConsistencyWitness=: every admitted set carries the
   pairwise relation witness for its actual observations.
 - [X] =validatedSetCarriesFreshnessWitness=: every admitted set carries the
   reference-time freshness witness.
-- [X] =semanticGenerationRequiresValidatedSet=: semantic generation accepts a
+- [ ] =semanticGenerationRequiresValidatedSet=: semantic generation accepts a
   validated set rather than a raw observation list.
-- [X] =versionComparabilityCarriesDeclaredDomain=: cross-resource version
+- [ ] =versionComparabilityCarriesDeclaredDomain=: cross-resource version
   comparison carries a declared resource domain and version relation.
 - [ ] Refine the validated set and contract through native =gerbil-poo=
   prototypes and runtime adapter snapshot/watermark implementations.

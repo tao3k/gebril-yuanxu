@@ -4,13 +4,20 @@
 
 import LeanPoo.Functional.ContextPullback
 
-import PooFlowCoreProof.Modules.Funflow.Strategy
 
 namespace PooFlowCoreProof.ModuleSystem.Schema.Demand
 
-open PooFlowCoreProof.Modules.Funflow.Strategy
 
 universe u
+
+/-- Projected runtime coordinates remain outside the semantic demand key. -/
+structure LiveEvaluationContext where
+  capabilityTokenDigest : Nat
+  cacheSnapshotDigest : Nat
+  clockEpoch : Nat
+  workerIdentity : Nat
+  runtimeGeneration : Nat
+  deriving Repr, DecidableEq
 
 structure PureSlotDemand
     (SemanticTarget DemandCausal EvidenceRequest ExecutionPolicy : Type u)

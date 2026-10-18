@@ -5,6 +5,12 @@
 #+title: Distributed Cache Admission, Provenance, and Poisoning Resistance
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted admission boundary for cache reuse across
@@ -82,23 +88,23 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =remoteCandidateIsNotLocalAuthority=
-- [X] =rejectedCandidateFailsClosed=
-- [X] =suspendedAdmissionFailsClosed=
-- [X] =quarantinedCandidateFailsClosed=
-- [X] =localAdmissionPermitsUse=
-- [X] =distributedCacheClassIsNotSemanticAuthority=
-- [X] =locallyAdmittedCandidateHasIndependentChecks=
-- [X] =semanticKeyMismatchPreventsCompletedChecks=
-- [X] =staleCandidatePreventsCompletedChecks=
-- [X] =incompatiblePlatformPreventsCompletedChecks=
-- [X] =confidentialityMismatchPreventsCompletedChecks=
-- [X] =revokedCandidatePreventsCompletedChecks=
-- [X] =determinismConflictPreventsCompletedChecks=
+- [ ] =remoteCandidateIsNotLocalAuthority=
+- [ ] =rejectedCandidateFailsClosed=
+- [ ] =suspendedAdmissionFailsClosed=
+- [ ] =quarantinedCandidateFailsClosed=
+- [ ] =localAdmissionPermitsUse=
+- [ ] =distributedCacheClassIsNotSemanticAuthority=
+- [ ] =locallyAdmittedCandidateHasIndependentChecks=
+- [ ] =semanticKeyMismatchPreventsCompletedChecks=
+- [ ] =staleCandidatePreventsCompletedChecks=
+- [ ] =incompatiblePlatformPreventsCompletedChecks=
+- [ ] =confidentialityMismatchPreventsCompletedChecks=
+- [ ] =revokedCandidatePreventsCompletedChecks=
+- [ ] =determinismConflictPreventsCompletedChecks=
 - [X] =determinismConflictRequiresQuarantine=
 - [X] =revocationFailsClosed=
-- [X] =localReceiptCarriesCandidateProvenance=
-- [X] =localReceiptCarriesLocalPolicyIdentity=
+- [ ] =localReceiptCarriesCandidateProvenance=
+- [ ] =localReceiptCarriesLocalPolicyIdentity=
 - [ ] Project admission receipts through the native =gerbil-poo= runtime.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 

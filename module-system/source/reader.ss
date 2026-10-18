@@ -4,12 +4,15 @@
 ;;; Trusted build-time declaration evaluation using the native expander. This
 ;;; neither compiles selected roots nor invokes their deferred core.link scopes.
 (import (only-in :core/configuration/json current-configuration-input-observer)
+        (only-in :core/ops/progress execution-progress!)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :gerbil/expander current-expander-context make-top-context
                  current-expander-module-import eval-syntax expander-context-id module-context-path
-                 core-resolve-library-module-path)
-        (only-in :clan/poo/object .o .ref .slot?)
+                 core-resolve-library-module-path module-context-code module-context?
+                 current-expander-compile current-expander-eval current-expander-phi
+                 expander-context-table module-context-import)
+        (only-in :clan/poo/object .o .cc .ref .slot?)
         :core/module-system/source/admission
         :core/module-system/source/preparation
         (only-in :core/module-system/source/declaration current-module-build-resolver)
@@ -17,6 +20,65 @@
         (only-in :core/module-system/building/source-closure for-each-build-module poo-flow-core-bootstrap-contexts
                  poo-flow-core-bootstrap-source-path))
 (export module-publication-reader module-prepared-source-binding)
+(def (reader-evaluation-observers owned completed)
+  ;; SDK runtime imports bypass current-expander-module-eval. Pair the exact
+  ;; phi-zero module body with its compiled program, then observe successful
+  ;; evaluation of that same program. Macro-phase or partial evaluation alone
+  ;; grants no release capability. Delegate all SDK results without alteration.
+  (def native-compile (current-expander-compile))
+  (def native-eval (current-expander-eval))
+  (def pending (make-hash-table-eq))
+  (def (body-event stage context)
+    (let (observer (current-module-source-observer))
+      (when observer
+        (observer stage 1)
+        ;; Only interface bodies receive phase snapshots. Other private bodies
+        ;; contribute scalar work counts without sampling once per dependency.
+        (when (string-suffix? "-interface.ss" (module-context-path context))
+          (observer
+            (list 'reader-declaration
+              (cons 'bindings (hash-length (expander-context-table context)))
+              (cons 'imports (length (module-context-import context)))) 1)))))
+  (def (owned-body? context form)
+    (and (module-context? context) (zero? (current-expander-phi))
+         (eq? form (module-context-code context))
+         (string? (module-context-path context))
+         (hash-key? owned (path-normalize (module-context-path context)))))
+  (def (compile form)
+    (let* ((context (current-expander-context))
+           (owned? (owned-body? context form)))
+      (when owned? (body-event 'reader-body-expanded context))
+      (let (program (native-compile form))
+        (when (and (pair? program) owned?)
+          (body-event 'reader-body-compiled context)
+          (hash-put! pending program (cons context form)))
+        program)))
+  (def (evaluate program)
+    (let (entry (hash-get pending program))
+      (call-with-values (lambda () (native-eval program))
+        (lambda results
+          (when entry
+            (hash-remove! pending program)
+            (hash-put! completed (car entry) (cdr entry))
+            (body-event 'reader-body-evaluated (car entry)))
+          (apply values results)))))
+  (values compile evaluate))
+(def (release-reader-expansions! completed)
+  ;; Only Core-generated interpreter wrappers occur in this completed set.
+  ;; They are never compiler inputs: building projects the guarded originals.
+  ;; Keep the context, imports, bindings, phases and runtime promise intact.
+  ;; In particular, do not import an unused wrapper merely to find a context.
+  (def released 0)
+  (hash-for-each
+    (lambda (context code)
+      (when (and code (eq? code (module-context-code context)))
+        (slot-set! context 'code #f)
+        (set! released (+ released 1)))) completed)
+  (when (current-module-source-observer)
+    ((current-module-source-observer)
+      (list 'reader-lifetime (cons 'completed (hash-length completed))
+                             (cons 'released released)) 1))
+  (hash-clear! completed))
 (def (remove-reader-tree path)
   (if (eq? (module-source-type path) 'directory)
     (begin (for-each (lambda (name) (remove-reader-tree (path-expand name path))) (directory-files path))
@@ -50,15 +112,14 @@
     (and (string? resolved) (equal? (path-normalize path) (path-normalize resolved)) input)))
 ;; Check the demanded SDK dependency subgraph, not every selected role on each
 ;; import edge. Complete role/asset guards still bracket expansion/evaluation.
-(def (admit-compiler-inputs! context inputs (visit (lambda (_input) (void))))
+(def (admit-compiler-inputs! context inputs-for (visit (lambda (_input) (void))))
   (call-with-module-source-read-cache
     (lambda ()
-      (for-each-build-module context
-        (lambda (child)
-          (let (input (hash-get inputs child))
-            (when input
-              (module-source-admit-current! (.ref input 'source-inputs))
-              (visit input))))))))
+      (for-each
+        (lambda (input)
+          (module-source-admit-current! (.ref input 'source-inputs))
+          (visit input))
+        (inputs-for context)))))
 ;; Preparation is determined by an actual SDK context and its observed source.
 ;; Keep the projection, never an admission result. Every reuse checks bytes and
 ;; native package identity again; changed code needs a fresh compiler context.
@@ -82,6 +143,30 @@
   (def tool-paths (make-hash-table))
   (def tool-inputs (make-hash-table-eq))
   (def tool-observations (make-hash-table))
+  (def dependency-index (make-hash-table-eq))
+  (def (inputs-for context)
+    ;; Cache only the immutable SDK import graph for this reader snapshot.
+    ;; Every caller above still checks the actual source observations; no
+    ;; acceptance or initializer result is stored in this structural index.
+    (when (current-module-source-observer)
+      ((current-module-source-observer) 'compiler-closure-requests 1)
+      ((current-module-source-observer) (list 'compiler-demand context) 1))
+    (if (hash-key? dependency-index context)
+      (hash-ref dependency-index context)
+      (let (inputs '())
+        (when (current-module-source-observer)
+          ((current-module-source-observer) 'compiler-closure-walks 1))
+        (for-each-build-module context
+          (lambda (child)
+            (let (input (hash-get tool-inputs child))
+              (when input
+                (when (current-module-source-observer)
+                  ((current-module-source-observer)
+                    (list 'compiler-discovery context child (.ref input 'path)) 1))
+                (set! inputs (cons input inputs))))))
+        (let (ordered (reverse inputs))
+          (hash-put! dependency-index context ordered)
+          ordered))))
   ;; Reuse only exact SDK-observed compiler contexts. A source path or Core-like
   ;; identity alone grants no exemption from publication source confinement.
   (parameterize ((current-module-source-phase 'compiler-tools))
@@ -110,11 +195,68 @@
                       (hash-put! tool-observations file (cdr observation))))
                   (.ref input 'source-inputs))))))
         (hash->list tool-contexts)))))
-  (values tool-contexts tool-paths tool-inputs tool-observations))
+  (values tool-contexts tool-paths inputs-for tool-observations))
 (def (module-publication-reader)
   (let ((guards '()) (dependencies (make-hash-table)) (refused? #f)
-        (kernel-contexts (make-hash-table)) (kernel-inputs (make-hash-table-eq)))
-    (defvalues (tool-contexts tool-paths tool-inputs tool-observations)
+        (kernel-contexts (make-hash-table)) (kernel-inputs (make-hash-table-eq))
+        (kernel-closures (make-hash-table-eq))
+        (preparations (make-hash-table)))
+    ;; Reuse inert role/header projections within this reader's source epoch.
+    ;; current! below checks the retained byte/package guards before EVERY use.
+    ;; This does not retain an evaluated publication or skip macro/initializer
+    ;; execution. Fresh SourceRef provenance is attached to the returned view.
+    (def (preparation-key source)
+      (unless (poo-flow-module-source-ref? source)
+        (error "publication preparation requires a SourceRef" source))
+      (let (metadata (poo-flow-module-source-ref-metadata source))
+        (cons (poo-flow-module-source-ref-kind source)
+                    (cons (path-normalize (poo-flow-module-source-ref-value source))
+                      (map (lambda (name) (assq name metadata))
+                           '(module-id module-root module-tree-root))))))
+    (def (prepare-publication source)
+      (let* ((key (preparation-key source))
+             (previous (hash-get preparations key)))
+        (when (current-module-source-observer)
+          ((current-module-source-observer) 'publication-preparation-requests 1))
+        (if previous
+          (begin (check-preparation-policy! previous) (.cc previous 'source source))
+          (let (value
+                 (begin
+                   (when (current-module-source-observer)
+                     ((current-module-source-observer) 'publication-policy-checks 1))
+                   (poo-flow-prepare-module-publication source)))
+            (when (current-module-source-observer)
+              ((current-module-source-observer) 'publication-preparation-walks 1))
+            (hash-put! preparations key value)
+            value))))
+    (def (check-preparation-policy! prepared)
+      ;; Never cache authoring admission: MOP policy objects may change without
+      ;; changing source bytes. Recheck the actual policy before using syntax.
+      (let* ((source (.ref prepared 'source))
+             (metadata (poo-flow-module-source-ref-metadata source))
+             (owner (cdr (assq 'module-id metadata)))
+             (root (cdr (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
+             (policy poo-flow-default-module-style-policy))
+        (when (current-module-source-observer)
+          ((current-module-source-observer) 'publication-policy-checks 1))
+        ((.ref policy 'validate) policy owner root module-source-read)
+        ;; A policy is an author-code boundary, not a source-cache window.
+        ((.ref prepared 'admit-current))))
+    ;; Cache only completed SDK context topology. Input registration can grow
+    ;; during declaration imports, so resolve kernel-inputs afresh on EVERY use.
+    ;; Neither source-check results nor macro/initializer effects enter this cache.
+    (def (kernel-closure context)
+      (when (current-module-source-observer)
+        ((current-module-source-observer) 'kernel-closure-requests 1))
+      (if (hash-key? kernel-closures context) (hash-ref kernel-closures context)
+        (let (children '())
+          (when (current-module-source-observer)
+            ((current-module-source-observer) 'kernel-closure-walks 1))
+          (for-each-build-module context
+            (lambda (child) (set! children (cons child children))))
+          (let (ordered (reverse children))
+            (hash-put! kernel-closures context ordered) ordered))))
+    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations)
       (module-compiler-tools))
     (def (check-current! observed-guards)
       (when (current-module-source-observer)
@@ -153,7 +295,7 @@
            ((current-module-source-observer)
              (list 'publication-start (poo-flow-module-source-ref-value source-value)) 1))
          (parameterize ((current-module-source-phase 'declaration-before)) (current!))
-         (let* ((prepared (poo-flow-prepare-module-publication source-value))
+         (let* ((prepared (prepare-publication source-value))
                 (interface-path (path-normalize (poo-flow-module-source-ref-value source-value)))
                 (root (path-directory interface-path))
                 (tree-row (assq 'collection-root (poo-flow-module-source-ref-metadata source-value)))
@@ -183,7 +325,9 @@
                 (directory (make-temporary-file-name "publication-reader-"))
                 (prefix (symbol->string (gensym 'publication-reader-)))
                 (wrappers (make-hash-table)) (artifacts (make-hash-table))
+                (completed (make-hash-table-eq))
                 (input-values '()) (input-paths (make-hash-table)) (native-import (current-expander-module-import)))
+           (defvalues (compile evaluate) (reader-evaluation-observers artifacts completed))
            (def (write-wrapper path forms)
              (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                     (target (path-expand name directory)))
@@ -231,10 +375,18 @@
              ;; ancestors must not reread the same bytes once per import edge.
              ;; End the observation scope before returning to native-import.
              (parameterize ((current-module-source-phase 'compiler-import))
-               (admit-compiler-inputs! context tool-inputs
+               (admit-compiler-inputs! context tool-dependencies
                  (lambda (input)
-                   (when (within? root (path-normalize (.ref input 'path)))
-                     (error "compiler tool cannot depend on Module implementation" (.ref input 'path)))
+                   ;; The explicit SDK bootstrap includes shared JSON artifact
+                   ;; definitions beside the JSON Module. Directory ownership
+                   ;; alone does not make those canonical libraries a role.
+                   ;; Actual publication roles (including deferred Build) must
+                   ;; never become implicit compiler capabilities.
+                   (let (path (path-normalize (.ref input 'path)))
+                     (when (or (equal? path interface-path)
+                               (member path (.ref prepared 'role-sources))
+                               (equal? path (.ref prepared 'build-source)))
+                       (error "compiler tool cannot depend on Module implementation" path)))
                    ;; SDK tool sources remain guarded in tool-observations.
                    ;; Only this repository's sources become compiler entries;
                    ;; a contribution must not rebuild its installed Core SDK.
@@ -258,27 +410,36 @@
                            (dynamic-wind
                             (lambda () (when shared? (set! kernel-depth (+ kernel-depth 1))))
                             (lambda ()
+                              (when (current-module-source-observer)
+                                ((current-module-source-observer)
+                                  (list 'native-source-import-start path) 1))
                               (let (context (native-import target reload?))
+                                (execution-progress! (list 'source-import path) 1)
+                                (when (current-module-source-observer)
+                                  ((current-module-source-observer)
+                                    (list 'native-source-import-end path
+                                          (expander-context-id context)) 1))
                                 (hash-put! kernel-contexts path context)
                                 (hash-put! kernel-inputs context
                                   (find (lambda (input) (equal? (.ref input 'path) path)) input-values))
                                 context))
                             (lambda () (when shared? (set! kernel-depth (- kernel-depth 1)))))))))
-               (for-each-build-module context
+               (for-each
                  (lambda (child)
                    (let (input (hash-get kernel-inputs child))
-                     (when input (record-input! input)))))
+                     (when input (record-input! input))))
+                 (kernel-closure context))
                context))
            (def (source-context original-path reload?)
              (let (path (path-normalize original-path))
                (cond
                 ((equal? path interface-path)
                  (error "publication bootstrap cannot import its own interface" interface-path))
+                ((hash-get tool-paths path)
+                 => (lambda (context) (tool-context context reload?)))
                 ((within? root path)
                  (when (> kernel-depth 0) (error "shared source cannot depend on Module implementation" path))
                  (shared-context original-path root reload? #f))
-                ((hash-get tool-paths path)
-                 => (lambda (context) (tool-context context reload?)))
                 ((and source-tree ((.ref source-tree 'locate-owner) path))
                  => (lambda (owner) (shared-context original-path (.ref owner 'root) reload?)))
                 ((and kernel-root tree (within? kernel-root path) (not (within? tree path))
@@ -298,24 +459,6 @@
                    (set! guards (cons (.ref input 'admit-current) guards))
                    (parameterize ((current-expander-module-import native-import))
                      (native-import original-path #f)))))))
-           (def (selected-source-path path)
-             ;; Resolve a library name without expanding it first. Expanding a
-             ;; canonical source and only then replacing it with its confined
-             ;; wrapper expands two compiler contexts for the same source.
-             ;; Compiled libraries keep their original SDK closure below.
-             (and (symbol? path)
-                  (string-prefix? ":" (symbol->string path))
-                  (let (resolved (core-resolve-library-module-path path))
-                    (and (string? resolved)
-                         (string=? (path-extension resolved) ".ss")
-                         (or (within? root resolved)
-                             (hash-key? tool-paths resolved)
-                             (and source-tree ((.ref source-tree 'locate-owner) resolved))
-                             (and kernel-root tree (within? kernel-root resolved)
-                                  (not (within? tree resolved))
-                                  (not (and source-tree (.slot? source-tree 'contains-module-path?)
-                                            ((.ref source-tree 'contains-module-path?) resolved)))))
-                         resolved))))
            (def (resolve-build!)
              (parameterize ((current-module-source-phase 'build-role-before)) (current!))
              (let* ((path (.ref prepared 'build-source))
@@ -339,11 +482,20 @@
            (dynamic-wind
             (lambda () (create-directory directory))
             (lambda ()
-              (for-each (lambda (path) (source-wrapper (path-normalize path) root)) (.ref prepared 'role-sources))
+              (for-each
+                (lambda (path)
+                  ;; The native import hook below already resolves a retained
+                  ;; role context and projects its CURRENT dependency registry.
+                  ;; Do not parse/write an unused wrapper for that same context.
+                  (unless (hash-key? kernel-contexts (path-normalize path))
+                    (source-wrapper (path-normalize path) root)))
+                (.ref prepared 'role-sources))
               (set! guards (cons (.ref prepared 'admit-current) guards))
               (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared 'reader-forms))))
                 (parameterize
                     ((current-configuration-input-observer record-data!)
+                     (current-expander-compile compile)
+                     (current-expander-eval evaluate)
                      (current-expander-context (make-top-context))
                      (current-module-build-resolver resolve-build!)
                      (current-expander-module-import
@@ -353,12 +505,6 @@
                           (native-import path reload?))
                          ((and (string? path) (string=? (path-extension path) ".ss"))
                           (source-context path reload?))
-                         ((selected-source-path path)
-                          => (lambda (resolved)
-                               (when (current-module-source-observer)
-                                 ((current-module-source-observer)
-                                   (list 'source-import-redirect resolved) 1))
-                               (source-context resolved reload?)))
                          (else
                           ;; Compiled libraries must retain their canonical SDK
                           ;; import closure. Redirect only the caller's source
@@ -387,15 +533,42 @@
                   (eval-syntax `(import ,wrapper))
                   (let (value (eval-syntax (.ref prepared 'binding)))
                     (parameterize ((current-module-source-phase 'declaration-after)) (current!))
+                    (release-reader-expansions! completed)
                     (when (current-module-source-observer)
+                      ;; Counts describe this reader's actual retention roots;
+                      ;; observers never receive the context/syntax objects.
+                      ((current-module-source-observer)
+                        (list 'reader-retention
+                          (cons 'tools (hash-length tool-contexts))
+                          (cons 'private-contexts (hash-length kernel-contexts))
+                          (cons 'dependency-closures (hash-length kernel-closures))
+                          (cons 'prepared-publications (hash-length preparations))
+                          (cons 'source-objects (hash-length kernel-inputs))
+                          (cons 'source-guards (length guards))) 1)
                       ((current-module-source-observer)
                         (list 'publication-end interface-path) 1))
-                    (let (roles (map path-normalize (.ref prepared 'role-sources)))
-                      (hash-put! dependencies interface-path
-                        (filter (lambda (input) (not (member (.ref input 'path) roles))) (reverse input-values))))
+                    ;; Include the already prepared roles as well as private
+                    ;; dependencies. Build projection must not allocate a second
+                    ;; header/guard object for the very same observed source.
+                    (hash-put! dependencies interface-path (reverse input-values))
                     value))))
             (lambda () (remove-reader-tree directory)))))))
     (.o read: read-publication admit-current: current!
+        preparation:
+        (lambda (source)
+          ;; Only a successfully observed declaration may supply this capability.
+          ;; This is the same inert projection, not another publication reader.
+          (current!)
+          (unless (hash-key? dependencies (path-normalize (poo-flow-module-source-ref-value source)))
+            (error "publication preparation requires a completed read"))
+          (let (prepared (hash-get preparations (preparation-key source)))
+            (unless prepared (error "publication preparation owner mismatch"))
+            (check-preparation-policy! prepared)
+            ;; Take the dependency registry at this consumption, not when the
+            ;; inert preparation was cached. Both views share this one guard.
+            (.cc prepared 'source source
+              'source-dependencies
+              (hash-ref dependencies (path-normalize (poo-flow-module-source-ref-value source))))))
         inputs: (lambda (source)
                   (parameterize ((current-module-source-phase 'publication-inputs)) (current!))
                   (hash-ref dependencies (path-normalize (poo-flow-module-source-ref-value source)))))))
@@ -411,8 +584,10 @@
          (directory (make-temporary-file-name "configuration-reader-"))
          (prefix (symbol->string (gensym 'configuration-reader-)))
          (wrappers (make-hash-table))
+         (owned (make-hash-table)) (completed (make-hash-table-eq))
          (native-import (current-expander-module-import)))
-    (defvalues (tool-contexts tool-paths tool-inputs tool-observations)
+    (defvalues (compile evaluate) (reader-evaluation-observers owned completed))
+    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations)
       (module-compiler-tools))
     (def (current!)
       (parameterize ((current-module-source-phase 'configuration-current))
@@ -433,6 +608,7 @@
           (hash-put! wrappers (path-normalize path) (cons input shared))
           (let (wrapper (path-expand (string-append (symbol->string (gensym 'role-)) ".ss") directory))
             (hash-put! wrappers (path-normalize path) wrapper)
+            (hash-put! owned (path-normalize wrapper) #t)
             (call-with-output-file wrapper
               (lambda (port)
                 (write 'package: port) (display " " port) (write prefix port) (newline port)
@@ -455,6 +631,8 @@
        (let (result
              (parameterize
                  ((current-expander-context (make-top-context))
+                  (current-expander-compile compile)
+                  (current-expander-eval evaluate)
                   (current-expander-module-import
                    (lambda (path (reload? #f))
                      (let (target (and (string? path) (hash-get wrappers (path-normalize path))))
@@ -476,7 +654,7 @@
                                (unless (eq? context (hash-get tool-contexts (expander-context-id context)))
                                  (error "compiler tool context changed during configuration"))
                                (parameterize ((current-module-source-phase 'configuration-import))
-                                 (admit-compiler-inputs! context tool-inputs))
+                                 (admit-compiler-inputs! context tool-dependencies))
                                context))
                          ((and shared-contexts shared-inputs (string? path)
                                (not (string-prefix?
@@ -512,5 +690,7 @@
                                  (native-import path reload?))))))))
                (eval-syntax `(import ,(hash-ref wrappers (path-normalize (.ref prepared 'path)))))
                (eval-syntax binding)))
-         (current!) result))
+         (current!)
+         (release-reader-expansions! completed)
+         result))
      (lambda () (remove-reader-tree directory)))))

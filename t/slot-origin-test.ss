@@ -6,6 +6,7 @@
         (prefix-in (only-in :clan/poo/object make-object) poo-)
         (only-in :clan/poo/mop Slot)
         (only-in :core/configuration/slot-origin field-slot-origins/value admit-field-sources!)
+        (only-in :core/module-system/source/admission current-module-source-observer)
         (only-in :core/configuration/json config-json-file config-field-origin)
         (only-in :core/observability/testing-fixture poo-flow-test-fixture)
         (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture))
@@ -17,6 +18,18 @@
       (.def (First @ Base) (port => + 1))
       (.def (Second @ First) port: 5440)
       (def origins (field-slot-origins/value Second '(port)))
+      (def reads 0)
+      (def stats 0)
+      (parameterize ((current-module-source-observer
+                      (lambda (key amount)
+                        (case key
+                          ((reads) (set! reads (+ reads amount)))
+                          ((stats) (set! stats (+ stats amount)))))))
+        ;; Three inherited specifications from this same source still enroll
+        ;; all their requirements, while sharing one physical observation.
+        (admit-field-sources! Second '((port))))
+      (check-equal? reads 1)
+      (check-equal? stats 1)
       (check-equal? (.get Second port) 5440)
       (check-equal? (map (lambda (origin) (.get origin operation)) origins) '(assign => assign))
       (check-equal? (map (lambda (origin) (.get origin kind)) origins) '(scheme-slot scheme-slot scheme-slot))

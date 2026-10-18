@@ -28,6 +28,11 @@
                       ;; Public artifact/IR identity is shared with Core admission.
                       ;; These are library definitions, not a linked Module scope.
                       :core/modules/json-schema/json-schema-receipt
+                      ;; Source-bound contracts are ordinary Core definitions
+                      ;; used by relocated publications, not a Module scope.
+                      :core/admission/source
+                      :core/configuration/diagnostics
+                      :core/object-family/role-syntax
                       :core/configuration/json))
 (def (poo-flow-core-bootstrap-contexts)
   (let (ids (make-hash-table))

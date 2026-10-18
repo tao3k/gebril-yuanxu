@@ -5,6 +5,12 @@
 #+title: Incremental Fixed-Point Reevaluation and Cache Correctness
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted incremental reevaluation and cache-correctness
@@ -86,12 +92,12 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =identityMismatchDoesNotAdmitSemanticReuse=
-- [X] =staleEvidenceDoesNotAdmitSemanticReuse=
-- [X] =incompleteExecutionDoesNotAdmitSemanticReuse=
-- [X] =suspensionDoesNotAdmitSemanticReuse=
-- [X] =exactFreshIdentityAdmitsSemanticReuse=
-- [X] =incompleteExecutionIsNotPublishedSemanticResult=
+- [ ] =identityMismatchDoesNotAdmitSemanticReuse=
+- [ ] =staleEvidenceDoesNotAdmitSemanticReuse=
+- [ ] =incompleteExecutionDoesNotAdmitSemanticReuse=
+- [ ] =suspensionDoesNotAdmitSemanticReuse=
+- [ ] =exactFreshIdentityAdmitsSemanticReuse=
+- [ ] =incompleteExecutionIsNotPublishedSemanticResult=
 - [X] =changedInputReevaluatesReachableFrontier=
 - [X] =frontierNodeSchedulesAffectedSCC=
 - [X] =affectedSCCReevaluatesAsWholeUnit=
@@ -108,7 +114,7 @@ flowchart LR
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is
-=PooFlowCoreProof.Graph.Cache=.  Its graph-proof
+=PooFlowCoreProof.ModuleSystem.Graph.Cache=.  Its graph-proof
 field imports RFC 45-65 directly; therefore cache reuse cannot replace
 graph-wide compatibility closure with a boolean hit or an execution-work
 receipt.

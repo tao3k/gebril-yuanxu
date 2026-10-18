@@ -2,6 +2,8 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+import LeanPoo.Functional.Assembly
+
 namespace PooFlowCoreProof.Composition.Identity
 
 structure LexicalName where
@@ -143,4 +145,24 @@ theorem derivedCompositionUsesFreshRoot
       parent.runtimeRoot := by
   exact fresh
 
+/-! `composition/lineage.ss` reports duplicate identities and whether a cycle
+contains a declared productive identity. It does not prove runtime termination. -/
+def lineageCycle [DecidableEq Key] (lineage : List Key) : Bool := !decide lineage.Nodup
+
+def productiveRecursion [DecidableEq Key] (lineage productive : List Key) : Bool :=
+  lineageCycle lineage && lineage.any (fun identity => productive.contains identity)
+
+theorem productive_iff_cycle_and_member [DecidableEq Key] (lineage productive : List Key) :
+    productiveRecursion lineage productive = true ↔
+      ¬ lineage.Nodup ∧ ∃ identity ∈ lineage, identity ∈ productive := by
+  simp [productiveRecursion, lineageCycle, List.any_eq_true]
+
+def lineageFactory [DecidableEq Key] :
+    LeanPoo.Functional.Factory (List Key × List Key) (fun _ => Bool × Bool) :=
+  LeanPoo.Functional.Factory.zipWith (fun _ cycle productive => (cycle, productive))
+    (fun context => lineageCycle context.1) (fun context => productiveRecursion context.1 context.2)
+
+#guard lineageFactory ([1, 2, 1], [2]) == (true, true)
+#guard lineageFactory ([1, 2, 1], [3]) == (true, false)
+#guard lineageFactory ([1, 2], [2]) == (false, false)
 end PooFlowCoreProof.Composition.Identity

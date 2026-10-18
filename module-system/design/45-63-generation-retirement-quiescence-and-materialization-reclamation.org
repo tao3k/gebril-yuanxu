@@ -5,6 +5,12 @@
 #+title: Generation Retirement, Quiescence, and Materialization Reclamation
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted lifecycle semantics for an immutable generation
@@ -94,22 +100,22 @@ semantic generation or its evidence history.
 
 ** Proof obligations
 
-- [X] =headObservationAloneDoesNotEstablishRetirement=: observation is a
+- [ ] =headObservationAloneDoesNotEstablishRetirement=: observation is a
   precondition, not the retirement fence.
-- [X] =retirementDoesNotEstablishQuiescence=: stopping new work does not prove
+- [ ] =retirementDoesNotEstablishQuiescence=: stopping new work does not prove
   existing use has drained.
-- [X] =quiescenceAloneDoesNotAuthorizeReclamation=: zero live obligations does
+- [ ] =quiescenceAloneDoesNotAuthorizeReclamation=: zero live obligations does
   not prove ownership of physical materializations.
-- [X] =ordinaryNewUseAfterFenceFailsClosed=: ordinary new use is rejected after
+- [ ] =ordinaryNewUseAfterFenceFailsClosed=: ordinary new use is rejected after
   retirement.
-- [X] =retirementRequiresAuthoritativeHeadObservation=: retirement carries its
+- [ ] =retirementRequiresAuthoritativeHeadObservation=: retirement carries its
   authoritative active-head observation.
 - [X] =retiredGenerationIsNotActiveHead=: the retiring generation differs from
   the observed selected head.
 - [X] =quiescenceHasNoLivePins= and
   =quiescenceHasNoOutstandingObligations=: quiescence carries both absence
   witnesses.
-- [X] =reclamationRequiresQuiescence=: every reclamation admission carries its
+- [ ] =reclamationRequiresQuiescence=: every reclamation admission carries its
   quiescence witness.
 - [X] =reclamationCarriesMaterializationOwnership=: all reclaimed
   materializations are bound to the retiring generation.

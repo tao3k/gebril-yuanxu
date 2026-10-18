@@ -51,6 +51,84 @@
     (check-equal? reads 0)))
 (def module-source-admission-test
   (test-suite "One source-role admission for directory and collection"
+    (poo-flow-test-case "collected replay starts fresh and shares only its own pure reads"
+      (with-module
+        (lambda (root)
+          (def file (path-expand "modules/custom/example/types.ss" root))
+          (def input (cons file (module-source-read file)))
+          (def replay
+            (call-with-collected-module-sources
+              (lambda (current!)
+                (module-source-admit-current! (list input)) current!)))
+          (def stats 0)
+          (def reads 0)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (case key
+                              ((stats) (set! stats (+ stats amount)))
+                              ((reads) (set! reads (+ reads amount)))))))
+            (replay)
+            ;; The explicit regular-file check and byte read share one stat.
+            (check-equal? stats 1)
+            (check-equal? reads 1)
+            (replay)
+            ;; Independent replays always read again, not a retained approval.
+            (check-equal? stats 2)
+            (check-equal? reads 2)
+            (call-with-module-source-read-cache
+              (lambda ()
+                (module-source-read file)
+                ;; Deliberate authority-boundary negative: an outer pure view
+                ;; must not conceal a source mutation from the fresh replay.
+                (write-role root "types" "(def PublicContract 'changed)")
+                (check-exception (replay) error?)))))))
+    (poo-flow-test-case "file kind is shared while each collector retains its own evidence"
+      (with-module
+       (lambda (root)
+         (def file (path-expand "modules/custom/example/types.ss" root))
+         (def input (cons file (module-source-read file)))
+         (def stats 0)
+         (def first #f)
+         (def second #f)
+         (parameterize ((current-module-source-observer
+                         (lambda (key amount)
+                           (when (eq? key 'stats) (set! stats (+ stats amount))))))
+           (call-with-module-source-read-cache
+             (lambda ()
+               (check-equal? (module-source-type file) 'regular)
+               (call-with-collected-module-sources
+                 (lambda (current!)
+                   (check-equal? (module-source-type file) 'regular)
+                   (module-source-admit-current! (list input))
+                   (set! first current!)))
+               (call-with-collected-module-sources
+                 (lambda (current!)
+                   (check-equal? (module-source-type file) 'regular)
+                   (module-source-admit-current! (list input))
+                   (set! second current!)))
+               (check-equal? stats 1))))
+         (write-role root "types" "(def PublicContract 'changed)")
+         (check-exception (first) error?)
+         (check-exception (second) error?)
+         (delete-file file)
+         (create-directory file)
+         (call-with-module-source-read-cache
+           (lambda () (check-equal? (module-source-type file) 'directory))))))
+    (poo-flow-test-case "each policy invocation parses each role once and rechecks changed roles"
+      (with-module
+        (lambda (root)
+          (def parses 0)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (eq? key 'role-parses)
+                              (set! parses (+ parses amount))))))
+            (check-equal? (length (collection-source root)) 1)
+            (check-equal? parses 4)
+            (check-equal? (length (collection-source root)) 1)
+            (check-equal? parses 8)
+            (write-role root "config" "(stage provider runtime)")
+            (check-exception (collection-source root) error?)
+            (check-equal? parses 12)))))
     (poo-flow-test-case "source guards require exact Unicode content and EOF"
       (with-module
         (lambda (root)
@@ -81,19 +159,30 @@
                    (call-with-module-source-read-cache
                      (lambda ()
                        (let (first (module-source-read file))
+                         (module-source-admit-current! (list (cons file first)))
                          (call-with-module-source-read-cache
-                           (lambda () (check-equal? (module-source-read file) first)))
+                           (lambda ()
+                             (module-source-admit-current! (list (cons file first)))
+                             ;; An equal copy is not the same expected revision
+                             ;; object. It must take the checking path as well.
+                             (module-source-admit-current! (list (cons file (string-copy first))))))
                          first))))
                (check-equal? reads 1)
+               (check-equal? (hash-ref events 'checks) 2)
+               (check-equal? (hash-ref events 'read-windows) 1)
                (check-equal? (hash-ref events (list 'file-read 'nested-guard file)) 1)
-               (check-equal? (hash-ref events (list 'file-request 'nested-guard file)) 2)
+               (check-equal? (hash-ref events 'source-comparisons) 2)
+               (check-equal? (hash-ref events 'source-comparison-hits) 1)
+               (check-equal? (hash-ref events (list 'file-request 'nested-guard file)) 3)
                ;; Mutation is an effect BETWEEN validation scopes, never inside.
                (write-role root "types" "(def PublicContract 'updated)")
                (check-exception
                 (call-with-module-source-read-cache
                   (lambda () (module-source-admit-current! (list (cons file original)))))
                 error?)
-               (check-equal? reads 2)))))))
+               (check-equal? reads 2)
+               (check-equal? (hash-ref events 'checks) 3)
+               (check-equal? (hash-ref events 'read-windows) 2)))))))
     (poo-flow-test-case "file-kind observations expire before a later validation"
       (with-module
        (lambda (root)
@@ -110,6 +199,50 @@
          (create-symbolic-link (path-expand "modules/custom/example/objects.ss" root) file)
          (check-exception
            (call-with-module-source-read-cache (lambda () (module-source-read file))) error?))))
+    (poo-flow-test-case "a memoized guard enrolls each new admission collector"
+      (with-module
+       (lambda (root)
+         (def file (path-expand "modules/custom/example/types.ss" root))
+         (def input (cons file (module-source-read file)))
+         (def replay #f)
+         (def calls 0)
+         (def (guard)
+           (set! calls (+ calls 1))
+           (module-source-admit-current! (list input)))
+         (call-with-module-source-read-cache
+           (lambda ()
+             (module-source-observe guard)
+             (module-source-observe guard)
+             (check-equal? calls 1)
+             (call-with-collected-module-sources
+               (lambda (current!)
+                 (module-source-observe guard)
+                 (module-source-observe guard)
+                 (check-equal? calls 2)
+                 (set! replay current!)))))
+         ;; The new collector must retain the source even though the first
+         ;; observation of these same bytes preceded that collector's scope.
+         (write-role root "types" "(def PublicContract 'changed)")
+         (check-exception (replay) error?))))
+    (poo-flow-test-case "comparison hits still enroll new collectors and cannot hide conflicting expectations"
+      (with-module
+        (lambda (root)
+          (def file (path-expand "modules/custom/example/types.ss" root))
+          (def replay #f)
+          (def original (module-source-read file))
+          (def inputs (list (cons file original)))
+          (call-with-module-source-read-cache
+            (lambda ()
+              (module-source-admit-current! inputs)
+              (call-with-collected-module-sources
+                (lambda (current!)
+                  (module-source-admit-current! inputs)
+                  (set! replay current!)))
+              ;; A path-only memo would wrongly authorize this revision.
+              (check-exception
+                (module-source-admit-current! (list (cons file "different bytes"))) error?)))
+          (write-role root "types" "(def PublicContract 'changed-after-window)")
+          (check-exception (replay) error?))))
     (poo-flow-test-case "one public Module object needs no flat private re-exports"
       (with-module
        (lambda (root)

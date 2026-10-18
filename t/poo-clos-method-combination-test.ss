@@ -196,6 +196,29 @@
 
 (def poo-clos-method-combination-test
   (test-suite "POO-native CLOS method combinations and protocol"
+    (poo-flow-test-case "single-receiver qualifier policy follows effective inherited slots"
+      (def parent (poo-clos-short-method-combination 'collect list))
+      ;; Force the parent callback before deriving another policy identity.
+      (check (poo-clos-method-combination-admits-qualifier? parent 'collect) => #t)
+      (def child (.o (:: @ parent) identity: 'release))
+      (check (poo-clos-method-combination-admits-qualifier? child 'release) => #t)
+      (check (poo-clos-method-combination-admits-qualifier? child 'collect) => #f)
+      (check (poo-clos-method-combination-admits-qualifier? parent 'collect) => #t)
+      (check (element? ClosMethodCombination
+               (.o (:: @ parent) .admits-qualifier?: #f)) => #f)
+      ;; Native refinement owns this one-axis extension; registration must use
+      ;; it too, rather than reimplementing kind dispatch at the call site.
+      (def restricted
+        (.o (:: @ (poo-clos-standard-method-combination))
+          .admits-qualifier?: (lambda (qualifier) (eq? qualifier 'around))))
+      (def generic
+        (poo-clos-generic-function 'restricted 1 method-combination: restricted))
+      (check-exception
+       (poo-clos-add-method generic
+         (poo-clos-method 'primary (list any-specializer)
+           (lambda (_frame _argument) 'never)))
+       (failure-code? 'invalid-method-qualifier)))
+
     (poo-flow-test-case "short declaration lowers to a lexical POO descriptor"
       (check (element? ClosMethodCombination declared-collect) => #t)
       (check-equal? (declared-values combination-dog) '(animal dog))

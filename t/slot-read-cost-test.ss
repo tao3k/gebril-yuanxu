@@ -65,7 +65,7 @@
        (def dependencies (slot-read-dependencies (car pending)))
        (hash-put! seen (car pending) #t)
        (loop (append dependencies (cdr pending)) (+ edges (length dependencies)))))))
-(def (trace-work phase action)
+(def (trace-work phase action (sample-replay? #f))
   (def roots (make-hash-table-eq))
   (def io (make-hash-table))
   (def events 0)
@@ -75,8 +75,7 @@
   (def result
     (parameterize ((current-module-source-observer
                     (lambda (key amount)
-                      (when (symbol? key)
-                        (hash-put! io key (+ amount (hash-ref io key 0)))))))
+                      (hash-put! io key (+ amount (hash-ref io key 0))))))
       (call-with-slot-read-observer observe action)))
   (def roots-list (hash-keys roots))
   (defvalues (nodes edges) (graph-size roots-list))
@@ -87,6 +86,26 @@
   (report (list 'READ-WORK phase events (hash-length roots) nodes edges callbacks
                 (hash-ref io 'read-requests 0) (hash-ref io 'reads 0)
                 (hash-ref io 'checks 0)))
+  (def phases (make-hash-table))
+  (for-each
+    (lambda (key)
+      (when (and (pair? key) (eq? (car key) 'file-read))
+        (let ((phase-name (cadr key)) (count (hash-ref io key)))
+          (hash-put! phases phase-name (+ count (hash-ref phases phase-name 0)))
+          (report (list 'SOURCE-FILE phase phase-name (caddr key) count)))))
+    (hash-keys io))
+  (for-each (lambda (key) (report (list 'SOURCE-PHASE phase key (hash-ref phases key))))
+            (hash-keys phases))
+  (when sample-replay?
+    ;; Validate the same stable graph; this callback has no source I/O. Real
+    ;; source-currentness remains in the separately measured admission path.
+    (for (round (in-range 3))
+      (defvalues (replayed costs)
+        (measure (lambda ()
+                   (replay-slot-reads! roots-list (lambda (_receiver _key) (void)))
+                   result) 200))
+      (check-equal? replayed result)
+      (report (list 'REPLAY-COST phase round 200 costs))))
   result)
 
 (def slot-read-cost-test
@@ -117,19 +136,19 @@
       (def Wrapped (.o selected: Final
                        unused: (begin (set! unused-calls (+ unused-calls 1)) (error "unselected"))))
       (.def (Outer @ EnvelopeContract) responsibilities: (.o selected: Contextual))
-      (def before (unbox calls))
-      (def nested (trace-work 'nested
-                       (cut .call Outer .admit Wrapped #f)))
-      (check-equal? (.get nested accepted?) #t)
-      (check-plan (car (.get nested responsibility-evidence)))
-      (check-equal? (unbox calls) (+ before 1))
+      (let* ((before (unbox calls))
+             (nested (trace-work 'nested (cut .call Outer .admit Wrapped #f))))
+        (check-equal? (.get nested accepted?) #t)
+        (check-plan (car (.get nested responsibility-evidence)))
+        (check-equal? (unbox calls) (+ before 1)))
       (sample-admission 'nested (cut .call Outer .admit Wrapped #f)
                         (cut check-envelope <> 1))
       (.def (Outer2 @ EnvelopeContract) responsibilities: (.o selected: Outer))
       (def Wrapped2 (.o selected: Wrapped))
-      (def before2 (unbox calls))
-      (check-envelope (trace-work 'nested2 (cut .call Outer2 .admit Wrapped2 #f)) 2)
-      (check-equal? (unbox calls) (+ before2 1))
+      ;; Keep the before/after pair in an explicit temporal scope after sampling.
+      (let (before2 (unbox calls))
+        (check-envelope (trace-work 'nested2 (cut .call Outer2 .admit Wrapped2 #f)) 2)
+        (check-equal? (unbox calls) (+ before2 1)))
       (sample-admission 'nested2 (cut .call Outer2 .admit Wrapped2 #f)
                         (cut check-envelope <> 2))
       (check-equal? unused-calls 0)
@@ -151,7 +170,7 @@
         (def probe (new-probe))
         ;; Warm outside every observer, just like a cached upstream Profile.
         (check-equal? (.get probe value) 5432)
-        (check-equal? (trace-work (list 'shared width) (cut .get probe value)) 5432)
+        (check-equal? (trace-work (list 'shared width) (cut .get probe value) #t) 5432)
         (for (round (in-range 3))
           (defvalues (value costs) (measure (lambda () (.get (new-probe) value)) 20))
           (check-equal? value 5432)

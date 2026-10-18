@@ -9,7 +9,10 @@ assert pkgs.stdenv.hostPlatform.system == "aarch64-darwin";
 pkgs.stdenvNoCC.mkDerivation {
   pname = "terraform-provider-aws";
   inherit version;
-  src = pkgs.fetchurl {
+  # The native fixed-output fetcher reports transfer counters to Nix's activity
+  # stream. A curl builder's carriage-return display is not liveness evidence.
+  # URL, expected content hash and archive name retain the same fixed output.
+  src = pkgs.stdenv.fetchurlBoot {
     url = "https://releases.hashicorp.com/terraform-provider-aws/${version}/terraform-provider-aws_${version}_darwin_arm64.zip";
     inherit hash;
   };

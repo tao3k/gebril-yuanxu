@@ -5,8 +5,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
         (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract. source-diagnose-at)
+        (only-in :core/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
         (only-in :core/configuration/slot-origin field-slot-origins/value)
+        (only-in :core/module-system/source/admission
+                 current-module-source-observer call-with-module-source-read-cache
+                 module-source-admit-current!)
         (only-in :core/observability/testing-fixture poo-flow-test-fixture)
         (only-in :core/t/qualification/service-publication/fixtures
                  DirectoryFixture write-source read-overrides))
@@ -27,25 +30,62 @@
 (def PortFields (.cc ObjectContract. responsibilities: (.o port: Port)))
 (def completed 0)
 (def (test-cleanup!)
-  (unless (= completed 5) (error "incomplete source observation controls" completed))
-  (displayln "SOURCE-OBSERVATION: 5 cases completed"))
+  (unless (= completed 6) (error "incomplete source observation controls" completed))
+  (displayln "SOURCE-OBSERVATION: 6 cases completed"))
 (def source-observation-test
   (test-suite "Collect actual source checks without a field list"
+    (poo-flow-test-fixture "replay shares one pure pass but never a preceding effect window"
+      (fixture DirectoryFixture)
+      (def path (path-expand "window.ss" (.get fixture root)))
+      (def text "(.def Observed port: 5432 client: 5432)\n")
+      (def candidate (observed-config path text))
+      ;; Already-cached values still carry both original slot dependencies.
+      (check-equal? (.get candidate port) 5432)
+      (check-equal? (.get candidate client) 5432)
+      (def replay-reads 0)
+      (def (read-fields) (+ (.get candidate port) (.get candidate client)))
+      (parameterize ((current-module-source-observer
+                      (lambda (key amount)
+                        (when (and (pair? key) (eq? (car key) 'file-read)
+                                   (eq? (cadr key) 'slot-replay))
+                          (set! replay-reads (+ replay-reads amount))))))
+        (check-equal? (call-with-source-slot-reads read-fields) 10864)
+        (check-equal? replay-reads 1)
+        (check-equal? (call-with-source-slot-reads read-fields) 10864)
+        ;; A new replay must read again, even for the same warmed receiver.
+        (check-equal? replay-reads 2))
+      (def failure
+        (with-catch values
+          (lambda ()
+            (call-with-module-source-read-cache
+              (lambda ()
+                (module-source-admit-current! (list (cons path text)))
+                (call-with-source-slot-reads
+                  (lambda ()
+                    (read-fields)
+                    (write-source path "; changed after a cached source guard\n"))))))))
+      (check-equal? (Error? failure) #t)
+      (check-equal? (Error-message failure) "Scheme configuration source changed")
+      (set! completed (+ completed 1)))
     (poo-flow-test-fixture "a guarded cached slot is rechecked and exceptions do not leak observations"
       (fixture DirectoryFixture)
       (def path (path-expand "selected.ss" (.get fixture root)))
       (def candidate (observed-config path "(.def Observed port: 5432)\n"))
       (check-equal? (.get candidate port) 5432)
+      (def after-mutation-reads 0)
       (.def (Contract @ ObservationContract)
         .preflight: (source-diagnose-at PortFields '())
         .obligations:
         (lambda (_candidate _context)
           ;; Deliberate negative effect, never a normal domain obligation.
           (write-source path "(.def Observed port: 5440)\n")
+          (.get _candidate port)
+          (set! after-mutation-reads (+ after-mutation-reads 1))
           '()))
       (def failure (with-catch values (lambda () (.call Contract .admit candidate #f))))
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "Scheme configuration source changed")
+      (check-equal? after-mutation-reads 0)
       (check-equal? (.get candidate port) 5432)
       ;; A fresh invocation must not inherit the failed scope's observations.
       (check-equal? (.get (.call ObservationContract .admit (.o) #f) accepted?) #t)

@@ -5,6 +5,12 @@
 #+title: Publication Observation, Local Activation, and Completion
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted separation between active-head publication and
@@ -118,21 +124,21 @@ or rollout completion.
 
 ** Proof obligations
 
-- [X] =publicationDoesNotEstablishLocalActivation=: a head-transition receipt
+- [ ] =publicationDoesNotEstablishLocalActivation=: a head-transition receipt
   proves publication only.
-- [X] =observationDoesNotEstablishLocalActivation=: observing the head is not
+- [ ] =observationDoesNotEstablishLocalActivation=: observing the head is not
   activating it locally.
-- [X] =preparationAloneDoesNotEstablishLocalActivation=: preparing artifacts
+- [ ] =preparationAloneDoesNotEstablishLocalActivation=: preparing artifacts
   does not prove the local serving boundary changed.
-- [X] =activationDoesNotEstablishRolloutCompletion=: one local activation does
+- [ ] =activationDoesNotEstablishRolloutCompletion=: one local activation does
   not complete a multi-consumer rollout.
-- [X] =localActivationCarriesHeadObservation=: every local activation carries
+- [ ] =localActivationCarriesHeadObservation=: every local activation carries
   the consumer observation chain.
-- [X] =localActivationCarriesPreparationReceipt=: every local activation
+- [ ] =localActivationCarriesPreparationReceipt=: every local activation
   carries the prepared-generation receipt.
 - [X] =rolloutCompletionRequiresActivationEvidence=: completion covers every
   consumer required by the completion policy with activation evidence.
-- [X] =headTransitionReceiptCarriesConditionalCommit=: every publication
+- [ ] =headTransitionReceiptCarriesConditionalCommit=: every publication
   receipt is bound to its RFC 45-59 conditional active-head commit.
 - [X] =headTransitionReceiptBelongsToAtomicHeadSetProjection=: a coupled
   publication receipt belongs to the RFC 45-61 atomic head-set after

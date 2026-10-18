@@ -405,6 +405,7 @@
 (def (poo-flow-json-schema-additional-property-valid? additional object-row)
   (cond
    ((eq? additional 'unspecified) #t)
+   ((boolean? additional) additional)
    ((and (poo-flow-json-schema-node? additional)
          (eq? (poo-flow-json-schema-node-kind additional) 'never))
     #f)

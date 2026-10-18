@@ -2,10 +2,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/list/list find)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .def .o .get .ref .slot? object?)
+        (only-in :clan/poo/object .def .o .get .ref .slot? .call object?)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
-                 core-import-module core-expand expander-context-id)
+                 core-import-module core-expand expander-context-id
+                 current-expander-eval module-context? module-context-path module-context-code)
+        (only-in :core/module-system/source/reader module-publication-reader)
+        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
         (rename-in (only-in :core/module-system/source/declaration .def) (.def publication-definition))
         (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
         (only-in :core/observability/testing-case poo-flow-test-case)
@@ -74,7 +78,92 @@
               (lambda () (thunk) "unexpected success")))
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
-    (poo-flow-test-case "symbolic owned imports expand the confined role only once"
+    (poo-flow-test-case "completed reader bodies release without discarding macro bindings"
+      (with-publication-source
+       (lambda (_root module-root source _view)
+         (write-file (path-expand "objects.ss" module-root)
+           "(import (only-in :clan/poo/object .o)) (defrules fixture-answer () ((_) 42)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope fixture-answer)")
+         (def reader (module-publication-reader))
+         (def sdk-context (core-import-module ':clan/poo/object))
+         (def sdk-code (module-context-code sdk-context))
+         (check-equal? (not (not sdk-code)) #t)
+         (def native-eval (current-expander-eval))
+         (def evaluated (make-hash-table-eq))
+         (def runtime-state (make-hash-table-eq))
+         (parameterize
+             ((current-expander-eval
+                (lambda (program)
+                  (def context (current-expander-context))
+                  (call-with-values (lambda () (native-eval program))
+                    (lambda results
+                      (when (module-context? context)
+                        (hash-put! evaluated context (module-context-code context))
+                        (hash-put! runtime-state context
+                          (cons (slot-ref context 'e) (slot-ref context 'import))))
+                      (apply values results))))))
+           (.call reader read source))
+         (def macro-context
+           (find (lambda (context)
+                   (let (path (module-context-path context))
+                     (and (string? path) (string-suffix? "-objects.ss" path))))
+                 (hash-keys evaluated)))
+         (check-equal? (module-context? macro-context) #t)
+         (check-equal? (module-context-code macro-context) #f)
+         (check-equal? (eq? sdk-code (module-context-code sdk-context)) #t)
+         (hash-for-each
+           (lambda (context state)
+             (check-equal? (eq? (car state) (slot-ref context 'e)) #t)
+             (check-equal? (eq? (cdr state) (slot-ref context 'import)) #t))
+           runtime-state)
+         ;; A second demand must use the original macro binding, after cleanup.
+         (parameterize ((current-expander-context macro-context))
+           (check-equal? (eval-syntax '(fixture-answer)) 42)
+           (check-equal? (eval-syntax '(fixture-answer)) 42))
+         ;; Reader cleanup must never erase canonical SDK/tool bodies.
+         (hash-for-each
+           (lambda (context code)
+             (let (path (module-context-path context))
+               (unless (and (string? path) (string-contains path "publication-reader-"))
+                 (check-equal? (eq? code (module-context-code context)) #t))))
+           evaluated)
+         ;; Compilation projects original sources, independently of the private
+         ;; reader body. Both original syntax and source currentness survive.
+         (def prepared (.call reader preparation source))
+         (check-equal? (pair? (.get prepared compiler-forms)) #t)
+         (check-equal? (pair? (.get (poo-flow-prepare-module-build-source
+                                    (path-expand "objects.ss" module-root) void)
+                                  compiler-forms)) #t)
+         (.call reader read source)
+         (.call reader admit-current))))
+    (poo-flow-test-case "failed post-evaluation source guard does not release reader bodies"
+      (with-publication-source
+       (lambda (_root module-root source _view)
+         (def path (path-expand "config.ss" module-root))
+         (write-file path
+           (call-with-output-string
+             (lambda (port)
+               (write `(call-with-output-file (list path: ,path truncate: #t)
+                         (lambda (out) (display "(def Greeting \"changed\")" out))) port)
+               (write '(def Greeting "hello") port)
+               (write '(export Greeting) port))))
+         (def reader (module-publication-reader))
+         (def native-eval (current-expander-eval))
+         (def evaluated (make-hash-table-eq))
+         (parameterize
+             ((current-expander-eval
+                (lambda (program)
+                  (def context (current-expander-context))
+                  (call-with-values (lambda () (native-eval program))
+                    (lambda results
+                      (when (module-context? context)
+                        (hash-put! evaluated context (module-context-code context)))
+                      (apply values results))))))
+           (check-exception (.call reader read source) error?))
+         (check-equal? (> (hash-length evaluated) 0) #t)
+         (hash-for-each
+           (lambda (context code)
+             (check-equal? (eq? code (module-context-code context)) #t)) evaluated))))
+    (poo-flow-test-case "symbolic owned imports keep one confined macro expansion"
       (with-publication-source
        (lambda (root module-root _source _view)
          (def package (cadr (call-with-input-file (path-expand "gerbil.pkg" root) read)))
@@ -102,16 +191,53 @@
          ;; Registration is local to the test; the SDK still resolves package
          ;; prefixes and the reader still enforces the original owner boundary.
          (def previous (load-path))
+         (def closure-requests 0)
+         (def closure-walks 0)
+         (def demanded (make-hash-table-eq))
+         (def discovered (make-hash-table-eq))
+         (def kernel-requests 0)
+         (def kernel-walks 0)
          (dynamic-wind
            (lambda () (add-load-path! root))
            (lambda ()
-             (let (view (poo-flow-load-modules (path-expand "modules" root)))
-               (check-equal? (.get view modules custom example greeting) "hello")
-               (check-equal? (call-with-input-file marker read-line) "once")
-               ;; Negative control: the SDK's independent canonical context
-               ;; really would rerun the initializer, as the old redirect did.
-               (check-exception (core-import-module library) error?)
-               (check-equal? (call-with-input-file marker read-line) "once")))
+             (parameterize
+               ((current-module-source-observer
+                  (lambda (kind amount)
+                    (cond ((eq? kind 'compiler-closure-requests)
+                           (set! closure-requests (+ closure-requests amount)))
+                          ((eq? kind 'compiler-closure-walks)
+                           (set! closure-walks (+ closure-walks amount)))
+                          ((and (pair? kind) (eq? (car kind) 'compiler-demand))
+                           (hash-update! demanded (cadr kind) (cut + <> amount) 0))
+                          ((and (pair? kind) (eq? (car kind) 'compiler-discovery))
+                           (let (children (or (hash-get discovered (cadr kind))
+                                             (let (table (make-hash-table-eq))
+                                               (hash-put! discovered (cadr kind) table) table)))
+                             (hash-update! children (caddr kind) (cut + <> amount) 0)))
+                          ((eq? kind 'kernel-closure-requests)
+                           (set! kernel-requests (+ kernel-requests amount)))
+                          ((eq? kind 'kernel-closure-walks)
+                           (set! kernel-walks (+ kernel-walks amount)))))))
+               (let (view (poo-flow-load-modules (path-expand "modules" root)))
+                 (check-equal? (.get view modules custom example greeting) "hello")
+                 (check-equal? (call-with-input-file marker read-line) "once")
+                 (check-equal? (> closure-walks 0) #t)
+                 (check-equal? (> closure-requests closure-walks) #t)
+                 ;; Actual SDK identities, not a hand-maintained dependency list:
+                 ;; every child is first-discovered once per requested closure.
+                 (check-equal? (> (hash-length discovered) 0) #t)
+                 (check-equal? (andmap
+                                (lambda (row)
+                                  (andmap (lambda (child) (= (cdr child) 1))
+                                          (hash->list (cdr row))))
+                                (hash->list discovered)) #t)
+                 (check-equal? (ormap (lambda (row) (> (cdr row) 1)) (hash->list demanded)) #t)
+                 (check-equal? (> kernel-walks 0) #t)
+                 (check-equal? (> kernel-requests kernel-walks) #t)
+                 ;; Negative control: the SDK's independent canonical context
+                 ;; really would rerun the initializer if confinement were lost.
+                 (check-exception (core-import-module library) error?)
+                 (check-equal? (call-with-input-file marker read-line) "once"))))
            (lambda () (set-load-path! previous))))))
     (poo-flow-test-case "default reader selects and builds source roles without compiled selected modules"
       (with-publication-source

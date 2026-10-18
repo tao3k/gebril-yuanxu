@@ -14,6 +14,14 @@
         :core/module-system/source/reader
         (only-in :core/module-system/source/declaration current-module-build-phase?))
 (export poo-flow-load-modules)
+;; Attribute effect boundaries without retaining their results or source reads.
+(def (observe-link-stage stage thunk)
+  (let (observer (current-module-source-observer))
+    (if (not observer) (thunk)
+      (dynamic-wind
+        (lambda () (observer (list 'link-stage-start stage) 1))
+        thunk
+        (lambda () (observer (list 'link-stage-end stage) 1))))))
 (def (module-id-parts id)
   (let (parts (string-split (symbol->string id) #\/))
     (unless (and (pair? parts)
@@ -44,6 +52,7 @@
             (context (module-directory-context source (.ref reader 'read)))
             (original-current? (.ref context 'current?)))
        (.+ context (.o publication-inputs: (.ref reader 'inputs)
+                       publication-preparation: (.ref reader 'preparation)
                        current?: (lambda (generation)
                                   ((.ref reader 'admit-current))
                                   (original-current? generation)))))
@@ -51,7 +60,8 @@
    #f #f module-view))
 (def (link-module-context context-value (realization #f) (original-graph #f) (module-view #f)
                           (source-publications #f) (source-prepared #f))
-  (admit-module-value! ModuleScopeContextContract context-value context-value)
+  (observe-link-stage 'context-admission
+    (lambda () (admit-module-value! ModuleScopeContextContract context-value context-value)))
   (let ((cache (make-hash-table))
         (prepared (or source-prepared (make-hash-table)))
         (publications (or source-publications (make-hash-table)))
@@ -59,6 +69,11 @@
         (active (make-hash-table))
         (failed? #f)
         (generation-value (.ref context-value 'generation)))
+    ;; Package realization changes scope bindings, not the selected source
+    ;; Graph. Preserve its identity and resolver result at this handoff; every
+    ;; public use below still performs a fresh source/package boundary check.
+    (when original-graph
+      (hash-put! graphs (.ref context-value 'selected) (.ref original-graph 'selected-graph)))
     (def (check-current!)
       (unless ((.ref context-value 'current?) generation-value)
         (set! failed? #t)
@@ -185,9 +200,13 @@
                                (map (lambda (alias)
                                       (cons alias (.ref (.ref (.ref records alias) 'provider) 'scope)))
                                     (.all-slots records))))
-                    (scope-value (bind-exports ((.ref baseline 'link) bindings) baseline id selection-value))
+                    (scope-value (observe-link-stage (list 'scope-factory id)
+                                   (lambda ()
+                                     (bind-exports ((.ref baseline 'link) bindings) baseline id selection-value))))
                     (scope-evidence-value
-                     (admit-module-value! (.ref baseline 'scope-contract) scope-value context-value))
+                     (observe-link-stage (list 'scope-admission id)
+                       (lambda ()
+                         (admit-module-value! (.ref baseline 'scope-contract) scope-value context-value))))
                     (record (.o identity: id generation: generation-value source: source-value
                                 publication: publication-value publication-evidence: publication-evidence-value
                                 dependency-records: records scope: scope-value scope-evidence: scope-evidence-value)))
@@ -201,8 +220,12 @@
        (lambda ()
          ;; Auto discovery adds only this demand root; selected init roots still
          ;; participate in the same admission, conflict and ordering policy.
-         (let (roots (.ref context-value 'selected))
-           (resolve-selection-graph (if (memq id roots) roots (append roots (list id)))))
+         (let* ((roots (.ref context-value 'selected))
+                (demand (if (memq id roots) roots (append roots (list id)))))
+           ;; An existing Graph needs no traversal here: only this private
+           ;; lookup precedes link's fresh eligibility/source guard. A new
+           ;; demand still runs the full resolver and its post-author guard.
+           (unless (hash-key? graphs demand) (resolve-selection-graph demand)))
          (link id '()))))
     (def (prepare id)
       (with-catch
@@ -213,10 +236,22 @@
                (if (hash-key? prepared id) (hash-ref prepared id)
                  (let* ((published (publication/eligible id))
                         (source-value (.ref published 'source))
-                        (related (if (.slot? context-value 'publication-inputs)
-                                   ((.ref context-value 'publication-inputs) source-value) '()))
-                        (value (.+ (poo-flow-prepare-module-publication source-value admit-context: current!)
-                                   (.o generation: generation-value source-dependencies: related))))
+                        (base (if (.slot? context-value 'publication-preparation)
+                                ((.ref context-value 'publication-preparation) source-value)
+                                (poo-flow-prepare-module-publication source-value)))
+                        (related (if (.slot? context-value 'publication-preparation)
+                                   (.ref base 'source-dependencies)
+                                   (if (.slot? context-value 'publication-inputs)
+                                     ((.ref context-value 'publication-inputs) source-value) '())))
+                        (value (.+ base
+                                   (.o generation: generation-value source-dependencies: related
+                                       admit-current:
+                                       (lambda ()
+                                         (call-with-module-source-read-cache
+                                           (lambda ()
+                                             (current!)
+                                             ((.ref base 'admit-current))
+                                             (current!))))))))
                    (unless (eq? id (.ref value 'identity))
                      (error "prepared publication source owner mismatch" id value))
                    (hash-put! prepared id value) value)))
@@ -244,16 +279,20 @@
         prepare-publication: prepare
         .selected-record:
         (lambda (owner)
-          (current!)
-          (let (graph (resolve-selection-graph (.ref context-value 'selected)))
+          ;; Private Graph/member lookups precede link's fresh eligibility
+          ;; guard. New roots still require the resolver's full admission.
+          (let* ((roots (.ref context-value 'selected))
+                 (graph (if (hash-key? graphs roots) (hash-ref graphs roots)
+                          (resolve-selection-graph roots))))
             (unless (memq owner (.ref graph 'module-order))
               (error "admission owner is outside selected Graph" owner))
-            (let (record (link owner '())) (current!) record)))
+            (link owner '())))
         .with-packages:
         (lambda (package-result)
           (unless (eq? (.ref package-result 'build-graph) build-graph)
             (error "realized packages belong to a different selected Graph"))
-          ((.ref package-result 'admit-current))
+          (observe-link-stage 'package-handoff
+            (lambda () ((.ref package-result 'admit-current))))
           ;; Realization changes dependency scopes, never the selected source
           ;; publication identities already retained by the build Graph.
           (link-module-context context-value package-result build-graph module-view

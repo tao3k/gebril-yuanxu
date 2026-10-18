@@ -6,15 +6,26 @@
 ;;; A POO policy around native std/test cases.  This does not own test
 ;;; discovery, assertion semantics, or the gxtest runner.
 (import (only-in :std/test test-case)
-        (only-in :clan/poo/object .call .o .ref .slot? object?)
-        (only-in :core/observability/debug
+        (only-in :core/ops/progress call-with-execution-progress execution-progress!
+                 execution-idle-seconds execution-total-seconds)
+        (only-in :clan/poo/object .call .o .cc .ref .slot? object?)
+        (only-in :gerbil/expander core-resolve-identifier core-context-root
+                 feature-binding? current-expander-context make-top-context eval-syntax)
+        (only-in :core/observability/output poo-flow-write-observation-line!)
+        (only-in :core/observability/memory
                  poo-flow-debug-memory-policy
+                 poo-flow-debug-allocation-current?
+                 poo-flow-debug-cpu-microseconds
+                 poo-flow-debug-memory-snapshot poo-flow-debug-memory-checkpoint
                  call-with-poo-flow-debug-memory-case-watchdog))
 
 (export poo-flow-testing-case-profile-prototype
         poo-flow-testing-case-profile?
         poo-flow-default-testing-case-profile
         poo-flow-current-testing-case-profile
+        poo-flow-selected-testing-case-profile
+        poo-flow-test-checkpoint
+        poo-flow-test-observe
         poo-flow-test-case
         poo-flow-test-case/with)
 
@@ -26,12 +37,14 @@
 (def poo-flow-testing-case-profile-prototype
   (.o (testing-case-profile? #t)
       (identity 'testing/default-case)
-      (heap-limit-bytes 1073741824)
-      (live-growth-limit-bytes 536870912)
+      (heap-limit-bytes 2147483648)
+      ;; Keep the existing half-budget growth policy when the heap is refined.
+      (live-growth-limit-bytes (quotient heap-limit-bytes 2))
       (sample-interval-milliseconds 10)
       (collect-before-sample? #f)
       (fail-closed? #t)
-      (max-duration-milliseconds 60000)
+      (max-duration-milliseconds (* 1000 execution-total-seconds))
+      (max-idle-milliseconds (* 1000 execution-idle-seconds))
       (emit? #f)
       .run: (lambda (self description thunk)
               (let (problem (poo-flow-testing-case-profile-problem self))
@@ -40,7 +53,7 @@
                          problem)))
               (unless (and (string? description) (procedure? thunk))
                 (error "invalid POO Flow testing Case" description thunk))
-              (call-with-poo-flow-debug-memory-case-watchdog
+              (def policy
                (poo-flow-debug-memory-policy
                 (.ref self 'identity)
                 heap-limit-bytes: (.ref self 'heap-limit-bytes)
@@ -50,12 +63,90 @@
                 (.ref self 'sample-interval-milliseconds)
                 collect-before-sample?:
                 (.ref self 'collect-before-sample?)
-                fail-closed?: (.ref self 'fail-closed?))
-               (string->symbol description)
-               thunk
-               emit?: (.ref self 'emit?)
-               max-duration-milliseconds:
-               (.ref self 'max-duration-milliseconds)))))
+                fail-closed?: (.ref self 'fail-closed?)))
+              ;; Runtime phase observations belong to this Case invocation.
+              ;; The default is inert. Emission uses the same policy, samples
+              ;; and receipt Contract as the existing watchdog, not a sampler.
+              (def observing? (.ref self 'emit?))
+              (def baseline
+                (and observing? (poo-flow-debug-memory-snapshot 'case-entry)))
+              (def started (and observing? (current-jiffy)))
+              (def started-cpu
+                (and observing? (poo-flow-debug-cpu-microseconds)))
+              (def counts (and observing? (make-hash-table-eq)))
+              (def allocation-previous #f)
+              (def allocation-current? #t)
+              (def (observe key amount)
+                (unless (and (symbol? key) (exact-integer? amount) (>= amount 0))
+                  (error "test work observation requires a symbol and natural count"))
+                (when (and (not (hash-key? counts key)) (>= (hash-length counts) 64))
+                  (error "test work observation exceeded its bounded categories"))
+                (let (next (+ (or (hash-get counts key) 0) amount))
+                  (hash-put! counts key next) next))
+              (def (observed-checkpoint phase)
+                (def checkpoint-started (current-jiffy))
+                (def checkpoint-cpu (poo-flow-debug-cpu-microseconds))
+                (let (receipt (poo-flow-debug-memory-checkpoint
+                                policy baseline phase emit?: #t))
+                  (poo-flow-write-observation-line!
+                    "test-phase %s elapsed-ms=%s cpu-ms=%s process-cpu-ms=%s" phase
+                    (quotient (* (- (current-jiffy) started) 1000)
+                              (jiffies-per-second))
+                    (quotient (- (poo-flow-debug-cpu-microseconds) started-cpu) 1000)
+                    ;; Includes native source imports before the Case begins.
+                    ;; This is the existing SDK process counter, not a probe or
+                    ;; a claim that parent and worker CPU clocks share an epoch.
+                    (quotient (poo-flow-debug-cpu-microseconds) 1000))
+                  (def allocated (.ref (.ref receipt 'after) 'allocated-bytes))
+                  (set! allocation-current?
+                    (poo-flow-debug-allocation-current? allocation-current?
+                      (or allocation-previous (.ref (.ref receipt 'before) 'allocated-bytes))
+                      allocated))
+                  (set! allocation-previous allocated)
+                  (poo-flow-write-observation-line!
+                    "test-work phase=%s allocation-current?=%s counts=%s"
+                    phase allocation-current? (hash->list counts))
+                  ;; Attribute explicit receipt construction/output separately
+                  ;; from domain work. Scalar source-event accounting and the
+                  ;; watchdog remain outside this deliberately narrow measure.
+                  (observe 'checkpoint-microseconds
+                    (quotient (* (- (current-jiffy) checkpoint-started) 1000000)
+                              (jiffies-per-second)))
+                  (observe 'checkpoint-cpu-microseconds
+                    (- (poo-flow-debug-cpu-microseconds) checkpoint-cpu))
+                  receipt))
+              (parameterize ((current-case-checkpoint (if counts observed-checkpoint void))
+                             (current-case-observer (and counts observe)))
+                (dynamic-wind
+                  void
+                  (lambda ()
+                    (call-with-execution-progress
+                      (.ref self 'max-idle-milliseconds)
+                      (.ref self 'max-duration-milliseconds)
+                      (lambda (_progress)
+                        (call-with-poo-flow-debug-memory-case-watchdog
+                          policy (string->symbol description) thunk
+                          emit?: (.ref self 'emit?)
+                          max-duration-milliseconds:
+                          (.ref self 'max-duration-milliseconds)))))
+                  (lambda ()
+                    (when counts
+                      (poo-flow-write-observation-line!
+                        "test-work case=%s allocation-current?=%s final-counts=%s"
+                        description allocation-current? (hash->list counts)))))))))
+
+(def current-case-checkpoint (make-parameter void))
+(def current-case-observer (make-parameter #f))
+(def (poo-flow-test-observe key (amount 1))
+  ;; Only scalar totals escape into a Case-owned table. No source context,
+  ;; syntax, candidate object or callback result becomes an observation root.
+  (let (observe (current-case-observer))
+    (if observe (observe key amount) 0)))
+(def (poo-flow-test-checkpoint phase)
+  (unless (symbol? phase) (error "test checkpoint requires a phase symbol" phase))
+  ;; A completed named boundary counts once, even when emission is disabled.
+  (execution-progress! (list 'checkpoint phase) 1)
+  ((current-case-checkpoint) phase))
 
 (def (poo-flow-testing-case-profile-problem value)
   (cond
@@ -91,9 +182,16 @@
         (not (exact-integer? (.ref value 'max-duration-milliseconds)))
         (<= (.ref value 'max-duration-milliseconds) 0))
     'invalid-duration)
+   ((or (not (.slot? value 'max-idle-milliseconds))
+        (not (exact-integer? (.ref value 'max-idle-milliseconds)))
+        (<= (.ref value 'max-idle-milliseconds) 0))
+    'invalid-idle-duration)
    ((or (not (.slot? value 'emit?))
         (not (boolean? (.ref value 'emit?))))
     'invalid-emission)
+   ((and (.slot? value 'trace-enabled?)
+         (not (boolean? (.ref value 'trace-enabled?))))
+    'invalid-trace)
    ((or (not (.slot? value '.run))
         (not (procedure? (.ref value '.run))))
     'missing-run-slot)
@@ -108,19 +206,40 @@
 (def poo-flow-current-testing-case-profile
   (make-parameter poo-flow-default-testing-case-profile))
 
+;; The native harness binds -D features in its root before importing tests.
+;; Resolve at execution time, including for compiled test modules. A lexical
+;; cond-expand here would freeze the build process's observation decision.
+(def module-observation-profile
+  (delay
+    ;; Capture native harness features before entering the private import frame.
+    (let (trace? (feature-binding?
+                  (core-resolve-identifier 'poo-flow-module-test-trace 0 (core-context-root))))
+      (parameterize ((current-expander-context (make-top-context)))
+        (eval-syntax '(import :core/module-system/building/test-observation))
+        (.cc (eval-syntax 'ModuleTestingProfile.) 'emit? #t 'trace-enabled? trace?)))))
+(def (poo-flow-selected-testing-case-profile)
+  (let (profile (poo-flow-current-testing-case-profile))
+    (if (and (eq? profile poo-flow-default-testing-case-profile)
+             (feature-binding?
+               (core-resolve-identifier 'poo-flow-module-test-observation
+                                        0 (core-context-root))))
+      (force module-observation-profile)
+      profile)))
+
 ;;; Hygienic syntax projects directly to the upstream test-case macro.  The
 ;;; native harness still registers and reports the resulting TestCase.
 (defrules poo-flow-test-case ()
   ((_ description body rest ...)
    (poo-flow-test-case/with
-    (poo-flow-current-testing-case-profile)
+    (poo-flow-selected-testing-case-profile)
     description body rest ...)))
 
 (defrules poo-flow-test-case/with ()
   ((_ profile description body rest ...)
    (test-case description
-     (call-with-values
-      (lambda ()
-        (.call profile .run profile description
-               (lambda () body rest ...)))
-      (lambda (value receipt) value)))))
+     (let (active-profile profile)
+       (call-with-values
+        (lambda ()
+          (.call active-profile .run active-profile description
+                 (lambda () body rest ...)))
+        (lambda (value receipt) value))))))

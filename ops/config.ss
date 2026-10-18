@@ -5,4 +5,5 @@
 (export Config)
 ;; Inert operational defaults; a command is supplied by the caller.
 (def Config
-  (.o directory: #f environment: (.o) timeout: #f log: #f check-status: #t))
+  (.o directory: #f environment: (.o) timeout: #f idle-timeout: #f
+      progress: #f log: #f check-status: #t))

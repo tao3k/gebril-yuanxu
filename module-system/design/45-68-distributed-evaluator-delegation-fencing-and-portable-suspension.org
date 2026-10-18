@@ -5,6 +5,12 @@
 #+title: Distributed Evaluator Delegation, Fencing, and Portable Suspension
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted execution protocol for evaluating pure POO
@@ -86,22 +92,22 @@ flowchart LR
 
 - [X] =pureDemandEnvelopeCarriesNoActionAuthority=
 - [X] =pureDemandEnvelopeCarriesPurityEvidence=
-- [X] =currentWorkerResultMayEnterLocalAdmission=
-- [X] =staleFenceResultFailsClosed=
-- [X] =revokedFenceResultFailsClosed=
-- [X] =suspendedResultDoesNotEnterAdmission=
-- [X] =workerResultNeverPublishesDirectly=
-- [X] =staleFencePreventsFenceChecks=
-- [X] =revokedFencePreventsFenceChecks=
+- [ ] =currentWorkerResultMayEnterLocalAdmission=
+- [ ] =staleFenceResultFailsClosed=
+- [ ] =revokedFenceResultFailsClosed=
+- [ ] =suspendedResultDoesNotEnterAdmission=
+- [ ] =workerResultNeverPublishesDirectly=
+- [ ] =staleFencePreventsFenceChecks=
+- [ ] =revokedFencePreventsFenceChecks=
 - [X] =portableSuspensionIsNotRawVmContinuation=
 - [X] =portableSuspensionCarriesNoActionAuthority=
 - [X] =portableSuspensionCarriesResumableData=
-- [X] =changedDemandPreventsResume=
-- [X] =changedObservationCutPreventsResume=
-- [X] =changedPolicyPreventsResume=
-- [X] =staleResumeFencePreventsResume=
+- [ ] =changedDemandPreventsResume=
+- [ ] =changedObservationCutPreventsResume=
+- [ ] =changedPolicyPreventsResume=
+- [ ] =staleResumeFencePreventsResume=
 - [X] =coordinatorCommitIsSinglePublication=
-- [X] =coordinatorCandidateCarriesIndependentLocalChecks=
+- [ ] =coordinatorCandidateCarriesIndependentLocalChecks=
 - [X] =coordinatorCandidateCarriesCurrentFence=
 - [X] =coordinatorCandidateCarriesNonrevokedFence=
 - [ ] Project delegation envelopes and receipts through native =gerbil-poo=.

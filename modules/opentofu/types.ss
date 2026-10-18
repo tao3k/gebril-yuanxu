@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import :clan/poo/object
+        (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/mop define-type Type.)
         (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
         (only-in :core/modules/nix/types NixSourceContract NixFlakeSourceContract NixScopeContract)
@@ -96,6 +97,10 @@
     (lambda (value)
       (and (object? value) (.slot? value 'artifact) (.slot? value 'source)
            (or (not (.get value artifact)) (string? (.get value artifact)))
+           (or (not (.slot? value 'selection-input)) (not (.get value selection-input))
+               (and (symbol? (.get value selection-input))
+                    (pregexp-match "^[A-Za-z][A-Za-z0-9_-]*$"
+                                   (symbol->string (.get value selection-input)))))
            (let (source (.get value source))
              (or (not source)
                  (and (object? source) (.slot? source '.prepare)

@@ -16,10 +16,18 @@
   (def phase (make-parameter #f))
   (def (context!)
     (if (phase) (.get (phase) checked) (context-current!)))
-  (let* ((prepared (poo-flow-prepare-module-build-source path context!))
-         (related (map (lambda (file) (poo-flow-prepare-module-build-source file context!))
-                    (filter (lambda (file) (and (not (equal? path file))
-                                               (not (member (path-strip-directory file) '("interface.ss" "build.ss"))))) roles))))
+  ;; Preparing inert role/header observations has no native expansion or
+  ;; initialization. Share this ONE source-only window, then close it before
+  ;; module-prepared-source-binding performs the native import below.
+  (let-values (((prepared related)
+                (call-with-module-source-read-cache
+                  (lambda ()
+                    (parameterize ((phase (.o checked: (context-current!))))
+                      (values
+                        (poo-flow-prepare-module-build-source path context!)
+                        (map (lambda (file) (poo-flow-prepare-module-build-source file context!))
+                          (filter (lambda (file) (and (not (equal? path file))
+                                      (not (member (path-strip-directory file) '("interface.ss" "build.ss"))))) roles))))))))
     (def (current!)
       (call-with-module-source-read-cache
         (lambda ()

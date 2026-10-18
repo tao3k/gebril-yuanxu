@@ -5,6 +5,12 @@
 #+title: Principal and Key Lifecycle, Revocation, and Long-Term Verification
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted cryptographic identity, key rotation, revocation,
@@ -88,10 +94,10 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =activeKeyMayAuthorizeNewSignature=
-- [X] =expiredKeyFailsClosedForNewSignature=
-- [X] =revokedKeyFailsClosedForNewSignature=
-- [X] =activeKeyPossessionIsNotGovernanceAuthority=
+- [ ] =activeKeyMayAuthorizeNewSignature=
+- [ ] =expiredKeyFailsClosedForNewSignature=
+- [ ] =revokedKeyFailsClosedForNewSignature=
+- [ ] =activeKeyPossessionIsNotGovernanceAuthority=
 - [X] =keyUseCarriesAllBindingChecks=
 - [X] =rotationChangesKeyIdentity=
 - [X] =rotationChangesBindingIdentity=

@@ -2,309 +2,71 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-import PooFlowCoreProof.PooClos.Refinement
-
 namespace PooFlowCoreProof.ProfileComposition.BundleIdentity
 
-/-!
-The stable identity boundary for a physical `ProfileBundle`.
+/-! Projections of `profile-bundle.ss` selection keys and duplicate checks.
+Native object reference identity is supplied by the projection, not inferred
+from content, a digest, a lexical alias or a caller's injectivity proposition. -/
+inductive SelectionKey where
+  | direct (profile : String)
+  | selected (moduleDefinition instanceName profile : String)
+  deriving DecidableEq, Repr
 
-This model deliberately keeps the digest implementation abstract.  The proof
-surface fixes the semantic and activation preimages, proves the intended
-normalization laws, and makes collision rejection an admission obligation.  It
-does not assume that an arbitrary finite digest is injective.
--/
+inductive Binding where
+  | direct (profile : String) (objectReference : Nat)
+  | selected (moduleDefinition instanceName profile revision generation : String)
+  deriving DecidableEq, Repr
 
-structure BoundSemanticIdentity (Lexical Semantic : Type) where
-  lexical : Lexical
-  semantic : Semantic
-deriving Repr
+def Binding.key : Binding → SelectionKey
+  | .direct profile _ => .direct profile
+  | .selected moduleName instanceName profile _ _ => .selected moduleName instanceName profile
 
-def renameBinding
-    {Lexical Semantic : Type}
-    (binding : BoundSemanticIdentity Lexical Semantic)
-    (lexical : Lexical) :
-    BoundSemanticIdentity Lexical Semantic :=
-  { binding with lexical := lexical }
+def compatible : Binding → Binding → Bool
+  | .direct _ before, .direct _ after => before == after
+  | .selected _ _ _ revision generation, .selected _ _ _ nextRevision nextGeneration =>
+      revision == nextRevision && generation == nextGeneration
+  | _, _ => false
 
-theorem renameBinding_preserves_semantic
-    {Lexical Semantic : Type}
-    (binding : BoundSemanticIdentity Lexical Semantic)
-    (lexical : Lexical) :
-    (renameBinding binding lexical).semantic = binding.semantic := by
-  rfl
+inductive Conflict where
+  | selectionRevision
+  | distinctDirectValues
+  deriving DecidableEq, Repr
 
-structure SemanticBundleInputs
-    (Identity Revision Capability : Type) where
-  moduleDefinition : Identity
-  moduleInstance : Identity
-  orderedProfileRevisions : List Revision
-  reachableImportRevisions : List Revision
-  effectiveCapabilityContract : Capability
-deriving Repr
+/-- The first selection keeps its position and evidence. Repeats either agree
+with that exact selection or fail; they never silently replace it. -/
+def insert (bindings : List Binding) (candidate : Binding) : Except Conflict (List Binding) :=
+  match bindings.find? (fun previous => previous.key == candidate.key) with
+  | none => .ok (bindings ++ [candidate])
+  | some previous =>
+      if compatible previous candidate then .ok bindings
+      else .error (match candidate with
+        | .direct .. => .distinctDirectValues
+        | .selected .. => .selectionRevision)
 
-structure ImportNormalizer (Revision : Type) where
-  normalize : List Revision → List Revision
-  permutationInvariant :
-    ∀ {left right : List Revision},
-      left.Perm right → normalize left = normalize right
+theorem selectedRepeatIsIdempotent (moduleName instanceName profile revision generation : String) :
+    let binding := Binding.selected moduleName instanceName profile revision generation
+    insert [binding] binding = .ok [binding] := by
+  simp [insert, Binding.key, compatible]
 
-structure SemanticBundlePreimage
-    (Identity Revision Capability : Type) where
-  domainTag : String
-  moduleDefinition : Identity
-  moduleInstance : Identity
-  orderedProfileRevisions : List Revision
-  normalizedImportRevisions : List Revision
-  effectiveCapabilityContract : Capability
-deriving Repr
+theorem conflictingRevisionRejected (moduleName instanceName profile before after generation : String)
+    (changed : before ≠ after) :
+    insert [.selected moduleName instanceName profile before generation]
+      (.selected moduleName instanceName profile after generation) = .error .selectionRevision := by
+  simp [insert, Binding.key, compatible, changed]
 
-def profileBundleDomainTag : String :=
-  "poo-flow.profile-bundle.semantic.v1"
+theorem distinctDirectReferencesRejected (profile : String) (before after : Nat)
+    (different : before ≠ after) :
+    insert [.direct profile before] (.direct profile after) = .error .distinctDirectValues := by
+  simp [insert, Binding.key, compatible, different]
 
-def semanticBundlePreimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability) :
-    SemanticBundlePreimage Identity Revision Capability :=
-  { domainTag := profileBundleDomainTag
-    moduleDefinition := inputs.moduleDefinition
-    moduleInstance := inputs.moduleInstance
-    orderedProfileRevisions := inputs.orderedProfileRevisions
-    normalizedImportRevisions :=
-      normalizer.normalize inputs.reachableImportRevisions
-    effectiveCapabilityContract := inputs.effectiveCapabilityContract }
-
-structure ActivationBundlePreimage
-    (SemanticIdentity Generation : Type) where
-  domainTag : String
-  semanticIdentity : SemanticIdentity
-  generationIdentity : Generation
-deriving Repr
-
-def profileBundleActivationDomainTag : String :=
-  "poo-flow.profile-bundle.activation.v1"
-
-def activationBundlePreimage
-    {SemanticIdentity Generation : Type}
-    (semanticIdentity : SemanticIdentity)
-    (generationIdentity : Generation) :
-    ActivationBundlePreimage SemanticIdentity Generation :=
-  { domainTag := profileBundleActivationDomainTag
-    semanticIdentity := semanticIdentity
-    generationIdentity := generationIdentity }
-
-structure BundleDigest
-    (Identity Revision Capability Generation Digest : Type) where
-  semantic :
-    SemanticBundlePreimage Identity Revision Capability → Digest
-  activation :
-    ActivationBundlePreimage Digest Generation → Digest
-
-def semanticBundleIdentity
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability) :
-    Digest :=
-  digest.semantic (semanticBundlePreimage normalizer inputs)
-
-def activationBundleIdentity
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (semanticIdentity : Digest)
-    (generationIdentity : Generation) :
-    Digest :=
-  digest.activation
-    (activationBundlePreimage semanticIdentity generationIdentity)
-
-def semanticBundleIdentityAtGeneration
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability)
-    (_generationIdentity : Generation) :
-    Digest :=
-  semanticBundleIdentity digest normalizer inputs
-
-theorem semantic_preimage_has_fixed_domain
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability) :
-    (semanticBundlePreimage normalizer inputs).domainTag =
-      profileBundleDomainTag := by
-  rfl
-
-theorem semantic_preimage_retains_declared_profile_order
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability) :
-    (semanticBundlePreimage normalizer inputs).orderedProfileRevisions =
-      inputs.orderedProfileRevisions := by
-  rfl
-
-theorem semantic_preimage_includes_effective_capability
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability) :
-    (semanticBundlePreimage normalizer inputs).effectiveCapabilityContract =
-      inputs.effectiveCapabilityContract := by
-  rfl
-
-theorem import_permutation_preserves_semantic_preimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability)
-    {left right : List Revision}
-    (permutation : left.Perm right) :
-    semanticBundlePreimage normalizer
-        { inputs with reachableImportRevisions := left } =
-      semanticBundlePreimage normalizer
-        { inputs with reachableImportRevisions := right } := by
-  simp only [semanticBundlePreimage]
-  rw [normalizer.permutationInvariant permutation]
-
-theorem import_permutation_preserves_semantic_identity
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability)
-    {left right : List Revision}
-    (permutation : left.Perm right) :
-    semanticBundleIdentity digest normalizer
-        { inputs with reachableImportRevisions := left } =
-      semanticBundleIdentity digest normalizer
-        { inputs with reachableImportRevisions := right } := by
-  unfold semanticBundleIdentity
-  rw [import_permutation_preserves_semantic_preimage
-    normalizer inputs permutation]
-
-theorem module_definition_change_changes_semantic_preimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (left right : SemanticBundleInputs Identity Revision Capability)
-    (changed : left.moduleDefinition ≠ right.moduleDefinition) :
-    semanticBundlePreimage normalizer left ≠
-      semanticBundlePreimage normalizer right := by
-  intro equalPreimages
-  apply changed
-  exact congrArg SemanticBundlePreimage.moduleDefinition equalPreimages
-
-theorem module_instance_change_changes_semantic_preimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (left right : SemanticBundleInputs Identity Revision Capability)
-    (changed : left.moduleInstance ≠ right.moduleInstance) :
-    semanticBundlePreimage normalizer left ≠
-      semanticBundlePreimage normalizer right := by
-  intro equalPreimages
-  apply changed
-  exact congrArg SemanticBundlePreimage.moduleInstance equalPreimages
-
-theorem profile_order_change_changes_semantic_preimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (left right : SemanticBundleInputs Identity Revision Capability)
-    (changed :
-      left.orderedProfileRevisions ≠ right.orderedProfileRevisions) :
-    semanticBundlePreimage normalizer left ≠
-      semanticBundlePreimage normalizer right := by
-  intro equalPreimages
-  apply changed
-  exact congrArg
-    SemanticBundlePreimage.orderedProfileRevisions
-    equalPreimages
-
-theorem capability_change_changes_semantic_preimage
-    {Identity Revision Capability : Type}
-    (normalizer : ImportNormalizer Revision)
-    (left right : SemanticBundleInputs Identity Revision Capability)
-    (changed :
-      left.effectiveCapabilityContract ≠
-        right.effectiveCapabilityContract) :
-    semanticBundlePreimage normalizer left ≠
-      semanticBundlePreimage normalizer right := by
-  intro equalPreimages
-  apply changed
-  exact congrArg
-    SemanticBundlePreimage.effectiveCapabilityContract
-    equalPreimages
-
-theorem semantic_identity_is_generation_independent
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (normalizer : ImportNormalizer Revision)
-    (inputs : SemanticBundleInputs Identity Revision Capability)
-    (leftGeneration rightGeneration : Generation) :
-    semanticBundleIdentityAtGeneration
-        digest normalizer inputs leftGeneration =
-      semanticBundleIdentityAtGeneration
-        digest normalizer inputs rightGeneration := by
-  rfl
-
-theorem activation_preimage_retains_semantic_identity
-    {SemanticIdentity Generation : Type}
-    (semanticIdentity : SemanticIdentity)
-    (generationIdentity : Generation) :
-    (activationBundlePreimage semanticIdentity generationIdentity).semanticIdentity =
-      semanticIdentity := by
-  rfl
-
-theorem activation_preimage_retains_generation
-    {SemanticIdentity Generation : Type}
-    (semanticIdentity : SemanticIdentity)
-    (generationIdentity : Generation) :
-    (activationBundlePreimage semanticIdentity generationIdentity).generationIdentity =
-      generationIdentity := by
-  rfl
-
-theorem distinct_generations_have_distinct_activation_identity
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (semanticIdentity : Digest)
-    (generationInjective :
-      Function.Injective
-        (fun generation =>
-          activationBundleIdentity digest semanticIdentity generation))
-    {leftGeneration rightGeneration : Generation}
-    (different : leftGeneration ≠ rightGeneration) :
-    activationBundleIdentity digest semanticIdentity leftGeneration ≠
-      activationBundleIdentity digest semanticIdentity rightGeneration := by
-  exact fun equalIdentity =>
-    different (generationInjective equalIdentity)
-
-def SemanticDigestCollision
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (left right :
-      SemanticBundlePreimage Identity Revision Capability) :
-    Prop :=
-  left ≠ right ∧ digest.semantic left = digest.semantic right
-
-def SemanticPairAdmitted
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (left right :
-      SemanticBundlePreimage Identity Revision Capability) :
-    Prop :=
-  ¬ SemanticDigestCollision digest left right
-
-theorem detected_semantic_collision_fails_closed
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    (left right :
-      SemanticBundlePreimage Identity Revision Capability)
-    (collision : SemanticDigestCollision digest left right) :
-    ¬ SemanticPairAdmitted digest left right := by
-  exact fun admitted => admitted collision
-
-theorem equal_semantic_preimages_have_equal_digests
-    {Identity Revision Capability Generation Digest : Type}
-    (digest : BundleDigest Identity Revision Capability Generation Digest)
-    {left right :
-      SemanticBundlePreimage Identity Revision Capability}
-    (equalPreimages : left = right) :
-    digest.semantic left = digest.semantic right := by
-  exact congrArg digest.semantic equalPreimages
+#guard match insert [.selected "M" "i" "P" "r1" "g1"] (.selected "M" "i" "P" "r1" "g2") with
+  | .error .selectionRevision => true
+  | _ => false
+#guard match insert [.direct "P" 1] (.direct "P" 2) with
+  | .error .distinctDirectValues => true
+  | _ => false
+#guard (insert [.selected "M" "left" "P" "r1" "g1"]
+  (.selected "M" "right" "P" "r1" "g1")).toOption ==
+  some [.selected "M" "left" "P" "r1" "g1", .selected "M" "right" "P" "r1" "g1"]
 
 end PooFlowCoreProof.ProfileComposition.BundleIdentity

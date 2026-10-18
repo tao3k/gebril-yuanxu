@@ -5,6 +5,12 @@
 #+title: Minimal User Composition and Three-Layer Extension Surface
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted public-interface projection for the POO module
@@ -82,7 +88,7 @@ flowchart TB
 
 - [X] =flatUserCompositionIsAdmitted=
 - [X] =nestedUserCompositionIsRejected=
-- [X] =clauseDslIsRejected=
+- [ ] =clauseDslIsRejected=
 - [X] =userCompositionEvaluatesExpressionOnce=
 - [X] =userCompositionBindingIsHygienic=
 - [X] =composeIsPure=

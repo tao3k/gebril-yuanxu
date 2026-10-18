@@ -5,6 +5,12 @@
 #+title: Graph-Wide Compatibility Closure and SCC Evidence
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted graph-wide compatibility closure semantics for
@@ -116,15 +122,15 @@ of converting missing evidence into a false violation or an unsafe proof.
 
 ** Proof obligations
 
-- [X] =pairwiseSummaryDoesNotAdmitGraphActivation=: pairwise checks cannot
+- [ ] =pairwiseSummaryDoesNotAdmitGraphActivation=: pairwise checks cannot
   authorize graph-wide activation.
-- [X] =violationFailsClosed= and =suspensionDoesNotAdmitGraphActivation=: only
+- [ ] =violationFailsClosed= and =suspensionDoesNotAdmitGraphActivation=: only
   a proof admits activation.
-- [X] =suspensionIsNotDefinitiveViolation=: incomplete evidence is not a proven
+- [ ] =suspensionIsNotDefinitiveViolation=: incomplete evidence is not a proven
   incompatibility.
-- [X] =exactCutProofAdmitsGraphActivation=: exact-cut proof is the sole admitted
+- [ ] =exactCutProofAdmitsGraphActivation=: exact-cut proof is the sole admitted
   outcome in this proof slice.
-- [X] =graphProofCarriesExactSemanticCut=: every proof carries the complete
+- [ ] =graphProofCarriesExactSemanticCut=: every proof carries the complete
   closure input.
 - [X] =graphProofCoversEverySCC=: every SCC has a closure witness.
 - [X] =sccClosureCoversEveryRequiredEdge=: every required SCC edge carries RFC

@@ -13,6 +13,9 @@
 (def (synthetic-source (guard void)) (.o spec: files admit-current: guard))
 (def testing-script-test
   (test-suite "Testing policy over Ops"
+    (test-case "child VM follows the default two-GiB Case policy"
+      (check-equal? (.get TestingScript. runtime-options)
+                    '("-:max-heap=2097152K,debug=q")))
     (test-case "completion must match the whole native harness and every input"
       (def result (receipt valid-output))
       (check-equal? (eq? (admit-testing-result result files) result) #t)

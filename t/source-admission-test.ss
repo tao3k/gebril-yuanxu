@@ -6,7 +6,7 @@
         (only-in :core/admission/source SourceAdmissionContract.)
         (only-in :core/configuration/diagnostics config-diagnostic-locator)
         (only-in :core/module-system/source/admission
-                 call-with-module-source-read-cache module-source-read)
+                 call-with-module-source-read-cache module-source-read module-source-admit-current!)
         (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture write-source)
         (only-in :core/observability/testing-fixture poo-flow-test-fixture)
         (only-in :core/observability/testing-case poo-flow-test-case))
@@ -29,10 +29,28 @@
 
 (def completed 0)
 (def (test-cleanup!)
-  (unless (= completed 5) (error "incomplete source admission controls" completed))
-  (displayln "SOURCE-ADMISSION: 5 cases completed"))
+  (unless (= completed 6) (error "incomplete source admission controls" completed))
+  (displayln "SOURCE-ADMISSION: 6 cases completed"))
 (def source-admission-test
   (test-suite "Source-bound native Contract admission"
+    (poo-flow-test-fixture "replaceable currentness callbacks cannot lend bytes across their effects"
+      (fixture DirectoryFixture)
+      (def path (path-expand "context.json" (.get fixture root)))
+      (write-source path "{}")
+      (def calls (vector 0))
+      (def contract (counted-contract calls))
+      ;; Deliberately effectful negative context. A method name does not certify
+      ;; purity; record an input, then edit it before returning to the adapter.
+      (def context
+        (.o admit-current:
+          (lambda ()
+            (module-source-admit-current! (list (cons path "{}")) "test context source changed")
+            (write-source path "{\"changed\":true}"))))
+      (def failure (with-catch values (cut .call contract .admit (.o) context)))
+      (check-equal? (Error? failure) #t)
+      (check-equal? (Error-message failure) "test context source changed")
+      (check-equal? (vector-ref calls 0) 1)
+      (set! completed (+ completed 1)))
     (poo-flow-test-case "inherited admission runs exactly once on each invocation"
       (def calls (vector 0))
       (def contract (counted-contract calls))

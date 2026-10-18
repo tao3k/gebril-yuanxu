@@ -5,6 +5,12 @@
 #+title: Admission, Fairness, Backpressure, and Scheduling Isolation
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted resource admission, fairness, and backpressure
@@ -84,21 +90,21 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =admittedDemandConsumesResources=
-- [X] =queuedDemandDoesNotConsumeExecutionResources=
-- [X] =suspendedDemandDoesNotConsumeExecutionResources=
-- [X] =rejectedDemandDoesNotConsumeExecutionResources=
-- [X] =queueIsExplicitBackpressure=
-- [X] =suspensionIsExplicitBackpressure=
-- [X] =rejectionIsExplicitBackpressure=
+- [ ] =admittedDemandConsumesResources=
+- [ ] =queuedDemandDoesNotConsumeExecutionResources=
+- [ ] =suspendedDemandDoesNotConsumeExecutionResources=
+- [ ] =rejectedDemandDoesNotConsumeExecutionResources=
+- [ ] =queueIsExplicitBackpressure=
+- [ ] =suspensionIsExplicitBackpressure=
+- [ ] =rejectionIsExplicitBackpressure=
 - [X] =hierarchicalAllocationConservesParentCapacity=
 - [X] =tenantConsumptionStaysWithinReservation=
 - [X] =admissionQueueIsBounded=
-- [X] =queuedOutcomeCarriesBackpressure=
-- [X] =fairnessRequiresEligibilityCompetitionAndProgress=
+- [ ] =queuedOutcomeCarriesBackpressure=
+- [ ] =fairnessRequiresEligibilityCompetitionAndProgress=
 - [X] =schedulingCannotChangeSemanticResolution=
 - [X] =slotAndRuntimePriorityHaveDistinctOwners=
-- [X] =backpressureSuspensionCarriesPortableState=
+- [ ] =backpressureSuspensionCarriesPortableState=
 - [X] =backpressureSuspensionCarriesNoActionAuthority=
 - [X] =resourceReleaseIsObservable=
 - [X] =releasedResourceIsNotStillConsumed=

@@ -1,7 +1,8 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object
+(import :std/test :core/object-syntax/path-slots
+        (only-in :clan/poo/object .get .call .ref/cached)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :core/modules/funflow/objects Job. Task.)
         (only-in :core/observability/testing-fixture poo-flow-test-fixture))
@@ -19,7 +20,7 @@
     (poo-flow-test-fixture "cached parent graph keeps child values and unused tasks lazy" (workspace Workspace)
       (def parent (.get Build graph))
       (.def (Release @ Build)
-        tasks: =>.+ (.o build: =>.+ (.o command: '("printf" "release"))))
+        tasks.build.command: '("printf" "release"))
       (check-equal? (.get (.call Release .run workspace) steps build output) "release")
       (check-equal? (.ref/cached (.get Release tasks) 'unused) #f)
       (check-equal? (.get Build tasks build command) '("printf" "build")))))

@@ -6,6 +6,12 @@
 #+subtitle: Immutable generations, versioned selection, publication barriers, conditional updates, and preserved history
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * RFC status
 
 - Status :: Accepted design
@@ -115,22 +121,22 @@ the same conditional commit boundary.
 
 ** Proof obligations
 
-- [X] =cachedHeadDoesNotAuthorizePublication= and
+- [ ] =cachedHeadDoesNotAuthorizePublication= and
   =cachedHeadDoesNotAuthorizeReversion=: remembered state is not current
   publication evidence.
-- [X] =observationAloneDoesNotAuthorizeMutation=: observation establishes the
+- [ ] =observationAloneDoesNotAuthorizeMutation=: observation establishes the
   precondition, not mutation authority.
-- [X] =authorizedIntentAloneDoesNotAuthorizeMutation=: authorization cannot
+- [ ] =authorizedIntentAloneDoesNotAuthorizeMutation=: authorization cannot
   bypass the runtime conditional commit.
-- [X] =conditionalCommitAuthorizesMutation=: only the conditional commit
+- [ ] =conditionalCommitAuthorizesMutation=: only the conditional commit
   evidence kind authorizes the head mutation in this proof slice.
 - [X] =preconditionCarriesCurrentVersionEvidence=: every publication
   precondition binds the authoritative observed head version.
-- [X] =publicationRequiresConditionalRuntimeCommit=: every admitted
+- [ ] =publicationRequiresConditionalRuntimeCommit=: every admitted
   publication or reversion carries its conditional commit witness.
-- [X] =staleHeadVersionCannotCommit= and =staleHeadFenceCannotCommit=: a
+- [ ] =staleHeadVersionCannotCommit= and =staleHeadFenceCannotCommit=: a
   concurrent writer invalidates stale publication attempts.
-- [X] =wrongHeadScopeCannotCommit=: a precondition from another scope cannot
+- [ ] =wrongHeadScopeCannotCommit=: a precondition from another scope cannot
   update this active head.
 - [X] =reversionDoesNotEraseGenerationHistory=: reversion changes selection
   without deleting the known immutable generations.

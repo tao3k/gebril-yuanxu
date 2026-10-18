@@ -5,6 +5,12 @@
 #+title: Explicit Temporal Observations, Clock Domains, and Replay
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted temporal semantics for POO Flow evaluation,
@@ -88,18 +94,18 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =explicitObservationAdmitsPureEvaluation=
-- [X] =missingObservationFailsClosed=
-- [X] =missingObservationRequiresSuspension=
-- [X] =implicitLiveTimeReadIsRejected=
+- [ ] =explicitObservationAdmitsPureEvaluation=
+- [ ] =missingObservationFailsClosed=
+- [ ] =missingObservationRequiresSuspension=
+- [ ] =implicitLiveTimeReadIsRejected=
 - [X] =pureEvaluationReadsNoLiveClock=
 - [X] =timeObservationCarriesImmutability=
-- [X] =wallClockDoesNotProveElapsedDuration=
-- [X] =monotonicClockSupportsElapsedDuration=
-- [X] =logicalVersionIsNotElapsedDuration=
-- [X] =unprovenCrossDomainComparisonFailsClosed=
-- [X] =sameDomainComparisonIsAdmitted=
-- [X] =explicitClockConversionIsAdmitted=
+- [ ] =wallClockDoesNotProveElapsedDuration=
+- [ ] =monotonicClockSupportsElapsedDuration=
+- [ ] =logicalVersionIsNotElapsedDuration=
+- [ ] =unprovenCrossDomainComparisonFailsClosed=
+- [ ] =sameDomainComparisonIsAdmitted=
+- [ ] =explicitClockConversionIsAdmitted=
 - [X] =conversionCarriesValidationEvidence=
 - [X] =replayWithSameObservationIsStable=
 - [X] =changedObservationCreatesNewEvaluationIdentity=

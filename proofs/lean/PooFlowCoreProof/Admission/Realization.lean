@@ -2,6 +2,9 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+import LeanPoo.Functional.DeclarativeMetadata
+import PooFlowCoreProof.Admission.Source
+
 namespace PooFlowCoreProof.Admission.Realization
 
 inductive Disposition where
@@ -10,57 +13,6 @@ inductive Disposition where
   | contextBound
   | suspendedOrUncommitted
 deriving Repr, DecidableEq
-
-structure AdmissionEvidence where
-  contentMatches : Prop
-  loweringMatches : Prop
-  dependencyMatches : Prop
-  policyMatches : Prop
-  portableValue : Prop
-  artifactVerified : Prop
-  noUnresolvedBarrier : Prop
-
-inductive Eligible : Disposition → AdmissionEvidence → Prop where
-  | pureValue
-      {evidence : AdmissionEvidence}
-      (content : evidence.contentMatches)
-      (lowering : evidence.loweringMatches)
-      (dependency : evidence.dependencyMatches)
-      (policy : evidence.policyMatches)
-      (portable : evidence.portableValue)
-      (clear : evidence.noUnresolvedBarrier) :
-      Eligible Disposition.pureValue evidence
-  | artifactBacked
-      {evidence : AdmissionEvidence}
-      (content : evidence.contentMatches)
-      (lowering : evidence.loweringMatches)
-      (dependency : evidence.dependencyMatches)
-      (policy : evidence.policyMatches)
-      (verified : evidence.artifactVerified)
-      (clear : evidence.noUnresolvedBarrier) :
-      Eligible Disposition.artifactBacked evidence
-
-theorem contextBoundNeverEligible
-    (evidence : AdmissionEvidence) :
-    ¬ Eligible Disposition.contextBound evidence := by
-  intro eligible
-  cases eligible
-
-theorem suspendedOrUncommittedNeverEligible
-    (evidence : AdmissionEvidence) :
-    ¬ Eligible Disposition.suspendedOrUncommitted evidence := by
-  intro eligible
-  cases eligible
-
-theorem eligibleDispositionIsPortable
-    {disposition : Disposition}
-    {evidence : AdmissionEvidence}
-    (eligible : Eligible disposition evidence) :
-    disposition = Disposition.pureValue ∨
-      disposition = Disposition.artifactBacked := by
-  cases eligible with
-  | pureValue => exact Or.inl rfl
-  | artifactBacked => exact Or.inr rfl
 
 inductive PortablePayload where
   | valueContent (contentIdentity : Nat)
@@ -101,60 +53,57 @@ inductive PayloadCompatible : Disposition → PortablePayload → Prop where
         Disposition.artifactBacked
         (PortablePayload.artifactReference artifactIdentity verifierEvidence)
 
-structure AdmissionResult where
-  disposition : Disposition
-  evidence : AdmissionEvidence
-  sourceRoot : Nat
-  receivingRoot : Nat
-  payload : PortablePayload
-  eligible : Eligible disposition evidence
-  payloadCompatible : PayloadCompatible disposition payload
-  rootsDistinct : sourceRoot ≠ receivingRoot
+/-! `ops/selected-packages.ss`: validation receipts are candidate-only. The
+returned package set must pass every package guard AND fresh source checks after
+all validators. Effects are represented by their actual final observations. -/
+open LeanPoo.Functional.DeclarativeMetadata
+open LeanPoo.Proof
+open PooFlowCoreProof.Admission.Source
 
-theorem admittedResultCannotBeContextBound
-    (result : AdmissionResult) :
-    result.disposition ≠ Disposition.contextBound := by
-  intro contextBound
-  have eligible := result.eligible
-  rw [contextBound] at eligible
-  exact contextBoundNeverEligible result.evidence eligible
+structure Observations where
+  sources : String → Option String
+  packages : String → Option String
 
-theorem admittedResultCannotBeSuspended
-    (result : AdmissionResult) :
-    result.disposition ≠ Disposition.suspendedOrUncommitted := by
-  intro suspended
-  have eligible := result.eligible
-  rw [suspended] at eligible
-  exact suspendedOrUncommittedNeverEligible result.evidence eligible
+structure Realized where
+  validators : List Bool
+  afterValidators : Observations
 
-theorem admittedPureValueCarriesValueContent
-    (result : AdmissionResult)
-    (pureValue : result.disposition = Disposition.pureValue) :
-    ∃ contentIdentity : Nat,
-      result.payload = PortablePayload.valueContent contentIdentity := by
-  have compatible := result.payloadCompatible
-  rw [pureValue] at compatible
-  cases payload : result.payload with
-  | valueContent contentIdentity =>
-      exact ⟨contentIdentity, rfl⟩
-  | artifactReference artifactIdentity verifierEvidence =>
-      rw [payload] at compatible
-      cases compatible
+def current (sources packages : List (String × String)) (observed : Observations) : Bool :=
+  checkSources sources observed.sources && checkSources packages observed.packages
 
-theorem admittedArtifactCarriesVerifiedReference
-    (result : AdmissionResult)
-    (artifactBacked :
-      result.disposition = Disposition.artifactBacked) :
-    ∃ artifactIdentity verifierEvidence : Nat,
-      result.payload =
-        PortablePayload.artifactReference artifactIdentity verifierEvidence := by
-  have compatible := result.payloadCompatible
-  rw [artifactBacked] at compatible
-  cases payload : result.payload with
-  | valueContent contentIdentity =>
-      rw [payload] at compatible
-      cases compatible
-  | artifactReference artifactIdentity verifierEvidence =>
-      exact ⟨artifactIdentity, verifierEvidence, rfl⟩
+def realizationCall (sources packages : List (String × String)) : Contract Unit Unit Realized where
+  input := ⟨"selected package request", fun _ => True, fun _ => inferInstance⟩
+  output := ⟨"all candidate admissions", fun result => result.validators.all id = true, fun _ => inferInstance⟩
+  meaning := fun _ _ result => current sources packages result.afterValidators = true
+  decide := fun _ _ _ => inferInstance
+  rule := .atom ()
 
+theorem returned_packages_are_current {State Error : Type} (sources packages : List (String × String))
+    (execute : Unit → Except Error (Realized × State))
+    (invocation : Invocation (realizationCall sources packages) execute ()) :
+    Certificate (sourceObject sources invocation.result.afterValidators.sources) ∧
+    Certificate (sourceObject packages invocation.result.afterValidators.packages) := by
+  have checked : current sources packages invocation.result.afterValidators = true := invocation.logic
+  obtain ⟨sourceCheck, packageCheck⟩ := Bool.and_eq_true_iff.mp checked
+  exact ⟨(checkSources_certifies _ _).mp sourceCheck, (checkSources_certifies _ _).mp packageCheck⟩
+
+theorem validator_package_drift_preserves_previous {State Error : Type}
+    (sources packages : List (String × String)) (old tentative : State) (result : Realized)
+    (execute : Unit → Except Error (Realized × State)) (called : execute () = .ok (result, tentative))
+    (validated : result.validators.all id = true) (package : String × String)
+    (selected : package ∈ packages) (drift : result.afterValidators.packages package.1 ≠ some package.2) :
+    (realizationCall sources packages).publish old execute () = (.error .logic, old) := by
+  have invalid : ¬ current sources packages result.afterValidators = true := by
+    intro checked
+    exact changedSourceCannotBeCertified _ _ package selected drift
+      ((checkSources_certifies _ _).mp (Bool.and_eq_true_iff.mp checked).2)
+  have refused := (realizationCall sources packages).invoke_logic execute () result tentative
+    trivial called validated invalid
+  apply (realizationCall sources packages).publish_refuses old execute () .logic
+  simp [Contract.wrap, refused, Except.map]
+
+#guard current [("config.ss", "v1")] [("provider", "digest-v1")]
+  ⟨fun _ => some "v1", fun _ => some "digest-v1"⟩
+#guard !current [("config.ss", "v1")] [("provider", "digest-v1")]
+  ⟨fun _ => some "v1", fun _ => some "digest-v2"⟩
 end PooFlowCoreProof.Admission.Realization

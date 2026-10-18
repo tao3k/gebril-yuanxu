@@ -116,6 +116,11 @@ Focused qualification on the declared Core dependency environment:
   child message, Schema upgrade, old evidence refusal and AWS validate passed.
 
 Each passing native gate required MODULE-OK, HARNESS-OK, final OK and exit zero.
+The historical Funflow filenames above have since moved under
+=t/Modules/funflow/=. Current module execution uses the automatically
+discovered =tests.qualification= projection; publication/dependency checks now
+share the init Graph in =t/module-testing-isolation-test.ss=. The earlier
+receipts are not re-labelled as measurements of that later selection entry.
 Earlier failed attempts exposed a test-side JSON representation error: current
 Gerbil read-json returns WAList, not HashTable. State inspection now uses waref;
 this was not repaired by changing provider output or weakening cleanup checks.

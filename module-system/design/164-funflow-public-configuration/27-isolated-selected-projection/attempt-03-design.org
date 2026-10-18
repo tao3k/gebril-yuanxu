@@ -266,7 +266,7 @@ plain .admit on an unprojected static descriptor does not gain this behavior.
 
 * Corresponding checked Lean properties
 
-[[file:../../../../../docs/packages/proofs/lean-poo/PooFlowCoreProof.ModuleSystem.Schema.Association/SelectedResponsibilities.lean][SelectedResponsibilities.lean]] models fixed ++ final-selected demand IDs.
+[[file:../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
 Contracts and candidates are resolved PER SLOT, so two Checks sharing one
 Contract still require two differently correlated receipts. A demand ID is
 scoped to its receiver/view, not a globally ambiguous Check name.

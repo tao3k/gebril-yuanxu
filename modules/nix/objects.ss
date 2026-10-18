@@ -65,6 +65,9 @@
 (.def (NixFlakeSource. source NixSource. config arguments)
   reference: #f
   attribute: #f
+  ;; Explicit local data inputs are hashed by Nix on every query. They are not
+  ;; Scheme argument/result caches and never permit implicit lock-file updates.
+  inputs: (.o)
   source-inputs: (poo-flow-core-nix-flake-source-inputs reference)
   .instantiate:
   (lambda ()
@@ -72,7 +75,8 @@
               (.call NixFlakeSourceContract .admit source #f))
       (error "invalid Nix Flake Source"))
     (module-source-admit-current! source-inputs)
-    (let (result (poo-flow-core-nix-flake-instantiate (.get config nix) reference attribute arguments))
+    (let (result (poo-flow-core-nix-flake-instantiate
+                   (.get config nix) reference attribute arguments inputs))
       (module-source-admit-current! source-inputs)
       result))
   .guard-form:
@@ -80,7 +84,8 @@
     `(poo-flow-core-nix-flake-admit-generation
        ,reference ,attribute ,expected ,(.get config nix)
        ',(map (lambda (key) (cons key (.ref arguments key))) (.all-slots arguments))
-       ',source-inputs)))
+       ',source-inputs
+       ',(map (lambda (key) (cons key (.ref inputs key))) (.all-slots inputs)))))
 
 (def (admit-derivation! source expected)
   (unless (equal? (call-with-nix-derivation-query (lambda () (.call source .instantiate))) expected)
@@ -92,9 +97,10 @@
                     'config (if tools (object<-alist tools) NixConfig)))
     (admit-derivation! source expected)))
 (def (poo-flow-core-nix-flake-admit-generation reference attribute expected executable
-        (argument-rows '()) (observations '()))
+        (argument-rows '()) (observations '()) (input-rows '()))
   (admit-derivation!
     (.cc NixFlakeSource. 'reference reference 'attribute attribute
       'config (.cc NixConfig 'nix executable)
-      'arguments (object<-alist argument-rows) 'source-inputs observations)
+      'arguments (object<-alist argument-rows) 'source-inputs observations
+      'inputs (object<-alist input-rows))
     expected))

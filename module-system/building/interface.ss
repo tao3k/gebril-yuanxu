@@ -27,7 +27,18 @@
             .run: (lambda () (.call (.get tests execution) .run))
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))
     (if suite executable
-      (.o (:: @ executable) integration: (test-source owners 'integration))))
+      (.o (:: @ executable)
+        integration: (test-source owners 'integration)
+        qualification:
+        (if owners (test-source owners 'qualification)
+          ;; Keep the aggregate facade inert, like init.tests itself. A narrow
+          ;; .select must not first discover every eligible owner's sources.
+          (executable-tests
+            (.o source-root: (path-directory (path-expand source))
+                selected-graph: (.get (selected!) selected-graph)
+                spec: (.get (test-source #f 'qualification) spec)
+                admit-current: (lambda () (test-source #f 'qualification)))
+            #f 'qualification)))))
   ;; Reuse the existing namespace's leaf resolver. Neither slot links the other.
   (def (module-view owner scope!)
     (.o identity: owner
@@ -68,7 +79,9 @@
         projection)))
   (def (test-spec (owners #f))
     (def projection (test-source owners))
-    (test-current!)
+    ;; test-source already admits this projection. A narrow request must not
+    ;; traverse every previously discovered suite; explicit test-current! is
+    ;; the aggregate epoch check, not a prerequisite for a single module.
     (.get projection spec))
   ;; This executable POO value shares the existing selection/projection cache.
   ;; Neither constructing it nor importing init acquires Graph or file inputs.

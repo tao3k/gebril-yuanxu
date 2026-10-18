@@ -8,12 +8,12 @@
 
 (import (for-syntax (only-in :std/source this-source-file)
                     (only-in "../building/source-package.ss" register-module-build-source!)
-                    (only-in :clan/poo/object .ref .slot?)
-                    (only-in :core/module-system/source/init module-init-intent)))
+                    (only-in :clan/poo/object .ref .slot?)))
 (begin-syntax
   (register-module-build-source!
     (path-expand "../.." (path-directory (this-source-file))) 'core))
 
+(import (for-syntax (only-in :core/module-system/source/init module-init-intent)))
 (import (only-in :core/module-system/source/init module-init-intent)
         (only-in :clan/poo/object .ref)
         (only-in :std/source this-source-file)

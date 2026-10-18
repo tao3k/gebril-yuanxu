@@ -5,6 +5,12 @@
 #+title: Gerbil Module Graph and POO Semantic Graph Separation
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): reopened entries below are design obligations,
+not current implementation verification. Premise-only and classification-only
+models were retired; see [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted separation between the Gerbil module import graph
@@ -91,12 +97,12 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =moduleGraphDoesNotSupportLazySemanticFixedPoint=
-- [X] =semanticGraphSupportsLazyFixedPoint=
-- [X] =moduleImportEdgeIsLexicalDependency=
-- [X] =semanticRequirementEdgeIsNotLexicalDependency=
-- [X] =semanticRequirementEdgeIsSemantic=
-- [X] =moduleImportEdgeIsNotSemanticRequirement=
+- [ ] =moduleGraphDoesNotSupportLazySemanticFixedPoint=
+- [ ] =semanticGraphSupportsLazyFixedPoint=
+- [ ] =moduleImportEdgeIsLexicalDependency=
+- [ ] =semanticRequirementEdgeIsNotLexicalDependency=
+- [ ] =semanticRequirementEdgeIsSemantic=
+- [ ] =moduleImportEdgeIsNotSemanticRequirement=
 - [X] =moduleGraphOwnsExpansionAndLoading=
 - [X] =semanticGraphOwnsFixedPoint=
 - [X] =semanticGraphConstructionRequiresLoadedModules=
@@ -106,8 +112,8 @@ flowchart LR
 - [X] =pooFlowDoesNotLoadGerbilModules=
 - [X] =pooFlowDoesNotOwnMacroPhases=
 - [X] =pooFlowDoesNotResolveCircularModuleInitialization=
-- [X] =circularModuleFailureBelongsToGerbilGraph=
-- [X] =semanticDivergenceBelongsToPooGraph=
+- [ ] =circularModuleFailureBelongsToGerbilGraph=
+- [ ] =semanticDivergenceBelongsToPooGraph=
 - [X] =graphIdentitiesRemainDistinct=
 - [X] =profileSetChangeCreatesNewSemanticGraphIdentity=
 - [X] =semanticPolicyChangeCreatesNewGraphIdentity=

@@ -37,6 +37,7 @@
         poo-flow-contract-obligations
         poo-flow-context-contract-obligations
         poo-flow-contract-admit
+        call-with-contract-analysis-root
         poo-flow-classification-evidence
         poo-flow-classification-evidence?
         poo-flow-classification-evidence-accepted?
@@ -59,9 +60,25 @@
 (.defgeneric (poo-flow-context-contract-obligations context contract candidate)
   slot: .contract-obligations)
 
-(def (context-contract-obligations context contract candidate)
+;; Only the kernel's explicit responsibility edge may request analysis. The
+;; pending edge is consumed before classification or any replaceable callback;
+;; an independent .admit inside an obligation cannot inherit this permission.
+(defstruct contract-analysis (contract candidate context child?))
+(def current-contract-analysis (make-parameter #f))
+(def (call-with-contract-analysis-root contract candidate context action)
+  (parameterize ((current-contract-analysis
+                  (make-contract-analysis contract candidate context #f)))
+    (action)))
+
+(.defgeneric (context-responsibility-obligations context contract candidate)
+  slot: .responsibility-obligations)
+
+(def (context-contract-obligations context contract candidate (analysis? #f))
   (if (and (object? context) (.slot? context '.contract-obligations))
-    (let (issues (poo-flow-context-contract-obligations context contract candidate))
+    (let (issues
+           (if (and analysis? (.slot? context '.responsibility-obligations))
+             (context-responsibility-obligations context contract candidate)
+             (poo-flow-context-contract-obligations context contract candidate)))
       (unless (list? issues) (error "Context contract obligations must return diagnostics"))
       issues)
     '()))
@@ -219,6 +236,19 @@
 
 ;; : (-> PooFlowContract Object Object PooFlowValidationEvidence)
 (def (poo-flow-contract-admit-evidence contract candidate context)
+  (def pending (current-contract-analysis))
+  (def owned?
+    (and pending
+         (eq? contract (contract-analysis-contract pending))
+         (eq? candidate (contract-analysis-candidate pending))
+         (eq? context (contract-analysis-context pending))))
+  ;; Consume, rather than temporarily hide, this one-shot edge. An .admit
+  ;; override calling its inherited producer a second time must be independent.
+  (current-contract-analysis #f)
+  (contract-admit-evidence contract candidate context owned?
+    (and owned? (contract-analysis-child? pending))))
+
+(def (contract-admit-evidence contract candidate context owned? analysis?)
   (let* ((value-contract (.ref contract 'value-contract))
          (candidate (if value-contract (validate value-contract candidate) candidate))
          (classification
@@ -234,7 +264,7 @@
          (children
           (if classification-ok?
             (map (cut poo-flow-responsibility-evidence
-                      candidate context responsibilities <>)
+                      candidate context responsibilities <> owned?)
                  (.all-slots responsibilities))
             '()))
          (rejections
@@ -243,7 +273,7 @@
          (obligation-evidence
           (if (and classification-ok? (null? rejections))
             (let* ((local (poo-flow-contract-obligations contract candidate context))
-                   (platform (context-contract-obligations context contract candidate)))
+                   (platform (context-contract-obligations context contract candidate analysis?)))
               (append local platform))
             '()))
          (failures (append rejections obligation-evidence))
@@ -337,11 +367,14 @@
 
 ;;; Object responsibility admission delegates every slot to its native Contract.
 ;;; The map is a POO value; inherited map slots follow upstream precedence.
-(def (poo-flow-responsibility-evidence candidate context responsibilities slot)
+(def (poo-flow-responsibility-evidence candidate context responsibilities slot owned?)
   (if (.slot? candidate slot)
     (let* ((descriptor (.ref responsibilities slot))
            (value (.ref candidate slot))
-           (evidence (poo-flow-contract-admit descriptor value context)))
+           (evidence
+            (parameterize ((current-contract-analysis
+                            (and owned? (make-contract-analysis descriptor value context #t))))
+              (poo-flow-contract-admit descriptor value context))))
       ;; Normalization belongs to the public root value Contract. Contextual
       ;; admission must describe that root's actual child, not a detached rewrite.
       (unless (eq? value (.ref evidence 'candidate))

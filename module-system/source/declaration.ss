@@ -100,10 +100,32 @@
        (slot-value rows 'identity stx)
        (slot-value rows 'features stx)
        (with-syntax ((context stx) (name name)
+                     ((build-binding ...)
+                      (let* ((location (stx-source stx))
+                             (file (and location (vector-ref location 0)))
+                             (build-name (datum->syntax (stx-car stx) 'Build location)))
+                        ;; Ordinary compilation reads the original interface,
+                        ;; whereas the source reader supplies an admitted wrapper.
+                        ;; Both routes need the SAME phase-checked lazy binding;
+                        ;; never import build.ss into the runtime publication.
+                        (if (and (string? file)
+                                 (string=? (path-strip-directory file) "interface.ss")
+                                 (module-regular-role-file? (path-expand "build.ss" (path-directory file)))
+                                 (not (resolve-identifier build-name)))
+                          (with-syntax ((build-name build-name))
+                            (syntax->list #'((define-module-build-binding build-name))))
+                          '())))
                      ((role-import ...)
                       (let* ((location (stx-source stx))
                              (file (and location (vector-ref location 0))))
-                        (if (and (string? file) (string=? (path-strip-directory file) "interface.ss"))
+                       (if (and (string? file) (string=? (path-strip-directory file) "interface.ss")
+                                 ;; A prepared wrapper already imports prepared
+                                 ;; roles. Following the include's original source
+                                 ;; location would import bare config.ss a second time.
+                                 (let (module (core-context-top (current-expander-context) module-context?))
+                                   (and module (string? (module-context-path module))
+                                        (equal? (path-normalize file)
+                                                (path-normalize (module-context-path module))))))
                           (map (lambda (path)
                                  (datum->syntax (stx-car stx) `(import ,path) location))
                                (module-publication-role-imports (path-directory file)
@@ -115,6 +137,7 @@
          (syntax/loc stx
            (begin
              role-import ...
+             build-binding ...
              (native-.def/ctx context binding row ...)
              (export name))))))
     (_ (raise-syntax-error #f "expected one native Module declaration" stx))))

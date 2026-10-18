@@ -2,6 +2,87 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: Core Quint Models
 
+* Backend lifecycle
+
+The default checker owns one version-checked Apalache =0.62.1= process on an
+ephemeral loopback endpoint for the entire invocation. [[file:backend.py][The shared backend helper]]
+also serves the product proof runner. Each model receives a fresh compilation
+request and a fresh, one-worker TLC exploration. The backend and TLC each have
+a 1 GiB heap; startup and cases retain five-second real-output and 45-second
+total deadlines. Normal exit, failure and TERM clean up the owned backend.
+An explicitly supplied =--server-endpoint= retains caller-owned lifecycle.
+The final Core source cut includes the helper itself.
+
+* Metadata allocation and shared payload authority
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.37-metadata-allocation-and-shared-authority.org][32.37]] adds eight scoped =MetadataAllocation= checks. Native tests reproduce
+shared self-slot function replacement/restoration with a retained cold-child
+cache, and show that export hiding/opaque final structures do not block SDK
+reflection. The private allocation ledger is a proposed MOP design, not an
+implemented SDK ownership barrier. Run =--case-prefix MetadataAllocation
+--typecheck-scope selected=. A Lean decoder consumes actual native observations;
+scope, raw-write counterexamples and existing domain guarantees remain distinct.
+
+* Metadata ownership and write capabilities
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.36-metadata-ownership-and-write-boundary.org][32.36]] adds nine scoped =MetadataOwnership= checks. An isolation gateway
+derives metadata owners from genuine selected reads and reuses the production
+receiver guard. Raw generated and SDK reflective setters remain reachable
+counterexamples; this is NOT an installed universal write barrier. Run with
+=--case-prefix MetadataOwnership --typecheck-scope selected=. Unknown targets
+fail closed; missing backend association has a separate coverage control.
+Two requirements, child-plan identity, laziness and acceptance retain matched
+controls. Runtime alias-coverage and SDK store mediation remain explicit premises.
+
+* Replay receiver ownership
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.35-replay-receiver-ownership.org][32.35]] adds the scoped =ReplayOwnership= family. Its ten checks distinguish
+selected-receiver pre-write refusal, ancestor preflight, nested frame retention,
+exceptional unwinding, two requirements, child-plan identity and laziness. A
+normal-model =NoRawCallbacks= counterexample is required: SDK raw setters do not
+enter the supported POO write protocol. Use =--case-prefix ReplayOwnership=;
+the same 45-second case, five-second output and typecheck deadlines remain.
+This model does not establish runtime SDK confinement or concurrent exclusion.
+
+For a focused owner qualification, =--typecheck-scope selected= checks each
+selected entry and its transitive imports through Quint's own resolver. It
+requires an explicit =--case-prefix=. The Scheme receipt records both the
+typecheck scope and entry names; it cannot be presented as all-source checking.
+The default remains =all=, with the same five-second deadline per entry. Both
+scopes retain the existing model predicates, matched counterexamples, proof
+source hashes and final source-cut rejection.
+
+* Metadata write ownership
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.34-metadata-write-boundary.org][32.34]] adds =RouteMutation=: one conditional positive safety check and six
+counterexample/witness checks. Run =python3 proofs/quint/check.py --case-prefix
+RouteMutation --receipt /private/tmp/route-mutation.ss=. The epoch policy assumes
+all relevant route writes advance an owned, non-resettable generation. This is
+NOT an implemented SDK barrier. The =endpoint= and =untracked= counterexamples
+retain raw modification/restoration as an actual open boundary. Removing the
+second requirement, child plan ownership or laziness has matched controls.
+The native isolation test and actual domain consumer regression remain separate
+from the bounded model's result.
+
+* Checker identity and ownership qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.30-checker-identity-and-ownership.org][32.30]] adds the scoped =CheckerOrigin= family: one conditional positive safety
+check and eight counterexample/witness checks. It distinguishes native procedure
+identity, receiver-table membership, transient cache-miss issuance and mutable
+HashTable-method dispatch. The positive read-only claim assumes unchanged native
+metadata operations; the separate metadata-hook counterexample refutes an
+unconditional claim. Run =python3 proofs/quint/check.py --case-prefix CheckerOrigin
+--receipt /private/tmp/checker-origin.ss= from Core. This scope is not a passing
+receipt for unrelated model families or a proof of arbitrary Scheme effects.
+
+* Existing model catalog
+
+The =MetadataRoute= scoped family in [[file:../../docs/30-39-research-foundations/32-module-assurance/32.31-selected-metadata-route.org][32.31]] adds one positive and eight negative/
+witness checks for selected metadata dispatch, callback gaps and transient
+issuance. Use =--case-prefix MetadataRoute= with the same proof runner. Its
+callback-free serial operation alphabet is a premise, not a runtime fence or
+automatic effect analysis. The source digest binds its Lean counterpart.
+
 All maintained finite models here are Quint. Use Quint 0.33.0, Apalache 0.62.1
 and Java 21 or newer; the TLC backend checks the complete finite reachable state
 space. Generated backend files remain temporary artifacts. No maintained TLA+
@@ -11,8 +92,8 @@ Run =just prepare-quint= once from Core to install the locked tool and bootstrap
 the backend before checking. Bootstrap has its own bounded preparation deadline
 and never emits an accepted proof receipt.
 Run =just proofs-quint /private/tmp/core-quint-proof.ss= from Core. The runner
-requires exact Quint version, typechecks every source, verifies two positive
-cases and five matched mutants, and writes a =poo-flow.quint-proof.v1= Scheme
+requires exact Quint version, typechecks every source, verifies nine positive
+cases, forty-one matched controls and five expected acceptance-witness counterexamples, and writes a =poo-flow.quint-proof.v1= Scheme
 receipt only after every case passes. Each case has a 45-second total deadline,
 a five-second real-output watchdog and a 1GB backend heap. Negative admission
 requires the named invariant violation and state counts; crashes, syntax failures
@@ -24,6 +105,14 @@ Logs, receipts and backend traces must not be committed.
 |-------+-----------------------+-------|
 | GraphOperations | graph/types-core, graph/rooted, graph/operation, graph/apply; t/graph-operations-test | Six bounded path identities; nine ordered operations; terminal application receipt |
 | NativeSemanticQuery | native semantic Query contracts and the independent Lean NativeSemanticQueryModel | Admission, revision preservation, Provider/result binding and absence of action authority |
+| TestSourceAdmission | building/test-projection, building/interface; t/module-testing-source-admission-test | Demand-only discovery on one selection; source checks across effects; fixture cleanup; explicit complete-Graph demand |
+
+TestSourceAdmission adds one positive instance and four matched mutants for eager
+sibling expansion, stale post-effect evidence, missing cleanup and a second Graph
+identity. The existing checker catalog includes these cases and binds the Lean
+source digest together with the relevant Scheme projection/test sources. This
+does not replace the independent native gates or prove reader completeness.
+See [[file:../../docs/10-19-design/13-module-loading/13.14-test-source-graph-model.org][model scope and Scheme correspondence]].
 
 GraphOperations compares each prefix against independent explicit expected
 fixtures. It covers append/prepend ordering, exact path targeting despite equal
@@ -43,3 +132,133 @@ digest and proves ordered-fold composition, live deletion endpoints, distinct
 containment paths, the one-pass receipt bound and a concrete non-fixed-point
 example. =check.py= rejects a stale binding. These are pure laws and an explicit
 counterexample, not a theorem that the Scheme implementation refines Quint.
+
+* Source windows
+
+=SourceWindows= adds one positive finite check, six matched unsafe schedules
+and a non-vacuous acceptance witness. Counterexamples distinguish byte-cache
+hits, actual contributor coverage, final receiver identity, demand and effects.
+The checker binds the model digest to =Admission/SourceWindows.lean= and binds
+the three production source-admission owners. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.15-source-window-model.org][32.15]] for reuse conditions and open Scheme correspondence.
+
+An owned already-prepared backend can be supplied with =QUINT_SERVER_ENDPOINT=
+or =--server-endpoint=. Backend preparation/RPC warmup is not a proof receipt.
+The 45-second case ceiling, five-second real-output watchdog and 1GB TLC heap
+remain unchanged. This separates JVM bootstrap from the timed verification
+phase; it does not accept failed or timed-out checks.
+
+* Root/child admission controls
+
+=RootChild.qnt= models two selected domain analyses, two independent port
+requirements, shared/private sources, warm-parent plan isolation and a final
+fresh source window. The nine control wrappers include eight broken protocols
+and one acceptance witness. In particular, =lateEffect= demonstrates that even
+one root check requires a stable read-to-return interval. All ten cases are
+registered in =check.py=; the Lean binding is =Admission.RootChild.quintSourceDigest=.
+Qualification does not establish production Scheme conformance. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]].
+
+* Remaining admission read windows
+
+=ReturnWindows= adds open/pure replay schedules, seven matched counterexamples
+and one acceptance witness. That qualification contained 40 cases; that follow-up contained 46. Exact source
+composition and deferral laws live in =Admission.ReturnWindows=, bound to the
+QNT source digest. The pure instance is an environment restriction, not proof
+that arbitrary MOP callbacks are pure. Actual Scheme still reads 356 files in
+the qualified Scenario; no Loader or Scheme change belongs to this model. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]]
+for counts, callback barriers, all counterexample results and native premises.
+
+* Replay producer and diagnostic boundary
+
+=ReplayBoundary= adds one positive program, four matched controls and an
+acceptance witness. =move= preserves rejection but changes the first error;
+=reuse= crosses actual metadata/observer writes; =omit= loses late coverage;
+=effects= refutes an assumed effect-free adapter. No hand-authored purity tag
+qualifies a native record. =Admission.ReplayBoundary= binds the exact source
+and proves ordered diagnostic preservation and complete successful observation
+for a closed structural operation projection. Native graph/observer extraction
+remains a premise. See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20 producer follow-up]].
+
+* Identity graph and recursive frame projection
+
+=IdentityDFS= adds one positive finite shared/cyclic graph, seven counterexample
+controls and an acceptance witness; the current catalog has 55 cases. Identity
+keys are not payload equality. The positive protocol marks before descending,
+checks the whole seen set again in a nondeterministic hash order, and uses fresh
+source certification. Controls expose late marking, payload deduplication,
+missing/skipped final checks, an effectful final checker, cross-effect byte reuse
+and parent receipt reuse. The bounded looping control has an eight-pop horizon;
+Lean proves general finite-graph/frame termination without that fixed cap.
+The source digest is bound to =Admission.IdentityDFS=; =DFSFrames= forwards that
+binding and both files are in the source receipt. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for native correspondence and callback premises.
+
+* State-derived entry controls
+
+ReadOnlyEntry adds a positive finite raw-state classifier, nine unsafe-inference
+controls and a non-vacuous acceptance witness. The current catalog has 66 cases.
+It distinguishes captured hook values from invocation, sealed/revision shortcuts,
+foreign currentness checkers, observer scope changes and JSON diagnostic order.
+The checker binds Admission.ReadOnlyEntry to its exact model digest. Native
+callback closure and stable-snapshot extraction are not inferred from finite
+verification. See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]].
+
+* Actual MOP snapshot qualification
+
+SnapshotEntry adds a positive finite guard, eight unsafe omission controls, an
+ABA limitation witness and an acceptance witness. The complete catalog now has
+77 outcomes over 78 QNT sources. The ABA witness asks a too-strong history claim
+of the correct endpoint guard; it is not a failing positive invariant.
+See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for native observations, proof premises and retained failures.
+
+* Snapshot lifetime and supported revision ABA
+
+SnapshotLifetime adds one positive certification model, eight unsafe variants,
+two limitation witnesses (restored-scope history and post-check use), and one
+acceptance witness. The full catalog has 89 expected outcomes over 90 sources.
+Certification safety does not imply execution fencing or effect rollback.
+See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] for actual native entry evidence and correspondence limits.
+
+* Serial use and conditional commit
+
+SerialUse adds nine expected outcomes: one positive, six unsafe variants, one
+correct-algorithm cold-scope limitation and an acceptance witness. The catalog
+has 98 outcomes over 99 QNT sources. The external atomic compare/commit relation
+is a premise, distinct from actual MOP protection; see
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]].
+
+* Function acquisition and call bodies
+
+CallPhases adds ten outcomes: one positive, seven unsafe variants, a correct
+algorithm mutation-protection limitation and an acceptance witness. The catalog
+has 108 outcomes over 109 sources. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] for actual native frame and observation-scope controls.
+
+* Actual admission body observation
+
+AdmissionBody adds ten expected outcomes: a positive boundary, seven unsafe
+policies, one no-rollback limitation and an acceptance witness. The complete
+catalog has 118 outcomes over 119 sources. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] for actual SourceAdmissionContract controls and projection premises.
+
+* Post-replay return limitations
+
+ReturnTail adds ten outcomes: recorded historical checks, five unsafe policies,
+three correct-algorithm return limitations and an acceptance witness. The full
+catalog has 128 outcomes over 129 sources. See
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]]: accepted stale objects, source sets and plans are actual reproduced
+limitations, not properties proved safe by a green qualification gate.
+
+
+* Constrained return-tail qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] separates a replaceable caller wrapper from a temporary producer-owned
+source-event gate. Opaque observers are refused before invocation; this is not
+a purity declaration or a production fix. An independent writer remains a
+correct-model limitation requiring snapshot/conditional-commit authority.
+ClosedTail adds eight outcomes: one positive model, five unsafe variants (including
+return-only protection), one external-writer limitation and one acceptance witness.
+The catalog contains 136 outcomes over 137 sources. Scoped receipts explicitly
+name their case prefix; a scoped gate is not a full-catalog qualification.

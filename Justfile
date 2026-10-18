@@ -3,10 +3,10 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-# V19 std/make defaults to zero workers unless this is explicitly provided.
-export GERBIL_BUILD_CORES := env_var_or_default("GERBIL_BUILD_CORES", `getconf _NPROCESSORS_ONLN`)
+# V19 std/make needs explicit workers; bound the default cold build memory.
+export GERBIL_BUILD_CORES := env_var_or_default("GERBIL_BUILD_CORES", "2")
 
-gerbil_test_max_heap := env_var_or_default("GERBIL_TEST_MAX_HEAP", "1G")
+gerbil_test_max_heap := env_var_or_default("GERBIL_TEST_MAX_HEAP", "2G")
 gerbil_test_debug := env_var_or_default("GERBIL_TEST_DEBUG", "q")
 gerbil_test_runtime_options := "-:max-heap=" + gerbil_test_max_heap + ",debug=" + gerbil_test_debug
 
@@ -16,18 +16,55 @@ default:
 build:
     GERBIL_BUILD_VERBOSE=1 env -u SDKROOT gerbil build
 
-# The SDK env dispatcher spawns its command; repeat VM flags in the child.
-test-file path:
+# gxtest owns package setup. Keep the actual test VM in the watchdog group.
+test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
     test -f "{{ path }}"
+    options=()
+    case "{{ observe }}" in
+      true) options=(-D poo-flow-module-test-observation) ;;
+      trace) options=(-D poo-flow-module-test-observation,poo-flow-module-test-trace) ;;
+      false) ;;
+      *) echo 'observe must be false, true, or trace' >&2; exit 1 ;;
+    esac
     log="$(mktemp)"
     trap 'rm -f "$log"' EXIT
-    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gerbil {{ gerbil_test_runtime_options }} test "{{ path }}" 2>&1 | tee "$log"
-    if grep -E 'ERROR (CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
-    grep -F 'MODULE-OK {{ path }}' "$log" >/dev/null
+    # The outer guard is the SAME finite total budget, not an inactivity timer.
+    # Case/Ops enforce idle progress; no shell output/heartbeat renews this cap.
+    budget="$(gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
+    if grep -E 'ERROR (MODULE|CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
+    grep -F -x 'MODULE-OK {{ path }}' "$log" >/dev/null
     grep -F 'HARNESS-OK' "$log" >/dev/null
     grep -x 'OK' "$log" >/dev/null
+
+# Qualification-only source dispatcher, built outside the checkout.
+test-source-tail-gateway directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
+    export CORE_SOURCE_TAIL_CORE="$(pwd)/"
+    test ! -e "$CORE_SOURCE_TAIL_ROOT/source"
+    mkdir -p "$CORE_SOURCE_TAIL_ROOT"
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib" just test-file t/source-admission-gateway-test.ss
+
+# Matched dispatcher policies in an already compiled, captured Core package.
+test-source-tail-policy directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export CORE_SOURCE_TAIL_POLICY="${CORE_SOURCE_TAIL_POLICY:-segment}"
+    export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
+    export CORE_SOURCE_TAIL_CORE="$(pwd)/"
+    test -f "$CORE_SOURCE_TAIL_ROOT/lib/core/module-system/source/admission.o1"
+    export GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib"
+    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/refine-tail-policy.ss
+    if [[ "$CORE_SOURCE_TAIL_POLICY" == unrestricted ]]; then
+        just test-file t/source-admission-closed-tail-test.ss
+    else
+        just test-file t/source-admission-gateway-test.ss
+    fi
 
 # Compile a complete gerbil-poo candidate checkout without injecting Core patches.
 test-slot-read-replay:
@@ -62,7 +99,7 @@ compile-slot-read-costs directory file:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_REPLAY_ROOT="{{ directory }}"
-    export CORE_REPLAY_CORE="$(pwd)/"
+    export CORE_REPLAY_CORE="${CORE_REPLAY_INPUT_CORE:-$(pwd)/}"
     export CORE_REPLAY_COMPILE_FILE="{{ file }}"
     (cd "$CORE_REPLAY_ROOT/source/clan/poo"; rg --files -0 -g '*.ss' -g '*.scm' | sort -z | xargs -0 shasum -a 256) > "$CORE_REPLAY_ROOT/dependency-source.sha256"
     log="$(mktemp "$CORE_REPLAY_ROOT/cost-compile-XXXXXX.log")"
@@ -98,19 +135,15 @@ test-slot-read-replay-regression directory:
       tail -5 "$log"
     done
 
-# One native harness amortizes Gerbil startup and module loading across files.
+# Give each file its existing bounded native harness and compiler context.
+# Repository-wide imports retain mutable fixtures and source-reader epochs.
 test:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=(t/funflow-tutorial-test.ss t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/funflow-job-test.ss t/funflow-profile-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/opentofu-publication-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/ops-selected-packages-test.ss t/ops-rounds-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
-    files+=(t/module-windows-test.ss)
-    log="$(mktemp)"
-    trap 'rm -f "$log"' EXIT
-    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gerbil {{ gerbil_test_runtime_options }} test "${files[@]}" 2>&1 | tee "$log"
-    if grep -E 'ERROR (CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
-    for file in "${files[@]}"; do grep -F "MODULE-OK $file" "$log" >/dev/null; done
-    grep -F 'HARNESS-OK' "$log" >/dev/null
-    grep -x 'OK' "$log" >/dev/null
+    files=(t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/opentofu-publication-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/execution-progress-test.ss t/ops-selected-packages-test.ss t/ops-rounds-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
+    files+=(t/module-windows-test.ss t/module-testing-isolation-test.ss)
+    for file in "${files[@]}"; do just test-file "$file"; done
+    echo "[core-testing] phase=all-files-complete fileCount=${#files[@]}"
 
 # Opt-in wall/user/system timing while preserving the same bounded test path.
 test-profile:
@@ -271,3 +304,42 @@ proofs-quint receipt="/private/tmp/core-quint-proof.ss":
 prepare-quint:
     npm ci --prefix proofs/quint --no-audit --no-fund
     python3 proofs/quint/prepare.py
+
+# Native issuer observations are checked independently by the Lean projection.
+check-issuer-projection trace:
+    cd proofs/lean && timeout 120s lake env lean --run IssuerProjectionCheck.lean "{{ trace }}"
+
+# Independent decoder consumes actual native alias/cache observations.
+check-metadata-allocation trace:
+    cd proofs/lean && timeout 120s lake env lean --run MetadataAllocationCheck.lean "{{ trace }}"
+
+# Process-local compiler lowering; production SDK/source untouched.
+test-mop-store-boundary directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export CORE_STORE_ROOT="{{ directory }}"
+    mkdir -p "$CORE_STORE_ROOT/lib"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
+    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/mop-store-boundary-test.ss ../.gerbil/lib/clan/poo/object~0.scm > "$CORE_STORE_ROOT/inputs.sha256"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-store-boundary.ss
+    just test-mop-store-boundary-runtime "$CORE_STORE_ROOT"
+
+test-mop-store-boundary-runtime directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export CORE_STORE_ROOT="{{ directory }}"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
+    shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+    sdk_home="$(cat "$CORE_STORE_ROOT/sdk-home")"
+    export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$sdk_home,~~bin=$sdk_home/bin,~~lib=$sdk_home/lib"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/store-runtime.o1" "$CORE_STORE_ROOT/store-runtime.scm"
+    just test-file t/mop-store-boundary-driver-test.ss
+    shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+
+test-issuer-projection directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p "{{ directory }}"
+    trace="$(cd "{{ directory }}" && pwd)/native-trace.json"
+    CORE_ISSUER_TRACE="$trace" just test-file t/issuer-projection-test.ss
+    just check-issuer-projection "$trace"

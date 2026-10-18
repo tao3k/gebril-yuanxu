@@ -3,9 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/misc/process run-process)
+        (only-in :core/ops/func run-script)
+        (only-in :core/ops/progress execution-idle-seconds execution-total-seconds
+                 make-nix-progress-reader)
         (only-in :std/string/misc string-subst)
         (only-in :std/encoding/json write-json)
-        (only-in :core/module-system/source/admission module-source-type module-source-read)
+        (only-in :core/module-system/source/admission module-source-type module-source-read
+                 current-module-source-observer current-module-process-trace-budget)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode))
 (export poo-flow-core-nix-flake-source-inputs poo-flow-core-nix-flake-instantiate current-nix-process-observer current-nix-process-completion-observer poo-flow-core-nix-instantiate poo-flow-core-nix-realize poo-flow-core-nix-source-inputs call-with-nix-derivation-query)
@@ -20,24 +24,59 @@
 (def nix-derivation-query? (make-parameter #f))
 (def (call-with-nix-derivation-query thunk)
   (parameterize ((nix-derivation-query? #t)) (thunk)))
+(def (observed-nix-command argv)
+  ;; Logging only: preserve the original command/mode and never issue an extra
+  ;; cache probe, preload a result, or change execution/currentness policy.
+  (let ((budget (current-module-process-trace-budget))
+        (command (if (member "--log-format" argv) argv
+                   (append argv '("--log-format" "internal-json" "--verbose")))))
+    (if (and budget (> (unbox budget) 0))
+      (begin
+        (set-box! budget (- (unbox budget) 1))
+        (append command '("--debug")))
+      command)))
+(def (run-nix-process argv check?)
+  ;; Reuse Ops ownership, progress decoding and descendant cleanup. Structured
+  ;; Nix stderr remains visible to a supervising TestingScript even with emit off.
+  (run-script
+    (.o command: argv directory: #f environment: (.o)
+        timeout: execution-total-seconds idle-timeout: execution-idle-seconds
+        progress: make-nix-progress-reader log: #f check-status: check?)
+    output-port: (current-error-port)))
 (def (call-with-nix-process-observation argv thunk)
-  (let (observer (current-nix-process-completion-observer))
-    (if (not observer) (thunk)
-      (let ((started (real-time)) (completed? #f))
-        (dynamic-wind void
-          (lambda () (let (value (thunk)) (set! completed? #t) value))
-          (lambda () (observer argv (- (real-time) started) completed?)))))))
+  (let ((observer (current-nix-process-completion-observer))
+        (source-observer (current-module-source-observer)))
+    (if (not (or observer source-observer)) (thunk argv)
+      (let ((started (real-time)) (completed? #f)
+            ;; Closed process modes, never argv/path payloads. Distinguish a
+            ;; cached store check from actual realization in the existing trace.
+            (operation
+              (cond ((member "--check-validity" argv) 'store-validity)
+                    ((member "--realise" argv) 'store-realize)
+                    ((member "--read-write-mode" argv) 'derivation-registration)
+                    ((or (member "--eval" argv) (member "--derivation" argv)) 'derivation-query)
+                    (else 'flake-query))))
+        (dynamic-wind
+          (lambda ()
+            (when source-observer
+              (source-observer (list 'nix-process-start operation) 1)))
+          (lambda ()
+            (let (value (thunk (observed-nix-command argv)))
+              (set! completed? #t) value))
+          (lambda ()
+            (when source-observer
+              (source-observer (list 'nix-process-end operation) 1))
+            (when observer (observer argv (- (real-time) started) completed?))))))))
 (def (store-path-command argv lookup?: (lookup? #f))
   (when (current-nix-process-observer) ((current-nix-process-observer) argv))
   (let* ((status #f)
          (result
           (call-with-nix-process-observation argv
-            (lambda ()
-              (run-process argv
-                stdin-redirection: #f stderr-redirection: #f
-                coprocess: read-line
-                check-status:
-                (if lookup? (lambda (code _settings) (set! status code)) #t))))))
+            (lambda (command)
+              (let (receipt (run-nix-process command (not lookup?)))
+                (set! status (.get receipt status))
+                (find (cut string-prefix? "/nix/store/" <>)
+                      (string-split (.get receipt output) #\newline)))))))
     ;; Only construction's optional cache lookup may miss. A currentness query
     ;; keeps the original strict process failure; it never retries in write mode.
     (if (and lookup? (not (zero? status))) #f
@@ -51,10 +90,12 @@
   (def status #f)
   (when (current-nix-process-observer) ((current-nix-process-observer) argv))
   (call-with-nix-process-observation argv
-    (lambda ()
-      (run-process argv stdin-redirection: #f stderr-redirection: #t
-        check-status: (lambda (code _settings) (set! status code)))))
-  (zero? status))
+    (lambda (command)
+      (set! status (.get (run-nix-process command #f) status))))
+  (let ((valid? (zero? status)) (observer (current-module-source-observer)))
+    (when observer
+      (observer (list 'nix-store-validity (if valid? 'hit 'miss)) 1))
+    valid?))
 
 (def (poo-flow-core-nix-instantiate executable expression arguments
                                    (store-command (lambda () "nix-store")))
@@ -88,9 +129,10 @@
         (string-subst (string-subst text "\\" "\\\\") "\"" "\\\"")
         "$" "\\$")
       "\n" "\\n") "\""))
-(def (poo-flow-core-nix-flake-instantiate executable reference attribute (arguments (.o)))
+(def (poo-flow-core-nix-flake-instantiate executable reference attribute
+        (arguments (.o)) (inputs (.o)))
   (let* ((applied? (pair? (.all-slots arguments)))
-         (installable (string-append reference "#" attribute (if applied? "" ".drvPath")))
+         (installable (string-append reference "#" attribute))
          (json (and applied?
                 (call-with-output-string
                   (lambda (port)
@@ -101,7 +143,19 @@
               ;; Nix 2.34 permits in-memory lock changes when --no-write-lock-file
               ;; is also set. --no-update-lock-file alone rejects them and never
               ;; writes a changed lock; keep this stronger boundary explicit.
-              "eval" "--raw" "--no-update-lock-file" installable)
+              ;; Derived-path consumers use Nix's persistent attribute cursor.
+              ;; `eval --raw ...drvPath` forces a fresh Value even on a cache hit.
+              (if applied? "eval" "path-info")
+              (if applied? "--raw" "--derivation")
+              "--no-update-lock-file" installable)
+        (foldr append '()
+          (map (lambda (name)
+                 (list "--override-input" (symbol->string name)
+                   ;; Equivalent directory spellings must share Nix's key.
+                   (string-append "path:"
+                     (path-strip-trailing-directory-separator
+                       (path-normalize (.ref inputs name))))))
+               (.all-slots inputs)))
         (if applied?
           (list "--apply" (string-append "function: (function (builtins.fromJSON "
                                          (nix-string json) ")).drvPath"))

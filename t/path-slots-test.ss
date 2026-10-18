@@ -27,6 +27,48 @@
 
 (def path-slots-test
   (test-suite "Native path-slot lowering"
+    (test-case "direct leaves merge prefixes and preserve inherited intermediates lazily"
+      (def demands 0)
+      (.def Parent
+        execution: (.o profile: (.o emit?: #f timeout: 60 retained: 'profile)
+                       environment: (.o PATH: "/bin"))
+        .acquire: (lambda () 'acquired)
+        .release: (lambda (value) value)
+        unrelated: (error "unrelated slot must stay lazy"))
+      (def parent-profile (.get Parent execution profile))
+      (.def (Child @ Parent)
+        execution.profile.emit?: (begin (set! demands (+ demands 1)) #t)
+        execution.environment.TMPDIR: "/tmp/tests"
+        execution.profile.timeout: 30)
+      (check-equal? demands 0)
+      (check-equal? (.get Child execution profile timeout) 30)
+      (check-equal? demands 0)
+      (check-equal? (.get Child execution profile emit?) #t)
+      (check-equal? (.get Child execution profile emit?) #t)
+      (check-equal? demands 1)
+      (check-equal? (.get Child execution profile retained) 'profile)
+      (check-equal? (.get Child execution environment PATH) "/bin")
+      (check-equal? (.get Child execution environment TMPDIR) "/tmp/tests")
+      (check-equal? ((.get Child .acquire)) 'acquired)
+      (check-equal? ((.get Child .release) 'released) 'released)
+      (check-equal? (.get parent-profile emit?) #f)
+      (check-equal? (.get parent-profile timeout) 60)
+      (native-.def (Expanded @ Parent)
+        execution: =>.+
+        (native-.o profile: =>.+ (native-.o emit?: #t timeout: 30)
+                   environment: =>.+ (native-.o TMPDIR: "/tmp/tests")))
+      (check-equal? (.get Child execution profile timeout) (.get Expanded execution profile timeout))
+      ;; Object-valued assignment replaces the leaf; refinement retains it.
+      (.def (Replaced @ Parent) execution.profile: (.o emit?: #t))
+      (check-equal? (.slot? (.get Replaced execution profile) 'retained) #f)
+      (.def (Mixed @ Parent)
+        execution.profile.emit?: #t
+        execution.environment: =>.+ {TMPDIR: "/tmp/mixed"})
+      (check-equal? (.get Mixed execution profile retained) 'profile)
+      (check-equal? (.get Mixed execution environment PATH) "/bin")
+      (.def Missing)
+      (.def (Invalid @ Missing) execution.profile.emit?: #t)
+      (check-exception (.get Invalid execution profile emit?) true))
     (test-case "four shared-prefix refinements retain final lexical slots after parent cache"
       (def pipeline-demands 0)
       (def checks-demands 0)
@@ -185,7 +227,8 @@
           ((.o a.b: =>.+ {} a: =>.+ {}) . "overlapping ancestor")
           ((.o a.b: =>.+ {} a.b.c: =>.+ {}) . "overlapping ancestor")
           ((.o a.b.c: =>.+ {} a.b: =>.+ {}) . "overlapping ancestor")
-          ((.o a.b: 1) . "require one =>.+")
+          ((.o a.b: 1 a.b: 2) . "duplicate path-slot")
+          ((.o a.b: 1 a.b.c: 2) . "overlapping ancestor")
           ((.o a.b: => identity) . "require native =>.+")
           ((.o a..b: =>.+ {}) . "empty path-slot segment")
-          ((.o a.b: =>.+) . "require one =>.+"))))))
+          ((.o a.b: =>.+) . "missing value after path-slot operator"))))))

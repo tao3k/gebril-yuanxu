@@ -73,7 +73,7 @@ def checkedQuery (context : Context) : Outcome context :=
         if aligned : context.space.revision = context.view.sourceRevision then
           match admitQuery context.space context.query with
           | .error error => .error error
-          | .ok admitted => .ok ⟨evaluateQuery context.space context.query,
+          | .ok admitted => .ok ⟨evaluateQuery context.space context.query (admitted.property.1 ▸ admitted.property.2),
               rfl, rfl, rfl, rfl, admitted.property.1 ▸ admitted.property.2,
               valid, evidenceLaw, aligned, composed⟩
         else .error "source cut mismatch"

@@ -105,7 +105,7 @@ marker was present. No production source or test was changed for these runs.
 | Suite | Scope of evidence |
 |-------+-------------------|
 | t/aws-scenario-contract-test.ss | Five structural cases: Schema-delegated spelling/type diagnostics, optional nominal identity, cached-parent/final-child projection, cold signatures and admission declarations. |
-| t/json-schema-value-contract-test.ss | Public Type/responsibilities composition, diagnostics, projection, supported Schema behavior and explicit unsupported-input refusal. |
+| t/Modules/json-schema/json-schema-value-contract-test.ss | Public Type/responsibilities composition, diagnostics, projection, supported Schema behavior and explicit unsupported-input refusal; discovered through init tests.qualification. |
 | t/admission-checked-publication-test.ss | Seven completion-checked cases: one root value validation, actual descriptor binding, cached-parent/final-child values, same-name Contract/Context replay refusal, source/Schema changes and failure preserving the previous value. |
 
 The AWS structural suite uses a small Schema fixture. The publication suite

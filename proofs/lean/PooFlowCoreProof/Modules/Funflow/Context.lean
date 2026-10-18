@@ -2,6 +2,9 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+import LeanPoo.Proof.Types
+import LeanPoo.Functional.Assembly
+
 namespace PooFlowCoreProof.Modules.Funflow.Context
 
 universe u
@@ -18,32 +21,7 @@ structure LiveEvaluationContext
   remainingBudget : Nat
   deadline : Nat
   remainingContinuations : Nat
-  cancelled : Prop
-
-structure Narrows
-    {Capability Adapter Disclosure : Type u}
-    (child parent :
-      LiveEvaluationContext Capability Adapter Disclosure) : Prop where
-  capabilitySubset :
-    (capability : Capability) →
-    child.policy.allowsCapability capability →
-    parent.policy.allowsCapability capability
-  adapterSubset :
-    (adapter : Adapter) →
-    child.policy.allowsAdapter adapter →
-    parent.policy.allowsAdapter adapter
-  disclosureSubset :
-    (disclosure : Disclosure) →
-    child.policy.allowsDisclosure disclosure →
-    parent.policy.allowsDisclosure disclosure
-  budgetConserved :
-    child.remainingBudget ≤ parent.remainingBudget
-  deadlineNarrowed :
-    child.deadline ≤ parent.deadline
-  continuationsConserved :
-    child.remainingContinuations ≤ parent.remainingContinuations
-  parentCancellationPropagates :
-    parent.cancelled → child.cancelled
+  cancelled : Bool
 
 structure ExecutionDemand
     (Capability Adapter Disclosure : Type u) where
@@ -71,94 +49,70 @@ structure Admitted
   continuationsAvailable :
     demand.continuationUses ≤ context.remainingContinuations
   notCancelled :
-    ¬ context.cancelled
+    context.cancelled = false
 
-theorem narrowingIsReflexive
-    {Capability Adapter Disclosure : Type u}
-    (context :
-      LiveEvaluationContext Capability Adapter Disclosure) :
-    Narrows context context := by
-  exact
-    { capabilitySubset := fun _ allowed => allowed
-      adapterSubset := fun _ allowed => allowed
-      disclosureSubset := fun _ allowed => allowed
-      budgetConserved := Nat.le_refl _
-      deadlineNarrowed := Nat.le_refl _
-      continuationsConserved := Nat.le_refl _
-      parentCancellationPropagates := fun cancelled => cancelled }
+/-- Mathematical context policy is explicit input. The current Funflow strategy
+has capability checks; this checker does not assert that the native runner meters
+all future budget/deadline/continuation coordinates. -/
+def Checks (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure) : Prop :=
+  context.policy.allowsCapability demand.capability ∧
+  context.policy.allowsAdapter demand.adapter ∧
+  context.policy.allowsDisclosure demand.disclosure ∧
+  demand.budgetCost ≤ context.remainingBudget ∧ demand.completesBy ≤ context.deadline ∧
+  demand.continuationUses ≤ context.remainingContinuations ∧ context.cancelled = false
 
-theorem narrowingIsTransitive
-    {Capability Adapter Disclosure : Type u}
-    {child middle parent :
-      LiveEvaluationContext Capability Adapter Disclosure}
-    (childToMiddle : Narrows child middle)
-    (middleToParent : Narrows middle parent) :
-    Narrows child parent := by
-  exact
-    { capabilitySubset := fun capability allowed =>
-        middleToParent.capabilitySubset capability
-          (childToMiddle.capabilitySubset capability allowed)
-      adapterSubset := fun adapter allowed =>
-        middleToParent.adapterSubset adapter
-          (childToMiddle.adapterSubset adapter allowed)
-      disclosureSubset := fun disclosure allowed =>
-        middleToParent.disclosureSubset disclosure
-          (childToMiddle.disclosureSubset disclosure allowed)
-      budgetConserved :=
-        Nat.le_trans
-          childToMiddle.budgetConserved
-          middleToParent.budgetConserved
-      deadlineNarrowed :=
-        Nat.le_trans
-          childToMiddle.deadlineNarrowed
-          middleToParent.deadlineNarrowed
-      continuationsConserved :=
-        Nat.le_trans
-          childToMiddle.continuationsConserved
-          middleToParent.continuationsConserved
-      parentCancellationPropagates := fun parentCancelled =>
-        childToMiddle.parentCancellationPropagates
-          (middleToParent.parentCancellationPropagates parentCancelled) }
+theorem admitted_iff_checks (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure) : Admitted context demand ↔ Checks context demand := by
+  constructor
+  · intro valid
+    exact ⟨valid.capabilityAllowed, valid.adapterAllowed, valid.disclosureAllowed, valid.budgetAvailable,
+      valid.completesWithinDeadline, valid.continuationsAvailable, valid.notCancelled⟩
+  · rintro ⟨capability, adapter, disclosure, budget, deadline, continuations, cancelled⟩
+    exact ⟨capability, adapter, disclosure, budget, deadline, continuations, cancelled⟩
 
-theorem childAdmissionImpliesParentAdmission
-    {Capability Adapter Disclosure : Type u}
-    {child parent :
-      LiveEvaluationContext Capability Adapter Disclosure}
-    {demand : ExecutionDemand Capability Adapter Disclosure}
-    (narrowing : Narrows child parent)
-    (admitted : Admitted child demand) :
-    Admitted parent demand := by
-  exact
-    { capabilityAllowed :=
-        narrowing.capabilitySubset demand.capability
-          admitted.capabilityAllowed
-      adapterAllowed :=
-        narrowing.adapterSubset demand.adapter
-          admitted.adapterAllowed
-      disclosureAllowed :=
-        narrowing.disclosureSubset demand.disclosure
-          admitted.disclosureAllowed
-      budgetAvailable :=
-        Nat.le_trans admitted.budgetAvailable narrowing.budgetConserved
-      completesWithinDeadline :=
-        Nat.le_trans
-          admitted.completesWithinDeadline
-          narrowing.deadlineNarrowed
-      continuationsAvailable :=
-        Nat.le_trans
-          admitted.continuationsAvailable
-          narrowing.continuationsConserved
-      notCancelled := fun parentCancelled =>
-        admitted.notCancelled
-          (narrowing.parentCancellationPropagates parentCancelled) }
+instance (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure)
+    [DecidablePred context.policy.allowsCapability] [DecidablePred context.policy.allowsAdapter]
+    [DecidablePred context.policy.allowsDisclosure] : Decidable (Admitted context demand) := by
+  letI : Decidable (Checks context demand) := by unfold Checks; infer_instance
+  exact decidable_of_iff (Checks context demand) (admitted_iff_checks context demand).symm
 
-theorem parentCancellationCancelsChild
-    {Capability Adapter Disclosure : Type u}
-    {child parent :
-      LiveEvaluationContext Capability Adapter Disclosure}
-    (narrowing : Narrows child parent)
-    (parentCancelled : parent.cancelled) :
-    child.cancelled :=
-  narrowing.parentCancellationPropagates parentCancelled
+def admitDemand (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure)
+    [DecidablePred context.policy.allowsCapability] [DecidablePred context.policy.allowsAdapter]
+    [DecidablePred context.policy.allowsDisclosure] :
+    Option { requested : ExecutionDemand Capability Adapter Disclosure // Admitted context requested } :=
+  if valid : Admitted context demand then some ⟨demand, valid⟩ else none
 
+theorem cancelled_demand_rejected (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure)
+    [DecidablePred context.policy.allowsCapability] [DecidablePred context.policy.allowsAdapter]
+    [DecidablePred context.policy.allowsDisclosure] (cancelled : context.cancelled = true) :
+    admitDemand context demand = none := by
+  have refused : ¬ Admitted context demand := fun valid => by
+    have same := valid.notCancelled
+    simp [cancelled] at same
+  simp [admitDemand, refused]
+
+/-- Attach the checked context predicate to the dependency's actual proof object.
+No arbitrary proposition is stored by a caller as a new 'admitted' field. -/
+def demandObligation (demand : ExecutionDemand Capability Adapter Disclosure) :
+    LeanPoo.Proof.Obligation Unit (fun _ => LiveEvaluationContext Capability Adapter Disclosure) where
+  dependencies := [()]
+  holds := fun state => Admitted (state ()) demand
+  stable := by
+    intro before after same proof
+    have equal := same () (by simp)
+    simpa only [equal] using proof
+
+def demandObject (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure) :
+    LeanPoo.Proof.ProofObject Unit (fun _ => LiveEvaluationContext Capability Adapter Disclosure) :=
+  ⟨fun _ => context, [demandObligation demand]⟩
+
+theorem demand_certificate_exact (context : LiveEvaluationContext Capability Adapter Disclosure)
+    (demand : ExecutionDemand Capability Adapter Disclosure) :
+    LeanPoo.Proof.Certificate (demandObject context demand) ↔ Admitted context demand := by
+  simp [LeanPoo.Proof.Certificate, demandObject, demandObligation]
 end PooFlowCoreProof.Modules.Funflow.Context

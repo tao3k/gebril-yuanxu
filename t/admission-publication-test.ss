@@ -135,6 +135,23 @@
           (check-equal? (length (.get pub context schema-inputs)) 1)
           (check-equal? (pair? (.get pub context source-inputs)) #t))))
 
+    (test-case "rejected evidence keeps the old value without a post-admission package effect"
+      (with-inputs
+        (lambda (source schema)
+          (def checks 0)
+          (def view (platform source schema))
+          (def pub
+            (.cc (.get view publication)
+              package-current: (lambda () (set! checks (+ checks 1)))
+              contract:
+              (.cc (.get view admission)
+                .obligations:
+                (lambda (_candidate _context) (list (.o kind: 'test-refused))))))
+          ;; The standard public invocation reports the same nested output
+          ;; refusal; this is not a new rejection protocol or a cached acceptance.
+          (check-refused pub 'source 'output)
+          (check-equal? checks 1))))
+
     (test-case "source and Schema edits after context demand refuse before admission"
       (for-each
         (lambda (which)

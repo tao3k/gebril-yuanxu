@@ -115,6 +115,10 @@ while attaching JSON baselines and source locations.
 
 * Qualification and limits
 
+This section records the fixed run08 input set. It is not a claim that a live,
+concurrently edited worktree still matches that set. The later performance
+audit and its separately identified inputs are in [[file:32.13-read-record-costs.org][32.13]].
+
 The integrated producer ece6f60 passes 11 slot-observation cases, 11 existing
 meta-prototype cases and 34 existing object cases (the upstream 51a276a change
 adds four object cases). Each focused gate exits normally with MODULE-OK,
@@ -141,7 +145,7 @@ actual production SourceAdmissionContract, the maintained Scenario Contracts,
 publication, JSON sources and relocation. Counted child obligations and negative
 effects remain test fixtures; they do not replace production .admit.
 
-The 101 selected Core source/test inputs match their pre-test fingerprints in
+The 101 selected Core source/test inputs matched their pre-test fingerprints in
 [[file:32.12-source-manifest.sha256][the source manifest]]. Concurrent changes to init-syntax and Nix files were
 outside this compiled/tested closure and were not overwritten. Three bounded
 compilation launches timed out after creating successful module checkpoints;

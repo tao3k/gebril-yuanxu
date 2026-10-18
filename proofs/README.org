@@ -7,8 +7,8 @@
 
 | Package | Scope | Dependency boundary |
 |---------+-------+---------------------|
-| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo v0.1.1 is a locked Git dependency |
-| [[file:quint/README.org][quint]] | Unified Graph operations and native semantic Query boundaries | Quint 0.33.0; bounded positive cases and matched negative controls |
+| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo PR 13 / =6e6a706= is an exact locked Git dependency |
+| [[file:quint/README.org][quint]] | Graph operations, demand-only test-source admission and semantic Query boundaries | Quint 0.33.0; bounded positive cases and matched negative controls |
 
 Run =just proofs= in Core. =just proofs-quint= checks the finite models separately;
 =just check-core-lean= in the consuming workspace checks the Lean packages only.
@@ -75,3 +75,76 @@ Its nine association modules keep their theorem bodies and namespaces. Both
 libraries build under Lean 4.34.0, with LeanPoo as one pinned Git dependency.
 The preceding migration validation table is historical evidence under the old
 separate toolchains, not a result for this consolidation.
+
+* Root/child source-certification boundary
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]] records the proof-only admission responsibility split: internal child
+analysis retains every domain requirement, while root certification independently
+checks complete selected sources after callbacks. Lean reuses source Certificates,
+ContextSlot laws and metadata publication. The focused QNT positive model and
+matched failures constrain any later reduction of whole-closure reads. This does
+not change Scheme admission or Loader behavior.
+
+* State-derived replay entry qualification
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]] separates bootstrap record validity, metadata readiness and callback
+exposure. The new Lean owner derives a closed operation program from actual
+kernel procedure identities, cached metadata or absent selected protocols, and
+absent source observers. It is independent of arbitrary callback bodies only
+because none are invoked. Native snapshot extraction remains unimplemented;
+sealing a root is not a general read-only proof. No Scheme/Loader change or new
+native read-count result follows from the formal qualification.
+
+* Observed MOP snapshot follow-up
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] joins default-runtime MOP extraction tests with SnapshotEntry's concrete
+cut guards. Native field reflection retrieves the checker without modifying
+producer exports. Exact endpoint equality preserves a deterministic projection;
+it does not establish source currentness, absence of ABA or atomicity. Existing
+source/domain/plan authorities remain independent. Production Scheme and Loader
+behavior are unchanged by this test/proof-only work.
+
+* Revision ABA and snapshot lifetime
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] joins actual supported invalidation, restored dynamic binding effects and
+check-to-use tests with SnapshotLifetime's laws/controls. It distinguishes the
+mutation graph from the full demand graph and certification refusal from effect
+rollback. A source cut that changes during qualification still refuses; input
+manifests and any drift details are retained outside Git. No production Scheme,
+new scope epoch or Loader behavior is introduced.
+
+
+* Serial use qualification
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] links actual MOP cold-frame/replay/source controls with Admission/SerialUse
+and the matched Quint catalog. External conditional commit remains an explicit
+provider assumption; no production Scheme or Loader change is made.
+
+* Call acquisition / body qualification
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] connects actual .call cold/warm/body observations with Admission/CallPhases
+and its matched Quint controls. No production Scheme or Loader change is made.
+
+* Actual source admission observation
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] exercises hot and nested bodies using the existing SourceAdmissionContract.
+The qualification does not install another production observer or wrapper.
+
+* Post-replay source-tail gap
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] records actual stale accepted evidence under late observer effects.
+The formal/native gates retain these limitation witnesses without changing
+production SourceAdmissionContract or claiming return atomicity.
+
+
+* Constrained return-tail qualification
+
+[[file:../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] separates a replaceable caller wrapper from a temporary producer-owned
+source-event gate. Opaque observers are refused before invocation; this is not
+a purity declaration or a production fix. An independent writer remains a
+correct-model limitation requiring snapshot/conditional-commit authority.
+
+The final candidate covers both slot-replay (including cache exit) and
+return-currentness. A return-only gate is retained as an unsafe matched control.
+Only source-observer calls are restricted; arbitrary MOP record/checker ownership
+and external snapshot/commit remain separate premises.

@@ -2,6 +2,8 @@
 --
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+import LeanPoo.Functional.Assembly
+
 /-!
 The formal core shared by native POO Objects, identity-bearing Entity roles,
 Contract-scoped Elements, Relations and bounded read-only Queries.
@@ -75,12 +77,12 @@ structure QueryResult where
 
 /-- A Provider projects evidence from an admitted Query without changing the
 semantic space or manufacturing authority. -/
-def evaluateQuery (space : ElementSpace) (query : Query) : QueryResult :=
+def evaluateQuery (space : ElementSpace) (query : Query) (_admitted : query.Admitted space) : QueryResult :=
   { queryIdentity := query.identity
     sourceRevision := space.revision
     selectedIdentities := query.selectedIdentities
     carriesActionAuthority := false
-    runtimeExecuted := true }
+    runtimeExecuted := false }
 
 theorem entityRolePreservesNativeObjectIdentity (object : NativeObject) :
     (EntityRole.mk object.identity).objectIdentity = object.identity := by
@@ -105,20 +107,32 @@ theorem admittedQuerySelectsOnlyElements
 
 theorem queryEvaluationPreservesSemanticRevision
     (space : ElementSpace)
-    (query : Query) :
-    (evaluateQuery space query).sourceRevision = space.revision := by
+    (query : Query) (admitted : query.Admitted space) :
+    (evaluateQuery space query admitted).sourceRevision = space.revision := by
   rfl
 
 theorem queryEvaluationBindsQueryIdentity
     (space : ElementSpace)
-    (query : Query) :
-    (evaluateQuery space query).queryIdentity = query.identity := by
+    (query : Query) (admitted : query.Admitted space) :
+    (evaluateQuery space query admitted).queryIdentity = query.identity := by
   rfl
 
 theorem queryEvaluationNeverCarriesActionAuthority
     (space : ElementSpace)
-    (query : Query) :
-    (evaluateQuery space query).carriesActionAuthority = false := by
+    (query : Query) (admitted : query.Admitted space) :
+    (evaluateQuery space query admitted).carriesActionAuthority = false := by
   rfl
 
+/-- A total public factory checks the actual query before returning a result.
+No admitted record supplied by the caller can bypass the membership check. -/
+def queryFactory : LeanPoo.Functional.Factory (ElementSpace × Query) (fun _ => Except String QueryResult) :=
+  fun (space, query) => (admitQuery space query).map fun checked =>
+    evaluateQuery space checked.val checked.property.2
+
+theorem projection_does_not_claim_native_execution (space : ElementSpace) (query : Query)
+    (admitted : query.Admitted space) : (evaluateQuery space query admitted).runtimeExecuted = false := rfl
+
+#guard (queryFactory (⟨1, ["a"]⟩, ⟨"q", ["a"], true, true⟩)).toOption.isSome
+#guard !(queryFactory (⟨1, ["a"]⟩, ⟨"q", ["outside"], true, true⟩)).toOption.isSome
+#guard !(queryFactory (⟨1, ["a"]⟩, ⟨"q", ["a"], false, true⟩)).toOption.isSome
 end PooFlowCoreProof.ModuleSystem.Schema.Query

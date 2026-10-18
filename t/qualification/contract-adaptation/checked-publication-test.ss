@@ -8,10 +8,10 @@
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :core/modules/json-schema/contracts
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence
-          poo-flow-contract-admit poo-flow-validation-evidence-accepted?))
+        (only-in :core/admission/publication AdmissionPublication.)
+        (only-in :core/types PooFlowContract. poo-flow-classification-evidence))
 (export checked-publication-test test-cleanup!
-        make-scenario make-admission allow replay
+        make-scenario make-admission allow
         WebContract ConfigContract ScenarioContract)
 
 (def completed-cases 0)
@@ -99,35 +99,11 @@
         (if accepted '() (list (.o kind: 'policy-refused))) context)))
   (values descriptor watched count observed))
 
-(def (evidence-view evidence)
-  (.o subject: (.get evidence candidate)
-      descriptor: (.get evidence admission-contract)
-      context: (.get evidence context)))
-(def AdmissionCall
-  (metadata.contract
-    (metadata.predicate "configuration" object?)
-    (metadata.predicate "accepted Core evidence" poo-flow-validation-evidence-accepted?)
-    (lambda (_key _request _evidence) #t) (metadata.atom 'context-current)))
-(def (current-call context-value)
-  (metadata.with-meaning AdmissionCall
-    (lambda (_key _request _evidence)
-      ((.get context-value admit-current)) #t) #f))
 (def (publish-checked previous candidate descriptor context-value)
-  (def call (current-call context-value))
-  (metadata.publish call previous
-    (lambda (raw)
-      ((.get context-value admit-current))
-      (def evidence (poo-flow-contract-admit descriptor raw context-value))
-      (def checked (.get evidence candidate))
-      (def bound
-        (metadata.bind-evidence call checked descriptor context-value evidence-view))
-      (metadata.invoke bound (lambda (_value) (values evidence checked)) checked))
-    candidate))
-(def (replay previous checked descriptor context-value evidence)
-  (metadata.publish
-    (metadata.bind-evidence (current-call context-value)
-      checked descriptor context-value evidence-view)
-    previous (lambda (_value) (values evidence checked)) checked))
+  ;; Synthetic field/Context data still belongs to this fixture. The protocol,
+  ;; normalization and evidence binding belong to the production publisher.
+  (.call (.cc AdmissionPublication. contract: descriptor context: context-value)
+    .publish previous candidate))
 (def (check-refused previous result next refusal)
   (check-equal? result #f)
   (check-equal? (eq? previous next) #t)
@@ -173,7 +149,10 @@
       (check-equal? (.get cached instance_type) "t3.small")
       (check-equal? (.get next resource instance_type) "t3.medium")
       (check-equal? (.get next config web settings instance_type) "t3.medium")
-      (defvalues (bad kept failure) (replay old-next next descriptor context old))
+      (def publication (.cc AdmissionPublication. contract: descriptor context: context))
+      (defvalues (bad kept failure)
+        (metadata.publish (.call publication .bind-evidence next)
+          old-next (lambda (checked) (values old checked)) next))
       (check-refused old-next bad kept failure)
       (check-equal? (metadata.failure-phase failure) 'logic)
       (check-equal? (vector-ref count 0) 2)
@@ -190,7 +169,10 @@
       (check-equal? (.get first identity) (.get second identity))
       (check-equal? (.get first-contract identity) (.get second-contract identity))
       (check-equal? (eq? first-contract second-contract) #f)
-      (defvalues (bad kept failure) (replay parent next second context old))
+      (def publication (.cc AdmissionPublication. contract: second context: context))
+      (defvalues (bad kept failure)
+        (metadata.publish (.call publication .bind-evidence next)
+          parent (lambda (checked) (values old checked)) next))
       (check-refused parent bad kept failure)
       (check-equal? (vector-ref second-count 0) 0)
       (defvalues (fresh newer failure2) (publish-checked next parent second context))
@@ -207,7 +189,10 @@
       (def other (.cc context))
       (defvalues (old next refusal) (publish-checked parent parent descriptor context))
       (check-equal? refusal #f)
-      (defvalues (bad kept failure) (replay parent next descriptor other old))
+      (def publication (.cc AdmissionPublication. contract: descriptor context: other))
+      (defvalues (bad kept failure)
+        (metadata.publish (.call publication .bind-evidence next)
+          parent (lambda (checked) (values old checked)) next))
       (check-refused parent bad kept failure)
       (check-equal? (metadata.failure-phase failure) 'logic)
       (check-equal? (vector-ref count 0) 1)
@@ -255,8 +240,10 @@
       (defvalues (bad kept failure) (publish-checked old-next parent descriptor context))
       (check-refused old-next bad kept failure)
       (check-equal? (vector-ref count 0) 1)
+      (def publication (.cc AdmissionPublication. contract: original context: context))
       (defvalues (bad-replay kept-replay replay-failure)
-        (replay old-next old-next original context old-evidence))
+        (metadata.publish (.call publication .bind-evidence old-next)
+          old-next (lambda (checked) (values old-evidence checked)) old-next))
       (check-refused old-next bad-replay kept-replay replay-failure)
       (check-equal? (vector-ref original-count 0) 1)
       (defvalues (bad2 kept2 failure2) (publish-checked parent parent descriptor context))

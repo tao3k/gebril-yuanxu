@@ -194,7 +194,7 @@ separate boundaries.
 
 * Corresponding Lean laws and proof status
 
-[[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/ConstructionRequirements.lean][ConstructionRequirements.lean]] adds a narrow reference trace, with an index
+[[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Requirements.lean][Requirements.lean]] adds a narrow reference trace, with an index
 fixed for one view. At every trace node, own requirements remain discoverable:
 
 #+begin_src lean

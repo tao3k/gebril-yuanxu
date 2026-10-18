@@ -9,7 +9,7 @@ package PooFlowCoreProof where
 
 require LeanPoo from git
   "https://github.com/tao3k/lean-poo.git"
-  @ "v0.1.1"
+  @ "6e6a706e14fa6f8199e4f36711440355b42ef335"
 
 @[default_target]
 lean_lib PooFlowCoreProof where

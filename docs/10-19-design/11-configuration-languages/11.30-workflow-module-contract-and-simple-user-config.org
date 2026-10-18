@@ -197,7 +197,7 @@ this source observation alone is not end-to-end provenance or authenticated evid
 * Conversion coverage and current evidence
 
 Real input: [[file:../../../../schemas/json/github-workflow.json][the maintained Workflow JSON asset]], hash recorded in module 28.
-Current consumer: [[file:../../../../modules/funflow/github-ci-contract.ss][Funflow GitHub contract]], whose audit declares a curated,
+Current consumer: [[file:../../../../modules/workflow/profiles/github-ci-contract.ss][Workflow GitHub contract]], whose audit declares a curated,
 top-level scope. Do not claim the raw-file route is already fully supported.
 Qualifier requirements include local/external/recursive refs, unions, conditional
 keywords, negation, patterns, map values and workflow-specific expression semantics.

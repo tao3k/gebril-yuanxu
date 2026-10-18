@@ -31,17 +31,21 @@
   (def (path-node name) (vector name #f (make-hash-table-eq) '()))
   (def (path-parts name)
     (let* ((text (symbol->string (syntax-e name))) (size (string-length text)))
-      (let loop ((start 0) (end 0) (parts '()))
-        (if (or (= end size) (char=? (string-ref text end) #\.))
-          (begin
-            (when (= start end)
-              (raise-syntax-error #f "empty path-slot segment" name))
-            (let ((part (datum->syntax name
-                          (string->symbol (substring text start end))
-                          (stx-source name))))
-              (if (= end size) (reverse (cons part parts))
-                (loop (+ end 1) (+ end 1) (cons part parts)))))
-          (loop start (+ end 1) parts)))))
+      ;; Native method names (.run, .acquire, .release) are ordinary slots,
+      ;; never paths with an empty leading segment.
+      (if (and (> size 0) (char=? (string-ref text 0) #\.))
+        (list name)
+        (let loop ((start 0) (end 0) (parts '()))
+          (if (or (= end size) (char=? (string-ref text end) #\.))
+            (begin
+              (when (= start end)
+                (raise-syntax-error #f "empty path-slot segment" name))
+              (let ((part (datum->syntax name
+                            (string->symbol (substring text start end))
+                            (stx-source name))))
+                (if (= end size) (reverse (cons part parts))
+                  (loop (+ end 1) (+ end 1) (cons part parts)))))
+            (loop start (+ end 1) parts))))))
 
   (def (insert-path! root parts spec origin)
     (let loop ((node root) (parts parts))
@@ -76,24 +80,35 @@
   (def (refinement? operator)
     (and (identifier? operator) (free-identifier=? operator #'=>.+)))
 
+  (def (lower-slot-assignment name value)
+    ;; Generated leaf slots have the same lexical source-binding constraints
+    ;; as ordinary slots. Keep one admission path for both forms.
+    (let ((bounded (bounded-module-use-parts value #'use-module)))
+      (when (and bounded (eq? (syntax-e name) (syntax-e (car bounded))))
+        (raise-syntax-error #f
+          "module source conflicts with lexical slot; use a distinct source binding (for example Funflow)"
+          (car bounded)))
+      (with-syntax ((name name) (value value)) #'(name value))))
+
   (def (lower-path-spec name tail dotted? leaf)
     (if dotted?
       (syntax-case tail ()
+        ((value)
+         (if (and (identifier? #'value)
+                  (or (free-identifier=? #'value #'=>.+)
+                      (free-identifier=? #'value #'=>)
+                      (free-identifier=? #'value #'?)))
+           (raise-syntax-error #f "missing value after path-slot operator" name)
+           (lower-slot-assignment leaf #'value)))
         ((op value)
          (if (refinement? #'op)
            (with-syntax ((name leaf) (op #'op)
                          (value (lower-path-value #'value)))
              #'(name op value))
            (raise-syntax-error #f "path slots require native =>.+" name)))
-        (_ (raise-syntax-error #f "path slots require one =>.+ object expression" name)))
+        (_ (raise-syntax-error #f "path slots require one value or =>.+ object expression" name)))
       (syntax-case tail ()
-        ((value)
-         (let ((bounded (bounded-module-use-parts #'value #'use-module)))
-           (when (and bounded (eq? (syntax-e name) (syntax-e (car bounded))))
-             (raise-syntax-error #f
-               "module source conflicts with lexical slot; use a distinct source binding (for example Funflow)"
-               (car bounded)))
-           (with-syntax ((name name) (value #'value)) #'(name value))))
+        ((value) (lower-slot-assignment name #'value))
         ((op value)
          (if (refinement? #'op)
            (with-syntax ((name name) (op #'op)

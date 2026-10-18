@@ -7,8 +7,16 @@
         (only-in :core/types poo-flow-validation-evidence-accepted?)
         (only-in :core/module-system/source/build unique-build-inputs)
         (only-in :core/module-system/source/admission module-source-type module-source-name?
-                 module-source-read module-source-admit-current! call-with-module-source-read-cache))
+                 module-source-read module-source-admit-current! call-with-module-source-read-cache
+                 current-module-source-observer))
 (export SelectedPackages.)
+(def (package-stage name action)
+  (def observer (current-module-source-observer))
+  (if (not observer) (action)
+    (dynamic-wind
+      (lambda () (observer (list 'package-stage-start name) 1))
+      action
+      (lambda () (observer (list 'package-stage-end name) 1)))))
 (def (forms-text forms)
   (call-with-output-string
     (lambda (port) (for-each (lambda (form) (write form port) (newline port)) forms))))
@@ -26,15 +34,15 @@
   (unless (and (object? selection) (string? directory))
     (error "selected package operation requires a selection and output directory"))
   (let* ((graph-value (.get selection build-graph))
-         (requests (.get graph-value external-packages))
+         (requests (package-stage 'external-requests (lambda () (.get graph-value external-packages))))
          (output-root (path-expand directory))
          (entry-path (path-expand "guard.ss" output-root))
-         (observed (.get graph-value source-inputs)))
+         (observed (package-stage 'source-inputs (lambda () (.get graph-value source-inputs)))))
     (unless (null? (.get graph-value other-projections))
       (error "unsupported selected operational projections" (.get graph-value other-projections)))
     ;; Source compiler entries remain owned by Core/std/make. This operation
     ;; consumes only external packages, retaining the whole graph's source guards.
-    (.call graph-value admit-current)
+    (package-stage 'entry-current (lambda () (.call graph-value admit-current)))
     (check-output-path! output-root)
     (when (and (file-exists? output-root) (pair? (directory-files output-root)))
       (error "Ops package output must be fresh" output-root))
@@ -59,16 +67,19 @@
           (module-source-admit-current! observed)
           (module-source-admit-current! inputs))))
     (for-each (lambda (row) (write-input! (car row) (cdr row))) inputs)
-    (inputs-current!)
+    (package-stage 'inputs-current inputs-current!)
     (let* ((results
-            (map (lambda (request)
+            (package-stage 'realize
+             (lambda ()
+              (map (lambda (request)
                    (cons (.get request identity)
                      (.call request .realize
                        (path-expand (string-append "external/" (symbol->string (.get request identity))) output-root)
-                       inputs-current!))) requests))
+                       inputs-current!))) requests))))
            (values (map cdr results))
            (script
-            (forms-text
+            (package-stage 'guard-script
+             (lambda () (forms-text
              `((import :gerbil/core :core/module-system/source/admission
                        ,@(foldr append '() (map (cut .get <> guard-imports) values)))
                ;; A normal operational guard, not a build specification.
@@ -76,7 +87,7 @@
                  (unless (equal? arguments '("check")) (error "expected check"))
                  (module-source-admit-current! ',(unique-build-inputs (append observed inputs)))
                  ,@(foldr append '() (map (cut .get <> guard-forms) values))
-                 #t))))
+                 #t))))))
            (entry-observation (list (cons entry-path script))))
       (def (sources-current!)
         (inputs-current!)
@@ -88,15 +99,16 @@
         (sources-current!))
       (inputs-current!)
       (write-input! entry-path script)
-      (for-each
+      (package-stage 'value-admission
+       (lambda () (for-each
         (lambda (value)
           (when (.slot? value 'admission)
             (unless (poo-flow-validation-evidence-accepted? (.get value admission))
-              (error "external package configuration admission rejected")))) values)
+              (error "external package configuration admission rejected")))) values)))
       ;; Admission may execute arbitrary validators. No candidate escapes until
       ;; every package identity and source is rechecked AFTER those validators.
       ;; Do not precheck and then treat a cached value receipt as currentness.
-      (current!)
+      (package-stage 'publication-current current!)
       (.o build-graph: graph-value packages: (object<-alist results)
           guard-entry: entry-path sources-current: sources-current!
           admit-current: current!))))

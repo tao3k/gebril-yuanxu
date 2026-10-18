@@ -174,6 +174,13 @@
                               'local (path-expand "interface.ss" child)
                               (list (cons 'module-id id) (cons 'module-root child)
                                     (cons 'collection-root collection-root)
+                                    ;; Mount is organization, never publication identity.
+                                    (cons 'namespace-mount
+                                      (and windows
+                                        (.ref (if row (row-window row)
+                                                (find (lambda (window)
+                                                        (string=? (window-root window) owner-root))
+                                                      windows)) 'mount)))
                                     (cons 'source-binding (if origin 'explicit 'directory))
                                     (cons 'source-tree source-tree)
                                     (cons 'init-source init-path) (cons 'generation generation-value))))

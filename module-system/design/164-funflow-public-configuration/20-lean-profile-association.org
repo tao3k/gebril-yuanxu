@@ -29,8 +29,8 @@ The new non-default library target is PooFlowCoreProof.ModuleSystem.Schema.Assoc
 
 | Source | Responsibility |
 |--------+----------------|
-| [[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/Model.lean][Model.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
-| [[file:../../../proofs/lean/PooFlowCoreProof.ModuleSystem.Schema.Association/Checks.lean][Checks.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
+| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Semantics.lean][Semantics.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
+| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Controls.lean][Controls.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/receipt.json][Receipt]] | Exact source hashes, dependency identity and verification scope |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/build.log][Target build]] | lake build PooFlowCoreProof.ModuleSystem.Schema.Association, exit 0 |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/axioms.log][All-theorem axiom audit]] | No sorryAx or new custom axioms; standard propext, Quot.sound and Classical.choice only where reported |

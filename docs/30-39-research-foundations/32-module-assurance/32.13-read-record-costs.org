@@ -1,0 +1,257 @@
+#+title: 32.13 Read recording, replay and nested admission costs
+#+language: en
+#+property: DOCUMENT_ID 32.13
+#+property: STATUS work-counts-qualified-timing-exploratory
+#+date: [2026-10-18]
+
+* Question and fixed controls
+
+[[file:32.12-mop-read-records-and-source-admission.org][32.12]] establishes the consumer semantics, not a zero-cost observation claim.
+This audit asks what ordinary reads pay without an observer, what shared
+dependencies actually deduplicate, and what another admission boundary repeats.
+No Loader integration, production MOP change, or admission-result cache is added.
+
+The ordinary control uses compiled public operations at gerbil-poo 51a276a
+(immediately before recording) and ece6f60 (recording enabled). Both receive
+the identical [[file:../../../t/qualification/slot-read-replay/ordinary-cost.ss][ordinary-cost.ss]] source, copied into their source packages as
+t/slot-read-cost-test.ss. Its SHA256 is
+4f5fde253560ed34fe7879415112129e52724fa39f1c6ae8c651d4dcb1054aad.
+The producer implementation is not patched. The ordinary experiment uses no
+Core admission implementation, observer, forced collection or source guard.
+
+All runs use Gerbil 1cfb032 on Gambit ea114fc, pre-import 1 GiB heap fences,
+the released test harness and the existing 120-second watchdog. Source import
+and compilation are outside the measured windows. Four fresh processes run
+in ABBA order, with three samples per phase per process. The phase order within
+a process is fixed, so GC carryover is not eliminated by the ABBA outer order.
+
+* Ordinary reads: recording is not free
+
+CPU and wall values below are observed medians in microseconds per operation,
+six samples per variant/phase. Warm phases use 100,000 reads per sample;
+cold phases create/read 1,000 fresh receivers. Empty calls are a separate
+control, not silently subtracted. Natural GC is retained.
+
+| Phase | Before CPU | After CPU | Before wall | After wall |
+|-------+------------+-----------+-------------+------------|
+| Empty call | 0.0039 | 0.0039 | 0.0044 | 0.0050 |
+| Warm .ref | 0.1806 | 0.3068 | 0.2949 | 0.5163 |
+| Warm .ref/cached | 0.1751 | 0.3590 | 0.2721 | 0.7502 |
+| Warm .ref/inline | 0.1656 | 0.2213 | 0.3155 | 0.4365 |
+| Cold scalar | 15.1000 | 17.4765 | 30.3334 | 118.8380 |
+| Cold derived scalar | 9.0710 | 15.7105 | 21.4025 | 32.0765 |
+
+These are exploratory observations, not a stable latency ratio or regression
+budget. Concurrent host work contaminated wall time: individual wall/CPU ratios
+reach 14.67. Some phases include GC. Every run still checks the same returned
+scalar and verifies the warmed getter ran exactly once. There is no evidence
+here for a startup, throughput or large-module-system speedup.
+
+The source explains the nonzero costs:
+
+- Ordinary non-bootstrap warm reads reuse their existing value/record; they do
+  not construct another dependency record. They still perform dynamic observer
+  state checks. This is not a claim of zero VM allocation.
+- Cold reads always capture dependencies and retain a receiver-bound record,
+  even without an observer. Otherwise an already-warmed Profile could later
+  enter admission with its computed-value provenance missing.
+  An absent observer does not mean an absent capture frame inside a cold getter.
+- Native instance preparation is recorded separately and attached to value
+  records. Removing that record is not a valid cold-path optimization.
+
+* Allocation evidence rejected
+
+The existing producer closure-measure.ss retains a signed allocation diagnostic
+derived from Gambit's process statistics. This runtime produced negative values,
+including cold samples whose reported GC count was zero. Those values are kept
+in the local raw logs; none are clamped, replaced by another statistic slot,
+or presented here as allocated bytes. The producer's dispatch-benchmark.ss
+already documents this runtime limitation and excludes unsuitable diagnostics.
+CPU, wall and collection counts remain separate columns. A trustworthy byte
+overhead or retained-heap bound needs an independently qualified runtime counter.
+
+* Shared dependencies: node deduplication is not edge deduplication
+
+The real Scenario supplies the PostgreSQL plan endpoint. A private cost probe
+reads that same endpoint repeatedly, warms outside every observer, then invokes
+the public MOP replay protocol. An independent graph-size oracle checks that
+each unique token receives exactly one replay callback.
+
+| Repeated endpoint reads | Unique nodes | Stored edges | Replay callbacks |
+|-------------------------+--------------+--------------+------------------|
+| 1 | 12 | 11 | 12 |
+| 8 | 12 | 18 | 12 |
+| 64 | 12 | 74 | 12 |
+| 512 | 12 | 522 | 12 |
+
+The final replay's seen table deduplicates node callbacks. The capture frame is
+still a list: repeated reads append repeated token references. Traversal must
+still inspect these edges. Successful replay also validates the visited tokens
+again before returning. Therefore callback count is V, currentness-predicate
+calls are 2V, and traversal work includes R + E; source/metadata inspection
+has its own additional cost. O(V) callback count is not an O(V) total-cost claim.
+
+The isolated compiled replay measurement validates these same stable graphs
+200 times per sample with a no-op callback. It does not perform source I/O.
+Across the two passing processes, six samples give exploratory CPU medians of
+6.905, 7.140, 9.047 and 25.110 microseconds per replay for widths 1, 8, 64 and
+512. The constant node count therefore does not imply a constant traversal
+cost. Wall/CPU outliers reach 78.52 in these very short samples; no stable
+replay latency or speed ratio is qualified. DEPENDENCY-COST rows separately
+measure fresh probe construction/cold capture, not replay-only throughput.
+
+* Real Scenario and nested-boundary comparison
+
+[[file:../../../t/slot-read-cost-test.ss][The Core cost gate]] uses ServicesFixture's maintained Gitea/PostgreSQL roles,
+JSON inputs, selected publication and original published Contract. Cold means a
+fresh derived candidate while the parent/Contract are warm; warm means a reused
+candidate. Both perform real normalization and admission on every call. Neither
+reuses a previous accepted receipt. A cached parent plan remains at 5432 while
+the child and its final client plan must both read 5433.
+
+Nested-boundary measurements are deliberately separate. First the original
+publication admits/normalizes the candidate. Private envelopes then admit that
+exact effective object through contextual Contracts, retaining the original
+preflight, domain classifier and child obligations. A counted obligation wraps
+and calls the inherited obligation; it does not replace its result. These
+envelopes have no publication authority and are not a new module protocol.
+Only the two nested depths are matched to each other; their times cannot be
+compared as equivalent work to full publication-context admission.
+
+Counter passes use the existing module-source observer for read requests,
+physical reads and pure-check windows. Timing passes do not install that
+observer or the extra MOP graph collector. The normal Case watchdog remains;
+process CPU/GC figures are not thread-exclusive attribution.
+
+Both passing fresh-process runs reproduce these counter rows exactly:
+
+| Full publication admission | Read events | Unique roots | Nodes / edges | File requests | Actual file reads | Pure-check entries |
+|----------------------------+-------------+--------------+---------------+---------------+-------------------+--------------------|
+| Fresh child, warm parent | 2628 | 568 | 871 / 1938 | 1834 | 310 | 642 |
+| Reused child | 2615 | 568 | 871 / 1938 | 1834 | 310 | 642 |
+
+An actual file read means a call to open/read the source, not a physical disk
+operation; the OS page cache may satisfy it. Warm object values do not eliminate
+source guards, normalization or contribution checks. The present implementation
+still performs substantial repeat source work in this small Scenario.
+The six timing samples per mode give descriptive CPU medians of 65.028 and
+63.408 ms/admission, and wall medians of 239.342 and 327.481 ms/admission.
+All six samples in each mode include a collection. These do not establish a
+warm-path latency improvement, and the counters alone do not attribute all CPU
+cost to file I/O.
+
+The matched contextual-envelope comparison keeps the effective object and
+contextual domain checks identical:
+
+| Source-admission boundaries | Read events | Unique roots | Nodes / edges | File requests / reads | Pure-check entries |
+|-----------------------------+-------------+--------------+---------------+-----------------------+--------------------|
+| 2: domain + envelope | 609 | 363 | 678 / 1675 | 8 / 8 | 2 |
+| 3: domain + two envelopes | 690 | 414 | 744 / 1734 | 10 / 10 | 3 |
+
+The extra boundary adds 81 observed reads, 66 graph nodes and two source-file
+reads in this fixture. CPU medians are 6.849 and 9.243 ms/admission; wall medians
+are 30.627 and 17.164 ms. The reversed wall ordering illustrates why host-load
+timing is not an acceptance result. These are not cheaper equivalents of the
+full publication path: root normalization and publication-context admission
+already happened before the contextual measurements.
+
+* Acceptance controls and evidence boundary
+
+The three cost/control Cases pass in two fresh processes (scenario-R3 and R4),
+with MODULE-OK, HARNESS-OK, final OK and natural exit zero. They retain:
+
+- Parent plan/cache at 5432, final child PostgreSQL/client plan at 5433, and
+  exact final config/plan identity. Explicitly injecting the parent's plan is
+  rejected as stale-parent-plan.
+- One inherited child obligation per nested admission. Counter snapshots use
+  explicit temporal let scopes; timing calls are not included in that delta.
+- An unselected getter that raises if forced, whose call count remains zero.
+- A source write in the outer obligation AFTER child admission, rejected as
+  configuration source changed before the outer boundary returns.
+
+The existing 16-case slot-read-replay regression also passes against this
+compiled library, including changed Scheme sources, cached/inline access,
+false/missing distinctions, nested obligations and unselected branch controls.
+These are 19 distinct Cases, with the three cost Cases repeated; this is not a
+full Core-suite or remote-CI receipt. The prior R1/R2 failures are not successes:
+R1 violated publication-descriptor identity; R2 failed a counter snapshot after
+timed calls. The strict one-call assertion was retained, not changed to match
+the observed accumulated counter. The earlier read-only slot-name compilation
+error and mutable-input compilation attempts are retained too.
+
+The selected source identities are in [[file:32.13-source-manifest.sha256][the source manifest]]. Core inputs are
+identified by content, not by claiming an unmodified Core commit: concurrent
+work was present. The fixed reader input is
+c219358294188d7b43f130fa6a61c3cb602767c8a4cf31e24a34f8a16e026a7b.
+All 611 fixed Scheme/JSON/package input files matched their recorded contents
+after both runs. The manifest describes the fixed input copy, not a promise
+that the concurrently edited working tree matches it. The shared installed
+package was not modified; concurrent edits, including reader.ss, were preserved.
+No measured result is a Lean proof or an allocation bound.
+
+* Reflection and tuning boundaries
+
+1. Target the repeated source work as well as capture-edge duplication; faster
+   graph bookkeeping alone cannot remove 310 source-file reads per admission.
+   Do not remove final safety checks. An
+   identity-deduplicated, lazily allocated frame index could retain one edge
+   per distinct token while leaving demand prechecks and observer events intact.
+   Scalar/one-dependency cold cases need controls against index overhead.
+2. Audit dynamic state checks on unobserved hot paths. A consolidated private
+   read context is a candidate, not an implemented or measured improvement.
+3. Nested boundaries currently collect/replay independently. Sharing an accepted
+   result or a seen table across those boundaries could hide an intervening
+   effect. Any reuse must still validate the final receiver and freshly check
+   sources before each authority-bearing return.
+4. Reuse existing pure source-check windows only where no intervening effects
+   can occur. Do not extend a file-byte cache across obligations or runtime
+   handoff to make warm measurements look cheaper.
+5. One two-service Scenario plus shared-edge probes does not qualify thousands
+   of services, retained memory or arbitrary nesting. Such scaling needs its
+   own fixed-input scenario and cost budget.
+
+* Reproduction and source discipline
+
+The heap-fenced Just gates are compile-slot-read-costs and test-slot-read-costs.
+The former adds a private single-source root to the existing qualification
+compiler; it creates no Loader API. Run the compiled .ssi to measure compiled
+operations, not a second evaluator. For each ordinary variant:
+
+#+begin_src sh
+# Populate ROOT/source/clan/poo using git archive of the fixed producer revision.
+cp t/qualification/slot-read-replay/ordinary-cost.ss \
+  "$ROOT/source/clan/poo/t/slot-read-cost-test.ss"
+just compile-slot-read-costs "$ROOT" \
+  "$ROOT/source/clan/poo/t/slot-read-cost-test.ss"
+just test-slot-read-costs "$ROOT" \
+  "$ROOT/lib/clan/poo/t/slot-read-cost-test.ssi" "$LABEL"
+#+end_src
+
+Core input files are snapshotted separately for the Scenario gate because
+another session was editing reader.ss during compilation. This is a fixed
+copy of current source, not an older linker implementation or compatibility
+runtime. CORE_REPLAY_INPUT_CORE points the qualification compiler at those
+inputs. Selected source fingerprints must match after the run. Do not overwrite
+the other session's reader or mix mutable-input runs into a timing receipt.
+
+For the Scenario gate, set CORE_REPLAY_INPUT_CORE to the fixed input directory,
+compile its t/slot-read-cost-test.ss, then run the resulting
+lib/core/t/slot-read-cost-test.ssi twice with distinct labels. Compilation may
+resume only completed content-bound module checkpoints under the unchanged
+watchdog; interrupted launches remain failed launches. Recheck the input
+manifest afterwards. The private input copy is a qualification source artifact,
+not a forked implementation to maintain alongside Core.
+
+Raw logs remain outside Git under /private/tmp/poo-read-cost-before,
+/private/tmp/poo-read-cost-after and /private/tmp/core-slot-read-cost-scenario.
+The first Scenario attempt substituted a derived descriptor into an existing
+publication context; the production identity guard correctly rejected it.
+That failed attempt is preserved rather than weakening the guard. A compiler
+attempt with an edited input is also retained/discarded as stale, not counted
+as a successful receipt.
+
+* Follow-up: attribute and bound file-read reuse
+
+[[file:32.14-source-check-windows.org][32.14]] records per-file/phase attribution and the stricter pure-window
+control. The historical 310 count above is retained, not rewritten as a new
+performance acceptance target.

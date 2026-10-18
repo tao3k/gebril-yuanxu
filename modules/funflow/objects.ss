@@ -1,8 +1,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :core/ops/objects ProcessScript.)
-        "control-plane/api.ss"
+        (only-in :core/ops/process-script ProcessScript.)
+        ;; This role publishes these combinators, not the aggregate control
+        ;; plane (including Agent harnesses and unrelated syntax facades).
+        (only-in "control-plane/flow.ss"
+                 flow-arr flow-then flow-fanout flow-map flow-bind
+                 flow-first flow-second conditional-flow try-flow
+                 return-flow cached-pure-flow)
         (only-in "store.ss" put-dir-flow get-dir-flow store-flow)
         "func.ss" "config-prototypes.ss" "graph-projection.ss")
 (export Task. Job. FunflowModule.)

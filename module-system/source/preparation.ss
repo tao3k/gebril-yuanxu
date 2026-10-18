@@ -19,11 +19,17 @@
     (and entry (cdr entry))))
 (def (module-compiler-identity path)
   (module-source-observe read-module-compiler-identity path))
-(def (read-module-compiler-identity path)
+(def (read-module-compiler-identity path (header-free-text #f))
   ;; Native package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
     ((current-module-source-observer) 'compiler-identity-reads 1))
   (let-values (((prelude identity namespace body) (core-read-module/sexp path)))
+    (when (and header-free-text
+               (not (equal? (syntax->datum body)
+                            (call-with-input-string header-free-text read-all))))
+      (error "compiler tool inclusion requires a header-free source body" path))
+    ;; Do not return the read syntax. Interpreted slot closures retain their
+    ;; lexical frame, including unused sibling bindings, until their owner dies.
     (list prelude identity namespace)))
 (def (package-source-snapshot path)
   ;; Observe the native reader's ancestor lookup, not a second package resolver.
@@ -184,9 +190,11 @@
   (context-current!)
   (let* ((text (module-source-read source-path))
          (packages (package-source-snapshot source-path)))
-    (let-values (((prelude id namespace _body) (core-read-module/sexp source-path)))
-      (when (and tool? (not (equal? (syntax->datum _body) (call-with-input-string text read-all))))
-        (error "compiler tool inclusion requires a header-free source body" source-path))
+    (let-values (((prelude id namespace)
+                  (apply values (read-module-compiler-identity source-path (and tool? text)))))
+      ;; Header extraction owns and releases the temporary syntax frame. The
+      ;; persistent POO projection retains only metadata and guarded source bytes;
+      ;; native include/expansion remains deferred to its original demand.
       ;; Native identity is determined by the exact header bytes and ancestor
       ;; package resolution observed above. Revalidate both (including the native
       ;; package cache), rather than reparse the entire unchanged module body.

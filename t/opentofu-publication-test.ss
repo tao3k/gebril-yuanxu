@@ -70,6 +70,8 @@
                               (json-schema @ ,(path-expand "json-schema" maintained))
                               (nix @ ,(path-expand "nix" maintained))
                               (opentofu @ ,(path-expand "opentofu" maintained))
+                              (ops @ ,(path-expand "../ops" maintained))
+                              (funflow @ ,(path-expand "funflow" maintained))
                               ,@(if consumer? '(:app (infrastructure)) '())) port)))))
             (create-directory* (path-expand "modules" root))
             (write-source (path-expand "gerbil.pkg" root)
@@ -105,10 +107,15 @@
                 (write-source (path-expand "interface.ss" consumer)
                   "(.def Infrastructure identity: 'app/infrastructure core: (.o requires: (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract)) scope-contract: OpenTofuScopeContract exports: (.o config: Config)) features: (.o))")
                 (write-init #t)
+                (def graph (.get (poo-flow-load-modules init) build-graph))
+                (assert 'consumer-keeps-package-preparation-deferred
+                  (not (.ref/cached graph 'external-packages)))
                 (assert 'missing-source-reported
                   (with-catch
                     (lambda (exception)
-                      (and (pregexp-match "build-required: OpenTofu Config.source"
-                             (call-with-output-string (cut display-exception exception <>))) #t))
-                    (lambda () (.get (poo-flow-load-modules init) build-graph) #f)))
+                      (if (pregexp-match "build-required: OpenTofu Config.source"
+                            (call-with-output-string (cut display-exception exception <>)))
+                        #t
+                        (raise exception)))
+                    (lambda () (.get graph external-packages) #f)))
                 (assert 'missing-source-starts-no-nix (zero? starts))))))))))

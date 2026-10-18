@@ -7,7 +7,7 @@
         (only-in :core/observability/debug PooFlowDebugMemoryAnomaly? PooFlowDebugMemoryAnomaly-receipt
                  poo-flow-debug-memory-snapshot)
         (only-in :core/admission/publication AdmissionPublication.)
-        (only-in "../scenarios/aws/tests/integration/fixtures.ss"
+        (only-in "./Scenarios/aws/fixtures.ss"
                  Workspace prepare-aws-selection! realize-aws-selection))
 (export aws-publication-cost-test)
 (def aws-publication-cost-test

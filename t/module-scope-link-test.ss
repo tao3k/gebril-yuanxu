@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .ref .get object?)
+        (only-in :clan/poo/object .o .ref .get .call object?)
         (only-in :core/observability/testing-case poo-flow-test-case)
         (only-in :core/types poo-flow-predicate-contract)
         :core/module-system/source/objects
@@ -23,6 +23,35 @@
       current?: current-predicate))
 (def module-scope-link-test
   (test-suite "Core selected native module scopes without a Loader backend"
+    (poo-flow-test-case "selected-record retains cold factory and warm source refusal"
+      (let* ((current #t) (links 0) (checks 0)
+             (declarations
+              (.o custom/guestbook:
+                  (publication 'custom/guestbook (.o)
+                    (lambda (_deps) (set! links (+ links 1)) (.o ready: #t)))))
+             (view (poo-flow-load-modules
+                     (context declarations '(custom/guestbook) '() void
+                              (lambda (_generation)
+                                (set! checks (+ checks 1)) current)))))
+        (def first (.call view .selected-record 'custom/guestbook))
+        (def before checks)
+        (check-equal? (eq? first (.call view .selected-record 'custom/guestbook)) #t)
+        ;; A cached Graph/record lookup has one fresh eligibility check; there
+        ;; is no effect requiring a preceding duplicate Graph guard.
+        (check-equal? (- checks before) 1)
+        (check-equal? links 1)
+        (set! current #f)
+        (check-exception (.call view .selected-record 'custom/guestbook) error?))
+      (let* ((current #t)
+             (declarations
+              (.o custom/guestbook:
+                  (publication 'custom/guestbook (.o)
+                    (lambda (_deps) (set! current #f) (.o ready: #t)))))
+             (view (poo-flow-load-modules
+                     (context declarations '(custom/guestbook) '() void
+                              (lambda (_generation) current)))))
+        (check-exception (.call view .selected-record 'custom/guestbook) error?)
+        (check-exception ((.get view admit-current)) error?)))
     (poo-flow-test-case "selected scopes demand dependencies once, leave siblings cold"
       (let* ((reads '()) (links 0) (current #t)
              (declarations

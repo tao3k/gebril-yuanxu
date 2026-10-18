@@ -2,8 +2,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
+        (only-in "./progress.ss" call-with-execution-watchdog)
         (only-in :core/types poo-flow-validation-evidence-accepted?)
         (only-in :std/misc/process run-process)
+        (only-in :std/os/signal kill SIGKILL)
+        (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/misc/ports read-all-as-string))
 (export validate-script prepare-script-command merge-script-environment preview-script run-script)
 
@@ -19,7 +22,10 @@
     (error "Ops arguments must be strings"))
   (let (argv (append (.get script command) arguments))
     (if (.get script timeout)
-      (append (list "timeout" "--foreground" "--signal=TERM" "--kill-after=5s"
+      ;; Preserve the watchdog's own signal report in failed Ops output. A 137
+      ;; alone cannot distinguish deadline escalation from another SIGKILL.
+      ;; Batch jobs need descendant signaling, not terminal foreground mode.
+      (append (list "timeout" "--verbose" "--signal=TERM" "--kill-after=5s"
                     (string-append (number->string (.get script timeout)) "s")) argv)
       argv)))
 (def (merge-script-environment inherited overrides)
@@ -37,6 +43,8 @@
         (environment-value (merge-script-environment inherited-environment (.get script environment))))
     (.o argv: argv-value directory: (.get script directory)
         environment: environment-value timeout: (.get script timeout)
+        idle-timeout: (and (.slot? script 'idle-timeout) (.get script idle-timeout))
+        progress: (and (.slot? script 'progress) (.get script progress))
         log: (.get script log) check-status: (.get script check-status)
         stderr-redirection: stderr-value)))
 
@@ -49,16 +57,19 @@
   (object<-alist
     (map (lambda (entry) (cons (string->symbol (car entry)) (cdr entry)))
          (get-environment-variables))))
-(def (copy-process-output process port)
+(def (copy-process-output process port progress forward)
   (close-output-port process)
-  (let loop ((line (read-line process)))
+  (let loop ((line (read-line process #\newline #t)))
     (unless (eof-object? line)
-      (display line port) (newline port) (force-output port) (loop (read-line process)))))
+      (when progress (progress line))
+      (display line port) (force-output port)
+      (when forward (display line forward) (force-output forward))
+      (loop (read-line process #\newline #t)))))
 (def (process-exit-code wait-status)
   (if (zero? (bitwise-and wait-status #xff))
     (arithmetic-shift wait-status -8)
     (+ 128 (bitwise-and wait-status #x7f))))
-(def (execute-script prepared)
+(def (execute-script prepared forward)
   (let* ((started (real-time)) (exit-status #f)
          (captured-output
           (run-process (.get prepared argv)
@@ -67,19 +78,54 @@
             stdin-redirection: #f stderr-redirection: (.get prepared stderr-redirection)
             check-status: (lambda (code _settings) (set! exit-status code))
             coprocess: (lambda (process)
-                        (if (.get prepared log)
-                          (call-with-output-file (list path: (.get prepared log) truncate: #t)
-                            (cut copy-process-output process <>))
-                          (read-all-as-string process)))))
+                        (def completed? #f)
+                        (dynamic-wind void
+                          (lambda ()
+                            (begin0
+                              (if (.get prepared log)
+                                (call-with-output-file (list path: (.get prepared log) truncate: #t)
+                                  (lambda (port)
+                                    (copy-process-output process port
+                                      (and (.get prepared progress) ((.get prepared progress))) forward)))
+                                (call-with-output-string
+                                  (lambda (port)
+                                    (copy-process-output process port
+                                      (and (.get prepared progress) ((.get prepared progress))) forward))))
+                              (set! completed? #t)))
+                          (lambda ()
+                            ;; std/run-process closes and waits on unwind; it
+                            ;; does not terminate a child interrupted by a Case.
+                            ;; timeout owns a dedicated group in batch mode.
+                            (unless completed?
+                              (with-catch
+                                (lambda (failure)
+                                  (unless (and (os-error? failure)
+                                               (= (OSError-errno failure) ESRCH))
+                                    (raise failure)))
+                                (lambda ()
+                                  (kill (if (.get prepared timeout)
+                                          (- (process-pid process)) (process-pid process))
+                                        SIGKILL)))))))))
          (elapsed-value (- (real-time) started)))
     (when (and (.get prepared check-status) (not (zero? exit-status)))
       (error "Ops script failed" (process-exit-code exit-status)
              (.get prepared log) captured-output))
     (.o status: (process-exit-code exit-status) wait-status: exit-status seconds: elapsed-value
         output: captured-output log: (.get prepared log))))
-(def (run-script script (arguments '()) stderr-redirection: (stderr-value #t))
+(def (run-script script (arguments '()) stderr-redirection: (stderr-value #t)
+                output-port: (forward #f))
+  (unless (or (not forward) (output-port? forward))
+    (error "Ops forwarding requires an output port"))
   ;; Validation precedes ambient sampling. The same preparation feeds execution.
   (let* ((prepared (preview-script script arguments stderr-redirection: stderr-value))
          (environment-value
           (merge-script-environment (inherited-process-environment) (.get prepared environment))))
-    (execute-script (.cc prepared 'environment environment-value))))
+    (let (execute (lambda () (execute-script (.cc prepared 'environment environment-value) forward)))
+      (if (.get prepared idle-timeout)
+        (call-with-execution-watchdog
+          (* 1000 (.get prepared idle-timeout))
+          ;; GNU timeout owns the existing total-budget exit status (124).
+          ;; Do not race it with a second total exception, especially when
+          ;; check-status is false and callers explicitly inspect the receipt.
+          #f execute)
+        (execute)))))

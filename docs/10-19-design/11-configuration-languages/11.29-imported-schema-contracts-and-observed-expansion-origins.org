@@ -53,7 +53,7 @@ file must not be called a GitHub-published official standard merely because it
 models GitHub workflows. An upstream refresh is a reviewed new source pin, not
 an implicit network fetch during expansion or first ordinary config access.
 
-The current [[file:../../../../modules/funflow/github-ci-contract.ss][Funflow GitHub contract owner]] records the actual source hash and uses
+The current [[file:../../../../modules/workflow/profiles/github-ci-contract.ss][Workflow GitHub contract owner]] records the actual source hash and uses
 a curated fragment with an explicit top-level scope/unsupported-semantics audit.
 It does not currently prove complete validation of the raw upstream document.
 The proposed raw-file route must report/refuse unsupported semantic coverage;

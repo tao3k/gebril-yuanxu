@@ -34,11 +34,15 @@
                (not (member name '("t" "design" "docs" "proofs" "packages")))
                (or (eq? kind 'directory) (string-suffix? ".ss" name)
                    (string=? name "gerbil.pkg")))))
-      (copy-fixture-tree lib (path-expand "lib" fixture-state)
-        (lambda (path name _kind)
-          (not (or (equal? path (path-expand "core" lib))
-                   (and (equal? (path-directory path) (path-expand "static/" lib))
-                        (string-prefix? "core__" name))))))
+      ;; A source-only package state legitimately has no installed lib tree.
+      ;; Create the empty destination without manufacturing compiled artifacts.
+      (create-directory* (path-expand "lib" fixture-state))
+      (when (file-exists? lib)
+        (copy-fixture-tree lib (path-expand "lib" fixture-state)
+          (lambda (path name _kind)
+            (not (or (equal? path (path-expand "core" lib))
+                     (and (equal? (path-directory path) (path-expand "static/" lib))
+                          (string-prefix? "core__" name)))))))
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)

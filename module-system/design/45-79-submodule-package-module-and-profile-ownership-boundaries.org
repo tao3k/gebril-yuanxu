@@ -5,6 +5,12 @@
 #+title: Submodule, Package, Module, and Profile Ownership Boundaries
 #+startup: overview
 
+#+begin_note
+Model audit (2026-10-18): checklist entries reopened below refer to removed
+premise-only wrappers or projection tautologies. They are design obligations,
+not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+#+end_note
+
 * Status
 
 This RFC records the accepted ownership and import boundaries among Git
@@ -92,14 +98,14 @@ flowchart LR
 
 * Proof obligations
 
-- [X] =submoduleDoesNotImplicitlyCreateGerbilPackage=
-- [X] =submoduleDoesNotImplicitlyCreateGerbilModule=
-- [X] =submoduleDoesNotImplicitlyCreatePooProfile=
-- [X] =gerbilPackageDoesNotImplicitlyCreatePooProfile=
-- [X] =gerbilModuleDoesNotImplicitlyCreatePooProfile=
-- [X] =parentDoesNotOwnChildBuild=
-- [X] =parentDoesNotOwnChildTests=
-- [X] =parentDoesNotOwnChildPublication=
+- [ ] =submoduleDoesNotImplicitlyCreateGerbilPackage=
+- [ ] =submoduleDoesNotImplicitlyCreateGerbilModule=
+- [ ] =submoduleDoesNotImplicitlyCreatePooProfile=
+- [ ] =gerbilPackageDoesNotImplicitlyCreatePooProfile=
+- [ ] =gerbilModuleDoesNotImplicitlyCreatePooProfile=
+- [ ] =parentDoesNotOwnChildBuild=
+- [ ] =parentDoesNotOwnChildTests=
+- [ ] =parentDoesNotOwnChildPublication=
 - [X] =gerbilPackageDeclaresNoImplicitProfile=
 - [X] =gerbilPackageRegistersNoProvider=
 - [X] =gerbilPackageDefinesNoRuntimeCapability=
@@ -107,7 +113,7 @@ flowchart LR
 - [X] =moduleImportGrantsNoRuntimeCapability=
 - [X] =moduleImportDoesNotActivateProfile=
 - [X] =profileIsFirstClassPooValue=
-- [X] =childOwnsItsLifecycle=
+- [ ] =childOwnsItsLifecycle=
 - [X] =parentDoesNotOwnChildLifecycle=
 - [X] =crossLayerProjectionRequiresExplicitContract=
 - [X] =sourcePinUpdateDoesNotActivateProfile=

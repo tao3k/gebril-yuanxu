@@ -57,28 +57,8 @@
     (append execution-forms
       '((call-with-output-file "testing-execution.loaded"
           (lambda (port) (display "loaded" port))))))
-  ;; A real native suite exercises the same init-owned execution object on
-  ;; failure. It is inert unless the explicit fault-injection environment is set.
-  (write-forms
-    (path-expand (string-append "modules/" (symbol->string owner) "/tests/failure-test.ss") root)
-    '((import :std/test :clan/poo/object
-              (only-in :core/observability/testing-fixture with-poo-flow-fixture))
-      (export cleanup-probe-test)
-      (.def CleanupProbe
-        .acquire: (lambda () (create-directory "failure-resource") "failure-resource")
-        .release: (lambda (path)
-                    (delete-directory path)
-                    (call-with-output-file "failure-resource.released"
-                      (lambda (port) (display "released" port)))))
-      (def cleanup-probe-test
-        (test-suite "Failure cleanup probe"
-          (test-case "release acquired resources after body failure"
-            (when (string=? (getenv "CORE_MODULE_TEST_FAILURE_PROBE" "") "yes")
-              (with-poo-flow-fixture (resource CleanupProbe)
-                (error "deliberate native suite failure"))))))))
+  ;; The independent compiled-import gate owns this diagnostic directory.
   (create-directory* (path-expand "t/qualification/module-testing" root))
-  (copy-file (path-expand "t/qualification/module-testing/selection-test.ss" repository)
-             (path-expand "t/qualification/module-testing/selection-test.ss" root))
   (for-each
     (lambda (module)
       (def name (symbol->string module))

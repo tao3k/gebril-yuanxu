@@ -6,7 +6,7 @@ namespace PooFlowCoreProof.FeatureSystem.DomainCase.Resolution
 
 universe u v
 
-/-- An ordered winner entry can be retired without shifting the remaining
+/-- A projected winner entry can be retired without shifting the remaining
     source-order entries. -/
 structure ResolutionEntry (Value : Type u) where
   value : Value
@@ -87,4 +87,39 @@ theorem indexedReplace_preserves_reference_order
   rw [indexedReplace, activeValues_append, activeValues_retireBy]
   simp [referenceReplace, activeValues]
 
+/-- This is the pure projection of the native winner-index/tombstone loop.
+The native hash index provides lookup; no O(1) cost follows from this list model. -/
+def resolveCandidates [DecidableEq Key] (keyOf : Value → Key) (candidates : List Value) :=
+  candidates.foldl (fun entries candidate => indexedReplace keyOf candidate entries) []
+
+theorem replacement_unique_keys [DecidableEq Key] (keyOf : Value → Key) (candidate : Value)
+    (entries : List (ResolutionEntry Value))
+    (unique : ((activeValues entries).map keyOf).Nodup) :
+    ((activeValues (indexedReplace keyOf candidate entries)).map keyOf).Nodup := by
+  rw [indexedReplace_preserves_reference_order]
+  simp only [referenceReplace, List.map_append, List.map_cons, List.map_nil]
+  apply List.nodup_append.mpr
+  refine ⟨?_, by simp, ?_⟩
+  · have equal : ((activeValues entries).filter (fun value => decide (keyOf value != keyOf candidate))).map keyOf =
+        ((activeValues entries).map keyOf).filter (fun key => decide (key != keyOf candidate)) := by
+      simp [List.filter_map, Function.comp_def]
+    rw [equal]
+    exact unique.filter _
+  · intro key present other last same
+    have lastKey : other = keyOf candidate := by simpa using last
+    obtain ⟨value, member, equal⟩ := List.mem_map.mp present
+    have different : keyOf value ≠ keyOf candidate := by simpa using (List.mem_filter.mp member).2
+    exact different (equal.trans (same.trans lastKey))
+
+theorem constructed_winners_unique [DecidableEq Key] (keyOf : Value → Key) (candidates : List Value) :
+    ((activeValues (resolveCandidates keyOf candidates)).map keyOf).Nodup := by
+  have maintained : ∀ (entries : List (ResolutionEntry Value)),
+      ((activeValues entries).map keyOf).Nodup →
+      ((activeValues (candidates.foldl (fun current candidate => indexedReplace keyOf candidate current) entries)).map keyOf).Nodup := by
+    induction candidates with
+    | nil => intro entries unique; exact unique
+    | cons candidate rest ih =>
+      intro entries unique
+      exact ih _ (replacement_unique_keys keyOf candidate entries unique)
+  exact maintained [] (by simp [activeValues])
 end PooFlowCoreProof.FeatureSystem.DomainCase.Resolution

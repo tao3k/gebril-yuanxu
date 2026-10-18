@@ -7,6 +7,7 @@
 (def rows (make-hash-table))
 (def frames '())
 (def started #f)
+(def interval 'startup)
 
 (def (context-name)
   (let (context (current-expander-context))
@@ -33,8 +34,13 @@
             (vector-set! entry 2 (+ (- elapsed (vector-ref frame 1)) (vector-ref entry 2)))
             (hash-put! rows key entry)))))))
 
-(def (aws-startup-observation-start!)
-  (when (getenv "CORE_AWS_TRACE" #f)
+(def (aws-startup-observation-start! (label 'startup))
+  (when (or (getenv "CORE_AWS_TRACE" #f) (getenv "CORE_AWS_STARTUP_TRACE" #f)
+            (and (eq? label 'build-graph) (getenv "CORE_AWS_GRAPH_TRACE" #f)))
+    (when started (error "AWS expansion probe is already active" interval))
+    (set! interval label)
+    (hash-clear! rows)
+    (set! frames '())
     (set! started (real-time))
     (observe! 'import current-expander-module-import
       (lambda (arguments) (syntax->datum (car arguments))))
@@ -52,7 +58,8 @@
     (for-each (lambda (entry) ((car entry) (cdr entry))) restore)
     (set! restore '())
     (parameterize ((current-output-port (current-error-port)))
-      (displayln "AWS-STARTUP observed-seconds=" (- (real-time) started))
+      (displayln "AWS-STARTUP observed-seconds=" (- (real-time) started)
+                 " interval=" interval)
       (let loop ((entries (list-sort
                            (lambda (a b) (> (vector-ref (cdr a) 2)
                                             (vector-ref (cdr b) 2)))

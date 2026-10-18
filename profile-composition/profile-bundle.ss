@@ -322,7 +322,7 @@
     (hash-get index profile-identity)))
 
 ;;; Selection is intentionally shallow: dependency closure and cycle handling
-;;; remain owned by the fixed-point boundary after the root is admitted.
+;;; remain owned by selected Graph admission after the root is admitted.
 (def (poo-flow-select-module-profiles module-value instance-identity profile-identities)
   (unless (element? SemanticModuleContract module-value)
     (error "use-module requires a semantic Module" module-value))
