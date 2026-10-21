@@ -583,7 +583,7 @@ gate in RFC 45-120-15; this section does not invent their implementation path.
 On 2026-09-08 the normal ASP Search command could not supply that gate:
 
 #+begin_src sh
-./.devenv/devenv-profile-exec asp search playbook --languages gerbil-scheme --rg 'yuanxu-classification-evidence|poo-flow-module-observation' src/module-system/types.ss src/user-interface/module-presentation.ss
+./.devenv/devenv-profile-exec asp search playbook --languages gerbil-scheme --rg 'yuanxu-classification-evidence|yuanxu-module-observation' src/module-system/types.ss src/user-interface/module-presentation.ss
 #+end_src
 
 The sandboxed call returned =host-operation-not-permitted=. The exact command

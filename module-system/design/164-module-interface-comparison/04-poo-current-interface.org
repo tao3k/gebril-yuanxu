@@ -16,7 +16,7 @@ The following is extracted verbatim from [[file:../../../../modules/funflow/nati
 ;;; Local native publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
         (only-in :yuanxu/module-system/source/objects
-                 make-poo-flow-module-local-source yuanxu-module-source-ref?)
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
         (only-in :poo-flow/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
         (only-in :poo-flow/modules/funflow/profiles/gerbil-scheme
@@ -47,7 +47,7 @@ The following is extracted verbatim from [[file:../../../../modules/funflow/nati
 
 (def Funflow
   (make-funflow-scope
-    (make-poo-flow-module-local-source "modules/funflow")))
+    (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
 There are three important costs behind this short module. SourceRef is local

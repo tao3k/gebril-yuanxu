@@ -7,7 +7,7 @@
 #+filetags: :config-language:contracts:scenarios:design:
 #+property: STATUS unexecuted-reference-design-no-runtime-or-loader-change
 
-The public design name PooFlowObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
 its Core export rename is pending. This example does not introduce an alias.
 
 * Scope and dependencies
@@ -47,7 +47,7 @@ not a public alist configuration language.
   (yuanxu-predicate-contract 'application/reference reference? no-obligations))
 
 ;; Shape admission is not complete service/relationship admission.
-(.def (ApplicationShapeContract @ PooFlowObjectContract.)
+(.def (ApplicationShapeContract @ YuanxuObjectContract.)
   identity: 'application/scenario
   proto: ApplicationScenario.
   responsibilities:

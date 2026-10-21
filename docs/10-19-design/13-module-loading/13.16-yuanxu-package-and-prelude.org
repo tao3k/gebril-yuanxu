@@ -249,3 +249,67 @@ bindings, capture complete public requests, propagate catalog sources and
 keep finite source admission coherent. They do not replace producer-owned
 read issuance with a consumer-authored bundle. Validation of the new pin is
 separate from the previous revision's receipts.
+
+
+* Measured CI phase boundary (edfeb1c)
+
+The successful Linux build job records these separate intervals:
+
+| Phase | Elapsed | Compiler units |
+|-------+---------+----------------|
+| Install pinned gerbil-poo dependency | 255 s | 186 unique units |
+| Build Yuanxu | 259 s | 263 unique units |
+| Source-only bootstrap/compile/clean/rebuild controls | 138 s | 41 selected units |
+
+The two fixture compilation actions took 33.67 and 33.04 seconds. These are
+not the full-library timings. The full library includes 74 module units,
+62 Module System units, 23 CLOS units, 20 Feature System units and 17 Scenario
+units, plus its other owners. No repeated compiler target was present in the
+successful log. The absence of duplicate targets does not establish a minimal
+or efficient closure.
+
+The workflow bypassed Just's existing bounded two-worker setting. The
+installed std/make implementation maps an absent GERBIL_BUILD_CORES to zero
+and uses a single build worker. CI now sets the existing two-worker policy
+for dependency construction and invokes =just build= for Yuanxu. No compiler
+source, build flags, timeout, heap allowance or target check is weakened.
+A new matched run must establish the effect on the 263-unit phase; the
+41-unit fixture cannot substitute for that comparison. Test grouping changes
+wall-clock scheduling, not per-test acceptance.
+
+The macOS setup failed because =timeout= was absent. The shared GitHub action
+resolves coreutils from the content-pinned Nix package set and exposes its commands, retaining the same
+store probe and deadline. CI files and labels use responsibilities such as
+=platform=, =setup-gerbil= and =test-directory= without redundant qualifiers.
+
+At edfeb1c, Lean and all eight Quint partitions pass. The source-only
+compile/clean/rebuild control passes on Linux without increasing its
+60-second Script limit. Gitea/PostgreSQL's eleven controls also pass locally
+with the aligned gerbil-poo revision. A separate local strict-idle progress
+control failed with idle budget exhaustion; that failure remains unqualified
+until its child-start/relay boundary is explained. Earlier failed package
+build attempts used an incomplete private package-manager state; normal
+package metadata is subsequently produced by the installed package manager.
+These are distinct from CI's actual compiler and test results.
+
+* CI repair controls
+
+The standalone Core checkout pins its qualification package set in
+=t/fixtures/nixpkgs.nix=; CI does not inherit the product checkout's NIX_PATH.
+Nix owns the timeout tool and the build-time mkdir/cp dependencies. Store
+publication recipes use declared runCommand inputs rather than host /bin tools.
+Provider archive checksums cover both x86_64-linux and aarch64-darwin; the AWS
+Scenario records Nix's host platform before constructing its pure flake output.
+No production provider selection is changed by these qualification fixtures.
+
+The complete partition runs every file even when an earlier file fails, then
+fails the job with the full failed-file list. All per-file heap, total/idle
+budgets, harness markers and assertions remain enforced. This gathers independent
+failures in one run instead of repeatedly stopping at the first file.
+
+The deep contribution regression now separates mutation of admitted metadata
+(which the MOP rejects as a stale slot dependency) from an invalid declaration
+present before selection (which must report the unknown admission). Source-byte
+changes retain the current reader's stale prepared build source diagnostic.
+The ten deep contribution controls and the build-role controls pass locally;
+full exact-head CI remains the completion gate.

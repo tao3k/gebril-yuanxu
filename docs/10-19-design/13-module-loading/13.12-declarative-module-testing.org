@@ -858,7 +858,7 @@ entrypoint, without increasing its heap or timeout allowances.
 * Hygienic fixture binding
 
 =:yuanxu/observability/testing-fixture= exports =yuanxu-test-fixture=,
-=with-poo-flow-fixture= and their functional implementation. A fixture is an
+=with-yuanxu-fixture= and their functional implementation. A fixture is an
 ordinary POO object with =.acquire= and =.release= methods. The macro introduces
 only the requested local binding and expands to existing test-case observation
 plus a dynamic-wind resource boundary:
@@ -870,7 +870,7 @@ plus a dynamic-wind resource boundary:
 
 ;; Expansion, using hygienic library bindings:
 (yuanxu-test-case "module behavior"
-  (call-with-poo-flow-fixture Workspace
+  (call-with-yuanxu-fixture Workspace
     (lambda (workspace)
       (check-equal? (.get (.call Release .run workspace) steps build output)
                     "release"))))

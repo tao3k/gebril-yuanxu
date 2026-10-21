@@ -9,7 +9,7 @@ let
 in {
   parent = schema (package {
     version = "5.99.0";
-    hash = "sha256:d77fc7e17730eb40cde656e67fc206e9d7ca2a346d9e1819e6f3bd71289207e2";
+    hash = { aarch64-darwin = "sha256:d77fc7e17730eb40cde656e67fc206e9d7ca2a346d9e1819e6f3bd71289207e2"; x86_64-linux = "sha256:ac8e1fb974569f0c5fdc09f5991fb8b0e79ccf4086799bf64715317f3a27a7fd"; };
   });
   child = schema (package { });
 }

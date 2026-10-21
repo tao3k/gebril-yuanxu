@@ -125,7 +125,7 @@ is not an end-to-end speedup claim or a controlled benchmark.
 
 The AWS parent uses the existing Ops log slot for optional local streaming, so
 the last completed native import survives a worker failure. It owns a temporary
-directory through =with-poo-flow-fixture= and passes it as the worker's =TMPDIR=.
+directory through =with-yuanxu-fixture= and passes it as the worker's =TMPDIR=.
 When Ops returns a failure, parent cleanup can release worker files even if the
 worker did not unwind its own fixture. Hard termination of the parent itself is
 not claimed to run Scheme cleanup.

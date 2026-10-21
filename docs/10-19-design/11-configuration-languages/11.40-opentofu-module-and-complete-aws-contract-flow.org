@@ -208,7 +208,7 @@ responsibilities and silently assume the current Contract protocol accepts them.
               (loop (cdr values) (+ index 1)))))))))
 (def SSHCidrsContract (list-contract 'aws/ssh-cidrs CIDRTextContract))
 
-(define-type (CidrBlockContract @ PooFlowObjectContract.)
+(define-type (CidrBlockContract @ YuanxuObjectContract.)
   identity: 'aws/cidr-block
   proto: (.o)
   responsibilities: (.o prefix: IPv4Contract length: PrefixLengthContract)
@@ -220,7 +220,7 @@ responsibilities and silently assume the current Contract protocol accepts them.
         (if (yuanxu-validation-evidence-accepted? receipt) '()
           (list (.o kind: 'noncanonical-network-base evidence: receipt)))))))
 
-(define-type (NetworkContract @ PooFlowObjectContract.)
+(define-type (NetworkContract @ YuanxuObjectContract.)
   identity: 'aws/network
   proto: (.o)
   responsibilities:
@@ -230,7 +230,7 @@ responsibilities and silently assume the current Contract protocol accepts them.
     (append (aws-closed-fields @ candidate context)
             (mapped-field-obligations NetworkFields candidate context))))
 
-(define-type (InstanceContract @ PooFlowObjectContract.)
+(define-type (InstanceContract @ YuanxuObjectContract.)
   identity: 'aws/instance
   proto: (.o)
   responsibilities:

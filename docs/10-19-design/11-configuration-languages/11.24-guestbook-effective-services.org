@@ -171,7 +171,7 @@ responsibilities:
 
 #+begin_src scheme
 ;; Inside make-guestbook-types, after schema-backed ServerContract is obtained.
-(define-type (ScenarioContract @ PooFlowObjectContract.)
+(define-type (ScenarioContract @ YuanxuObjectContract.)
   identity: 'guestbook/scenario
   proto: GuestbookScenario.
   responsibilities:

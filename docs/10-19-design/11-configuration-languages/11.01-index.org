@@ -154,7 +154,7 @@ module/category metadata or a new package catalog schema.
 
 * Public names and Gerbil syntax
 
-Use PooFlowObjectContract. for the object Contract in design examples. POO is the
+Use YuanxuObjectContract. for the object Contract in design examples. POO is the
 normal object semantics; Native is not a second public category. The current
 [[file:../../../types.ss][Core export]] still uses its earlier name, so these examples describe a pending
 API rename, not an already available binding. Migrate the owning definition and

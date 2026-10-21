@@ -7,7 +7,7 @@
 #+filetags: :config-language:contracts:scenarios:kubernetes:design:
 #+property: STATUS proposed-declaration-and-graph-adapters-no-implementation-no-loader
 
-The public design name PooFlowObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
 its Core export rename is pending. This example does not introduce an alias.
 
 * Correction: a simple surface must still declare its domain
@@ -99,7 +99,7 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
     postgres: (.o (:: @ Endpoint.)
       protocol: "PostgreSQL" port: 5432 targetPort: 5432)))
 
-(.def (HTTPEndpointContract @ PooFlowObjectContract.)
+(.def (HTTPEndpointContract @ YuanxuObjectContract.)
   identity: 'service/http-endpoint
   proto: Endpoint.
   responsibilities:
@@ -110,7 +110,7 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
   identity: 'service/postgresql-endpoint
   responsibilities: =>.+ (.o protocol: PostgreSQLContract))
 
-(.def (HTTPExportsContract @ PooFlowObjectContract.)
+(.def (HTTPExportsContract @ YuanxuObjectContract.)
   identity: 'service/http-exports
   proto: ExportMap.
   responsibilities: (.o http: HTTPEndpointContract)
@@ -136,7 +136,7 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
 (def StorageContract
   (yuanxu-predicate-contract 'service/storage-shape storage-shape? no-obligations))
 
-(.def (WebProfileContract @ PooFlowObjectContract.)
+(.def (WebProfileContract @ YuanxuObjectContract.)
   identity: 'service/web
   proto: Web.
   responsibilities:
@@ -149,7 +149,7 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
   proto: API.
   requirements: (.o database: "PostgreSQL"))
 
-(.def (DatabaseProfileContract @ PooFlowObjectContract.)
+(.def (DatabaseProfileContract @ YuanxuObjectContract.)
   identity: 'service/database
   proto: Database.
   responsibilities:

@@ -145,7 +145,7 @@ non-sensitive name. That operation creates a new receiver/cache and may print
 raw arguments and results. It is not a redaction boundary.
 
 For a call edge that may itself be malformed, use a validated
-=yuanxu-debug-call-policy= with =call-with-poo-flow-debug-trace=.  The adapter
+=yuanxu-debug-call-policy= with =call-with-yuanxu-debug-trace=.  The adapter
 rejects a non-procedure operator, a repeated symbolic call identity, or a call
 beyond the policy depth before invocation and raises
 =YuanxuDebugCallAnomaly= with a typed receipt.  The admitted invocation is
@@ -210,9 +210,9 @@ the catalog handoff and projected target count.
   without loading =:std/debug/heap='s unrelated heap-walker machinery;
 - =yuanxu-debug-memory-receipt= is a pure comparison of policy and samples;
 - =yuanxu-debug-memory-checkpoint= and
-  =call-with-poo-flow-debug-memory-span= perform the effectful sampling and may
+  =call-with-yuanxu-debug-memory-span= perform the effectful sampling and may
   fail closed with =YuanxuDebugMemoryAnomaly=;
-- =call-with-poo-flow-debug-memory-monitor= runs a development operation in a
+- =call-with-yuanxu-debug-memory-monitor= runs a development operation in a
   Scheme thread and samples it at the POO policy interval, so a yielding lazy
   slot cycle does not need to return before detection; and
 - only =yuanxu-debug-memory-receipt-sexp='s bounded phase, verdict, reason,

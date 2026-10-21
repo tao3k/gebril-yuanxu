@@ -7,7 +7,7 @@
 #+filetags: :config-language:modules:guestbook:contracts:design:
 #+property: STATUS design-only-no-module-or-loader-implementation
 
-The public design name PooFlowObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
 its Core export rename is pending. This example does not introduce an alias.
 
 * Correct the abstraction boundary
@@ -41,7 +41,7 @@ Existing public collection projection, shown only for framework maintainers:
 
 #+begin_src scheme
 (yuanxu-load-modules
- (make-poo-flow-module-source-collection
+ (make-yuanxu-module-source-collection
   'team-modules 'team "." "modules"))
 #+end_src
 
@@ -180,7 +180,7 @@ must remain associated with the published artifact.
                          (object-kind . GuestbookServer)
                          (object-key . guestbook/server))))
              (ServerContract (contract artifact)))
-        (define-type (ScenarioContract @ PooFlowObjectContract.)
+        (define-type (ScenarioContract @ YuanxuObjectContract.)
           identity: 'guestbook/scenario
           proto: GuestbookScenario.
           responsibilities:

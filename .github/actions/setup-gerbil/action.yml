@@ -1,5 +1,5 @@
-name: Set up Yuanxu native prerequisites
-description: Activate the immutable gerbil-bazel release and required native tools.
+name: Set up Gerbil prerequisites
+description: Activate the immutable gerbil-bazel release and required tools.
 runs:
   using: composite
   steps:
@@ -24,12 +24,21 @@ runs:
         echo "GERBIL_GCC=$gcc_bin" >> "$GITHUB_ENV"
         openssl_prefix="$(brew --prefix openssl@3 2>/dev/null || brew --prefix openssl)"
         echo "PKG_CONFIG_PATH=$openssl_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
-    - name: Install pinned Nix daemon for native publication tests
+    - name: Install pinned Nix daemon for publication tests
       uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
       with:
         install_url: https://releases.nixos.org/nix/nix-2.28.5/install
         enable_kvm: false
-    - name: Verify required Nix commands and native store access
+    - name: Resolve pinned qualification dependencies through Nix
+      shell: bash
+      run: |
+        package_set=$(nix-instantiate --eval --strict --json t/fixtures/nixpkgs.nix | jq -er .)
+        test -d "$package_set"
+        echo "NIX_PATH=nixpkgs=$package_set" >> "$GITHUB_ENV"
+        coreutils=$(NIX_PATH="nixpkgs=$package_set" nix-build --no-out-link '<nixpkgs>' -A coreutils)
+        test -x "$coreutils/bin/timeout"
+        echo "$coreutils/bin" >> "$GITHUB_PATH"
+    - name: Verify required Nix commands and store access
       shell: bash
       run: |
         nix-store --version
@@ -39,7 +48,7 @@ runs:
         nix-store --version
         probe=$(mktemp -d "${TMPDIR:-/tmp}/yuanxu-nix-store.XXXXXX")
         trap 'rm -rf "$probe"' EXIT
-        printf '%s\n' 'yuanxu native publication store probe' > "$probe/receipt"
+        printf '%s\n' 'Yuanxu publication store probe' > "$probe/receipt"
         store_root=$(timeout 120 nix-store --store daemon --add "$probe")
         timeout 120 nix-store --store daemon --check-validity "$store_root"
         timeout 120 nix-store --store daemon --verify-path "$store_root"

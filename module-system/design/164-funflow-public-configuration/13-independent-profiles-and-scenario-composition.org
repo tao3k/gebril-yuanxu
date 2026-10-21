@@ -112,7 +112,7 @@ The following is target design source, not installed or compiled publication.
 
 (def Funflow
   (make-funflow-scope
-    (make-poo-flow-module-local-source "modules/funflow")))
+    (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
 There is no profiles export, language recipe, CI command or Scenario here.

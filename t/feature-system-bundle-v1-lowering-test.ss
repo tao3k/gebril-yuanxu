@@ -44,8 +44,8 @@
            (feature-bundle-v1-lower-compact-id 'obligation 1)))
       (check (> (.ref zero 'high) 4294967295) => #t)
       (check (> (.ref zero 'low) 4294967295) => #t)
-      (check (.ref zero 'high) => 15650260190551699577)
-      (check (.ref zero 'low) => 10580127755728368254)
+      (check (.ref zero 'high) => 1933910409207442175)
+      (check (.ref zero 'low) => 12623881436804134026)
       (check (feature-bundle-v1-compact-id=? zero one) => #f)))
 
    (yuanxu-test-case

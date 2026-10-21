@@ -23,11 +23,11 @@ Source: [[file:../../composition/lineage.ss][core/composition/lineage.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-lineage-analysis-prototype= | E | Define lineage result prototype. |
+| =yuanxu-lineage-analysis-prototype= | E | Define lineage result prototype. |
 | =yuanxu-lineage-cycle?= | D | Pure bounded analysis of supplied lineage identities. |
 | =yuanxu-productive-recursion?= | D | Pure bounded analysis of supplied lineage identities. |
 | =yuanxu-lineage-analysis= | D | Pure bounded analysis of supplied lineage identities. |
-| =poo-flow-lineage-analysis?= | D | Pure bounded analysis of supplied lineage identities. |
+| =yuanxu-lineage-analysis?= | D | Pure bounded analysis of supplied lineage identities. |
 
 * core/contribution/objects.ss
 
@@ -200,7 +200,7 @@ Source: [[file:../catalog/objects.ss][core/module-system/catalog/objects.ss]].
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =yuanxu-module-catalog-entry-prototype= | E | Extend a source/catalog family. |
-| =make-poo-flow-module-catalog-entry= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-catalog-entry= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-entry?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-entry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-entry-module= | D | Inert immutable construction, identity lookup or inspection; no source load. |
@@ -214,7 +214,7 @@ Source: [[file:../catalog/objects.ss][core/module-system/catalog/objects.ss]].
 | =yuanxu-module-catalog-modules= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-add= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-find-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =resolve-poo-flow-module-source/default= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =resolve-yuanxu-module-source/default= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 
 * core/module-system/config.ss
@@ -223,7 +223,7 @@ Source: [[file:../config.ss][core/module-system/config.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-kind=?= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-kind=?= | D | Read supplied Interface data or project an inspection receipt. |
 | =yuanxu-module-object-ref/default= | D | Read supplied Interface data or project an inspection receipt. |
 | =yuanxu-module-object->alist= | D | Read supplied Interface data or project an inspection receipt. |
 | =yuanxu-module-interface-schema-index= | I | Derived index representation. |
@@ -276,8 +276,8 @@ Source: [[file:../loader/load-path.ss][core/module-system/loader/load-path.ss]].
 | =yuanxu-module-source-collection-identity= | D | Inspect a maintained LoadPath/source collection. |
 | =yuanxu-module-source-collection-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
 | =yuanxu-module-load-path-prototype= | E | Define or extend a source collection/LoadPath. |
-| =make-poo-flow-module-load-path= | E | Define or extend a source collection/LoadPath. |
-| =extend-poo-flow-module-load-path= | E | Define or extend a source collection/LoadPath. |
+| =make-yuanxu-module-load-path= | E | Define or extend a source collection/LoadPath. |
+| =extend-yuanxu-module-load-path= | E | Define or extend a source collection/LoadPath. |
 | =yuanxu-module-load-path?= | D | Inspect a maintained LoadPath/source collection. |
 | =yuanxu-module-load-path-identity= | D | Inspect a maintained LoadPath/source collection. |
 | =yuanxu-module-load-path-collections= | D | Inspect a maintained LoadPath/source collection. |
@@ -290,19 +290,19 @@ Source: [[file:../loader/objects.ss][core/module-system/loader/objects.ss]].
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =yuanxu-module-loader-entry-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-poo-flow-module-loader-entry= | E | Loader Backend/plan/receipt authoring. |
+| =make-yuanxu-module-loader-entry= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-module-loader-entry?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-entry-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-entry-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-backend-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-poo-flow-module-loader-backend= | E | Loader Backend/plan/receipt authoring. |
+| =make-yuanxu-module-loader-backend= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-module-loader-backend?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-backend-source-kind= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-loader-backend-load= | E | Exposes a behavior callback; not configurable noun data. |
 | =yuanxu-module-loader-backend-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-lazy-load-plan-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-poo-flow-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
+| =make-yuanxu-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-lazy-load-plan?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-lazy-load-plan-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-lazy-load-plan-backends= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
@@ -310,7 +310,7 @@ Source: [[file:../loader/objects.ss][core/module-system/loader/objects.ss]].
 | =yuanxu-lazy-load-plan-receipt= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-lazy-load-plan-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-load-receipt-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-poo-flow-module-load-receipt= | E | Loader Backend/plan/receipt authoring. |
+| =make-yuanxu-module-load-receipt= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-module-load-receipt?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-load-receipt-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-module-load-receipt-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
@@ -347,7 +347,7 @@ Source: [[file:../observability/diagnostics.ss][core/module-system/observability
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =yuanxu-module-diagnostic-prototype= | E | Define diagnostic/report family. |
-| =make-poo-flow-module-diagnostic= | E | Define diagnostic/report family. |
+| =make-yuanxu-module-diagnostic= | E | Define diagnostic/report family. |
 | =yuanxu-module-diagnostic?= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-diagnostic-severity= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-diagnostic-code= | D | Inspect diagnostic/Doctor results. |
@@ -355,7 +355,7 @@ Source: [[file:../observability/diagnostics.ss][core/module-system/observability
 | =yuanxu-module-diagnostic-detail= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-diagnostics-status= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-doctor-report-prototype= | E | Define diagnostic/report family. |
-| =make-poo-flow-module-doctor-report= | E | Define diagnostic/report family. |
+| =make-yuanxu-module-doctor-report= | E | Define diagnostic/report family. |
 | =yuanxu-module-doctor-report?= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-doctor-report-modules= | D | Inspect diagnostic/Doctor results. |
 | =yuanxu-module-doctor-report-status= | D | Inspect diagnostic/Doctor results. |
@@ -369,14 +369,14 @@ Source: [[file:../projection/option-objects.ss][core/module-system/projection/op
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =yuanxu-module-option-config-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-poo-flow-module-option-config= | E | Construct an Interface-bound option/receipt projection. |
+| =make-yuanxu-module-option-config= | E | Construct an Interface-bound option/receipt projection. |
 | =yuanxu-module-option-config?= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-config-id= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-config-value= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-config-source-module= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-config-metadata= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-poo-flow-module-option-schema= | E | Construct an Interface-bound option/receipt projection. |
+| =make-yuanxu-module-option-schema= | E | Construct an Interface-bound option/receipt projection. |
 | =yuanxu-module-option-schema?= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-id= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-source-module= | D | Inspect or validate supplied Interface-bound option values. |
@@ -385,7 +385,7 @@ Source: [[file:../projection/option-objects.ss][core/module-system/projection/op
 | =yuanxu-module-option-schema-value= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-metadata= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-validation-receipt-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-poo-flow-module-option-validation-receipt= | E | Construct an Interface-bound option/receipt projection. |
+| =make-yuanxu-module-option-validation-receipt= | E | Construct an Interface-bound option/receipt projection. |
 | =yuanxu-module-option-validation-receipt?= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-validation-receipt-id= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-validation-receipt-source-module= | D | Inspect or validate supplied Interface-bound option values. |
@@ -734,17 +734,17 @@ Source: [[file:../source/objects.ss][core/module-system/source/objects.ss]].
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =yuanxu-module-source-ref-prototype= | E | Extend a source/catalog family. |
-| =make-poo-flow-module-source-ref= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-source-ref= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-source-ref?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-source-ref-kind= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-source-ref-value= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-source-ref-metadata= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =make-poo-flow-module-local-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =make-poo-flow-module-package-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =make-poo-flow-module-standard-library-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =make-poo-flow-module-registry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =make-poo-flow-module-generated-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref=?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-local-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-package-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-standard-library-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-registry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =make-yuanxu-module-generated-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref=?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-source-ref->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 
 * core/module-system/types.ss
@@ -818,7 +818,7 @@ Reexports [[file:../../observability/slot-debug.ss][core/observability/slot-debu
 | =yuanxu-debug-call-policy= | E | Advanced debug policy/receipt/exception interface. |
 | =yuanxu-debug-call-receipt= | E | Advanced debug policy/receipt/exception interface. |
 | =yuanxu-debug-call-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
-| =call-with-poo-flow-debug-trace= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =call-with-yuanxu-debug-trace= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =YuanxuDebugCallAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
 | =YuanxuDebugCallAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
 | =yuanxu-debug-memory-policy= | E | Advanced debug policy/receipt/exception interface. |
@@ -828,9 +828,9 @@ Reexports [[file:../../observability/slot-debug.ss][core/observability/slot-debu
 | =yuanxu-debug-memory-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
 | =yuanxu-debug-memory-snapshot= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =yuanxu-debug-memory-checkpoint= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =call-with-poo-flow-debug-memory-span= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =call-with-poo-flow-debug-memory-monitor= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =call-with-poo-flow-debug-memory-case-watchdog= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =call-with-yuanxu-debug-memory-span= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =call-with-yuanxu-debug-memory-monitor= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =call-with-yuanxu-debug-memory-case-watchdog= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =YuanxuDebugMemoryAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
 | =YuanxuDebugMemoryAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
 | =YuanxuDebugDurationAnomaly?= | E | Advanced debug policy/receipt/exception interface. |

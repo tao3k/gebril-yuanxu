@@ -59,10 +59,10 @@
       ;; The ordinary selected Module publishes Source. New processes discover its
       ;; Nix output from persistent policy; no release path is supplied on their CLI.
       (def (release-recipe packet-directory)
-        (string-append "builtins.derivation { name = import ./release-name.nix; "
-          "system = builtins.currentSystem; builder = \"/bin/sh\"; "
-          "packet = " packet-directory "/issuance.ss; "
-          "args = [ \"-c\" \"/bin/mkdir $out; /bin/cp $packet $out/issuance.ss\" ]; }\n"))
+        (string-append "let pkgs = import <nixpkgs> {}; in "
+          "pkgs.runCommand (import ./release-name.nix) { "
+          "packet = " packet-directory "/issuance.ss; } "
+          "\"mkdir $out; cp $packet $out/issuance.ss\"\n"))
       (write-source (path-expand "release.nix" owner) (release-recipe packet-root))
       ;; Deliberately broken PUBLISHER output: valid store data and selected recipe,
       ;; but not enough observations to admit the actual selected Graph.

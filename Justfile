@@ -144,7 +144,7 @@ test:
     files=(t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/opentofu-publication-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/execution-progress-test.ss t/ops-selected-packages-test.ss t/ops-rounds-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     files+=(t/module-windows-test.ss t/module-testing-isolation-test.ss)
     for file in "${files[@]}"; do just test-file "$file"; done
-    echo "[core-testing] phase=all-files-complete fileCount=${#files[@]}"
+    echo "[yuanxu-testing] phase=all-files-complete fileCount=${#files[@]}"
 
 # Opt-in wall/user/system timing while preserving the same bounded test path.
 test-profile:
@@ -455,13 +455,13 @@ test-yuanxu-prelude:
 # Match gxtest's non-recursive `test t` discovery exactly: direct children
 # ending in -test.ss, in native lexical order. Each existing test-file gate
 # gets the original CI heap limit; no suite or assertion is excluded.
-native-test-files group="all":
+test-files group="all":
     #!/usr/bin/env bash
     set -euo pipefail
     export LC_ALL=C
     case "{{ group }}" in
       all|bootstrap|modules|contracts|objects|scenarios|runtime) ;;
-      *) echo 'unknown native test group' >&2; exit 64 ;;
+      *) echo 'unknown test group' >&2; exit 64 ;;
     esac
     shopt -s nullglob
     for file in t/*-test.ss; do
@@ -476,35 +476,42 @@ native-test-files group="all":
       if [[ "{{ group }}" == all || "{{ group }}" == "$owner" ]]; then printf '%s\n' "$file"; fi
     done
 
-check-native-test-groups:
+check-test-groups:
     #!/usr/bin/env bash
     set -euo pipefail
     export LC_ALL=C
     scratch=$(mktemp -d)
     trap 'rm -rf "$scratch"' EXIT
-    just native-test-files all > "$scratch/all"
+    just test-files all > "$scratch/all"
     test -s "$scratch/all"
     for group in bootstrap modules contracts objects scenarios runtime; do
-      just native-test-files "$group" > "$scratch/$group"
+      just test-files "$group" > "$scratch/$group"
       test -s "$scratch/$group"
       cat "$scratch/$group" >> "$scratch/groups"
-      printf 'NATIVE-GROUP %s files=%s\n' "$group" "$(wc -l < "$scratch/$group")"
+      printf 'TEST-GROUP %s files=%s\n' "$group" "$(wc -l < "$scratch/$group")"
     done
     sort "$scratch/groups" > "$scratch/sorted"
     cmp "$scratch/all" "$scratch/sorted"
-    printf 'NATIVE-GROUPS-OK\n'
+    printf 'TEST-GROUPS-OK\n'
 
-test-native-directory group="all":
+test-directory group="all":
     #!/usr/bin/env bash
     set -euo pipefail
     export LC_ALL=C
-    manifest=$(just native-test-files "{{ group }}")
+    manifest=$(just test-files "{{ group }}")
     files=()
     while IFS= read -r file; do [[ -z "$file" ]] || files+=("$file"); done <<< "$manifest"
     test "${#files[@]}" -gt 0
-    printf '[core-testing] phase=native-directory-manifest fileCount=%s\n' "${#files[@]}"
+    printf '[yuanxu-testing] phase=test-directory-manifest fileCount=%s\n' "${#files[@]}"
     printf '%s\n' "${files[@]}"
+    failed=()
     for file in "${files[@]}"; do
-      GERBIL_TEST_MAX_HEAP=1G just test-file "$file"
+      if ! GERBIL_TEST_MAX_HEAP=1G just test-file "$file"; then
+        failed+=("$file")
+      fi
     done
-    printf '[core-testing] phase=native-directory-complete fileCount=%s\n' "${#files[@]}"
+    if (( ${#failed[@]} )); then
+      printf 'FAILED-TEST %s\n' "${failed[@]}" >&2
+      exit 1
+    fi
+    printf '[yuanxu-testing] phase=test-directory-complete fileCount=%s\n' "${#files[@]}"

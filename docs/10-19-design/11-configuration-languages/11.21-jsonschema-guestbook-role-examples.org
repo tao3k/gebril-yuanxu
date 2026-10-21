@@ -18,7 +18,7 @@ The bridge is now implemented under [[file:../../../modules/json-schema/interfac
 System implementation lives under [[file:../../../feature-system/interface.ss][Core feature-system]]. These are reusable moved
 owners, not future source extractions. The four-role object assembly, publication
 linker and Guestbook/Kubernetes adapter examples below remain proposed. The shorter
-PooFlowObjectContract. export rename remains pending independently. See the
+YuanxuObjectContract. export rename remains pending independently. See the
 [[file:11.22-migrated-core-guestbook-chain.org][current chain audit]] for the exact distinction between existing calls and design.
 
 All Core-owned procedure bindings in the proposed code below use the target
@@ -165,7 +165,7 @@ filesystem name. The type anchor is empty; operational defaults live in objects.
                   (object-kind . GuestbookServer)
                   (object-key . guestbook/server))))
              (ServerContract (contract artifact)))
-        (define-type (ScenarioContract @ PooFlowObjectContract.)
+        (define-type (ScenarioContract @ YuanxuObjectContract.)
           identity: 'guestbook/scenario
           proto: GuestbookScenario.
           responsibilities:

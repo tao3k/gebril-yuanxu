@@ -237,7 +237,7 @@ Module/prototype generation and describe them as migrated instances.
     (error "Funflow publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.) source: source-handle))
 (def Funflow
-  (make-funflow-scope (make-poo-flow-module-local-source "modules/funflow")))
+  (make-funflow-scope (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
 * Complete selection, contextual guards, obligations and graph functions

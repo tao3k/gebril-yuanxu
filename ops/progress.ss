@@ -120,7 +120,7 @@
                        ;; A preceding command may have emitted an unterminated
                        ;; stdout fragment; protocol records need their own line.
                        (newline port)
-                       (display "@poo-progress " port)
+                       (display "@yuanxu-progress " port)
                        (write-json port (vector (execution-progress-scope state)
                                                 (execution-progress-sequence state)))
                        (newline port))))
@@ -203,7 +203,7 @@
   (def nix (make-nix-progress-reader))
   (lambda (line)
     (nix line)
-    (let (record (json-record line "@poo-progress "))
+    (let (record (json-record line "@yuanxu-progress "))
       (when (and (vector? record) (= (vector-length record) 2)
                  (string? (vector-ref record 0)) (<= (string-length (vector-ref record 0)) 128)
                  (exact-integer? (vector-ref record 1)) (>= (vector-ref record 1) 0))

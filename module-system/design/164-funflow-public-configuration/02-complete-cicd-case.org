@@ -100,7 +100,7 @@ Contracts from [[file:01-surface-and-schema.org][module 01]], with their concret
 
 (def Funflow
   (make-funflow-scope
-    (make-poo-flow-module-local-source "modules/funflow")))
+    (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
 The prototype owner never requests the Profile owner. The Profile factory

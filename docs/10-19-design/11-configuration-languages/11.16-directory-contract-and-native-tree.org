@@ -7,7 +7,7 @@
 #+filetags: :config-language:modules:contracts:design:
 #+property: STATUS complete-bounded-design-code-not-implemented-or-executed
 
-The public design name PooFlowObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
 its Core export rename is pending. This example does not introduce an alias.
 
 * Ownership and executable boundary
@@ -91,7 +91,7 @@ values; ordinary application users receive the resulting Guestbook scope.
                             (object-kind . GuestbookServer)
                             (object-key . guestbook/server))))
                 (ServerContract (contract artifact)))
-           (define-type (ScenarioContract @ PooFlowObjectContract.)
+           (define-type (ScenarioContract @ YuanxuObjectContract.)
              identity: 'guestbook/scenario
              proto: GuestbookScenario.
              responsibilities:

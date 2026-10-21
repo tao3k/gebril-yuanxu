@@ -16,7 +16,11 @@
   (unless value (error "assertion failed" name))
   (displayln "ASSERT-OK " name) (force-output))
 (def (rejects? text thunk)
-  (with-catch (lambda (e) (and (pregexp-match text (call-with-output-string (cut display-exception e <>))) #t))
+  (with-catch (lambda (e)
+                (def message (call-with-output-string (cut display-exception e <>)))
+                (def matched? (and (pregexp-match text message) #t))
+                (unless matched? (display "UNEXPECTED-REJECTION ") (display message) (force-output))
+                matched?)
     (lambda () (thunk) #f)))
 (def (write-source path text)
   (create-directory* (path-directory path))
@@ -113,7 +117,8 @@
               (rejects? "build-publication phase" (lambda () (.get scope forbidden))))
             (write-source (path-expand "build.ss" owner) "(def Build (error \"changed\"))")
             (assert 'build-mutation-rejects-old-generation
-              (rejects? "stale|refused" (lambda () ((.get view admit-current)))))))))
+              (rejects? "compiler tool source changed; use a fresh reader"
+                (lambda () ((.get view admit-current)))))))))
     (yuanxu-test-case "Build cannot reload root selection through an alias"
       (call-with-temporary-directory "module-build-reentry"
         (lambda (root)
@@ -136,7 +141,8 @@
               (.get view build-graph)
               (write-source (path-expand "build.ss" owner) "(def Build (.o kind: 'module/build roots: '()))")
               (assert 'new-build-role-invalidates-old-generation
-                (rejects? "stale|refused" (lambda () ((.get view admit-current))))))))))
+                (rejects? "stale prepared Module publication"
+                (lambda () ((.get view admit-current))))))))))
     (yuanxu-test-case "Build imports cannot escape to the root init source"
       (call-with-temporary-directory "module-build-import"
         (lambda (root)

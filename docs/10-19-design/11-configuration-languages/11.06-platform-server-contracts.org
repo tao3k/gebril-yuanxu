@@ -7,7 +7,7 @@
 #+filetags: :config-language:contracts:design:
 #+property: STATUS unexecuted-scheme-design-no-runtime-or-loader-change
 
-The public design name PooFlowObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
 its Core export rename is pending. This example does not introduce an alias.
 
 * This is platform code, not Profile authoring
@@ -122,14 +122,14 @@ keys while structural fields are closed against misspellings.
 * Native Port and resource Contracts
 
 #+begin_src scheme
-(.def (PortContract @ PooFlowObjectContract.)
+(.def (PortContract @ YuanxuObjectContract.)
   identity: 'server/port-object
   proto: Port.
   responsibilities:
   (.o protocol: ProtocolContract port: PortNumberContract targetPort: TargetPortContract)
   .obligations: (cut closed-fields '(protocol port targetPort) <> <>))
 
-(.def (ResourceContract @ PooFlowObjectContract.)
+(.def (ResourceContract @ YuanxuObjectContract.)
   identity: 'server/resources
   proto: Resource.
   responsibilities:
@@ -164,13 +164,13 @@ Port admissions. The candidate contains the final normalized Port objects.
 (.def (PortsContract @ PortListShape)
   .admit: (cut admit-ports @ <> <>))
 
-(.def (MainContract @ PooFlowObjectContract.)
+(.def (MainContract @ YuanxuObjectContract.)
   identity: 'server/main
   proto: Main.
   responsibilities: (.o name: StringContract ports: PortsContract)
   .obligations: (cut closed-fields '(name ports) <> <>))
 
-(.def (ServerContract @ PooFlowObjectContract.)
+(.def (ServerContract @ YuanxuObjectContract.)
   identity: 'server/object
   proto: Server.
   responsibilities:

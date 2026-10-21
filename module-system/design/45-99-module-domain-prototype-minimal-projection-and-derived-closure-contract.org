@@ -54,7 +54,7 @@ Parser-owned evidence currently identifies:
 
 - =yuanxu-module-interface-prototype= as a project-owned domain prototype
   candidate;
-- =poo-flow-module-kind=?= as a plain kind-label equality comparison;
+- =yuanxu-module-kind=?= as a plain kind-label equality comparison;
 - interface identity, schemas, metadata, import kind, and option-policy
   selector families;
 - generic object slot checks and default projections;
@@ -260,7 +260,7 @@ Kind equality does not prove:
 - responsibility completeness;
 - authority.
 
-=poo-flow-module-kind=?= therefore cannot be the conformance predicate for the
+=yuanxu-module-kind=?= therefore cannot be the conformance predicate for the
 new architecture.
 
 A kind label may remain an optional diagnostic projection after it is separated

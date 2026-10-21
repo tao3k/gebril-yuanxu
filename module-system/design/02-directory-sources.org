@@ -13,7 +13,7 @@ not I/O hidden in a pure Contract predicate. The source shell is owned by
 [[file:01-source-roles.org][the published Module source Contract]]. interface.ss publishes Module objects;
 init.ss selects sources and intent under [[file:03-publication-selection.org][the publication/selection protocol]].
 
-The code uses the proposed shorter object Contract name PooFlowObjectContract.
+The code uses the proposed shorter object Contract name YuanxuObjectContract.
 The current [[file:../../types.ss][Core export]] has not been renamed; there is no alias or runtime change.
 read-child/realize-interface below are explicit admitted source capabilities whose
 production implementations are still pending, not hidden completed helpers.
@@ -71,7 +71,7 @@ not require authors to keep a second manual export-name registry.
               (not (any (lambda (name) (memq name exports)) children)))
        '() (list (.o kind: 'directory-export-name-collision))))))
 
-(define-type (DirectorySnapshotContract @ PooFlowObjectContract.)
+(define-type (DirectorySnapshotContract @ YuanxuObjectContract.)
   identity: 'module/directory-snapshot
   proto: DirectorySnapshot.
   responsibilities:

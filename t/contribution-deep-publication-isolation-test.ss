@@ -60,13 +60,14 @@
 (def Scope (.o exports: (.o policy: (.o requirements:
  (.o port: Policy cold: (begin (vector-set! Probe 0 (+ 1 (vector-ref Probe 0))) (error \"cold export forced\"))))) probe: Probe))
 (export Scope)")
-(def (interface-source id app?)
+(def (interface-source id app? (target-admission 'Scenario))
   (string-append "(.def Fixture identity: '" (symbol->string id)
    " core: (.o requires: (.o) scope-contract: ScopeContract "
    (if app? "admissions: (.o Scenario: (.o export-path: '(Scenario) contract-path: '(types Admission))) "
-     "contributions: (.o database-port: (.o target-owner: 'fixture/application target-admission: 'Scenario export-path: '(exports policy requirements port))) ")
+     (string-append "contributions: (.o database-port: (.o target-owner: 'fixture/application target-admission: '"
+       (symbol->string target-admission) " export-path: '(exports policy requirements port))) "))
    "exports: (.o (:: @ Scope))) features: (.o))"))
-(def (with-module-tree consume (ports '(5432 5433 5433)))
+(def (with-module-tree consume (ports '(5432 5433 5433)) (target-admission 'Scenario))
   (def root (make-temporary-file-name "deep-contribution-"))
   (dynamic-wind
    (lambda ()
@@ -79,7 +80,7 @@
       (write-source (path-expand "config.ss" dir) (string-append "(import :clan/poo/object) (def Config (.o port: " (number->string port) ")) (export Config)"))
       (write-source (path-expand "objects.ss" dir) (if (string=? name "application") ApplicationObjects PolicyObjects))
       (write-source (path-expand "interface.ss" dir)
-        (interface-source (string->symbol (string-append "fixture/" name)) (string=? name "application"))))
+        (interface-source (string->symbol (string-append "fixture/" name)) (string=? name "application") target-admission)))
      '("application" "operations" "security") ports)
     (write-source (path-expand "modules/fixture/unused/interface.ss" root) "(((not readable")
     (write-source (path-expand "init.ss" root)
@@ -100,7 +101,10 @@
  (defvalues (receipt next failure) (.call (.get view publication) .publish parent candidate))
  (check-equal? receipt #f) (check-equal? (eq? parent next) #t)
  (check-equal? (metadata.failure? failure) #t)
- (when message (check-equal? ((error-message=? message) (underlying-cause failure)) #t)))
+ (when message
+   (unless ((error-message=? message) (underlying-cause failure))
+     (display-exception (underlying-cause failure) (current-error-port)))
+   (check-equal? ((error-message=? message) (underlying-cause failure)) #t)))
 (def (check-cold view)
  (for-each (lambda (row) (check-equal? (vector-ref (.get row origin record scope probe) 0) 0)) (.get view rows))
  (check-equal? (memq 'fixture/unused (.get view selection selected-graph module-order)) #f))
@@ -151,7 +155,7 @@
     (.put! context 'contributions (map values rows))
     ;; Erasing a declaration after indexing must not erase its obligation.
     (.put! (.get original publication core) 'contributions (.o))
-    (refused view (.get view parent) "contribution object changed")
+    (refused view (.get view parent) "stale slot dependency")
     (check-cold view) (done!))))
   (test-case "real source role edit refuses selected publication"
    (with-module-tree (lambda (root)
@@ -159,7 +163,7 @@
     (def parent (.get view parent))
     (.def (Release @ parent) config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
     (write-source path (string-append (module-source-read path) "\n; changed\n"))
-    (refused view Release "stale prepared Module publication") (done!))))
+    (refused view Release "stale prepared build source") (done!))))
   (test-case "production admission retains both incompatible port sources"
    (with-module-tree
     (lambda (root)
@@ -189,12 +193,11 @@
    (with-module-tree (lambda (root)
     (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/operations))
-    (.put! (.get record publication core contributions database-port) 'target-admission 'Missing)
     (check-exception
       (.call AdmissionPublication. .for-export selection 'fixture/application 'Scenario)
       (error-message=? "contribution targets unknown selected admission"))
     (check-equal? (vector-ref (.get record scope probe) 0) 0)
-    (done!))))
+    (done!)) '(5432 5433 5433) 'Missing))
   (test-case "inherited domain obligations are retained beside contributions"
    (with-module-tree (lambda (root)
     (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -229,7 +232,7 @@
       (.o late: (.o target-owner: 'fixture/application target-admission: 'Scenario
                     export-path: '(Scenario))))
     (def view (.cc (.o) publication: publication parent: parent))
-    (refused view Release "contribution object changed")
+    (refused view Release "stale slot dependency")
     (done!))))
   (test-case "cached parent then fresh child final preview and frozen refusal"
    (with-module-tree (lambda (root)

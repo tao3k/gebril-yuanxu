@@ -24,9 +24,8 @@
   (def expression (path-expand "release.nix" directory))
   (write-source expression
     (string-append
-      "builtins.derivation { name = \"core-head-" label "\";\n"
-      "system = builtins.currentSystem; builder = \"/bin/sh\"; src = ./payload;\n"
-      "args = [\"-c\" \"/bin/mkdir $out; /bin/cp $src/plan.json $out/plan.json\"]; }\n"))
+      "let pkgs = import <nixpkgs> {}; in pkgs.runCommand \"yuanxu-head-" label "\"\n"
+      "{ src = ./payload; } \"mkdir $out; cp $src/plan.json $out/plan.json\"\n"))
   (def source (.cc NixSource. 'expression expression))
   (def observations (.get source source-inputs))
   (values (.call source .build (cut module-source-admit-current! observations)) expression))

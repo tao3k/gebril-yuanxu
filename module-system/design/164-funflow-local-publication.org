@@ -32,7 +32,7 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
 ;;; Local native publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
         (only-in :yuanxu/module-system/source/objects
-                 make-poo-flow-module-local-source yuanxu-module-source-ref?)
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
         (only-in :poo-flow/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
         (only-in :poo-flow/modules/funflow/profiles/gerbil-scheme
@@ -63,7 +63,7 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
 
 (def Funflow
   (make-funflow-scope
-    (make-poo-flow-module-local-source "modules/funflow")))
+    (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
 prototype-scope 的 =(source) (prototypes)= 是原生 shared-slot capture：在这个

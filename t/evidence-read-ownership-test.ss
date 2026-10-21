@@ -6,7 +6,7 @@
         (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
                  owned-read-copy! owned-read-derived!)
         (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :clan/poo/mop Type. define-type validate)
+        (only-in :clan/poo/mop Type. define-type validate object-read-issued?)
         (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :yuanxu/module-system/authoring/roles TypesSourceRole.)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
@@ -15,14 +15,16 @@
                  YuanxuContract. yuanxu-contract-admit)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export evidence-read-ownership-test)
-(def (has-full-bundle? reads)
+(def (original-read-graph? reads)
   (def seen (make-hash-table-eq))
-  (def (find read)
-    (and (not (hash-key? seen read))
-         (begin (hash-put! seen read #t)
-           (or (eq? (slot-read-key read) 'owned-call/full)
-               (ormap find (slot-read-dependencies read))))))
-  (if (ormap find reads) #t #f))
+  (def (original? read)
+    (or (hash-key? seen read)
+        (and (object-read-issued? read)
+             (not (eq? (slot-read-key read) 'owned-call/full))
+             (begin
+               (hash-put! seen read #t)
+               (andmap original? (slot-read-dependencies read))))))
+  (and (pair? reads) (andmap original? reads)))
 (def evidence-read-ownership-test
   (test-suite "Native evidence read ownership"
     (yuanxu-test-case "receipts retain actual candidate Contract Context and child identities"
@@ -52,7 +54,7 @@
       (def clone (.cc evidence 'responsibility-evidence children))
       (check-equal? (eq? (.get clone candidate) candidate) #t)
       (check-equal? (eq? (.get clone responsibility-evidence) children) #t))
-    (yuanxu-test-case "returned receipts keep original replay while unused receipts can collect"
+    (yuanxu-test-case "receipts remain original replay dependencies after collection"
       (def witness (make-hash-table-eq weak-values: #t))
       (def policy (.o accepted: #t))
       (def Root
@@ -65,7 +67,7 @@
               (.get receipt candidate)))))
       (check-equal? (.get Root answer) #t)
       (yuanxu-debug-memory-snapshot 'receipt-collected collect?: #t)
-      (check-equal? (hash-get witness 'temporary) #f)
+      (check-equal? (object? (hash-get witness 'temporary)) #t)
       (.put! policy 'accepted #f)
       (check-exception (.get Root answer) error?)
       (def Held
@@ -109,7 +111,7 @@
           (defvalues (answer reads)
             (%call-with-recorded-slot-reads (lambda () (.get Root answer))))
           (check-equal? answer #t)
-          (check-equal? (has-full-bundle? reads) #t)
+          (check-equal? (original-read-graph? reads) #t)
           (yuanxu-debug-memory-snapshot 'open-receipt-retained collect?: #t)
           (unless (eq? axis 'borrowed)
             (check-equal? (object? (hash-get witness 'receipt)) #t)))
@@ -124,9 +126,9 @@
                 (.get receipt accepted?)
                 (.put! receipt 'changed-after-read #t)
                 #t)))))
-      (check-equal? (has-full-bundle? reads) #t)
+      (check-equal? (original-read-graph? reads) #t)
       (check-exception (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?))
-    (yuanxu-test-case "unchanged native validation scratch collects but all parent policy remains"
+    (yuanxu-test-case "validation keeps original receivers and all parent policy"
       (def witness (make-hash-table-eq weak-values: #t))
       (def base (.o port: 443))
       (def candidate (.o (:: @ base) label: 'configured))
@@ -148,7 +150,7 @@
       (check-equal? (.get Root answer) 443)
       (check-equal? validations 1)
       (yuanxu-debug-memory-snapshot 'native-validation-scratch-collected collect?: #t)
-      (check-equal? (hash-get witness 'checked) #f)
+      (check-equal? (object? (hash-get witness 'checked)) #t)
       ;; Even an unread transitive parent field is part of the conservative
       ;; native parent-generation guard; mutation-and-restore cannot renew it.
       (.put! base 'policy 'changed)
@@ -168,7 +170,7 @@
                         (owned-read-derived! receiver) original)))))
                 (.put! candidate 'policy 'changed-after-validation)
                 result)))))
-      (check-equal? (has-full-bundle? reads) #t)
+      (check-equal? (original-read-graph? reads) #t)
       (check-exception (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?))
     (yuanxu-test-case "native checked receiver with a MOP ancestor keeps full support"
       (def parent (.o port: 443))
@@ -182,7 +184,7 @@
                   (list (cons 'port
                     (lambda (original receiver)
                       (owned-read-derived! receiver) original)))))))))
-      (check-equal? (has-full-bundle? reads) #t))
+      (check-equal? (original-read-graph? reads) #t))
     (yuanxu-test-case "normalized native checked receivers remain live original evidence"
       (def candidate (.o port: 443))
       (def validations 0)

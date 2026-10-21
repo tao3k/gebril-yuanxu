@@ -10,7 +10,7 @@ in [[file:../../../t/qualification/service-publication/fixtures.ss][t/qualificat
 no TestSuite or runner. Test files no longer import another test file to acquire
 services, and the callback-shaped =with-services= helper is removed.
 
-This reuses =yuanxu-test-fixture= and =with-poo-flow-fixture= from the existing
+This reuses =yuanxu-test-fixture= and =with-yuanxu-fixture= from the existing
 [[file:../../../observability/testing-fixture.ss][Fixture owner]]. Those macros keep the existing native std/test lifecycle and
 POO Case policy. No new fixture DSL, scheduler, product Loader or production
 module loading behavior is added.
@@ -151,7 +151,7 @@ case would add an unnecessary resource dependency.
 10. The same Fixture is acquired again while the first owner remains alive;
     recovery and inner release leave the first owner's residual untouched.
 
-Expected faults are caught around =with-poo-flow-fixture= inside an ordinary
+Expected faults are caught around =with-yuanxu-fixture= inside an ordinary
 Fixture case, so the outer harness can assert cleanup without registering an
 intentional failing Case as a success. This exercises the same lifecycle used
 by =yuanxu-test-fixture=; it is not a subprocess-crash cleanup claim.
@@ -240,7 +240,7 @@ an explicit verification function:
 
 =verify-directory-failure= owns the shared injection, exception-identity and
 sibling-directory checks. It acquires its sibling with the existing
-=with-poo-flow-fixture= macro. The broken Fixture transforms the inherited
+=with-yuanxu-fixture= macro. The broken Fixture transforms the inherited
 release function with native =(.release => observe-release)=, preserving the
 real cleanup path while counting zero releases for failed preparation and one
 for failed body execution. The common cleanup function records exactly one
@@ -300,7 +300,7 @@ choosing whether to reuse the resource or acquire the same Fixture again:
 (def (retry-same-resource _fixture resource verify)
   (verify resource))
 (def (retry-acquired-resource fixture _resource verify)
-  (with-poo-flow-fixture (next fixture) (verify next)))
+  (with-yuanxu-fixture (next fixture) (verify next)))
 #+end_src
 
 The test's =.after-failure= function interrupts only its first call. Its explicit

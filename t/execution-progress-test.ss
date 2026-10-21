@@ -89,7 +89,7 @@
               (call-with-execution-progress 2000 3000
                 (lambda (_state) (set! now 1500) (execution-progress! 'completed 1))
                 clock: (lambda () now))))))
-      (check-equal? (string-prefix? "unterminated\n@poo-progress " wire) #t))
+      (check-equal? (string-prefix? "unterminated\n@yuanxu-progress " wire) #t))
     (yuanxu-test-case "progress never extends the total budget or replays worker evidence"
       (def now 0)
       (call-with-execution-progress 100 300
@@ -97,11 +97,11 @@
           (def read-progress (make-test-progress-reader))
           (for-each (lambda (n)
                       (set! now (* n 80))
-                      (read-progress (string-append "@poo-progress [\"worker\","
+                      (read-progress (string-append "@yuanxu-progress [\"worker\","
                                                    (number->string n) "]")))
                     '(1 2 3))
           (set! now 301)
-          (read-progress "@poo-progress [\"worker\",4]")
+          (read-progress "@yuanxu-progress [\"worker\",4]")
           (check-equal? (execution-progress-status state) 'total))
         clock: (lambda () now)))
     (yuanxu-test-case "Ops keeps genuine progress alive past idle and rejects a noisy stall"

@@ -930,6 +930,8 @@ def main():
         "backend": "tlc", "apalache-version": "0.62.1", "sources-sha256": sources,
         "case-prefix": args.case_prefix or "all", "catalogue-size": len(CASES),
         "shard-index": args.shard_index, "shard-count": args.shard_count,
+        "qualification-scope": ("partition" if args.shard_count > 1 else
+                                "selected" if args.case_prefix else "complete"),
         "typecheck-scope": args.typecheck_scope,
         "typecheck-entries": [source.stem for source in typecheck_sources],
         "cases": results}) + "\n")

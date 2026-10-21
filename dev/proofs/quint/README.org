@@ -325,7 +325,7 @@ the backend before checking. Bootstrap has its own bounded preparation deadline
 and never emits an accepted proof receipt.
 Run =just proofs-quint /private/tmp/core-quint-proof.ss= from Core. The runner
 requires exact Quint version, typechecks every source, verifies nine positive
-cases, forty-one matched controls and five expected acceptance-witness counterexamples, and writes a =poo-flow.quint-proof.v1= Scheme
+cases, forty-one matched controls and five expected acceptance-witness counterexamples, and writes a =yuanxu.quint-proof.v1= Scheme
 receipt only after every case passes. Each case has a 45-second total deadline,
 a five-second real-output watchdog and a 1GB backend heap. Negative admission
 requires the named invariant violation and state counts; crashes, syntax failures

@@ -69,21 +69,21 @@ The following are copied from the reviewable types.ss design source. AWSString,
 AWSName, AWSCidrBlock, AWSCidrs, AWSBoolean and AWSNamedMap are predicate Contracts
 fully defined in that file. Other access/state Contracts also live there. Empty
 proto values carry no deployment defaults; those belong to configuration.
-The PooFlowObjectContract. spelling in the historical listings below was a
+The YuanxuObjectContract. spelling in the historical listings below was a
 proposed Core admission-base rename, not an installed API. It must not be confused
 with public gerbil-poo ObjectContract., which validates values. No alias is
 installed here. The implemented AWS source and vocabulary are documented in
 [[file:../12-contracts-types/12.20-aws-alignment-and-dynamic-typing.org][current AWS alignment]]; these listings do not define an additional current system.
 
 #+begin_src scheme
-(define-type (NetworkContract @ PooFlowObjectContract.)
+(define-type (NetworkContract @ YuanxuObjectContract.)
   identity: 'aws/network
   proto: (.o)
   responsibilities:
   (.o region: AWSString cidr-block: AWSCidrBlock tag-prefix: AWSString)
   .obligations: (cut aws-closed-fields @ <> <>))
 
-(define-type (InstanceContract @ PooFlowObjectContract.)
+(define-type (InstanceContract @ YuanxuObjectContract.)
   identity: 'aws/instance
   proto: (.o)
   responsibilities:
@@ -92,7 +92,7 @@ installed here. The implemented AWS source and vocabulary are documented in
       ssh-cidrs: AWSCidrs public-ip?: AWSBoolean)
   .obligations: (cut aws-closed-fields @ <> <>))
 
-(define-type (ApplicationContract @ PooFlowObjectContract.)
+(define-type (ApplicationContract @ YuanxuObjectContract.)
   identity: 'aws/application
   proto: (.o)
   responsibilities:

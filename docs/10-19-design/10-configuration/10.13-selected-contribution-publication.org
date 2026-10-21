@@ -60,7 +60,7 @@ is declared once by Core:
 
 #+begin_src scheme
 (.defgeneric
-  (poo-flow-contract-contribution-obligations contract candidate rows context)
+  (yuanxu-contract-contribution-obligations contract candidate rows context)
   slot: .contribution-obligations)
 #+end_src
 

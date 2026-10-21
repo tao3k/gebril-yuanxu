@@ -44,7 +44,7 @@
       "  package = args: import ./aws-package.nix ({ inherit pkgs; } // args);\n"
       "  schema = provider: pkgs.callPackage ./provider-schema.nix { inherit provider; };\n"
       "  versions = {\n"
-      "    parent = schema (package { version = \"5.99.0\"; hash = \"sha256:d77fc7e17730eb40cde656e67fc206e9d7ca2a346d9e1819e6f3bd71289207e2\"; });\n"
+      "    parent = schema (package { version = \"5.99.0\"; hash = { aarch64-darwin = \"sha256:d77fc7e17730eb40cde656e67fc206e9d7ca2a346d9e1819e6f3bd71289207e2\"; x86_64-linux = \"sha256:ac8e1fb974569f0c5fdc09f5991fb8b0e79ccf4086799bf64715317f3a27a7fd\"; }; });\n"
       "    child = schema (package {});\n"
       "  };\n"
       "in { aws = versions.${import ./version.nix}; }\n"))
@@ -108,17 +108,22 @@
     (error "Nix did not publish the canonical immutable package set"))
   (phase 'package-set-published)
   (write-source (path-expand "demand/selection.json" project) "{\"providers\":[]}")
+  (def system
+    (call-with-input-string
+      (.get (run-script (.cc NixSetup 'command
+                '("nix-instantiate" "--eval" "--json" "--expr" "builtins.currentSystem"))) output)
+      read-json))
   (write-source (path-expand "flake.nix" project)
     (string-append
       "{ inputs.nixpkgs = { type = \"path\"; path = \"" canonical-package-set "\";\n"
       "    narHash = \"" nar-hash "\"; flake = false; };\n"
       "  inputs.selection = { url = \"path:./demand\"; flake = false; };\n"
       "  outputs = { self, nixpkgs, selection }: let\n"
-      "    pkgs = import nixpkgs { system = \"aarch64-darwin\"; };\n"
+      "    pkgs = import nixpkgs { system = \"" system "\"; };\n"
       "    artifacts = import ./selected-provider-artifacts-flake.nix {\n"
       "      inherit pkgs; schemas = import ./providers.nix { inherit pkgs; };\n"
       "    };\n"
-      "  in { packages.aarch64-darwin.default = builtins.trace \"aws-final-package-evaluated\"\n"
+      "  in { packages." system ".default = builtins.trace \"aws-final-package-evaluated\"\n"
       "    ((artifacts { selection = builtins.readFile (selection + \"/selection.json\"); }).overrideAttrs (_: {\n"
       "      name = if builtins.pathExists ./profile-options.nix\n"
       "             then import ./profile-options.nix else \"opentofu-artifacts\";\n"
@@ -143,7 +148,7 @@
                   (funflow @ ,(path-expand "modules/funflow" repository))
                   (json-schema @ ,(path-expand "modules/json-schema" repository))) port))))
   (.cc (.o) 'project project 'init init 'reader (module-publication-reader)
-    'closure-inputs closure-inputs 'package-set canonical-package-set))
+    'closure-inputs closure-inputs 'package-set canonical-package-set 'system system))
 (def (realize-aws-selection fixture directory (phase void))
   (def init (.get fixture init))
   ;; Existing source-context customization hook, as used by the selected-Graph
@@ -153,7 +158,7 @@
   (def version-path (path-expand "version.nix" project))
   (.def (Source @ NixFlakeSource.)
     reference: (string-append "path:" project)
-    attribute: "packages.aarch64-darwin.default"
+    attribute: (string-append "packages." (.get fixture system) ".default")
     ;; Resolve the SAME immutable input through Nix's path fetcher. On 2.34,
     ;; the final/narHash shortcut loses this path accessor's fingerprint;
     ;; explicit resolution retains Nix's own source-to-hash cache. The locked
