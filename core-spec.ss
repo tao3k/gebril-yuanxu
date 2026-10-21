@@ -137,6 +137,7 @@
     "module-system/source/declaration"
     "module-system/source/module-prelude"
     "module-system/source/config-prelude"
+    "module-system/source/module-prelude"
     "module-system/source/preparation"
     "module-system/source/reader"
     "module-system/source/collection"

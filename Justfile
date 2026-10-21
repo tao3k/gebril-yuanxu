@@ -21,10 +21,10 @@ test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
     test -f "{{ path }}"
-    options=()
+    set --
     case "{{ observe }}" in
-      true) options=(-D yuanxu-module-test-observation) ;;
-      trace) options=(-D yuanxu-module-test-observation,yuanxu-module-test-trace) ;;
+      true) set -- -D yuanxu-module-test-observation ;;
+      trace) set -- -D yuanxu-module-test-observation,yuanxu-module-test-trace ;;
       false) ;;
       *) echo 'observe must be false, true, or trace' >&2; exit 1 ;;
     esac
@@ -34,7 +34,7 @@ test-file path observe="false":
     # Case/Ops enforce idle progress; no shell output/heartbeat renews this cap.
     # Fence the pure policy import too; it cannot start a download or build.
     budget="$(timeout --signal=TERM --kill-after=5s 60s gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
-    GERBIL_LOADPATH="{{ justfile_directory() }}/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
+    GERBIL_LOADPATH="{{ justfile_directory() }}/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "$@" "{{ path }}" 2>&1 | tee "$log"
     if grep -E 'ERROR (MODULE|CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
     grep -F -x 'MODULE-OK {{ path }}' "$log" >/dev/null
     grep -F 'HARNESS-OK' "$log" >/dev/null

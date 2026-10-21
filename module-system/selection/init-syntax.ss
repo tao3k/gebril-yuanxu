@@ -6,12 +6,7 @@
 ;;; Boundary: declarative init selection and hygienic namespace bindings.
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
-(import (for-syntax (only-in :std/source this-source-file)
-                    (only-in "../building/source-package.ss" register-yuanxu-build-source!)
-                    (only-in :clan/poo/object .ref .slot?)))
-(begin-syntax
-  (register-yuanxu-build-source!
-    (path-expand "../.." (path-directory (this-source-file)))))
+(import (for-syntax (only-in :clan/poo/object .ref .slot?)))
 
 (import (for-syntax (only-in :yuanxu/module-system/source/init module-init-intent)))
 (import (only-in :yuanxu/module-system/source/init module-init-intent)

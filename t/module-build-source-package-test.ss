@@ -27,9 +27,13 @@
               (def before (load-path))
               (check-exception (register! foreign 'yuanxu) error?)
               (check-equal? (load-path) before)))))
-      (test-case "init registers source before Core imports and guards tool drift"
+      (test-case "build registration precedes init imports and guards tool drift"
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
+          (eval-syntax `(import
+                         (only-in ,(path-expand "module-system/building/source-package.ss" root)
+                                  register-yuanxu-build-source!)))
+          ((eval-syntax 'register-yuanxu-build-source!) root)
           (eval-syntax `(import
                          (only-in ,(path-expand "init.ss" root) init.build-spec init.build-current!)))
           (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
