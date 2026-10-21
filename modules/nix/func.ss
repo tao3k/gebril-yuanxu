@@ -13,6 +13,7 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode))
 (export poo-flow-core-nix-flake-source-inputs poo-flow-core-nix-flake-instantiate current-nix-process-observer current-nix-process-completion-observer poo-flow-core-nix-instantiate poo-flow-core-nix-realize poo-flow-core-nix-source-inputs call-with-nix-derivation-query)
+(export poo-flow-core-nix-verify-store)
 ;; Optional build-tool observability at the actual process boundary. No cache or
 ;; Provider-specific instrumentation; default execution has no observer.
 (def current-nix-process-observer (make-parameter #f))
@@ -38,15 +39,43 @@
 (def (run-nix-process argv check?)
   ;; Reuse Ops ownership, progress decoding and descendant cleanup. Structured
   ;; Nix stderr remains visible to a supervising TestingScript even with emit off.
-  (run-script
-    (.o command: argv directory: #f environment: (.o)
-        timeout: execution-total-seconds idle-timeout: execution-idle-seconds
-        progress: make-nix-progress-reader log: #f check-status: check?)
-    output-port: (current-error-port)))
+  (def observer (current-module-source-observer))
+  ;; Bounded counters, not a path registry or an evaluation/result cache. The
+  ;; protocol logs requests, not RPC completion: do not invent service timings.
+  (def counts (and observer (make-hash-table-eq)))
+  (def (record-native record)
+    (when (equal? (hash-get record 'action) "msg")
+      (let* ((text (hash-get record 'msg))
+             (category
+               (cond
+                ((not (string? text)) #f)
+                ((equal? text "performing daemon worker op: 1") 'nix-store-validity-requests)
+                ((equal? text "performing daemon worker op: 11") 'nix-gc-root-requests)
+                ((equal? text "performing daemon worker op: 7") 'nix-store-add-requests)
+                ((equal? text "performing daemon worker op: 26") 'nix-store-info-requests)
+                ((string-prefix? "instantiated '" text) 'nix-derivation-instantiations)
+                ((string-prefix? "evaluating file '" text) 'nix-file-evaluations)
+                (else #f))))
+        (hash-put! counts 'nix-message-records (+ 1 (or (hash-get counts 'nix-message-records) 0)))
+        (when category (hash-put! counts category (+ 1 (or (hash-get counts category) 0)))))))
+  (dynamic-wind void
+    (lambda ()
+      (run-script
+        (.o command: argv directory: #f environment: (.o)
+            timeout: execution-total-seconds idle-timeout: execution-idle-seconds
+            progress: (lambda () (make-nix-progress-reader observe: (and observer record-native)))
+            log: #f check-status: check?)
+        output-port: (current-error-port)))
+    (lambda ()
+      (when observer
+        (observer (cons 'nix-process-observation (hash->list counts)) 1)))))
 (def (call-with-nix-process-observation argv thunk)
   (let ((observer (current-nix-process-completion-observer))
-        (source-observer (current-module-source-observer)))
-    (if (not (or observer source-observer)) (thunk argv)
+        (source-observer (current-module-source-observer))
+        ;; Liveness decoding must not depend on observation emission. Native
+        ;; activity records are required even when no Case observer is active.
+        (command (observed-nix-command argv)))
+    (if (not (or observer source-observer)) (thunk command)
       (let ((started (real-time)) (completed? #f)
             ;; Closed process modes, never argv/path payloads. Distinguish a
             ;; cached store check from actual realization in the existing trace.
@@ -61,7 +90,7 @@
             (when source-observer
               (source-observer (list 'nix-process-start operation) 1)))
           (lambda ()
-            (let (value (thunk (observed-nix-command argv)))
+            (let (value (thunk command))
               (set! completed? #t) value))
           (lambda ()
             (when source-observer
@@ -96,6 +125,18 @@
     (when observer
       (observer (list 'nix-store-validity (if valid? 'hit 'miss)) 1))
     valid?))
+
+(def (poo-flow-core-nix-verify-store executable path)
+  (unless (and (string? path) (string-prefix? "/nix/store/" path)
+               (not (string-index (substring path 11 (string-length path)) #\/))
+               (eq? (module-source-type path) 'directory))
+    (error "approved release must be an exact Nix store directory" path))
+  (for-each
+    (lambda (operation)
+      (def argv (list executable operation path))
+      (when (current-nix-process-observer) ((current-nix-process-observer) argv))
+      (call-with-nix-process-observation argv (cut run-nix-process <> #t)))
+    '("--check-validity" "--verify-path")))
 
 (def (poo-flow-core-nix-instantiate executable expression arguments
                                    (store-command (lambda () "nix-store")))
@@ -132,7 +173,15 @@
 (def (poo-flow-core-nix-flake-instantiate executable reference attribute
         (arguments (.o)) (inputs (.o)))
   (let* ((applied? (pair? (.all-slots arguments)))
-         (installable (string-append reference "#" attribute))
+         ;; A fully qualified output is an exact path, not a package shorthand.
+         ;; Native prefix probing can seal/replace ancestor cache rows on Nix
+         ;; 2.34 and cause a second full evaluation for identical inputs. The
+         ;; leading dot selects Nix's existing exact-attribute route. Keep short
+         ;; names and applied-function evaluation unchanged.
+         (exact? (and (not applied?)
+                      (or (string-prefix? "packages." attribute)
+                          (string-prefix? "legacyPackages." attribute))))
+         (installable (string-append reference "#" (if exact? "." "") attribute))
          (json (and applied?
                 (call-with-output-string
                   (lambda (port)

@@ -1,7 +1,8 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/object .o .ref)
+(import (only-in :clan/poo/object .o .ref .cc)
+        (only-in :clan/poo/mop element?)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :core/observability/testing-case poo-flow-test-case)
         :core/module-system/source/interface
@@ -27,6 +28,19 @@
       forbidden-projections: '(parallel-build)))
 (def module-authoring-test
   (test-suite "Core source admission without product imports or activation"
+    (poo-flow-test-case "authoring receipt identities are stable and do not grant currentness"
+      (def interface (poo-flow-module-interface "example" (.o) '()))
+      (def result
+        (poo-flow-module-authoring-admit-datum interface 'objects '(.o add-profile: #t)))
+      (def diagnostic (car (poo-flow-module-authoring-admission-diagnostics result)))
+      (check-equal? (.ref result 'kind) 'poo-flow.module-authoring.admission)
+      (check-equal? (.ref diagnostic 'kind) 'poo-flow.module-authoring.diagnostic)
+      (check-equal? (element? PooFlowModuleAuthoringAdmission result) #t)
+      (check-equal? (element? PooFlowModuleAuthoringDiagnostic diagnostic) #t)
+      ;; A matching kind does not waive the remaining receipt checks.
+      (check-equal? (element? PooFlowModuleAuthoringAdmission (.cc result 'accepted? #t)) #f)
+      (check-equal? (element? PooFlowModuleAuthoringDiagnostic
+                      (.cc diagnostic 'runtime-executed? #t)) #f))
     (poo-flow-test-case "declarative authoring bundle retains its owner and both dispatch axes"
       ;; Methods have already been composed by the production declaration.
       ;; Do not replay its owned descriptors into a second generic registry.

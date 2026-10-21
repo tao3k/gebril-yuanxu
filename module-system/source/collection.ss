@@ -47,13 +47,15 @@
 (def (poo-flow-directory-module-source-collection? value)
   (and (poo-flow-module-source-collection? value)
        (every (lambda (slot) (.slot? value slot))
-              '(owner source-root modules-directory style-policy))
+              '(owner source-root modules-directory style-policy excluded-directories))
        (symbol? (.ref value 'owner))
        (nonempty-string? (.ref value 'source-root))
        (nonempty-string? (.ref value 'modules-directory))
        (object? (.ref value 'style-policy))
        (.slot? (.ref value 'style-policy) 'validate)
        (procedure? (.ref (.ref value 'style-policy) 'validate))
+       (list? (.ref value 'excluded-directories))
+       (every module-source-name? (.ref value 'excluded-directories))
        (procedure? (.ref value 'locate))))
 
 (def (poo-flow-module-source-collection-owner collection)
@@ -114,7 +116,9 @@
               (path-expand
                (symbol->string module-name)
                (poo-flow-module-source-collection-modules-root collection))))
-        (if (module-source-type module-root)
+        (if (and (not (member (symbol->string module-name)
+                             (.ref collection 'excluded-directories)))
+                 (module-source-type module-root))
           (begin
             ((.ref (.ref collection 'style-policy) 'validate)
              (.ref collection 'style-policy) module-name module-root module-source-read)
@@ -131,9 +135,10 @@
       (let (module-names
           (filter
            (lambda (name)
-             (eq? (file-info-type
+             (and (not (member name (.ref collection 'excluded-directories)))
+                  (eq? (file-info-type
                    (file-info (path-expand name modules-root)))
-                  'directory))
+                  'directory)))
            (list-sort string<? (directory-files modules-root))))
         module-names)
       '())))
@@ -199,6 +204,7 @@
             (source-root source-root-value)
             (modules-directory modules-directory-value)
             (style-policy style-policy-value)
+            (excluded-directories '())
             (locate poo-flow-module-source-collection-default-locate)))
     (unless (poo-flow-directory-module-source-collection? collection)
       (error "invalid POO Flow module source collection" collection))

@@ -8,13 +8,20 @@
         (only-in :std/list/list find)
         (only-in :clan/poo/object .o .cc .ref .slot? .all-slots object?)
         (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe)
+        (only-in :core/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
         (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
         (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
         (only-in :core/feature-system/capability-model feature-projection-request?)
         (only-in :core/module-system/source/declaration current-module-build-phase?)
         (only-in :core/module-system/building/package write-selected-package))
-(export module-build-graph unique-build-inputs BuildContributionContract ExternalPackageContributionContract)
+(export module-build-graph unique-build-inputs BuildContributionContract ExternalPackageContributionContract
+        BuildPublicationContract)
+(def BuildPublicationContract
+  (poo-flow-predicate-contract 'module/build-publication
+    (lambda (value)
+      (and (object? value) (.slot? value '.restore-build)
+           (procedure? (.ref value '.restore-build))))
+    (lambda (_v _c) '())))
 (def (native-build-root? value)
   (or (and (string? value) (> (string-length value) 0))
       (and (list? value) (>= (length value) 2) (eq? (car value) 'gxc:)
@@ -58,7 +65,8 @@
   (parameterize ((current-module-build-phase? #t))
     (module-build-graph/phase selected-value prepare-publication)))
 (def (module-build-graph/phase selected-value prepare-publication)
-  ((.ref selected-value 'admit-current))
+  (parameterize ((current-module-source-phase 'build-entry))
+    ((.ref selected-value 'admit-current)))
   (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table))
         (prepared (make-hash-table)) (checks '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
@@ -74,13 +82,14 @@
     (def (check-current! observed-checks)
       ((.ref selected-value 'admit-current))
       (for-each (lambda (check) (check)) observed-checks))
-    (def (current!)
-      (call-with-module-source-read-cache
-        (lambda ()
-          ;; Cache only this pure traversal in the enclosing observation
-          ;; window. Adding an input changes the key; effects and independent
-          ;; currentness calls start fresh windows, never reuse this approval.
-          (module-source-observe check-current! checks))))
+    (def (current! (site 'build-current))
+      (parameterize ((current-module-source-phase site))
+        (call-with-module-source-read-cache
+          (lambda ()
+            ;; Cache only this pure traversal in the enclosing observation
+            ;; window. Adding an input changes the key; effects and independent
+            ;; currentness calls start fresh windows, never reuse this approval.
+            (module-source-observe check-current! checks)))))
     (def (owner-preparation owner)
       (if (hash-key? prepared owner) (hash-ref prepared owner)
         (let (value (prepare-publication owner))
@@ -228,11 +237,18 @@
            ((feature)
             (add-projections! owner contributor (.ref (.ref node 'descriptor) 'projections)))
            (else (error "unknown selected Graph node" node))))) (.ref selected-value 'nodes))
-    (current!)
-    (let* ((init-path (.ref selected-value 'init-source))
-           (init-inputs (if (and (string? init-path) (eq? (module-source-type init-path) 'regular))
-                           (list (cons init-path (module-source-read init-path))) '())))
-      (current!)
+    (let ((init-inputs
+           ;; Finalization only reads the init source. Share the existing pure
+           ;; window for its two Graph checks; close it before any consumer can
+           ;; demand external packages, native imports or publication effects.
+           (call-with-module-source-read-cache
+             (lambda ()
+               (current! 'build-finalize)
+               (let* ((path (.ref selected-value 'init-source))
+                      (inputs (if (and (string? path) (eq? (module-source-type path) 'regular))
+                                (list (cons path (module-source-read path))) '())))
+                 (current! 'build-finalize)
+                 inputs)))))
       (.o (:: graph) compiler-inputs:
           (unique-build-inputs
            (append init-inputs
@@ -241,6 +257,16 @@
                           (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs))
                                (reverse entry-values)))))
           selected-graph: selected-value generation: (.ref selected-value 'generation)
+          build-publication:
+          (let (owners (filter (lambda (owner)
+                                (.slot? (hash-ref cores owner) 'build-publication))
+                              (hash-keys cores)))
+            (cond ((null? owners) #f)
+                  ((pair? (cdr owners)) (error "conflicting selected build publications" owners))
+                  (else
+                   (let (value (.ref (hash-ref cores (car owners)) 'build-publication))
+                     (admit-module-value! BuildPublicationContract value selected-value)
+                     value))))
           assets: (reverse asset-values)
           .package: (lambda (directory) (write-selected-package graph directory))
           entries: (reverse entry-values) other-projections: (reverse other)
@@ -253,9 +279,9 @@
               (lambda (failure) (set! package-refused? #t) (raise failure))
               (lambda ()
                 (parameterize ((current-module-build-phase? #t))
-                  (current!)
+                  (current! 'build-external-before)
                   (for-each (lambda (prepare!) (prepare!)) (reverse package-demands))
-                  (current!)
+                  (current! 'build-external-after)
                   (reverse package-values)))))
           source-inputs:
           (unique-build-inputs
@@ -264,6 +290,19 @@
           compiler-current: current!
           admit-current:
           (lambda ()
-            (current!)
-            (for-each (lambda (request) ((.ref request 'admit-current))) external-packages)
-            (current!))))))
+            (current! 'build-admit-before)
+            ;; Observe the actual getter/callback boundary, not a reconstructed
+            ;; request tree. Position is diagnostic only; do not read identity
+            ;; slots here and contaminate a surrounding admission's MOP reads.
+            (let loop ((requests external-packages) (position 0))
+              (unless (null? requests)
+                (let ((observer (current-module-source-observer))
+                      (name (list 'build-request position)))
+                  (if observer
+                    (dynamic-wind
+                      (lambda () (observer (list 'admission-stage-start name) 1))
+                      (lambda () ((.ref (car requests) 'admit-current)))
+                      (lambda () (observer (list 'admission-stage-end name) 1)))
+                    ((.ref (car requests) 'admit-current))))
+                (loop (cdr requests) (+ position 1))))
+            (current! 'build-admit-after))))))

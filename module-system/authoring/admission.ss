@@ -24,7 +24,9 @@
         ;; the aggregate class evolution/reflection/load-form publication.
         (only-in :core/poo-clos/objects
                  poo-clos-generic-protocol
-                 poo-clos-generic-binding-current poo-clos-compose-method-bundle)
+                 poo-clos-generic-binding-current poo-clos-compose-method-bundle
+                 clos-call-carrier-policy-guard)
+        (only-in :core/object-family/read-projection call-with-owned-read-projection)
         (only-in :core/poo-clos/generic-syntax .defgeneric .defmethod)
         (only-in :core/poo-clos/dispatch poo-clos-call)
         (only-in :core/poo-clos/method-bundle-syntax .defmethod-bundle)
@@ -39,12 +41,15 @@
         poo-flow-module-authoring-admit-datum
         poo-flow-module-authoring-admit-datums
         poo-flow-module-authoring-admit-port
+        call-with-module-authoring-read-scope
         poo-flow-module-authoring-admission?
         poo-flow-module-authoring-admission-accepted?
         poo-flow-module-authoring-admission-diagnostics)
 
+;; Stable receipt identities. Module/source revisions remain owned by their
+;; existing publication Metadata and currentness guards, not by kind names.
 (.def ModuleAuthoringDiagnostic
-  kind: 'poo-flow.module-authoring.diagnostic.v1
+  kind: 'poo-flow.module-authoring.diagnostic
   module: #f
   role: #f
   code: #f
@@ -56,7 +61,7 @@
   runtime-executed?: #f)
 
 (.def ModuleAuthoringAdmission
-  kind: 'poo-flow.module-authoring.admission.v1
+  kind: 'poo-flow.module-authoring.admission
   module: #f
   role: #f
   accepted?: #f
@@ -68,7 +73,7 @@
        (andmap (cut .slot? value <>)
                '(kind module role code subject rule recommendation
                       repair-operators freedom runtime-executed?))
-       (eq? (.ref value 'kind) 'poo-flow.module-authoring.diagnostic.v1)
+       (eq? (.ref value 'kind) 'poo-flow.module-authoring.diagnostic)
        (string? (.ref value 'module))
        (symbol? (.ref value 'role))
        (symbol? (.ref value 'code))
@@ -86,7 +91,7 @@
   (and (object? value)
        (andmap (cut .slot? value <>)
                '(kind module role accepted? diagnostics runtime-executed?))
-       (eq? (.ref value 'kind) 'poo-flow.module-authoring.admission.v1)
+       (eq? (.ref value 'kind) 'poo-flow.module-authoring.admission)
        (string? (.ref value 'module))
        (symbol? (.ref value 'role))
        (boolean? (.ref value 'accepted?))
@@ -385,6 +390,17 @@
  ModuleAuthoringAdmissionGeneric
  ModuleAuthoringCoreMethods)
 
+;; The two generated wrappers above call private named admission functions with
+;; domain arguments only. Neither wrapper exposes its lexical CLOS frame or
+;; next-method closure. Keep exact procedure identities, not mutable method
+;; names, contributor flags, or a second dispatch registry.
+(def authoring-closed-bodies
+  (map (cut .ref <> 'body) (.ref ModuleAuthoringCoreMethods 'methods)))
+
+(def (call-with-module-authoring-read-scope action)
+  (call-with-owned-read-projection authoring-closed-bodies
+    (clos-call-carrier-policy-guard) action))
+
 ;; : (-> PooModuleInterface Symbol PooModuleSourceRole)
 (def (poo-flow-module-authoring-role interface role-name)
   (unless (poo-flow-module-interface? interface)
@@ -401,8 +417,9 @@
   (let* ((authoring (poo-flow-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
          (role (poo-flow-module-authoring-role interface role-name)))
-    (poo-clos-call ModuleAuthoringAdmissionGeneric
-                   executor role interface datum)))
+    (call-with-module-authoring-read-scope
+      (cut poo-clos-call ModuleAuthoringAdmissionGeneric
+           executor role interface datum))))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
 (def (poo-flow-module-authoring-admit-datums interface role-name datums)

@@ -1,11 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Isolation compiler policy. No public replacement mutation API.
 (import :clan/poo/object
-        (only-in :clan/poo/slot-observation slot-read-receiver slot-read-key slot-read-dependencies)
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method! slot-ref) runtime.))
-(export call-with-selected-stores before-store! specification-owners register-allocation!)
+(export before-store! specification-owners register-allocation! store-frame-depth)
+;; Qualification-only access to the CURRENT producer's PRIVATE native frame.
+;; Production integration belongs inside object.ss, without this extern bridge.
+(extern namespace: clan/poo/object active-read-replays)
 (def direct-owners (make-hash-table test: eq? weak-keys: #t))
-(def selected-stores (make-parameter '()))
+(def (store-frame-depth) (length (active-read-replays)))
 ;; The native initializer supplies identities for EVERY constructor route,
 ;; including .cc/direct metadata copies which have no ancestry edge to SELF.
 (def original-init (runtime.find-method object::t #f ':init!))
@@ -17,7 +19,7 @@
         (let (table (make-hash-table test: eq? weak-keys: #t))
           (hash-put! direct-owners spec table) table)))
       (hash-put! owners self #t))
-    (append (object-slots self) (object-defaults self))))
+    (object-slots self)))
 (def (tracked-init self . args)
   (def result (apply original-init self args))
   (register-allocation! self)
@@ -40,49 +42,18 @@
     (when owners (for-each (lambda (entry) (visit (car entry))) (hash->list owners))))
   result)
 
-(def (call-with-selected-stores roots observe)
-  (def targets (make-hash-table-eq))
-  (def reads (make-hash-table-eq))
-  (def (associate spec declarer receiver)
-    (def registered (hash-get direct-owners spec))
-    (unless (and registered (hash-key? registered declarer))
-      (error "unregistered specification allocation"))
-    (def previous (or (hash-get targets spec) '()))
-    (unless (memq receiver previous)
-      (hash-put! targets spec (cons receiver previous))))
-  (def (carriers receiver key)
-    (def seen (make-hash-table-eq))
-    (def (visit owner)
-      (unless (hash-key? seen owner)
-        (hash-put! seen owner #t)
-        (for-each
-          (lambda (entry)
-            (when (eq? key (car entry)) (associate (cdr entry) owner receiver)))
-          (append (object-slots owner) (object-defaults owner)))
-        (for-each visit (object-supers owner))))
-    (visit receiver))
-  (def (visit read)
-    (unless (hash-key? reads read)
-      (unless (object-read-issued? read) (error "unissued slot dependency"))
-      (hash-put! reads read #t)
-      (when (symbol? (slot-read-key read))
-        (carriers (slot-read-receiver read) (slot-read-key read)))
-      (for-each visit (slot-read-dependencies read))))
-  (for-each visit roots)
-  (parameterize ((selected-stores (cons targets (selected-stores))))
-    (replay-slot-reads! roots observe)))
-
 ;; Called automatically from lowered native structure stores. The actual
 ;; receiver guard still owns the diagnostic and dynamic replay protection.
 (def (before-store! target)
-  (for-each
-    (lambda (targets)
-      (let (receivers (hash-get targets target))
-        (when receivers
-          (for-each
-            (lambda (receiver) (check-object-edit receiver (object-%state receiver)))
-            receivers))))
-    (selected-stores)))
+  (when (pair? (active-read-replays))
+    (when ($slot-spec? target)
+      (unless (hash-get direct-owners target)
+        (error "unregistered specification allocation"))
+      ;; Read-only preflight of ALL native registered users, including copies
+      ;; without a parent edge. No invalidation or revision change occurs here.
+      (for-each
+        (lambda (owner) (check-object-edit owner (object-%state owner)))
+        (specification-owners target)))))
 
 ;; The derived SDK bodies are generated/compiled from the ACTIVE SDK, not .data.
 (let (root (getenv "CORE_STORE_ROOT" #f))

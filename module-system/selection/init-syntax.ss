@@ -79,6 +79,7 @@
          ((init-binding (datum->syntax (syntax ctx) 'poo-flow-module-init))
           (build-spec-binding (datum->syntax (syntax ctx) 'init.build-spec))
           (build-current-binding (datum->syntax (syntax ctx) 'init.build-current!))
+          (build-run-binding (datum->syntax (syntax ctx) 'init.build-run))
           (test-spec-binding (datum->syntax (syntax ctx) 'init.test-spec))
           (test-current-binding (datum->syntax (syntax ctx) 'init.test-current!))
           (test-source-binding (datum->syntax (syntax ctx) 'init.tests))
@@ -92,13 +93,16 @@
              ;; All projections close over this one init-owned selection.
              (defvalues (build-spec-binding build-current-binding
                          test-spec-binding test-current-binding
-                         test-source-binding module-source-getter)
+                         test-source-binding module-source-getter build-run-binding)
                (poo-flow-core-init-build
                  (this-source-file ctx)
                  '(poo-flow! option value init-clause ...)))
              namespace-definition ...
-             (export init-binding build-spec-binding build-current-binding
-                     test-spec-binding test-current-binding test-source-binding))))))
+             (export init-binding build-spec-binding build-current-binding build-run-binding
+                     test-spec-binding test-current-binding test-source-binding)
+             ;; A source module's native runtime promise has one result. Do not
+             ;; leave defvalues' seven projection values as its last expression.
+             (void))))))
     ((_ profile-binding
         profile-set-binding
         (profile profile-name (extends base-profile))

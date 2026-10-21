@@ -5,10 +5,15 @@ import PooFlowCoreProof.Modules.Funflow.Policy
 import PooFlowCoreProof.Admission.Publication
 import PooFlowCoreProof.PooClos.MethodCombination
 import PooFlowCoreProof.ModuleSystem.Source.Ownership
+import PooFlowCoreProof.ModuleSystem.Source.Collections
 import PooFlowCoreProof.ModuleSystem.Building.Inputs
 import PooFlowCoreProof.ModuleSystem.Workflow
 import PooFlowCoreProof.ModuleSystem.Graph.ImportCorrespondence
 import PooFlowCoreProof.ModuleSystem.Graph.TestAdmission
+import PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+import PooFlowCoreProof.ModuleSystem.Graph.SemanticReads
+import PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
+import PooFlowCoreProof.ModuleSystem.Graph.PublicationReads
 import PooFlowCoreProof.Composition.Overlay
 import PooFlowCoreProof.Composition.Identity
 import PooFlowCoreProof.PooClos.Outcomes
@@ -19,6 +24,7 @@ import PooFlowCoreProof.Admission.Source
 import PooFlowCoreProof.Admission.SourceWindows
 import PooFlowCoreProof.Admission.RootChild
 import PooFlowCoreProof.Admission.ReturnWindows
+import PooFlowCoreProof.Admission.BoundaryComposition
 import PooFlowCoreProof.Admission.ReplayBoundary
 import PooFlowCoreProof.Admission.IdentityDFS
 import PooFlowCoreProof.Admission.DFSFrames
@@ -26,6 +32,7 @@ import PooFlowCoreProof.Admission.ReadOnlyEntry
 import PooFlowCoreProof.Admission.SnapshotEntry
 import PooFlowCoreProof.Admission.SnapshotLifetime
 import PooFlowCoreProof.Admission.SerialUse
+import PooFlowCoreProof.Admission.IssuedRootForwarding
 import PooFlowCoreProof.Admission.CallPhases
 import PooFlowCoreProof.Admission.AdmissionBody
 import PooFlowCoreProof.Admission.ReturnTail
@@ -38,6 +45,14 @@ import PooFlowCoreProof.Admission.RouteMutation
 import PooFlowCoreProof.Admission.ReplayOwnership
 import PooFlowCoreProof.Admission.MetadataOwnership
 import PooFlowCoreProof.Admission.MetadataAllocation
+import PooFlowCoreProof.Admission.StoreLowering
+import PooFlowCoreProof.Admission.ArtifactClosure
+import PooFlowCoreProof.Admission.IssuedLoading
+import PooFlowCoreProof.Admission.SourceLoader
+import PooFlowCoreProof.Admission.CoreStoreRecovery
+import PooFlowCoreProof.Admission.CoreApprovedRecovery
+import PooFlowCoreProof.Admission.CoreBuildHandoff
+import PooFlowCoreProof.Admission.CoreBuildPublication
 import PooFlowCoreProof.FeatureSystem.DomainCase.Resolution
 import PooFlowCoreProof.Modules.Funflow.Context
 import PooFlowCoreProof.Modules.Funflow.CausalCut
@@ -45,6 +60,7 @@ import PooFlowCoreProof.ModuleSystem.Selection.Requirements
 import PooFlowCoreProof.PooClos.NextMethod
 import PooFlowCoreProof.PooClos.InstanceStorage
 import PooFlowCoreProof.PooClos.Dispatch
+import PooFlowCoreProof.PooClos.CarrierCapture
 import PooFlowCoreProof.Admission.Decision
 import PooFlowCoreProof.Graph.Payload
 import PooFlowCoreProof.Ops.ProcessScript
@@ -85,6 +101,9 @@ run_cmd do
   let allowed := #[`propext, `Classical.choice, `Quot.sound]
   let owners := #[`PooFlowCoreProof]
   for required in #[
+      `PooFlowCoreProof.Admission.IssuedRootForwarding.preserves_issuance,
+      `PooFlowCoreProof.Admission.IssuedRootForwarding.cannot_hide_unissued,
+      `PooFlowCoreProof.Admission.IssuedRootForwarding.forward_keeps_dependency_closure,
       `PooFlowCoreProof.FeatureSystem.DomainCase.Resolution.constructed_winners_unique,
       `PooFlowCoreProof.PooClos.InstanceStorage.migration_reads_own_class,
       `PooFlowCoreProof.PooClos.InstanceStorage.subclass_metadata_retains_class_storage,
@@ -129,6 +148,9 @@ run_cmd do
       `PooFlowCoreProof.Admission.ReturnWindows.cached_parent_rejected,
       `PooFlowCoreProof.Admission.ReturnWindows.fresh_after_callback_rejects_change,
       `PooFlowCoreProof.Admission.ReturnWindows.pure_tail_fixture_cost,
+      `PooFlowCoreProof.Admission.BoundaryComposition.composition_equivalent,
+      `PooFlowCoreProof.Admission.BoundaryComposition.changed_after_action_rejected,
+      `PooFlowCoreProof.ModuleSystem.Graph.TestAdmission.discovery_visit_bound,
       `PooFlowCoreProof.Admission.ReplayBoundary.ordered_diagnostic_exact,
       `PooFlowCoreProof.Admission.ReplayBoundary.successful_coverage,
       `PooFlowCoreProof.Admission.ReplayBoundary.both_branches_retained,
@@ -226,6 +248,7 @@ run_cmd do
       `PooFlowCoreProof.Admission.RouteMutation.equal_projection_same_decision,
       `PooFlowCoreProof.Admission.ReplayOwnership.selected_write_refused,
       `PooFlowCoreProof.Admission.ReplayOwnership.nested_frame_keeps_outer,
+      `PooFlowCoreProof.Admission.ReplayOwnership.delivery_write_refused,
       `PooFlowCoreProof.Admission.ReplayOwnership.rejected_edit_has_no_partial_clear,
       `PooFlowCoreProof.Admission.ReplayOwnership.independent_edit_allowed,
       `PooFlowCoreProof.Admission.ReplayOwnership.unaffected_parent_unchanged,
@@ -241,6 +264,61 @@ run_cmd do
       `PooFlowCoreProof.Admission.MetadataAllocation.restoration_keeps_parent_and_revision,
       `PooFlowCoreProof.Admission.MetadataAllocation.restoration_retains_poisoned_cold_cache,
       `PooFlowCoreProof.Admission.MetadataAllocation.restoration_is_not_invalidation,
+      `PooFlowCoreProof.Admission.StoreLowering.mediated_prewrite_refusal,
+      `PooFlowCoreProof.Admission.StoreLowering.mediated_no_cold_poison,
+      `PooFlowCoreProof.Admission.StoreLowering.unlowered_retains_counterexample,
+      `PooFlowCoreProof.Admission.StoreLowering.precompiled_callees_refuse,
+      `PooFlowCoreProof.Admission.StoreLowering.precompiled_callees_preserve_cold,
+      `PooFlowCoreProof.Admission.StoreLowering.fixture_owners_derived,
+      `PooFlowCoreProof.Admission.StoreLowering.direct_copies_are_required,
+      `PooFlowCoreProof.Admission.StoreLowering.missing_carrier_retains_counterexample,
+      `PooFlowCoreProof.Admission.ArtifactClosure.changed_closure_refuses,
+      `PooFlowCoreProof.Admission.ArtifactClosure.raw_store_refuses,
+      `PooFlowCoreProof.Admission.ArtifactClosure.stale_inputs_refuse,
+      `PooFlowCoreProof.Admission.ArtifactClosure.prior_loading_refuses,
+      `PooFlowCoreProof.Admission.ArtifactClosure.unchanged_mediated_admits,
+      `PooFlowCoreProof.Admission.ArtifactClosure.both_requirements_preserved,
+      `PooFlowCoreProof.Admission.IssuedLoading.changed_record_refuses,
+      `PooFlowCoreProof.Admission.IssuedLoading.changed_artifact_refuses,
+      `PooFlowCoreProof.Admission.IssuedLoading.changed_snapshot_refuses,
+      `PooFlowCoreProof.Admission.IssuedLoading.allowed_checks_match,
+      `PooFlowCoreProof.Admission.IssuedLoading.public_replace_preserves_consumed_bytes,
+      `PooFlowCoreProof.Admission.IssuedLoading.latest_path_not_implied,
+      `PooFlowCoreProof.Admission.IssuedLoading.private_writer_breaks_consumption,
+      `PooFlowCoreProof.Admission.SourceLoader.changed_cache_refused,
+      `PooFlowCoreProof.Admission.SourceLoader.stable_cache_allowed,
+      `PooFlowCoreProof.Admission.SourceLoader.saved_edge_independent_of_rebinding,
+      `PooFlowCoreProof.Admission.SourceLoader.both_requirements,
+      `PooFlowCoreProof.Admission.SourceLoader.old_edge_counterexample,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.valid_other_store_refused,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.stable_restart,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.joint_replacement_refused,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.changed_source_refused,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.nonregular_issuance_refused,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.recovery_requires_registered_contents,
+      `PooFlowCoreProof.Admission.CoreStoreRecovery.integrity_without_selection_counterexample,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.changed_approval_refused,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.noop_cannot_restore,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.coverage_requires_each_selected,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.omission_refused,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.replacement_refused,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.changed_source_refused,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.joint_replacement_refused,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.accepted_preserves_boundaries,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.restart_has_accepting_path,
+      `PooFlowCoreProof.Admission.CoreApprovedRecovery.dropping_approval_is_unsound,
+      `PooFlowCoreProof.Admission.CoreBuildHandoff.accept_requires_exact_projection,
+      `PooFlowCoreProof.Admission.CoreBuildHandoff.joint_disk_replacement_refused,
+      `PooFlowCoreProof.Admission.CoreBuildHandoff.warm_handoff,
+      `PooFlowCoreProof.Admission.CoreBuildHandoff.final_and_both_requirements,
+      `PooFlowCoreProof.Admission.CoreBuildHandoff.parent_receiver_isolation,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.joint_replacement_refused,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.publication_requires_final_check,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.both_requirements,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.native_cache_grants_no_authority,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.saved_entry_uses_same_check,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.first_build_cannot_adopt_cache,
+      `PooFlowCoreProof.Admission.CoreBuildPublication.unchecked_adoption_counterexample,
       `PooFlowCoreProof.Admission.RouteMutation.raw_restore_keeps_observation,
       `PooFlowCoreProof.Admission.RouteMutation.raw_restore_keeps_generation,
       `PooFlowCoreProof.Admission.RouteMutation.raw_restore_retains_history,

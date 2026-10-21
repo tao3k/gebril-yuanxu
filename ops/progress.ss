@@ -4,12 +4,64 @@
 ;;; Execution liveness, not observation emission, admission or a result cache.
 (import (only-in :std/encoding/json read-json write-json make-JSONReadOptions
                  current-json-read-options)
-        (only-in :std/os/pid getpid))
+        (only-in :std/os/pid getpid)
+        (only-in :std/os/signal SIGTERM)
+        (only-in :std/os/signal-handler add-signal-handler! remove-signal-handler!))
 (export execution-idle-seconds execution-total-seconds
         current-execution-progress call-with-execution-progress
         execution-progress! execution-progress-status execution-progress-idle-milliseconds
         execution-progress-limit
-        call-with-execution-watchdog make-nix-progress-reader make-test-progress-reader)
+        call-with-execution-watchdog call-with-execution-cancellation
+        make-nix-progress-reader make-test-progress-reader)
+
+;; A TERM from the enclosing process budget must unwind the resource owner,
+;; not just stop its child. Register lazily around effects/fixtures. Nested
+;; operations on the same thread share one registration; no resource is held
+;; after that dynamic extent. SIGKILL cannot run Scheme cleanup.
+(def cancellation-owner (make-parameter #f))
+(def cancellation-lock (make-mutex 'execution-cancellation))
+(def cancellation-owners '())
+(def (with-cancellation-lock thunk)
+  (dynamic-wind
+    (lambda () (mutex-lock! cancellation-lock)) thunk
+    (lambda () (mutex-unlock! cancellation-lock))))
+(def (cancel-executions!)
+  (def owners
+    (with-cancellation-lock
+      (lambda ()
+        (filter-map
+          (lambda (entry)
+            (and (not (vector-ref entry 2))
+                 (begin (vector-set! entry 2 #t) entry)))
+          cancellation-owners))))
+  ;; Never interrupt while holding the registry lock: unwinding unregisters.
+  (for-each
+    (lambda (entry)
+      (thread-interrupt! (vector-ref entry 0)
+        (lambda ()
+          (when (vector-ref entry 1)
+            (error "Ops execution terminated" SIGTERM)))))
+    owners))
+(def (call-with-execution-cancellation thunk)
+  (def owner (current-thread))
+  (if (eq? owner (cancellation-owner)) (thunk)
+    (let (entry (vector owner #t #f))
+      (dynamic-wind
+        (lambda ()
+          (with-cancellation-lock
+            (lambda ()
+              (vector-set! entry 1 #t)
+              (when (null? cancellation-owners)
+                (add-signal-handler! SIGTERM cancel-executions!))
+              (set! cancellation-owners (cons entry cancellation-owners)))))
+        (lambda () (parameterize ((cancellation-owner owner)) (thunk)))
+        (lambda ()
+          (with-cancellation-lock
+            (lambda ()
+              (vector-set! entry 1 #f)
+              (set! cancellation-owners (remq entry cancellation-owners))
+              (when (null? cancellation-owners)
+                (remove-signal-handler! SIGTERM)))))))))
 
 (def execution-idle-seconds 60)
 (def execution-total-seconds 600)
@@ -21,8 +73,8 @@
 ;; Only bounded scalar progress metadata is retained. No source contexts,
 ;; objects, outputs or validation results become roots here.
 (def (call-with-execution-progress idle total thunk clock: (clock milliseconds))
-  (unless (and (or (not idle) (and (real? idle) (> idle 0)))
-               (or (not total) (and (real? total) (> total 0))))
+  (unless (and (or (not idle) (and (real? idle) (> idle 0) (< idle +inf.0)))
+               (or (not total) (and (real? total) (> total 0) (< total +inf.0))))
     (error "invalid execution progress budget" idle total))
   (let* ((now (clock))
          (state (make-execution-progress now now idle total (make-hash-table)
@@ -65,6 +117,9 @@
         (execution-progress-emitted-set! state now)
         (let (line (call-with-output-string
                      (lambda (port)
+                       ;; A preceding command may have emitted an unterminated
+                       ;; stdout fragment; protocol records need their own line.
+                       (newline port)
                        (display "@poo-progress " port)
                        (write-json port (vector (execution-progress-scope state)
                                                 (execution-progress-sequence state)))
@@ -109,12 +164,22 @@
                (substring line (string-length prefix) (string-length line)) read-json))))))
 (def (field record name)
   (and (hash-table? record) (hash-get record name)))
-(def (make-nix-progress-reader)
+(def (make-nix-progress-reader observe: (observe #f))
+  (unless (or (not observe) (procedure? observe))
+    (error "Nix observation must be a procedure or false"))
   (def activities (make-hash-table))
   (lambda (line)
-    (let* ((record (json-record line "@nix "))
+    (let* (;; Native diagnostic messages cannot advance liveness. A parent
+           ;; test already receives the child's progress relay; do not decode
+           ;; thousands of diagnostic JSON records there a second time. Keep
+           ;; the general decoder for other serializations and activity events.
+           (record (and (or observe
+                            (not (string-prefix? "@nix {\"action\":\"msg\"," line)))
+                        (json-record line "@nix ")))
            (action (field record 'action)) (id (field record 'id))
            (kind (field record 'type)) (fields (field record 'fields)))
+      ;; Reuse THIS decode for observation; observers cannot grant progress.
+      (when (and observe (hash-table? record)) (observe record))
       (when (and (exact-integer? id) (>= id 0))
         (cond
          ((and (equal? action "start") (memv kind '(100 101 102 103 104 105 108 109 110 112))

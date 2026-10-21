@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .ref .get .call object?)
+        (only-in :clan/poo/object .o .ref .get .call object? object-slots $constant-slot-spec?)
         (only-in :core/observability/testing-case poo-flow-test-case)
         (only-in :core/types poo-flow-predicate-contract)
         :core/module-system/source/objects
@@ -34,6 +34,10 @@
                               (lambda (_generation)
                                 (set! checks (+ checks 1)) current)))))
         (def first (.call view .selected-record 'custom/guestbook))
+        ;; Link records hold already admitted values. Inspecting the native
+        ;; slot specs checks that no linking-frame initializer is retained.
+        (check-equal? (andmap (lambda (entry) ($constant-slot-spec? (cdr entry)))
+                        (object-slots first)) #t)
         (def before checks)
         (check-equal? (eq? first (.call view .selected-record 'custom/guestbook)) #t)
         ;; A cached Graph/record lookup has one fresh eligibility check; there

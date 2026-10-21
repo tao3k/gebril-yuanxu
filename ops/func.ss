@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
-        (only-in "./progress.ss" call-with-execution-watchdog)
+        (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation)
         (only-in :core/types poo-flow-validation-evidence-accepted?)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
@@ -121,11 +121,13 @@
          (environment-value
           (merge-script-environment (inherited-process-environment) (.get prepared environment))))
     (let (execute (lambda () (execute-script (.cc prepared 'environment environment-value) forward)))
-      (if (.get prepared idle-timeout)
-        (call-with-execution-watchdog
-          (* 1000 (.get prepared idle-timeout))
-          ;; GNU timeout owns the existing total-budget exit status (124).
-          ;; Do not race it with a second total exception, especially when
-          ;; check-status is false and callers explicitly inspect the receipt.
-          #f execute)
-        (execute)))))
+      (call-with-execution-cancellation
+        (lambda ()
+          (if (.get prepared idle-timeout)
+            (call-with-execution-watchdog
+              (* 1000 (.get prepared idle-timeout))
+              ;; GNU timeout owns the existing total-budget exit status (124).
+              ;; Do not race it with a second total exception, especially when
+              ;; check-status is false and callers explicitly inspect the receipt.
+              #f execute)
+            (execute)))))))

@@ -1,0 +1,171 @@
+#+title: 12.27.03 Startup and Duplicate Source Expansion
+#+property: DOCUMENT_ID 12.27.03
+#+language: en
+#+property: STATUS retained-evidence
+
+* Startup attribution and duplicate source expansion
+
+The opt-in [[file:../../../../../t/qualification/aws-startup-observation.ss][startup probe]] wraps the original SDK module-import,
+module-eval, expression-compile and expression-eval parameters. It restores them
+before executing the test. It does not replace expansion, module initialization
+or the native test lifecycle. Rows contain call count, inclusive seconds and
+self seconds after subtracting nested observed callbacks. Repeated import calls
+are not automatically repeated expansions; expression compilation is not a
+count of macro transformations.
+
+One observed run separated the previously aggregated startup interval:
+
+| Boundary | Observed seconds |
+|----------+------------------|
+| Instrumented imports, including init syntax | 26.46 |
+| First namespace access after test entry | 6.89 |
+| Selected test-spec discovery | 25.13 |
+| Remaining test/execution association | 0.89 |
+
+The source import of =module-system/source/link.ss= accounted for 15.78 seconds
+inclusive; =module-system/authoring/admission.ss= accounted for 10.10 seconds
+inclusive. These overlap and must not be added. The largest import self-time
+rows included =poo-clos/objects.ss= (2.28 seconds), =poo-clos/classes.ss=
+(1.57), =module-system/source/selection.ss= (1.46), =types.ss= (1.14) and
+=module-system/authoring/admission.ss= (1.12). The probe also observed eleven
+expression-compile callbacks in =core/poo-clos/syntax= at phase one, totalling
+about 0.25 seconds. This is not evidence that all remaining import time is
+macro CPU time. A short process-stack sample separately showed expander,
+allocation, MOP and filesystem activity, rather than a wait on Nix alone.
+
+Test-spec discovery also imported additional role dependencies. Reading an
+interface currently entails native expansion of its adjacent role imports;
+not invoking =core.link= does not by itself make this declaration work cheap.
+The root's selected Graph includes all explicitly selected roots, whereas the
+test projection filters execution owners. Changing that contract to silently
+drop selected roots is not an acceptable performance repair.
+
+An initial hypothesis concerned importing a symbolic library before redirecting
+its source to a private wrapper. The SDK's =core-expand-import%= actually resolves
+ordinary library names to filesystem paths before invoking its import callback;
+source-path imports already take the confined route first. An experimental
+early-symbol-resolution branch recorded zero redirects in AWS and was removed.
+This was not a demonstrated AWS duplication bug or performance repair. Compiled
+libraries retain their original SDK import closure. No result of a macro,
+initializer, validator or package effect is reused as currentness evidence.
+
+[[file:../../../../../t/module-publication-test.ss][The publication control]] uses a real phase-one initializer that refuses a
+second expansion. The symbolic import must use its already admitted private
+role once; an independent canonical SDK import is the negative control. This
+protects confinement but does not establish that the removed branch fixed it. Existing
+fresh-session, source-mutation, confinement and deferred-export controls remain
+in the same native suite. The initial test setup incorrectly treated SDK
+=load-path= as a parameter; it was corrected to the SDK's =add-load-path!= and
+=set-load-path!= functions with unconditional cleanup, without weakening the
+initializer assertion.
+
+This repair addresses one measured mechanism, not the complete laziness gap.
+Cold infrastructure imports, eager role expansion during declaration discovery
+and repeated source guards still require separate attribution. The instrumented
+pre-repair endpoint remained unsuccessful (outer status 124, child status 137
+during first-Graph preparation); a sample or partial phase log is not a passing
+AWS Schema transition.
+
+** Reusing dependency structure without reusing admission
+
+Compiler-tool checks also traversed the same SDK context import DAG on every
+reference. The reader now indexes the prepared tool-input references for each
+demanded context within that reader's fixed SDK snapshot. Every request still
+checks those inputs' current source bytes and performs the original visitor;
+no successful guard result is cached. Reload requests still refuse. This index
+does not outlive its reader, does not contain contribution scopes or initialized
+values, and is not a second selected Graph.
+
+The storage bound is the sum of the demanded tool closures, not a claim of
+constant memory for arbitrary SDK graphs. It retains references to existing
+prepared inputs rather than copying source text. The premise is the same
+immutable, fully expanded SDK context used by the existing tool-source cache;
+arbitrary mutation of SDK expander internals is not qualified by this control.
+
+The publication suite now verifies the phase-one negative control and that
+repeated dependency requests exceed actual structure walks. It passed with
+natural exit zero. Configuration-source controls also passed, including source
+mutation during initialization, fresh private scopes and foreign same-identity
+source refusal. Thus structural reuse did not replace the pre/post authority
+checks in those controls.
+
+In the instrumented root test-spec interval, 287 dependency requests required 38
+actual SDK closure walks; it still performed 6,661 observed source reads and
+351 source-check windows. This is a work-count result, not a complete endpoint
+speedup. Per-publication observations attributed approximately 8.40 seconds to
+Funflow, 3.91 to OpenTofu and 3.30 to JsonSchema; Ops, Nix, Null and AWS-validation
+were smaller, and AWS itself was about 0.15 seconds. These rows identify where
+declaration work occurs; they do not imply those scopes were linked or that the
+timings are comparable across hosts.
+
+This exposes a remaining architectural boundary: =init.test-spec= filters test
+execution, but resolving its selected Graph still expands role bodies needed
+by selected publications. Funflow's objects role imports its control-plane,
+store and Graph-projection implementations; OpenTofu's types construct several
+Schema adapters at module evaluation. Deferring domain exports alone therefore
+does not establish cheap declaration discovery. An eventual compiled declaration
+reuse must bind code to its complete source/compiler/dependency inputs and must
+not reuse macro side effects or initializer results. This work does not add
+that persistent cache or a runtime Loader, and does not conceal this cost by
+dropping selected init roots or excluding assertions.
+
+** Final focused outcome and the remaining atomicity gap
+
+The structural-index endpoint reached first-Graph completion at about 13.59
+seconds into the integration body, parent publication at 31.13 seconds, Context
+refusal at 34.40 seconds and old-source refusal at 34.43 seconds. It entered
+second-version declarations before Ops expired with status 124. The body clock
+excludes child imports. Its first Graph made 286 tool-dependency requests but
+walked 39 actual closures. Source checks were retained: 8,717 observed reads in
+that interval. These are partial outcomes, not a passing Schema-upgrade gate.
+
+Funflow's =objects.ss= imported the aggregate =control-plane/api.ss= while
+publishing only eleven Flow combinators from it. That aggregate also imported
+Agent harnesses and syntax facades not referenced by this role. The role now
+imports those combinators directly from =control-plane/flow.ss=. Job execution
+keeps its existing statically declared dependencies; no dynamic import hides
+runtime files from the build Graph. The focused Funflow Job suite passed with
+natural exit zero. The final publication suite passed after removing the
+unexercised symbol-resolution experiment, including its macro-initialization
+negative control and structure-walk assertions.
+
+A final run of the same AWS endpoint with =CORE_AWS_TRACE= unset also failed:
+the Ops child reported status 124 and the outer Just entry reached status 124.
+Therefore diagnostic counters are not a sufficient explanation for the timeout.
+All Schema-upgrade, stale-evidence and previous-value assertions remain; the
+final run does not qualify their complete execution. No timeout or heap policy
+was widened, and no failed expectation was changed to acceptance.
+
+The coupling diagnosed before the test-source split was explicit in these owners:
+
+- =building/test-projection.ss:module-test-projection= immediately demands
+  =selection.selected-graph= and its =module-order=, even for one requested
+  test owner. =building/interface.ss:test-source= calls it before returning
+  the module's test source. Thus file discovery already resolves publications
+  for other selected roots; filtering test paths is too late to avoid this work.
+- =source/declaration.ss= and =source/preparation.ss= attach the adjacent role
+  imports to publication frames. Module scope linking stays deferred, while
+  imported role bodies still require native expansion and initialization.
+- =source/reader.ss:check-current!= checks the growing reader observation set.
+  Separate effect boundaries can repeatedly check prefixes of this set. If
+  each publication adds inputs, that traversal can grow quadratically in the
+  number of selected publications; this is an inference from the algorithm,
+  not a measured thousand-module benchmark. The structural index above removes
+  repeated SDK graph discovery, not this source-authority cost.
+
+The bounded acceptance target was to separate test-source admission from
+full configuration-Graph admission while retaining one selection and its lazy
+Graph identity. A one-owner test-source request must not expand unrelated
+selected owners' role bodies. It must still observe its native test dependency
+closure, reject changed role/test inputs, and retain execution cleanup. Requests
+that actually consume a complete configuration Graph must continue to perform
+its complete dependency/conflict admission. This requires an explicit guard
+boundary, not removal of the Graph getter or a second test tree.
+
+Likewise, shortening reader guards requires either exact demanded-dependency
+checks plus a complete final Graph check, or a proven immutable source
+capability. Caching an entire publication result, trusting timestamps, or
+assuming arbitrary Scheme initializers are pure would not establish that
+boundary. No such shortcut or runtime Loader was introduced in this repair.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

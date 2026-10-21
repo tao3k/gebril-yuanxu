@@ -7,7 +7,8 @@ module StoreLoweringModel {
     parent: int, hot: int, cold: int, unused: int, accepted: bool, planOwner: int}
   var s: State
   action init = {
-    nondet route = Set("generated", "reflective", "inline", "unlowered").oneOf()
+    nondet route = Set("generated", "reflective", "inline", "unlowered",
+      "precompiled-generated", "precompiled-reflective", "precompiled-inline").oneOf()
     nondet a = Set(false, true).oneOf()
     nondet b = Set(false, true).oneOf()
     all {s' = {phase: 0, route: route, a: a, b: b, owners: Set(),
@@ -16,10 +17,13 @@ module StoreLoweringModel {
   }
   action allocate = all {s.phase == 0,
     s' = s.with("phase", 1).with("owners",
-      if (BUG == "missConstructor") Set(1,2,3) else Set(1,2,3,4,5,6))}
-  action select = all {s.phase == 1,
+      if (BUG == "missConstructor") Set(1,2,3) else
+        Set(1,4,5,6).union(Set((1,2),(1,3)).map(edge => edge._2)))}
+  action protectReads = all {s.phase == 1,
     s' = s.with("phase", 2).with("protected", BUG != "missCarrier")}
+  val precompiled = Set("precompiled-generated", "precompiled-reflective", "precompiled-inline").contains(s.route)
   val mediated = s.route != "unlowered" and not(BUG == "missInline" and s.route == "inline")
+    and not(BUG == "missCallback" and precompiled)
   val blocked = mediated and s.protected
   action replace = all {s.phase == 2,
     s' = s.with("phase", 3).with("denied", blocked)
@@ -35,7 +39,7 @@ module StoreLoweringModel {
       .with("accepted", s.a and (s.b or BUG == "dropB"))
       .with("planOwner", if (BUG == "parent") 1 else 2)}
   action terminal = all {s.phase == 5, s' = s}
-  action step = any {allocate, select, replace, bodyRestore, finish, terminal}
+  action step = any {allocate, protectReads, replace, bodyRestore, finish, terminal}
   val OwnerCoverage = s.phase == 0 or Set(1,2,3,4,5,6).subseteq(s.owners)
   val DeclaredPreWrite = s.route == "unlowered" or s.writes == 0
   val NoPoison = s.phase < 5 or s.cold == 5432

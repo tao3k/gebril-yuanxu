@@ -211,5 +211,8 @@
         (def parent (.get publication value))
         (def path (path-expand "modules/services/postgresql/config.ss" root))
         (write-source path (string-append (module-source-read path) "\n; source changed\n"))
-        (refused publication parent parent "stale prepared Module publication")
+        ;; Current reader registers role compilation sources. Its byte guard
+        ;; refuses first; retain the exact path/reason rather than accepting
+        ;; any generic refusal or changing production diagnostic ordering.
+        (refused publication parent parent "stale prepared build source" path)
         (set! completed (+ completed 1))))))

@@ -8,7 +8,7 @@ module ReplayOwnershipModel {
     childPort: int, planOwner: int, unselected: int}
   var s: State
   action init = {
-    nondet target = Set("child", "ancestor", "outer", "independent", "none", "raw").oneOf()
+    nondet target = Set("child", "ancestor", "outer", "delivery", "independent", "none", "raw").oneOf()
     nondet throws = Set(false, true).oneOf()
     nondet a = Set(false, true).oneOf()
     nondet b = Set(false, true).oneOf()
@@ -26,9 +26,11 @@ module ReplayOwnershipModel {
       if (s.target == "outer")
         (if (BUG == "dropOuter") Set(3) else s.frames.union(Set(3))) else s.frames)}
   val affected = if (s.target == "ancestor") Set(1,2) else
-    if (Set("child","outer").contains(s.target)) Set(2) else
+    if (Set("child","outer","delivery").contains(s.target)) Set(2) else
     if (s.target == "independent") Set(3) else Set()
+  // Warm Type catalog delivery/work stays inside the SAME selected frame.
   val blocked = affected.intersect(s.frames).size() > 0 and BUG != "noGuard"
+    and not(BUG == "dropDelivery" and s.target == "delivery")
   action attempt = all {s.phase == 2,
     s' = s.with("phase", 3).with("denied", blocked)
       .with("revision", if (not(blocked) or BUG == "partialClear")
@@ -46,7 +48,7 @@ module ReplayOwnershipModel {
   action terminal = all {s.phase == 5, s' = s}
   action step = any {enter, nested, attempt, unwind, finish, terminal}
   val PreWriteRefusal = s.phase < 3 or
-    not(Set("child","ancestor","outer").contains(s.target)) or s.supported == 0
+    not(Set("child","ancestor","outer","delivery").contains(s.target)) or s.supported == 0
   val NoPartialClear = not(s.denied) or
     (s.revision.get(1) == 0 and s.revision.get(2) == 0 and s.revision.get(3) == 0)
   val Released = s.phase < 4 or s.frames == Set()

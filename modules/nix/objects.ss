@@ -1,12 +1,16 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object "./config.ss" "./types.ss" "./func.ss"
+(import :clan/poo/object "./config.ss" "./types.ss" "./func.ss" "./build-publication.ss"
         (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/source/admission module-source-admit-current! module-source-type module-source-read))
+        (only-in :core/module-system/source/admission module-source-admit-current! module-source-type module-source-read
+                 module-source-checked-operation module-source-operation-procedure))
 (export NixSource. NixFlakeSource. poo-flow-core-nix-admit-generation
         poo-flow-core-nix-flake-admit-generation)
 (.def (NixSource. source [])
+  .restore-build:
+  (lambda (graph)
+    (poo-flow-core-nix-restore-build-publication! source graph))
   expression: #f
   ;; A configured Source owns its byte observations. Flake Sources override this
   ;; with their lock/source closure; expression callers may refine it upstream.
@@ -41,19 +45,20 @@
           preflight: (check-current!)
           derivation: (begin preflight (.call source-value .instantiate))
           artifact: (.call source-value .realize derivation)
-          admit-current:
-          (lambda ()
-            ;; Preparation may have been demanded earlier. Recheck before any
-            ;; delayed effect, and again after the external realization.
-            (check-current!)
-            ;; A cached artifact read has no realization effect. The cold path
-            ;; still brackets realization; warm calls retain the pre-query and
-            ;; post-query checks without repeating that same source-only guard.
-            (unless (.ref/cached publication 'artifact)
-              artifact
-              (check-current!))
-            (admit-derivation! source-value derivation)
-            (check-current!))
+          %source-operation:
+          (module-source-checked-operation check-current!
+            (lambda ()
+              ;; A cached artifact read has no realization effect. The cold path
+              ;; still brackets realization; warm calls retain the pre-query and
+              ;; post-query checks without repeating that same source-only guard.
+              (unless (.ref/cached publication 'artifact)
+                artifact
+                (check-current!))
+              (admit-derivation! source-value derivation)))
+          ;; The paired native continuation can omit just this operation's
+          ;; entry guard when its caller has immediately run that exact guard.
+          ;; Tail checks and all external effect boundaries remain unchanged.
+          admit-current: (module-source-operation-procedure %source-operation)
           guard-imports: '(:core/modules/nix/objects)
           guard-forms:
           (list (.call source-value .guard-form derivation)))))

@@ -1,0 +1,140 @@
+#+title: 12.27.19 Context Source Collection and Complete Admission
+#+property: DOCUMENT_ID 12.27.19
+#+language: en
+#+property: STATUS source-only-qualified
+
+* Actual call chain and ownership
+
+The selected export path admits the full build Graph before resolving the
+publication's descriptor. It then assembles an internal Context and checks the
+complete contribution-bound Context before returning the publication:
+
+#+begin_src text
+AdmissionPublication.for-export
+  module-admission-publication -> full Graph.admit-current
+  bind-publication-contributions
+    resolve contribution index and actual descriptor requirements
+    internal Context -> capture Graph/configuration source observations
+      compiler-current + captured source checks, one pure read window
+      END window -> resolve cold Schema associations
+    complete Context.current! -> full Graph, Schema, contribution checks
+  return publication
+#+end_src
+
+Previously that intermediate source-collection entry invoked full
+Graph.admit-current again. Outside a read window it performed compiler checks
+before and after the request guards; the OpenTofu request guard also reached
+the same source reader. This incomplete Context is not independently admitted
+or published. Complete request admission already has an entry owner and a
+mandatory return owner in this same private assembly.
+
+The private constructor now uses the existing compiler-current plus the full
+captured source observations at source-collection entry. It does NOT replace
+that check with compiler-current alone: request/configuration inputs may extend
+the compiler closure. Metadata capture happens outside the read window. Only
+the compiler traversal and comparisons against captured input bytes share it.
+The window ends before any cold Schema getter, obligation or package operation.
+
+#+begin_src scheme
+;; Standalone construction retains the full entry check.
+(unless defer-current? ((.get build-graph admit-current)))
+;; selected, generation and sources are then captured outside the window.
+(when defer-current?
+  (call-with-module-source-read-cache
+    (lambda ()
+      ((.get build-graph compiler-current))
+      (module-source-admit-current! sources "admission source input changed"))))
+;; Cold Schema associations are resolved AFTER that window has ended.
+;; The existing binder still checks the complete Context before returning it.
+#+end_src
+
+This is not a purity claim about replaceable request methods, a cached approval
+or a changed public Graph method. Request policies still run at complete entry
+and complete return. They may refuse at that return boundary after metadata has
+been assembled; no internal Context or admission evidence escapes beforehand.
+There is no new Graph interface or source cache. Independent later Context
+checks and standalone Context construction retain their full checks.
+
+* Native controls
+
+The existing admission-publication suite uses the real selected/build Graph and
+public Schema/Projection Contracts. Its assembly fixture counts source opens
+across ALL phases as well as build-admit-before, so relabeling reads as
+compiler-current cannot satisfy the physical-work assertion. Its selected
+Graph's source projection is explicitly demanded before this measurement; the
+Schema getters remain cold. The aggregate above does not add that warm-up.
+
+- A one-file selected assembly has two complete before-guard passes and five
+  actual opens across all phases. Its previous implementation has three and
+  six respectively. The matched previous producer fails the unchanged work
+  assertion with (3 6), against (2 5). Standalone Context construction retains
+  two before passes.
+- A request policy refusing at complete entry prevents Schema metadata demand.
+  A policy refusing at the complete return prevents publication escape. These
+  are deliberate policy fault injections, not a replacement package backend.
+- A descriptor configuration getter changes an additional request input after
+  export entry. The source-collection guard must refuse BEFORE the cold Schema
+  getter runs. The isolated compiler-only mutant fails the unchanged control:
+  it demands the Schema once, where the assertion requires zero demands. The
+  complete candidate restores refusal before that getter.
+- A Schema getter changing an observed module source is still rejected by the
+  complete return check. Negative assertions match specific errors.
+
+The production mechanism is in
+[[file:../../../../../admission/publication.ss][publication.ss]]; controls remain in
+[[file:../../../../../t/admission-publication-test.ss][admission-publication-test.ss]].
+The native tests use the existing serial heap-fenced Just entrypoint. An
+initial work assertion incorrectly included first source-projection setup:
+it observed seven opens against an estimated five and failed. The bounded
+assembly counter now excludes that setup explicitly, while the full workload
+retains its ordinary lazy demands. That initial failure is not a passing run.
+
+* Qualification receipt
+
+The same observation-enabled init tests object selects JsonSchema, Funflow and
+AWS and invokes its existing .run. It completes naturally with seven MODULE-OK,
+two HARNESS-OK and two final OK markers and no failure/overflow markers. The
+unchanged Case retains Schema transition, stale Schema/Contract/Context evidence
+refusal, previous-value preservation and cleanup under the existing heap fence
+and progress-aware inactivity/total budgets.
+
+| Actual AWS work | Previous receipt | Complete source-entry check | Reduction |
+|-----------------+------------------+-----------------------------+-----------|
+| Physical source reads | 47841 | 47169 | 672 |
+| build-admit-before reads | 19539 | 19205 | 334 |
+| File requests | 120911 | 119607 | 1304 |
+| Read windows | 520 | 516 | 4 |
+| Publication guard bodies | 259 | 255 | 4 |
+
+Two intermediate entries change, one for each Schema-version publication. The
+before-label decrease alone would be insufficient evidence: compiler-current
+also opens sources. The all-phase total independently falls by 672 actual
+opens. Each selection retains its own Graph; the Schema transition does not
+reuse an old selection or admission. The remaining 19205 before reads stay open
+for further analysis; they are not declared necessary as a group.
+
+The subsequent [[file:07-route-free-index.org][route-free index change]] saves another 356 all-phase opens while leaving
+that before subtotal unchanged. This table remains the source-entry receipt.
+
+The reduced compiler-only probe passed the aggregate but is not the accepted
+implementation. That probe omitted request-input comparisons at this boundary;
+the added cold-Schema negative requires them. Its 47153-read receipt is therefore
+not the qualified count. The complete candidate above includes those checks.
+
+The final admission-publication suite and admission-checked-publication suite
+also pass against the working Core source, including its artifact gates, with
+MODULE-OK, HARNESS-OK, final OK, natural exit zero and no failure markers. The
+latter retains checked-value normalization, child Context evidence and actual
+Contract binding. The previous producer and compiler-only mutants were confined
+to the isolated source environment and were restored to the complete candidate.
+
+* Limits
+
+The source-only qualification uses the locked gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. Concurrent compiled-artifact gates in
+the working checkout are preserved; no compiled artifact is issued by these
+source-only controls. An observed work reduction does not qualify that separate
+integration or establish an endpoint latency improvement. No full build,
+runtime Loader integration, upstream edit, new runner or push is involved.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and qualification limits]]

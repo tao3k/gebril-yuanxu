@@ -15,8 +15,7 @@
 
 (export ClosDirectSlotDefinition ClosEffectiveSlotDefinition ClosClass
         poo-clos-standard-object-class poo-clos-direct-slot-definition
-        poo-clos-class poo-clos-class-precedence-list
-        poo-clos-class-precedence-position
+        poo-clos-class
         poo-clos-find-class poo-clos-set-find-class! poo-clos-resolve-class
         poo-clos-class-effective-slots poo-clos-find-effective-slot
         poo-clos-class-subclass? poo-clos-class-specializer
@@ -545,19 +544,6 @@
     (.put! class-value 'metaclass metaclass-value)
     (hash-put! poo-clos-class-registry identity-value class-value)
     class-value))
-
-;; : (-> ClosClass [ClosClass])
-(def (poo-clos-class-precedence-list class-value)
-  (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
-  (.ref class-value 'class-precedence-list))
-
-;; : (-> ClosClass ClosClass (Maybe Natural))
-(def (poo-clos-class-precedence-position class-value target-value)
-  (unless (and (element? ClosClass class-value)
-               (element? ClosClass target-value))
-    (clos-fail 'invalid-class))
-  (hash-get (.ref class-value 'class-precedence-index)
-            target-value))
 
 ;; : (-> ClosClass [ClosEffectiveSlotDefinition])
 (def (poo-clos-class-effective-slots class-value)

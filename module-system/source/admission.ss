@@ -2,7 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Shared source-role and publication admission. No expansion or activation.
-(import (only-in :clan/poo/object .o .ref)
+(import (only-in :clan/poo/object .o .ref .ref/cached object? object-%instance object-protocol
+                 object-revision object-supers)
+        (only-in :clan/poo/slot-observation %slot-read-active?)
         (only-in :core/module-system/source/role-forms poo-flow-module-allowed-entrypoint-roles)
         (only-in :std/list/list any)
         (only-in :std/misc/ports read-all-as-string)
@@ -13,10 +15,11 @@
         (only-in :core/module-system/authoring/import-policy
                  SourceInspectionPolicy. poo-flow-module-owner-import-datum-observations)
         (only-in :core/module-system/authoring/admission
+                 call-with-module-authoring-read-scope
                  poo-flow-module-authoring-admit-datums
                  poo-flow-module-authoring-admission-accepted?
                  poo-flow-module-authoring-admission-diagnostics)
-        (only-in :core/module-system/authoring/roles poo-flow-default-module-authoring-profile))
+        (only-in :core/module-system/authoring/roles make-default-module-authoring-profile))
 (export poo-flow-module-required-role-files poo-flow-module-allowed-entrypoint-roles
         poo-flow-module-style-policy-prototype poo-flow-default-module-style-policy
         module-source-type module-source-read module-source-name? module-source-admit-current!
@@ -24,9 +27,60 @@
         call-with-collected-module-sources
         module-source-observe current-module-source-observer current-module-source-phase
         current-module-process-trace-budget
-        admit-module-value! admit-module-publication!)
+        module-source-checked-operation module-source-operation-procedure
+        module-source-operation-resume module-source-object-policy
+        admit-module-value! admit-module-publication! module-source-style-policy-current?
+        module-source-publication-policy)
+
+;; Read-only native identity/revision support for parser-owned metadata. This
+;; is not a currentness-result cache: every call compares the actual revisions
+;; of every captured receiver/ancestor. Closed metadata rejects native MOP;
+;; a general source identity snapshot can preserve an existing opaque protocol
+;; without certifying its execution as pure.
+(def (module-source-object-policy roots reject-protocols?: (reject-protocols? #t))
+  (def seen (make-hash-table-eq))
+  (def entries '())
+  (def (visit value)
+    (unless (hash-key? seen value)
+      (hash-put! seen value #t)
+      (set! entries (cons (cons value (object-revision value)) entries))
+      (for-each visit (object-supers value))))
+  (for-each visit roots)
+  (source-object-policy entries reject-protocols?))
+(def (source-object-policy entries reject-protocols?)
+  ;; Construct outside the capture frame; do not retain its traversal table.
+  (lambda ()
+    (andmap (lambda (entry)
+              (and (= (cdr entry) (object-revision (car entry)))
+                   (or (not reject-protocols?)
+                       (not (object-protocol (car entry)))))) entries)))
 
 (def poo-flow-module-required-role-files '("types.ss" "objects.ss" "config.ss" "interface.ss"))
+
+;; Structural decomposition of ONE operation, not a source approval or cache.
+;; Only this constructor creates the paired entry/resume procedures. Neither
+;; procedure retains a check result; every invocation still runs the tail guard.
+(defstruct source-checked-operation (guard invoke resume) final: #t)
+(def (module-source-checked-operation guard action)
+  (unless (and (procedure? guard) (procedure? action))
+    (error "source operation requires a guard and an action"))
+  (def (resume) (action) (guard))
+  (make-source-checked-operation guard (lambda () (guard) (resume)) resume))
+(def (module-source-operation-procedure operation)
+  (source-checked-operation-invoke operation))
+(def (module-source-operation-resume receiver guard)
+  ;; Inspect ONLY an already prepared ordinary native receiver, without a MOP
+  ;; hook or read observer. Cold/mutated objects, overridden methods, different
+  ;; guards and instrumented reads retain the ordinary checked call. This probe
+  ;; must not execute anything between the caller's guard and the continuation.
+  (and (object? receiver) (object-%instance receiver)
+       (not (%slot-read-active?)) (not (object-protocol receiver))
+       (let ((operation (.ref/cached receiver '%source-operation (lambda () #f)))
+             (invoke (.ref/cached receiver 'admit-current (lambda () #f))))
+         (and (source-checked-operation? operation)
+              (eq? guard (source-checked-operation-guard operation))
+              (eq? invoke (source-checked-operation-invoke operation))
+              (source-checked-operation-resume operation)))))
 
 (def (module-source-name? name)
   (and (string? name) (> (string-length name) 0)
@@ -234,29 +288,31 @@
 ;;; role before exposing any entrypoint.  Admission reads inert datums only;
 ;;; it neither expands nor evaluates module source.
 (def (poo-flow-module-role-authoring-validate! policy module-name module-root reader read-datums)
-  (let* ((authoring (.ref policy 'authoring))
-         (interface
-          (poo-flow-module-interface
-           (if (symbol? module-name) (symbol->string module-name) module-name) (.o)
-           (list (cons 'module-root module-root))
-           authoring: authoring)))
-    (for-each
-     (lambda (role)
-       (let* ((path
-               (path-expand
-                (string-append (symbol->string role) ".ss") module-root))
-              (admission
-               (poo-flow-module-authoring-admit-datums
-                 interface (if (eq? role 'func) 'funs role) (read-datums path))))
-         (unless (poo-flow-module-authoring-admission-accepted? admission)
-           (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
-                  module-name role path
-                  (car (poo-flow-module-authoring-admission-diagnostics
-                        admission))))))
-     (filter
-      (lambda (role)
-        (reader (path-expand (string-append (symbol->string role) ".ss") module-root) #f))
-      '(types objects func config interface build)))))
+  ;; Interface creation validates the authoring Profile and its child roles.
+  ;; Their temporary evidence belongs to the SAME region as datum dispatch.
+  (call-with-module-authoring-read-scope
+    (lambda ()
+      (let* ((authoring (.ref policy 'authoring))
+             (interface
+              (poo-flow-module-interface
+                (if (symbol? module-name) (symbol->string module-name) module-name) (.o)
+                (list (cons 'module-root module-root))
+                authoring: authoring)))
+        (for-each
+          (lambda (role)
+            (let* ((path
+                    (path-expand (string-append (symbol->string role) ".ss") module-root))
+                   (admission
+                    (poo-flow-module-authoring-admit-datums
+                      interface (if (eq? role 'func) 'funs role) (read-datums path))))
+              (unless (poo-flow-module-authoring-admission-accepted? admission)
+                (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
+                       module-name role path
+                       (car (poo-flow-module-authoring-admission-diagnostics admission))))))
+          (filter
+            (lambda (role)
+              (reader (path-expand (string-append (symbol->string role) ".ss") module-root) #f))
+            '(types objects func config interface build)))))))
 
 
 (def (poo-flow-module-source-admit! policy module-name module-root reader)
@@ -306,11 +362,33 @@
 
 (def poo-flow-module-style-policy-prototype
   (.o (module-style-policy? #t)
-      (authoring (poo-flow-default-module-authoring-profile))
+      ;; Construct here, validate at make-module-interface. Validation inside
+      ;; this computed default would retain its constructor receipts in every
+      ;; later replay of the shared policy slot. Derived receivers still get
+      ;; fresh defaults; this is not a shared accepted-Profile cache.
+      (authoring (make-default-module-authoring-profile))
       source-policy: SourceInspectionPolicy.
       validate: poo-flow-module-source-admit!))
 (def poo-flow-default-module-style-policy
   (.o (:: @ poo-flow-module-style-policy-prototype)))
+
+;; Capture the maintained policy BEFORE exposing it for extension. Include its
+;; actual Profile children; changing a role need not edit the containing slot.
+(def (module-source-style-policy-support)
+  (let* ((policy poo-flow-default-module-style-policy)
+         (profile (.ref policy 'authoring)))
+    (append (list policy profile (.ref policy 'source-policy))
+        (filter object?
+          (map (cut .ref profile <>) '(executor types objects funs config interface build))))))
+(def default-style-policy-current
+  (module-source-object-policy (module-source-style-policy-support)))
+(def (module-source-style-policy-current?) (default-style-policy-current))
+(def (module-source-publication-policy)
+  ;; Snapshot the actual policy/Contract references before role execution.
+  ;; Native initializer scratch reads are not admission requirements.
+  (module-source-object-policy
+    (cons ModulePublicationContract (module-source-style-policy-support))
+    reject-protocols?: #f))
 
 (def (admit-module-value! contract candidate context-value)
   (let (evidence (poo-flow-contract-admit contract candidate context-value))
@@ -321,8 +399,11 @@
   (unless (poo-flow-module-source-ref? source)
     (error "module publication requires a SourceRef" expected-id source))
   (let* ((evidence (admit-module-value! ModulePublicationContract publication context-value))
+         ;; The public value Contract may return a different checked receiver.
+         ;; Owner checks must describe THAT subject, not the pre-check input.
+         (checked (.ref evidence 'candidate))
          (owner (assq 'module-id (poo-flow-module-source-ref-metadata source))))
-    (unless (and (eq? expected-id (.ref publication 'identity))
+    (unless (and (eq? expected-id (.ref checked 'identity))
                  (or (not owner) (eq? expected-id (cdr owner))))
       (error "publication source owner mismatch" expected-id source))
     evidence))

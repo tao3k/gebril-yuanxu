@@ -1,0 +1,127 @@
+#+title: 12.27.13 Physical Source Read Attribution
+#+property: DOCUMENT_ID 12.27.13
+#+language: en
+#+property: STATUS retained-evidence
+
+* Physical source-read attribution at actual publication boundaries
+
+The follow-up retains the existing init qualification selection and its =.run=
+entry, observation enabled, and progress-aware idle/total policy. It adds
+diagnostic aggregation to =ModuleTestingProfile.=, not another runner or a
+currentness cache. =file-read= is emitted immediately before the source
+producer opens and reads a file; =file-request= also includes requests served
+by the existing pure-window byte cache. These are file-read operations, not
+physical storage-device I/O measurements. Package metadata, configuration
+assets and Schema files are included; the count is not exclusively Scheme
+files and does not instrument the SDK's own internal file opens.
+
+The same real AWS Case still performs 49595 reads, 126253 requests and 530
+read windows. Repeated lookup suppression has NOT reduced physical reads.
+The bounded diagnostic keeps at most 512 owner/phase/caller rows and 128
+effect rows; overflow contributes to an explicit bucket, never disappears.
+It retains neither bytes, syntax, SDK contexts nor admission results. Disabled
+observation allocates no diagnostic tables. Flushing happens on both normal
+return and failure through the existing profile's dynamic extent.
+
+** Which owners and stages actually read files?
+
+The owner/phase/caller partition accounts for all 49595 operations. Twenty
+operations reach the bounded overflow bucket, so named rows below are observed
+counts, not a claim of exhaustive per-owner precision. The independent effect
+partition has no overflow in this receipt.
+
+| Source phase | Observed reads |
+|--------------+----------------|
+| publication-current | 43947 |
+| source | 2710 |
+| configuration-current | 892 |
+| compiler-import | 752 |
+| compiler-tools | 395 |
+| configuration-import | 382 |
+| Other named phases | 497 |
+| Explicit attribution overflow | 20 |
+| Total | 49595 |
+
+Within the publication caller partition, =graph-current= contributes 26233
+reads and =eligibility= 5497. Major observed owners are =modules/funflow= 9066,
+=modules/json-schema= 6971, =module-system/source= 4497, =modules/opentofu=
+3280, =poo-clos= 2940, =ops= 2479, =gerbil-poo= 1856 and =scenarios/aws= 1534.
+This identifies repeated source verification of the selected dependency
+closure, rather than 49595 new module discoveries or expansions.
+
+** Effect boundaries are a different partition
+
+Each read is assigned to the innermost existing package, admission or native
+import bracket. Nested spans are not summed twice. Being outside these named
+brackets does NOT establish purity: declaration/policy callbacks and other
+operations can occur there.
+
+| Innermost bracket | Reads |
+|-------------------+-------|
+| Admission stages | 21384 |
+| Selected-package stages | 8134 |
+| Native source import stages | 954 |
+| Outside these named brackets | 19123 |
+| Total | 49595 |
+
+Admission includes package-before 5194, package-after 3710, selected-record
+2848, bind-contributions 3124, contract-admit 1991, meaning-current 1801,
+entry-current 1443, post-package-current 1267 and schema-associations 6.
+Package stages include external-requests 4854, publication-current 1484,
+entry-current 1024, guard-script 418 and inputs-current 354. A bracket identifies
+the operation containing a read; it does not by itself prove that every guard
+inside that operation is necessary or redundant. Nix subprocess file I/O is
+not counted by this Scheme producer.
+
+** What may be shared, and what must be rechecked?
+
+- Within an existing synchronous pure window, repeated paths already share
+  bytes. Distinct collector enrollments remain distinct even when those bytes
+  are shared. The package-entry candidate reduces parsing/query requests only.
+- Across macro expansion/native initialization, policy or Contract callbacks,
+  Nix/package operations and independent publication invocations, a shared
+  Graph identity is insufficient authority to reuse earlier source acceptance.
+  The source bytes or dependency registration may have changed.
+- Collected-source replay deliberately starts fresh even inside an outer read
+  window. The native control mutates a source after the outer read and requires
+  replay to reject it. Removing that reset would hide a real mutation.
+- =graph-current= is the dominant next audit surface. Its repeated calls must
+  be related to the operation between them before coalescing: a private lookup
+  is a candidate; lazy author slot evaluation or a validator is not presumed
+  pure. These aggregate rows do not prove a safe removable-call count.
+
+No new source cache, metadata-only acceptance shortcut, cross-effect read
+window, Contract bypass or reduced source closure is introduced by this audit.
+Physical-read optimization remains open; the attribution is not reported as a
+completed performance improvement.
+
+** Executable receipt and limits
+
+The original aggregate exits naturally with seven MODULE-OK, two HARNESS-OK
+and two final OK markers, without error or overflow failure markers. The AWS
+Case retains Schema upgrade, three admission-to-publication negative controls,
+stale evidence refusal, previous-value preservation and fixture cleanup. Its
+publication-complete checkpoint is 59856 ms / 22415 ms Case CPU; the Ops worker
+is 76704 ms. Nix union time is 36272689 microseconds. This is not a speedup
+over the earlier 29767 ms receipt, and the measured Nix time must not be
+attributed to Scheme file reads or silently excluded from endpoint duration.
+Observation and progress-aware deadlines remain enabled throughout.
+
+The focused native observation test checks owner/phase/caller attribution and
+the disjoint effect totals using injected diagnostic events. Those events are
+test probes; the AWS counts above come from actual source-producer events.
+Existing disabled-observation, no-domain-slot-read and failure-release controls
+remain in that test. Reproduction uses the normal heap-fenced entrypoints:
+
+#+begin_src text
+just test-file t/module-test-observation-test.ss
+just test-file t/module-source-admission-test.ss
+just test-file t/module-testing-isolation-test.ss trace
+#+end_src
+
+The last command reaches the existing init test-object =.select= and =.run=;
+it does not maintain another test list. The named selection's existing fixture
+pins the provider package and retains currentness/cleanup policy. These are
+targeted checks, not a full build or a runtime Loader qualification.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

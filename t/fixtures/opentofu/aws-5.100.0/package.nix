@@ -12,7 +12,10 @@ pkgs.stdenvNoCC.mkDerivation {
   # The native fixed-output fetcher reports transfer counters to Nix's activity
   # stream. A curl builder's carriage-return display is not liveness evidence.
   # URL, expected content hash and archive name retain the same fixed output.
-  src = pkgs.stdenv.fetchurlBoot {
+  # stdenv.fetchurlBoot can itself be replaced by a later curl bootstrap stage.
+  # Use Nix's shipped fixed-output builder rather than inferring from its name.
+  src = import <nix/fetchurl.nix> {
+    system = pkgs.stdenv.hostPlatform.system;
     url = "https://releases.hashicorp.com/terraform-provider-aws/${version}/terraform-provider-aws_${version}_darwin_arm64.zip";
     inherit hash;
   };

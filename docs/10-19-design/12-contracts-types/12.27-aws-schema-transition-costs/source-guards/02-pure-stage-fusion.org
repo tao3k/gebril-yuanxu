@@ -1,0 +1,139 @@
+#+title: 12.27.14 Qualified Pure Source Stage Fusion
+#+property: DOCUMENT_ID 12.27.14
+#+language: en
+#+property: STATUS retained-evidence
+
+* Graph-current call sites and qualified pure-stage fusion
+
+The next change moves beyond attribution. It removes one redundant return-time
+guard and joins two adjacent pure preparation stages, using the EXISTING source
+read window. No new cache or retained approval is introduced. Source mutation
+across native import, initialization, Contract callbacks and Nix remains a
+fresh-check boundary.
+
+** Two changes, with native old-implementation controls
+
+The owner is
+[[file:../../../../../module-system/building/configuration-source.ss][configuration-source.ss]].
+The configuration reader already checks prepared and related inputs after
+native evaluation, before returning its value. Its remaining work releases
+completed private interpreter expansion results and removes its own wrapper
+directory. It runs no author initializer or Nix operation at that point and
+does not modify admitted source files. The builder's additional full =current!=
+after that return was redundant. The reader's post-evaluation check remains.
+Normal observation is passive; diagnostic callbacks are not an effect or
+authority mechanism.
+
+In addition, preparing role/header/package observations and the immediate
+pre-bootstrap check form one synchronous pure stage. They now share the
+preparation's existing read window. The code returns three ordinary Scheme
+values: prepared input, related inputs and the later currentness procedure.
+That window ENDS before calling =module-prepared-source-binding=: its
+bootstrap imports, private wrapper writes and native evaluation are outside.
+Independent later public calls to the returned currentness procedure start
+fresh windows. Calls explicitly nested in a pure window share only that window.
+No table is captured as an approval for those calls.
+
+The native control in
+[[file:../../../../../t/module-configuration-source-test.ss][module-configuration-source-test.ss]]
+observes actual reads of a Context dependency, not lookup requests:
+
+| Implementation | Context file reads during construction |
+|----------------+----------------------------------------|
+| Original, with both redundancies | 5 |
+| Reader owns its return check | 4 |
+| Preparation and pre-bootstrap share one pure window | 3 |
+
+The same assertion fails on the old implementation with result 5 / expected 4.
+After the first change it passes. The second assertion fails on that intermediate
+implementation with result 4 / expected 3, then passes with pure-stage fusion.
+The expected failures remain separate local controls; assertions are not
+weakened. Mutating the Context input afterwards still makes the returned
+public currentness procedure reject. The existing native initializer that
+rewrites config.ss is still rejected by the reader's independent post-import
+guard, and independent public checks remain fresh.
+
+** Call sites and the operations between guards
+
+Build/source phase labels now distinguish these sites in the existing
+publication guard observation. Labels do not enter the query cache key or
+authorize reuse. Stage output also includes cumulative =source-reads=, so two
+guard brackets can be related to the actual intervening operations. Nested
+guard read totals must be made exclusive; summing inclusive spans would count
+the same read twice.
+
+| Guard pair / call site | Intervening work | Decision |
+|------------------------+------------------+----------|
+| Configuration preparation -> pre-bootstrap | Inert role/header/package reads and internal source projections | Share one existing pure window |
+| Pre-bootstrap -> reader pre-import | Bootstrap SDK imports can expand/initialize code | Keep separate |
+| Reader pre-import -> post-import | Wrapper creation, native expansion and author initialization | Keep separate |
+| Reader post-import -> builder return | Private expansion release and wrapper cleanup only | Remove redundant builder return guard |
+| Build external-before -> external-after | Module .prepare, configuration evaluation and business projection callbacks | Keep separate |
+| Build admit-before -> admit-after | Lazy external-request preparation and extensible request guards | No blanket fusion |
+| Build finalization checks | Read init.ss and finalize inert inputs | Already share one pure window; no new saving claimed |
+| Independent public currentness calls | Caller-controlled interval, possibly source/package changes | Recheck |
+
+The seven nonempty =build-admit-after= checks cannot be removed on the basis
+of the much larger before count. Callback and package preparation boundaries
+must be respected even when the current upstream request happens to implement
+a source-only guard. Generic request guards are extensible; this change does
+not declare every such implementation pure.
+
+** Complete init-owned receipt
+
+Both changes pass the SAME observed aggregate through init's qualification
+object =.select= / =.run=, with the existing progress-aware idle/total budgets.
+Seven MODULE-OK, two HARNESS-OK and two final OK markers are present, natural
+exit is zero, and no error/heap/stack failure marker is present. Schema upgrade,
+the three admission-to-publication refusals, previous-value preservation and
+fixture cleanup remain in that Case. The intermediate implementation also
+passes that endpoint before applying pure-stage fusion.
+
+| Work | Before | Remove duplicate return guard | Also fuse pure preparation |
+|------+--------+-------------------------------+----------------------------|
+| Actual file reads | 49595 | 49259 | 48923 |
+| Graph-current reads | 26233 | 25899 | 25565 |
+| File requests | 126253 | 125651 | 125057 |
+| Read windows | 530 | 528 | 526 |
+| Publication guard bodies run | 269 | 267 | 265 |
+
+The final call-site partition has no overflow with a bounded 1024-row
+owner/phase/caller diagnostic; the separate effect table stays bounded at 128.
+This raises only diagnostic attribution capacity, not any timeout, heap fence,
+Case counter limit or source acceptance allowance.
+
+| Final Graph-current call site | Actual reads |
+|-------------------------------+--------------|
+| Build admit-before | 20541 |
+| Public configuration guard | 1503 |
+| Build admit-after | 1169 |
+| Selection-ready and initial configuration preparation | 668 |
+| Configuration reader | 348 |
+| Build entry | 334 |
+| Build finalization | 334 |
+| Build external-before | 334 |
+| Build external-after | 334 |
+| Separate pre-bootstrap traversal | 0 |
+| Total | 25565 |
+
+The 668 reads retain the generic =graph-current= label: the ordered trace
+identifies two selection-ready calls immediately before build entry, and two
+initial configuration preparation calls before the reader/bootstrap handoff.
+Each pair contributes 334. This is call-sequence attribution, not a fabricated
+new timing span. The intermediate trace records 143 =build-admit-before=
+brackets, including 20 with no reads; existing pure-window reuse already
+eliminates work in those calls. Its seven =build-admit-after= brackets each
+perform fresh reads. Neither the request count nor a shared Graph identity is
+proof that those independent boundaries may be removed.
+
+The final AWS publication checkpoint is 38785 ms / 26208 ms Case CPU; Ops
+worker time is 56931 ms. Nix union time is 12643939 microseconds, versus
+36272689 in the preceding attribution receipt. Source-guard CPU is 6355266
+microseconds, versus 5469621 there. The intermediate endpoint is 34267 ms /
+23129 ms Case CPU with 11465471 microseconds Nix union time. These are not
+matched timing controls. The qualified claim is 672 fewer actual file reads
+and four fewer windows, NOT an established endpoint or CPU speedup. The
+20541-read before-guard hotspot remains open for a further callback-specific
+audit; it is not declared necessary in its entirety or silently dropped.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

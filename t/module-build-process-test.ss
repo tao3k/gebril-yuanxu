@@ -42,14 +42,23 @@
         '((export core-spec)
           (def core-spec '("utilities/algorithms" "types" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
-      (check-equal? (length spec) 36)
       (def names (map cadr spec))
+      ;; Current JsonSchema receipts import this one additional library.
+      ;; Build-only tooling must not become an ordinary Module target.
+      (check-equal? (length spec) 37)
+      (check-equal? (length (filter (cut equal? <> "type-facts/objects") names)) 1)
+      (check-equal? (member "module-system/building/artifacts" names) #f)
       (build-command Build "compile")
       (def first-identities (output-identities lib names))
+      ;; Core clean owns selected generated .scm files too. Keep a separate,
+      ;; unselected sentinel so cleanup isolation is checked independently.
+      (def unselected (path-expand "object-family/unselected-output.scm" lib))
+      (call-with-output-file unselected (cut display "; unselected output\n" <>))
       (build-command Build "clean")
       (for-each (lambda (name)
                   (check-equal? (file-exists? (path-expand (string-append name ".ssi") lib)) #f)) names)
-      (check-equal? (file-exists? (path-expand "object-family/syntax.scm" lib)) #t)
+      (check-equal? (file-exists? (path-expand "object-family/syntax.scm" lib)) #f)
+      (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       ;; This must compile again, not merely print a new-process specification.
       ;; The same Script retains the exact source directory and GERBIL_PATH.
       (build-command Build "compile")
@@ -58,6 +67,8 @@
       (for-each (lambda (name)
                   (check-equal? (file-exists? (path-expand (string-append name ".ssi") lib)) #f)) names)
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
+      (check-equal? (file-exists? (path-expand "object-family/syntax.scm" lib)) #f)
+      (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))
     (test-case "same fixture rejects package mismatch and changed admission inputs"
       (def result (.call InputChecks .run))

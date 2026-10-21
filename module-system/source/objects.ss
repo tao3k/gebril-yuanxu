@@ -6,10 +6,11 @@
 ;;; Source identity is inert POO metadata. Discovery and activation belong to
 ;;; the consuming product, not to this Core owner.
 
-(import (only-in :clan/poo/object .o)
+(import (only-in :clan/poo/object .o object-revision object-protocol)
         (only-in :core/object-family/syntax defpoo-object-family))
 
 (export poo-flow-module-source-ref-prototype
+        poo-flow-module-source-ref-construction-current?
         make-poo-flow-module-source-ref
         poo-flow-module-source-ref?
         poo-flow-module-source-ref-kind
@@ -36,6 +37,16 @@
    (poo-flow-module-source-ref-value value)
    (poo-flow-module-source-ref-metadata metadata))
   (projections))
+
+;; The closed directory prefix constructs this exact maintained family.
+;; Capture at its definition, before exposing the prototype to contributors.
+;; An edited prototype (even restored) requires the ordinary guarded path.
+(def source-ref-construction-revision
+  (object-revision poo-flow-module-source-ref-prototype))
+(def (poo-flow-module-source-ref-construction-current?)
+  (and (= source-ref-construction-revision
+          (object-revision poo-flow-module-source-ref-prototype))
+       (not (object-protocol poo-flow-module-source-ref-prototype))))
 
 (def (make-poo-flow-module-local-source path)
   (make-poo-flow-module-source-ref 'local path '()))

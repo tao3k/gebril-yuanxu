@@ -3,12 +3,18 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source capabilities supply generation-qualified declarations, never user syntax.
 (import (only-in :std/list/list delete-duplicates/hash)
-        (only-in :clan/poo/object .o .ref .slot? .all-slots object?)
+        (only-in :clan/poo/object .o .ref .slot? .all-slots object?
+                 object-revision object-protocol object-%instance object-%reads
+                 object-%precedence-list object-%all-slots)
+        (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type element?)
-        (only-in :core/types poo-flow-predicate-contract))
+        (only-in :core/types PooFlowContract. poo-flow-predicate-contract))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract
-        module-publication? module-scope-context?)
-(def (no-publication-obligations _value _context) '())
+        module-publication? module-scope-context?
+        module-publication-contract-current? module-publication-dependency-projection)
+;; Use the existing closed empty operation, rather than another wrapper which
+;; the unified producer correctly classifies as an open obligation callback.
+(def no-publication-obligations (.ref PooFlowContract. '.obligations))
 (def (has-slots? value names)
   (and (object? value) (andmap (cut .slot? value <>) names)))
 (def (contract-descriptor? value)
@@ -64,6 +70,41 @@
 (def ModulePublicationContract
   (poo-flow-predicate-contract 'module/publication module-publication?
                               no-publication-obligations))
+;; Capture at definition, before contributors can extend the descriptor. A
+;; restored method/value Contract is still another native revision and falls
+;; back to guarded public reads. This is not a contributor-supplied pure flag.
+(def publication-contract-revision (object-revision ModulePublicationContract))
+(def (module-publication-contract-current?)
+  (= publication-contract-revision (object-revision ModulePublicationContract)))
+(def (module-publication-dependency-projection value observed?)
+  ;; Read ONLY native cache/token storage. No .ref, MOP query, replay callback
+  ;; or observer delivery may execute after the producer in this probe.
+  (def (observed-value? receiver key value)
+    (and (object? receiver) (object-%instance receiver)
+         (object-%precedence-list receiver) (not (object-protocol receiver))
+         (object-%reads receiver)
+         (let (read (hash-get (object-%reads receiver) key))
+           (and read (observed? read)
+                (= (slot-read-revision read) (object-revision receiver))
+                (eq? (slot-read-instance read) (object-%instance receiver))
+                (eq? (slot-read-value read) value)))))
+  (def (cached receiver key)
+    (and (object? receiver) (object-%instance receiver)
+         (let (value (hash-get (object-%instance receiver) key))
+           (and (observed-value? receiver key value) value))))
+  (and (module-publication-contract-current?)
+       (let* ((core (cached value 'core))
+              (requires (cached core 'requires))
+              (names (and (object? requires) (object-%all-slots requires))))
+         (and (list? names) (observed-value? requires '(names) names)
+              (let ((complete? #t))
+                (let (ids
+                       (map (lambda (name)
+                              (let* ((requirement (cached requires name))
+                                     (id (cached requirement 'module-id)))
+                                (unless (symbol? id) (set! complete? #f))
+                                id)) names))
+                  (and complete? ids)))))))
 (def (symbol-set? value)
   (and (list? value) (andmap symbol? value)
        (= (length value) (length (delete-duplicates/hash value from-end?: #t)))))

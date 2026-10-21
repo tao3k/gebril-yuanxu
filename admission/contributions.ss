@@ -69,16 +69,44 @@
   ;; Do not retain the weak cache key in its value.
   (.cc (.o) revision: (object-revision graph) routes: routes observations: observations))
 
+;; A route-free index needs only already-demanded native metadata. A cache miss
+;; or any contribution declaration takes the guarded reader path below. This
+;; constructs an index, never a source approval or publication receipt.
+(def (cached-route-free-index graph)
+  (let/cc unavailable
+    (def (cached receiver slot)
+      (unless (object? receiver) (unavailable #f))
+      (.ref/cached receiver slot (lambda () (unavailable #f))))
+    (def revision (object-revision graph))
+    (def observations '())
+    (for-each
+      (lambda (node)
+        (when (eq? (cached node 'kind) 'module-core)
+          (let* ((publication (cached node 'publication))
+                 (core (cached publication 'core)))
+            ;; Presence inspection does not demand the declaration's value.
+            (when (.slot? core 'contributions) (unavailable #f))
+            (set! observations
+              (append (map observe (list node publication core)) observations)))))
+      (cached graph 'nodes))
+    (.cc (.o) revision: revision routes: (make-hash-table-eq)
+         observations: observations)))
+
 (def (selected-index selection graph)
-  ;; Source guards are adjacent and effect-free. Route indexing below can read
-  ;; author declarations, so it must not inherit this source-read window.
-  (call-with-module-source-read-cache
-    (lambda ()
-      ((.get selection sources-current))
-      ((.get graph admit-current))))
   (def index
     (or (hash-get indexes graph)
-        (let (value (index-routes graph)) (hash-put! indexes graph value) value)))
+        (let (value (cached-route-free-index graph))
+          (when value (hash-put! indexes graph value)) value)))
+  ;; A completed empty index can be inspected without reading any author slot.
+  ;; Nonempty routes or cold metadata retain their original guarded reader.
+  (unless (and index (zero? (hash-length (.get index routes))))
+    (call-with-module-source-read-cache
+      (lambda ()
+        ((.get selection sources-current))
+        ((.get graph admit-current))))
+    (unless index
+      (set! index (index-routes graph))
+      (hash-put! indexes graph index)))
   (index-current! graph index)
   index)
 (def (index-current! graph index)
@@ -144,6 +172,10 @@
   (def graph (.get publication graph selected-graph))
   (def index (selected-index selection graph))
   (def edges (incoming index owner name))
+  ;; With no incoming rows, only native index inspection precedes this source
+  ;; collection boundary. Demand it BEFORE cold Contract metadata/handlers;
+  ;; an empty index never grants permission to read them from stale sources.
+  (def source-base (and (null? edges) (.get publication context)))
   (def descriptor (.get publication contract))
   ;; Only contextual requirements are admission producers. Public value Types
   ;; under value-contract have their own validation protocol, not this authority.
@@ -168,7 +200,7 @@
   (def observations
     (append contract-observations
             (append-map (lambda (item) (.get item observations)) collected)))
-  (def base (.get publication context))
+  (def base (or source-base (.get publication context)))
   (def (current! context)
     (call-with-module-source-read-cache
       (lambda ()

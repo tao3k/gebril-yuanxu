@@ -3,23 +3,35 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/list/list find)
+        (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .def .o .get .ref .slot? .call object?)
+        (only-in :gerbil/runtime/loader load-path set-load-path!)
+        (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?)
+        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+                 slot-read-key slot-read-dependencies replay-slot-reads!)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
                  core-import-module core-expand expander-context-id
-                 current-expander-eval module-context? module-context-path module-context-code)
+                 current-expander-eval module-context? module-context-path module-context-code
+                 core-context-prelude core-module->prelude-context expander-context-table)
         (only-in :core/module-system/source/reader module-publication-reader)
+        (only-in :core/module-system/building/source-closure
+                 for-each-build-module poo-flow-core-bootstrap-contexts)
         (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
         (rename-in (only-in :core/module-system/source/declaration .def) (.def publication-definition))
+        (only-in :core/module-system/source/declaration current-module-build-phase?)
         (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe)
+        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
         :core/module-system/source/objects
         (only-in :core/module-system/source/collection
                  make-poo-flow-module-source-collection poo-flow-module-source-collection-locate)
         :core/module-system/source/admission
+        (only-in :core/module-system/source/publication ModulePublicationContract
+                 module-publication-contract-current?)
         :core/module-system/source/preparation
         :core/module-system/interface)
-(export module-publication-test)
+(export module-publication-test with-publication-source write-file)
 (def ScopeContract
   (poo-flow-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
 (def factory-calls 0)
@@ -76,8 +88,498 @@
   (with-catch (lambda (exception)
                 (call-with-output-string (lambda (port) (display-exception exception port))))
               (lambda () (thunk) "unexpected success")))
+(.def PublicLibraryFixture
+  .acquire:
+  (lambda ()
+    (def fixture-root (make-temporary-file-name "publication-public-library-"))
+    (def original-paths (load-path))
+    (def package-name (symbol->string (gensym 'publication-library-)))
+    (def first-root (path-expand "first" fixture-root))
+    (def shadow-root (path-expand "shadow" fixture-root))
+    (def relative (string-append package-name "/helper.ss"))
+    (with-catch
+      (lambda (failure)
+        (set-load-path! original-paths)
+        (when (file-exists? fixture-root) (remove-tree fixture-root))
+        (raise failure))
+      (lambda ()
+        (for-each
+          (lambda (root)
+            (write-file (path-expand (string-append package-name "/gerbil.pkg") root)
+              (call-with-output-string (cut write (list package: package-name) <>)))
+            (write-file (path-expand relative root)
+              "(def ExternalValue \"original\") (export ExternalValue)"))
+          (list first-root shadow-root))
+        (set-load-path! (cons first-root original-paths))
+        (.o root: fixture-root path: (path-expand relative first-root)
+            shadow: shadow-root paths: original-paths))))
+  .release:
+  (lambda (resource)
+    (set-load-path! (.get resource paths))
+    (remove-tree (.get resource root))
+    (check-equal? (file-exists? (.get resource root)) #f)))
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
+    (poo-flow-test-case "Graph consumes the exact normalized publication from its single producer"
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def original (.get ModulePublicationContract value-contract))
+          (def checked #f)
+          (def calls 0)
+          (def ValueContract
+            (.o (:: @ Type.)
+              .element?: object?
+              .validate:
+              (lambda (value)
+                (set! calls (+ calls 1))
+                (set! checked
+                  (.o (:: @ value)
+                    core:
+                    (.o (:: @ (.get value core))
+                      link: (lambda (_dependencies) (.o greeting: "normalized")))))
+                checked)))
+          ;; Test-only installation on the actual public Contract. The
+          ;; producer remains unchanged and must normalize exactly once.
+          (dynamic-wind
+            (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+            (lambda ()
+              (def record (.call view .selected-record 'custom/example))
+              (check-equal? calls 1)
+              (check-equal? (eq? (.get record publication) checked) #t)
+              (check-equal? (eq? (.get record publication-evidence candidate) checked) #t)
+              (check-equal? (.get record scope greeting) "normalized")
+              (check-equal? (eq? record (.call view .selected-record 'custom/example)) #t)
+              (check-equal? calls 1))
+            (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+    (poo-flow-test-case "normalized publication owner mismatch is refused before Graph insertion"
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def original (.get ModulePublicationContract value-contract))
+          (def ValueContract
+            (.o (:: @ Type.)
+              .element?: object?
+              .validate: (lambda (value) (.o (:: @ value) identity: 'custom/wrong-owner))))
+          (dynamic-wind
+            (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+            (lambda ()
+              (check-equal?
+                (if (string-contains
+                      (exception-message (lambda () (.get view selected-graph)))
+                      "publication source owner mismatch") #t #f) #t))
+            (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+    (poo-flow-test-case "publication normalization cannot carry a source mutation into the Graph"
+      (with-publication-source
+        (lambda (root module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def original (.get ModulePublicationContract value-contract))
+          (def calls 0)
+          (def ValueContract
+            (.o (:: @ Type.)
+              .element?: object?
+              .validate:
+              (lambda (value)
+                (set! calls (+ calls 1))
+                (write-file (path-expand "config.ss" module-root)
+                  "(def Greeting \"changed by normalization\") (export Greeting)")
+                (.o (:: @ value)))))
+          (dynamic-wind
+            (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+            (lambda ()
+              (check-exception (.get view selected-graph) error?)
+              (check-equal? calls 1)
+              ;; The failed attempt never becomes a cached accepted Graph;
+              ;; restoring a Contract does not revive the refused session.
+              (check-exception (.call view .selected-record 'custom/example) error?)
+              (check-equal? calls 1))
+            (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+    (poo-flow-test-case "extended publication Contracts retain guards before declaration or Feature callbacks"
+      (for-each
+        (lambda (boundary)
+          (with-publication-source
+            (lambda (root module-root _source _view)
+              (def marker (path-expand "must-not-execute" root))
+              (write-file (path-expand "init.ss" root)
+                (if (eq? boundary 'declaration)
+                  "(poo-flow! mode: explicit :custom (example) (other))"
+                  "(poo-flow! mode: explicit :custom (example +ci))"))
+              (if (eq? boundary 'declaration)
+                (let (other (path-expand "modules/custom/other" root))
+                  (for-each
+                    (lambda (role)
+                      (write-file (path-expand role other)
+                        (module-source-read (path-expand role module-root))))
+                    '("types.ss" "objects.ss"))
+                  (write-file (path-expand "config.ss" other)
+                    (string-append "(call-with-output-file " (object->string marker)
+                      " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
+                  (write-file (path-expand "interface.ss" other)
+                    "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o))"))
+                (write-file (path-expand "interface.ss" module-root)
+                  (string-append
+                    "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
+                    (object->string marker)
+                    " (lambda (port) (display \"unexpected\" port))) (error \"Feature executed before source refusal\"))))")))
+              (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+              (def original (.get ModulePublicationContract value-contract))
+              (def calls 0)
+              (def ValueContract
+                (.o (:: @ Type.)
+                  .element?: object?
+                  .validate:
+                  (lambda (value)
+                    (set! calls (+ calls 1))
+                    (write-file (path-expand "config.ss" module-root)
+                      "(def Greeting \"changed before continuation\") (export Greeting)")
+                    value)))
+              (dynamic-wind
+                (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+                (lambda ()
+                  (check-equal? (module-publication-contract-current?) #f)
+                  (check-exception (.get view selected-graph) error?)
+                  (check-equal? calls 1)
+                  (check-equal? (file-exists? marker) #f))
+                (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+        '(declaration feature)))
+    (poo-flow-test-case "publication identity remains an open computation after reader return"
+      (with-publication-source
+        (lambda (_root module-root source view)
+          (def config (path-expand "config.ss" module-root))
+          (def replacement "(def Greeting \"changed during metadata admission\") (export Greeting)")
+          ;; Deliberately cold metadata: .def constructs the receiver without
+          ;; executing this identity getter. Reading a publication is therefore
+          ;; not a checked-value witness for the later Contract producer.
+          (write-file (path-expand "interface.ss" module-root)
+            (call-with-output-string
+              (lambda (port)
+                (write
+                  `(.def Fixture
+                     identity: (begin
+                       (call-with-output-file (list path: ,config truncate: #t)
+                         (lambda (out) (display ,replacement out)))
+                       'custom/example)
+                     core: (.o requires: (.o) scope-contract: FixtureContract
+                               exports: FixtureScope)
+                     features: (.o)) port))))
+          ;; Use a fresh reader after writing the declaration. The mutation
+          ;; must happen at actual Contract admission, not initial discovery.
+          (def reader (module-publication-reader))
+          (def publication (.call reader read source))
+          (check-equal? (string-contains (module-source-read config) "changed during") #f)
+          (check-equal? (poo-flow-validation-evidence-accepted?
+                         (admit-module-publication! source 'custom/example publication (.get view context))) #t)
+          (check-equal? (module-source-read config) replacement)
+          (check-exception (.call reader admit-current) error?))))
+    (poo-flow-test-case "Context admission is an open boundary after structural metadata checks"
+      (with-publication-source
+        (lambda (_root module-root source view)
+          (def reader (module-publication-reader))
+          (def publication (.call reader read source))
+          (def calls 0)
+          ;; Negative injection at the PUBLIC contextual obligation boundary.
+          ;; A structural predicate returning true does not close this callback.
+          (def context
+            (.o (:: @ (.get view context))
+              .contract-obligations:
+              (lambda (contract _candidate)
+                (when (eq? (.get contract identity) 'module/publication)
+                  (set! calls (+ calls 1))
+                  (write-file (path-expand "config.ss" module-root)
+                    "(def Greeting \"changed during Context admission\") (export Greeting)"))
+                '())))
+          (check-equal? (.slot? context '.contract-obligations) #t)
+          (check-equal? (poo-flow-validation-evidence-accepted?
+                         (admit-module-publication! source 'custom/example publication context)) #t)
+          (check-equal? calls 1)
+          (check-exception (.call reader admit-current) error?))))
+    (poo-flow-test-case "paired location admits authoring once before declaration evaluation"
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def original (.get poo-flow-default-module-style-policy validate))
+          (def calls 0)
+          (dynamic-wind
+            (lambda ()
+              (.put! poo-flow-default-module-style-policy 'validate
+                (lambda arguments (set! calls (+ calls 1)) (apply original arguments))))
+            (lambda ()
+              (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+              (check-equal? (.get view selected-graph module-order) '(custom/example))
+              (check-equal? calls 1))
+            (lambda () (.put! poo-flow-default-module-style-policy 'validate original))))))
+    (poo-flow-test-case "location support includes nested parser objects and their ancestors"
+      (.def Parent location: 'original)
+      (.def (Child @ Parent))
+      (def current? (module-source-object-policy (list Child)))
+      (check-equal? (current?) #t)
+      (.put! Parent 'location 'changed)
+      (check-equal? (current?) #f)
+      (.put! Parent 'location 'original)
+      (check-equal? (current?) #f)
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def row (car (.get view context intent decisions)))
+          (.put! (.get row selection) 'selection-flags '(+unexpected))
+          (check-exception (.get view selected-graph) error?)))
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def source (.call (.get view context) locate 'custom/example))
+          (def original (.get source value))
+          (.put! source 'value "changed-source.ss")
+          (check-exception (.call view sources-current) error?)
+          (.put! source 'value original)
+          (check-exception (.call view sources-current) error?))))
+    (poo-flow-test-case "an overridden locator cannot reuse the closed source prefix"
+      (with-publication-source
+        (lambda (root module-root _source _view)
+          (write-file (path-expand "init.ss" root)
+            "(poo-flow! mode: explicit :custom (example) (other))")
+          (def other (path-expand "modules/custom/other" root))
+          (for-each
+            (lambda (role)
+              (write-file (path-expand role other) (module-source-read (path-expand role module-root))))
+            '("types.ss" "objects.ss"))
+          (def marker (path-expand "must-not-initialize" root))
+          (write-file (path-expand "config.ss" other)
+            (string-append "(call-with-output-file " (object->string marker)
+              " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
+          (write-file (path-expand "interface.ss" other)
+            "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def context (.get view context))
+          (def locate (.get context locate))
+          ;; Establish a real earlier reader dependency without resolving the
+          ;; selected Graph or initializing the second declaration.
+          (.call context read-publication (locate 'custom/example))
+          (check-equal? (file-exists? marker) #f)
+          ;; A closed locator validates metadata, not all earlier source bytes.
+          ;; The reader MUST perform its full entry check even on that path.
+          (def first (locate 'custom/example))
+          (def second (locate 'custom/other))
+          (def control (module-publication-reader))
+          (.call control read first)
+          (def config-path (path-expand "config.ss" module-root))
+          (def original-config (module-source-read config-path))
+          (dynamic-wind
+            (lambda () (write-file config-path "(def Greeting \"changed\") (export Greeting)"))
+            (lambda ()
+              (check-exception
+                (call-with-values
+                  (lambda () (.call control read-located (lambda () second)))
+                  (lambda (_source _publication) 'unexpected-success)) error?)
+              (check-equal? (file-exists? marker) #f))
+            (lambda () (write-file config-path original-config)))
+          (def calls 0)
+          (.put! context 'locate
+            (lambda (id)
+              (set! calls (+ calls 1))
+              (write-file (path-expand "config.ss" module-root)
+                "(def Greeting \"changed\") (export Greeting)")
+              (locate id)))
+          (check-exception (.get view selected-graph) error?)
+          (check-equal? calls 1)
+          (check-equal? (file-exists? marker) #f))))
+    (poo-flow-test-case "the source constructor prototype is part of closed-prefix support"
+      (check-equal? (poo-flow-module-source-ref-construction-current?) #t)
+      (dynamic-wind
+        (lambda () (.put! poo-flow-module-source-ref-prototype 'prefix-test-marker #t))
+        (lambda () (check-equal? (poo-flow-module-source-ref-construction-current?) #f))
+        (lambda () (.put! poo-flow-module-source-ref-prototype 'prefix-test-marker #f)))
+      (check-equal? (poo-flow-module-source-ref-construction-current?) #f))
+    (poo-flow-test-case "interfaces share the SDK POO prelude without per-module alias copies"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def reader (module-publication-reader))
+          (def prelude
+            (core-module->prelude-context
+              (core-import-module ':core/module-system/source/config-prelude)))
+          (def native-eval (current-expander-eval))
+          (def interfaces (make-hash-table-eq))
+          (parameterize
+              ((current-expander-eval
+                 (lambda (program)
+                   (def context (current-expander-context))
+                   (call-with-values (cut native-eval program)
+                     (lambda results
+                       (when (and (module-context? context)
+                                  (string? (module-context-path context))
+                                  (string-suffix? "-interface.ss" (module-context-path context)))
+                         (hash-put! interfaces context #t))
+                       (apply values results))))))
+            (.call reader read source)
+            (.call reader read source))
+          (check-equal? (hash-length interfaces) 2)
+          (hash-for-each
+            (lambda (context _seen)
+              (check-equal? (eq? (core-context-prelude context) prelude) #t)
+              ;; .o remains available through the shared native weak prelude;
+              ;; its import alias is not copied into either local table.
+              (check-equal? (hash-key? (expander-context-table context) '.o) #f)
+              (check-equal? (hash-key? (expander-context-table context) '.def) #t))
+            interfaces))))
+    (poo-flow-test-case "publication keeps unique original reads and refuses changed provenance"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def reader (module-publication-reader))
+          (def counts #f)
+          (def (observe key _amount)
+            (when (and (pair? key) (eq? (car key) 'reader-read-roots))
+              (set! counts (cdr key))))
+          (defvalues (_publication reads)
+            (parameterize ((current-module-source-observer observe))
+              (%call-with-recorded-slot-reads (cut .call reader read source))))
+          (def bundle (find (lambda (read) (eq? (slot-read-key read) 'publication-reads)) reads))
+          (check-equal? (if bundle #t #f) #t)
+          (def roots (slot-read-dependencies bundle))
+          (def seen (make-hash-table-eq))
+          (for-each (lambda (read)
+                      (check-equal? (hash-key? seen read) #f)
+                      (hash-put! seen read #t)) roots)
+          (check-equal? (length roots) (cdr (assq 'identities counts)))
+          (check-equal? (> (cdr (assq 'deliveries counts)) (length roots)) #t)
+          (replay-slot-reads! (list bundle) (lambda (_receiver _key) (void)))
+          ;; Mutation is a negative injection, not a different source fixture.
+          ;; No token is rebuilt and no callback's dependencies are filtered.
+          (.put! source 'value "changed-after-publication")
+          (check-exception
+            (replay-slot-reads! (list bundle) (lambda (_receiver _key) (void))) error?))))
+    (poo-flow-test-case "reader streams warm source inputs without retained transitive context lists"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def reader (module-publication-reader))
+          (def retained #f)
+          (def (observe key _amount)
+            (when (and (pair? key) (eq? (car key) 'reader-retention))
+              (set! retained (cdr key))))
+          (parameterize ((current-module-source-observer observe))
+            (.call reader read source)
+            (def first (.call reader inputs source))
+            (def objects (cdr (assq 'source-objects retained)))
+            (check-equal? (> objects 0) #t)
+            (.call reader read source)
+            (def second (.call reader inputs source))
+            ;; The same guarded native inputs are projected again, not cloned
+            ;; sources or reused success. Existing currentness controls remain.
+            (check-equal? (length second) (length first))
+            (for-each (lambda (input) (check-equal? (if (memq input first) #t #f) #t)) second)
+            (check-equal? (cdr (assq 'source-objects retained)) objects)
+            (check-equal? (cdr (assq 'dependency-closures retained)) 0)
+            (check-equal? (cdr (assq 'dependency-contexts retained)) 0)))))
+    (poo-flow-test-fixture "public source preparation is unique but admission remains fresh"
+      (library PublicLibraryFixture)
+      (with-publication-source
+        (lambda (_root module-root source _view)
+          (write-file (path-expand "objects.ss" module-root)
+            (call-with-output-string
+              (lambda (port)
+                (write `(import (only-in ,(.get library path) ExternalValue)
+                                (only-in :clan/poo/object .o)) port)
+                (write '(def FixtureScope (.o retained: ExternalValue)) port)
+                (write '(export FixtureScope) port))))
+          ;; An explicit interface import is revisited on every declaration,
+          ;; even when the native role contexts have already been evaluated.
+          (write-file (path-expand "interface.ss" module-root)
+            (string-append
+              (call-with-output-string
+                (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
+              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+          (def requests 0)
+          (def preparations 0)
+          (def reader (module-publication-reader))
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (case key
+                              ((public-preparation-requests) (set! requests (+ requests amount)))
+                              ((public-preparation-walks) (set! preparations (+ preparations amount)))))))
+            (def first (.call reader read source))
+            (def first-preparations preparations)
+            (def second (.call reader read source))
+            (check-equal? (eq? first second) #f)
+            (check-equal? (> requests preparations) #t)
+            (check-equal? preparations first-preparations)
+            (.call reader admit-current))
+          ;; Do not modify the installed SDK. This external public source is
+          ;; owned by the fixture and published through the real native resolver.
+          (write-file (.get library path)
+            "(def ExternalValue \"changed\") (export ExternalValue)")
+          (check-exception (.call reader admit-current)
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception)
+                     "public dependency source or native identity changed")))))))
+    (poo-flow-test-fixture "warm public source refuses native name redirection"
+      (library PublicLibraryFixture)
+      (with-publication-source
+        (lambda (_root module-root source _view)
+          (write-file (path-expand "interface.ss" module-root)
+            (string-append
+              (call-with-output-string
+                (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
+              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+          (def reader (module-publication-reader))
+          (.call reader read source)
+          (set-load-path! (cons (.get library shadow) (load-path)))
+          (check-exception (.call reader admit-current)
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception)
+                     "public dependency source or native identity changed")))))))
+    (poo-flow-test-case "tool eligibility does not enlarge the declaration dependency closure"
+      (with-publication-source
+       (lambda (_root module-root source _view)
+         (def projection
+           (path-normalize (module-context-path
+             (core-import-module ':core/module-system/building/build-projection))))
+         (def dependency
+           (path-normalize (module-context-path
+             (core-import-module ':core/module-system/building/source-package))))
+         (def (observed-paths reader)
+           (def paths (make-hash-table))
+           (parameterize ((current-module-source-observer
+                           (lambda (key _amount)
+                             (when (and (pair? key) (eq? (car key) 'file-read))
+                               (hash-put! paths (path-normalize (caddr key)) #t)))))
+             (.call reader admit-current))
+           paths)
+         (def reader (module-publication-reader))
+         ;; The import eligibility catalog is not the consumer dependency set.
+         (check-equal? (hash-key? (observed-paths reader) projection) #f)
+         (.call reader read source)
+         (check-equal? (hash-key? (observed-paths reader) projection) #f)
+         ;; Changing a role requires a fresh reader. Its actual import must
+         ;; register the entire native transitive closure, not only the root.
+         (write-file (path-expand "build.ss" module-root)
+           "(import (only-in :core/module-system/building/build-projection poo-flow-core-project-source-spec)) (.def Build function: poo-flow-core-project-source-spec)")
+         (write-file (path-expand "interface.ss" module-root)
+           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
+         (def demanded (module-publication-reader))
+         (def published (.call demanded read source))
+         (check-equal? (hash-key? (observed-paths demanded) projection) #f)
+         ;; The deferred Build evaluator must enroll its support in the same
+         ;; publication reader before returning a callable/object to the Graph.
+         (check-equal?
+           (parameterize ((current-module-build-phase? #t))
+             (procedure? (.get published core configuration-build function))) #t)
+         (def paths (observed-paths demanded))
+         (check-equal? (hash-key? paths projection) #t)
+         (check-equal? (hash-key? paths dependency) #t)
+         ;; A topology hit still requires fresh byte reads on a later check.
+         (check-equal? (hash-key? (observed-paths demanded) projection) #t)
+         (write-file (path-expand "config.ss" module-root)
+           "(def Greeting \"changed after demand\") (export Greeting)")
+         (check-exception (.call demanded admit-current)
+           (lambda (exception)
+             (and (Error? exception)
+                  (string=? (Error-message exception)
+                    "compiler tool source changed; use a fresh reader")))))))
     (poo-flow-test-case "completed reader bodies release without discarding macro bindings"
       (with-publication-source
        (lambda (_root module-root source _view)
@@ -109,6 +611,37 @@
                  (hash-keys evaluated)))
          (check-equal? (module-context? macro-context) #t)
          (check-equal? (module-context-code macro-context) #f)
+         ;; Independent full native DFS is the oracle for the cut traversal.
+         ;; Register every evaluated private wrapper, a superset of role inputs;
+         ;; both projections must preserve exact order and identities.
+         (def canonical (poo-flow-core-bootstrap-contexts))
+         (def private (make-hash-table-eq))
+         (hash-for-each
+           (lambda (context _code)
+             (let (path (module-context-path context))
+               (when (and (string? path) (string-contains path "publication-reader-"))
+                 (hash-put! private context #t)))) evaluated)
+         (def full-visits 0)
+         (def cut-visits 0)
+         (def (keep? context)
+           (not (eq? context (hash-get canonical (expander-context-id context)))))
+         (hash-for-each
+           (lambda (root _registered)
+             (def full '())
+             (def pruned '())
+             (for-each-build-module root
+               (lambda (context)
+                 (set! full-visits (+ full-visits 1))
+                 (when (hash-key? private context) (set! full (cons context full)))))
+             (for-each-build-module root
+               (lambda (context)
+                 (set! cut-visits (+ cut-visits 1))
+                 (when (hash-key? private context) (set! pruned (cons context pruned))))
+               (make-hash-table-eq) keep?)
+             (check-equal? (equal? full pruned) #t)) private)
+         (check-equal? (< cut-visits full-visits) #t)
+         (poo-flow-test-observe 'private-closure-oracle-visits full-visits)
+         (poo-flow-test-observe 'private-closure-cut-visits cut-visits)
          (check-equal? (eq? sdk-code (module-context-code sdk-context)) #t)
          (hash-for-each
            (lambda (context state)
@@ -233,7 +766,9 @@
                                 (hash->list discovered)) #t)
                  (check-equal? (ormap (lambda (row) (> (cdr row) 1)) (hash->list demanded)) #t)
                  (check-equal? (> kernel-walks 0) #t)
-                 (check-equal? (> kernel-requests kernel-walks) #t)
+                 ;; Private projections now stream on every demand. Only the
+                 ;; independent canonical compiler-tool index keeps closures.
+                 (check-equal? kernel-requests kernel-walks)
                  ;; Negative control: the SDK's independent canonical context
                  ;; really would rerun the initializer if confinement were lost.
                  (check-exception (core-import-module library) error?)

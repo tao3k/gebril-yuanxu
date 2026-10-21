@@ -297,6 +297,22 @@
             (poo-flow-module-source-collection-locate collection '(custom . ../example)) error?))
          (create-directory (path-expand "modules/custom/example/func.ss" root))
          (both-refuse root))))
+    (poo-flow-test-case "explicit integration exclusions preserve strict admission of selected Modules"
+      (with-module
+       (lambda (root)
+         (def collection (make-poo-flow-module-source-collection 'fixture 'test root "modules/custom"))
+         (def (front-end name)
+           (def directory (path-expand (string-append "modules/custom/" name) root))
+           (create-directory directory)
+           (call-with-output-file (path-expand "interface.ss" directory)
+             (lambda (port) (display "(export)" port))))
+         (front-end "helper")
+         (check-exception (poo-flow-module-source-collection-interfaces collection) error?)
+         (def selected (.o (:: @ collection) excluded-directories: '("helper")))
+         (check-equal? (length (poo-flow-module-source-collection-interfaces selected)) 1)
+         (check-equal? (poo-flow-module-source-collection-locate selected '(custom . helper)) '())
+         (front-end "broken")
+         (check-exception (poo-flow-module-source-collection-interfaces selected) error?))))
     (poo-flow-test-case "source owner and publication owner must agree before scope assembly"
       (let ((source (make-poo-flow-module-source-ref
                      'local "example/interface.ss" '((module-id . another/owner))))

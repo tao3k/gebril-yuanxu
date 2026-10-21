@@ -1,0 +1,123 @@
+#+title: 12.27.02 Historical Qualification Receipts
+#+property: DOCUMENT_ID 12.27.02
+#+language: en
+#+property: STATUS retained-evidence
+
+* Early source-only 2 GiB receipts
+
+The opening receipts describe previously qualified execution. The final-
+derivation cache and progress-aware policy introduced later are qualified
+separately below; earlier passes do not qualify that changed integration.
+
+The original Ops endpoint now passes in fully source-loaded mode with locked
+POO =fdeadfa40= and the user-approved 2 GiB default. Both the initial revised-
+budget attempt and the subsequent integrated-observation attempt finish with
+natural exit zero, all native harness markers, Schema update, stale-evidence
+refusal, fresh publication and failure cleanup. The worker remains limited to
+60 seconds and the outer Justfile qualification to 120 seconds. No compiled
+Core/POO cache, upstream edit, runtime Loader or additional SDK-state cleanup
+was introduced. The Case growth guard keeps its prior half-heap ratio.
+
+This qualifies the revised budget, not the historical 1 GiB route or a general
+performance improvement. Module-specific observation now refines the existing
+Case Profile; AWS no longer supplies a handwritten source observer. The failed
+first adapter attempt treated floating =check-seconds= as integer work and is
+not acceptance evidence. Its correction converts seconds into explicitly
+named microseconds and preserves the original event for previous observers.
+
+A later attempt after the hygiene/stat/counter changes hit the original worker
+deadline after parent publication. It is a failure, not superseded by the two
+earlier passes. Its first Graph has the same 8322 source reads, 74 private
+imports, 80 evaluated private bodies and 47 publication guards as the passing
+phase receipt, but takes 15921 rather than 8443 wall milliseconds. Those work
+counts exclude additional source traversal as the explanation for that boundary;
+they do not establish host contention or exclude interpreter overhead. Case
+observations now also use the SDK process CPU clock alongside wall time, without
+a new sampler or environment probe. Requalification of that CPU-observed final
+entry passes with natural exit zero and all native harness markers, retaining
+the same 2 GiB ceiling and original deadlines. This later pass does not erase
+the timeout or establish why its wall time varied. Its successful child output
+is retained by the existing Ops receipt, not copied into version control.
+
+
+* Historical one-GiB boundary
+
+The [[file:../../../13-module-loading/13.15-import-and-source-guard-correspondence.org::#matched-source-revisions-and-test-observation][matched source-only comparison]] qualifies the current dependency boundary:
+=79880413= and =fdeadfa40= both overflow with the same Core snapshot and
+unchanged limits. The dependency lock now names =fdeadfa40=; the older
+compiled-library success below is historical and does not qualify that update.
+The shared test-macro observation dependency was narrowed, but that one-GiB
+source-only original Ops endpoint did not pass its complete Schema transition.
+
+Private reader expansion lifetime is now qualified separately from that gate.
+Exact generated-wrapper ownership, phase-zero body/program identity, successful
+evaluation and a successful post-source guard precede release of a disposable
+expanded body. Macro bindings, runtime values and canonical SDK state remain.
+The source-only paired-body experiment reduces first-Graph last-GC live bytes
+from =849398152= to =760877856=, but still overflows during second-epoch
+Funflow publication. It therefore does not qualify fresh Schema publication or
+the complete original Ops endpoint at one GiB. The detailed lifetime rule and rejected
+cleanup experiments are recorded in the matched-source comparison above.
+
+The [[file:../../../13-module-loading/13.15-import-and-source-guard-correspondence.org::#post-clos-source-graph-reuse-and-aws-acceptance][post-CLOS source Graph reuse record]] contains the subsequent passing original
+Ops endpoint on the locked dependency, the query/enrollment boundary and the
+separate unsuccessful fully source-loaded latest-dependency candidate. The
+timeout observations below are historical failures, not the current acceptance
+status for that locked environment.
+
+
+* Qualification record
+
+The configuration-source, selected-Graph, Nix phase-publication and actual Nix
+derivation controls passed through =just test-file= with MODULE-OK, HARNESS-OK,
+final OK and natural exit zero. The native derivation control also checks that
+a readonly guard does not force an unused store/realization capability.
+
+The later full AWS attempt terminated with status 137 during source Graph
+preparation, before executing the new Nix store-reuse path. Both its child and
+outer entry failed; this is not evidence of a completed 60-second integration.
+Separate host samples showed 0% idle CPU, 55--64 running processes and heavy
+compression, with concurrent compiler activity. Available/reclaimable-memory
+figures alone did not characterize that contention. Do not label signal 9 as a
+proven heap overflow, successful timeout correction or Nix failure.
+
+The original AWS Schema-update, stale-evidence, child-Context and previous-value
+assertions remain unchanged. The final init-owned endpoint still needs a clean
+fixed-budget completion after resource contention subsides. Standalone Nix tests
+qualify the changed cache protocol; they do not replace that endpoint gate.
+
+A subsequent endpoint run reached the real warm-store path: readonly derivation
+evaluation, native store-validity checking and provider realization completed,
+without writable registration in that interval. It then refused with
+=compiler tool source changed; use a fresh reader= for =gerbil.pkg=, which was
+modified concurrently. This run exited nonzero with ERROR CASE/ERROR HARNESS;
+MODULE-OK/HARNESS-OK text in the same transcript does not make it a pass. It
+qualifies neither the complete Schema transition nor a clean performance run.
+An updated dependency is allowed: create a fresh reader and Graph against the
+new locked revision. Refusal concerns reuse of the old observations, not the
+legitimacy of upgrading POO. Bypassing that refusal would invalidate the experiment.
+
+The next run used the current lock,
+=gerbil-poo@ece6f609357ea918038090559ac051a8d9f3e52f=, with isolated compiled
+dependency artifacts checked against their source manifest and Core read from
+source. It retained the original limits. Its parent endpoint took approximately
+77 seconds before starting the integration subprocess. Inside that subprocess,
+the first Graph completed at about 17.0 seconds, packages at 26.3 seconds and
+parent publication at 35.8 seconds. Same-name descriptor rejection completed;
+Context checks followed, then Ops refused with status 124 before the second
+Schema selection. The outer entry also reached its 120-second limit. This is
+still an incomplete endpoint qualification, not a dependency-update refusal or
+evidence that provider acquisition rebuilt a cached package.
+
+The real interval again used readonly evaluation and native store validity,
+with no writable registration. First-Graph source reads were 8,717 under this
+revision; that source set differs from the earlier 26b4b58 control, so these
+numbers must not be combined into an additional optimization claim. The current
+revision's module-window, selected-Graph and real Nix derivation controls
+completed serially through =just test-file= with MODULE-OK, HARNESS-OK, final OK
+and natural exit zero, without ERROR CASE/CHECK/HARNESS or heap/stack overflow
+markers. The Nix controls retain transitive-input change rejection and the
+lookup/registration race refusal. These narrow successes do not close the AWS
+endpoint gate; its failed run is retained locally without committing logs.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

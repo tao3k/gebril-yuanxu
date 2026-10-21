@@ -19,7 +19,8 @@
   (let (text (symbol->string flag))
     (values (string->symbol (substring text 1 (string-length text)))
             (char=? (string-ref text 0) #\+))))
-(def (select-module-graph context root-values read-publication current!)
+(def (select-module-graph context root-values read-publication current!
+                          (read-dependencies #f))
   ;; Resolve each selected declaration once for this candidate Graph. Reuse the
   ;; actual publication object for Core/Feature edges, not a source observation
   ;; or an admission result across declaration expansion/initialization.
@@ -31,22 +32,35 @@
   (let* ((intent (and (.slot? context 'intent) (.ref context 'intent)))
          (decision-values (if intent (.ref intent 'decisions) '()))
          (origin (and (.slot? context 'init-source) (.ref context 'init-source)))
+         (explicit? (and intent (eq? (.ref intent 'mode) 'explicit)))
          (selected-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'selected))))
          (denied-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'denied-modules))))
          (modules
           (module-closure root-values identity
            (lambda (id)
-             (let (requirements (.ref (.ref (publication-for id) 'core) 'requires))
-               (map (lambda (alias)
-                       (let (required (.ref (.ref requirements alias) 'module-id))
-                         (when (hash-get denied-index required)
-                           (error "required module disabled" id required origin (.ref context 'generation)))
-                         (when (and intent (eq? (.ref intent 'mode) 'explicit)
-                                    (not (hash-get selected-index required)))
-                           (error "required module not explicitly declared" id required origin
-                                  (.ref context 'generation)))
-                         required))
-                    (.all-slots requirements))))))
+             (let (required-ids
+                    (if read-dependencies
+                      (call-with-values (lambda () (read-dependencies id))
+                        (lambda (value ids)
+                          ;; Populate the SAME publication index as the normal
+                          ;; reader. Core/Feature resolution must not reread it.
+                          (hash-put! publications id value)
+                          ids))
+                      (let (requirements (.ref (.ref (publication-for id) 'core) 'requires))
+                        (map (lambda (alias) (.ref (.ref requirements alias) 'module-id))
+                             (.all-slots requirements)))))
+               (map (lambda (required)
+                      (when (hash-get denied-index required)
+                        (error "required module disabled" id required origin (.ref context 'generation)))
+                      (when (and explicit? (not (hash-get selected-index required)))
+                        (error "required module not explicitly declared" id required origin
+                               (.ref context 'generation)))
+                      required)
+                    required-ids)))))
+         ;; Dependency projection can leave a private candidate pending. Close
+         ;; it BEFORE decision slots, Feature construction or any open resolver
+         ;; callback. Generic readers keep their independent publication tails.
+         (_closure-current (when read-dependencies (current!)))
          (nodes (make-hash-table))
          (decision-index (make-hash-table))
          (negative

@@ -6,6 +6,7 @@
 (import (only-in :std/string/path path-absolute?)
         (only-in :std/source this-source-file)
         (only-in "./source-package.ss" register-module-build-source!)
+        (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process)
         (only-in :core/module-system/source/declaration current-module-build-phase?)
         (only-in :clan/poo/object .o .ref)
         (only-in :core/module-system/interface poo-flow-load-modules)
@@ -13,9 +14,7 @@
         (only-in :core/module-system/source/preparation poo-flow-prepare-module-retained-source poo-flow-prepare-module-build-source)
         (only-in :core/module-system/source/admission module-source-type module-source-read
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
-(export poo-flow-core-project-source-spec poo-flow-core-admit-build-inputs)
-(def (poo-flow-core-admit-build-inputs observations)
-  (module-source-admit-current! observations))
+(export poo-flow-core-project-source-spec)
 (def (build-target-name identity package-prefix)
   (let ((name (symbol->string identity))
         (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))
@@ -112,7 +111,13 @@
         (lambda ()
           ((.ref graph 'compiler-current))
           (for-each (lambda (entry) ((.ref (.ref entry 'input) 'admit-current))) kept)
-          (poo-flow-core-admit-build-inputs observed))))
+          (module-source-admit-current! observed))))
     (current!)
-    (.o selected-graph: (.ref graph 'selected-graph) build-graph: graph
+    (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
+        compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
+        source-inputs: observed
+        .compile: (lambda (libdir action)
+                    (call-with-build-artifact-issuance projection libdir action))
+        .process: (lambda (libdir command)
+                   (run-build-artifact-process projection libdir command))
         source-root: root spec: build-value admit-current: current!)))

@@ -16,7 +16,16 @@ def prepareCommand (script : Script) (arguments : List String) : List String :=
   let argv := script.command ++ arguments
   match script.timeoutSeconds with
   | none => argv
-  | some seconds => ["timeout", "--verbose", "--foreground", "--signal=TERM", "--kill-after=5s", seconds ++ "s"] ++ argv
+  | some seconds => ["timeout", "--verbose", "--signal=TERM", "--kill-after=5s", seconds ++ "s"] ++ argv
+
+/-- Native batch-mode argv projection; signal delivery remains external. -/
+theorem command_with_total_timeout (command arguments : List String) (seconds : String) :
+    prepareCommand ⟨command, some seconds⟩ arguments =
+      ["timeout", "--verbose", "--signal=TERM", "--kill-after=5s", seconds ++ "s"] ++
+        command ++ arguments := rfl
+
+theorem command_without_total_timeout (command arguments : List String) :
+    prepareCommand ⟨command, none⟩ arguments = command ++ arguments := rfl
 
 /-- Environment merge is ordinary child-over-parent POO provider composition;
 it is not an alist override language. -/
@@ -42,7 +51,7 @@ theorem exited_status (code : Nat) : exitCode (code * 256) = code := by
   simp [exitCode]
 
 #guard prepareCommand ⟨["tool", "literal argument"], some "3"⟩ ["--flag"] ==
-  ["timeout", "--verbose", "--foreground", "--signal=TERM", "--kill-after=5s", "3s", "tool", "literal argument", "--flag"]
+  ["timeout", "--verbose", "--signal=TERM", "--kill-after=5s", "3s", "tool", "literal argument", "--flag"]
 #guard exitCode 9 == 137
 #guard exitCode (2 * 256) == 2
 end PooFlowCoreProof.Ops.ProcessScript

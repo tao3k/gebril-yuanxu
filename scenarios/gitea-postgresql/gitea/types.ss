@@ -6,13 +6,10 @@
         (only-in :clan/poo/type List)
         (only-in :clan/poo/object-diagnostics diagnostic-then)
         (only-in :std/list/list every)
-        (only-in :core/types PooFlowContract.
-                 poo-flow-predicate-contract poo-flow-classification-evidence)
+        (only-in :core/types PooFlowContract. poo-flow-predicate-contract)
         (only-in :core/admission/source SourceAdmissionContract. source-diagnose-at)
         (only-in :core/configuration/diagnostics config-diagnostic-locator))
 (export ApplicationContract GiteaConfigContract GiteaScopeContract PostgreSQLScopeContract)
-(def (fields? value names)
-  (and (object? value) (every (lambda (name) (.slot? value name)) names)))
 (define-type (GiteaValueContract. @ ObjectContract. port-type)
   identity: 'gitea/config-value
   responsibilities:
@@ -20,28 +17,23 @@
       allowed-ports: (List port-type)))
 (define-type (GiteaConfigContract @ PooFlowContract.)
   identity: 'gitea/config
-  value-contract: (.cc GiteaValueContract. port-type: (IntegerRange min: 1 max: 65535))
-  .classify: (lambda (candidate context)
-               (poo-flow-classification-evidence identity candidate #t '() context)))
+  value-contract: (.cc GiteaValueContract. port-type: (IntegerRange min: 1 max: 65535)))
 ;; Root value validation owns normalization. Contextual descendants retain the
 ;; service classifiers/obligations and must admit that exact checked child.
 (define-type (ConfigurationAdmission. @ PooFlowContract. database-contract)
   identity: 'gitea/configuration-context
   responsibilities:
   (.o postgresql: (.o (:: @ database-contract) value-contract: #f)
-      gitea: (.o (:: @ GiteaConfigContract) value-contract: #f))
-  .classify: (lambda (candidate context)
-               (poo-flow-classification-evidence identity candidate #t '() context)))
+      gitea: (.o (:: @ GiteaConfigContract) value-contract: #f)))
 ;; These scope probes inspect names only, rather than normalizing lazy exports.
 (def PostgreSQLScopeContract
   (poo-flow-predicate-contract 'gitea/postgresql-dependency
     (lambda (value)
-      (and (fields? value '(config types))
-           (fields? (.get value types) '(port Config))))
-    (lambda (_v _c) '())))
+      (and ((o?/slots '(config types)) value)
+           ((o?/slots '(port Config)) (.get value types))))))
 (def GiteaScopeContract
   (poo-flow-predicate-contract 'gitea/scope
-    (lambda (value) (fields? value '(config document application types policy))) (lambda (_v _c) '())))
+    (o?/slots '(config document application types policy))))
 (def (issue kind-value path-value actual-value)
   (.o kind: kind-value path: path-value actual: actual-value))
 (def ApplicationEnvelope
@@ -66,18 +58,18 @@
           (source-diagnose-at database-type '(config postgresql))
           (source-diagnose-at client-type '(config gitea))
           (source-diagnose-at plan-type '(plan)))))
-(def (application-issues candidate)
+(def (application-issues candidate location)
   (def database (.get candidate config postgresql))
   (def client (.get candidate config gitea))
   (cond
      ((not (= (.get database settings port) (.get client database port)))
-      (list (.cc (issue 'connection-mismatch '(config gitea database port) (.get client database port))
+      (list (.cc (issue 'connection-mismatch (append location '(config gitea database port)) (.get client database port))
         expected: (.get database settings port)
-        expected-path: '(config postgresql settings port))))
+        expected-path: (append location '(config postgresql settings port)))))
      ((not (and (eq? (.get candidate plan configuration) (.get candidate config))
                 (= (.get candidate plan postgresql port) (.get database settings port))
                 (= (.get candidate plan gitea database-port) (.get client database port))))
-      (list (issue 'stale-parent-plan '(plan) (.get candidate plan))))
+      (list (issue 'stale-parent-plan (append location '(plan)) (.get candidate plan))))
      (else '())))
 
 (def (port-contributions requirement-type candidate rows _context)
@@ -101,16 +93,14 @@
   .preflight: (.get value-contract preflight)
   .locate-diagnostic: (config-diagnostic-locator documents '(config))
   identity: 'gitea/application
-  value-contract: (.cc ApplicationValueContract.
-                    database-type: (.get database-contract value-contract) port-type: port-type)
+  value-contract:
+  (refine (.cc ApplicationValueContract.
+            database-type: (.get database-contract value-contract) port-type: port-type)
+          application-issues)
   responsibilities:
   (.o config: (.cc ConfigurationAdmission. database-contract: database-contract))
   requirement-type: (.cc ObjectContract. responsibilities:
                       (.o allowed-ports: (List port-type) origin: Any source-origin: Any))
-  .classify:
-  (lambda (candidate context)
-    (def issues (application-issues candidate))
-    (poo-flow-classification-evidence identity candidate (null? issues) issues context))
   .contribution-obligations:
   (lambda (candidate rows context)
     (port-contributions requirement-type candidate rows context)))

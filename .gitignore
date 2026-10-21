@@ -1,3 +1,4 @@
 /.gerbil/
 /manifest.ss
 /build-deps
+/_apalache*

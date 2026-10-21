@@ -17,6 +17,10 @@ the focused Just recipe reads the same total from this ordinary Scheme module
 for its outer hard ceiling. No environment-variable probe or log heartbeat
 extends the total budget.
 
+The pure policy import is itself heap-fenced with a separate 60-second startup
+ceiling. It does not select modules or start external effects. This protects
+policy resolution before the test's declared total can be read.
+
 The Nix reader consumes native =internal-json= activity events. Increasing
 =resProgress.done=, a new native build phase, and completion of a tracked
 activity count as progress. Merely starting an activity, changing an expected

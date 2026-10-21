@@ -340,8 +340,11 @@
     (def (watch)
       (thread-sleep! interval-seconds)
       (unless done?
-        (let (counters
-              (poo-flow-debug-memory-counters collect-before-sample?))
+        (let* ((counters (poo-flow-debug-memory-counters collect-before-sample?))
+               (elapsed (poo-flow-debug-elapsed-milliseconds started-jiffy))
+               (progress (and (pair? (current-execution-progress))
+                              (car (current-execution-progress))))
+               (progress-status (and progress (execution-progress-status progress))))
           (cond
            ((and fail-closed?
                  (poo-flow-debug-memory-counters-rejected?
@@ -363,28 +366,21 @@
                      (parameterize ((current-error-port port))
                        (emit-memory-receipt receipt)))
                    (poo-flow-debug-raise-memory-anomaly receipt))))))
-           ((or (>= (poo-flow-debug-elapsed-milliseconds started-jiffy)
-                    max-duration-milliseconds)
-                (and (pair? (current-execution-progress))
-                     (execution-progress-status (car (current-execution-progress)))))
+           ((or (>= elapsed max-duration-milliseconds) progress-status)
             (when (claim-stop!)
-              (thread-interrupt!
-               owner
-               (lambda ()
-                 (poo-flow-debug-raise-duration-anomaly
-                  phase (.ref policy 'label)
-                  (if (and (pair? (current-execution-progress))
-                           (eq? (execution-progress-status (car (current-execution-progress))) 'idle))
-                    (execution-progress-limit (car (current-execution-progress)) 'idle)
-                    max-duration-milliseconds)
-                  (if (and (pair? (current-execution-progress))
-                           (eq? (execution-progress-status (car (current-execution-progress))) 'idle))
-                    (execution-progress-idle-milliseconds (car (current-execution-progress)))
-                    (poo-flow-debug-elapsed-milliseconds started-jiffy))
-                  reason: (if (and (pair? (current-execution-progress))
-                                   (eq? (execution-progress-status
-                                          (car (current-execution-progress))) 'idle))
-                            'idle-exceeded 'duration-exceeded)))))))
+              ;; The interrupted owner may currently be inside a different,
+              ;; nested Ops progress extent. Preserve the triggering watchdog's
+              ;; state; do not relabel an idle stop as a total-budget failure.
+              (let* ((idle? (eq? progress-status 'idle))
+                     (limit (if idle? (execution-progress-limit progress 'idle)
+                                max-duration-milliseconds))
+                     (observed (if idle? (execution-progress-idle-milliseconds progress)
+                                   elapsed)))
+                (thread-interrupt! owner
+                  (lambda ()
+                    (poo-flow-debug-raise-duration-anomaly
+                      phase (.ref policy 'label) limit observed
+                      reason: (if idle? 'idle-exceeded 'duration-exceeded))))))))
           (unless done? (watch)))))
     (let (watchdog (make-thread watch))
       (thread-start! watchdog)

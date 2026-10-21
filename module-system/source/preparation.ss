@@ -51,14 +51,30 @@
 (def (package-snapshot-current? entries)
   (module-source-observe check-package-snapshot-current? entries))
 (def (check-package-snapshot-current? entries)
-  (andmap (lambda (entry)
-            (if (cdr entry)
-              (and (eq? (module-source-type (car entry)) 'regular)
-                   (equal? (cdr entry) (module-source-read (car entry)))
-                   (let* ((datum (call-with-input-string (cdr entry) read))
-                          (expected (if (eof-object? datum) '() datum)))
-                     (equal? expected (core-library-package-plist (path-directory (car entry)) #t))))
-              (not (module-source-type (car entry))))) entries))
+  ;; Sibling sources have different negative ancestor lists but share the same
+  ;; positive gerbil.pkg entry. Reuse its pure byte/SDK-identity check inside
+  ;; the EXISTING read window; do not reparse it once per source guard.
+  (andmap (lambda (entry) (module-source-observe check-package-entry-current? entry)) entries))
+(def (check-package-entry-current? entry)
+  (if (cdr entry)
+    (and (eq? (module-source-type (car entry)) 'regular)
+         (equal? (cdr entry) (module-source-read (car entry)))
+         (let* ((datum (call-with-input-string (cdr entry) read))
+                (expected (if (eof-object? datum) '() datum)))
+           (equal? expected (core-library-package-plist (path-directory (car entry)) #t))))
+    (not (module-source-type (car entry)))))
+
+;; Return only the binding identity. Interpreted slot/guard closures retain
+;; enclosing lexical frames, including unused sibling bindings. The persistent
+;; preparation must not own a second parsed interface tree beside its bytes.
+(def (publication-source-binding path text)
+  (let* ((forms (call-with-input-string text read-all))
+         (declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms)))
+    (unless (and (= (length declarations) 1)
+                 (andmap (lambda (form) (and (pair? form) (memq (car form) '(import .def)))) forms))
+      (error "interface.ss must contain one Module .def and optional explicit external imports" path))
+    (let (binding (cadr (car declarations)))
+      (if (pair? binding) (car binding) binding))))
 
 (def (poo-flow-prepare-module-publication source-value
                                           style-policy: (policy poo-flow-default-module-style-policy)
@@ -77,14 +93,7 @@
      (lambda (file)
        (let (text (module-source-read file))
          (hash-put! texts file text) text)))
-    (let* ((forms (call-with-input-string (hash-ref texts path) read-all))
-           (declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms)))
-      (unless (and (= (length declarations) 1)
-                   (andmap (lambda (form) (and (pair? form) (memq (car form) '(import .def)))) forms))
-        (error "interface.ss must contain one Module .def and optional explicit external imports" path))
-      (let* ((declaration (car declarations))
-             (binding (cadr declaration))
-             (name (if (pair? binding) (car binding) binding))
+      (let* ((name (publication-source-binding path (hash-ref texts path)))
              (package-sources (package-source-snapshot path))
              (compiler-info (module-compiler-identity path))
              (prelude-inputs
@@ -115,12 +124,21 @@
           (context-current!))
         ;; The interpreter redirects original sources through its admitted reader;
         ;; standalone compiler input imports adjacent prepared role projections.
+        ;; The existing POO prelude is one SDK-owned weak binding frame. Do not
+        ;; copy its full export set into every generated interface's strong
+        ;; import table. Explicit role/import bindings still override the prelude.
+        ;; A contributor's custom prelude keeps the original explicit imports.
+        (def shared-prelude?
+          (or (not (car compiler-info))
+              (eq? (syntax->datum (car compiler-info)) ':gerbil/core)))
         (def (publication-forms imports)
           (append
-           (if (car compiler-info) (list 'prelude: (car compiler-info)) '())
+           (if shared-prelude?
+             '(prelude: :core/module-system/source/config-prelude)
+             (list 'prelude: (car compiler-info)))
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
-                 `(import (except-in :clan/poo/object .def)
+                 `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
                           (only-in :core/module-system/source/declaration .def define-module-build-binding)
                           ,@imports))
            (if (hash-key? texts (path-expand "build.ss" root))
@@ -142,7 +160,7 @@
             reader-forms: (publication-forms
                            (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
             compiler-forms: (publication-forms
-                             (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles)))))))
+                             (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles))))))
 (def (poo-flow-write-module-publication prepared output)
   ;; Materialization belongs to source preparation, never to the syntax expander.
   (unless (string=? (path-strip-directory output) "interface.ss")

@@ -8,7 +8,15 @@
 (import (only-in :core/observability/testing-case poo-flow-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
-        (only-in :clan/poo/object .o .ref)
+        (only-in :clan/poo/object .o .ref .put! .all-slots object-slots $constant-slot-spec?
+                 object-protocol-set! replay-slot-reads! object-read-issued?)
+        (only-in :clan/poo/mop Type. element?)
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+                 slot-read-key slot-read-receiver slot-read-dependencies)
+        (only-in :core/poo-clos/objects make-effective-method make-invocation-frame
+                 clos-call-carrier-policy-guard)
+        (only-in :core/object-family/read-projection call-with-owned-read-projection owned-read-value!)
+        (only-in :core/observability/memory poo-flow-debug-memory-snapshot)
         :core/poo-clos/interface)
 
 (export poo-clos-dispatch-test)
@@ -31,6 +39,197 @@
 
 (def poo-clos-dispatch-test
   (test-suite "POO-native CLOS multi-dispatch conformance"
+    (poo-flow-test-case "projection preserves multiple values and unwinds a failed region"
+      (check-exception
+        (call-with-owned-read-projection '() (lambda () #t)
+          (lambda () (error "negative region failure"))) error?)
+      (check-equal?
+        (call-with-values
+          (lambda ()
+            (call-with-owned-read-projection '() (lambda () #t)
+              (lambda () (values 'first 'second)))) list)
+        '(first second)))
+    (poo-flow-test-case "effective-method and native MOP hooks retain the complete call trace"
+     (for-each
+      (lambda (axis)
+      (def exposed #f)
+      (def body
+        (lambda (frame _value)
+          (when (eq? axis 'native-mop) (set! exposed frame)) 'done))
+      (def protocol
+        (poo-clos-generic-protocol 'open-projection
+          compute-effective-method:
+          (and (eq? axis 'effective)
+               (lambda (_generic _args _methods original)
+                 (set! exposed original) original))))
+      (when (eq? axis 'native-mop) (object-protocol-set! protocol (.o)))
+      (def generic
+        (poo-clos-add-method
+          (poo-clos-generic-function 'hooked-projection 1 protocol: protocol)
+          (poo-clos-method 'check (list any-specializer) body)))
+      (def result
+        (.o answer:
+          (call-with-owned-read-projection (list body) (clos-call-carrier-policy-guard)
+            (cut poo-clos-call generic dog))))
+      (def root #f)
+      (call-with-slot-read-observer
+        (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! root read)))
+        (lambda () (.ref result 'answer)))
+      (def support (slot-read-dependencies root))
+      ;; Internal bundle markers were removed. Preserve the stronger actual
+      ;; contract: original issued records directly cover the escaped receiver.
+      (check-equal? (andmap object-read-issued? support) #t)
+      (check-equal? (ormap (lambda (read) (eq? (slot-read-receiver read) exposed))
+                      support) #t)
+      (.put! exposed 'negative-edit #t)
+      (check-exception (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
+      '(effective native-mop)))
+    (poo-flow-test-case "owned getter dependencies promote their external policy"
+      ;; This isolated ownership fixture puts the only external read UNDER the
+      ;; owned token, rather than relying on an independently observed root.
+      (def policy (.o allowed: #t))
+      (def result
+        (.o answer:
+          (call-with-owned-read-projection '() (lambda () #t)
+            (lambda ()
+              (def owned (owned-read-value! (.o value: (.ref policy 'allowed))))
+              (.ref owned 'value)))))
+      (def root #f)
+      (call-with-slot-read-observer
+        (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! root read)))
+        (lambda () (.ref result 'answer)))
+      (poo-flow-debug-memory-snapshot 'owned-fixture-returned collect?: #t)
+      (.put! policy 'allowed #f)
+      (check-exception (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
+    (poo-flow-test-case "owned-read projection promotes external dependencies and preserves open frames"
+      (check-equal? ((clos-call-carrier-policy-guard)) #t)
+      (for-each
+        (lambda (axis)
+          (def policy (.o allowed: #t))
+          (def value-checks 0)
+          (def constraint
+            (.o (:: @ Type.) .element?:
+              (lambda (_value) (set! value-checks (+ 1 value-checks)) #t)))
+          (def escaped #f)
+          (def body
+            (lambda (frame value)
+              (when (memq axis '(open-frame known-frame)) (set! escaped frame))
+              (and (.ref policy 'allowed) (element? constraint value))))
+          (def generic
+            (poo-clos-add-method (poo-clos-generic-function 'projected-reads 1)
+              (poo-clos-method 'check (list any-specializer) body)))
+          (def known (if (eq? axis 'open-frame) '() (list body)))
+          (def result
+            (.o answer:
+              (call-with-owned-read-projection known (clos-call-carrier-policy-guard)
+                (cut poo-clos-call generic dog))))
+          (def root #f)
+          (check-equal?
+            (call-with-slot-read-observer
+              (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! root read)))
+              (lambda () (.ref result 'answer))) #t)
+          (replay-slot-reads! (list root) (lambda (_receiver _key) (void)))
+          (check-equal? value-checks 1)
+          (case axis
+            ((policy) (.put! policy 'allowed #f))
+            ((contract) (.put! constraint '.element? (lambda (_value) #f)))
+            ((generic) (.put! generic 'generation (+ 1 (.ref generic 'generation))))
+            ((open-frame known-frame) (.put! escaped 'qualifier 'before)))
+          ;; Deliberately enroll an escaping fixture body as known: even this
+          ;; producer-error probe may not turn a lost weak token into approval.
+          (when (eq? axis 'known-frame)
+            (poo-flow-debug-memory-snapshot 'invalidated-owned-frame collect?: #t))
+          (check-exception
+            (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
+        '(policy contract generic open-frame known-frame)))
+    (poo-flow-test-case "prototype policy changes invalidate collected-carrier evidence"
+      ;; Mutate the shared declaration LAST: restoring a value intentionally
+      ;; does not restore its native revision or re-certify the old policy.
+      (def body (lambda (_frame _value) 'done))
+      (def generic
+        (poo-clos-add-method (poo-clos-generic-function 'prototype-policy 1)
+          (poo-clos-method 'check (list any-specializer) body)))
+      (def projected
+        (.o answer:
+          (call-with-owned-read-projection (list body) (clos-call-carrier-policy-guard)
+            (cut poo-clos-call generic dog))))
+      (def prototype (.ref ClosInvocationFrame 'proto))
+      (def original-kind (.ref prototype 'kind))
+      (def projected-root #f)
+      (call-with-slot-read-observer
+        (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! projected-root read)))
+        (lambda () (.ref projected 'answer)))
+      (poo-flow-debug-memory-snapshot 'projected-call-returned collect?: #t)
+      (dynamic-wind
+        (lambda () (.put! prototype 'kind 'negative-policy-injection))
+        (lambda ()
+          (check-exception
+            (replay-slot-reads! (list projected-root) (lambda (_receiver _key) (void))) error?))
+        (lambda () (.put! prototype 'kind original-kind)))
+      (check-equal? ((clos-call-carrier-policy-guard)) #f))
+    (poo-flow-test-case "completed CLOS reads retain policy Type Generic and escaped-frame dependencies"
+      (for-each
+        (lambda (axis)
+          (def policy (.o allowed: #t))
+          (def constraint (.o (:: @ Type.) .element?: (lambda (_value) #t)))
+          (def escaped #f)
+          (def generic
+            (poo-clos-add-method
+              (poo-clos-generic-function 'semantic-reads 1)
+              (poo-clos-method 'check (list any-specializer)
+                (lambda (frame value)
+                  ;; A public method may retain its frame. Allocation identity
+                  ;; or CLOS ancestry cannot certify a disposable dependency.
+                  (set! escaped frame)
+                  (and (.ref policy 'allowed) (element? constraint value))))))
+          (def result (.o answer: (poo-clos-call generic dog)))
+          (def reads (make-hash-table-eq))
+          (check-equal?
+            (call-with-slot-read-observer
+              (lambda (read) (hash-put! reads read #t))
+              (lambda () (.ref result 'answer))) #t)
+          (replay-slot-reads! (hash-keys reads) (lambda (_receiver _key) (void)))
+          ;; No source-byte change. Each is a real native object mutation,
+          ;; after the lazy result has completed and its call stack returned.
+          (case axis
+            ((policy) (.put! policy 'allowed #f))
+            ((contract) (.put! constraint '.element? (lambda (_value) #f)))
+            ((generic) (.put! generic 'generation (+ 1 (.ref generic 'generation))))
+            ((frame) (.put! escaped 'qualifier 'before)))
+          (check-exception
+            (replay-slot-reads! (hash-keys reads) (lambda (_receiver _key) (void)))
+            error?))
+        '(policy contract generic frame)))
+    (poo-flow-test-case "CLOS carriers capture values without constructor-wide lazy closures"
+      (def generic (poo-clos-generic-function 'carrier-values 1))
+      (def method (primary-method 'carrier-method (list any-specializer) 'done))
+      (def args (list dog))
+      (def primaries (list method))
+      (def effective (make-effective-method generic args '() '() primaries '()))
+      ;; Independent original shape, not a constructor calling itself.
+      (def generic-value generic)
+      (def original
+        (.o (:: @ (.ref ClosEffectiveMethod 'proto))
+            generic: generic-value arguments: args around: '() before: '()
+            primary: primaries after: '() groups: '() executor: #f))
+      (check-equal? (.all-slots effective) (.all-slots original))
+      (for-each (lambda (name)
+                  (check-equal? (eq? (.ref effective name) (.ref original name)) #t))
+        '(generic arguments primary executor))
+      (check-equal? (andmap (lambda (entry) ($constant-slot-spec? (cdr entry)))
+                      (object-slots effective)) #t)
+      (def next (lambda (replacement) replacement))
+      (def frame (make-invocation-frame effective args next 'primary method))
+      (check-equal? (element? ClosInvocationFrame frame) #t)
+      (check-equal? (eq? (.ref frame 'effective-method) effective) #t)
+      (check-equal? (eq? (.ref frame 'arguments) args) #t)
+      (check-equal? (eq? (.ref frame 'next) next) #t)
+      (check-equal? (andmap (lambda (entry) ($constant-slot-spec? (cdr entry)))
+                      (object-slots frame)) #t)
+      (check-exception (make-effective-method generic 'invalid '() '() primaries '())
+                       (failure-code? 'invalid-effective-method))
+      (check-exception (make-invocation-frame effective args 42 'primary method)
+                       (failure-code? 'invalid-invocation-frame)))
     (poo-flow-test-case "native prototype and any specializers participate in multi-argument dispatch"
       (let* ((generic (poo-clos-generic-function 'meet 2))
              (generic

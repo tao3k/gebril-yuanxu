@@ -231,10 +231,13 @@
     (apply values (map eval-syntax names))))
 (def (cause failure)
   (if (metadata.failure? failure) (cause (metadata.failure-cause failure)) failure))
-(def (refused publication parent candidate (message #f))
+(def (refused publication parent candidate (message #f) (expected-source #f))
   (defvalues (receipt next failure) (.call publication .publish parent candidate))
   (check-equal? receipt #f)
   (check-equal? (eq? next parent) #t)
   (check-equal? (metadata.failure? failure) #t)
   (when message
-    (check-equal? (and (Error? (cause failure)) (Error-message (cause failure))) message)))
+    (check-equal? (and (Error? (cause failure)) (Error-message (cause failure))) message))
+  (when expected-source
+    (check-equal? (Error-irritants (cause failure))
+                  (list (path-normalize expected-source) 'source-bytes-changed))))

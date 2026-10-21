@@ -13,6 +13,14 @@
   (displayln "ROOT-CHILD-COMPLETE"))
 (def active-boundary (make-parameter 'outside))
 (def (row value) (write value) (newline))
+(def (graph-current-reads phases)
+  ;; Attribution refines the phase with its call site; count the whole family
+  ;; while retaining the exact physical-read and matched-control assertions.
+  (foldl (lambda (phase total)
+           (if (or (eq? phase 'graph-current)
+                   (string-prefix? "graph-current/" (symbol->string phase)))
+             (+ total (hash-ref phases phase)) total))
+         0 (hash-keys phases)))
 (def root-child-admission-test
  (test-suite "Real admission call attribution"
   (poo-flow-test-case "three internal analyses retain observations without whole-closure certification"
@@ -173,8 +181,8 @@
     ;; Return certification and actual source reads must stay unchanged.
     (check-equal? (- (hash-ref baseline-phases 'publication-current)
                      (hash-ref measured-phases 'publication-current)) (* 3 closure-size))
-    (check-equal? (- (hash-ref baseline-phases 'graph-current)
-                     (hash-ref measured-phases 'graph-current)) 3)
+    (check-equal? (- (graph-current-reads baseline-phases)
+                     (graph-current-reads measured-phases)) 3)
     (check-equal? (hash-ref baseline-phases 'source) (hash-ref measured-phases 'source))
     (check-equal? (- baseline-total measured-total) (+ (* 3 closure-size) 3))
     (check-equal? (hash-length baseline-paths) (length measured-paths))

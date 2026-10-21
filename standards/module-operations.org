@@ -252,7 +252,46 @@ No caller-defined =Atomic=, runner or manual file/guard association is needed.
 Advanced test process policy belongs to the existing execution object obtained
 from =tests.execution=; it is not required in ordinary module configuration.
 
+* Execution progress and deadlines
+
+Testing uses separate inactivity and total budgets. The current framework
+defaults are 60 seconds without progress and 600 seconds total, sourced from
+the shared Ops execution policy. TestingScript derives its limits from the
+associated Case Profile; the outer focused-test guard reads the same finite
+total. Native imports before a Case remain bounded by that outer total, not
+yet by a separate import-inactivity observer.
+
+Pure policy resolution has its own heap-fenced 60-second startup bound before
+the declared test total is available. No build or download runs in that step.
+
+An advancing native transfer counter, a new native build phase, or a completed
+tracked operation can renew inactivity. A started operation, an unchanged
+counter, repeated diagnostics, arbitrary build-log text, or synthetic heartbeat
+cannot. Progress relays are bounded monotonic execution metadata, never
+admission evidence, source currentness or permission to publish. Observation
+emission may be disabled without disabling the liveness rules.
+
+The existing Ops boundary owns subprocess cancellation and std/run-process
+waits; Case interruption retains fixture cleanup and post-execution source
+guards. GNU timeout retains the process-total exit status, including callers
+that explicitly request a receipt with =check-status: #f=. Idle rejection is a
+distinct execution failure. A late event cannot revive an expired span, and
+progress cannot renew the total budget. Ordinary module authors keep declaring
+fixtures and assertions; init associates this execution policy automatically.
+
+See [[file:../ops/README.org][Ops execution]] and
+[[file:../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs.org][the AWS GC/cache qualification]]
+for the protocol controls, real-provider results and remaining boundaries.
+
 * Research and evidence
+
+Capacity qualification must separate catalog enumeration, demanded native
+declarations, business scope links and execution. The
+[[file:../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/14-declaration-capacity.org][real declaration capacity gates]] retain the 1000/10000 memory-policy failures
+alongside the passing small native control. A fixture publication, finite
+model, structural cache hit or sparse catalog pass cannot qualify a fully
+demanded source Graph. Test observers retain scalar widths and counts, not
+native import contexts or expanded syntax.
 
 [[file:../docs/20-29-ecosystem-research/20-nixos/20.07-issues-and-evidence.org][NixOS issue research]] motivates separate source selection, effective-value
 demand, validation forcing and measured costs. Those reports are not local

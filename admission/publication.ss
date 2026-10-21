@@ -4,10 +4,13 @@
 (import :clan/poo/object
         (only-in :clan/poo/mop define-type Type element?)
         (only-in :core/module-system/source/build unique-build-inputs)
+        (only-in :core/module-system/building/artifacts admit-build-artifacts!
+          admit-build-artifact-publication! build-artifact-publication-current)
         (only-in :core/admission/contributions bind-publication-contributions)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/string/path path-absolute?)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
+        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?
+                 call-with-contract-analysis-root)
         (only-in :core/module-system/source/admission
           module-source-read module-source-admit-current! call-with-module-source-read-cache
           current-module-source-observer)
@@ -126,6 +129,7 @@
 ;; The selected, admitted Module publication owns both scope paths. Reuse its
 ;; actual descriptor: this creates neither a producer nor another evidence type.
 (def (module-admission-publication graph publication scope name)
+  (admit-build-artifacts! graph)
   ((.get graph admit-current))
   (unless (find (lambda (node)
                   (and (eq? (.get node kind) 'module-core)
@@ -151,16 +155,30 @@
     'configuration-inputs (if (.slot? descriptor 'source-inputs) (.get descriptor source-inputs) '())
     'value (scope-path scope (.get declaration export-path))))
 
-(def (admission-context build-graph artifacts inputs)
-  ((.get build-graph admit-current))
-  (let ((selected (.get build-graph selected-graph))
-        (generation (.get build-graph generation))
-        (sources (copy-inputs (unique-build-inputs (append (.get build-graph source-inputs) inputs))))
-        (schemas (publication-stage 'schema-associations
+(def (admission-context build-graph artifacts inputs (defer-current? #f))
+  ;; Standalone construction is an admission boundary. The private assembler
+  ;; already admitted requests at export entry and will admit the full Context
+  ;; before return; its intermediate source collection is not a publication.
+  (unless defer-current? ((.get build-graph admit-current)))
+  (let* ((selected (.get build-graph selected-graph))
+         (generation (.get build-graph generation))
+         (sources (copy-inputs (unique-build-inputs (append (.get build-graph source-inputs) inputs))))
+         ;; Capture metadata outside the read window: a cold getter may run
+         ;; code. Then check compiler AND request/configuration observations
+         ;; together before demanding any Schema associations. Reuse neither
+         ;; these bytes nor this incomplete Context across the Schema getters.
+         (_source-entry
+          (when defer-current?
+            (call-with-module-source-read-cache
+              (lambda ()
+                ((.get build-graph compiler-current))
+                (module-source-admit-current! sources "admission source input changed")))))
+         (schemas (publication-stage 'schema-associations
                    (lambda ()
                      (unique-build-inputs
                        (foldr append '() (map schema-observations artifacts)))))))
     (def (current!)
+      (admit-build-artifacts! build-graph)
       ;; The build Graph guard is source-only; package checks live separately
       ;; at publication's effect boundaries. Do not encompass Contract callbacks
       ;; or Nix in this synchronous observation window.
@@ -172,8 +190,12 @@
             (error "admission belongs to a different selected Graph"))
           (module-source-admit-current! sources "admission source input changed")
           (module-source-admit-current! schemas "admission Schema input changed")
-          ((.get build-graph admit-current)))))
-    (current!)
+          ((.get build-graph admit-current))
+          (admit-build-artifacts! build-graph))))
+    ;; Only the private .for-export assembly defers this check to its
+    ;; enclosing contribution binder, which admits the complete Context before
+    ;; returning it. Ordinary Context construction keeps its return guard.
+    (unless defer-current? (current!))
     (.o selected-graph: selected graph-generation: generation
         source-inputs: sources schema-inputs: schemas admit-current: current!)))
 
@@ -214,11 +236,23 @@
         (publication-stage 'entry-current (.get context-value admit-current))
         ;; Nix/package effects must not run under the source-read cache used by
         ;; contextual child checks. Recheck the package before and after admission.
-        (when package-current (publication-stage 'package-before package-current))
-        (publication-stage 'post-package-current (.get context-value admit-current))
+        (when package-current
+          (publication-stage 'package-before package-current)
+          ;; This recheck belongs to the package callback, not to admission
+          ;; itself. With no package callback, entry-current already completed
+          ;; this boundary; the producer still checks Context after obligations.
+          (publication-stage 'post-package-current (.get context-value admit-current)))
         (def evidence
           (publication-stage 'contract-admit
-            (cut poo-flow-contract-admit descriptor value context-value)))
+            (lambda ()
+              ;; The publisher owns this one root producer invocation, including
+              ;; ordinary public value Contracts without a source wrapper.
+              ;; The kernel consumes the exact edge before any open callback;
+              ;; only its registered responsibility children inherit analysis.
+              ;; Root, independent and replaced/inherited Context callbacks keep
+              ;; their full source guards. This is not a byte-cache window.
+              (call-with-contract-analysis-root descriptor value context-value
+                (cut poo-flow-contract-admit descriptor value context-value)))))
         (def checked (.get evidence candidate))
         (def bound
           (publication-stage 'bind-evidence
@@ -241,14 +275,28 @@
 (define-type (AdmissionPublication. @ [] graph schemas contract context invocation configuration-inputs package-current)
   .for-export:
   (lambda (selection owner name)
+    ;; Reject a stale managed build before resolving an export scope, whose
+    ;; lazy fields may run author code. Native cache state grants no shortcut.
+    (admit-build-artifact-publication! (.get selection build-graph))
     (let (record (publication-stage 'selected-record
                    (lambda () (.call selection .selected-record owner))))
       (publication-stage 'bind-contributions
         (lambda ()
-          (bind-publication-contributions selection owner name
-            (.cc (module-admission-publication (.get selection build-graph)
-                    (.get record publication) (.get record scope) name)
-              'package-current (.get selection package-current)))))))
+          (let* ((base (module-admission-publication (.get selection build-graph)
+                         (.get record publication) (.get record scope) name))
+                 (package-guard
+                   (let ((build-current (build-artifact-publication-current (.get selection build-graph)))
+                         (packages-current (.get selection package-current)))
+                     (if (and build-current packages-current)
+                       (lambda () (build-current) (packages-current))
+                       (or build-current packages-current)))))
+            (bind-publication-contributions selection owner name
+              (.o (:: @ base graph schemas configuration-inputs)
+                ;; No intermediate Context escapes this assembly. The binder's
+                ;; final current! includes this base's complete source/Schema
+                ;; guard plus the contribution checks; do not run it twice.
+                context: (admission-context graph schemas configuration-inputs #t)
+                package-current: package-guard)))))))
   package-current: #f
   configuration-inputs: '()
   context: (admission-context graph schemas configuration-inputs)

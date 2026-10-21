@@ -3,10 +3,7 @@
 (export ServiceScopeContract ApplicationScopeContract)
 (def ServiceScopeContract
   (poo-flow-predicate-contract 'application/service-scope
-    (lambda (value) (and (object? value) (.slot? value 'config)
-                        (.slot? value 'document) (.slot? value 'types)))
-    (lambda (_v _c) '())))
+    (o?/slots '(config document types))))
 (def ApplicationScopeContract
   (poo-flow-predicate-contract 'application/scope
-    (lambda (value) (and (object? value) (.slot? value 'Scenario) (.slot? value 'types)))
-    (lambda (_v _c) '())))
+    (o?/slots '(Scenario types))))

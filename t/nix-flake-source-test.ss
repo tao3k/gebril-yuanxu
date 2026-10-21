@@ -15,8 +15,7 @@
         (only-in :core/modules/opentofu/objects OpenTofuScope.)
         (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-source->json-like)
         (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
-        (only-in :core/module-system/building/build-projection poo-flow-core-admit-build-inputs)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!))
 (export nix-flake-source-test)
 (def (assert label value)
   (unless value (error "assertion failed" label))
@@ -113,7 +112,7 @@
             (let* ((observed (map (lambda (path) (cons path (module-source-read path)))
                                   (list flake lock selection)))
                    (publication (.call (source) .prepare
-                                  (lambda () (poo-flow-core-admit-build-inputs observed)))))
+                                  (lambda () (module-source-admit-current! observed)))))
               (let (complete
                      (.+ publication
                        (.o (:: @ [] artifact admit-current)

@@ -19,6 +19,7 @@
         SemanticModuleContract
         ModuleSourceRoleContract ModuleAuthoringProfileContract
         poo-flow-semantic-module
+        make-default-module-authoring-profile
         poo-flow-default-module-authoring-profile)
 
 ;;; The executor stays a native POO prototype.  CLOS specializes it through
@@ -76,16 +77,24 @@
    'build '(import def .def .o) '(add remove replace delete) '()
    'build-publication-only))
 
-(def (poo-flow-default-module-authoring-profile)
-  (validate ModuleAuthoringProfileContract
-    (.o (:: @ ModuleAuthoringProfile.)
+(def (make-default-module-authoring-profile)
+  ;; Internal construction stage. Source-policy getters must not capture the
+  ;; temporary validation receipts of every child as enduring dependencies.
+  ;; Each invocation still owns a fresh Profile and executor. The Interface
+  ;; constructor validates this value before any role admission or expansion.
+  (.o (:: @ ModuleAuthoringProfile.)
         executor: (.mix ModuleAuthoringExecutor.)
         types: TypesSourceRole.
         objects: ObjectsSourceRole.
         funs: FunsSourceRole.
         config: ConfigSourceRole.
         interface: InterfaceSourceRole.
-        build: BuildSourceRole.)))
+        build: BuildSourceRole.))
+
+(def (poo-flow-default-module-authoring-profile)
+  ;; Public constructor retains immediate validation and checked-value identity.
+  (validate ModuleAuthoringProfileContract
+    (make-default-module-authoring-profile)))
 
 ;; : (-> ModuleIdentity imports: ModuleImports capabilities: ModuleCapabilities profiles: ModuleProfiles authoring: ModuleAuthoringProfile SemanticModule)
 (def (poo-flow-semantic-module identity-value

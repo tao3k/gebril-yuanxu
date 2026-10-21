@@ -1,868 +1,206 @@
 #+title: 12.27 AWS Schema Transition Cost Boundaries
 #+property: DOCUMENT_ID 12.27
 #+language: en
-#+property: STATUS source-only-2g-ops-qualified-no-runtime-loader
-
-* Current receipt
-
-The opening receipts describe previously qualified execution. The final-
-derivation cache and progress-aware policy introduced later are qualified
-separately below; earlier passes do not qualify that changed integration.
-
-The original Ops endpoint now passes in fully source-loaded mode with locked
-POO =fdeadfa40= and the user-approved 2 GiB default. Both the initial revised-
-budget attempt and the subsequent integrated-observation attempt finish with
-natural exit zero, all native harness markers, Schema update, stale-evidence
-refusal, fresh publication and failure cleanup. The worker remains limited to
-60 seconds and the outer Justfile qualification to 120 seconds. No compiled
-Core/POO cache, upstream edit, runtime Loader or additional SDK-state cleanup
-was introduced. The Case growth guard keeps its prior half-heap ratio.
-
-This qualifies the revised budget, not the historical 1 GiB route or a general
-performance improvement. Module-specific observation now refines the existing
-Case Profile; AWS no longer supplies a handwritten source observer. The failed
-first adapter attempt treated floating =check-seconds= as integer work and is
-not acceptance evidence. Its correction converts seconds into explicitly
-named microseconds and preserves the original event for previous observers.
-
-A later attempt after the hygiene/stat/counter changes hit the original worker
-deadline after parent publication. It is a failure, not superseded by the two
-earlier passes. Its first Graph has the same 8322 source reads, 74 private
-imports, 80 evaluated private bodies and 47 publication guards as the passing
-phase receipt, but takes 15921 rather than 8443 wall milliseconds. Those work
-counts exclude additional source traversal as the explanation for that boundary;
-they do not establish host contention or exclude interpreter overhead. Case
-observations now also use the SDK process CPU clock alongside wall time, without
-a new sampler or environment probe. Requalification of that CPU-observed final
-entry passes with natural exit zero and all native harness markers, retaining
-the same 2 GiB ceiling and original deadlines. This later pass does not erase
-the timeout or establish why its wall time varied. Its successful child output
-is retained by the existing Ops receipt, not copied into version control.
-
-** Cached Nix operations in the observed three-owner Case
-
-The retained 24.195-second receipt only records the aggregate duration of the
-first four Nix calls. It does not identify an individually slow operation or
-contain Nix-native activity messages. Its historical cause remains unqualified;
-later successful execution must not be used to assign it to cold building,
-daemon locks, host scheduling or observation overhead.
-
-Two subsequent runs keep observation and detailed tracing enabled, the same
-three-owner Case, one selected Graph/spec, and the original deadlines. Both
-finish naturally with all six child module markers and the parent harness
-markers. They retain Schema/Contract/Context changes, stale-evidence refusal,
-fresh publication, previous-value preservation and cleanup assertions.
-
-| Actual first four operations | Run A milliseconds | Run B milliseconds |
-|------------------------------+--------------------+--------------------|
-| Read-only derivation evaluation | 905 | 843 |
-| Registered derivation validity query | 71 | 68 |
-| Output realization | 436 | 279 |
-| Post-realization derivation evaluation | 567 | 508 |
-| Sum of these process spans | 1979 | 1698 |
-| Complete three-owner Case body | 57730 | 50334 |
-
-Each whole AWS Case still executes 22 Nix calls: 18 derivation evaluations,
-two validity queries and two realizations. Their total wall times are 14.010
-and 10.909 seconds respectively. No writable derivation-registration fallback
-appears. The variability remains visible rather than being replaced by a best
-run or a claim that the slow receipt is fixed.
-
-*** What cache evidence establishes
-
-The validity result is reported from the actual =nix-store --check-validity=
-exit status, not inferred from a fast duration. It is a hit in both runs; this
-specifically proves derivation registration, not by itself output availability.
-The bounded native realization trace contains no concrete build/substitution
-activity. A separate read-only output metadata inspection finds the artifact's
-registration time more than eleven hours before the historical failed run's
-log completion. It supports a pre-existing output for the reproduced selection;
-the old receipt did not save its derivation identity, so exact historical
-identity equality is not established retroactively.
-
-Conversely, both recorded evaluations of the same initial derivation evaluate
-327 Nix files and return the same derivation identity. A registered derivation
-and available build outputs do not eliminate this legacy command's evaluation.
-The configured =eval-cache=true= setting describes Nix's *flake evaluation
-cache*, not a general result cache for every =nix-instantiate --eval= call:
-[[https://nix.dev/manual/nix/2.34/command-ref/conf-file.html#conf-eval-cache][Nix evaluation-cache configuration]].
-The current search path names a fixed local store source, not a remote channel
-lookup. This excludes a search-path download in these runs, not every possible
-network or daemon wait in the historical run.
-
-*** Which repeated work can be reused
-
-The first four operations are not four duplicate builds. They establish a
-candidate identity, check its registration, demand its outputs, and recheck
-identity after that effect. Later queries straddle package handoffs, arbitrary
-Contract/Context callbacks and publication. Existing pure source-read windows
-remain reusable inside one synchronous guard; a Nix result does not cross those
-authority boundaries. The native derivation regression still rejects undeclared
-transitive-file changes, a newly present optional file, and mutation between
-lookup and registration. A source-list-only memo would miss those changes.
-
-The =guard-script= phase can demand the lazy derivation before
-=value-admission= demands its artifact. Thus a phase named =realize= may merely
-return the deferred publication; process-level spans identify where actual
-evaluation and realization occur. Phase names alone are not cost attribution.
-
-*** Eighteen evaluations: ownership and reuse boundaries
-
-The eighteen queries are not eighteen demands inside one immutable source
-epoch. The Case deliberately creates a new selected Graph when its provider
-Schema changes. Query indices below come from the retained observed Run B;
-the tests and their public handoffs remain unchanged.
-
-| Query indices | Boundary | Why an earlier result is insufficient |
-|---------------+----------+---------------------------------------|
-| 1, 9 | Initial derivation demanded by each Graph's guard script | Different Schema epochs; establish each expected identity |
-| 2, 10 | SelectedPackages publication-current | Artifact realization and arbitrary value validators have returned |
-| 3, 11 | Public selection.with-packages handoff | The caller may change inputs between package production and handoff |
-| 4–5 | Initial accepted publication | Actual Contract/Context callbacks occur between the checks |
-| 6 | Context-denied admission | Entry must be current; rejection avoids a post-admission query |
-| 7–8 | Schema-transition negative publication | Mutation is injected after admission at the second package boundary |
-| 12–13 | Fresh accepted publication | New Schema association; both sides of actual callbacks are checked |
-| 14 | Misspelled-field rejection | Pre-admission check runs; refused admission has no post-query |
-| 15–16 | Context-transition negative publication | Preserve the after-admission mutation boundary |
-| 17–18 | Contract-transition negative publication | Preserve the after-admission mutation boundary |
-
-The handoff checks are adjacent in the trace but separated by a public return.
-Removing them merely because both objects share a Graph would weaken that
-public API. Likewise, two checks around a Contract are not pure duplicates:
-the Contract is extensible and may perform effects. Pure source observations
-already share bounded synchronous read windows; those windows cannot certify
-undeclared transitive Nix inputs across callbacks.
-
-The two bounded detailed samples each evaluate 327 files. This is evidence of
-repeated evaluation for those samples, not a measured file count for all
-eighteen queries. This audit removes no query by assuming an unobserved file
-closure or treating store availability as evaluation-cache evidence.
-
-*** Native evaluation-cache qualification
-
-=t/nix-evaluation-cache-test.ss= uses the existing native Case macro, std/test
-and std/run-process. It invokes the installed Nix, without providers, external
-flake inputs, package builds, a new evaluator service or a Scheme result cache.
-Each operation starts a fresh process; a native =builtins.trace= in the imported
-value distinguishes actual evaluation from reuse. The fixture supplies these
-equivalent output forms:
-
-#+begin_src nix
-{
-  outputs = { self }: {
-    cached = import ./value.nix;
-    applied = args: import ./value.nix;
-    package = builtins.derivation {
-      name = "core-eval-cache";
-      system = "aarch64-darwin";
-      builder = "/bin/sh";
-      value = import ./value.nix;
-    };
-  };
-}
-#+end_src
-
-On installed Nix 2.34.4+1, repeated =nix eval --raw= of =cached= still emits the
-body trace. Repeated =--apply= of =applied= also emits it. In contrast, repeated
-=nix derivation show= of =package= omits the trace on its warm call; disabling
-the native evaluation cache restores it. Changing =value.nix= invalidates that
-reuse: the next derivation query emits the trace, then its warm successor does
-not. These assertions distinguish a native derived-path cache hit from a fast
-process or registered store object. No derivation output is realized.
-
-The initial experiment expected scalar =nix eval= to reuse evaluation and
-failed. The positive derived-path control corrects that hypothesis rather than
-declaring every flake command cached. The existing NixFlakeSource uses =nix
-eval=, including =--apply= for arguments; simply switching the AWS command to
-that entry would therefore not establish reuse. General flake-cache documentation
-does not establish the behavior of each CLI consumer.
-
-The AWS expression currently imports =<nixpkgs>= and receives mutable catalog,
-collector and selection paths. A final derivation published as a pure flake
-attribute could use Nix's own cache, but all effective inputs must first belong
-to its immutable input closure. Replacing mutable paths by string arguments,
-adding =--impure=, or snapshotting only Scheme's declared observations would not
-prove this closure. Existing tests intentionally change undeclared transitive
-and optional files; those refusals must survive any future adapter.
-
-Native derived-path caching can reduce reevaluation while retaining a fresh
-process at each effect boundary. It does not by itself remove process startup.
-Multiple independent installables could share one native command at one such
-boundary, but this AWS selection has one provider-artifact request: its
-eighteen time-separated checks cannot be batched as independent attributes.
-No persistent evaluator or new caching protocol is introduced here. The native
-cache route is qualified only by the small fixture; a closed AWS publication
-and its full invalidation qualification remain unfinished.
-
-The unchanged, observation-enabled three-owner Case was requalified after this
-audit: natural exit zero, 55077 milliseconds for the aggregate body, 31390
-milliseconds through AWS publication completion, seven MODULE-OK markers,
-two HARNESS-OK markers and two final OK markers, with no native error/overflow
-markers. Its eighteen derivation queries total 10979 milliseconds; all twenty-two
-Nix process spans total 12842 milliseconds. The original Case/worker limits,
-Schema transition, stale evidence refusal, retained previous value and fixture
-cleanup assertions remain in force. This is a safety receipt, not a reduction
-in evaluation count or a resolution of the historical slow run.
-
-*** AWS final-derivation publication
-
-The implementation now connects the existing NixFlakeSource and OpenTofu Build
-publication. A zero-argument Flake Source consumes a *package* attribute through
-=nix path-info --derivation=; parameterized function exports retain =nix eval
---apply=. The former uses Nix's native derived-path cursor and prints the
-derivation identity without realizing its outputs. Realization remains the
-existing, explicit =nix-store --realise= operation. There is no Scheme result
-cache, new evaluator service, alternate Graph or alternate publication protocol.
-
-The maintained OpenTofu configuration may name =selection-input: 'selection=.
-Its existing Build projection then binds the already-generated directory
-containing =selection.json= as an explicit, non-flake data input. It does not
-serialize the demand into =--apply=. A NixFlakeSource retains these overrides in
-its ordinary =inputs= object, and its generated guard preserves the same input
-names and paths. Input paths are normalized without trailing directory
-separators: otherwise =path:/input= and =path:/input/= can produce different
-native cache identities for identical bytes. This was observed and repaired in
-the public Source/serialized-guard control.
-
-#+begin_src scheme
-;; Maintainer-side configuration; ordinary AWS users still only change values.
-(.def (Source @ NixFlakeSource.)
-  reference: package-reference
-  attribute: "packages.aarch64-darwin.default")
-(.def (Packages @ (.get OpenTofuScope. config))
-  source: Source
-  selection-input: 'selection)
-#+end_src
-
-The AWS integration publishes a bounded local Nix tree containing its catalog,
-version, provider-package definition, Schema producer and artifact collector.
-All imports inside that tree are relative. The existing immutable store-backed
-package set is resolved once during fixture setup and recorded as a locked
-non-flake input. Only the explicit selected demand is overridden during queries;
-no =<nixpkgs>= lookup or =--impure= evaluation occurs in the final derivation.
-The native lock is created once during setup, not silently rewritten by guards.
-Original maintained files copied into that publication also retain their Core
-source observations. This is an explicit test publication closure, not a claim
-that arbitrary mutable Nix expressions can be closed automatically.
-
-#+begin_src nix
-# Shape of the maintained final-package export; inputs are locked at publication.
-outputs = { self, nixpkgs, selection }:
-let
-  pkgs = import nixpkgs { system = "aarch64-darwin"; };
-  artifacts = import ./selected-provider-artifacts-flake.nix {
-    inherit pkgs;
-    schemas = import ./providers.nix { inherit pkgs; };
-  };
-in {
-  packages.aarch64-darwin.default = artifacts {
-    selection = builtins.readFile (selection + "/selection.json");
-  };
-}
-#+end_src
-
-Nix hashes the published root and explicit data input on every guard invocation.
-An unchanged fingerprint can reuse native evaluation; a changed transitive file
-or selected demand produces a different fingerprint. Core still checks its
-observed source bytes before and after effects, and compares the freshly
-obtained derivation identity with the prepared identity. Configuration admission
-does not reuse evidence simply because Nix's evaluation cache hits.
-
-The original AWS Case additionally creates an undeclared optional
-=profile-options.nix= inside the published tree, changing the final package's
-name. Its package-current guard must reject the old identity even though that
-file was absent from Scheme's observation list. Removing it restores the
-original package identity. The file is a negative-test injection; the
-=aws-final-package-evaluated= native trace is a test probe identifying actual
-evaluation, not a production policy or a timing-based cache claim. Existing
-Schema replacement, Contract/Context faults, old-evidence refusal,
-previous-value preservation and cleanup assertions remain unchanged.
-
-The first aggregate attempt at this revision failed the original 60-second
-Case watchdog during the parent Graph's native source import, before launching
-the AWS worker or making a Nix query. Its failure is retained; it cannot qualify
-the new AWS path or be attributed to Nix evaluation. Focused native controls
-have qualified the public Source, serialized input binding, external transitive
-invalidation and unchanged lock bytes after path normalization. Aggregate
-qualification and actual AWS evaluation/read counts must be recorded separately.
-
-The focused native control also adds an unrelated, unlocked input while retaining
-the explicit selection override. Nix rejects that query under
-=--no-update-lock-file= and leaves the lock unchanged. Explicit demand overrides
-therefore do not authorize unrelated dependency changes in this tested version.
-A subsequent aggregate attempt exposed a missing =pregexp-match= import in the
-new OpenTofu configuration check; the import now uses =:std/text/pregexp=.
-The next attempt reaches worker launch at 49.296 seconds but exhausts the
-unchanged parent Case deadline before AWS starts. Neither failure supplies AWS
-cache-hit, Schema-transition or end-to-end performance acceptance evidence.
-
-*** Progress-aware execution after garbage collection
-
-The user subsequently reported a Nix garbage collection. Previous receipts of
-available provider outputs do not establish availability after that collection.
-Native evaluation-cache reuse, derivation registration, output availability and
-realization progress are separate observations. A new realization or substitution
-after GC is not evidence that native evaluation caching failed.
-
-The current implementation has three elapsed-time ceilings: the Case watchdog,
-TestingScript's Ops process timeout derived from the Case duration, and the
-outer focused-test watchdog. Neither the Case nor Ops currently implements an
-inactivity timeout. A process making genuine progress can therefore be killed
-at 60 seconds. This is an execution-policy gap, not a reason to discard source
-or admission checks, or to report an interrupted integration as successful.
-
-The required distinction is between an explicit total resource budget and a
-no-progress deadline. The latter must follow bounded native activity evidence:
-advancing transfer/build counters, completed dependencies, and completed
-evaluation or publication stages. Arbitrary output, repeated diagnostics,
-unchanged progress counters and synthetic heartbeats must not renew it.
-Silent evaluation is not automatically a deadlock; unsupported progress
-observation must remain explicit rather than inventing activity. Observation
-formatting (=emit?=) must not switch execution safety on or off.
-
-This policy is implemented in the existing Ops execution and testing Case mechanisms,
-with native Nix activity supplied at the process boundary. It must cover the
-parent waiting for the child as well as the child, preserve process-group
-termination and fixture cleanup, and retain a finite overall bound. Merely
-raising the 60-second constant, disabling the watchdog, or changing only the
-inner Ops timeout would not implement these semantics.
-
-The shared Scheme policy now declares a 60-second inactivity deadline and a
-600-second finite total. Case memory sampling also checks inactivity, while
-Ops owns external process supervision. TestingScript receives both limits from
-the Case Profile; the Just recipe reads the shared total for its outer ceiling.
-Nested spans receive the same advancing events. Monotonic, bounded child
-records bridge genuine work into the supervising Ops span independently of
-=emit?=. Completed source imports also advance liveness; repeated source reads
-and guard traversals do not count as new completed imports. The outer ceiling
-includes native import time but does not yet detect pre-Case import inactivity.
-
-=t/execution-progress-test.ss= passes its native controls: progress keeps the
-parent Case and child Ops alive beyond the idle interval; repeated messages,
-replayed counters and changing expected amounts do not; a late event cannot
-revive an expired span; the total cannot be renewed; emission-disabled Cases
-still reject inactivity; and cancellation removes owned descendants. These
-small protocol controls inject Nix-shaped activity records and are not real
-downloads. The initial failed control exposed an interrupt/join deadlock during
-unwinding; the fix terminates the sampler just as the existing Case watchdog
-does. The failed receipt remains a failure, not acceptance evidence.
-
-The existing Ops process-script regression also passes, preserving exact
-unterminated stdout, argument/environment boundaries, descendant cancellation,
-and the existing timeout receipt behavior with =check-status: #f=. Only GNU
-timeout produces that process-total exit code; the new Ops sampler handles
-inactivity instead of racing it with another total exception.
-
-The first AWS run under this policy reaches closure publication and package-set
-resolution, then hits inactivity in native =flake lock=. This is not a total-
-duration rejection or successful AWS acceptance. Lock setup now uses the same
-Ops supervision and forwards native activity; talkative native activity output
-is enabled without enabling debug dumps on every query. The focused Nix cache
-controls still pass after the Ops integration. AWS rebuilding, Schema change,
-stale-evidence rejection and final cleanup remain a separate aggregate gate.
-
-The Nix command's native semantics are documented in
-[[https://nix.dev/manual/nix/2.34/command-ref/new-cli/nix3-path-info.html][nix path-info]],
-including =--derivation=, =--override-input= and =--no-update-lock-file=. The
-cache-hit and invalidation claims above depend on native Scheme controls, not
-on assuming that every Flake command benefits from the cache.
-
-*** Diagnostic boundary
-
-The existing test adapter gives detailed observation a fresh four-process
-logging allowance per Case. Nix consumes it only for fixed
-=--log-format internal-json --debug= flags. The semantic argv passed to existing
-observers, commands, currentness checks, process counts and result validation
-stay unchanged. There is no extra cache probe inside the Case, environment
-probe, subprocess launcher, upstream patch or Scheme evaluation-result cache.
-Ordinary observation has no such diagnostic flags; disabled observation does
-not allocate the allowance. Native controls check scope restoration, renewed
-allowances, exhaustion without extra processes, and zero domain MOP reads.
-
-Native diagnostics distinguish derivation queries, store queries, realization
-and registration; they also retain Nix's own lock/goal messages in the local
-Ops log. Raw JSON/logs are not versioned. Their output has a cost, so these
-measurements are diagnostic receipts, not an uninstrumented benchmark.
-
-The recorded historical time window was also queried for retained system
-events naming Nix executables or store paths. It provides no attributable Nix
-wait record. Unrelated SQLite messages from =syspolicyd= are not evidence of
-a Nix security-assessment delay. No system daemon, trust policy, timeout or
-heap allowance was changed. A reproduced slow call with these native activity
-records is still required to close the 24.195-second root cause.
-
-** Historical one-GiB boundary
-
-The [[file:../13-module-loading/13.15-import-and-source-guard-correspondence.org::#matched-source-revisions-and-test-observation][matched source-only comparison]] qualifies the current dependency boundary:
-=79880413= and =fdeadfa40= both overflow with the same Core snapshot and
-unchanged limits. The dependency lock now names =fdeadfa40=; the older
-compiled-library success below is historical and does not qualify that update.
-The shared test-macro observation dependency was narrowed, but that one-GiB
-source-only original Ops endpoint did not pass its complete Schema transition.
-
-Private reader expansion lifetime is now qualified separately from that gate.
-Exact generated-wrapper ownership, phase-zero body/program identity, successful
-evaluation and a successful post-source guard precede release of a disposable
-expanded body. Macro bindings, runtime values and canonical SDK state remain.
-The source-only paired-body experiment reduces first-Graph last-GC live bytes
-from =849398152= to =760877856=, but still overflows during second-epoch
-Funflow publication. It therefore does not qualify fresh Schema publication or
-the complete original Ops endpoint at one GiB. The detailed lifetime rule and rejected
-cleanup experiments are recorded in the matched-source comparison above.
-
-The [[file:../13-module-loading/13.15-import-and-source-guard-correspondence.org::#post-clos-source-graph-reuse-and-aws-acceptance][post-CLOS source Graph reuse record]] contains the subsequent passing original
-Ops endpoint on the locked dependency, the query/enrollment boundary and the
-separate unsuccessful fully source-loaded latest-dependency candidate. The
-timeout observations below are historical failures, not the current acceptance
-status for that locked environment.
-
-* Question and executed workload
-
-Why does the init-owned AWS integration exceed its unchanged 60-second Ops
-deadline when both provider packages already exist in the Nix store?
-
-The subject is [[file:../../../t/Scenarios/aws/context-publication-test.ss][the Core qualification over maintained AWS publication]], selected through root
-=init.Scenarios=. It retains real AWS 5.99.0 and 5.100.0 packages, public value
-Contracts, contextual child evidence, publication and failure retention. The
-[[file:../../../t/Scenarios/aws/fixtures.ss][private fixture]] supplies version-switching Nix inputs and the ordinary
-publication-reader customization hook. It is not a second Loader or runner.
-
-The qualification has since moved out of the AWS module's tests: Core owns the
-Schema/Contract/Context fault matrix. The init-owned =tests.qualification=
-projection discovers and guards that source automatically; AWS authors retain
-only their atomic tests.
-Historical timing and failure records below describe the workload at the time
-and are not rewritten as measurements of this ownership change.
-
-The phase callbacks divide each version into source-context creation, selected
-build Graph preparation, package realization and realized-scope association.
-Existing Nix completion observers measure actual external commands. Existing
-source observers count reads, requests and actual publication-guard runs by
-origin. Publication preparation and publication execution are measured separately.
-The latter includes value admission, Context checks and evidence binding; its
-whole duration must not be labelled pure Schema-validation CPU time.
-
-* Observations before the final eligibility reduction
-
-The first instrumented run expired before the second version. Initial Graph
-preparation read source files 9,855 times. Initial publication association read
-them 5,813 times, including 32 repeated reads of several SDK sources. This is
-real source work in addition to Nix work, not evidence that Nix rebuilt providers.
-
-A later instrumented run reached the second version and child publication but
-still exceeded the Ops deadline. Its second Graph preparation took about 4.0
-seconds and read sources 9,531 times; package preparation/realization took about
-6.0 seconds; publication association took about 1.9 seconds. Child publication
-completed at about 52.8 seconds from the fixture body start, before the final
-negative controls finished. Ops also accounts for the child's import time before
-that body timestamp. Body completion markers alone cannot qualify its deadline.
-
-Nix durations varied materially between runs. Concurrent source compilation and
-other focused tests were observed on the host. Keep deterministic work counts
-separate from wall-clock observations; these runs do not establish a general
-startup or end-to-end speedup.
-
-* Changes with bounded reuse
-
-1. Contribution-index preparation combines adjacent selection-source and
-   selected-Graph source guards in the existing synchronous read window. It ends
-   that window before route indexing can demand author declarations. The measured
-   publication association drops from 5,813 to 5,637 source reads in this control.
-2. Nix's prepared publication checks whether artifact realization is already
-   cached. Cold realization keeps its source pre/post checks. Warm currentness
-   retains a fresh Nix identity query and its source pre/post checks, omitting
-   only the redundant guard around a cached artifact read.
-3. Linking and source preparation use the private publication lookup immediately
-   after eligibility admission. Only private hash operations intervene; the
-   lookup no longer repeats that same eligibility guard. Publication reading,
-   Contract execution and scope factories retain their post-effect checks.
-   Dynamic eligibility callbacks receive an explicit post-policy source check
-   before publication initialization.
-4. Initial expression construction first performs a readonly Nix evaluation and
-   asks =nix-store --check-validity= about that exact drvPath. A valid store entry
-   avoids writable registration. A miss uses the original registration path;
-   when both evaluations return paths, disagreement refuses construction. A
-   failed optional lookup is not admission evidence. Currentness queries retain
-   strict failure and never fall back to registration. Flake evaluation keeps
-   its existing implementation.
-
-These are local changes to existing owners, not a generation-wide success cache.
-The measured source-read controls after the eligibility change are:
-
-| Interval | Before | After |
-|----------+--------+-------|
-| First selected build Graph | 9,855 | 8,799 |
-| Second selected build Graph | 9,531 | 8,475 |
-| Publication association | 5,813 | 4,909 |
-
-These counts cover the observed intervals, not all filesystem operations. They
-establish less duplicate traversal; they do not establish an end-to-end latency
-improvement under the observed CPU contention.
-
-The selected Graph, actual publication objects and native receiver caches remain
-authoritative. Replacing external version input still creates a fresh selection;
-declaration expansion and initialization results are not cached across that effect.
-
-An attempted blanket addition of nested caches to prepared-source guards did
-not reduce the 9,855 initial reads. It was removed rather than presented as an
-optimization. Existing callers already provide those pure observation windows.
-
-* Checks which remain necessary
-
-Readonly Nix queries still re-evaluate the expression and its arguments. A
-completed provider build does not prove that its current selection is unchanged.
-[[file:../../../t/nix-derivation-query-test.ss][The native transitive-input control]] changes an undeclared imported Nix file
-and adds a previously absent file; source observations alone cannot replace that
-query. No process result is reused across arbitrary validators or Context policy.
-
-The store lookup is not a new evaluator cache: Nix re-evaluates transitive inputs
-before checking store validity. A local pathname existence test would not suffice.
-The configured store executable is reused for both validity and realization;
-users supply no new field. Process metrics distinguish readonly evaluations,
-store-validity checks, writable registration and realization. A cold construction
-may add one registration evaluation; it is separately counted and bounded, never
-hidden inside the warm query budget.
-
-Likewise, every failed publication must retain the previous object. Source or
-Schema changes, a copied same-name descriptor, stale evidence, invalid fields
-and a modified responsibility map remain refusals. None of these assertions is
-removed or replaced by a timing assertion.
-
-* Focused controls
-
-- [[file:../../../t/module-configuration-source-test.ss][Configuration-source controls]] retain initialization-time source mutation
-  refusal and independent currentness checks.
-- [[file:../../../t/module-nix-publication-test.ss][Nix publication controls]] exercise the real prepared-publication methods.
-  Inert command probes check cold/warm source-guard counts, one realization,
-  a new identity query on each check and post-query mutation refusal. Those
-  probes are not evidence of Nix package performance.
-- [[file:../../../t/module-selected-graph-test.ss][Selected-Graph controls]] retain dependency/Feature admission and add refusal
-  when dynamic eligibility changes source state before publication reading.
-- [[file:../../../t/nix-derivation-query-test.ss][Native Nix controls]] check actual cold registration, warm store validity without
-  writable registration, undeclared transitive/negative-input changes, query-mode
-  failure and a transitive change between lookup and registration. No provider
-  acquisition is needed for this narrow derivation control.
-
-The real integration verdict is recorded after the final focused run. The
-60-second Ops limit, 120-second outer entry and one-GiB child heap fence remain
-unchanged. No full repository build, runtime Loader or upstream patch is involved.
-
-* Qualification record
-
-The configuration-source, selected-Graph, Nix phase-publication and actual Nix
-derivation controls passed through =just test-file= with MODULE-OK, HARNESS-OK,
-final OK and natural exit zero. The native derivation control also checks that
-a readonly guard does not force an unused store/realization capability.
-
-The later full AWS attempt terminated with status 137 during source Graph
-preparation, before executing the new Nix store-reuse path. Both its child and
-outer entry failed; this is not evidence of a completed 60-second integration.
-Separate host samples showed 0% idle CPU, 55--64 running processes and heavy
-compression, with concurrent compiler activity. Available/reclaimable-memory
-figures alone did not characterize that contention. Do not label signal 9 as a
-proven heap overflow, successful timeout correction or Nix failure.
-
-The original AWS Schema-update, stale-evidence, child-Context and previous-value
-assertions remain unchanged. The final init-owned endpoint still needs a clean
-fixed-budget completion after resource contention subsides. Standalone Nix tests
-qualify the changed cache protocol; they do not replace that endpoint gate.
-
-A subsequent endpoint run reached the real warm-store path: readonly derivation
-evaluation, native store-validity checking and provider realization completed,
-without writable registration in that interval. It then refused with
-=compiler tool source changed; use a fresh reader= for =gerbil.pkg=, which was
-modified concurrently. This run exited nonzero with ERROR CASE/ERROR HARNESS;
-MODULE-OK/HARNESS-OK text in the same transcript does not make it a pass. It
-qualifies neither the complete Schema transition nor a clean performance run.
-An updated dependency is allowed: create a fresh reader and Graph against the
-new locked revision. Refusal concerns reuse of the old observations, not the
-legitimacy of upgrading POO. Bypassing that refusal would invalidate the experiment.
-
-The next run used the current lock,
-=gerbil-poo@ece6f609357ea918038090559ac051a8d9f3e52f=, with isolated compiled
-dependency artifacts checked against their source manifest and Core read from
-source. It retained the original limits. Its parent endpoint took approximately
-77 seconds before starting the integration subprocess. Inside that subprocess,
-the first Graph completed at about 17.0 seconds, packages at 26.3 seconds and
-parent publication at 35.8 seconds. Same-name descriptor rejection completed;
-Context checks followed, then Ops refused with status 124 before the second
-Schema selection. The outer entry also reached its 120-second limit. This is
-still an incomplete endpoint qualification, not a dependency-update refusal or
-evidence that provider acquisition rebuilt a cached package.
-
-The real interval again used readonly evaluation and native store validity,
-with no writable registration. First-Graph source reads were 8,717 under this
-revision; that source set differs from the earlier 26b4b58 control, so these
-numbers must not be combined into an additional optimization claim. The current
-revision's module-window, selected-Graph and real Nix derivation controls
-completed serially through =just test-file= with MODULE-OK, HARNESS-OK, final OK
-and natural exit zero, without ERROR CASE/CHECK/HARNESS or heap/stack overflow
-markers. The Nix controls retain transitive-input change rejection and the
-lookup/registration race refusal. These narrow successes do not close the AWS
-endpoint gate; its failed run is retained locally without committing logs.
-
-* Startup attribution and duplicate source expansion
-
-The opt-in [[file:../../../t/qualification/aws-startup-observation.ss][startup probe]] wraps the original SDK module-import,
-module-eval, expression-compile and expression-eval parameters. It restores them
-before executing the test. It does not replace expansion, module initialization
-or the native test lifecycle. Rows contain call count, inclusive seconds and
-self seconds after subtracting nested observed callbacks. Repeated import calls
-are not automatically repeated expansions; expression compilation is not a
-count of macro transformations.
-
-One observed run separated the previously aggregated startup interval:
-
-| Boundary | Observed seconds |
-|----------+------------------|
-| Instrumented imports, including init syntax | 26.46 |
-| First namespace access after test entry | 6.89 |
-| Selected test-spec discovery | 25.13 |
-| Remaining test/execution association | 0.89 |
-
-The source import of =module-system/source/link.ss= accounted for 15.78 seconds
-inclusive; =module-system/authoring/admission.ss= accounted for 10.10 seconds
-inclusive. These overlap and must not be added. The largest import self-time
-rows included =poo-clos/objects.ss= (2.28 seconds), =poo-clos/classes.ss=
-(1.57), =module-system/source/selection.ss= (1.46), =types.ss= (1.14) and
-=module-system/authoring/admission.ss= (1.12). The probe also observed eleven
-expression-compile callbacks in =core/poo-clos/syntax= at phase one, totalling
-about 0.25 seconds. This is not evidence that all remaining import time is
-macro CPU time. A short process-stack sample separately showed expander,
-allocation, MOP and filesystem activity, rather than a wait on Nix alone.
-
-Test-spec discovery also imported additional role dependencies. Reading an
-interface currently entails native expansion of its adjacent role imports;
-not invoking =core.link= does not by itself make this declaration work cheap.
-The root's selected Graph includes all explicitly selected roots, whereas the
-test projection filters execution owners. Changing that contract to silently
-drop selected roots is not an acceptable performance repair.
-
-An initial hypothesis concerned importing a symbolic library before redirecting
-its source to a private wrapper. The SDK's =core-expand-import%= actually resolves
-ordinary library names to filesystem paths before invoking its import callback;
-source-path imports already take the confined route first. An experimental
-early-symbol-resolution branch recorded zero redirects in AWS and was removed.
-This was not a demonstrated AWS duplication bug or performance repair. Compiled
-libraries retain their original SDK import closure. No result of a macro,
-initializer, validator or package effect is reused as currentness evidence.
-
-[[file:../../../t/module-publication-test.ss][The publication control]] uses a real phase-one initializer that refuses a
-second expansion. The symbolic import must use its already admitted private
-role once; an independent canonical SDK import is the negative control. This
-protects confinement but does not establish that the removed branch fixed it. Existing
-fresh-session, source-mutation, confinement and deferred-export controls remain
-in the same native suite. The initial test setup incorrectly treated SDK
-=load-path= as a parameter; it was corrected to the SDK's =add-load-path!= and
-=set-load-path!= functions with unconditional cleanup, without weakening the
-initializer assertion.
-
-This repair addresses one measured mechanism, not the complete laziness gap.
-Cold infrastructure imports, eager role expansion during declaration discovery
-and repeated source guards still require separate attribution. The instrumented
-pre-repair endpoint remained unsuccessful (outer status 124, child status 137
-during first-Graph preparation); a sample or partial phase log is not a passing
-AWS Schema transition.
-
-** Reusing dependency structure without reusing admission
-
-Compiler-tool checks also traversed the same SDK context import DAG on every
-reference. The reader now indexes the prepared tool-input references for each
-demanded context within that reader's fixed SDK snapshot. Every request still
-checks those inputs' current source bytes and performs the original visitor;
-no successful guard result is cached. Reload requests still refuse. This index
-does not outlive its reader, does not contain contribution scopes or initialized
-values, and is not a second selected Graph.
-
-The storage bound is the sum of the demanded tool closures, not a claim of
-constant memory for arbitrary SDK graphs. It retains references to existing
-prepared inputs rather than copying source text. The premise is the same
-immutable, fully expanded SDK context used by the existing tool-source cache;
-arbitrary mutation of SDK expander internals is not qualified by this control.
-
-The publication suite now verifies the phase-one negative control and that
-repeated dependency requests exceed actual structure walks. It passed with
-natural exit zero. Configuration-source controls also passed, including source
-mutation during initialization, fresh private scopes and foreign same-identity
-source refusal. Thus structural reuse did not replace the pre/post authority
-checks in those controls.
-
-In the instrumented root test-spec interval, 287 dependency requests required 38
-actual SDK closure walks; it still performed 6,661 observed source reads and
-351 source-check windows. This is a work-count result, not a complete endpoint
-speedup. Per-publication observations attributed approximately 8.40 seconds to
-Funflow, 3.91 to OpenTofu and 3.30 to JsonSchema; Ops, Nix, Null and AWS-validation
-were smaller, and AWS itself was about 0.15 seconds. These rows identify where
-declaration work occurs; they do not imply those scopes were linked or that the
-timings are comparable across hosts.
-
-This exposes a remaining architectural boundary: =init.test-spec= filters test
-execution, but resolving its selected Graph still expands role bodies needed
-by selected publications. Funflow's objects role imports its control-plane,
-store and Graph-projection implementations; OpenTofu's types construct several
-Schema adapters at module evaluation. Deferring domain exports alone therefore
-does not establish cheap declaration discovery. An eventual compiled declaration
-reuse must bind code to its complete source/compiler/dependency inputs and must
-not reuse macro side effects or initializer results. This work does not add
-that persistent cache or a runtime Loader, and does not conceal this cost by
-dropping selected init roots or excluding assertions.
-
-** Final focused outcome and the remaining atomicity gap
-
-The structural-index endpoint reached first-Graph completion at about 13.59
-seconds into the integration body, parent publication at 31.13 seconds, Context
-refusal at 34.40 seconds and old-source refusal at 34.43 seconds. It entered
-second-version declarations before Ops expired with status 124. The body clock
-excludes child imports. Its first Graph made 286 tool-dependency requests but
-walked 39 actual closures. Source checks were retained: 8,717 observed reads in
-that interval. These are partial outcomes, not a passing Schema-upgrade gate.
-
-Funflow's =objects.ss= imported the aggregate =control-plane/api.ss= while
-publishing only eleven Flow combinators from it. That aggregate also imported
-Agent harnesses and syntax facades not referenced by this role. The role now
-imports those combinators directly from =control-plane/flow.ss=. Job execution
-keeps its existing statically declared dependencies; no dynamic import hides
-runtime files from the build Graph. The focused Funflow Job suite passed with
-natural exit zero. The final publication suite passed after removing the
-unexercised symbol-resolution experiment, including its macro-initialization
-negative control and structure-walk assertions.
-
-A final run of the same AWS endpoint with =CORE_AWS_TRACE= unset also failed:
-the Ops child reported status 124 and the outer Just entry reached status 124.
-Therefore diagnostic counters are not a sufficient explanation for the timeout.
-All Schema-upgrade, stale-evidence and previous-value assertions remain; the
-final run does not qualify their complete execution. No timeout or heap policy
-was widened, and no failed expectation was changed to acceptance.
-
-The coupling diagnosed before the test-source split was explicit in these owners:
-
-- =building/test-projection.ss:module-test-projection= immediately demands
-  =selection.selected-graph= and its =module-order=, even for one requested
-  test owner. =building/interface.ss:test-source= calls it before returning
-  the module's test source. Thus file discovery already resolves publications
-  for other selected roots; filtering test paths is too late to avoid this work.
-- =source/declaration.ss= and =source/preparation.ss= attach the adjacent role
-  imports to publication frames. Module scope linking stays deferred, while
-  imported role bodies still require native expansion and initialization.
-- =source/reader.ss:check-current!= checks the growing reader observation set.
-  Separate effect boundaries can repeatedly check prefixes of this set. If
-  each publication adds inputs, that traversal can grow quadratically in the
-  number of selected publications; this is an inference from the algorithm,
-  not a measured thousand-module benchmark. The structural index above removes
-  repeated SDK graph discovery, not this source-authority cost.
-
-The bounded acceptance target was to separate test-source admission from
-full configuration-Graph admission while retaining one selection and its lazy
-Graph identity. A one-owner test-source request must not expand unrelated
-selected owners' role bodies. It must still observe its native test dependency
-closure, reject changed role/test inputs, and retain execution cleanup. Requests
-that actually consume a complete configuration Graph must continue to perform
-its complete dependency/conflict admission. This requires an explicit guard
-boundary, not removal of the Graph getter or a second test tree.
-
-Likewise, shortening reader guards requires either exact demanded-dependency
-checks plus a complete final Graph check, or a proven immutable source
-capability. Caching an entire publication result, trusting timestamps, or
-assuming arbitrary Scheme initializers are pure would not establish that
-boundary. No such shortcut or runtime Loader was introduced in this repair.
-
-* Test-source admission split
-
-=module-test-projection= now obtains requested owners from the existing init
-selection, rather than forcing =selected-graph.module-order=. Each requested
-owner reuses =selection.prepare-publication=, including its existing publication
-cache and SDK-observed private/compiler source dependencies. This is still real
-source preparation: selected role expansion is not claimed to be free or pure.
-Other init roots are not prepared merely to discover one owner's test files.
-No business scope is linked and no second resolver or dependency tree is built.
-
-The projection's =selected-graph= slot remains lazy and delegates to the same
-selection. Explicit demand still performs complete Module/Feature dependency,
-conflict and ordering admission. A missing required module may therefore leave
-test-source discovery valid while making configuration Graph admission fail.
-Test enumeration follows requested owner order, or init root order without a
-filter, then filename; it is not the configuration/task execution order.
-
-=init.test-spec owners= checks only that acquired test projection. It no longer
-invokes the aggregate =init.test-current!= traversal of previously acquired
-suites. The aggregate entry remains available explicitly. Existing source guards
-continue to check actual bytes; package-effect callbacks remain outside the
-shared pure-read window, followed by fresh checks. The shared reader retains
-all observations already demanded within this source epoch, so a previously
-demanded dependency change can still invalidate the epoch.
-
-The focused native =t/module-testing-source-admission-test.ss= gate passed with
-natural exit zero and MODULE-OK/HARNESS-OK/final OK at the locked
-=gerbil-poo ece6f609357ea918038090559ac051a8d9f3e52f= revision. It verifies:
-
-- A broken /selected/ sibling is untouched by a one-owner source request; test
-  bodies that raise during macro expansion or evaluation remain untouched too.
-- The test projection and selection retain cold Graph slots through repeated
-  source admission. Explicit Graph demand still rejects that broken sibling.
-- Changing the owner's SDK-observed private helper rejects old test admission.
-- Missing required Module policy is still rejected by full Graph admission.
-- On a valid selection, an explicitly demanded Graph is identical through the
-  test projection and the original selection.
-
-The initial run failed on the fixture's noncanonical macOS temporary path;
-the expectation now uses the same native path normalization as SourceRef.
-That failure was not a production admission failure. The successful gate does
-not establish a startup speedup or complete the AWS Schema-transition endpoint.
-The AWS endpoint no longer forces full root Graph identity just before running
-one module's tests; explicit identity coverage remains in the focused gate.
-Its Schema-upgrade, stale-evidence and failed-publication assertions are retained.
-
-This split does not claim automatic discovery of arbitrary test-only imports
-outside adjacent helpers and the publication reader's observed dependency
-closure. Runtime-generated imports and other dynamic test inputs still need
-their existing explicit source authority. Full dynamic test closure discovery
-is a separate boundary, not permission to cache across macro effects.
-
-** Qualification after the split
-
-The original =t/module-testing-test.ss= regression passed with natural exit zero,
-MODULE-OK, HARNESS-OK and final OK. This retains its package-effect source-mutation
-control, native fixture isolation/exception cleanup, test edits/additions and
-execution of the real JsonSchema, Funflow and AWS atomic suites.
-
-The traced =t/aws-context-publication-test.ss= endpoint remains failed. Its outer
-test returned 1 with an Ops child status of 137; no timeout or heap setting was
-increased. Before execution, only the AWS publication was prepared. Namespace
-acquisition took 3.40 seconds, followed by 2.32 seconds for the atomic test-source
-projection (987 actual reads, 1,125 read requests). These are one-run phase
-observations, not a controlled performance comparison or an end-to-end pass.
-
-The integration child explicitly requested its own complete build Graph. The
-last completed phase was that first Graph at 30.50 seconds of test-body time:
-8,492 actual reads, 12,236 requests, 424 pure observation windows, 280 compiler
-closure requests and 39 structural walks. OpenTofu publication expansion alone
-took 12.39 seconds. Reported heap size was near the existing 1 GiB fence, with
-about 589 MB live. There was no explicit heap-overflow diagnostic, so status 137
-does not prove an out-of-memory cause. No Nix/package phase had completed.
-
-Thus removing premature root-Graph admission fixes the tested atomicity defect,
-but does not qualify the full AWS Schema transition. All Schema-update,
-stale-evidence and previous-value preservation assertions remain unchanged;
-this run did not reach them. The remaining full-Graph preparation/expansion and
-guard cost must be addressed on its own authority boundary, without widening
-the deadline, dropping currentness checks, or caching initializer effects.
-
-** Subsequent native import and deadline diagnosis
-
-The follow-up qualification in
-[[file:../13-module-loading/13.15-import-and-source-guard-correspondence.org][Import and source-guard correspondence]]
-records actual SDK context identities, native import boundaries and refreshed
-source registrations. With the unchanged Ops deadline, GNU timeout explicitly
-reported TERM followed by KILL in the run returning 137. This identifies that
-run's termination mechanism; it does not establish an OOM kill.
-
-One retained bounded run completed both Graphs and the second provider package,
-then returned Ops status 124 before refreshed publication completed. Thus the
-remaining endpoint failure spans native expansion, source checks and package
-handoffs, rather than a Graph algorithm that never returns. Schema-transition
-acceptance remains incomplete; the linked record separates completed negative
-controls from assertions not reached before the deadline.
-
-The subsequent import/preparation changes and current failed endpoint are
-recorded in that follow-up document. Later runs did not reach all those phases;
-do not combine different attempts into one successful Schema transition.
+#+property: STATUS source-only-qualified-hotspot-open
+
+[[file:12.27-aws-schema-transition-costs/source-guards/39-init-demand-boundaries.org][Init import and namespace demand]] separates native infrastructure imports and
+Reader creation from namespace discovery, retaining one selection and the
+original source guards. Real declaration capacity remains a separate gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/38-live-witness-replay.org][Live witness replay in one native DFS]] removes repeated traversal of shared
+closed-call policy suffixes without changing open callback guards or retaining
+currentness results. The real thousand-declaration gate remains separate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/37-prototype-query-import-boundary.org][Prototype queries without Class construction]] removes an unused SDK import
+edge and records the real declaration memory/read comparison, deadline
+attribution and consumer/capacity qualifications.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/36-carrier-candidate-admission.org][EffectiveMethod candidate admission]] removes the duplicate closed-path carrier
+check at the real handoff; public hooks retain checked input and a checked
+return, with no validation cache.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/35-authoring-dispatch-work-and-open-returns.org][Authoring dispatch work and open returns]] separates nested CLOS policy-read
+deliveries from predicate execution and tests the return boundary after a
+public hook; thousand-declaration capacity remains open.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/34-authoring-construction-and-admission.org][Authoring construction and Interface admission]] prevents the default getter
+from capturing constructor validation receipts, while keeping the public
+validated constructor and per-Interface admission boundary.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/33-sdk-enrollment-and-declaration-budget.org][SDK enrollment and the real declaration budget]] separates import topology
+registration from fresh admission, removes repeated registration, and records
+why source-read bounds alone cannot establish thousand-module capacity.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/32-location-support-and-replay-cost.org][Candidate location support and native replay cost]] investigates the remaining
+metadata prefix independently of physical source reads, with separate native
+replay/compile/evaluation observation and cached-path support controls.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/31-staged-candidate-publications.org][Candidate publication support and complete Graph commit]] implements the
+approved candidate-local source boundary in the same reader and Graph, while
+retaining complete source and native evidence checks before visibility.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/30-reader-effect-support.org][Reader source closure versus ambient effect support]] audits the remaining
+entry/return prefix: an actual import closure does not certify arbitrary native
+initializers as confined. It separates the root-optimization premise from the
+existing quadratic implementation and records the real capacity gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/29-private-dependency-continuation.org][Private dependency continuation]] lowers the paired role-file recurrence
+to =4N^2 + 4N= and records an actual native read reduction, with full guards
+before the next opaque declaration or Feature operation.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/28-checked-publication-subject.org][Checked publication subject handoff]] makes owner checking and Graph
+consumption use the unified producer's exact normalized candidate once.
+It repairs a real raw/checked-object mismatch without removing open guards.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/27-metadata-to-admission.org][Metadata-to-admission audit]] separates completed source declarations, cold
+metadata checks and open Context obligations. Native negative controls retain
+the necessary tail guard; the measured remaining recurrence is unchanged.
+
+* Current status and evidence limits
+
+[[file:12.27-aws-schema-transition-costs/source-guards/26-closed-location-prefix.org][Closed location prefix]] implements the first paired native source operation:
+one authoring admission and one physical entry traversal, with complete
+metadata/ancestor support and conservative open-callback fallback. It records
+the actual sixteen/256 read reduction rather than only a cost recurrence.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/25-outer-stop-and-prefix-guard-cost.org][Outer stop cleanup and prefix guard cost]] repairs delivered-TERM fixture
+unwinding and identifies the accumulated-prefix guard recurrence. It keeps
+the 684-publication timeout as a failed capacity gate and distinguishes
+operation-support coverage proofs from unsafe removal of opaque guards.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/24-checked-role-receiver-lifetime.org][Role validation receiver lifetime]] follows original dependency suffixes into
+unreturned native checked receivers, retains transitive parent policy and
+records the next collected-byte comparison. It reuses public ObjectContract
+validation rather than weakening fields or clearing SDK bindings.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/23-evidence-read-ownership.org][Evidence read ownership]] follows the actual temporary authoring-Profile
+receipts into Graph dependencies, with a paired 256-declaration live-memory
+comparison and conservative open-callback fallback.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/22-reader-binding-ownership.org][Reader binding ownership]] records the real thousand-declaration capacity
+boundary, shared SDK prelude and original-token publication projection.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/21-owned-call-read-projection.org][Owned authoring-call read projection]] bounds the two maintained method
+bodies, promotes original external read tokens and keeps native replay for live
+escaped carriers. Unknown execution-state callbacks retain the complete trace.
+This is a Core-local retention projection, not an upstream collector patch or
+an unrestricted CLOS purity certificate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/20-semantic-reads-and-link-records.org][Semantic reads and link records]] keeps policy/Contract/source/Generic
+dependencies distinct from temporary carriers. Its normal live-Graph comparison
+does not clear caches; the measured contraction is small and native declaration
+capacity remains open. Quint mutation schedules and Lean completeness properties
+state the missing projection premises explicitly.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/19-clos-carrier-retention.org][POO/MOP/CLOS and retained call values]] separates reader binding roots, CLOS
+payloads and native read-record ownership. Native constant lexical slots keep
+the same semantic payloads; their use alone does not close the capacity gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/18-reader-retained-roots.org][Reader retained roots and Role value checks]] separates stable receipt identity,
+streamed private projections and public-library value checking from native
+declaration capacity, which remains an independent gate.
+
+This page is a read map. Detailed mechanisms and retained receipts live in the
+modules below; new experiments belong in their owning module, not at the end
+of this index. Historical timings qualify their recorded revisions and policy,
+not today's complete checkout or a general speedup.
+
+The observed source-only qualification uses gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b= and the unchanged 2 GiB heap fence.
+The same init-owned tests object selects JsonSchema, Funflow and AWS, with
+observation and progress-aware execution. Its retained passing aggregate has
+seven MODULE-OK, two HARNESS-OK and two final OK markers, natural exit zero,
+Schema updates, stale-evidence refusals, old-value preservation and cleanup.
+
+The earlier retained AWS work sample is 37785 physical reads, including 12852
+build-admit-before reads. [[file:12.27-aws-schema-transition-costs/source-guards/12-demanded-source-support.org][Demanded source support]] reduces each retained before
+pass from 167 to 153 files, with 84 passes unchanged. The
+[[file:12.27-aws-schema-transition-costs/source-guards/13-scale-and-model-correspondence.org][1000/10000-module controls and Quint/Lean correspondence]] qualify catalog,
+selected resolver and iterative closure behavior separately from native expansion.
+
+The preceding [[file:12.27-aws-schema-transition-costs/source-guards/10-operation-boundaries.org][operation-boundary composition]] removed 2505 before
+reads from the preceding 16533 subtotal by assigning each closed native boundary
+one check. It generalizes across the sequential package chain, retaining full
+entry/return guards around opaque callbacks. The new
+[[file:12.27-aws-schema-transition-costs/source-guards/11-graph-cost-and-ownership.org][Graph cost and ownership analysis]] separates this implemented composition law
+from finer dependency slicing and issued-code costs that remain open.
+
+The preceding source-only receipt had 43981 physical reads and 16533 before
+reads. The
+[[file:12.27-aws-schema-transition-costs/source-guards/09-package-entry-prefix.org][package entry-prefix change]] removes 2672 before reads (16 traversals
+of 167 files) from the preceding 19205 subtotal. It factors a closed native
+function prefix; it neither skips custom callbacks nor shares bytes across Nix.
+
+The preceding source-only receipt had 46813 physical reads and 19205 before
+reads. The
+[[file:12.27-aws-schema-transition-costs/source-guards/07-route-free-index.org][route-free index change]] removes another 356 all-phase reads after the
+[[file:12.27-aws-schema-transition-costs/source-guards/06-context-source-entry.org][Context source-entry check]]. That route-free change did not reduce its
+before subtotal. Those two earlier changes added no public interface or cache.
+The subsequent [[file:12.27-aws-schema-transition-costs/source-guards/08-before-call-chain-audit.org][before-guard call-chain audit]] reproduced those historical counts,
+excluded path aliases and a SourceAdmission wrapper absent from AWS, and recorded
+the remaining open callback boundaries. It qualifies no additional reduction.
+The earlier Context continuation experiment was removed;
+its internal method is not a supported API. See the
+[[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][rejected experiment and design reflection]].
+
+The source-only qualification excludes the concurrent compiled-build-artifact
+issuance integration. It is not a claim that the complete working checkout or
+compiled-artifact path is qualified. No raw logs are stored in this document
+tree. There is no new cache, runner, public builder, upstream change, full
+build or pushed change associated with the rejected experiment.
+
+* Read by question
+
+| Question | Owning module |
+|----------+---------------|
+| Which repeated preparations are gone, and what retains native read dependencies? | [[file:12.27-aws-schema-transition-costs/source-guards/15-public-preparation-and-read-retention.org][Public-source uniqueness, native name refusal and read-token retention]] |
+| Which algorithm properties belong to Quint, Lean and thousand-scale Scheme checks? | [[file:12.27-aws-schema-transition-costs/source-guards/16-source-closure-algorithm.org][Demanded closure work, counterexamples and evidence responsibilities]] |
+| Does the actual SDK Context walker preserve postorder without recursive dependency depth? | [[file:12.27-aws-schema-transition-costs/source-guards/17-context-walk-frames.org][Explicit frames, native identity and callback-order controls]] |
+| Do 1000/10000 real source declarations expand within the existing limits? | [[file:12.27-aws-schema-transition-costs/source-guards/14-declaration-capacity.org][Native declaration gates, retained capacity failures and SDK closure cut]] |
+| Which actual dependencies replace the complete tool catalog? | [[file:12.27-aws-schema-transition-costs/source-guards/12-demanded-source-support.org][Demanded support, deferred Build and source ownership]] |
+| What has been tested at 1000/10000 Modules, and what do Quint/Lean prove? | [[file:12.27-aws-schema-transition-costs/source-guards/13-scale-and-model-correspondence.org][Scale controls and model correspondence]] |
+| How were root and request reads attributed? | [[file:12.27-aws-schema-transition-costs/source-guards/04-remaining-guards.org][Root, request and callback guards]] |
+| How are checked returns and subsequent entries composed? | [[file:12.27-aws-schema-transition-costs/source-guards/10-operation-boundaries.org][One-call boundary normalization, opaque barriers and Lean correspondence]] |
+| What is the architectural cost problem beyond removing wrappers? | [[file:12.27-aws-schema-transition-costs/source-guards/11-graph-cost-and-ownership.org][Boundary ownership, dependency projection and issued code]] |
+| Which callback prefix actually reduced before reads? | [[file:12.27-aws-schema-transition-costs/source-guards/09-package-entry-prefix.org][Exact procedure binding, conservative fallback and measured reduction]] |
+| What did the preceding before-only rerun establish? | [[file:12.27-aws-schema-transition-costs/source-guards/08-before-call-chain-audit.org][Actual callbacks, path identities and unchanged counts]] |
+| Why does source collection not repeat full request admission? | [[file:12.27-aws-schema-transition-costs/source-guards/06-context-source-entry.org][Context source entry and complete admission]] |
+| What can a route-free index skip, and what must stay guarded? | [[file:12.27-aws-schema-transition-costs/source-guards/07-route-free-index.org][Cached metadata and the cold-handler boundary]] |
+| Which reductions actually changed physical reads? | [[file:12.27-aws-schema-transition-costs/source-guards/02-pure-stage-fusion.org][Qualified pure-stage fusion]], [[file:12.27-aws-schema-transition-costs/source-guards/03-publication-producer.org][publication-owned analysis]] |
+| Why do Nix hits and misses differ from output reuse? | [[file:12.27-aws-schema-transition-costs/nix/01-evaluation-cache.org][Evaluation cache]], [[file:12.27-aws-schema-transition-costs/nix/06-dependency-misses.org][dependency misses]] |
+| What happens after GC or during genuine build progress? | [[file:12.27-aws-schema-transition-costs/nix/03-progress-and-gc.org][Progress and GC recovery]] |
+| Does Source Builder differ from Building? | [[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][One Building chain and the rejected experiment]] |
+| What is the tested workload and admission boundary? | [[file:12.27-aws-schema-transition-costs/qualification/01-workload-and-controls.org][Workload and controls]] |
+
+* Nix evaluation and publication
+
+- [[file:12.27-aws-schema-transition-costs/nix/01-evaluation-cache.org][Evaluation cache and ownership boundaries]].
+- [[file:12.27-aws-schema-transition-costs/nix/02-final-publication.org][Final derivation publication]].
+- [[file:12.27-aws-schema-transition-costs/nix/03-progress-and-gc.org][Progress-aware execution and GC recovery]].
+- [[file:12.27-aws-schema-transition-costs/nix/04-input-identities.org][Input fingerprints and exact attribute selection]].
+- [[file:12.27-aws-schema-transition-costs/nix/05-cost-attribution.org][Retained 128837 ms cost attribution]].
+- [[file:12.27-aws-schema-transition-costs/nix/06-dependency-misses.org][Evaluation misses, dependency overlap and invalidation]].
+- [[file:12.27-aws-schema-transition-costs/nix/07-source-hash-reuse.org][Source-to-hash reuse in Nix]].
+- [[file:12.27-aws-schema-transition-costs/nix/08-remaining-costs.org][Remaining costs and diagnostic limits]].
+
+* Source guards and admission
+
+- [[file:12.27-aws-schema-transition-costs/source-guards/01-physical-reads.org][Physical read attribution and effect partitions]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/02-pure-stage-fusion.org][Qualified pure-stage fusion and matched controls]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/03-publication-producer.org][Publication-owned responsibility analysis]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/04-remaining-guards.org][Remaining guards, closed branches and observed reruns]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/05-context-assembly.org][One complete check at the Context assembly boundary]].
+
+* Workload and retained qualification
+
+- [[file:12.27-aws-schema-transition-costs/qualification/01-workload-and-controls.org][Workload, invariants and focused controls]].
+- [[file:12.27-aws-schema-transition-costs/qualification/02-historical-receipts.org][Historical one-GiB and early two-GiB receipts]].
+- [[file:12.27-aws-schema-transition-costs/qualification/03-startup-attribution.org][Startup attribution and duplicate source expansion]].
+- [[file:12.27-aws-schema-transition-costs/qualification/04-test-source-admission.org][Test-source and full configuration admission separation]].
+
+* Building design reflection
+
+[[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][Building ownership and rejected Context preparation experiment]] distinguishes
+one Graph/build integration from an unnecessary second builder. Fixture-only
+savings are not a real AWS performance improvement or a reason to expand the
+Core interface. The remaining hotspot is open.

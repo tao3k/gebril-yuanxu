@@ -7,8 +7,8 @@
 
 * Current package-binding audit
 
-[[file:12.27-aws-schema-transition-costs.org][AWS Schema transition costs]] separates selected-Graph source guards, native
-Nix store reuse, contextual admission and the unchanged init-owned Ops deadline.
+[[file:12.27-aws-schema-transition-costs.org][AWS Schema transition costs read map]] links focused modules for source guards,
+Nix reuse, contextual admission, progress-aware Ops execution and retained evidence.
 
 [[file:12.26-selected-packages-and-owned-aws-tests.org][Selected packages and init-owned AWS tests]] moves test ownership to the module's
 tests directory and connects AWS to the existing selected-package dependency scope.

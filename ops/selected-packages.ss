@@ -8,6 +8,7 @@
         (only-in :core/module-system/source/build unique-build-inputs)
         (only-in :core/module-system/source/admission module-source-type module-source-name?
                  module-source-read module-source-admit-current! call-with-module-source-read-cache
+                 module-source-operation-resume
                  current-module-source-observer))
 (export SelectedPackages.)
 (def (package-stage name action)
@@ -95,8 +96,21 @@
       (def (current!)
         (sources-current!)
         ;; May realize or evaluate Nix. Never share a source-read cache across it.
-        (for-each (lambda (value) (.call value admit-current)) values)
-        (sources-current!))
+        (let loop ((remaining values) (inputs-checked? #t))
+          (if (null? remaining)
+            ;; A matched native tail has just checked inputs-current!. The
+            ;; generated guard entry is a separate obligation and stays fresh.
+            (if inputs-checked?
+              (module-source-admit-current! entry-observation)
+              (sources-current!))
+            (let* ((value (car remaining))
+                   (resume (module-source-operation-resume value inputs-current!)))
+              (if (and inputs-checked? resume) (resume) (.call value admit-current))
+              ;; Carry only a constructive native tail, never an opaque return
+              ;; value. Recheck metadata without demand after the action: an
+              ;; installed protocol/observer or invalidation ends the segment.
+              (loop (cdr remaining)
+                (and resume (module-source-operation-resume value inputs-current!) #t))))))
       (inputs-current!)
       (write-input! entry-path script)
       (package-stage 'value-admission

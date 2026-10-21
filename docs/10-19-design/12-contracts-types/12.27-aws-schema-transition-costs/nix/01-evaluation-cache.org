@@ -1,0 +1,171 @@
+#+title: 12.27.05 Nix Evaluation Cache Boundaries
+#+property: DOCUMENT_ID 12.27.05
+#+language: en
+#+property: STATUS retained-evidence
+
+* Cached Nix operations in the observed three-owner Case
+
+The retained 24.195-second receipt only records the aggregate duration of the
+first four Nix calls. It does not identify an individually slow operation or
+contain Nix-native activity messages. Its historical cause remains unqualified;
+later successful execution must not be used to assign it to cold building,
+daemon locks, host scheduling or observation overhead.
+
+Two subsequent runs keep observation and detailed tracing enabled, the same
+three-owner Case, one selected Graph/spec, and the original deadlines. Both
+finish naturally with all six child module markers and the parent harness
+markers. They retain Schema/Contract/Context changes, stale-evidence refusal,
+fresh publication, previous-value preservation and cleanup assertions.
+
+| Actual first four operations | Run A milliseconds | Run B milliseconds |
+|------------------------------+--------------------+--------------------|
+| Read-only derivation evaluation | 905 | 843 |
+| Registered derivation validity query | 71 | 68 |
+| Output realization | 436 | 279 |
+| Post-realization derivation evaluation | 567 | 508 |
+| Sum of these process spans | 1979 | 1698 |
+| Complete three-owner Case body | 57730 | 50334 |
+
+Each whole AWS Case still executes 22 Nix calls: 18 derivation evaluations,
+two validity queries and two realizations. Their total wall times are 14.010
+and 10.909 seconds respectively. No writable derivation-registration fallback
+appears. The variability remains visible rather than being replaced by a best
+run or a claim that the slow receipt is fixed.
+
+** What cache evidence establishes
+
+The validity result is reported from the actual =nix-store --check-validity=
+exit status, not inferred from a fast duration. It is a hit in both runs; this
+specifically proves derivation registration, not by itself output availability.
+The bounded native realization trace contains no concrete build/substitution
+activity. A separate read-only output metadata inspection finds the artifact's
+registration time more than eleven hours before the historical failed run's
+log completion. It supports a pre-existing output for the reproduced selection;
+the old receipt did not save its derivation identity, so exact historical
+identity equality is not established retroactively.
+
+Conversely, both recorded evaluations of the same initial derivation evaluate
+327 Nix files and return the same derivation identity. A registered derivation
+and available build outputs do not eliminate this legacy command's evaluation.
+The configured =eval-cache=true= setting describes Nix's *flake evaluation
+cache*, not a general result cache for every =nix-instantiate --eval= call:
+[[https://nix.dev/manual/nix/2.34/command-ref/conf-file.html#conf-eval-cache][Nix evaluation-cache configuration]].
+The current search path names a fixed local store source, not a remote channel
+lookup. This excludes a search-path download in these runs, not every possible
+network or daemon wait in the historical run.
+
+** Which repeated work can be reused
+
+The first four operations are not four duplicate builds. They establish a
+candidate identity, check its registration, demand its outputs, and recheck
+identity after that effect. Later queries straddle package handoffs, arbitrary
+Contract/Context callbacks and publication. Existing pure source-read windows
+remain reusable inside one synchronous guard; a Nix result does not cross those
+authority boundaries. The native derivation regression still rejects undeclared
+transitive-file changes, a newly present optional file, and mutation between
+lookup and registration. A source-list-only memo would miss those changes.
+
+The =guard-script= phase can demand the lazy derivation before
+=value-admission= demands its artifact. Thus a phase named =realize= may merely
+return the deferred publication; process-level spans identify where actual
+evaluation and realization occur. Phase names alone are not cost attribution.
+
+** Eighteen evaluations: ownership and reuse boundaries
+
+The eighteen queries are not eighteen demands inside one immutable source
+epoch. The Case deliberately creates a new selected Graph when its provider
+Schema changes. Query indices below come from the retained observed Run B;
+the tests and their public handoffs remain unchanged.
+
+| Query indices | Boundary | Why an earlier result is insufficient |
+|---------------+----------+---------------------------------------|
+| 1, 9 | Initial derivation demanded by each Graph's guard script | Different Schema epochs; establish each expected identity |
+| 2, 10 | SelectedPackages publication-current | Artifact realization and arbitrary value validators have returned |
+| 3, 11 | Public selection.with-packages handoff | The caller may change inputs between package production and handoff |
+| 4–5 | Initial accepted publication | Actual Contract/Context callbacks occur between the checks |
+| 6 | Context-denied admission | Entry must be current; rejection avoids a post-admission query |
+| 7–8 | Schema-transition negative publication | Mutation is injected after admission at the second package boundary |
+| 12–13 | Fresh accepted publication | New Schema association; both sides of actual callbacks are checked |
+| 14 | Misspelled-field rejection | Pre-admission check runs; refused admission has no post-query |
+| 15–16 | Context-transition negative publication | Preserve the after-admission mutation boundary |
+| 17–18 | Contract-transition negative publication | Preserve the after-admission mutation boundary |
+
+The handoff checks are adjacent in the trace but separated by a public return.
+Removing them merely because both objects share a Graph would weaken that
+public API. Likewise, two checks around a Contract are not pure duplicates:
+the Contract is extensible and may perform effects. Pure source observations
+already share bounded synchronous read windows; those windows cannot certify
+undeclared transitive Nix inputs across callbacks.
+
+The two bounded detailed samples each evaluate 327 files. This is evidence of
+repeated evaluation for those samples, not a measured file count for all
+eighteen queries. This audit removes no query by assuming an unobserved file
+closure or treating store availability as evaluation-cache evidence.
+
+** Native evaluation-cache qualification
+
+=t/nix-evaluation-cache-test.ss= uses the existing native Case macro, std/test
+and std/run-process. It invokes the installed Nix, without providers, external
+flake inputs, package builds, a new evaluator service or a Scheme result cache.
+Each operation starts a fresh process; a native =builtins.trace= in the imported
+value distinguishes actual evaluation from reuse. The fixture supplies these
+equivalent output forms:
+
+#+begin_src nix
+{
+  outputs = { self }: {
+    cached = import ./value.nix;
+    applied = args: import ./value.nix;
+    package = builtins.derivation {
+      name = "core-eval-cache";
+      system = "aarch64-darwin";
+      builder = "/bin/sh";
+      value = import ./value.nix;
+    };
+  };
+}
+#+end_src
+
+On installed Nix 2.34.4+1, repeated =nix eval --raw= of =cached= still emits the
+body trace. Repeated =--apply= of =applied= also emits it. In contrast, repeated
+=nix derivation show= of =package= omits the trace on its warm call; disabling
+the native evaluation cache restores it. Changing =value.nix= invalidates that
+reuse: the next derivation query emits the trace, then its warm successor does
+not. These assertions distinguish a native derived-path cache hit from a fast
+process or registered store object. No derivation output is realized.
+
+The initial experiment expected scalar =nix eval= to reuse evaluation and
+failed. The positive derived-path control corrects that hypothesis rather than
+declaring every flake command cached. The existing NixFlakeSource uses =nix
+eval=, including =--apply= for arguments; simply switching the AWS command to
+that entry would therefore not establish reuse. General flake-cache documentation
+does not establish the behavior of each CLI consumer.
+
+The AWS expression currently imports =<nixpkgs>= and receives mutable catalog,
+collector and selection paths. A final derivation published as a pure flake
+attribute could use Nix's own cache, but all effective inputs must first belong
+to its immutable input closure. Replacing mutable paths by string arguments,
+adding =--impure=, or snapshotting only Scheme's declared observations would not
+prove this closure. Existing tests intentionally change undeclared transitive
+and optional files; those refusals must survive any future adapter.
+
+Native derived-path caching can reduce reevaluation while retaining a fresh
+process at each effect boundary. It does not by itself remove process startup.
+Multiple independent installables could share one native command at one such
+boundary, but this AWS selection has one provider-artifact request: its
+eighteen time-separated checks cannot be batched as independent attributes.
+No persistent evaluator or new caching protocol is introduced here. The native
+cache route is qualified only by the small fixture; a closed AWS publication
+and its full invalidation qualification remain unfinished.
+
+The unchanged, observation-enabled three-owner Case was requalified after this
+audit: natural exit zero, 55077 milliseconds for the aggregate body, 31390
+milliseconds through AWS publication completion, seven MODULE-OK markers,
+two HARNESS-OK markers and two final OK markers, with no native error/overflow
+markers. Its eighteen derivation queries total 10979 milliseconds; all twenty-two
+Nix process spans total 12842 milliseconds. The original Case/worker limits,
+Schema transition, stale evidence refusal, retained previous value and fixture
+cleanup assertions remain in force. This is a safety receipt, not a reduction
+in evaluation count or a resolution of the historical slow run.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

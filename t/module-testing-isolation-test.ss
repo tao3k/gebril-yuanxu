@@ -86,8 +86,14 @@
       (def source (.get selected source))
       (def guard (.get selected admit-current))
       (.def (Run @ selected)
+        ;; Observation belongs to this init-owned test object. Ops propagates
+        ;; the selected policy to child fixtures; no author-side Profile.
+        execution.profile.emit?: #t
+        execution.profile.trace-enabled?: #t
         execution.environment.TMPDIR: workspace
         execution.log: (path-expand "harness.log" workspace))
+      (check-equal? (.get Run execution profile emit?) #t)
+      (check-equal? (.get Run execution profile trace-enabled?) #t)
       (check-equal? (eq? (.get Run execution source) source) #t)
       (check-equal? (eq? (.get Run admit-current) guard) #t)
       (poo-flow-test-checkpoint 'qualification-run)

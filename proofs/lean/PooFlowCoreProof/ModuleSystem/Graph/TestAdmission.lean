@@ -8,7 +8,7 @@ Sources mean observed reader dependencies, not configuration-policy edges. -/
 namespace PooFlowCoreProof.ModuleSystem.Graph.TestAdmission
 
 def quintSourceDigest : String :=
-  "sha256:c98032b5090c9cad0da00903af9e2d88299b1dec3f976eed892ebc49893f9e6d"
+  "sha256:a6fbd0cbb215fb72a5bcb3faa939e537e2af15920c2eeb48654ff16bdcadf3e8"
 
 structure Discovery (Node : Type) where
   seen : List Node
@@ -184,6 +184,22 @@ theorem discover_preserves_unique_reads [DecidableEq Node]
 
 def SourcesCurrent (observed : List (Node × Revision)) (actual : Node → Revision) : Prop :=
   ∀ entry ∈ observed, actual entry.1 = entry.2
+
+-- This bound is independent of catalog size and shared-edge multiplicity.
+-- It counts discovery visits, NOT fresh source reads across effect boundaries.
+-- Runtime import completeness and the Scheme hash-table cost remain premises.
+theorem discovery_visit_bound [DecidableEq Node]
+    (dependencies : Node → List Node) (catalog roots : List Node) (fuel : Nat)
+    (rootCoverage : ∀ root ∈ roots, root ∈ catalog)
+    (dependencyCoverage : ∀ node ∈ catalog, ∀ child ∈ dependencies node, child ∈ catalog) :
+    (discover dependencies fuel ⟨[], roots⟩).seen.length ≤ catalog.length := by
+  have initial : Inside (fun node => node ∈ catalog) (⟨[], roots⟩ : Discovery Node) :=
+    ⟨by simp, rootCoverage⟩
+  have covered := (discover_stays_inside dependencies (fun node => node ∈ catalog)
+    dependencyCoverage fuel _ initial).1
+  have unique := discover_preserves_unique_reads dependencies fuel
+    (⟨[], roots⟩ : Discovery Node) (by simp)
+  exact unique.length_le_of_subset covered
 
 def SourceAdmitted (state : Discovery Node) (observed : List (Node × Revision))
     (actual : Node → Revision) : Prop :=

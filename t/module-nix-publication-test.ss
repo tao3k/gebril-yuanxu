@@ -5,6 +5,9 @@
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :clan/poo/object .def .get .call .slot? .ref/cached object?)
+        (only-in :clan/poo/mop call-with-slot-read-observer)
+        (only-in :clan/poo/object object-protocol-set! .o)
+        (only-in :core/module-system/source/admission module-source-operation-resume)
         (only-in :core/modules/nix/objects NixSource.)
         (only-in :core/types poo-flow-validation-evidence-accepted?)
         (only-in :core/observability/testing-case poo-flow-test-case)
@@ -12,6 +15,30 @@
 (export module-nix-publication-test)
 (def module-nix-publication-test
   (test-suite "Nix is a declarative Core Module, not a global facade"
+    (poo-flow-test-case "native prefix inspection never forces metadata or bypasses MOP reads"
+      (def calls 0)
+      (def (guard) (set! calls (+ calls 1)))
+      (.def (Source @ NixSource.)
+        .instantiate: (lambda () "/nix/store/native-probe.drv")
+        .realize: (lambda (_derivation) "/nix/store/native-probe-artifact"))
+      (def prepared (.call Source .prepare guard))
+      (check-equal? (module-source-operation-resume prepared guard) #f)
+      (check-equal? calls 0)
+      (check-equal? (.ref/cached prepared '%source-operation) #f)
+      (.call prepared admit-current)
+      (check-equal? (procedure? (module-source-operation-resume prepared guard)) #t)
+      (check-equal? (module-source-operation-resume prepared void) #f)
+      (check-equal?
+        (call-with-slot-read-observer void
+          (lambda () (module-source-operation-resume prepared guard))) #f)
+      (.def (Custom @ prepared) admit-current: void)
+      (.call Custom admit-current)
+      (check-equal? (module-source-operation-resume Custom guard) #f)
+      ;; Even a warm ordinary method cannot opt a custom metaclass into the
+      ;; closed prefix. Hook dispatch retains the full public call semantics.
+      (object-protocol-set! prepared (.o))
+      (.call prepared admit-current)
+      (check-equal? (module-source-operation-resume prepared guard) #f))
     (poo-flow-test-case "selected source publishes native Sources without realizing packages"
       (call-with-temporary-directory "nix-module-publication"
         (lambda (directory)

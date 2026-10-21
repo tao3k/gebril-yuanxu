@@ -8,28 +8,39 @@
         :core/module-system/source/admission
         :core/module-system/source/init)
 (export module-directory-context)
-(def (source-cache-ref cache key compute)
-  (if (hash-key? cache key) (hash-ref cache key) (compute)))
+(defstruct directory-source (value current?) final: #t)
+(defstruct directory-decision (value current?) final: #t)
+(def (directory-path-current source-current? checks)
+  ;; Allocate outside locate-source's collecting frame: a retained SourceRef
+  ;; must not retain that frame, its box or another located receiver.
+  (lambda () (and (source-current?) (andmap (lambda (check) (check)) checks))))
 (def (source-parts id)
   (let (parts (string-split (symbol->string id) #\/))
     (unless (and (pair? parts) (andmap module-source-name? parts))
       (error "invalid module directory identity" id))
     parts))
-(def (module-directory-context path publication-reader)
+(def (module-directory-context path publication-reader
+                              publication-prepares-source?: (publication-prepares-source? #f))
   (let ((observations '()) (directories (make-hash-table)) (sources (make-hash-table)))
+    (def location-guards (make-parameter '()))
+    (def (enroll-location! guard)
+      (for-each (lambda (frame) (set-box! frame (cons guard (unbox frame))))
+                (location-guards)))
     ;; Observations include negative lookups and immediate child names. They are
     ;; checked at the explicit publication boundary, not on every cached slot read.
-    (def (observe! reader file)
+    (def (observe! reader file (local? #t))
       (let (value (reader file))
-        (set! observations (cons (lambda () (equal? value (reader file))) observations))
+        (def guard (lambda () (equal? value (module-source-observe reader file))))
+        (set! observations (cons (cons local? guard) observations))
+        (when local? (enroll-location! guard))
         value))
     (def (directory-names directory)
       (unless (eq? (module-source-type directory) 'directory) (error "module source is not a directory" directory))
       (list-sort string<? (directory-files directory)))
     (def (snapshot directory)
-      (source-cache-ref directories directory
-       (lambda ()
-         (let* ((names (observe! directory-names directory))
+      (if (hash-key? directories directory)
+        (hash-ref directories directory)
+         (let* ((names (observe! directory-names directory #f))
                 (children
                  (filter (lambda (name)
                            (and (module-source-name? name)
@@ -43,8 +54,11 @@
            (for-each (lambda (name)
                        (when (eq? (module-source-type (path-expand name directory)) 'symbolic-link)
                          (error "symlink in module source tree" directory name))) names)
+           ;; Whole listings establish global namespace/collision policy, not
+           ;; each private candidate's path support. locate-source* enrolls
+           ;; actual path kinds even when this snapshot is already present.
            (hash-put! directories directory value)
-           value))))
+           value)))
     (let* ((input (path-expand path))
            (init-path
             (if (eq? (module-source-type input) 'regular)
@@ -83,6 +97,13 @@
                                (filter (lambda (row) (.ref row 'disabled?)) decisions)))
            (generation-value (symbol->string (gensym 'module-directory-))))
       (def windows (and (.slot? intent-value 'windows) (.ref intent-value 'windows)))
+      ;; These are the parser's own inert objects, not evaluated user objects.
+      ;; Bind the complete location support, including nested decision flags.
+      ;; Native revisions also refuse mutation followed by restoration.
+      (def intent-current?
+        (module-source-object-policy
+          (append (list intent-value) decisions (or windows '())
+                  (map (lambda (row) (.ref row 'selection)) decisions))))
       (def (window-root window)
         (path-expand (.ref window 'root) (path-directory init-path)))
       (def (row-window row)
@@ -92,7 +113,14 @@
         (let (window (row-window row)) (if window (window-root window) root-path)))
       (def source-owners (make-hash-table))
       (def decision-index (list->hash-table
-                             (map (lambda (row) (cons (.ref row 'identity) row)) decisions)))
+                             (map (lambda (row)
+                                    (cons (.ref row 'identity)
+                                      (make-directory-decision row
+                                        (module-source-object-policy
+                                          (list row (.ref row 'selection)))))) decisions)))
+      (def (decision-row id)
+        (let (entry (hash-get decision-index id))
+          (and entry (directory-decision-value entry))))
       ;; Index declared ownership once. Locating an imported private owner walks
       ;; path ancestors, not the module list or another filesystem search tree.
       (for-each
@@ -133,11 +161,15 @@
                        (eq? (observe! module-source-type package) 'regular))
                 (begin (observe! module-source-read package) (path-normalize parent))
                 (and init-path (path-normalize (path-directory init-path)))))))
-      (def (locate-source id)
+      (def (locate-source* id)
         (source-parts id)
-        (source-cache-ref sources id
-         (lambda ()
-           (let* ((row (hash-get decision-index id))
+        (if (hash-key? sources id)
+          (let (entry (hash-ref sources id))
+            (unless ((directory-source-current? entry))
+              (error "stale directory SourceRef" id))
+            (directory-source-value entry))
+         (let ()
+           (let* ((row (decision-row id))
                   (auto-roots
                    (if (or row (not windows)) '()
                      (filter-map
@@ -165,9 +197,16 @@
                       (collection-root (path-normalize raw-collection-root))
                       (leaf (snapshot child)))
                  (unless (.ref leaf 'interface?) (error "module has no interface.ss" id child))
-                 ((.ref poo-flow-default-module-style-policy 'validate)
-                  poo-flow-default-module-style-policy id child
-                  (lambda (file) (observe! module-source-read file)))
+                 (unless (eq? (observe! module-source-type (path-expand "interface.ss" child)) 'regular)
+                   (error "module interface is not a regular file" id child))
+                 ;; The native publication preparer owns role/authoring
+                 ;; admission before expansion. In that paired path locating
+                 ;; an owner is only inert directory/init interpretation.
+                 ;; Custom readers retain the original source admission here.
+                 (unless publication-prepares-source?
+                   ((.ref poo-flow-default-module-style-policy 'validate)
+                    poo-flow-default-module-style-policy id child
+                    (lambda (file) (observe! module-source-read file))))
                  (hash-put! source-owners (path-strip-trailing-directory-separator child)
                             (.o identity: id root: child))
                  (let (value (make-poo-flow-module-source-ref
@@ -184,7 +223,12 @@
                                     (cons 'source-binding (if origin 'explicit 'directory))
                                     (cons 'source-tree source-tree)
                                     (cons 'init-source init-path) (cons 'generation generation-value))))
-                   (hash-put! sources id value) value)))
+                   ;; Replace the existing source-index payload with its owned
+                   ;; identity support; do not build another source tree/cache.
+                   (hash-put! sources id
+                     (make-directory-source value
+                       (module-source-object-policy (list value) reject-protocols?: #f)))
+                   value)))
              ;; An explicit binding is authoritative. Never probe a local or SDK
              ;; fallback when it is absent, disabled, stale or malformed.
              (if origin
@@ -194,12 +238,35 @@
                    (unless (member (car parts) (.ref node 'child-names))
                      (error "module directory not found" id directory))
                    (let (child (path-expand (car parts) directory))
+                     (unless (eq? (observe! module-source-type child) 'directory)
+                       (error "module path is not a directory" id child))
                      (if (pair? (cdr parts)) (walk child (cdr parts))
                        (publish child owner-root))))))))))
+      (def (locate-source id)
+        (if (hash-key? sources id) (locate-source* id)
+          (let* ((frame (box '()))
+                 (value (parameterize ((location-guards (cons frame (location-guards))))
+                          (locate-source* id)))
+                 (entry (hash-ref sources id))
+                 (source-current? (directory-source-current? entry))
+                 (checks (unbox frame)))
+            ;; Retain actual positive AND negative path demands in the existing
+            ;; SourceRef carrier. No successful currentness result is retained.
+            (set! (directory-source-current? entry)
+              (directory-path-current source-current? checks))
+            value)))
+      (def (current-sources?)
+        (def valid? #t)
+        (hash-for-each
+          (lambda (_id entry)
+            (when valid? (set! valid? ((directory-source-current? entry))))) sources)
+        valid?)
       (def (current-source? requested-generation)
         (with-catch (lambda (_exception) #f)
                     (lambda () (and (string=? requested-generation generation-value)
-                                    (andmap (lambda (check) (check)) observations)))))
+                                    (intent-current?)
+                                    (current-sources?)
+                                    (andmap (lambda (entry) ((cdr entry))) observations)))))
       (def (tree resolve directory prefix (window #f))
         (let* ((node (and (eq? (observe! module-source-type directory) 'directory) (snapshot directory)))
                (declared (filter-map
@@ -220,7 +287,7 @@
            (lambda (key)
              (let* ((text (symbol->string key)) (child (path-expand text directory))
                     (id (string->symbol (string-append prefix text)))
-                    (row (hash-get decision-index id)))
+                    (row (decision-row id)))
                (when (and window row (not (eq? (.ref row 'window) (.ref window 'mount))))
                  (error "publication belongs to a different directory window"
                         id (.ref window 'mount) (.ref row 'window)))
@@ -233,11 +300,29 @@
       (snapshot root-path)
       (when windows
         (for-each (lambda (window) (snapshot (window-root window))) windows))
+      ;; Candidate location does not depend on every earlier located Module.
+      ;; Root/init/window observations are fixed here; a requested decision and
+      ;; its actual path support are checked separately. Full current-source?
+      ;; remains mandatory before Graph visibility and around open callbacks.
+      (def location-inputs
+        (filter-map (lambda (entry) (and (car entry) (cdr entry))) observations))
+      (def location-policy? (module-source-object-policy (cons intent-value (or windows '()))))
+      (def (candidate-location-current? requested-generation id)
+        (with-catch (lambda (_exception) #f)
+          (lambda ()
+            (let ((decision (hash-get decision-index id)) (entry (hash-get sources id)))
+              (when (current-module-source-observer)
+                ((current-module-source-observer) 'candidate-location-checks 1))
+              (and (string=? requested-generation generation-value)
+                   (location-policy?)
+                   (or (not decision) ((directory-decision-current? decision)))
+                   (andmap (lambda (check) (check)) location-inputs)
+                   (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
           denied-modules: denied-values intent: intent-value init-source: init-path source-root: root-path
-          locate: locate-source current?: current-source?
+          locate: locate-source current?: current-source? candidate-current?: candidate-location-current?
           eligible?: (lambda (id)
-                       (let (row (hash-get decision-index id))
+                       (let (row (decision-row id))
                          (and (not (and row (.ref row 'disabled?)))
                               (or row
                                   (if windows

@@ -5,4 +5,4 @@
 (package:
  core
  depend:
- ("github.com/tao3k/gerbil-poo@fdeadfa40ca5cee5fe20308985aef1577f2eb49b"))
+ ("github.com/tao3k/gerbil-poo@46d1b9322d5464c2224dc32a7334fae121a0cb72"))

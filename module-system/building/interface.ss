@@ -3,12 +3,29 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :clan/poo/object .get .o .cc .+ .call)
-        (only-in :core/module-system/interface poo-flow-load-modules)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./test-projection.ss" module-test-projection module-test-execution)
-        (only-in :core/module-system/source/admission module-source-read call-with-module-source-read-cache)
-        (only-in :core/module-system/building/build-projection
-                 poo-flow-core-project-source-spec))
+        (only-in :core/module-system/source/admission module-source-read call-with-module-source-read-cache))
 (export poo-flow-core-init-build)
+
+;; Like testing-executor, these promises retain native bindings, never a Graph,
+;; source check or approval. Importing init must not import the Reader/compiler
+;; or artifact machinery. Each explicit demand still runs the original owner.
+(def module-linker
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :core/module-system/interface))
+      (eval-syntax 'poo-flow-load-modules))))
+(def build-projector
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :core/module-system/building/build-projection))
+      (eval-syntax 'poo-flow-core-project-source-spec))))
+(def artifact-cleaners
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :core/module-system/building/artifacts))
+      (eval-syntax '(cons invalidate-build-artifacts! clean-build-artifacts!)))))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
@@ -51,7 +68,7 @@
              (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'poo-flow!))) forms)))
         (unless (equal? declared (list declaration))
           (error "imported init declaration differs from its source; use a fresh source context"))
-        (set! selection (poo-flow-load-modules init module-view: module-view))))
+        (set! selection ((force module-linker) init module-view: module-view))))
     ((.get selection admit-current))
     selection)
   (def (test-current!)
@@ -101,11 +118,24 @@
         (error "init build specification cannot change retained roots within one source epoch"))
       (let* ((init (path-expand source)) (root (path-directory init)))
         (set! prepared
-          (poo-flow-core-project-source-spec (selected!) roots root (path-expand "build.ss" root)))
+          ((force build-projector) (selected!) roots root (path-expand "build.ss" root)))
         (set! retained roots)))
     (current!)
     (.get prepared spec))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace) (.get (selected!) modules))
-  (values build-spec current! test-spec test-current! test-source-value module-namespace))
+  ;; Execute the installed SDK's dispatcher unchanged. Core only owns the
+  ;; before/after boundary and the retained result of a successful compile.
+  (def (build-run roots native-main args (libdir (path-expand "lib" (gerbil-path))))
+    (build-spec roots)
+    (cond
+      ((or (null? args) (equal? (car args) "compile"))
+       (.call prepared .compile libdir (cut apply native-main args)))
+      ((equal? (car args) "clean")
+       (let (cleaners (force artifact-cleaners))
+         ((car cleaners) (.get prepared build-graph))
+         (begin0 (apply native-main args)
+           ((cdr cleaners) (.get prepared compiler-identities) libdir))))
+      (else (apply native-main args))))
+  (values build-spec current! test-spec test-current! test-source-value module-namespace build-run))

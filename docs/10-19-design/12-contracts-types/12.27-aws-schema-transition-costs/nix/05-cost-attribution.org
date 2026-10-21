@@ -1,0 +1,139 @@
+#+title: 12.27.09 Retained 128837 ms Cost Attribution
+#+property: DOCUMENT_ID 12.27.09
+#+language: en
+#+property: STATUS retained-evidence
+
+* Attribution of the 128837 ms receipt
+
+The aggregate's elapsed clock starts after its test module has been imported.
+Its 128837 ms is therefore not a measurement of command startup from exec.
+The existing parent/child checkpoints give this non-overlapping decomposition:
+
+| Span | Milliseconds | Attribution boundary |
+|------+--------------+----------------------|
+| Aggregate preparation through worker launch | 9197 | Parent selection, first Graph/publication work and pre-execution guards |
+| Child startup/imports and preceding qualifications | 13973 | Ops child duration minus AWS Case duration; a residual, not an import-only timer |
+| AWS setup through source-context | 1530 | Source publication plus four setup Nix commands |
+| First AWS Graph preparation | 6103 | Declaration/import and source checks |
+| Schema-transition Graph preparation | 3713 | Fresh declarations/checks; already imported dependencies reused |
+| Four package-body queries | 79849 | 18919, 28265, 17414 and 15251 ms, in query order |
+| Sixteen attribute-cache-hit queries | 4163 | All source/derivation boundaries retained |
+| Two provider/Schema realizations | 1590 | 1077 and 513 ms; cached outputs, not archive builds |
+| Remaining AWS work | 8592 | Residual admission, publication, checkpoints and other source checks |
+| Parent completion after child | 127 | Result validation/checkpoint remainder |
+
+The first Graph reports 74 native source imports with 1646051 microseconds of
+union import time. The second Graph has the SAME count and import time: its
+3713 ms must not be labelled another cold import. It evaluates six new owner
+declaration bodies and rechecks the changed source epoch. Reusing an evaluated
+publication here would skip macro/initializer behavior and is not authorized
+by identical file paths. Nested publication/source-guard totals overlap these
+spans and must not be added to them again. Pre-Case SDK/test-module imports
+remain outside this clock; no per-module timing is claimed for that blind spot.
+
+The first native package miss reports 1324 instantiated derivations and 329
+file-evaluation events. Its daemon trace includes 1328 =IsValidPath=, 1326
+=AddTempRoot=, 303 =AddToStore= and 288 =QueryPathInfo= requests. These are
+metadata/source operations, not evidence of 1324 package builds. The opcode
+mapping is the installed-series
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libstore/include/nix/store/worker-protocol.hh][worker protocol]].
+Neither operation counts nor Scheme-side CPU time establish how many wall
+seconds belong to evaluation versus daemon waiting. The remaining misses
+still traverse the real OpenTofu/jq/stdenv dependency derivations under new
+native fingerprints. Successful Core evidence cannot replace that Nix check.
+
+An isolated attempt to enable Nix's native flamegraph sampler on the same
+observed Case reached the first package but then failed the original 60-second
+inactivity guard. The one saved sample points into nixpkgs make-derivation and
+attribute-set processing; it does NOT qualify all four misses or a CPU/wait
+split. The diagnostic source edit was removed. The failure is retained as a
+local artifact, not rewritten as a pass, and neither timeout nor heap was raised.
+The native local-store =read-only= option was also rejected as a shortcut:
+installed help explicitly requires an immutable filesystem/database. The live
+store can change during GC/builds; bypassing its daemon locks is not safe reuse.
+
+Two pure repeated traversals can be removed without retaining more state:
+
+1. Bootstrap previously DFS-walked each root with a fresh visited set. It now
+   completes the native root imports first, then shares ONE visited set within
+   that union traversal. The native two-root control visits 267 unique contexts
+   instead of 512 repeated contexts, with identical context identities. A second
+   independent call visits all of them again. This is an algorithmic work-count
+   result, not a new cache or an end-to-end speed claim.
+2. Graph finalization previously checked currentness, read init, then opened
+   another currentness window. Those adjacent source-only reads now share the
+   EXISTING observation window. It ends before external-package preparation,
+   expansion, arbitrary validators or execution. No source approval crosses an
+   effect; independent guard calls still start fresh observations.
+
+Import trace labels now retain repository-relative owner paths, such as
+=modules/funflow/func.ss= and =modules/nix/func.ss=. Formatting uses an already
+observed string and does not scan, import or read domain slots. The observation
+controls check distinct labels, absence of host-root output and absence of MOP
+slot-read effects. This fixes attribution lost by logging only =func.ss=.
+
+** Observation is a property of the init-owned test object
+
+The developer's fenced =just test-file= invocation is not the Module user
+interface. A consumer executes the existing lazy test projection directly:
+
+#+begin_src scheme
+(.call (.get init.Modules funflow tests) .run)
+(.call (.get init.Scenarios aws tests) .run)
+
+;; Optional observation refines that same object, not a business scope.
+(.def (Observed @ (.get init.Scenarios aws tests))
+  execution.profile.emit?: #t
+  execution.profile.trace-enabled?: #t)
+(.call Observed .run)
+#+end_src
+
+The qualification aggregate selects JsonSchema, Funflow and AWS from the
+existing =init.tests.qualification= object. Its fixture-owned =Run= value now
+sets these same execution-profile fields explicitly instead of relying on
+outer CLI observation flags to configure the child. The source projection and
+currentness guard identities are preserved. TestingScript/Ops propagate the
+policy through the existing native harness feature channel; fixture macros
+automatically receive ModuleTestingProfile. Authors declare fixtures and
+assertions, not observation Profiles, process wrappers or another test tree.
+
+The post-change aggregate with outer trace enabled exits naturally with all
+seven module, two harness and two final success markers. Qualification
+completion is 133314 ms and AWS completion is 106775 ms: there is no demonstrated
+wall-time improvement over the earlier 128837/105540 ms receipt. The DFS
+work-count reduction is the qualified optimization, not a timing claim.
+
+A separate execution of that SAME Case omits outer observation flags entirely.
+Only the selected test object's =execution.profile= enables observation. The
+child still emits owner-labelled import and Nix stages through its automatically
+associated ModuleTestingProfile. It completes all 20 queries/four package bodies,
+Schema update refusal, old-evidence rejection, previous-value retention and
+fixture cleanup, with the same success markers and natural exit zero. AWS
+completion is 145172 ms in this receipt; it must not be reported as a speedup.
+This verifies the object-level interface independently of =just ... trace=.
+The remaining native package misses continue to dominate the performance work.
+
+The pure policy-resolution invocation itself is heap-fenced and has a separate
+60-second bootstrap ceiling before importing Scheme. It selects no Graph and
+starts no build or download. Once resolved, the outer 600-second test ceiling
+covers native test imports as well as execution. The final focused gate also
+checks the ordinary =gerbil env gxi= policy-resolution path; it does not rely on
+the test snapshot's load path to bypass the normal entrypoint.
+
+A final synthetic-cleanup attempt failed its readiness precondition: no child
+PID had been written before the subsecond idle window. Tool inspection also
+found that an unqualified host =gsc= resolves to Ghostscript. The final controls
+resolve Gambit's executable from =gerbil-home=, evaluate only Scheme runtime
+primitives with =-e=, and retain the original 500/600 ms idle windows and every
+cleanup assertion. This avoids Gerbil expander startup and host tool-name
+ambiguity without compiling files or enlarging the test deadline. All seven
+focused Cases then pass through the final fenced entrypoint. Earlier failed
+synthetic attempts do not qualify descendant cleanup.
+
+The Nix command's native semantics are documented in
+[[https://nix.dev/manual/nix/2.34/command-ref/new-cli/nix3-path-info.html][nix path-info]],
+including =--derivation=, =--override-input= and =--no-update-lock-file=. The
+cache-hit and invalidation claims above depend on native Scheme controls, not
+on assuming that every Flake command benefits from the cache.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

@@ -32,7 +32,8 @@ test-file path observe="false":
     trap 'rm -f "$log"' EXIT
     # The outer guard is the SAME finite total budget, not an inactivity timer.
     # Case/Ops enforce idle progress; no shell output/heartbeat renews this cap.
-    budget="$(gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
+    # Fence the pure policy import too; it cannot start a download or build.
+    budget="$(timeout --signal=TERM --kill-after=5s 60s gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
     if grep -E 'ERROR (MODULE|CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
     grep -F -x 'MODULE-OK {{ path }}' "$log" >/dev/null
@@ -140,7 +141,7 @@ test-slot-read-replay-regression directory:
 test:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=(t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/opentofu-publication-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/execution-progress-test.ss t/ops-selected-packages-test.ss t/ops-rounds-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
+    files=(t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/opentofu-publication-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/execution-progress-test.ss t/ops-selected-packages-test.ss t/ops-rounds-test.ss t/module-nix-publication-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     files+=(t/module-windows-test.ss t/module-testing-isolation-test.ss)
     for file in "${files[@]}"; do just test-file "$file"; done
     echo "[core-testing] phase=all-files-complete fileCount=${#files[@]}"
@@ -313,28 +314,119 @@ check-issuer-projection trace:
 check-metadata-allocation trace:
     cd proofs/lean && timeout 120s lake env lean --run MetadataAllocationCheck.lean "{{ trace }}"
 
+check-store-lowering trace:
+    cd proofs/lean && timeout 120s lake env lean --run StoreLoweringCheck.lean "{{ trace }}"
+
+check-artifact-closure trace:
+    cd proofs/lean && timeout 120s lake env lean --run ArtifactClosureCheck.lean "{{ trace }}"
+
+check-issued-loading trace:
+    cd proofs/lean && timeout 120s lake env lean --run IssuedLoadingCheck.lean "{{ trace }}"
+
 # Process-local compiler lowering; production SDK/source untouched.
-test-mop-store-boundary directory:
+compile-mop-store-boundary directory:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_STORE_ROOT="{{ directory }}"
     mkdir -p "$CORE_STORE_ROOT/lib"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
-    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/mop-store-boundary-test.ss ../.gerbil/lib/clan/poo/object~0.scm > "$CORE_STORE_ROOT/inputs.sha256"
+    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/qualification/mop-state/precompiled-stores.ss t/mop-store-boundary-test.ss t/mop-store-boundary-driver-test.ss ../.gerbil/lib/clan/poo/object~0.scm > "$CORE_STORE_ROOT/inputs.sha256"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-store-boundary.ss
-    just test-mop-store-boundary-runtime "$CORE_STORE_ROOT"
+    just build-mop-store-boundary-runtime "$CORE_STORE_ROOT"
 
-test-mop-store-boundary-runtime directory:
+build-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_STORE_ROOT="{{ directory }}"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+    shasum -a 256 "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
     sdk_home="$(cat "$CORE_STORE_ROOT/sdk-home")"
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$sdk_home,~~bin=$sdk_home/bin,~~lib=$sdk_home/lib"
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/store-runtime.o1" "$CORE_STORE_ROOT/store-runtime.scm"
+    gsc_features=()
+    if [[ "$(cat "$CORE_STORE_ROOT/sdk-smp")" == true ]]; then
+        gsc_features=(-e '(define-cond-expand-feature|enable-smp|)')
+    fi
+    shasum -a 256 "$sdk_home/lib/gerbil/runtime/mop~0.scm" "$sdk_home/lib/_gambit#.scm" "$sdk_home/lib/_thread#.scm" "$sdk_home/include/gambit.h" > "$CORE_STORE_ROOT/sdk-inputs.sha256"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/store-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/store-runtime.scm"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/loader-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/loader-runtime.scm"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/seal-artifact-closure.ss
+
+test-mop-store-boundary directory:
+    just compile-mop-store-boundary "{{ directory }}"
+    just verify-mop-store-boundary-runtime "{{ directory }}"
+
+verify-mop-store-boundary-runtime directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export CORE_STORE_ROOT="{{ directory }}"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
+    just test-file t/artifact-closure-test.ss
     just test-file t/mop-store-boundary-driver-test.ss
+    shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+    shasum -a 256 -c "$CORE_STORE_ROOT/sdk-inputs.sha256"
+
+test-artifact-authority directory:
+    CORE_STORE_ROOT="{{ directory }}" just test-file t/artifact-authority-test.ss
+
+test-source-loader-authority directory:
+    CORE_STORE_ROOT="{{ directory }}" just test-file t/source-loader-authority-test.ss
+
+compile-build-publication directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p "{{ directory }}/lib"
+    export CORE_BUILD_PUBLICATION_LIB="{{ directory }}/lib"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/../.gerbil}"
+    export GERBIL_LOADPATH="$CORE_BUILD_PUBLICATION_LIB:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$(pwd)/../.gerbil/lib"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/compile.ss
+
+test-build-publication directory file="t/build-artifact-publication-test.ss":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/../.gerbil}"
+    export GERBIL_LOADPATH="{{ directory }}/lib:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$(pwd)/../.gerbil/lib"
+    just test-file "{{ file }}"
+
+check-build-publication trace:
+    cd proofs/lean && timeout 120s lake env lean --run CoreBuildPublicationCheck.lean "{{ trace }}"
+
+check-build-handoff trace:
+    cd proofs/lean && timeout 120s lake env lean --run CoreBuildHandoffCheck.lean "{{ trace }}"
+
+check-store-recovery trace:
+    cd proofs/lean && timeout 120s lake env lean --run CoreStoreRecoveryCheck.lean "{{ trace }}"
+
+check-approved-recovery trace:
+    cd proofs/lean && timeout 120s lake env lean --run CoreApprovedRecoveryCheck.lean "{{ trace }}"
+
+# Independent snapshot consumer; uses the same pre-import heap fence as tests.
+nix-head-reader profile:
+    @env -u SDKROOT timeout --signal=TERM --kill-after=5s 30s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/nix-head-reader.ss "{{ profile }}"
+
+# Independent persistent-head consumer, bounded before any Scheme import.
+persistent-head-worker path operation argument="":
+    @env -u SDKROOT timeout --signal=TERM --kill-after=5s 30s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/persistent-head-worker.ss "{{ path }}" "{{ operation }}" "{{ argument }}"
+
+# Parent owns stdin; worker receives retained Core issuance, not a sidecar.
+build-publication-worker root lib identity mode record:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/worker.ss "{{ root }}" "{{ lib }}" "{{ identity }}" "{{ mode }}" "{{ record }}"
+
+build-store-producer root:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/store-producer.ss "{{ root }}"
+
+build-approved-producer root:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/approved-producer.ss "{{ root }}"
+
+build-approved-worker root mode:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/worker.ss "{{ root }}" "approved-{{ mode }}"
+
+build-store-worker root lib identity mode record selected candidate:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/worker.ss "{{ root }}" "{{ lib }}" "{{ identity }}" "{{ mode }}" "{{ record }}" "{{ selected }}" "{{ candidate }}"
+
+check-source-loader trace:
+    cd proofs/lean && timeout 120s lake env lean --run SourceLoaderCheck.lean "{{ trace }}"
 
 test-issuer-projection directory:
     #!/usr/bin/env bash

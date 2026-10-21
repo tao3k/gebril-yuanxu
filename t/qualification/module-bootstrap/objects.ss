@@ -5,6 +5,7 @@
         (only-in :std/source this-source-file))
 (export Build InputChecks Fixture)
 (def owner (path-expand "../../.." (path-directory (this-source-file))))
+(def host-state (path-expand (gerbil-path)))
 (def Ops (.get init.Modules ops scope))
 ;; Lazy fixture data; declaring this object creates no fixture or process.
 (.def Fixture
@@ -27,4 +28,6 @@
   command: '("env" "-u" "GERBIL_LOADPATH" "-u" "SDKROOT"
                   "just" "test-file" "t/module-build-source-package-test.ss")
   directory: owner
-  environment: =>.+ (.o CORE_QUALIFICATION_ROOT: (.get Fixture root)))
+  ;; CLEAN removes the fixture's compiled Core. Bootstrap the test policy from
+  ;; its host; source/context assertions still target the isolated fixture.
+  environment: =>.+ (.o GERBIL_PATH: host-state CORE_QUALIFICATION_ROOT: (.get Fixture root)))

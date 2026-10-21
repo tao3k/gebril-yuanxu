@@ -10,10 +10,63 @@ namespace PooFlowCoreProof.ModuleSystem.Graph.ImportCorrespondence
 open TestAdmission
 open PooFlowCoreProof.Admission.Source
 
--- The reader caches the completed SDK context list, not its input-registration
--- projection. Newly registered inputs must be visible on the next consumption.
+-- Context order is supplied by the completed native traversal. Resolve the
+-- CURRENT input registry during consumption; no per-root transitive list or
+-- previously projected registration is required to preserve this result.
 def registeredInputs (contexts : List Context) (lookup : Context → Option Input) : List Input :=
   contexts.filterMap lookup
+
+def streamRegistered (contexts : List Context) (lookup : Context → Option Input)
+    (reversed : List Input) : List Input :=
+  contexts.foldl (fun out context =>
+    match lookup context with
+    | none => out
+    | some input => input :: out) reversed
+
+-- The Core callback accumulates in reverse, then restores ordered inputs.
+-- This proves result equality, not garbage collection or heap-size bounds.
+theorem stream_registered_exact (contexts : List Context) (lookup : Context → Option Input)
+    (reversed : List Input) :
+    streamRegistered contexts lookup reversed =
+      (registeredInputs contexts lookup).reverse ++ reversed := by
+  induction contexts generalizing reversed with
+  | nil => rfl
+  | cons context rest ih =>
+    cases found : lookup context with
+    | none => simpa [streamRegistered, registeredInputs, found] using ih reversed
+    | some input =>
+      simpa [streamRegistered, registeredInputs, found, List.reverse_cons,
+        List.append_assoc] using ih (input :: reversed)
+
+-- Cutting a canonical SDK subtree is valid only when every omitted context
+-- has no private-source registration. Equality of names is insufficient.
+-- This preserves order and multiplicity, not merely set membership. Native
+-- traversal completeness and independent SDK source guarding remain gates.
+theorem private_projection_cut (contexts : List Context) (keep : Context → Bool)
+    (lookup : Context → Option Input)
+    (absent : ∀ context ∈ contexts, keep context = false → lookup context = none) :
+    registeredInputs (contexts.filter keep) lookup = registeredInputs contexts lookup := by
+  induction contexts with
+  | nil => rfl
+  | cons head tail ih =>
+    have rest := ih (fun context member => absent context (by simp [member]))
+    cases marked : keep head with
+    | false =>
+      have missing := absent head (by simp) marked
+      simp [registeredInputs, marked, missing] at rest ⊢
+      exact rest
+    | true =>
+      simp only [registeredInputs, List.filter_cons, marked, ↓reduceIte,
+                 List.filterMap_cons] at rest ⊢
+      rw [rest]
+
+-- The absent-registration premise is necessary, not a cache optimization
+-- inferred from a context's name. An omitted registered dependency changes
+-- the exact result even when another selected dependency remains present.
+#guard registeredInputs [1] (fun n : Nat => some n) !=
+       registeredInputs [0, 1] (fun n : Nat => some n)
+#guard registeredInputs [1] (fun n : Nat => if n == 0 then none else some n) ==
+       registeredInputs [0, 1] (fun n : Nat => if n == 0 then none else some n)
 
 theorem current_registration_is_never_omitted (contexts : List Context)
     (lookup : Context → Option Input) (context : Context) (input : Input)
@@ -64,6 +117,25 @@ theorem native_entry_exact (expected : Option String) (state : PathState) :
 
 def nativeGuard (inputs : List (String × Option String)) (read : String → PathState) : Bool :=
   inputs.all (fun input => entryAccepted input.2 (read input.1))
+
+-- Source bytes and the native public-name resolution are distinct premises.
+-- This models the retained preparation, not a memoized successful admission.
+def publicPreparationGuard (inputs : List (String × Option String))
+    (read : String → PathState) (expected : String) (resolved : Option String) : Bool :=
+  nativeGuard inputs read && (resolved == some expected)
+
+theorem public_resolution_change_refused (inputs : List (String × Option String))
+    (read : String → PathState) (expected : String) (resolved : Option String)
+    (changed : resolved ≠ some expected) :
+    publicPreparationGuard inputs read expected resolved = false := by
+  simp [publicPreparationGuard, changed]
+
+-- Identical registrations add no source requirement in one unchanged pure
+-- world. An effect still requires a fresh guard; no temporal law follows.
+theorem repeated_registration_same_requirements (inputs : List (String × Option String))
+    (read : String → PathState) :
+    nativeGuard (inputs ++ inputs) read = nativeGuard inputs read := by
+  simp [nativeGuard, List.all_append]
 
 -- Adjacent private lookups leave the same read function and requirements.
 -- This law does NOT identify worlds separated by an import or a callback.

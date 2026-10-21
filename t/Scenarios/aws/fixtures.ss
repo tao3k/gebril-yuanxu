@@ -91,10 +91,26 @@
   (unless (and (string? nar-hash) (string-prefix? "sha256-" nar-hash))
     (error "Nix store metadata lacks the immutable NAR identity"))
   (phase 'package-set-identified)
+  ;; Nix's path-input fast path requires the store basename to be exactly
+  ;; "source". A prefixed source name is recopied even with a pinned NAR hash.
+  ;; builtins.path checks the native content-addressed store identity first;
+  ;; the known hash permits reuse without rescanning an existing canonical tree.
+  (def canonical-package-set
+    (find (cut string-prefix? "/nix/store/" <>)
+      (string-split
+        (.get (run-script (.cc NixSetup 'command
+                 (list "nix" "--extra-experimental-features" "nix-command flakes"
+                       "eval" "--raw" "--expr"
+                       (string-append "builtins.path { path = " (object->string package-set)
+                         "; name = \"source\"; sha256 = " (object->string nar-hash) "; }")))
+                 output-port: (current-error-port)) output) #\newline)))
+  (unless (and canonical-package-set (file-exists? canonical-package-set))
+    (error "Nix did not publish the canonical immutable package set"))
+  (phase 'package-set-published)
   (write-source (path-expand "demand/selection.json" project) "{\"providers\":[]}")
   (write-source (path-expand "flake.nix" project)
     (string-append
-      "{ inputs.nixpkgs = { type = \"path\"; path = \"" package-set "\";\n"
+      "{ inputs.nixpkgs = { type = \"path\"; path = \"" canonical-package-set "\";\n"
       "    narHash = \"" nar-hash "\"; flake = false; };\n"
       "  inputs.selection = { url = \"path:./demand\"; flake = false; };\n"
       "  outputs = { self, nixpkgs, selection }: let\n"
@@ -127,7 +143,7 @@
                   (funflow @ ,(path-expand "modules/funflow" repository))
                   (json-schema @ ,(path-expand "modules/json-schema" repository))) port))))
   (.cc (.o) 'project project 'init init 'reader (module-publication-reader)
-    'closure-inputs closure-inputs))
+    'closure-inputs closure-inputs 'package-set canonical-package-set))
 (def (realize-aws-selection fixture directory (phase void))
   (def init (.get fixture init))
   ;; Existing source-context customization hook, as used by the selected-Graph
@@ -138,6 +154,11 @@
   (.def (Source @ NixFlakeSource.)
     reference: (string-append "path:" project)
     attribute: "packages.aarch64-darwin.default"
+    ;; Resolve the SAME immutable input through Nix's path fetcher. On 2.34,
+    ;; the final/narHash shortcut loses this path accessor's fingerprint;
+    ;; explicit resolution retains Nix's own source-to-hash cache. The locked
+    ;; declaration above and all native GC/source guards remain in place.
+    inputs: (.o nixpkgs: (.get fixture package-set))
     source-inputs: (append (.get fixture closure-inputs)
                     (map (lambda (path) (cons path (module-source-read path)))
                          (list (path-expand "flake.nix" project)

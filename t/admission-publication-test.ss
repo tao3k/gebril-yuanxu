@@ -2,8 +2,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
+        (only-in :core/types PooFlowContract. poo-flow-classification-evidence
+                 poo-flow-predicate-contract poo-flow-contract-admit
+                 poo-flow-validation-evidence-accepted?)
         (only-in :core/admission/publication AdmissionPublication.)
         (only-in :core/module-system/source/selection select-module-graph)
         (only-in :core/module-system/source/build module-build-graph)
@@ -89,8 +92,316 @@
     (check-equal? (metadata.failure? (metadata.failure-cause failure)) #t)
     (check-equal? (metadata.failure-phase (metadata.failure-cause failure)) inner-phase)))
 
+;; A source-only selected publication exercises the real .for-export assembler
+;; without Nix. Only the Schema getter below is an optional fault injector.
+(def (assembly-selection source-path schema-path (during-schema void) (refine-descriptor values) (refine-publication values))
+  (def inputs (list (cons source-path (module-source-read source-path))))
+  (def (current!) (module-source-admit-current! inputs "assembly source changed"))
+  (def artifact
+    (poo-flow-json-schema->contract-artifact
+      (poo-flow-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
+  (def fields
+    (.o (:: @ SchemaContract.)
+      identity: 'assembly/fields
+      node: (poo-flow-json-schema-normalization-schema
+              (poo-flow-json-schema-contract-artifact-normalization artifact))
+      schema-artifact: (begin (during-schema) artifact)
+      schema: (poo-flow-json-schema-read-file schema-path)
+      source-inputs: (list (cons schema-path (module-source-read schema-path)))))
+  (def descriptor
+    (refine-descriptor
+      (.cc PooFlowContract. identity: 'assembly/application
+        value-contract: (.cc ProjectionContract. constraint: fields
+                         project: (lambda (value) (.get value config))))))
+  (def module-publication
+    (refine-publication
+      (.o identity: 'app/web features: (.o)
+        core: (.o requires: (.o)
+                admissions: (.o Scenario: (.o contract-path: '(types Application)
+                                             export-path: '(value)))))))
+  (def selected
+    (select-module-graph
+      (.o generation: "assembly-1" selected: '(app/web)
+          denied-modules: '() init-source: #f)
+      '(app/web) (lambda (_owner) module-publication) current!))
+  (def graph
+    (module-build-graph selected
+      (lambda (owner)
+        (.o identity: owner generation: "assembly-1"
+            compiler-identity: 'fixture/interface
+            source: (make-poo-flow-module-source-ref 'local source-path '())
+            role-sources: '() source-inputs: inputs admit-current: current!))))
+  (.o build-graph: graph selected-graph: selected package-current: #f
+      sources-current: current!
+      .selected-record:
+      (lambda (_owner)
+        (.o publication: module-publication
+            scope: (.o types: (.o Application: descriptor) value: Parent)))))
+
 (def admission-publication-test
   (test-suite "Platform admission context and publication currentness"
+    (poo-flow-test-case "selected assembly has one final Context check; standalone construction retains its own"
+      (with-inputs
+        (lambda (source schema)
+          (def selection (assembly-selection source schema))
+          ;; Bound the work counter to Context assembly, not the first lazy
+          ;; source projection. Schema getters remain cold in this control.
+          (.get selection build-graph source-inputs)
+          (def standalone (.get (platform source schema) publication))
+          (def reads 0)
+          (def physical 0)
+          (def (observe key amount)
+            (when (equal? key (list 'file-read 'build-admit-before source))
+              (set! reads (+ reads amount)))
+            (when (and (pair? key) (eq? (car key) 'file-read)
+                       (equal? (caddr key) source))
+              (set! physical (+ physical amount))))
+          (def bound
+            (parameterize ((current-module-source-observer observe))
+              (.call AdmissionPublication. .for-export selection 'app/web 'Scenario)))
+          ;; Complete export entry and contribution-bound return. The private
+          ;; source-only entry is counted under build-current, not before.
+          ;; Count every phase too: the cached, route-free index has no extra
+          ;; source traversal. This is fewer physical opens, not just
+          ;; a transfer from the before label to compiler-current.
+          (check-equal? (list reads physical) '(2 4))
+          (check-equal? (eq? (.get bound context selected-graph)
+                            (.get selection selected-graph)) #t)
+          (check-equal? (length (.get bound context schema-inputs)) 1)
+          (set! reads 0)
+          (parameterize ((current-module-source-observer observe))
+            (.get standalone context))
+          (check-equal? reads 2))))
+    (poo-flow-test-case "a cold contribution declaration still requires source admission before its getter"
+      (with-inputs
+        (lambda (source schema)
+          (def demanded 0)
+          (def selection
+            (assembly-selection source schema void values
+              (lambda (baseline)
+                (let (core (.get baseline core))
+                  (.cc baseline core:
+                    (.o (:: @ core)
+                      contributions: (begin (set! demanded (+ demanded 1)) (.o))))))))
+          (def refusal
+            (with-catch values
+              (lambda ()
+                (.call AdmissionPublication. .for-export
+                  (.cc selection sources-current:
+                    (lambda () (error "route source changed")))
+                  'app/web 'Scenario))))
+          (check-equal? demanded 0)
+          (check-equal? (Error? refusal) #t)
+          (check-equal? (Error-message refusal) "route source changed"))))
+    (poo-flow-test-case "a route-free index is not authority after its Core changes"
+      (with-inputs
+        (lambda (source schema)
+          (def selection (assembly-selection source schema))
+          (def bound (.call AdmissionPublication. .for-export selection 'app/web 'Scenario))
+          (def node (car (.get selection selected-graph nodes)))
+          (def core (.get node publication core))
+          (.putslot! core 'contributions ($constant-slot-spec (.o)))
+          (check-exception ((.get bound context admit-current))
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception) "contribution object changed")))))))
+    (poo-flow-test-case "route-free indexing still checks sources before a cold Contract handler"
+      (with-inputs
+        (lambda (source schema)
+          (def handlers 0)
+          (def selection
+            (assembly-selection source schema void
+              (lambda (base)
+                (.o (:: @ base)
+                  .contribution-obligations:
+                  (begin (set! handlers (+ handlers 1))
+                         (lambda (_candidate _rows _context) '()))))))
+          (def guarded
+            (.o (:: @ selection)
+              .selected-record:
+              (lambda (owner)
+                (def record (.call selection .selected-record owner))
+                (def scope (.get record scope))
+                (.cc record scope:
+                  (.o (:: @ scope)
+                    value: (begin (write-file source "; changed resolving export\n") Parent))))))
+          (def refusal
+            (with-catch values
+              (cut .call AdmissionPublication. .for-export guarded 'app/web 'Scenario)))
+          (check-equal? handlers 0)
+          (check-equal? (Error? refusal) #t)
+          (check-equal? (Error-message refusal) "assembly source changed"))))
+    (poo-flow-test-case "the enclosing assembly check refuses changes made while resolving Schema metadata"
+      (with-inputs
+        (lambda (source schema)
+          (def selection
+            (assembly-selection source schema
+              (lambda () (write-file source "; changed during Schema association\n"))))
+          (check-exception
+            (.call AdmissionPublication. .for-export selection 'app/web 'Scenario)
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception) "assembly source changed")))))))
+    (poo-flow-test-case "selected Context source collection cannot bypass entry or final request policy"
+      (for-each
+        (lambda (refuse-at)
+          (with-inputs
+            (lambda (source schema)
+              (def requests 0)
+              (def schemas 0)
+              (def selection
+                (assembly-selection source schema (lambda () (set! schemas (+ schemas 1)))))
+              ;; A replaceable request is a deliberate negative injector. It is
+              ;; still called by the complete export entry and bound return.
+              (def guarded
+                (.cc (.get selection build-graph)
+                  external-packages:
+                  (list (.o source-inputs: '()
+                          admit-current:
+                          (lambda ()
+                            (set! requests (+ requests 1))
+                            (when (= requests refuse-at)
+                              (error "assembly request policy rejected")))))))
+              (check-exception
+                (.call AdmissionPublication. .for-export
+                  (.cc selection build-graph: guarded) 'app/web 'Scenario)
+                (lambda (exception)
+                  (and (Error? exception)
+                       (string=? (Error-message exception) "assembly request policy rejected"))))
+              (check-equal? requests refuse-at)
+              (check-equal? schemas (if (= refuse-at 1) 0 1)))))
+        '(1 2)))
+    (poo-flow-test-case "intermediate source collection checks request inputs before cold Schema getters"
+      (with-inputs
+        (lambda (source schema)
+          (def schemas 0)
+          (def observations (list (cons schema (module-source-read schema))))
+          (def selection
+            (assembly-selection source schema
+              (lambda () (set! schemas (+ schemas 1)))
+              (lambda (base)
+                ;; Fault injection occurs after export's complete entry check,
+                ;; while reading the descriptor's configuration observations.
+                (.o (:: @ base)
+                  source-inputs:
+                  (begin (write-file schema (string-append SchemaText "\n")) '())))))
+          (def guarded
+            (.cc (.get selection build-graph)
+              external-packages:
+              (list (.o source-inputs: observations
+                      admit-current:
+                      (lambda ()
+                        (module-source-admit-current! observations "request input changed"))))))
+          (def failure
+            (with-catch values
+              (lambda ()
+                (.call AdmissionPublication. .for-export
+                  (.cc selection build-graph: guarded) 'app/web 'Scenario))))
+          (check-equal? schemas 0)
+          (check-equal? (Error? failure) #t)
+          (check-equal? (Error-message failure) "admission source input changed"))))
+    (poo-flow-test-case "no package callback means no second pre-admission boundary"
+      (with-inputs
+        (lambda (source schema)
+          (def pub (.get (platform source schema) publication))
+          (def stages '())
+          (def observer
+            (lambda (key _amount)
+              (when (and (pair? key) (eq? (car key) 'admission-stage-start))
+                (set! stages (cons (cadr key) stages)))))
+          (defvalues (_receipt next failure)
+            (parameterize ((current-module-source-observer observer))
+              (.call pub .publish Parent Release)))
+          (check-equal? failure #f)
+          (check-equal? (eq? next Release) #t)
+          (check-equal? (and (memq 'entry-current stages) #t) #t)
+          (check-equal? (memq 'post-package-current stages) #f)
+          ;; A real package callback is an open boundary even if its current
+          ;; implementation does no work. Its post-check must still execute.
+          (set! stages '())
+          (def with-package (.cc pub package-current: void))
+          (defvalues (_second _value second-failure)
+            (parameterize ((current-module-source-observer observer))
+              (.call with-package .publish Parent Release)))
+          (check-equal? second-failure #f)
+          (check-equal? (and (memq 'post-package-current stages) #t) #t)
+          ;; Source mutation in admission cannot use the entry check as an
+          ;; approval. Final meaning-current still refuses and retains Parent.
+          (def changed
+            (.cc pub contract:
+              (.cc (.get pub contract)
+                .obligations:
+                (lambda (_candidate _context)
+                  (write-file schema (string-append SchemaText "\n")) '()))))
+          (check-refused changed 'source 'logic))))
+    (poo-flow-test-case "publication owns child analysis but not admissions inside obligations"
+      (with-inputs
+        (lambda (source schema)
+          (def view (platform source schema))
+          (def double-admit? #f)
+          (def child-base (poo-flow-predicate-contract 'test/child object? (lambda (_v _c) '())))
+          (.def (Child @ child-base)
+            (.admit (inherited)
+              (lambda (candidate context)
+                (def first ((inherited) candidate context))
+                (if double-admit? ((inherited) candidate context) first))))
+          (def child Child)
+          (def other (poo-flow-predicate-contract 'test/independent object? (lambda (_v _c) '())))
+          (def descriptor
+            (.cc (.get view admission) responsibilities: (.o config: child)
+              .obligations:
+              (lambda (candidate context)
+                (unless (poo-flow-validation-evidence-accepted?
+                          (poo-flow-contract-admit other (.get candidate config) context))
+                  (error "independent admission refused"))
+                '())))
+          (def publisher (.cc (.get view publication) contract: descriptor))
+          (def base (.get publisher context))
+          (def full-child 0)
+          (def full-root 0)
+          (def independent 0)
+          (def analytic-child 0)
+          (def reject-child? #f)
+          ;; Test policy callbacks; the Graph, producer, binding and publisher
+          ;; remain real. Child analysis is not permission for an arbitrary call.
+          (.def (Context @ base)
+            .contract-obligations:
+            (lambda (actual _candidate)
+              (cond ((eq? actual child) (set! full-child (+ full-child 1)))
+                    ((eq? actual other) (set! independent (+ independent 1)))
+                    ((eq? actual descriptor) (set! full-root (+ full-root 1))))
+              ((.get base admit-current))
+              '())
+            .responsibility-obligations:
+            (lambda (actual _candidate)
+              (unless (eq? actual child) (error "analysis escaped its responsibility edge"))
+              (set! analytic-child (+ analytic-child 1))
+              (if reject-child? (list (.o kind: 'test-child-refused)) '())))
+          (def target (.cc publisher context: Context))
+          (defvalues (receipt next failure) (.call target .publish Parent Release))
+          (check-equal? failure #f)
+          (check-equal? (eq? next Release) #t)
+          (check-equal? analytic-child 1)
+          (check-equal? full-child 0)
+          (check-equal? full-root 1)
+          (check-equal? independent 1)
+          (def evidence (car (.get receipt responsibility-evidence)))
+          (check-equal? (eq? (.get evidence admission-contract) child) #t)
+          (check-equal? (eq? (.get evidence candidate) (.get next config)) #t)
+          ;; An override's second inherited producer call has no remaining
+          ;; role edge. It must perform the full child Context callback.
+          (set! double-admit? #t)
+          (defvalues (_second _next second-failure) (.call target .publish Parent Release))
+          (check-equal? second-failure #f)
+          (check-equal? analytic-child 2)
+          (check-equal? full-child 1)
+          (check-equal? full-root 2)
+          (check-equal? independent 2)
+          (set! double-admit? #f)
+          (set! reject-child? #t)
+          (check-refused target 'source 'output)
+          (check-equal? analytic-child 3)
+          (check-equal? independent 2))))
     (poo-flow-test-case "one Context source window reads once; an independent window observes edits"
       (with-inputs
         (lambda (source schema)

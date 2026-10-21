@@ -4,6 +4,7 @@
 (import :clan/poo/object
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
+        (only-in :clan/poo/object-diagnostics diagnostic-then)
         (only-in :core/types PooFlowContract. poo-flow-classification-evidence
                  poo-flow-validation-evidence call-with-contract-analysis-root)
         (only-in :core/configuration/slot-origin admit-field-sources!)
@@ -52,7 +53,7 @@
     (module-source-admit-current! (.get contract source-inputs)
       "configuration source changed"))
   (sources-current!)
-  (def failures ((.get contract .preflight) candidate '()))
+  (def failures ((.get contract prepared-preflight) candidate '()))
   (def evidence
     (if (null? failures)
       ;; The inherited kernel includes arbitrary obligations. Do not keep a
@@ -84,10 +85,17 @@
   result)
 
 (define-type (SourceAdmissionContract. @ PooFlowContract.
-               source-inputs .preflight .locate-diagnostic)
+               source-inputs .preflight .locate-diagnostic value-contract)
   source-inputs: '()
   .preflight: (lambda (_candidate _path) '())
   .locate-diagnostic: (lambda (_candidate diagnostic) diagnostic)
+  ;; Field-demand guards precede the native whole-value diagnosis. Recognition
+  ;; does not normalize; the inherited producer still validates exactly once.
+  ;; Cache the COMPOSITION on this receiver, never a successful admission.
+  prepared-preflight:
+  (diagnostic-then .preflight
+    (if value-contract (cut diagnose value-contract <> <>)
+      (lambda (_candidate _path) '())))
   (.admit (inherited)
     (lambda (candidate context)
       (call-with-module-source-fresh-reads

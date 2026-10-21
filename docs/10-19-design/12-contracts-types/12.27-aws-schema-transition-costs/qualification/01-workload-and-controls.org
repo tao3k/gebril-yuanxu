@@ -1,0 +1,137 @@
+#+title: 12.27.01 Workload and Admission Boundaries
+#+property: DOCUMENT_ID 12.27.01
+#+language: en
+#+property: STATUS retained-evidence
+
+* Question and executed workload
+
+Why does the init-owned AWS integration exceed its unchanged 60-second Ops
+deadline when both provider packages already exist in the Nix store?
+
+The subject is [[file:../../../../../t/Scenarios/aws/context-publication-test.ss][the Core qualification over maintained AWS publication]], selected through root
+=init.Scenarios=. It retains real AWS 5.99.0 and 5.100.0 packages, public value
+Contracts, contextual child evidence, publication and failure retention. The
+[[file:../../../../../t/Scenarios/aws/fixtures.ss][private fixture]] supplies version-switching Nix inputs and the ordinary
+publication-reader customization hook. It is not a second Loader or runner.
+
+The qualification has since moved out of the AWS module's tests: Core owns the
+Schema/Contract/Context fault matrix. The init-owned =tests.qualification=
+projection discovers and guards that source automatically; AWS authors retain
+only their atomic tests.
+Historical timing and failure records below describe the workload at the time
+and are not rewritten as measurements of this ownership change.
+
+The phase callbacks divide each version into source-context creation, selected
+build Graph preparation, package realization and realized-scope association.
+Existing Nix completion observers measure actual external commands. Existing
+source observers count reads, requests and actual publication-guard runs by
+origin. Publication preparation and publication execution are measured separately.
+The latter includes value admission, Context checks and evidence binding; its
+whole duration must not be labelled pure Schema-validation CPU time.
+
+* Observations before the final eligibility reduction
+
+The first instrumented run expired before the second version. Initial Graph
+preparation read source files 9,855 times. Initial publication association read
+them 5,813 times, including 32 repeated reads of several SDK sources. This is
+real source work in addition to Nix work, not evidence that Nix rebuilt providers.
+
+A later instrumented run reached the second version and child publication but
+still exceeded the Ops deadline. Its second Graph preparation took about 4.0
+seconds and read sources 9,531 times; package preparation/realization took about
+6.0 seconds; publication association took about 1.9 seconds. Child publication
+completed at about 52.8 seconds from the fixture body start, before the final
+negative controls finished. Ops also accounts for the child's import time before
+that body timestamp. Body completion markers alone cannot qualify its deadline.
+
+Nix durations varied materially between runs. Concurrent source compilation and
+other focused tests were observed on the host. Keep deterministic work counts
+separate from wall-clock observations; these runs do not establish a general
+startup or end-to-end speedup.
+
+* Changes with bounded reuse
+
+1. Contribution-index preparation combines adjacent selection-source and
+   selected-Graph source guards in the existing synchronous read window. It ends
+   that window before route indexing can demand author declarations. The measured
+   publication association drops from 5,813 to 5,637 source reads in this control.
+2. Nix's prepared publication checks whether artifact realization is already
+   cached. Cold realization keeps its source pre/post checks. Warm currentness
+   retains a fresh Nix identity query and its source pre/post checks, omitting
+   only the redundant guard around a cached artifact read.
+3. Linking and source preparation use the private publication lookup immediately
+   after eligibility admission. Only private hash operations intervene; the
+   lookup no longer repeats that same eligibility guard. Publication reading,
+   Contract execution and scope factories retain their post-effect checks.
+   Dynamic eligibility callbacks receive an explicit post-policy source check
+   before publication initialization.
+4. Initial expression construction first performs a readonly Nix evaluation and
+   asks =nix-store --check-validity= about that exact drvPath. A valid store entry
+   avoids writable registration. A miss uses the original registration path;
+   when both evaluations return paths, disagreement refuses construction. A
+   failed optional lookup is not admission evidence. Currentness queries retain
+   strict failure and never fall back to registration. Flake evaluation keeps
+   its existing implementation.
+
+These are local changes to existing owners, not a generation-wide success cache.
+The measured source-read controls after the eligibility change are:
+
+| Interval | Before | After |
+|----------+--------+-------|
+| First selected build Graph | 9,855 | 8,799 |
+| Second selected build Graph | 9,531 | 8,475 |
+| Publication association | 5,813 | 4,909 |
+
+These counts cover the observed intervals, not all filesystem operations. They
+establish less duplicate traversal; they do not establish an end-to-end latency
+improvement under the observed CPU contention.
+
+The selected Graph, actual publication objects and native receiver caches remain
+authoritative. Replacing external version input still creates a fresh selection;
+declaration expansion and initialization results are not cached across that effect.
+
+An attempted blanket addition of nested caches to prepared-source guards did
+not reduce the 9,855 initial reads. It was removed rather than presented as an
+optimization. Existing callers already provide those pure observation windows.
+
+* Checks which remain necessary
+
+Readonly Nix queries still re-evaluate the expression and its arguments. A
+completed provider build does not prove that its current selection is unchanged.
+[[file:../../../../../t/nix-derivation-query-test.ss][The native transitive-input control]] changes an undeclared imported Nix file
+and adds a previously absent file; source observations alone cannot replace that
+query. No process result is reused across arbitrary validators or Context policy.
+
+The store lookup is not a new evaluator cache: Nix re-evaluates transitive inputs
+before checking store validity. A local pathname existence test would not suffice.
+The configured store executable is reused for both validity and realization;
+users supply no new field. Process metrics distinguish readonly evaluations,
+store-validity checks, writable registration and realization. A cold construction
+may add one registration evaluation; it is separately counted and bounded, never
+hidden inside the warm query budget.
+
+Likewise, every failed publication must retain the previous object. Source or
+Schema changes, a copied same-name descriptor, stale evidence, invalid fields
+and a modified responsibility map remain refusals. None of these assertions is
+removed or replaced by a timing assertion.
+
+* Focused controls
+
+- [[file:../../../../../t/module-configuration-source-test.ss][Configuration-source controls]] retain initialization-time source mutation
+  refusal and independent currentness checks.
+- [[file:../../../../../t/module-nix-publication-test.ss][Nix publication controls]] exercise the real prepared-publication methods.
+  Inert command probes check cold/warm source-guard counts, one realization,
+  a new identity query on each check and post-query mutation refusal. Those
+  probes are not evidence of Nix package performance.
+- [[file:../../../../../t/module-selected-graph-test.ss][Selected-Graph controls]] retain dependency/Feature admission and add refusal
+  when dynamic eligibility changes source state before publication reading.
+- [[file:../../../../../t/nix-derivation-query-test.ss][Native Nix controls]] check actual cold registration, warm store validity without
+  writable registration, undeclared transitive/negative-input changes, query-mode
+  failure and a transitive change between lookup and registration. No provider
+  acquisition is needed for this narrow derivation control.
+
+The real integration verdict is recorded after the final focused run. The
+60-second Ops limit, 120-second outer entry and one-GiB child heap fence remain
+unchanged. No full repository build, runtime Loader or upstream patch is involved.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

@@ -1,0 +1,116 @@
+#+title: 12.27.11 Nix Source Hash Reuse
+#+property: DOCUMENT_ID 12.27.11
+#+language: en
+#+property: STATUS retained-evidence
+
+* Reusing Nix's source-to-hash cache below the Flake cache
+
+The complete follow-up through the same init-owned =.run= first reproduces
+four evaluator-root loads, 16 cached attribute queries and the 802-path
+multiset relations above. It exits zero with seven module, two harness and
+two final success markers; AWS completes at 158149 ms. Schema transitions,
+old-evidence rejection, previous-value preservation and cleanup all pass.
+This confirms the boundary, not a speedup.
+
+That trace exposes a second native cache layer: each miss reports 285
+uncacheable source paths under the immutable package-set tree. In the inspected
+=2.34.4= source, the final-input/NAR shortcut in
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libfetchers/fetchers.cc][Input::getAccessorUnchecked]]
+obtains a Store accessor before the path scheme's normal resolution. For this
+path input, its scheme fingerprint is absent. The normal
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libfetchers/path.cc][PathInputScheme::getAccessor]]
+instead assigns a NAR-based accessor fingerprint and registers the native
+source-to-hash entry. Without that fingerprint,
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libfetchers/fetch-to-store.cc][fetchToStore2]]
+cannot reuse its persistent source-hash cache and enters =addToStore= again.
+This includes source files embedded by dependency derivations, beyond merely
+reading =flake.nix=. A copying log alone still does not quantify bytes written
+or RPC service time.
+
+The existing public Source already supports explicit input resolution. The
+AWS fixture retains its setup-resolved, canonical immutable package-set path
+and supplies that SAME path through this capability:
+
+#+begin_src scheme
+;; Existing NixFlakeSource.; package-set is resolved from the locked Store.
+inputs: (.o nixpkgs: (.get fixture package-set))
+#+end_src
+
+The generated selected demand remains the separate =selection= input. The
+original Flake declaration still retains its package-set NAR pin. Native
+locking, GC roots, validity checks, source guards and serialized input guards
+remain enabled. This does not normalize metadata, construct a new cache or
+skip a derivation query. It reuses the existing Nix fetcher cache below the
+root Flake attribute-cache boundary.
+
+The focused native control publishes a small immutable source, then compares
+two cold output attributes with identical derivation identity. Direct final
+input resolution reports an uncacheable source; explicit resolution of the
+same Store path instead reports a source-cache hit. The control checks native
+GC-root requests, unchanged lock bytes and a subsequent warm attribute-cache
+hit. The first attempt correctly rejected a macOS temporary-directory symlink;
+the control now uses the same path normalization as the Source implementation.
+No upstream source or standard library is modified.
+
+This is an explicit upstream package-publication binding in the qualification
+fixture, using an existing Source capability. It is not a claim that every
+arbitrary publication is automatically rewritten, nor that four distinct root
+fingerprints can share one attribute-cache database. The full AWS Case must
+qualify the binding's work-count effect and all publication safety assertions.
+The prerequisite is the setup-verified immutable Store path corresponding to
+the retained NAR pin. This must not be generalized to arbitrary mutable input
+directories or used to discard a lock mismatch. If a future Nix revision fixes
+the final-input path accessor, requalify whether this explicit binding remains
+necessary; it is not a new permanent publication protocol.
+
+The same observed init-owned aggregate qualifies that binding with no new
+Case categories and unchanged progress budgets. All four misses retain exactly
+the same complete derivation-event multisets as the preceding direct-input
+receipt: 1324 events / 802 paths each, including the one-path transitive change,
+zero-path restore change and six-path Schema upgrade. The 16 stable-fingerprint
+queries still read cached attributes without loading an evaluator root.
+
+| Miss query | Wall ms | Uncacheable source messages | Source-cache hits | Store-add requests | GC-root requests | Validity requests |
+|------------+---------+-----------------------------+-------------------+--------------------+------------------+-------------------|
+| 1 | 3685 | 0 | 17 | 288 | 1342 | 1329 |
+| 6 | 10119 | 0 | 287 | 18 | 1612 | 1613 |
+| 7 | 1718 | 0 | 287 | 18 | 1612 | 1613 |
+| 11 | 1337 | 0 | 287 | 18 | 1612 | 1613 |
+
+Previously every miss had 285 uncacheable-source messages and 303 Store-add
+requests. The first explicit-resolution miss still populates native hash
+entries for many embedded files; later misses reuse them despite different
+application fingerprints. GC-root and validity counts INCREASE because the
+native cache-hit route protects and checks those Store paths before returning.
+The improvement is therefore not removal of GC or currentness protection.
+File-evaluation counts remain 329/330; no reduction in physical reads is
+inferred from that counter alone.
+
+Four miss queries total 16859 ms in this receipt, versus 109586 ms in the
+immediately preceding direct-input receipt. The complete AWS phase finishes at
+66430 ms versus 158149 ms. These are uncontrolled local observations with
+diagnostic logging enabled, not a stable speedup ratio or a claim that every
+query is below one second: query 6 still takes 10119 ms. Request/multiset
+controls and the focused native A/B qualify the reuse mechanism. They do not
+attribute the entire wall-time difference to one RPC or remove remaining
+import, Graph and evaluator costs.
+
+The aggregate exits naturally with seven MODULE-OK, two HARNESS-OK and two
+final OK markers and no error/overflow markers. It preserves the Schema
+upgrade, old Contract/Context evidence refusal, previous-value retention and
+fixture cleanup in the SAME Case. The focused cache suite additionally passes
+native GC-root, unchanged-lock and warm-attribute assertions. The temporary
+24-command diagnostic allowance is restored to the original four afterward.
+
+A final execution with the ordinary four-command diagnostic allowance also
+exits naturally with the same seven module, two harness and two final success
+markers and no errors/overflows. The selected test object's execution Profile
+still enables observation; no outer trace option is supplied. All 20 queries
+remain, and package-body traces occur only at queries 1, 6, 7 and 11. AWS
+publication completes at 29767 ms with native source-hash entries now warm.
+Different diagnostic volume and native cache state prohibit presenting this
+as a matched speedup. It qualifies ordinary-policy operation, Schema update
+refusal, stale Contract/Context evidence rejection, previous-value retention
+and cleanup without any enlarged observation, inactivity or total budget.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

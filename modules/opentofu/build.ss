@@ -7,8 +7,8 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source)
-        (only-in :core/module-system/building/build-projection poo-flow-core-admit-build-inputs)
-        (only-in :core/module-system/source/admission call-with-module-source-read-cache)
+        (only-in :core/module-system/source/admission call-with-module-source-read-cache
+                 module-source-admit-current!)
         ;; Build-tool native owners, not a second runtime facade or Loader.
         (only-in :core/modules/nix/types NixFlakeSourceContract)
         (only-in :core/types poo-flow-validation-evidence-accepted?)
@@ -52,7 +52,7 @@
         (call-with-module-source-read-cache
           (lambda ()
             ((.get configuration-input admit-current))
-            (poo-flow-core-admit-build-inputs observed))))
+            (module-source-admit-current! observed))))
       (current!)
       (.o identity: 'opentofu source-inputs: observed
           configuration: (.get configuration-input value) demand: projected-demand

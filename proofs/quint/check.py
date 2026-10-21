@@ -16,6 +16,91 @@ import tempfile
 import time
 
 CASES = [
+    ("ReplayOwnership_dropDelivery", "PreWriteRefusal", True),
+    ("IssuedRootForwarding", "safety", False),
+    ("IssuedRootForwarding_omit", "Coverage", True),
+    ("IssuedRootForwarding_forge", "Authentic", True),
+    ("IssuedRootForwarding_source", "Current", True),
+    ("IssuedRootForwarding_dropB", "Both", True),
+    ("IssuedRootForwarding_eager", "Lazy", True),
+    ("IssuedRootForwarding", "RejectAll", True),
+    ("CoreApprovedRecovery", "safety", False),
+    ("CoreApprovedRecovery_install", "Installed", True),
+    ("CoreApprovedRecovery_coverage", "Coverage", True),
+    ("CoreApprovedRecovery_approval", "Approval", True),
+    ("CoreApprovedRecovery_warm", "Approval", True),
+    ("CoreApprovedRecovery_source", "Source", True),
+    ("CoreApprovedRecovery_joint", "Files", True),
+    ("CoreApprovedRecovery_dropB", "Both", True),
+    ("CoreApprovedRecovery_parent", "Parent", True),
+    ("CoreApprovedRecovery_eager", "Lazy", True),
+    ("CoreApprovedRecovery_acceptance", "RejectAll", True),
+    ("CoreStoreRecovery", "safety", False),
+    ("CoreStoreRecovery_pin", "Origin", True),
+    ("CoreStoreRecovery_registry", "Origin", True),
+    ("CoreStoreRecovery_nar", "Origin", True),
+    ("CoreStoreRecovery_asset", "Origin", True),
+    ("CoreStoreRecovery_tail", "Final", True),
+    ("CoreStoreRecovery_dropB", "Both", True),
+    ("CoreStoreRecovery_parent", "Parent", True),
+    ("CoreStoreRecovery_eager", "Lazy", True),
+    ("CoreStoreRecovery_acceptance", "RejectAll", True),
+    ("CoreBuildHandoff", "safety", False),
+    ("CoreBuildHandoff_disk", "Origin", True),
+    ("CoreBuildHandoff_selection", "Origin", True),
+    ("CoreBuildHandoff_tail", "Final", True),
+    ("CoreBuildHandoff_source", "Final", True),
+    ("CoreBuildHandoff_parent", "Parent", True),
+    ("CoreBuildHandoff_eager", "Lazy", True),
+    ("CoreBuildHandoff_acceptance", "RejectAll", True),
+    ('CoreBuildPublication', 'safety', False),
+    ('CoreBuildPublication_adopt', 'Compiled', True),
+    ('CoreBuildPublication_trustDisk', 'Issued', True),
+    ('CoreBuildPublication_saved', 'Issued', True),
+    ('CoreBuildPublication_skipReturn', 'Issued', True),
+    ('CoreBuildPublication_dropB', 'BothRequirements', True),
+    ('CoreBuildPublication_parent', 'ParentCache', True),
+    ('CoreBuildPublication_eager', 'LazyBranch', True),
+    ('CoreBuildPublication_acceptance', 'RejectAll', True),
+    ('SourceLoader', 'safety', False),
+    ('SourceLoader_oldEdge', 'EntryCoverage', True),
+    ('SourceLoader_reload', 'EntryCoverage', True),
+    ('SourceLoader_retry', 'EntryCoverage', True),
+    ('SourceLoader_dropB', 'BothRequirements', True),
+    ('SourceLoader_parent', 'ParentCache', True),
+    ('SourceLoader_eager', 'LazyBranch', True),
+    ('SourceLoader_acceptance', 'RejectAll', True),
+    ('IssuedLoading', 'safety', False),
+    ('IssuedLoading_trustSidecar', 'ByteSafety', True),
+    ('IssuedLoading_skipHandoff', 'HandoffCurrent', True),
+    ('IssuedLoading_publicPath', 'ByteSafety', True),
+    ('IssuedLoading_skipCache', 'CacheAuthority', True),
+    ('IssuedLoading_poolWriter', 'ByteSafety', True),
+    ('IssuedLoading_latest', 'LatestPath', True),
+    ('IssuedLoading_dropB', 'BothRequirements', True),
+    ('IssuedLoading_parent', 'ParentCache', True),
+    ('IssuedLoading_eager', 'LazyBranch', True),
+    ('IssuedLoading_acceptance', 'RejectAll', True),
+    ('ArtifactClosure', 'safety', False),
+    ('ArtifactClosure_omitDependency', 'NoChangedAdmission', True),
+    ('ArtifactClosure_ignoreResolution', 'NoChangedAdmission', True),
+    ('ArtifactClosure_trustOldBody', 'NoPoison', True),
+    ('ArtifactClosure_skipInput', 'NoChangedAdmission', True),
+    ('ArtifactClosure_ignoreLoaded', 'NoChangedAdmission', True),
+    ('ArtifactClosure_dropB', 'BothRequirements', True),
+    ('ArtifactClosure_parent', 'ParentCache', True),
+    ('ArtifactClosure_eager', 'LazyBranch', True),
+    ('ArtifactClosure_acceptance', 'RejectAll', True),
+    ('StoreLowering', 'safety', False),
+    ('StoreLowering_unlowered', 'NoPoison', True),
+    ('StoreLowering_missConstructor', 'OwnerCoverage', True),
+    ('StoreLowering_missCarrier', 'DeclaredPreWrite', True),
+    ('StoreLowering_missInline', 'DeclaredPreWrite', True),
+    ('StoreLowering_missCallback', 'DeclaredPreWrite', True),
+    ('StoreLowering_dropB', 'BothRequirements', True),
+    ('StoreLowering_parent', 'ChildPlan', True),
+    ('StoreLowering_eager', 'LazyBranch', True),
+    ('StoreLowering_acceptance', 'RejectAll', True),
     ('MetadataAllocation', 'safety', False),
     ('MetadataAllocation_raw', 'RestoredImpliesCoherent', True),
     ('MetadataAllocation_exports', 'HiddenExportsStopReflection', True),
@@ -100,7 +185,132 @@ CASES = [
     ("TestSourceAdmission_eager", "NoUnrelatedExpansion", True),
     ("TestSourceAdmission_stale", "CurrentEvidence", True),
     ("TestSourceAdmission_cleanup", "FailureCleanup", True),
+    ("TestSourceAdmission_hardStop", "FailureCleanup", True),
     ("TestSourceAdmission_secondGraph", "SameGraphIdentity", True),
+    ("TestSourceAdmission_repeat", "UniqueDiscovery", True),
+    ("TestSourceAdmission_dropDeferred", "CompleteConfiguration", True),
+    ("SourceClosureWork", "safety", False),
+    ("SourceClosureWork_repeat", "UniqueExpansion", True),
+    ("SourceClosureWork_eager", "DemandOnly", True),
+    ("SourceClosureWork_drop", "Complete", True),
+    ("SourceClosureWork_reuse", "Current", True),
+    ("SourceClosureWork_rescan", "PureEpochOnce", True),
+    ("SourceClosureWork_wideGuard", "GuardScope", True),
+    ("SourceClosureWork_leak", "Cleanup", True),
+    ("SourceClosureWork_acceptance", "RejectAll", True),
+    ("SourcePrefix", "safety", False),
+    ("SourcePrefix_open", "EntryCurrent", True),
+    ("SourcePrefix_scope", "EntryCurrent", True),
+    ("SourcePrefix_carry", "PublishedCurrent", True),
+    ("SourcePrefix_coldMetadata", "PublishedCurrent", True),
+    ("SourcePrefix_contextAfterCheck", "PublishedCurrent", True),
+    ("SourcePrefix_rawSubject", "SameAdmittedSubject", True),
+    ("SourcePrefix_drop", "PublishedCurrent", True),
+    ("SourcePrefix_repeat", "ClosedPrefixOnce", True),
+    ("SourcePrefix_cleanup", "Cleanup", True),
+    ("SourcePrefix_acceptance", "RejectAll", True),
+    ("DependencyContinuation", "safety", False),
+    ("DependencyContinuation_openWalk", "OpenEntryCurrent", True),
+    ("DependencyContinuation_unseenToken", "OpenEntryCurrent", True),
+    ("DependencyContinuation_beforeRead", "OpenEntryCurrent", True),
+    ("DependencyContinuation_beforeFeature", "OpenEntryCurrent", True),
+    ("DependencyContinuation_drop", "PublishedCurrent", True),
+    ("DependencyContinuation_earlyPublish", "AcceptedOnlyAtEnd", True),
+    ("DependencyContinuation_cleanup", "Cleanup", True),
+    ("DependencyContinuation_acceptance", "RejectAll", True),
+    ("ReaderEffectSupport", "safety", False),
+    ("ReaderEffectSupport_importsOnly", "EntrySupport", True),
+    ("ReaderEffectSupport_returnImports", "ReturnSupport", True),
+    ("ReaderEffectSupport_cleanup", "Cleanup", True),
+    ("ReaderEffectSupport_acceptance", "RejectAll", True),
+    ("CandidatePublication", "safety", False),
+    ("CandidatePublication_dropImport", "LocalEntry", True),
+    ("CandidatePublication_openBefore", "OpenEntry", True),
+    ("CandidatePublication_openAfter", "OpenReturn", True),
+    ("CandidatePublication_skipCommit", "FinalCurrent", True),
+    ("CandidatePublication_dropSchema", "FinalCurrent", True),
+    ("CandidatePublication_earlyVisible", "CommitOnly", True),
+    ("CandidatePublication_replaceOnFailure", "KeepPrevious", True),
+    ("CandidatePublication_cleanup", "Cleanup", True),
+    ("CandidatePublication_acceptance", "RejectAll", True),
+    ("CandidatePublication_retainScratch", "NoSpuriousRefusal", True),
+    ("CandidateLocation", "safety", False),
+    ("CandidateLocation_dropCachedPath", "LocalEntry", True),
+    ("CandidateLocation_skipCommit", "FinalCurrent", True),
+    ("CandidateLocation_acceptance", "RejectAll", True),
+    ("CompilerEnrollment", "safety", False),
+    ("CompilerEnrollment_reuseApproval", "FreshDemand", True),
+    ("CompilerEnrollment_dropEnrollment", "Complete", True),
+    ("CompilerEnrollment_acceptance", "RejectAll", True),
+    ("AuthoringStage", "safety", False),
+    ("AuthoringStage_skipAdmission", "BoundaryChecked", True),
+    ("AuthoringStage_oldContract", "ValidAdmission", True),
+    ("AuthoringStage_rawSubject", "CheckedSubject", True),
+    ("AuthoringStage_skipCommit", "CurrentPublication", True),
+    ("AuthoringStage_acceptance", "RejectAll", True),
+    ("CarrierReturn", "ValidExecution", False),
+    ("CarrierReturn_skipReturn", "ValidExecution", True),
+    ("CarrierReturn_acceptance", "RejectAll", True),
+    ("CarrierAdmission", "safety", False),
+    ("CarrierAdmission_skipBefore", "CheckedHandoff", True),
+    ("CarrierAdmission_skipAfter", "ValidExecution", True),
+    ("CarrierAdmission_acceptance", "RejectAll", True),
+    ("WitnessReplay", "safety", False),
+    ("WitnessReplay_dropLive", "Complete", True),
+    ("WitnessReplay_openWeak", "Complete", True),
+    ("WitnessReplay_missing", "LiveToken", True),
+    ("WitnessReplay_skipFinal", "Current", True),
+    ("WitnessReplay_repeat", "BatchWork", True),
+    ("WitnessReplay_noPin", "LiveRoots", True),
+    ("WitnessReplay_retain", "Released", True),
+    ("WitnessReplay_acceptance", "RejectAll", True),
+    ("ContextWalk", "safety", False),
+    ("ContextWalk_lateMark", "UniqueEntry", True),
+    ("ContextWalk_preorder", "Prefix", True),
+    ("ContextWalk_ignoreCut", "Prefix", True),
+    ("ContextWalk_forgetShared", "UniqueEntry", True),
+    ("ContextWalk_dropAfter", "Complete", True),
+    ("ContextWalk_eager", "Lazy", True),
+    ("ContextWalk_acceptance", "RejectAll", True),
+    ("ReaderProjection", "safety", False),
+    ("ReaderProjection_retain", "NoIdleProjection", True),
+    ("ReaderProjection_cacheInputs", "ExactInputs", True),
+    ("ReaderProjection_cutUnknown", "ExactInputs", True),
+    ("ReaderProjection_dropSource", "ExactInputs", True),
+    ("ReaderProjection_skipGuard", "Current", True),
+    ("ReaderProjection_acceptance", "RejectAll", True),
+    ("PublicationReads", "safety", False),
+    ("PublicationReads_byKey", "Complete", True),
+    ("PublicationReads_failure", "Complete", True),
+    ("PublicationReads_observers", "AllEvents", True),
+    ("PublicationReads_suffix", "Current", True),
+    ("PublicationReads_skipGuard", "Current", True),
+    ("PublicationReads_acceptance", "RejectAll", True),
+    ("CarrierRoots", "safety", False),
+    ("CarrierRoots_strongObserver", "WeakDiagnostic", True),
+    ("CarrierRoots_dropArgument", "SamePayloads", True),
+    ("CarrierRoots_forgetRead", "ReadRetention", True),
+    ("CarrierRoots_clearSDK", "CanonicalPreserved", True),
+    ("CarrierRoots_payload", "PayloadGoneAfterReturn", True),
+    ("CarrierRoots_acceptance", "RejectAll", True),
+    ("SemanticReads", "safety", False),
+    ("SemanticReads_policy", "Current", True),
+    ("SemanticReads_contract", "Current", True),
+    ("SemanticReads_source", "Current", True),
+    ("SemanticReads_generic", "Current", True),
+    ("SemanticReads_escape", "Current", True),
+    ("SemanticReads_return", "Current", True),
+    ("SemanticReads_acceptance", "RejectAll", True),
+    ("OwnedReads", "safety", False),
+    ("OwnedReads_promotion", "Current", True),
+    ("OwnedReads_policy", "Current", True),
+    ("OwnedReads_dead", "Current", True),
+    ("OwnedReads_missing", "MissingRefused", True),
+    ("OwnedReads_open", "UnknownStrong", True),
+    ("OwnedReads_acceptance", "RejectAll", True),
+    ("OwnedReads_construction", "ConstructorOnly", True),
+    ("OwnedReads_generation", "GenerationStable", True),
+    ("OwnedReads_parentDuring", "GenerationStable", True),
     ("SourceWindows", "safety", False),
     ("SourceWindows_cross", "CurrentEvidence", True),
     ("SourceWindows_omit", "CompleteRequirements", True),
@@ -296,9 +506,23 @@ def main():
     core = models.parents[1]
     bound = (sorted(models.glob("*.qnt")) + sorted((core / "graph").glob("*.ss"))
              + sorted((core / "module-system/schema/support").glob("*.ss"))
-             + [core / "t/graph-operations-test.ss", core / "module-system/source/projection.ss"])
+             + [core / "t/graph-operations-test.ss", core / "module-system/source/projection.ss",
+                core / "module-system/source/collection.ss", core / "t/module-source-admission-test.ss",
+                core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Source/Collections.lean"])
     def digests():
-        return {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest() for p in bound}
+        current = set(bound) | set(models.glob("*.qnt"))
+        return {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in sorted(current)}
+    issued_roots_lean = core / "proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean"
+    issued_roots_digest = "sha256:" + hashlib.sha256((models / "IssuedRootForwarding.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String :=\n  "{issued_roots_digest}"' not in issued_roots_lean.read_text():
+        raise AssertionError("Lean retains a stale IssuedRootForwarding Quint source binding")
+    bound.extend([issued_roots_lean, core / "t/issued-root-forwarding-test.ss",
+                  core / "t/persistent-selected-head-test.ss",
+                  core / "t/contract-diagnostics-test.ss",
+                  core / "scenarios/gitea-postgresql/types.ss",
+                  core / "scenarios/gitea-postgresql/gitea/types.ss",
+                  core / "scenarios/gitea-postgresql/postgresql/types.ss"])
     window_lean = core / "proofs/lean/PooFlowCoreProof/Admission/SourceWindows.lean"
     window_digest = "sha256:" + hashlib.sha256((models / "SourceWindows.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{window_digest}"' not in window_lean.read_text():
@@ -372,6 +596,80 @@ def main():
     ownership_lean = core / "proofs/lean/PooFlowCoreProof/Admission/ReplayOwnership.lean"
     metadata_lean = core / "proofs/lean/PooFlowCoreProof/Admission/MetadataOwnership.lean"
     allocation_lean = core / "proofs/lean/PooFlowCoreProof/Admission/MetadataAllocation.lean"
+    store_lean = core / "proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean"
+    artifact_lean = core / "proofs/lean/PooFlowCoreProof/Admission/ArtifactClosure.lean"
+    core_build_lean = core / "proofs/lean/PooFlowCoreProof/Admission/CoreBuildPublication.lean"
+    core_build_digest = "sha256:" + hashlib.sha256((models / "CoreBuildPublication.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{core_build_digest}"' not in core_build_lean.read_text():
+        raise AssertionError("Lean retains a stale CoreBuildPublication Quint source binding")
+    bound.extend([core_build_lean, core / "proofs/lean/CoreBuildPublicationCheck.lean",
+                  core / "t/build-artifact-publication-test.ss",
+                  core / "t/qualification/build-publication/compile.ss",
+                  core / "module-system/building/artifacts.ss", core / "build.ss",
+                  core / "module-system/building/interface.ss",
+                  core / "module-system/building/build-projection.ss",
+                  core / "module-system/selection/init-syntax.ss",
+                  core / "t/module-build-process-test.ss", core / "core-spec.ss",
+                  core / "t/qualification/module-bootstrap/objects.ss"])
+    handoff_lean = core / "proofs/lean/PooFlowCoreProof/Admission/CoreBuildHandoff.lean"
+    handoff_digest = "sha256:" + hashlib.sha256((models / "CoreBuildHandoff.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{handoff_digest}"' not in handoff_lean.read_text():
+        raise AssertionError("Lean retains a stale CoreBuildHandoff Quint source binding")
+    bound.extend([handoff_lean, core / "proofs/lean/CoreBuildHandoffCheck.lean",
+                  core / "t/qualification/build-publication/projection.ss",
+                  core / "t/qualification/build-publication/worker.ss", core / "Justfile"])
+    recovery_lean = core / "proofs/lean/PooFlowCoreProof/Admission/CoreStoreRecovery.lean"
+    approved_lean = core / "proofs/lean/PooFlowCoreProof/Admission/CoreApprovedRecovery.lean"
+    approved_digest = "sha256:" + hashlib.sha256((models / "CoreApprovedRecovery.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{approved_digest}"' not in approved_lean.read_text():
+        raise AssertionError("Lean retains a stale CoreApprovedRecovery Quint source binding")
+    bound.extend([approved_lean, core / "proofs/lean/CoreApprovedRecoveryCheck.lean",
+                  core / "t/approved-build-recovery-test.ss",
+                  core / "t/build-recovery-boundary-test.ss",
+                  core / "t/qualification/build-publication/approved-producer.ss",
+                  core / "modules/nix/build-publication.ss",
+                  core / "modules/nix/func.ss", core / "modules/nix/objects.ss"])
+    recovery_digest = "sha256:" + hashlib.sha256((models / "CoreStoreRecovery.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{recovery_digest}"' not in recovery_lean.read_text():
+        raise AssertionError("Lean retains a stale CoreStoreRecovery Quint source binding")
+    bound.extend([recovery_lean, core / "proofs/lean/CoreStoreRecoveryCheck.lean",
+                  core / "t/build-store-recovery-test.ss",
+                  core / "t/qualification/build-publication/store.ss",
+                  core / "t/qualification/build-publication/store-producer.ss",
+                  core / "module-system/source/role-forms.ss",
+                  core / "module-system/source/declaration.ss",
+                  core / "module-system/source/module-prelude.ss",
+                  core / "module-system/source/config-prelude.ss"])
+    source_loader_lean = core / "proofs/lean/PooFlowCoreProof/Admission/SourceLoader.lean"
+    source_loader_digest = "sha256:" + hashlib.sha256((models / "SourceLoader.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{source_loader_digest}"' not in source_loader_lean.read_text():
+        raise AssertionError("Lean retains a stale SourceLoader Quint source binding")
+    bound.extend([source_loader_lean, core / "proofs/lean/SourceLoaderCheck.lean",
+                  core / "t/source-loader-authority-test.ss",
+                  core / "t/qualification/mop-state/compile-store-boundary.ss"])
+    issued_loading_lean = core / "proofs/lean/PooFlowCoreProof/Admission/IssuedLoading.lean"
+    issued_loading_digest = "sha256:" + hashlib.sha256((models / "IssuedLoading.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{issued_loading_digest}"' not in issued_loading_lean.read_text():
+        raise AssertionError("Lean retains a stale IssuedLoading Quint source binding")
+    bound.extend([issued_loading_lean, core / "proofs/lean/IssuedLoadingCheck.lean",
+                  core / "t/artifact-authority-test.ss",
+                  core / "t/qualification/mop-state/artifact-authority.ss"])
+    artifact_digest = "sha256:" + hashlib.sha256((models / "ArtifactClosure.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{artifact_digest}"' not in artifact_lean.read_text():
+        raise AssertionError("Lean retains a stale ArtifactClosure Quint source binding")
+    bound.extend([artifact_lean, core / "proofs/lean/ArtifactClosureCheck.lean",
+                  core / "t/artifact-closure-test.ss",
+                  core / "t/qualification/mop-state/seal-artifact-closure.ss",
+                  core / "t/qualification/mop-state/artifact-closure.ss"])
+    store_digest = "sha256:" + hashlib.sha256((models / "StoreLowering.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{store_digest}"' not in store_lean.read_text():
+        raise AssertionError("Lean retains a stale StoreLowering Quint source binding")
+    bound.extend([store_lean, core / "proofs/lean/StoreLoweringCheck.lean",
+                  core / "t/mop-store-boundary-test.ss", core / "t/mop-store-boundary-driver-test.ss",
+                  core / "t/qualification/mop-state/store-policy.ss",
+                  core / "t/qualification/mop-state/compile-store-boundary.ss",
+                  core / "t/qualification/mop-state/precompiled-stores.ss",
+                  core / "t/qualification/mop-state/unlowered-store.ss"])
     allocation_digest = "sha256:" + hashlib.sha256((models / "MetadataAllocation.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{allocation_digest}"' not in allocation_lean.read_text():
         raise AssertionError("Lean retains a stale MetadataAllocation Quint source binding")
@@ -436,14 +734,96 @@ def main():
     admission_digest = "sha256:" + hashlib.sha256((models / "TestSourceAdmission.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{admission_digest}"' not in " ".join(admission_lean.read_text().split()):
         raise AssertionError("Lean retains a stale TestSourceAdmission Quint source binding")
+    work_lean = core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean"
+    work_digest = "sha256:" + hashlib.sha256((models / "SourceClosureWork.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{work_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale SourceClosureWork Quint source binding")
+    prefix_digest = "sha256:" + hashlib.sha256((models / "SourcePrefix.qnt").read_bytes()).hexdigest()
+    if f'sourcePrefixQuintDigest : String := "{prefix_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale SourcePrefix Quint source binding")
+    continuation_digest = "sha256:" + hashlib.sha256((models / "DependencyContinuation.qnt").read_bytes()).hexdigest()
+    if f'dependencyContinuationQuintDigest : String := "{continuation_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale DependencyContinuation Quint source binding")
+    reader_effect_digest = "sha256:" + hashlib.sha256((models / "ReaderEffectSupport.qnt").read_bytes()).hexdigest()
+    if f'readerEffectSupportQuintDigest : String := "{reader_effect_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale ReaderEffectSupport Quint source binding")
+    candidate_digest = "sha256:" + hashlib.sha256((models / "CandidatePublication.qnt").read_bytes()).hexdigest()
+    if f'candidatePublicationQuintDigest : String := "{candidate_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale CandidatePublication Quint source binding")
+    location_digest = "sha256:" + hashlib.sha256((models / "CandidateLocation.qnt").read_bytes()).hexdigest()
+    if f'candidateLocationQuintDigest : String := "{location_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale CandidateLocation Quint source binding")
+    enrollment_digest = "sha256:" + hashlib.sha256((models / "CompilerEnrollment.qnt").read_bytes()).hexdigest()
+    if f'compilerEnrollmentQuintDigest : String := "{enrollment_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale CompilerEnrollment Quint source binding")
+    authoring_digest = "sha256:" + hashlib.sha256((models / "AuthoringStage.qnt").read_bytes()).hexdigest()
+    if f'authoringStageQuintDigest : String := "{authoring_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale AuthoringStage Quint source binding")
+    carrier_return_digest = "sha256:" + hashlib.sha256((models / "CarrierReturn.qnt").read_bytes()).hexdigest()
+    if f'carrierReturnQuintDigest : String := "{carrier_return_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale CarrierReturn Quint source binding")
+    carrier_admission_digest = "sha256:" + hashlib.sha256((models / "CarrierAdmission.qnt").read_bytes()).hexdigest()
+    if f'carrierAdmissionQuintDigest : String := "{carrier_admission_digest}"' not in " ".join(work_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale CarrierAdmission Quint source binding")
+    bound.append(core / "t/module-authoring-dispatch-work-test.ss")
+    witness_lean = core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean"
+    witness_digest = "sha256:" + hashlib.sha256((models / "WitnessReplay.qnt").read_bytes()).hexdigest()
+    if f'witnessReplayQuintDigest : String := "{witness_digest}"' not in " ".join(witness_lean.read_text().split()):
+        raise AssertionError("Lean retains a stale WitnessReplay Quint source binding")
+    bound.extend([core / "poo-clos/classes.ss", core / "observability/memory.ss",
+                  core / "t/execution-progress-test.ss",
+                  core / "t/qualification/module-scale/worker-test.ss"])
+    bound.extend([core / "t/module-candidate-stage-test.ss",
+                  core / "t/module-candidate-metadata-test.ss",
+                  core / "object-family/read-projection.ss"])
+    bound.append(core / "t/module-reader-effect-support-test.ss")
+    bound.extend([work_lean, core / "module-system/graph/funs.ss", core / "t/module-closure-work-test.ss",
+                  core / "t/module-context-walk-test.ss"])
     bound.extend([admission_lean, core / "module-system/building/test-projection.ss",
+                  core / "t/module-init-import-test.ss",
+                  core / "ops/progress.ss", core / "ops/func.ss",
+                  core / "observability/testing-fixture.ss",
+                  core / "t/execution-cancellation-test.ss",
                   core / "module-system/building/interface.ss",
                   core / "t/module-testing-source-admission-test.ss",
+                  core / "t/module-loading-scale-test.ss",
+                  core / "t/qualification/module-scale/fixture.ss",
+                  core / "t/qualification/module-scale/worker-test.ss",
+                  core / "t/module-declaration-calibration-test.ss",
+                  core / "t/module-declaration-retention-test.ss",
+                  core / "t/module-dependency-continuation-test.ss",
+                  core / "t/evidence-read-ownership-test.ss",
+                  core / "t/evidence-witness-replay-test.ss",
+                  core / "t/module-declaration-1000-test.ss",
+                  core / "t/module-declaration-10000-test.ss",
+                  core / "module-system/building/test-observation.ss",
+                  core / "t/module-test-observation-test.ss",
+                  core / "module-system/source/directory.ss",
+                  core / "module-system/source/objects.ss",
+                  core / "module-system/source/selection.ss",
+                  core / "module-system/graph/funs.ss",
                   core / "module-system/source/reader.ss",
+                  core / "module-system/source/preparation.ss",
                   core / "module-system/source/link.ss",
                   core / "module-system/source/publication.ss",
                   core / "module-system/building/configuration-source.ss",
                   core / "module-system/authoring/admission.ss",
+                  core / "module-system/authoring/roles.ss",
+                  core / "module-system/config.ss",
+                  core / "module-system/source/interface.ss",
+                  core / "t/module-authoring-stage-test.ss",
+                  core / "module-system/types.ss",
+                  core / "t/semantic-module-test.ss",
+                  core / "t/module-authoring-test.ss",
+                  core / "poo-clos/objects.ss",
+                  core / "poo-clos/types.ss",
+                  core / "poo-clos/dispatch.ss",
+                  core / "object-family/read-projection.ss",
+                  core / "t/poo-clos-dispatch-test.ss",
+                  core / "proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean",
+                  core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SemanticReads.lean",
+                  core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean",
+                  core / "proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/PublicationReads.lean",
                   core / "poo-clos/method-bundle-syntax.ss",
                   core / "poo-clos/syntax.ss",
                   core / "t/poo-clos-method-bundle-test.ss",
@@ -474,7 +854,7 @@ def main():
     else:
         from backend import backend_session
     session = (nullcontext(args.server_endpoint) if args.server_endpoint else
-               backend_session(lambda chunk: print(chunk.decode(errors="replace"), end="", flush=True)))
+               backend_session(lambda chunk: print(chunk.decode(errors="replace"), end="", flush=True), args.quint))
     with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint:
         work = Path(directory)
         for source in models.glob("*.qnt"):

@@ -6,13 +6,38 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :clan/poo/object .get)
         (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/admission current-module-source-observer)
+        (only-in :core/module-system/source/admission current-module-source-observer
+                 module-source-read module-source-admit-current!)
         (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source))
 (export module-configuration-source-test)
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def module-configuration-source-test
   (test-suite "Observed native configuration roles"
+    (poo-flow-test-case "reader return owns the final check, not a duplicate after private cleanup"
+      (call-with-temporary-directory "configuration-return-guard"
+        (lambda (root)
+          (def config (path-expand "config.ss" root))
+          (def dependency (path-expand "context-input.ss" root))
+          (write-source (path-expand "gerbil.pkg" root) "(package: configuration-return-control)")
+          (write-source config "(def Config 'ready) (export Config)")
+          (write-source dependency "context-version-one")
+          (def inputs (list (cons dependency (module-source-read dependency))))
+          (def reads 0)
+          (def (context!) (module-source-admit-current! inputs))
+          (def result
+            (parameterize ((current-module-source-observer
+                            (lambda (key amount)
+                              (when (and (pair? key) (eq? (car key) 'file-read)
+                                         (equal? (caddr key) dependency))
+                                (set! reads (+ reads amount))))))
+              (poo-flow-core-configuration-source config 'Config context! role-sources: (list config))))
+          ;; One preparation/pre-bootstrap window, reader pre-import and post-import.
+          ;; Count actual opens, not requests served by a pure-window byte hit.
+          (check-equal? reads 3)
+          (check-equal? (.get result value) 'ready)
+          (write-source dependency "context-version-two")
+          (check-exception ((.get result admit-current)) error?))))
     (poo-flow-test-case "pure import checks do not reuse observations across initialization effects"
       (call-with-temporary-directory "configuration-initialization-effect"
         (lambda (root)

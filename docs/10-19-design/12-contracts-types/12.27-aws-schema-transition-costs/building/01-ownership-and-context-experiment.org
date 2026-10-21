@@ -1,0 +1,109 @@
+#+title: 12.27.17 Building Ownership and Rejected Context Experiment
+#+property: DOCUMENT_ID 12.27.17
+#+language: en
+#+property: STATUS rejected-experiment
+
+* Decision: not retained
+
+This is a research record, not a supported Core API. The candidate passed its
+isolated controls and the observed init-owned AWS aggregate, but did not reduce
+that aggregate's physical work: 48199 reads and 19873 build-admit-before reads
+remained. The added continuation method, eager identity preparation and
+candidate-specific fixture changes were removed. Current Building keeps its
+existing Graph guard and public entrypoints; no Source Builder was introduced.
+The diagnostic/compiled-artifact qualification boundary in the read map applies.
+
+The controls below describe the evaluated candidate, not the restored source.
+Raw receipts and the candidate source snapshots remain local artifacts. Do not
+copy its internal method name as an available interface.
+
+* Building ownership
+
+There is no independent Source Builder subsystem. The existing
+=module-system/source/build.ss= collects selected Core/Feature contributions
+into the build Graph and owns its source guard. The existing
+=module-system/building/= code consumes that same Graph for build-spec,
+compilation and init-owned test projections. These are stages of one Building
+chain. Their directory split must not become another builder, user entrypoint,
+Graph namespace or cache.
+
+** Evaluated candidate: share the final pure phase
+
+A warm Context with no Schema associations only copies Graph inputs before
+its initial check. The old path nevertheless performed a complete preliminary
+Graph admission, then the Context's own complete admission. In the minimal
+source-only fixture this reads its source three times. The Graph's before and
+after checks each create a window, followed by the Context's own window.
+
+Checking POO cache presence can establish that these data reads do not need a
+cold getter. It cannot establish source currentness or a request callback's
+purity. A preliminary candidate that only skipped the first admission was
+therefore not adopted: its remaining Context-wide window could encompass an
+open request guard. The evaluated candidate instead used the existing
+Graph guard's final source phase as a functional continuation boundary.
+
+The experimental Core-internal =.with-current-sources= method invoked that same guard. It
+starts fresh even inside another source window. Requests execute before the
+final window; the final Graph source check and Core's copied-input/generation
+check then share that window. If the already-cached request list is empty,
+there is no request getter/preparation/callback to cross, so the native check
+and its continuation can share one window. This is ordinary Scheme function
+composition using the existing source-read mechanism, not a new cache or DSL.
+
+The method compares the effective handler with the root Graph's handler. A
+derived/replaced handler is invoked with its original zero-argument calling
+convention; its return is followed by a separate fresh source window for the
+continuation. It is not given an inferred-pure flag or a cached approval.
+The continuation is Core-owned source validation, not a user-configurable
+business callback. All ordinary no-argument Graph admissions remain supported.
+
+The candidate took this route only when Graph identity/source/request
+data is already warm and there are no Schema associations to resolve. Graph
+generation was prepared as static identity data by the candidate factory; that
+does not demand external packages, business scopes or tests. Cold data and
+Schema associations retain the existing pre-check and full path. Public
+Context currentness remains independent; it does not retain construction's
+approval. The candidate kept compiled-artifact checks outside its proposed continuation
+window. Those existing gates remain intact after removing the candidate.
+
+** Native controls and explicit rejection boundaries
+
+Temporary Core qualification fixtures checked all of the following:
+
+- Warm, Schema-free construction reads its source once; after editing it,
+  an independent Context call still rejects.
+- A cold source-input getter must see the pre-check before it executes;
+  changing the source from that getter is refused.
+- A replaced zero-argument Graph guard that changes a source is called with
+  its original arity; the following source continuation rejects the change.
+- A real native build Graph request guard changes an admitted module file.
+  The Graph's fresh post-callback guard rejects before the continuation runs.
+
+The new read-count assertion fails against the prior constructor with three
+reads instead of one. The corrected candidate and the request/derived
+handler controls passed through the existing heap-fenced native test entrypoints.
+The initial cold-getter test mistakenly used eager .cc arguments; it was
+corrected to a lazy .def override. An initial request fixture also used a
+nonconforming slash-containing package identity and accidentally narrowed
+existing projection fixtures. Those fixture mistakes were corrected without
+changing the established expected projection counts. They are not production
+rejection or performance receipts.
+
+The temporary controls used the existing entrypoints:
+
+#+begin_src text
+just test-file t/module-build-graph-test.ss
+just test-file t/admission-publication-test.ss
+#+end_src
+
+** Reflection and next admission gate
+
+A smaller synthetic fixture is insufficient justification for a new Graph
+protocol. A candidate must identify its applicability in the real selected
+Graph and reduce physical work there while preserving effect boundaries.
+Cached slot presence is neither admission evidence nor a purity declaration
+for request callbacks. Future optimization must first explain why a real
+package/root phase qualifies; it must not add another builder to compensate
+for an unqualified branch.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]
