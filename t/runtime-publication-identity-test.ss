@@ -1,0 +1,32 @@
+;;; -*- Gerbil -*-
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Runtime selection must not reinstall canonical library definitions.
+(import :std/test :clan/poo/object
+        (only-in :clan/poo/mop validate)
+        (only-in :std/source this-source-file)
+        (only-in :gerbil/expander eval-syntax make-top-context current-expander-context)
+        (only-in :core/observability/types PooFlowDebugDurationReceiptContract))
+(export runtime-publication-identity-test)
+(def root (path-expand ".." (path-directory (this-source-file))))
+(def runtime-publication-identity-test
+  (test-suite "Runtime publication preserves installed contract identity"
+    (test-case "source init build projection preserves held watchdog receipts"
+      (def contract PooFlowDebugDurationReceiptContract)
+      (def proto (.ref contract 'proto))
+      (def held (.o (:: @ proto)
+                   phase: 'identity-probe policy-label: 'testing/default-case
+                   limit-milliseconds: 100 elapsed-milliseconds: 101
+                   accepted?: #f reason: 'idle-exceeded))
+      (check-equal? (eq? (validate contract held) held) #t)
+      (def paths (load-path))
+      (parameterize ((current-expander-context (make-top-context)))
+        (eval-syntax '(import :gerbil/core))
+        (eval-syntax `(import (only-in ,(path-expand "init.ss" root) init.build-spec)))
+        (check-equal? (load-path) paths)
+        (check-equal? (pair? ((eval-syntax 'init.build-spec) '())) #t))
+      ;; Explicit build projection may register its source package. Runtime
+      ;; import above remains inert; neither route may reinstall the objects.
+      (check-equal? (eq? contract PooFlowDebugDurationReceiptContract) #t)
+      (check-equal? (eq? proto (.ref PooFlowDebugDurationReceiptContract 'proto)) #t)
+      (check-equal? (eq? (validate PooFlowDebugDurationReceiptContract held) held) #t))))
