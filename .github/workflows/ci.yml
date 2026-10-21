@@ -59,13 +59,5 @@ jobs:
         run: just test-yuanxu-prelude
       - name: Qualify source-only selected build bootstrap
         run: just test-bootstrap
-      - name: Test Core
-        shell: bash
-        run: |
-          set -euo pipefail
-          log="$(mktemp)"
-          trap 'rm -f "$log"' EXIT
-          gerbil -:max-heap=1G,debug=q test t 2>&1 | tee "$log"
-          if grep -E 'ERROR (CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
-          grep -F 'HARNESS-OK' "$log" >/dev/null
-          grep -x 'OK' "$log" >/dev/null
+      - name: Test Core with the same directory inputs and 1 GiB workers
+        run: just test-native-directory

@@ -451,3 +451,20 @@ test-issuer-projection directory:
 # The nested public package owns its prelude/header, independently of Core roots.
 test-yuanxu-prelude:
     just test-file yuanxu/tests/prelude-test.ss
+
+# Match gxtest's non-recursive `test t` discovery exactly: direct children
+# ending in -test.ss, in native lexical order. Each existing test-file gate
+# gets the original CI heap limit; no suite or assertion is excluded.
+test-native-directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export LC_ALL=C
+    shopt -s nullglob
+    files=(t/*-test.ss)
+    test "${#files[@]}" -gt 0
+    printf '[core-testing] phase=native-directory-manifest fileCount=%s\n' "${#files[@]}"
+    printf '%s\n' "${files[@]}"
+    for file in "${files[@]}"; do
+      GERBIL_TEST_MAX_HEAP=1G just test-file "$file"
+    done
+    printf '[core-testing] phase=native-directory-complete fileCount=%s\n' "${#files[@]}"
