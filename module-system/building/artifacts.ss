@@ -7,7 +7,7 @@
         (only-in :std/io/tempfile make-temporary-file-name call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-u8vector read-all-as-string)
         (only-in :std/misc/process run-process)
-        (only-in :core/module-system/source/admission module-source-type module-source-admit-current!))
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current!))
 (export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts! clean-build-artifacts!
         current-build-output-directory run-build-artifact-process
         accept-build-artifact-handoff! read-build-artifact-handoff
@@ -178,7 +178,7 @@
   (call-with-input-string
     (call-with-output-string
       (lambda (port)
-        (write (list 'poo-flow-core-build-handoff-v1
+        (write (list 'yuanxu-build-handoff-v1
                      (issued-build-identities state) (issued-build-inputs state)
                      libdir (issued-build-files state)
                      (issued-build-record state) (issued-build-record-digest state)) port)))
@@ -204,7 +204,7 @@
 (def (read-build-artifact-handoff)
   (def packet (read))
   (unless (and (list? packet) (= (length packet) 7)
-               (eq? (car packet) 'poo-flow-core-build-handoff-v1)
+               (eq? (car packet) 'yuanxu-build-handoff-v1)
                (eof-object? (read))
                (list? (list-ref packet 1)) (andmap symbol? (list-ref packet 1))
                (list? (list-ref packet 2))
@@ -281,10 +281,10 @@
                  (not (equal? published (issued-build-files previous))))
         (error "approved Core build outputs changed; require a new publication"))
       (create-directory* libdir)
-      (def record (make-temporary-file-name (path-expand ".poo-flow-build-issuance-" libdir)))
+      (def record (make-temporary-file-name (path-expand ".yuanxu-build-issuance-" libdir)))
       (call-with-output-file (list path: record truncate: #t)
         (lambda (port)
-          (write (list 'poo-flow-core-build-v1 (.get graph generation) files) port)
+          (write (list 'yuanxu-build-v1 (.get graph generation) files) port)
           (newline port)))
       (def generation (.get graph generation))
       (def state (make-issued-build

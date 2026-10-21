@@ -36,15 +36,15 @@ been removed from this chapter rather than retained as a second current entry.
 
 #+begin_src scheme
 ;; project/init.ss -- the root selection; dependencies enter its same closure
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :app (infrastructure))
 
 ;; modules/app/infrastructure/types.ss
 (import (only-in :clan/poo/object object?)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/modules/opentofu/types OpenTofuScopeContract))
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract))
 (def Scope
-  (poo-flow-predicate-contract 'app/infrastructure/scope object?
+  (yuanxu-predicate-contract 'app/infrastructure/scope object?
                              (lambda (_value _context) '())))
 (export Scope OpenTofuScopeContract)
 

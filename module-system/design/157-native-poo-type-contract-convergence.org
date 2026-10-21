@@ -69,9 +69,9 @@ domain object never inherits contract obligations as object behavior.
 
 Only behavior with an open specialization axis is generic:
 
-- =poo-flow-type-classify= dispatches to =.classify=;
-- =poo-flow-contract-obligations= dispatches to =.obligations=; and
-- =poo-flow-contract-admit= dispatches to =.admit=.
+- =yuanxu-type-classify= dispatches to =.classify=;
+- =yuanxu-contract-obligations= dispatches to =.obligations=; and
+- =yuanxu-contract-admit= dispatches to =.admit=.
 
 Fixed accessors, constructors, pure helpers, and final projections remain
 ordinary named functions.  The project reuses upstream =element?= and
@@ -130,7 +130,7 @@ depending on the aggregate unit-test loader.
 * Graph vertical slice
 
 Graph node, edge, aggregate, analysis, and loop-analysis contracts are native
-=PooFlowContract.= descriptors.  Their slot schemas are ordinary POO objects,
+=YuanxuContract.= descriptors.  Their slot schemas are ordinary POO objects,
 and every slot holds a native Type descriptor.  Contract admission first
 classifies the graph object's POO responsibility and then discharges required
 slot and =element?= obligations.
@@ -149,7 +149,7 @@ validation, and analysis receipt construction.
 
 The sandbox resource owner stores filesystem, CPU, ports, memory, and timeout
 constraints as native Type descriptors inside POO slot-schema objects.  Its
-=PooFlowSandboxResourcesPrototypeContract= is a native =PooFlowContract.=
+=PooFlowSandboxResourcesPrototypeContract= is a native =YuanxuContract.=
 descriptor whose pure obligations reject missing required slots and values that
 fail upstream =element?= admission.
 
@@ -168,7 +168,7 @@ shape, and integration with the existing evidence-producing validation path.
 Session policy and tool-grant owners use the repository-wide functional native
 composition owner, =core/module-system/schema/slot-contracts.ss=.  That module constructs
 native value Types, POO slot-schema objects, pure slot obligations, and
-=PooFlowContract.= descriptors.  Graph and sandbox resource contracts use the
+=YuanxuContract.= descriptors.  Graph and sandbox resource contracts use the
 same owner.  Policy objects use POO slot presence and lookup; tool-grant
 authorization rows use their bounded row reader.  These paths therefore share
 contract semantics without conflating their representation boundaries.
@@ -220,7 +220,7 @@ rejection.
 * JSON Schema and proof projection vertical slice
 
 The JSON Schema emitter maps normalized IR nodes directly to native Types,
-POO slot schemas, and a =PooFlowContract.= descriptor.  Node =kind= remains an
+POO slot schemas, and a =YuanxuContract.= descriptor.  Node =kind= remains an
 IR dispatch key only.  The validator checks slot values through upstream
 =element?= and cannot recover or invoke a predicate from a projected record.
 

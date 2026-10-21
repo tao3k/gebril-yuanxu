@@ -57,7 +57,7 @@ are additional alias paths that a future ownership boundary must account for.
 
 * Isolation experiment and retained negative result
 
-Executable owner: [[file:../../../t/mop-route-mutation-test.ss][mop-route-mutation-test.ss]]. It uses =poo-flow-test-case=,
+Executable owner: [[file:../../../t/mop-route-mutation-test.ss][mop-route-mutation-test.ss]]. It uses =yuanxu-test-case=,
 the real native observer/replay entry and actual SDK setters. Its small
 =change-and-restore= helper only owns temporary mutation cleanup. It does not
 authenticate, issue records, intercept writes or mark a callback pure.
@@ -107,7 +107,7 @@ and current. An unselected error-producing slot is never evaluated.
 
 * Lean correspondence and the necessary missing condition
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RouteMutation.lean][RouteMutation.lean]] binds the Quint digest and proves:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean][RouteMutation.lean]] binds the Quint digest and proves:
 
 - =equal_projection_same_decision=: any gate over identical endpoint
   observations gives the same answer. No endpoint-only policy can infer the

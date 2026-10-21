@@ -2,14 +2,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object "./qualification/opentofu/objects.ss"
-        (only-in :core/profile-composition/selection-syntax use-module)
+        (only-in :yuanxu/profile-composition/selection-syntax use-module)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export ops-functional-test)
 (def ops-functional-test
   (test-suite "Ops Functional First uses the admitted Module scope"
-    (poo-flow-test-case "pure validation, command preparation and preview create no effects"
+    (yuanxu-test-case "pure validation, command preparation and preview create no effects"
       (use-module Ops as ops
         (with-slots (validate prepare-command preview) ops
           (call-with-temporary-directory "ops-preview"
@@ -35,7 +35,7 @@
                 (check-exception (validate view) error?)
                 (check-exception (preview (.cc Script 'command '("touch" 42))) error?)
                 (check-exception (prepare-command Script '(42)) error?)))))))
-    (poo-flow-test-case "environment merging has explicit inputs and leaves both unchanged"
+    (yuanxu-test-case "environment merging has explicit inputs and leaves both unchanged"
       (use-module Ops as ops
         (with-slots (merge-environment preview) ops
           (let* ((base (.o KEEP: "base" BASE_ONLY: "a"))
@@ -51,7 +51,7 @@
             (.def (Command @ (.get ops prototypes Script)) command: '("true"))
             ;; No host environment is sampled by the default preview.
             (check-equal? (.all-slots (.get (preview Command) environment)) '())))))
-    (poo-flow-test-case "function and native method share execution, failures, logs and timeout"
+    (yuanxu-test-case "function and native method share execution, failures, logs and timeout"
       (use-module Ops as ops
         (with-slots (run) ops
           (call-with-temporary-directory "ops-functional-run"

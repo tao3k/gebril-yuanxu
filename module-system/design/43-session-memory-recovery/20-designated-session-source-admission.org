@@ -63,7 +63,7 @@ configured permission are still required. Source authentication does not
 replace them, turn eligible into authorized, or issue an effect grant.
 
 The Assurance review operation independently checks the same captured source
-and Governance, before and after its Host checks. Calling =poo-flow-verify=
+and Governance, before and after its Host checks. Calling =yuanxu-verify=
 directly with an unbound/foreign-source or copied-Governance request therefore
 cannot bypass the consumer wrapper and mint a review. Core retains exact
 private adapter/seal issuance. A seal or raw valid-evidence observation alone

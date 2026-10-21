@@ -31,7 +31,7 @@ producers/consumers still use command-vector and are unchanged by this design:
 
 #+begin_src scheme
 (.def funflow-check
-  kind: 'poo-flow.funflow.check.prototype
+  kind: 'yuanxu.funflow.check.prototype
   check-name: #f
   profile-ref: #f
   commands: '()
@@ -55,7 +55,7 @@ producers/consumers still use command-vector and are unchanged by this design:
   runtime-executed: #f)
 
 (.def funflow-pipeline
-  kind: 'poo-flow.funflow.pipeline.prototype
+  kind: 'yuanxu.funflow.pipeline.prototype
   pipeline-name: #f
   checks: '()
   metadata: '()
@@ -94,7 +94,7 @@ Contracts from [[file:01-surface-and-schema.org][module 01]], with their concret
       (make-gerbil-scheme-ci-profile prototype-scope)))
 
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.) source: source-handle))
 
@@ -355,7 +355,7 @@ do not authenticate SourceRef or deploy cleanup actions.
             effective-profile: selected-profile-value
             profile-path:
             '(ExtendedCI funflow profiles gerbil-scheme))))
-  (poo-flow-contract-admit
+  (yuanxu-contract-admit
     profile-contract-value selected-profile-value admission-context))
 #+end_src
 
@@ -394,7 +394,7 @@ The existing bounded declaration below does exactly this lowering:
 (use-module Funflow as ff (.o (:: @ ff)))
 
 ;; Hygienic expansion, same object identity; source expression evaluated once.
-(let ((ff (poo-flow-module-scope Funflow)))
+(let ((ff (yuanxu-module-scope Funflow)))
   (.o (:: @ ff)))
 #+end_src
 

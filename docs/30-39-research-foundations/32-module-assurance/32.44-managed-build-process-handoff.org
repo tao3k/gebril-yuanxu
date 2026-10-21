@@ -28,7 +28,7 @@ association, starts the selected worker through =std/misc/process= and sends
 only retained expectations on the parent-owned stdin pipe:
 
 #+begin_src scheme
-(list 'poo-flow-core-build-handoff-v1
+(list 'yuanxu-build-handoff-v1
       (issued-build-identities state) (issued-build-inputs state)
       libdir (issued-build-files state)
       (issued-build-record state) (issued-build-record-digest state))

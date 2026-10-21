@@ -53,7 +53,7 @@ author input and do not cause package acquisition:
               null_data_source: (.get null-scope types data null_data_source)))))))
 
 (def ConfigurationContract
-  (poo-flow-opentofu-configuration-from-types SelectedTypes))
+  (yuanxu-opentofu-configuration-from-types SelectedTypes))
 #+end_src
 
 All aliases are bounded by the existing hygienic =use-module=. The selection
@@ -105,9 +105,9 @@ override only a desired value through the existing native object operators.
 
 * Composition boundary
 
-=poo-flow-opentofu-configuration-from-types= composes the selected generated
+=yuanxu-opentofu-configuration-from-types= composes the selected generated
 input schemas with the shared JSON Schema compiler. The existing lower-level
-=poo-flow-opentofu-configuration-contract= still serves raw-block conversion
+=yuanxu-opentofu-configuration-contract= still serves raw-block conversion
 controls; ordinary module consumers need not retrieve those blocks.
 
 The new function rejects a selection with the wrong provider/resource/data

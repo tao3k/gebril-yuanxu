@@ -45,8 +45,8 @@
   (def datum (syntax-e path))
   (def name (and (symbol? datum) (symbol->string datum)))
   (def source
-    (and name (string-prefix? ":core/" name)
-         (path-expand (string-append (substring name 6 (string-length name)) ".ss") source-core)))
+    (and name (string-prefix? ":yuanxu/" name)
+         (path-expand (string-append (substring name (string-length ":yuanxu/") (string-length name)) ".ss") source-core)))
   (original-import (if (and source (file-exists? source)) source path) reload?))
 (def (visit context)
   (cond
@@ -58,8 +58,8 @@
      (for-each visit (module-context-import context))
      (let* ((identity (expander-context-id context))
             (name (and (symbol? identity) (symbol->string identity)))
-            (source (and name (string-prefix? "core/" name)
-                         (path-expand (string-append (substring name 5 (string-length name)) ".ss") source-core))))
+            (source (and name (string-prefix? "yuanxu/" name)
+                         (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") source-core))))
        (when (and source (file-exists? source))
          (displayln "SOURCE-TAIL-COMPILE " name) (force-output)
          (compile-module source [output-dir: (path-expand "lib" root) invoke-gsc: #t keep-scm: #t])

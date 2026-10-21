@@ -5,21 +5,21 @@
 
 * Entry and selection
 
-The public =:core/module-system/interface= entry now accepts either the existing
+The public =:yuanxu/module-system/interface= entry now accepts either the existing
 native source context, an exact =init.ss= path, or a module directory. It does
 not import or execute source files. A normalized publication reader is still an
 explicit capability, not an installed runtime Loader. For example:
 
 #+begin_src scheme
 ;; repository/init.ss; parsed as declaration data
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :custom (guestbook -smoke)
   :unused (experimental disable: #t))
 
 ;; Preparation succeeds without an executable publication provider.
-(def sources (poo-flow-load-modules "./init.ss"))
+(def sources (yuanxu-load-modules "./init.ss"))
 ;; A platform can supply an admitted source/publication adapter explicitly.
-(def selected (poo-flow-load-modules "./init.ss"
+(def selected (yuanxu-load-modules "./init.ss"
                 read-publication: read-normalized-publication))
 (.get selected modules custom guestbook)
 ((.get selected admit-current)) ; required before publishing a derived plan
@@ -35,7 +35,7 @@ pass the exact authoritative init path; implicit precedence is refused. Relative
 =source:= paths resolve against that init file. Without an explicit source option,
 repository init defaults to =modules/=; =modules/init.ss= defaults to its directory.
 
-=init.ss= is read, never evaluated. One bounded =poo-flow!= form plus compiler
+=init.ss= is read, never evaluated. One bounded =yuanxu!= form plus compiler
 =import/export= scaffolding is accepted. The reader lowers categorized rows through
 the existing native selection constructor; it does not create another Feature
 resolver. =disable: #f= remains an explicit decision distinct from absence;
@@ -45,7 +45,7 @@ Nested feature declarations, external =@= roots, named Profile init forms and
 arbitrary source computation are not supported by this filesystem adapter yet;
 the legacy short compiler form retains its existing surface. The =mode:/source:=
 compiler form and filesystem reader share the same pure lowering and produce
-native intent. The compiler form exports =poo-flow-module-init= hygienically;
+native intent. The compiler form exports =yuanxu-module-init= hygienically;
 it performs no filesystem discovery during expansion or declaration evaluation.
 
 * Demand and source lifetime

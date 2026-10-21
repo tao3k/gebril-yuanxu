@@ -5,15 +5,15 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in "../../../init.ss" init.modules init.tests)
-        (only-in :core/observability/memory poo-flow-debug-memory-snapshot)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/module-system/source/admission current-module-source-observer module-source-read)
-        (only-in :core/observability/testing-case
-                 poo-flow-test-case poo-flow-test-checkpoint))
+        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
+        (only-in :yuanxu/observability/testing-case
+                 yuanxu-test-case yuanxu-test-checkpoint))
 (export worker-test)
 (def worker-test
   (test-suite "Real native declaration expansion through init"
-    (poo-flow-test-case "all selected declarations expand without linking business scopes"
+    (yuanxu-test-case "all selected declarations expand without linking business scopes"
       (def count (length (.all-slots init.modules)))
       (def counts (make-hash-table-eq))
       (def class-construction-reads 0)
@@ -33,11 +33,11 @@
                               native-source-import-start publication-guard-run file-read))
           (hash-update! counts category (cut + <> amount) 0))
         (when previous (previous key amount)))
-      (poo-flow-test-checkpoint 'native-graph-start)
+      (yuanxu-test-checkpoint 'native-graph-start)
       (def graph
         (parameterize ((current-module-source-observer observe))
           (.get init.tests selected-graph)))
-      (poo-flow-test-checkpoint 'native-graph-ready)
+      (yuanxu-test-checkpoint 'native-graph-ready)
       (check-equal? (eq? graph (.get init.tests selected-graph)) #t)
       (check-equal? (length (.get graph module-order)) count)
       (check-equal? (car (.get graph module-order)) 'module-0)
@@ -62,8 +62,8 @@
       (def current! (.get graph admit-current))
       ;; Measure the normal live Graph. GC is an Observability measurement,
       ;; not cache invalidation: the same selected Graph remains reachable.
-      (def held (poo-flow-debug-memory-snapshot 'graph-held collect?: #t))
-      (poo-flow-write-observation-line!
+      (def held (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))
+      (yuanxu-write-observation-line!
         "reader-graph-live modules=%s live-bytes=%s" count (.get held live-bytes))
       (check-equal? (eq? graph (.get init.tests selected-graph)) #t)
       (dynamic-wind

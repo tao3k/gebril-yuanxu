@@ -8,7 +8,7 @@
                  .ref
                  object<-alist
                  object?)
-        :core/composition/roles)
+        :yuanxu/composition/roles)
 
 (export +feature-adapter-capability-kind+
         +feature-adapter-requirement-kind+
@@ -24,13 +24,13 @@
         defpoo-feature-projection-request)
 
 (def +feature-adapter-capability-kind+
-  'poo-flow.feature-adapter-capability.v1)
+  'yuanxu.feature-adapter-capability.v1)
 
 (def +feature-adapter-requirement-kind+
-  'poo-flow.feature-adapter-requirement.v1)
+  'yuanxu.feature-adapter-requirement.v1)
 
 (def +feature-projection-request-kind+
-  'poo-flow.feature-projection-request.v1)
+  'yuanxu.feature-projection-request.v1)
 
 ;; : (-> Alist POOObject)
 ;; : (-> Object Symbol [Symbol] Boolean)

@@ -67,3 +67,7 @@ integration. They include no runtime Loader implementation.
   scope/test leaves, native fixture isolation and remaining benchmark policies.
   Public operation and project-context conventions are owned by
   [[file:../../../standards/README.org][Core Standards]], not another execution layer.
+
+- [[file:13.16-yuanxu-package-and-prelude.org][Yuanxu package identity and language prelude]] separates the one library
+  namespace from its optional consumer language entry and documents source-only
+  bootstrap, native dependency ownership and direct consumer migration.

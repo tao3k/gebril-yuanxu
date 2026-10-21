@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.CoreBuildHandoff
-open Lean PooFlowCoreProof.Admission.CoreBuildHandoff
+import YuanxuProof.Admission.CoreBuildHandoff
+open Lean YuanxuProof.Admission.CoreBuildHandoff
 
 def checkHandoff (j : Json) : Except String Unit := do
   let rows ← j.getArr?

@@ -141,7 +141,7 @@ Core's existing evidence producer first normalizes the candidate, classifies it,
 then explicitly sequences domain obligations and optional platform obligations:
 
 #+begin_src scheme
-(let* ((local (poo-flow-contract-obligations contract candidate context))
+(let* ((local (yuanxu-contract-obligations contract candidate context))
        (platform (context-contract-obligations context contract candidate)))
   (append local platform))
 #+end_src
@@ -149,7 +149,7 @@ then explicitly sequences domain obligations and optional platform obligations:
 The optional Context protocol is itself a native slot Generic:
 
 #+begin_src scheme
-(.defgeneric (poo-flow-context-contract-obligations context contract candidate)
+(.defgeneric (yuanxu-context-contract-obligations context contract candidate)
   slot: .contract-obligations)
 #+end_src
 
@@ -180,7 +180,7 @@ The test's platform helper now only calls production boundaries:
 
 #+begin_src scheme
 (def selection
-  (poo-flow-load-modules (path-expand "init.ss" root)))
+  (yuanxu-load-modules (path-expand "init.ss" root)))
 (def publication
   (.call AdmissionPublication. .for-export
          selection 'fixture/application 'Scenario))

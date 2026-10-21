@@ -16,8 +16,8 @@
                  check-true
                  test-error
                  test-suite)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/modules/funflow/control-plane/api)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/modules/funflow/control-plane/api)
 
 (export functional-flow-kernel-test)
 
@@ -38,35 +38,35 @@
    (else
     (functional-flow-alist-value key (cdr entries)))))
 
-(defpoo-flow-arr macro-inc
+(defyuanxu-arr macro-inc
   macro-inc
   (lambda (x) (+ x 1))
   'number
   'number)
 
-(defpoo-flow-arr macro-double
+(defyuanxu-arr macro-double
   macro-double
   (lambda (x) (* x 2))
   'number
   'number)
 
-(defpoo-flow-compose macro-pipeline
+(defyuanxu-compose macro-pipeline
   macro-pipeline
   macro-inc
   macro-double)
 
-(defpoo-flow-map macro-mapped
+(defyuanxu-map macro-mapped
   macro-mapped
   macro-inc
   (lambda (x) (* x 10))
   'number)
 
-(defpoo-flow-fanout macro-fanout
+(defyuanxu-fanout macro-fanout
   macro-fanout
   macro-inc
   macro-double)
 
-(defpoo-flow-dag macro-dag
+(defyuanxu-dag macro-dag
   macro-dag
   macro-inc
   macro-double)
@@ -77,21 +77,21 @@
                      'unit
                      'unit))
 
-(defpoo-flow-try macro-try
+(defyuanxu-try macro-try
   macro-try
   macro-throw)
 
-(defpoo-flow-dag-artifacts macro-dag-receipt
+(defyuanxu-dag-artifacts macro-dag-receipt
   macro-dag-manifest
   macro-dag
   'macro-dag-request)
 
-(defpoo-flow-first macro-first
+(defyuanxu-first macro-first
   macro-first
   macro-inc
   'symbol)
 
-(defpoo-flow-second macro-second
+(defyuanxu-second macro-second
   macro-second
   macro-inc
   'symbol)
@@ -101,7 +101,7 @@
 ;; : TestSuite
 (def functional-flow-kernel-test
   (test-suite "functional flow kernel"
-    (poo-flow-test-case "exposes a POO category object for flow arrows"
+    (yuanxu-test-case "exposes a POO category object for flow arrows"
       (let* ((category default-flow-category)
              (inc (flow-category-arr category
                                      'inc
@@ -113,7 +113,7 @@
         (check-equal? (flow-category-arrow category) 'flow)
         (check-equal? (flow-category-domain category inc) 'number)
         (check-equal? (flow-category-codomain category inc) 'number)))
-    (poo-flow-test-case "exposes Funflow-style required strands as POO metadata"
+    (yuanxu-test-case "exposes Funflow-style required strands as POO metadata"
       (let* ((category default-flow-category)
              (registry (flow-category-strand-registry category))
              (simple (flow-strand-for-kind-in registry 'simple))
@@ -140,7 +140,7 @@
                         io-lift
                         caching
                         runtime-handoff))))
-    (poo-flow-test-case "extends flow strands with POO override semantics"
+    (yuanxu-test-case "extends flow strands with POO override semantics"
       (let* ((word-count
               (make-flow-strand-descriptor
                'word-count
@@ -179,7 +179,7 @@
                         io-continuation
                         local-kleisli
                         extension-hook))))
-    (poo-flow-test-case "exposes Arrow first and second through the category object"
+    (yuanxu-test-case "exposes Arrow first and second through the category object"
       (let* ((category default-flow-category)
              (inc (flow-category-arr category
                                      'inc
@@ -190,7 +190,7 @@
              (second (flow-category-second category 'second-inc inc 'symbol)))
         (check-equal? (kernel-run first '(3 tag)) '(4 tag))
         (check-equal? (kernel-run second '(tag 3)) '(tag 4))))
-    (poo-flow-test-case "composes category arrows and identity without execution side effects"
+    (yuanxu-test-case "composes category arrows and identity without execution side effects"
       (let* ((category default-flow-category)
              (inc (flow-category-arr category
                                      'inc
@@ -210,7 +210,7 @@
                         identity)))
         (check-equal? (flow-step-count pipeline) 3)
         (check-equal? (kernel-run pipeline 3) 8)))
-    (poo-flow-test-case "observes category identity and associativity laws"
+    (yuanxu-test-case "observes category identity and associativity laws"
       (let* ((category default-flow-category)
              (inc (flow-category-arr category
                                      'inc
@@ -246,7 +246,7 @@
         (check-equal? (kernel-run right-identity 3) (kernel-run inc 3))
         (check-equal? (kernel-run assoc-left 3) (kernel-run assoc-right 3))
         (check-equal? (flow-step-count assoc-left) (flow-step-count assoc-right))))
-    (poo-flow-test-case "maps flow output as functional composition"
+    (yuanxu-test-case "maps flow output as functional composition"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (mapped (flow-category-map default-flow-category
                                         'mapped
@@ -255,7 +255,7 @@
                                         'number)))
         (check-equal? (flow-step-count mapped) 2)
         (check-equal? (kernel-run mapped 4) 50)))
-    (poo-flow-test-case "fans out two arrows with branch declaration semantics"
+    (yuanxu-test-case "fans out two arrows with branch declaration semantics"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
              (fanout (flow-category-fanout default-flow-category
@@ -264,7 +264,7 @@
                                            double)))
         (check-equal? (flow-branch-declaration? fanout) #t)
         (check-equal? (kernel-run fanout 3) '(4 6))))
-    (poo-flow-test-case "projects Arrow fanout into a report-only DAG receipt"
+    (yuanxu-test-case "projects Arrow fanout into a report-only DAG receipt"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
              (fanout (flow-category-fanout default-flow-category
@@ -286,7 +286,7 @@
         (check-equal? (functional-flow-alist-value 'strategy-facing receipt) #t)
         (check-equal? (functional-flow-alist-value 'runtime-executed receipt) #f)
         (check-equal? plan-receipt receipt)))
-    (poo-flow-test-case "publishes Arrow DAG runtime manifest for Marlin discovery"
+    (yuanxu-test-case "publishes Arrow DAG runtime manifest for Marlin discovery"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
              (fanout (flow-category-fanout default-flow-category
@@ -319,7 +319,7 @@
         (check-equal? (functional-flow-alist-value 'runtime-executed receipt)
                       #f)
         (check-equal? plan-manifest manifest)))
-    (poo-flow-test-case "authors user-facing functional DAG flow artifacts"
+    (yuanxu-test-case "authors user-facing functional DAG flow artifacts"
       (check-equal? (flow-name macro-dag) 'macro-dag)
       (check-equal? (flow-branch-declaration? macro-dag) #t)
       (check-equal? (kernel-run macro-dag 3) '(4 6))
@@ -336,13 +336,13 @@
       (check-equal? (functional-flow-alist-value 'runtime-executed
                                                  macro-dag-manifest)
                     #f))
-    (poo-flow-test-case "applies first and second arrows over pair-shaped values"
+    (yuanxu-test-case "applies first and second arrows over pair-shaped values"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (first (flow-first 'first-inc inc 'symbol))
              (second (flow-second 'second-inc inc 'symbol)))
         (check-equal? (kernel-run first '(3 tag)) '(4 tag))
         (check-equal? (kernel-run second '(tag 3)) '(tag 4))))
-    (poo-flow-test-case "authors functional flows with hygienic Gerbil macros"
+    (yuanxu-test-case "authors functional flows with hygienic Gerbil macros"
       (check-equal? (flow-name macro-inc) 'macro-inc)
       (check-equal? (flow-name macro-pipeline) 'macro-pipeline)
       (check-equal? (kernel-run macro-pipeline 3) 8)

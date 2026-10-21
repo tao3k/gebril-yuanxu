@@ -36,9 +36,9 @@ Source preparation emits a native compiler frame, without parsing user def
 forms or evaluating configuration during expansion:
 
 #+begin_src scheme
-prelude: :core/module-system/source/config-prelude
+prelude: :yuanxu/module-system/source/config-prelude
 ;; Original package/namespace headers are preserved here by preparation.
-(import (only-in :core/module-system/source/declaration
+(import (only-in :yuanxu/module-system/source/declaration
                  include-module-body export-role-config))
 (include-module-body "/original/module/config.ss")
 (export-role-config Config)

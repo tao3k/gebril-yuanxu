@@ -5,14 +5,14 @@
 
 * Entry and boundary
 
-=:core/object-syntax/path-slots= exports authoring bindings =.def=, =.o= and
+=:yuanxu/object-syntax/path-slots= exports authoring bindings =.def=, =.o= and
 =@method= (braces). Import them instead of the corresponding primitive bindings
 in a configuration owner. The pinned =:clan/poo/object= bindings are unchanged;
 they continue to support literal dotted slot names. There is no runtime patch
 interpreter, Loader hook or global syntax replacement.
 
 #+begin_src scheme
-(import :core/object-syntax/path-slots
+(import :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get))
 
 (.def Parent

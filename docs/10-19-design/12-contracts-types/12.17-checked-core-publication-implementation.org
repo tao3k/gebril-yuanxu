@@ -16,7 +16,7 @@ Core gerbil.pkg now pins gerbil-poo PR 13 at
 unmodified upstream source in an isolated namespace. No package installation,
 upstream change or dependency checkout mutation is required for this control.
 
-PooFlowContract. has one optional value-contract slot, default #f. When set to
+YuanxuContract. has one optional value-contract slot, default #f. When set to
 a public POO Type, the existing single evidence producer validates the raw
 candidate once BEFORE classification and contextual obligations. The effective
 descriptor retains the actual Type reference; the producer records that same
@@ -27,7 +27,7 @@ authentication of arbitrary user-created evidence.
 
 #+begin_src scheme
 ;; Maintainer-owned association. Users do not repeat these slots per Profile.
-(.cc PooFlowContract.
+(.cc YuanxuContract.
   identity: 'aws/scenario-admission
   value-contract: ScenarioValueContract
   .classify: contextual-classifier)
@@ -45,7 +45,7 @@ recognition work and is not the one-validate publication path.
 #+begin_src scheme
 ;; Inside the existing metadata.publish source callback:
 ((.get context-value admit-current))
-(def evidence (poo-flow-contract-admit descriptor value context-value))
+(def evidence (yuanxu-contract-admit descriptor value context-value))
 (def checked (.get evidence candidate))
 (def bound
   (metadata.bind-evidence current-call checked descriptor context-value evidence-view))

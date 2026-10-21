@@ -192,7 +192,7 @@ alone is insufficient. Missing required resolution evidence remains pending.
 
 Payload admission iterates exactly input-bindings, config-sources,
 observability, observes, guards and report. For each field it calls
-poo-flow-contract-admit on the corresponding selected payload Contract with a
+yuanxu-contract-admit on the corresponding selected payload Contract with a
 field child context. Rejected evidence is retained as the diagnostic's nested
 evidence. The recipe's empty/false policies in [[file:05-field-contracts-and-capabilities.org][module 05]] make this concrete;
 there is no unnamed universal payload validator.

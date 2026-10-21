@@ -2,17 +2,17 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuModule.)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuModule.)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-provider-versions-test)
 
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
 
-(def (accepted? evidence) (poo-flow-validation-evidence-accepted? evidence))
+(def (accepted? evidence) (yuanxu-validation-evidence-accepted? evidence))
 
 (def (verify-isolation parent-path child-path parent-version child-version)
   (unless (and (string? parent-path) (string? child-path))
@@ -119,13 +119,13 @@
 
 (def opentofu-provider-versions-test
   (test-suite "opentofu-provider-versions-test"
-    (poo-flow-test-case "real AWS upgrade after parent Contract caching"
+    (yuanxu-test-case "real AWS upgrade after parent Contract caching"
       (verify-isolation
-        (getenv "POO_FLOW_OPENTOFU_TEST_PARENT_ARTIFACT" #f)
-        (getenv "POO_FLOW_OPENTOFU_TEST_CHILD_ARTIFACT" #f)
+        (getenv "YUANXU_OPENTOFU_TEST_PARENT_ARTIFACT" #f)
+        (getenv "YUANXU_OPENTOFU_TEST_CHILD_ARTIFACT" #f)
         "5.99.0" "5.100.0"))
-    (poo-flow-test-case "real AWS rollback after parent Contract caching"
+    (yuanxu-test-case "real AWS rollback after parent Contract caching"
       (verify-isolation
-        (getenv "POO_FLOW_OPENTOFU_TEST_CHILD_ARTIFACT" #f)
-        (getenv "POO_FLOW_OPENTOFU_TEST_PARENT_ARTIFACT" #f)
+        (getenv "YUANXU_OPENTOFU_TEST_CHILD_ARTIFACT" #f)
+        (getenv "YUANXU_OPENTOFU_TEST_PARENT_ARTIFACT" #f)
         "5.100.0" "5.99.0"))))

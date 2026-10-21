@@ -25,214 +25,214 @@
         (only-in :std/string/misc
                  string-drop))
 
-(export poo-flow-fold-left
-        poo-flow-fold-right
-        poo-flow-map
-        poo-flow-find
-        poo-flow-filter-map
-        poo-flow-remove
-        poo-flow-append-map
-        poo-flow-any?
-        poo-flow-all?
-        poo-flow-member?
-        poo-flow-set-subset?
-        poo-flow-stable-duplicates
-        poo-flow-alist?
-        poo-flow-list-of?
-        poo-flow-string-prefix?
-        poo-flow-string-drop-prefix
-        poo-flow-predicate-and
-        poo-flow-predicate-or
-        poo-flow-predicate-exactly-one
-        poo-flow-alist-ref/default
-        poo-flow-alist-select
-        poo-flow-alist-delete-key
-        poo-flow-alist-merge-right)
+(export yuanxu-fold-left
+        yuanxu-fold-right
+        yuanxu-map
+        yuanxu-find
+        yuanxu-filter-map
+        yuanxu-remove
+        yuanxu-append-map
+        yuanxu-any?
+        yuanxu-all?
+        yuanxu-member?
+        yuanxu-set-subset?
+        yuanxu-stable-duplicates
+        yuanxu-alist?
+        yuanxu-list-of?
+        yuanxu-string-prefix?
+        yuanxu-string-drop-prefix
+        yuanxu-predicate-and
+        yuanxu-predicate-or
+        yuanxu-predicate-exactly-one
+        yuanxu-alist-ref/default
+        yuanxu-alist-select
+        yuanxu-alist-delete-key
+        yuanxu-alist-merge-right)
 
-;; poo-flow-fold-left
+;; yuanxu-fold-left
 ;;   : (-> Procedure Object [Object] Object)
 ;;   | doc m%
-;;       `poo-flow-fold-left` delegates ordinary left folds to SRFI-1 while
+;;       `yuanxu-fold-left` delegates ordinary left folds to SRFI-1 while
 ;;       keeping shared control-plane algorithms behind a project-owned name.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-fold-left cons '() '(a b))
+;;       (yuanxu-fold-left cons '() '(a b))
 ;;       ;; => (b a)
 ;;       ```
 ;;     %
-(def (poo-flow-fold-left combine seed values)
+(def (yuanxu-fold-left combine seed values)
   (fold combine seed values))
 
-;; poo-flow-fold-right
+;; yuanxu-fold-right
 ;;   : (-> Procedure Object [Object] Object)
 ;;   | doc m%
-;;       `poo-flow-fold-right` preserves right-associated list construction and
+;;       `yuanxu-fold-right` preserves right-associated list construction and
 ;;       projection order without hand-written recursive loops in callers.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-fold-right cons '() '(a b))
+;;       (yuanxu-fold-right cons '() '(a b))
 ;;       ;; => (a b)
 ;;       ```
 ;;     %
-(def (poo-flow-fold-right combine seed values)
+(def (yuanxu-fold-right combine seed values)
   (fold-right combine seed values))
 
-;; poo-flow-map
+;; yuanxu-map
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
-;;       `poo-flow-map` is the project-level pure projection boundary for
+;;       `yuanxu-map` is the project-level pure projection boundary for
 ;;       keeping field extraction and manifest row construction out of
 ;;       hand-written recursion.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-map (lambda (value) (* value 2)) '(1 2 3))
+;;       (yuanxu-map (lambda (value) (* value 2)) '(1 2 3))
 ;;       ;; => (2 4 6)
 ;;       ```
 ;;     %
-(def (poo-flow-map project values)
+(def (yuanxu-map project values)
   (map project values))
 
-;; poo-flow-find
+;; yuanxu-find
 ;;   : (-> Procedure [Object] Object)
 ;;   | doc m%
-;;       `poo-flow-find` is the project-level pure lookup boundary for
+;;       `yuanxu-find` is the project-level pure lookup boundary for
 ;;       replacing recursive scans that return the matching value.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-find odd? '(2 4 5 6))
+;;       (yuanxu-find odd? '(2 4 5 6))
 ;;       ;; => 5
 ;;       ```
 ;;     %
-(def (poo-flow-find predicate values)
+(def (yuanxu-find predicate values)
   (find predicate values))
 
-;; poo-flow-filter-map
+;; yuanxu-filter-map
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
-;;       `poo-flow-filter-map` is the default projection helper when a mapper
+;;       `yuanxu-filter-map` is the default projection helper when a mapper
 ;;       may reject rows by returning `#f`.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-filter-map (lambda (x) (and (odd? x) x)) '(1 2 3))
+;;       (yuanxu-filter-map (lambda (x) (and (odd? x) x)) '(1 2 3))
 ;;       ;; => (1 3)
 ;;       ```
 ;;     %
-(def (poo-flow-filter-map project values)
+(def (yuanxu-filter-map project values)
   (filter-map project values))
 
-;; poo-flow-remove
+;; yuanxu-remove
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
-;;       `poo-flow-remove` delegates negative filtering to SRFI-1 `remove` so
+;;       `yuanxu-remove` delegates negative filtering to SRFI-1 `remove` so
 ;;       callers do not hand-roll `(filter (lambda (...) (not ...)) ...)`.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-remove even? '(1 2 3))
+;;       (yuanxu-remove even? '(1 2 3))
 ;;       ;; => (1 3)
 ;;       ```
 ;;     %
-(def (poo-flow-remove predicate values)
+(def (yuanxu-remove predicate values)
   (remove predicate values))
 
-;; poo-flow-append-map
+;; yuanxu-append-map
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
-;;       `poo-flow-append-map` flattens one projection layer and should replace
+;;       `yuanxu-append-map` flattens one projection layer and should replace
 ;;       local map/append loops in ordinary list expansion code.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-append-map (lambda (x) (list x x)) '(a b))
+;;       (yuanxu-append-map (lambda (x) (list x x)) '(a b))
 ;;       ;; => (a a b b)
 ;;       ```
 ;;     %
-(def (poo-flow-append-map project values)
+(def (yuanxu-append-map project values)
   (flatten1 (map project values)))
 
-;; poo-flow-any?
+;; yuanxu-any?
 ;;   : (-> Procedure [Object] Boolean)
 ;;   | doc m%
-;;       `poo-flow-any?` normalizes SRFI-1 `any` into a strict boolean for
+;;       `yuanxu-any?` normalizes SRFI-1 `any` into a strict boolean for
 ;;       predicates used by contract and policy gates.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-any? symbol? '(1 two))
+;;       (yuanxu-any? symbol? '(1 two))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-any? predicate values)
+(def (yuanxu-any? predicate values)
   (if (any predicate values) #t #f))
 
-;; poo-flow-all?
+;; yuanxu-all?
 ;;   : (-> Procedure [Object] Boolean)
 ;;   | doc m%
-;;       `poo-flow-all?` normalizes SRFI-1 `every` into a strict boolean for
+;;       `yuanxu-all?` normalizes SRFI-1 `every` into a strict boolean for
 ;;       list-shaped contract predicates.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-all? integer? '(1 2 3))
+;;       (yuanxu-all? integer? '(1 2 3))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-all? predicate values)
+(def (yuanxu-all? predicate values)
   (if (every predicate values) #t #f))
 
-;; poo-flow-member?
+;; yuanxu-member?
 ;;   : (-> Object [Object] Boolean)
 ;;   | doc m%
-;;       `poo-flow-member?` wraps `member` as a strict boolean so callers do
+;;       `yuanxu-member?` wraps `member` as a strict boolean so callers do
 ;;       not duplicate `(and (member value values) #t)` in predicates.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-member? 'mode '(owner mode))
+;;       (yuanxu-member? 'mode '(owner mode))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-member? value values)
+(def (yuanxu-member? value values)
   (if (member value values) #t #f))
 
-;; poo-flow-set-subset?
+;; yuanxu-set-subset?
 ;;   : (-> [Object] [Object] Boolean)
 ;;   | contract: compare list-shaped sets without rescanning the allowed set
 ;;   | complexity: O(requested + allowed) expected time
-(def (poo-flow-set-subset? requested allowed)
+(def (yuanxu-set-subset? requested allowed)
   (let (allowed-index (make-hash-table))
     (for-each
      (lambda (value)
        (hash-put! allowed-index value #t))
      allowed)
-    (poo-flow-all?
+    (yuanxu-all?
      (lambda (value)
        (hash-key? allowed-index value))
      requested)))
 
-;; poo-flow-stable-duplicates
+;; yuanxu-stable-duplicates
 ;;   : (-> [Object] [Object])
 ;;   | doc m%
 ;;       Returns each duplicated value once, ordered by its first appearance.
 ;;       The implementation composes the maintained `std/misc/list` hash
 ;;       algorithms instead of repeatedly scanning an accumulated list.
 ;;     %
-(def (poo-flow-stable-duplicates values)
+(def (yuanxu-stable-duplicates values)
   (let (duplicate-table (make-hash-table))
     (for-each
      (lambda (entry)
@@ -243,119 +243,119 @@
        (hash-key? duplicate-table value))
      (delete-duplicates/hash values from-end?: #t))))
 
-;; poo-flow-alist?
+;; yuanxu-alist?
 ;;   : (-> Object Boolean)
 ;;   | doc m%
-;;       `poo-flow-alist?` recognizes proper association lists without assigning
+;;       `yuanxu-alist?` recognizes proper association lists without assigning
 ;;       any domain meaning to the keys or values.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-alist? '((owner . contract)))
+;;       (yuanxu-alist? '((owner . contract)))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-alist? value)
+(def (yuanxu-alist? value)
   (and (list? value)
-       (poo-flow-all? pair? value)))
+       (yuanxu-all? pair? value)))
 
-;; poo-flow-list-of?
+;; yuanxu-list-of?
 ;;   : (-> Procedure Object Boolean)
 ;;   | doc m%
-;;       `poo-flow-list-of?` checks that a value is a list and that every element
+;;       `yuanxu-list-of?` checks that a value is a list and that every element
 ;;       satisfies a supplied predicate.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-list-of? symbol? '(alpha beta))
+;;       (yuanxu-list-of? symbol? '(alpha beta))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-list-of? predicate value)
+(def (yuanxu-list-of? predicate value)
   (and (list? value)
-       (poo-flow-all? predicate value)))
+       (yuanxu-all? predicate value)))
 
-;; poo-flow-string-prefix?
+;; yuanxu-string-prefix?
 ;;   : (-> String String Boolean)
 ;;   | doc m%
-;;       `poo-flow-string-prefix?` checks string prefixes without allocating
+;;       `yuanxu-string-prefix?` checks string prefixes without allocating
 ;;       temporary substrings. Non-string inputs are rejected.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-string-prefix? "src/" "src/contract")
+;;       (yuanxu-string-prefix? "src/" "src/contract")
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-string-prefix? prefix value)
+(def (yuanxu-string-prefix? prefix value)
   (and (string? prefix)
        (string? value)
        (string-prefix? prefix value)))
 
-;; poo-flow-string-drop-prefix
+;; yuanxu-string-drop-prefix
 ;;   : (-> String String MaybeString)
 ;;   | doc m%
-;;       `poo-flow-string-drop-prefix` returns the suffix after PREFIX when
+;;       `yuanxu-string-drop-prefix` returns the suffix after PREFIX when
 ;;       VALUE has that prefix; otherwise it returns `#f`.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-string-drop-prefix "src/" "src/contract")
+;;       (yuanxu-string-drop-prefix "src/" "src/contract")
 ;;       ;; => "contract"
 ;;       ```
 ;;     %
-(def (poo-flow-string-drop-prefix prefix value)
-  (and (poo-flow-string-prefix? prefix value)
+(def (yuanxu-string-drop-prefix prefix value)
+  (and (yuanxu-string-prefix? prefix value)
        (string-drop value (string-length prefix))))
 
-;; poo-flow-predicate-and
+;; yuanxu-predicate-and
 ;;   : (-> [Procedure] Procedure)
 ;;   | doc m%
-;;       `poo-flow-predicate-and` builds one predicate that accepts a value only
+;;       `yuanxu-predicate-and` builds one predicate that accepts a value only
 ;;       when every predicate in the supplied list accepts it.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       ((poo-flow-predicate-and (list integer? positive?)) 3)
+;;       ((yuanxu-predicate-and (list integer? positive?)) 3)
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-predicate-and predicates)
+(def (yuanxu-predicate-and predicates)
   (lambda (value)
-    (poo-flow-all?
+    (yuanxu-all?
      (lambda (predicate)
        (predicate value))
      predicates)))
 
-;; poo-flow-predicate-or
+;; yuanxu-predicate-or
 ;;   : (-> [Procedure] Procedure)
 ;;   | doc m%
-;;       `poo-flow-predicate-or` builds one predicate that accepts a value when
+;;       `yuanxu-predicate-or` builds one predicate that accepts a value when
 ;;       any predicate in the supplied list accepts it.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       ((poo-flow-predicate-or (list string? symbol?)) 'agent)
+;;       ((yuanxu-predicate-or (list string? symbol?)) 'agent)
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-predicate-or predicates)
+(def (yuanxu-predicate-or predicates)
   (lambda (value)
-    (poo-flow-any?
+    (yuanxu-any?
      (lambda (predicate)
        (predicate value))
      predicates)))
 
-;; poo-flow-predicate-exactly-one
+;; yuanxu-predicate-exactly-one
 ;;   : (-> [Procedure] Procedure)
 ;;   | doc m%
-;;       `poo-flow-predicate-exactly-one` builds one predicate that accepts a
+;;       `yuanxu-predicate-exactly-one` builds one predicate that accepts a
 ;;       value only when exactly one predicate in the supplied list accepts it.
 ;;       JSON Schema `oneOf` and mutually exclusive policy branches use this
 ;;       instead of duplicating counting loops.
@@ -363,13 +363,13 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       ((poo-flow-predicate-exactly-one (list string? symbol?)) 'agent)
+;;       ((yuanxu-predicate-exactly-one (list string? symbol?)) 'agent)
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-predicate-exactly-one predicates)
+(def (yuanxu-predicate-exactly-one predicates)
   (lambda (value)
-    (= (poo-flow-fold-left
+    (= (yuanxu-fold-left
         (lambda (predicate count)
           (if (predicate value)
             (+ count 1)
@@ -378,41 +378,41 @@
         predicates)
        1)))
 
-;; poo-flow-alist-ref/default
+;; yuanxu-alist-ref/default
 ;;   : (-> Alist Symbol Object Object)
 ;;   | doc m%
-;;       `poo-flow-alist-ref/default` reads an association-list key and returns
+;;       `yuanxu-alist-ref/default` reads an association-list key and returns
 ;;       an explicit fallback when the key is absent.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-alist-ref/default '((mode . strict)) 'missing 'fallback)
+;;       (yuanxu-alist-ref/default '((mode . strict)) 'missing 'fallback)
 ;;       ;; => fallback
 ;;       ```
 ;;     %
-(def (poo-flow-alist-ref/default alist key default-value)
+(def (yuanxu-alist-ref/default alist key default-value)
   (let (entry (assoc key alist))
     (if entry
       (cdr entry)
       default-value)))
 
 ;; : (forall (k v) (-> [k] [(Pair k v)] [(Pair k v)]))
-;; poo-flow-alist-select
+;; yuanxu-alist-select
 ;;   : (-> [Symbol] Alist Alist)
 ;;   | doc m%
-;;       `poo-flow-alist-select` projects keys in caller-provided order and
+;;       `yuanxu-alist-select` projects keys in caller-provided order and
 ;;       drops missing keys without allocating placeholder rows.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-alist-select '(mode owner) '((owner . kernel) (mode . strict)))
+;;       (yuanxu-alist-select '(mode owner) '((owner . kernel) (mode . strict)))
 ;;       ;; => ((mode . strict) (owner . kernel))
 ;;       ```
 ;;     %
-(def (poo-flow-alist-select keys alist)
-  (poo-flow-filter-map
+(def (yuanxu-alist-select keys alist)
+  (yuanxu-filter-map
    (lambda (key)
      (let (entry (assoc key alist))
        (and entry
@@ -420,43 +420,43 @@
    keys))
 
 ;; : (forall (k v) (-> k [(Pair k v)] [(Pair k v)]))
-;; poo-flow-alist-delete-key
+;; yuanxu-alist-delete-key
 ;;   : (-> Symbol Alist Alist)
 ;;   | doc m%
-;;       `poo-flow-alist-delete-key` removes entries matching one key using
+;;       `yuanxu-alist-delete-key` removes entries matching one key using
 ;;       `equal?` key comparison.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-alist-delete-key 'budget '((budget . 10) (mode . strict)))
+;;       (yuanxu-alist-delete-key 'budget '((budget . 10) (mode . strict)))
 ;;       ;; => ((mode . strict))
 ;;       ```
 ;;     %
-(def (poo-flow-alist-delete-key key alist)
-  (poo-flow-remove
+(def (yuanxu-alist-delete-key key alist)
+  (yuanxu-remove
    (lambda (entry)
      (equal? key (car entry)))
    alist))
 
 ;; : (forall (k v) (-> [(Pair k v)] [(Pair k v)] [(Pair k v)]))
-;; poo-flow-alist-merge-right
+;; yuanxu-alist-merge-right
 ;;   : (-> Alist Alist Alist)
 ;;   | doc m%
-;;       `poo-flow-alist-merge-right` returns a deterministic right-biased merge:
+;;       `yuanxu-alist-merge-right` returns a deterministic right-biased merge:
 ;;       entries from the right side override matching keys from the left side.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-alist-merge-right '((mode . strict)) '((mode . relaxed)))
+;;       (yuanxu-alist-merge-right '((mode . strict)) '((mode . relaxed)))
 ;;       ;; => ((mode . relaxed))
 ;;       ```
 ;;     %
-(def (poo-flow-alist-merge-right left right)
-  (poo-flow-fold-right
+(def (yuanxu-alist-merge-right left right)
+  (yuanxu-fold-right
    (lambda (entry merged)
      (cons entry
-           (poo-flow-alist-delete-key (car entry) merged)))
+           (yuanxu-alist-delete-key (car entry) merged)))
    left
    right))

@@ -219,7 +219,7 @@ The native extension surface has three layers:
 - =(profile existing-poo-object)= directly reuses an already-defined POO object.
 
 Reusable profile libraries can also be imported slot-by-slot without writing
-repeated =poo-flow-profile-ref= calls:
+repeated =yuanxu-profile-ref= calls:
 #+begin_src scheme
 (use-composition crewai
   (use-module crew
@@ -268,7 +268,7 @@ same =use-module= block:
   (use-module crew
     (profiles crewai agent task memory)
     (profile audited-memory
-      :extends (poo-flow-profile-ref crewai 'memory)
+      :extends (yuanxu-profile-ref crewai 'memory)
       :with (audit-retention citation-trace)
       :retention (project-retained audit-log)))
   (stage production

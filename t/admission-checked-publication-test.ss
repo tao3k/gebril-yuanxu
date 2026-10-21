@@ -5,18 +5,18 @@
         (only-in :clan/poo/mop validate element?)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :core/types poo-flow-contract-admit)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/source/selection select-module-graph)
-        (only-in :core/module-system/source/build module-build-graph)
-        (only-in :core/module-system/source/objects make-poo-flow-module-source-ref)
-        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-receipt
-          poo-flow-json-schema->contract-artifact
-          poo-flow-json-schema-contract-artifact-normalization)
-        (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization-schema)
-        (only-in :core/modules/json-schema/contracts SchemaContract.)
+        (only-in :yuanxu/types yuanxu-contract-admit)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/source/selection select-module-graph)
+        (only-in :yuanxu/module-system/source/build module-build-graph)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-receipt
+          yuanxu-json-schema->contract-artifact
+          yuanxu-json-schema-contract-artifact-normalization)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        (only-in :yuanxu/modules/json-schema/contracts SchemaContract.)
         (only-in "./qualification/contract-adaptation/checked-publication-test.ss"
           make-scenario make-admission allow WebContract ConfigContract ScenarioContract))
 (export admission-checked-publication-test test-cleanup!)
@@ -58,17 +58,17 @@
       (lambda (id)
         (.o identity: id generation: "checked-source"
             compiler-identity: 'qualification/interface
-            source: (make-poo-flow-module-source-ref 'local source-path '())
+            source: (make-yuanxu-module-source-ref 'local source-path '())
             role-sources: '() source-inputs: inputs admit-current: current!))))
   (def artifact
-    (poo-flow-json-schema->contract-artifact
-      (poo-flow-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
+    (yuanxu-json-schema->contract-artifact
+      (yuanxu-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
   ;; Associate the exact selected artifact with the actual value Type; there is
   ;; no automatic publication association resolver in this test or implementation.
   (def instance
     (.cc SchemaContract. identity: 'aws/instance-input
-      node: (poo-flow-json-schema-normalization-schema
-              (poo-flow-json-schema-contract-artifact-normalization artifact))))
+      node: (yuanxu-json-schema-normalization-schema
+              (yuanxu-json-schema-contract-artifact-normalization artifact))))
   (def web-contract
     (.cc WebContract responsibilities:
       (.+ (.get WebContract responsibilities) (.o settings: instance))))

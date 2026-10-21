@@ -138,7 +138,7 @@ No such external authority is implemented here.
 
 * Lean correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
 through SnapshotLifetime. Its actions are concrete: affected edit, independent
 demand edit, source edit and read. The =cold= argument projects a real captured
 native frame, never a user assertion of purity. Native identity-based closure

@@ -1,0 +1,116 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.16 Yuanxu Package Identity and Optional Prelude
+
+* One library package, one source root
+
+The repository is =tao3k/gebril-yuanxu=. Its root =gerbil.pkg= declares
+=package: yuanxu= with =prelude: :tao3k/yuanxu/prelude=. Library imports use
+=:yuanxu/...=. The consumer checkout may remain =core/=; filesystem location
+is not a namespace. Core-owned public functions, types and configuration
+prefixes migrate to Yuanxu as well; product-owned POO Flow APIs remain product
+APIs. Consumers are updated directly rather than given compatibility aliases.
+
+The former nested =yuanxu/= package directory is removed. There are no
+=:core/...= forwarding modules. Maintained consumers, role package metadata,
+compiler identities, compiled library paths and source projections migrate
+together. Frozen historical snapshots retain their recorded identities and
+are not runtime entrypoints.
+
+* Prelude is optional, explicit and independently bootstrapped
+
+The single =prelude.ss= lives directly in the repository root, beside
+=gerbil.pkg=. It overrides its own package identity and base prelude:
+
+#+begin_src scheme
+;; gerbil.pkg: the implementation's default language
+(package: yuanxu
+ prelude: :tao3k/yuanxu/prelude
+ depend: ("github.com/tao3k/gerbil-poo@0df023fd9e15192156935c971f0f1940028c5277"))
+
+;; prelude.ss: the unique public language entry
+prelude: :gerbil/core
+package: tao3k/yuanxu
+#+end_src
+
+Its sole published identity is =:tao3k/yuanxu/prelude=. No =lang/= directory,
+second package root, forwarding module or =:yuanxu/prelude= alias is needed.
+The file reexports Gerbil and gerbil-poo at the required expansion phases; it
+neither imports the Module System nor loads user modules or executes Scripts.
+
+During a source-only build, registering the =yuanxu= library directory alone
+cannot resolve the distinct =tao3k/yuanxu= prefix. The existing build bootstrap
+therefore imports the actual root file with =core-import-module=, verifies its
+native compiler identity, and binds that module context using Gerbil's
+=core-bind-root-syntax!=. The expander's existing
+=core-bound-module-prelude?= branch selects it before library-path resolution.
+This is a binding to the unique module context, not a second implementation or
+a generated source alias. The source preparer projects a bound module/prelude context back to its native
+source path before serializing compiler headers; it must not write an opaque
+context object into generated Scheme. The existing source-byte and ancestor
+package guards still apply. Installed consumers resolve the compiled public
+identity normally. Init remains declarative; bootstrap preparation belongs to
+the build entry, not a user configuration. Gerbil itself is unchanged.
+
+Ordinary consumers declare the repository dependency and explicitly import a
+library. They need not select a custom prelude. A configuration package may
+choose =prelude: :tao3k/yuanxu/prelude= in its own =gerbil.pkg=; that choice
+controls lexical/syntax bindings rather than dependency ownership or execution
+authority. Role-specific module/config preludes retain their existing phase
+semantics.
+
+* Source identity is checked, not aliased
+
+Build-owned source registration now requires =yuanxu=. The bootstrap source
+projection recognizes the exact =yuanxu/= prefix and strips its computed
+length. Reader tool eligibility and observed compiler identities use the same
+namespace. Package mismatch still refuses before source registration.
+
+The migration does not relax native read issuance, dependency replay, child
+Contract obligations, independent requirements, source currentness, receiver
+identity, parent-cache isolation or lazy demand. Existing native dependency
+revision and Gerbil compiler remain unchanged. New processes and newly built
+Yuanxu artifacts are required; old =core= artifacts are not reused as aliases.
+
+* Verification ownership
+
+=t/package-identity-test.ss= uses the Gerbil base prelude and ordinary explicit
+Yuanxu imports, and checks compiler-to-source identity projection.
+=t/prelude-test.ss= separately checks the optional prelude and inherited values.
+Existing Gitea/PostgreSQL, source-admission and issued-root consumer controls
+own the protection regressions. A namespace rewrite alone is not evidence that
+these controls passed; record their actual outcomes after rebuilding.
+
+** Public naming ownership
+
+The root selection macro is =yuanxu!=. Module loading uses
+=yuanxu-load-modules=, reusable test helpers use =yuanxu-test-*=, and Core
+contracts use =Yuanxu*= identities, including =YuanxuObjectContract.=.
+The Core proof library/package is =YuanxuProof= under =dev/proofs/lean/=;
+the product's independent =PooFlowProof= aggregate consumes it. Core-owned
+environment names use =YUANXU_=. This is a source migration: old source or
+compiled public symbols do not become aliases to the new ones.
+
+** Namespace migration receipt
+
+The new namespace compiled all 47 qualification units within the unchanged
+120-second gate. Ordinary package imports, the separate optional prelude,
+issued-root forwarding, source admission and Gitea/PostgreSQL publication all
+completed with MODULE-OK, HARNESS-OK, final OK and natural exit zero. The
+RootCollection QNT scope passed eight controls against the migrated source cut.
+An earlier run refused the remaining hard-coded =core= source registration;
+that refusal was repaired by updating the expected identity, not by weakening
+registration. An initial focused prelude invocation omitted the new library
+load path; the complete qualification environment passed the rerun. These are
+focused migration receipts, not a claim that every product consumer has rebuilt.
+
+** Root-file bootstrap verification boundary
+
+The root-file change removes the temporary =lang/= source scope. The changed
+qualification units compile with the installed Gerbil compiler. The first cold
+run exposed an opaque bound-prelude context being serialized into a generated
+header; source preparation now extracts its native source path. A subsequent
+run exposed bootstrap binding at runtime instead of expansion time; the build
+entry now prepares that binding in =begin-syntax=. The rerun was interrupted
+before a final harness result, so source-only cold bootstrap is not yet a
+verified pass. Earlier namespace receipts above do not establish this new gate.

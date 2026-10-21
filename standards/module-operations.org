@@ -75,7 +75,7 @@ also maintain a flat compatibility alias. See the
 #+end_src
 
 =init.modules= is a read-only computed identifier emitted by the existing
-=poo-flow!= declaration using Gerbil's =identifier-rules=. Importing that name
+=yuanxu!= declaration using Gerbil's =identifier-rules=. Importing that name
 does not acquire the namespace. Reading it calls a hygienically bound accessor
 which checks the source epoch and returns the actual selected namespace object.
 Repeated reads in a current epoch return that same object. Native =only-in=

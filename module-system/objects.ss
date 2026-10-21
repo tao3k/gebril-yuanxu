@@ -6,11 +6,11 @@
 ;;; Core owns the semantic Module value; a product supplies its authoring Profile.
 (import (only-in :clan/poo/object .o .mix .ref)
         (only-in :clan/poo/mop validate)
-        (only-in :core/module-system/schema/relations
+        (only-in :yuanxu/module-system/schema/relations
                  SemanticImports.
-                 poo-flow-empty-imports poo-flow-empty-capabilities
-                 poo-flow-empty-profiles)
-        :core/module-system/types)
+                 yuanxu-empty-imports yuanxu-empty-capabilities
+                 yuanxu-empty-profiles)
+        :yuanxu/module-system/types)
 
 (export SemanticModule. ModuleSourceRole. ModuleAuthoringProfile.
         make-semantic-module)
@@ -25,9 +25,9 @@
     (.mix local inherited)))
 
 (def (make-semantic-module identity-value authoring-value
-                           imports: (imports-value (poo-flow-empty-imports))
-                           capabilities: (capabilities-value (poo-flow-empty-capabilities))
-                           profiles: (profiles-value (poo-flow-empty-profiles)))
+                           imports: (imports-value (yuanxu-empty-imports))
+                           capabilities: (capabilities-value (yuanxu-empty-capabilities))
+                           profiles: (profiles-value (yuanxu-empty-profiles)))
   (validate SemanticModuleContract
     (.o (:: @ SemanticModule.)
         identity: identity-value

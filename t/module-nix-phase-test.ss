@@ -2,12 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :core/modules/nix/objects NixSource.)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/modules/nix/objects NixSource.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-nix-phase-test)
 (def module-nix-phase-test
   (test-suite "Native Nix preparation is candidate-only and receiver-local"
-    (poo-flow-test-case "preparation caches derivation, not currentness or authority"
+    (yuanxu-test-case "preparation caches derivation, not currentness or authority"
       (let ((instantiations 0) (realizations 0) (current? #t))
         (def source
           (.cc NixSource. 'expression "unused.nix"

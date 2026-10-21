@@ -7,15 +7,15 @@
         (only-in :clan/poo/object .def .get .call .slot? .ref/cached object?)
         (only-in :clan/poo/mop call-with-slot-read-observer)
         (only-in :clan/poo/object object-protocol-set! .o)
-        (only-in :core/module-system/source/admission module-source-operation-resume)
-        (only-in :core/modules/nix/objects NixSource.)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/interface poo-flow-load-modules))
+        (only-in :yuanxu/module-system/source/admission module-source-operation-resume)
+        (only-in :yuanxu/modules/nix/objects NixSource.)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export module-nix-publication-test)
 (def module-nix-publication-test
   (test-suite "Nix is a declarative Core Module, not a global facade"
-    (poo-flow-test-case "native prefix inspection never forces metadata or bypasses MOP reads"
+    (yuanxu-test-case "native prefix inspection never forces metadata or bypasses MOP reads"
       (def calls 0)
       (def (guard) (set! calls (+ calls 1)))
       (.def (Source @ NixSource.)
@@ -39,27 +39,27 @@
       (object-protocol-set! prepared (.o))
       (.call prepared admit-current)
       (check-equal? (module-source-operation-resume prepared guard) #f))
-    (poo-flow-test-case "selected source publishes native Sources without realizing packages"
+    (yuanxu-test-case "selected source publishes native Sources without realizing packages"
       (call-with-temporary-directory "nix-module-publication"
         (lambda (directory)
           (let* ((path (path-expand "init.ss" directory))
                  (source (path-expand "../modules" (path-directory (this-source-file)))))
             (call-with-output-file path
               (lambda (port)
-                (write `(poo-flow! mode: explicit source: ,source (nix)) port)))
-            (let* ((view (poo-flow-load-modules path))
+                (write `(yuanxu! mode: explicit source: ,source (nix)) port)))
+            (let* ((view (yuanxu-load-modules path))
                    (scope (.get view modules nix))
                    (prototype (.get scope prototypes Source)))
               (check-equal? (object? prototype) #t)
               (check-equal? (.slot? prototype '.build) #t)
               (check-equal? (.slot? (.get scope types) 'FlakeSource) #t)
               (check-equal? (.slot? (.get scope prototypes FlakeSource) '.prepare) #t)
-              (check-equal? (poo-flow-validation-evidence-accepted?
+              (check-equal? (yuanxu-validation-evidence-accepted?
                               (.call (.get scope types Source) .admit prototype #f)) #f)
               (check-equal? (.get view selected-graph module-order) '(nix))
               (check-equal? (.get view build-graph external-packages) '())
               ((.get view admit-current)))))))
-    (poo-flow-test-case "cached realization removes only an adjacent source check, never the Nix identity query"
+    (yuanxu-test-case "cached realization removes only an adjacent source check, never the Nix identity query"
       ;; The phase object and guards are production code. Only the two external
       ;; commands are inert probes; real Nix is retained in the AWS integration.
       (def instantiations 0)

@@ -18,7 +18,7 @@ kind indexes. Runtime discovery still uses the final candidate, but no longer
 reads/decodes =schema.json= or linearly searches raw resource/data export tables.
 No Loader, Provider RPC, plan or apply is introduced.
 
-This is a direct artifact-format migration to =poo-flow/provider-schema-v2=.
+This is a direct artifact-format migration to =yuanxu/provider-schema-v2=.
 There is no v1 reader fallback. A v1 manifest is rejected; rebuild that package
 with the current producer. Historical v1 paths/digests/receipts in chapters
 45-49 remain historical evidence, not supported runtime inputs. The small
@@ -28,13 +28,13 @@ changing its historical audit Schema; it is not a new complete Provider export.
 * Module-specific injection
 
 The development/package default is now exclusively
-=POO_FLOW_OPENTOFU_ARTIFACT=, declared by =devenv.nix= and consumed lazily by
+=YUANXU_OPENTOFU_ARTIFACT=, declared by =devenv.nix= and consumed lazily by
 =modules/opentofu/config.ss=. The former generic Provider environment names
 are removed, without aliases or fallback.
 
 #+begin_src scheme
 (.def OpenTofuConfig
-  artifact: (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f))
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
 #+end_src
 
 The =provider-artifact= slot belongs to a Provider LEAF and has no environment
@@ -67,7 +67,7 @@ The actual AWS manifest is:
 
 #+begin_src json
 {
-  "format": "poo-flow/provider-schema-v2",
+  "format": "yuanxu/provider-schema-v2",
   "provider": "registry.opentofu.org/hashicorp/aws",
   "version": "5.100.0",
   "schema-sha256": "7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c",

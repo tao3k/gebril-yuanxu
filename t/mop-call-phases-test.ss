@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!
                  slot-read-receiver)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-call-phases-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
@@ -23,7 +23,7 @@
 (def (has-receiver? frames receiver) (and (assq receiver frames) #t))
 (def mop-call-phases-test
  (test-suite "Function lookup frames and .call bodies"
-  (poo-flow-test-case "cold acquisition has a method frame; warm calls reuse the function but execute its body"
+  (yuanxu-test-case "cold acquisition has a method frame; warm calls reuse the function but execute its body"
     (def acquired 0)
     (def invoked 0)
     (def lookup-frames '())
@@ -50,7 +50,7 @@
     (check-equal? (has-receiver? body-frames Root) #f)
     (check-equal? (eq? (active-slot-computations) previous) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "top-level function body can edit receiver; enclosing read replay refuses"
+  (yuanxu-test-case "top-level function body can edit receiver; enclosing read replay refuses"
     (def body-frames '())
     (def returned #f)
     (.def Root
@@ -68,7 +68,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "warm function body edits an independent demand; whole-call observation records it"
+  (yuanxu-test-case "warm function body edits an independent demand; whole-call observation records it"
     (.def Database port: 5432)
     (def body-frames '())
     (.def Root operation: (lambda ()
@@ -86,7 +86,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested .call inherits caller frame; receiver mutation is rejected and frames unwind"
+  (yuanxu-test-case "nested .call inherits caller frame; receiver mutation is rejected and frames unwind"
     (def body-frames '())
     (.def Root
       port: 5432
@@ -103,7 +103,7 @@
     (check-equal? (.get Root port) 5432)
     (check-equal? (eq? (active-slot-computations) previous) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested call preserves caller protection but permits independent dependency edits"
+  (yuanxu-test-case "nested call preserves caller protection but permits independent dependency edits"
     (.def Database port: 5432)
     (def body-frames '())
     (.def Root
@@ -122,7 +122,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "observing only function acquisition omits later body reads"
+  (yuanxu-test-case "observing only function acquisition omits later body reads"
     (.def Database port: 5432)
     (.def Root operation: (lambda ()
                            (let (port (.get Database port))

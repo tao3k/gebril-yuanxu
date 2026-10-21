@@ -193,7 +193,7 @@ remain historical; the migrated Scenario and JSON controls require fresh results
 ** Selection example (paths relative to Core root)
 
 #+begin_src scheme
-(poo-flow! mode: explicit
+(yuanxu! mode: explicit
   :services
   (postgresql @ "./modules/postgresql")
   (gitea @ "./modules/gitea")

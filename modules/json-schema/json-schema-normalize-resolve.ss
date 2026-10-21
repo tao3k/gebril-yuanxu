@@ -8,213 +8,213 @@
 ;;; It does not fetch schemas, execute validators, or emit runtime payloads.
 
 (import (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-node?
-                 poo-flow-json-schema-node-kind
-                 poo-flow-json-schema-node-value
-                 poo-flow-json-schema-node-metadata
-                 poo-flow-json-schema-node-record
-                 poo-flow-json-schema-object?
-                 poo-flow-json-schema-object-properties
-                 poo-flow-json-schema-object-additional-properties
-                 poo-flow-json-schema-object-pattern-properties
-                 poo-flow-json-schema-object-metadata
-                 poo-flow-json-schema-object-record
-                 poo-flow-json-schema-property-name
-                 poo-flow-json-schema-property-schema
-                 poo-flow-json-schema-property-required?
-                 poo-flow-json-schema-property-doc
-                 poo-flow-json-schema-property-metadata
-                 poo-flow-json-schema-property-record
-                 poo-flow-json-schema-pattern-property-pattern
-                 poo-flow-json-schema-pattern-property-compiled
-                 poo-flow-json-schema-pattern-property-schema
-                 poo-flow-json-schema-pattern-property-record
-                 poo-flow-json-schema-diagnostic-record)
+                 yuanxu-json-schema-node?
+                 yuanxu-json-schema-node-kind
+                 yuanxu-json-schema-node-value
+                 yuanxu-json-schema-node-metadata
+                 yuanxu-json-schema-node-record
+                 yuanxu-json-schema-object?
+                 yuanxu-json-schema-object-properties
+                 yuanxu-json-schema-object-additional-properties
+                 yuanxu-json-schema-object-pattern-properties
+                 yuanxu-json-schema-object-metadata
+                 yuanxu-json-schema-object-record
+                 yuanxu-json-schema-property-name
+                 yuanxu-json-schema-property-schema
+                 yuanxu-json-schema-property-required?
+                 yuanxu-json-schema-property-doc
+                 yuanxu-json-schema-property-metadata
+                 yuanxu-json-schema-property-record
+                 yuanxu-json-schema-pattern-property-pattern
+                 yuanxu-json-schema-pattern-property-compiled
+                 yuanxu-json-schema-pattern-property-schema
+                 yuanxu-json-schema-pattern-property-record
+                 yuanxu-json-schema-diagnostic-record)
         (only-in "./functional.ss"
-                 poo-flow-contract-object-ref
-                 poo-flow-contract-member?
-                 poo-flow-contract-map-pair-with-diagnostics)
+                 yuanxu-contract-object-ref
+                 yuanxu-contract-member?
+                 yuanxu-contract-map-pair-with-diagnostics)
         (only-in "./json-schema-normalize-core.ss"
-                 poo-flow-json-schema-local-definition-name))
+                 yuanxu-json-schema-local-definition-name))
 
 (export #t)
 
-;; poo-flow-json-schema-ref-lookup
-;;   : (-> String JsonSchemaReferenceRows MaybePooFlowJsonSchemaNode)
+;; yuanxu-json-schema-ref-lookup
+;;   : (-> String JsonSchemaReferenceRows MaybeYuanxuJsonSchemaNode)
 ;;   | result: referenced normalized node or #f
 ;;   | doc m%
 ;;       Reference lookup stays on normalized definition rows; external and
 ;;       missing references are handled by the caller as explicit diagnostics.
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-json-schema-ref-lookup "User" references)
+;;       (yuanxu-json-schema-ref-lookup "User" references)
 ;;       ;; => maybe-node
 ;;       ```
 ;;     %
-(def (poo-flow-json-schema-ref-lookup ref-name references)
-  (poo-flow-contract-object-ref references ref-name #f))
+(def (yuanxu-json-schema-ref-lookup ref-name references)
+  (yuanxu-contract-object-ref references ref-name #f))
 
-;; poo-flow-json-schema-resolve-node
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
+;; yuanxu-json-schema-resolve-node
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | doc m%
 ;;       Resolve references inside a parsed node while carrying the reference
 ;;       stack used to detect cycles.
 ;;     %
-(def (poo-flow-json-schema-resolve-node node references seen)
-  (let (kind (poo-flow-json-schema-node-kind node))
+(def (yuanxu-json-schema-resolve-node node references seen)
+  (let (kind (yuanxu-json-schema-node-kind node))
     (cond
      ((eq? kind 'ref)
-      (poo-flow-json-schema-resolve-ref node references seen))
+      (yuanxu-json-schema-resolve-ref node references seen))
      ((eq? kind 'object)
-      (poo-flow-json-schema-resolve-object node references seen))
+      (yuanxu-json-schema-resolve-object node references seen))
      ((eq? kind 'array)
-      (poo-flow-json-schema-resolve-array node references seen))
+      (yuanxu-json-schema-resolve-array node references seen))
      ((or (eq? kind 'nullable)
           (eq? kind 'any-of)
           (eq? kind 'all-of)
           (eq? kind 'one-of))
-      (poo-flow-json-schema-resolve-sequence node references seen))
+      (yuanxu-json-schema-resolve-sequence node references seen))
      (else
       (cons node '())))))
 
-;; poo-flow-json-schema-resolve-ref
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
+;; yuanxu-json-schema-resolve-ref
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | doc m%
 ;;       Resolve a local definition reference or return a diagnostic fallback
 ;;       for external, cyclic, and missing references.
 ;;     %
-(def (poo-flow-json-schema-resolve-ref node references seen)
-  (let* ((ref (poo-flow-json-schema-node-value node))
-         (name (poo-flow-json-schema-local-definition-name ref)))
+(def (yuanxu-json-schema-resolve-ref node references seen)
+  (let* ((ref (yuanxu-json-schema-node-value node))
+         (name (yuanxu-json-schema-local-definition-name ref)))
     ;; Reference resolution must remain bounded: P0 only follows local
     ;; definition names, and the `seen` set prevents recursive schemas from
     ;; creating an unbounded normalized object graph.
     (cond
      ((not name)
       (cons
-       (poo-flow-json-schema-node-record
+       (yuanxu-json-schema-node-record
         'predicate-fallback
         'any
         `((ref . ,ref) (fallback . external-reference)))
        (list
-        (poo-flow-json-schema-diagnostic-record
+        (yuanxu-json-schema-diagnostic-record
          'warning
          'unsupported-reference
          "Only local #/definitions/<name> and #/$defs/<name> references are supported in P0"
          ref
          '((owner . json-schema-normalize))))))
-     ((poo-flow-contract-member? name seen)
+     ((yuanxu-contract-member? name seen)
       (cons
-       (poo-flow-json-schema-node-record
+       (yuanxu-json-schema-node-record
         'predicate-fallback
         'any
         `((ref . ,ref) (fallback . cyclic-reference)))
        (list
-        (poo-flow-json-schema-diagnostic-record
+        (yuanxu-json-schema-diagnostic-record
          'warning
          'cyclic-reference
          "Cyclic JSON Schema references fall back to an opaque predicate"
          ref
          '((owner . json-schema-normalize))))))
      (else
-      (let (target (poo-flow-json-schema-ref-lookup name references))
+      (let (target (yuanxu-json-schema-ref-lookup name references))
         (if target
           (let (resolved
-                (poo-flow-json-schema-resolve-node
+                (yuanxu-json-schema-resolve-node
                  target
                  references
                  (cons name seen)))
             (cons
-             (poo-flow-json-schema-node-record
-              (poo-flow-json-schema-node-kind (car resolved))
-              (poo-flow-json-schema-node-value (car resolved))
+             (yuanxu-json-schema-node-record
+              (yuanxu-json-schema-node-kind (car resolved))
+              (yuanxu-json-schema-node-value (car resolved))
               (cons (cons 'resolved-ref ref)
-                    (poo-flow-json-schema-node-metadata (car resolved))))
+                    (yuanxu-json-schema-node-metadata (car resolved))))
              (cdr resolved)))
           (cons
-           (poo-flow-json-schema-node-record
+           (yuanxu-json-schema-node-record
             'predicate-fallback
             'any
             `((ref . ,ref) (fallback . unresolved-reference)))
            (list
-            (poo-flow-json-schema-diagnostic-record
+            (yuanxu-json-schema-diagnostic-record
              'warning
              'unresolved-reference
              "Local JSON Schema reference could not be resolved"
              ref
              '((owner . json-schema-normalize)))))))))))
 
-;; poo-flow-json-schema-resolve-object
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
+;; yuanxu-json-schema-resolve-object
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | doc m%
 ;;       Resolve each property schema inside an object node while preserving the
 ;;       object's own metadata and additionalProperties value.
 ;;     %
-(def (poo-flow-json-schema-resolve-object node references seen)
-  (let* ((object (poo-flow-json-schema-node-value node))
+(def (yuanxu-json-schema-resolve-object node references seen)
+  (let* ((object (yuanxu-json-schema-node-value node))
          (resolved
-          (poo-flow-json-schema-resolve-properties
-           (poo-flow-json-schema-object-properties object)
+          (yuanxu-json-schema-resolve-properties
+           (yuanxu-json-schema-object-properties object)
            references
            seen))
          (resolved-additional
-          (poo-flow-json-schema-resolve-additional-properties
-           (poo-flow-json-schema-object-additional-properties object)
+          (yuanxu-json-schema-resolve-additional-properties
+           (yuanxu-json-schema-object-additional-properties object)
            references
            seen))
          (resolved-patterns
-          (poo-flow-json-schema-resolve-pattern-properties
-           (poo-flow-json-schema-object-pattern-properties object)
+          (yuanxu-json-schema-resolve-pattern-properties
+           (yuanxu-json-schema-object-pattern-properties object)
            references
            seen)))
     (cons
-     (poo-flow-json-schema-node-record
+     (yuanxu-json-schema-node-record
       'object
-      (poo-flow-json-schema-object-record
+      (yuanxu-json-schema-object-record
        (car resolved)
        (car resolved-additional)
        (car resolved-patterns)
-       (poo-flow-json-schema-object-metadata object))
-      (poo-flow-json-schema-node-metadata node))
+       (yuanxu-json-schema-object-metadata object))
+      (yuanxu-json-schema-node-metadata node))
      (append (cdr resolved)
              (cdr resolved-additional)
              (cdr resolved-patterns)))))
 
-;; poo-flow-json-schema-resolve-additional-properties
+;; yuanxu-json-schema-resolve-additional-properties
 ;;   : (-> JsonSchemaMapValueSchema JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | doc m%
 ;;       Resolve references inside the normalized additionalProperties schema.
 ;;     %
-(def (poo-flow-json-schema-resolve-additional-properties additional references seen)
-  (if (poo-flow-json-schema-node? additional)
-    (poo-flow-json-schema-resolve-node additional references seen)
+(def (yuanxu-json-schema-resolve-additional-properties additional references seen)
+  (if (yuanxu-json-schema-node? additional)
+    (yuanxu-json-schema-resolve-node additional references seen)
     (cons additional '())))
 
-;; poo-flow-json-schema-resolve-pattern-properties
+;; yuanxu-json-schema-resolve-pattern-properties
 ;;   : (-> [Pair] JsonSchemaReferenceRows [String] JsonSchemaPatternResolveResult)
 ;;   | doc m%
 ;;       Resolve references inside every normalized patternProperties value.
 ;;     %
-(def (poo-flow-json-schema-resolve-pattern-properties pattern-properties
+(def (yuanxu-json-schema-resolve-pattern-properties pattern-properties
                                                      references
                                                      seen)
-  (poo-flow-contract-map-pair-with-diagnostics
+  (yuanxu-contract-map-pair-with-diagnostics
    (lambda (row)
      (let (resolved
-           (poo-flow-json-schema-resolve-node
-            (poo-flow-json-schema-pattern-property-schema row)
+           (yuanxu-json-schema-resolve-node
+            (yuanxu-json-schema-pattern-property-schema row)
             references
             seen))
-       (cons (poo-flow-json-schema-pattern-property-record
-              (poo-flow-json-schema-pattern-property-pattern row)
-              (poo-flow-json-schema-pattern-property-compiled row)
+       (cons (yuanxu-json-schema-pattern-property-record
+              (yuanxu-json-schema-pattern-property-pattern row)
+              (yuanxu-json-schema-pattern-property-compiled row)
               (car resolved))
              (cdr resolved))))
    pattern-properties
    '()))
 
-;; poo-flow-json-schema-resolve-array
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
+;; yuanxu-json-schema-resolve-array
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | result: array node with resolved item schema and diagnostics
 ;;   | doc m%
 ;;       Resolve references inside the parsed homogeneous item schema while
@@ -222,17 +222,17 @@
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-json-schema-resolve-array node references seen)
+;;       (yuanxu-json-schema-resolve-array node references seen)
 ;;       ;; => (resolved-array-node . diagnostics)
 ;;       ```
 ;;     %
-(def (poo-flow-json-schema-resolve-array node references seen)
-  (let* ((value (poo-flow-json-schema-node-value node))
+(def (yuanxu-json-schema-resolve-array node references seen)
+  (let* ((value (yuanxu-json-schema-node-value node))
          (resolved
           (if (list? value)
             (let (children
                   (map (lambda (child)
-                         (poo-flow-json-schema-resolve-node
+                         (yuanxu-json-schema-resolve-node
                           child
                           references
                           seen))
@@ -241,72 +241,72 @@
                     (if (null? children)
                       []
                       (apply append (map cdr children)))))
-            (poo-flow-json-schema-resolve-node value references seen))))
+            (yuanxu-json-schema-resolve-node value references seen))))
     (cons
-     (poo-flow-json-schema-node-record
+     (yuanxu-json-schema-node-record
       'array
       (car resolved)
-      (poo-flow-json-schema-node-metadata node))
+      (yuanxu-json-schema-node-metadata node))
      (cdr resolved))))
 
-;; poo-flow-json-schema-resolve-properties
-;;   : (-> [PooFlowJsonSchemaProperty] JsonSchemaReferenceRows [String] JsonSchemaPropertyResolveResult)
+;; yuanxu-json-schema-resolve-properties
+;;   : (-> [YuanxuJsonSchemaProperty] JsonSchemaReferenceRows [String] JsonSchemaPropertyResolveResult)
 ;;   | result: resolved properties paired with reference diagnostics
 ;;   | doc m%
 ;;       Property resolution walks already-parsed property objects and preserves
 ;;       property metadata while replacing nested schema nodes with resolved IR.
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-json-schema-resolve-properties properties references '())
+;;       (yuanxu-json-schema-resolve-properties properties references '())
 ;;       ;; => (properties . diagnostics)
 ;;       ```
 ;;     %
-(def (poo-flow-json-schema-resolve-properties properties references seen)
-  (poo-flow-contract-map-pair-with-diagnostics
+(def (yuanxu-json-schema-resolve-properties properties references seen)
+  (yuanxu-contract-map-pair-with-diagnostics
    (lambda (property)
      (let (resolved
-           (poo-flow-json-schema-resolve-node
-            (poo-flow-json-schema-property-schema property)
+           (yuanxu-json-schema-resolve-node
+            (yuanxu-json-schema-property-schema property)
             references
             seen))
        (cons
-        (poo-flow-json-schema-property-record
-         (poo-flow-json-schema-property-name property)
+        (yuanxu-json-schema-property-record
+         (yuanxu-json-schema-property-name property)
          (car resolved)
-         (poo-flow-json-schema-property-required? property)
-         (poo-flow-json-schema-property-doc property)
-         (poo-flow-json-schema-property-metadata property))
+         (yuanxu-json-schema-property-required? property)
+         (yuanxu-json-schema-property-doc property)
+         (yuanxu-json-schema-property-metadata property))
         (cdr resolved))))
    properties
    '()))
 
-;; poo-flow-json-schema-resolve-sequence
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
+;; yuanxu-json-schema-resolve-sequence
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaReferenceRows [String] JsonSchemaResolveResult)
 ;;   | result: resolved logical/nullable sequence node with diagnostics
 ;;   | doc m%
 ;;       Sequence resolution handles `nullable`, `any-of`, `all-of`, and `one-of`
 ;;       nodes without changing their public normalized IR shape.
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-json-schema-resolve-sequence node references '())
+;;       (yuanxu-json-schema-resolve-sequence node references '())
 ;;       ;; => (node . diagnostics)
 ;;       ```
 ;;     %
-(def (poo-flow-json-schema-resolve-sequence node references seen)
+(def (yuanxu-json-schema-resolve-sequence node references seen)
   (let* ((parsed
-          (poo-flow-contract-map-pair-with-diagnostics
+          (yuanxu-contract-map-pair-with-diagnostics
            (lambda (item)
-             (poo-flow-json-schema-resolve-node item references seen))
-           (if (list? (poo-flow-json-schema-node-value node))
-             (poo-flow-json-schema-node-value node)
-             (list (poo-flow-json-schema-node-value node)))
+             (yuanxu-json-schema-resolve-node item references seen))
+           (if (list? (yuanxu-json-schema-node-value node))
+             (yuanxu-json-schema-node-value node)
+             (list (yuanxu-json-schema-node-value node)))
            '()))
          (value (car parsed)))
     (cons
-     (poo-flow-json-schema-node-record
-      (poo-flow-json-schema-node-kind node)
-      (if (eq? (poo-flow-json-schema-node-kind node) 'nullable)
+     (yuanxu-json-schema-node-record
+      (yuanxu-json-schema-node-kind node)
+      (if (eq? (yuanxu-json-schema-node-kind node) 'nullable)
         (car value)
         value)
-      (poo-flow-json-schema-node-metadata node))
+      (yuanxu-json-schema-node-metadata node))
      (cdr parsed))))

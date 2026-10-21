@@ -46,7 +46,7 @@ Existing Core/Nix production calls retain their semantics and checks.
   of user values and no shell command is used for the transaction.
 - Existing =ProcessScript.= / =run-script= launches the independent clients;
   =Justfile= applies the pre-import heap limit and finite timeout.
-- Existing =poo-flow-test-fixture= owns temporary directories and cleanup.
+- Existing =yuanxu-test-fixture= owns temporary directories and cleanup.
 
 The adapter is
 [[file:../../../t/qualification/build-publication/persistent-head.ss][persistent-head.ss]], the executable is
@@ -185,7 +185,7 @@ approval authority or authenticate who may write the store.
 
 * Lean and QNT boundaries
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/PersistentSelectedHead.lean][PersistentSelectedHead.lean]] proves properties of the exact conditional state
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/PersistentSelectedHead.lean][PersistentSelectedHead.lean]] proves properties of the exact conditional state
 transition relation:
 
 - =accepted_binds_revision_fence_selection=: acceptance requires all three
@@ -249,7 +249,7 @@ just compile-build-publication /private/tmp/core-persistent-head-20261021
 just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-head-store-test.ss
 just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-selected-head-test.ss
 cd dev/proofs/lean
-timeout 120s lake env lean PooFlowCoreProof/Admission/PersistentSelectedHead.lean
+timeout 120s lake env lean YuanxuProof/Admission/PersistentSelectedHead.lean
 #+end_src
 
 The ordinary =just test-file= invocation is also a valid installed-library

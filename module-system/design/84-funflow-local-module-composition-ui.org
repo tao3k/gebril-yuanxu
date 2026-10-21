@@ -280,7 +280,7 @@ small manifest wrapper:
 ((schema "poo-flow.scheme-load-projection-artifact.v1")
  (source-digest "...")
  (projection-digest "...")
- (rows ((schema "poo-flow.funflow-plan-projection.v1") ...)))
+ (rows ((schema "yuanxu.funflow-plan-projection.v1") ...)))
 #+end_src
 
 The =rows= payload is exactly the normalized projection that Python already

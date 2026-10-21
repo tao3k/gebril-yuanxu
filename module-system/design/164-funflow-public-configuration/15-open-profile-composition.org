@@ -107,7 +107,7 @@ with expected Contracts and requirements without per-Profile wrapper objects,
 and how selected final occurrences
 resolve the internal association. ExampleBindings below remains a fixture for
 that result; the publication/provenance resolver is not implemented.
-poo-flow-contract-admit is Core's admission protocol, not a Module Contract.
+yuanxu-contract-admit is Core's admission protocol, not a Module Contract.
 The concrete supplied descriptor determines the checked boundary.
 
 * Actual admission and current final values
@@ -118,7 +118,7 @@ The full call path is:
    demand the current context's preparation.
 2. Preparation iterates the current participants. It resolves each actual Profile
    occurrence and the trusted expected Contract, creates its context and calls
-   poo-flow-contract-admit. There is no caller-provided accepted flag or assumed
+   yuanxu-contract-admit. There is no caller-provided accepted flag or assumed
    Profile receipt replacing this work.
 3. Profile responsibilities invoke a module-position Contract. It derives the
    configured-feature context and invokes ConfiguredFunflowContract.

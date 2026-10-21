@@ -109,7 +109,7 @@ synthetic token's cold receiver causes =observe-owned-hook= to select the full
 trace. Such a trace is supposed to keep its receiver alive. Those failures are
 retained; no roots-release qualification follows from them. The corrected
 fixture uses a prepared synthetic receiver, the production
-=poo-flow-validation-evidence= factory and an external formula defined outside
+=yuanxu-validation-evidence= factory and an external formula defined outside
 the Case frame. It must assert the closed branch, drop setup references during
 replay, survive replay-time GC, then allow collection after replay. No collection
 assertion is removed or weakened. A diagnostic helper's earlier expression
@@ -219,7 +219,7 @@ just test-file t/execution-cancellation-test.ss true
 just test-file t/module-declaration-1000-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix WitnessReplay --typecheck-scope selected --receipt ../.data/qualification/witness-replay.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 
 Use the same repository-locked source environment and original budgets.

@@ -6,9 +6,9 @@
 ;;; Boundary: planning produces inspectable control-plane artifacts.
 ;;; Invariant: execution stays in the runner/runtime-adapter layer.
 
-(import :core/modules/funflow/control-plane/projection-syntax
-        :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/task)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/task)
 
 (export make-plan-node
         plan-node?
@@ -72,13 +72,13 @@
 ;;; and they must not imply scheduling, adapter submission, or state writes.
 ;; : (-> Unit FlowDagReceiptKind)
 (def flow-dag-receipt-kind
-  "poo-flow.core.flow-dag-receipt.v1")
+  "yuanxu.core.flow-dag-receipt.v1")
 
 ;;; Boundary: runtime manifest schema is discovery metadata only.
 ;;; Intent: Marlin can discover DAG receipt shape without guessing entrypoints.
 ;; : (-> Unit FlowDagRuntimeManifestSchema)
 (def +flow-dag-runtime-manifest-schema+
-  'poo-flow.core.flow-dag-runtime-manifest.v1)
+  'yuanxu.core.flow-dag-runtime-manifest.v1)
 
 ;; : (-> Flow ExecutionPlan)
 (def (flow->linear-plan flow)
@@ -377,7 +377,7 @@
   (fields ((schema +flow-dag-runtime-manifest-schema+)
            (kind 'flow-dag-runtime-manifest)
            (bridge 'runtime-manifest)
-           (producer 'poo-flow)
+           (producer 'yuanxu)
            (consumer 'marlin-agent-core)
            (operation 'inspect-flow-dag)
            (request-id request-id)

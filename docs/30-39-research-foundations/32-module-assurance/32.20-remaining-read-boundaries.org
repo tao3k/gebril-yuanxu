@@ -7,7 +7,7 @@ This extends [[file:32.19-root-owned-child-analysis.org][32.19]], without modify
 The question is which of its remaining 356 reads are redundant certification,
 not whether repeating a path name implies repeating the same observation.
 
-The new owners are [[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReturnWindows.lean][Admission.ReturnWindows]] and
+The new owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean][Admission.ReturnWindows]] and
 [[file:../../../dev/proofs/quint/ReturnWindows.qnt][ReturnWindows]]. They reuse LeanPoo's actual =ensureLookup= through
 =Admission.SourceWindows=, the existing =ContextSlot= laws, and
 =Admission.RootChild='s concrete candidate/contribution predicate. No new cache,
@@ -286,7 +286,7 @@ No Scheme comment or behavior is changed in this proof-only work.
 
 * Ordered replay projection and exact source coverage
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReplayBoundary.lean][Admission.ReplayBoundary]] reuses =SourceWindows.fetch= and therefore LeanPoo's
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean][Admission.ReplayBoundary]] reuses =SourceWindows.fetch= and therefore LeanPoo's
 =ConstructionCache.ensureLookup=. Its closed operation algebra has only concrete
 source requests and structural token-coordinate comparisons. It has no
 function-valued operation, getter, observer, public purity flag or alternate

@@ -31,8 +31,8 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
 
 ;;; Local native publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
-        (only-in :core/module-system/source/objects
-                 make-poo-flow-module-local-source poo-flow-module-source-ref?)
+        (only-in :yuanxu/module-system/source/objects
+                 make-poo-flow-module-local-source yuanxu-module-source-ref?)
         (only-in :poo-flow/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
         (only-in :poo-flow/modules/funflow/profiles/gerbil-scheme
@@ -56,7 +56,7 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
       (make-gerbil-scheme-ci-profile prototype-scope)))
 
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow local publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.)
     source: source-handle))
@@ -82,7 +82,7 @@ prototype-scope 的 =(source) (prototypes)= 是原生 shared-slot capture：在�
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Native default Profile construction, with no import of the publishing scope.
-(import :core/profile-composition/selection-syntax
+(import :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .o .get))
 (export make-gerbil-scheme-ci-profile)
 
@@ -147,8 +147,8 @@ checks 用外层槽词法绑定，不捕获已缓存的父列表，也不需要�
 此例不改变现有 user-root source-role 准入策略。
 
 #+begin_src scheme
-(import :core/object-syntax/path-slots
-        :core/profile-composition/selection-syntax
+(import :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .get)
         (only-in :poo-flow/modules/funflow/native-scope Funflow))
 
@@ -224,7 +224,7 @@ module-owner-export/Generic provider 的完整桥接仍为后续方案，不参�
 | 合计 | 95 |
 
 同进程合并 public interface 与其他产品源码套件的尝试触发既有
-PooFlowDebugMemoryAnomaly；失败日志保留于临时验证目录。公共套件独立进程的三项
+YuanxuDebugMemoryAnomaly；失败日志保留于临时验证目录。公共套件独立进程的三项
 测试通过；其余四项产品回归也单独运行。不修改内存策略、不增大阈值、不将失败
 写成通过。这说明源码测试进程组成会影响该守卫，尚无规模性能/内存优势结论。
 

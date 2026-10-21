@@ -9,13 +9,13 @@
 This module supplies the field values referenced by
 [[file:01-surface-and-schema.org][the canonical Check/Pipeline/Profile schema]]. These are design declarations,
 not new runtime definitions. They use the existing
-poo-flow-predicate-contract constructor and ordinary Scheme predicates. No new
+yuanxu-predicate-contract constructor and ordinary Scheme predicates. No new
 configuration syntax is introduced. Bootstrap owners supply canonical bindings;
 downstream users keep the bounded module interface in the complete case.
 
 The source distinction matters. In [[file:../../../../modules/workflow/types.ss][workflow/types.ss]],
-poo-flow-cicd-command-vector? accepts a nonempty proper string list and
-poo-flow-cicd-profile-ref? accepts symbols, native objects or nonempty recursive
+yuanxu-cicd-command-vector? accepts a nonempty proper string list and
+yuanxu-cicd-profile-ref? accepts symbols, native objects or nonempty recursive
 reference lists. [[file:../../../../modules/workflow/objects.ss][workflow/objects.ss]] mainly checks list shape for inputs,
 config, artifacts, cache, secrets and result. Its durable action vocabulary
 comes from [[file:../../../../modules/memory-core/durable/policy.ss][the durable policy owner]]. Those checks do not establish complete
@@ -31,7 +31,7 @@ proposed domain admission. They must not be described as existing guarantees.
   '())
 
 (def (field-contract identity-value predicate)
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     identity-value predicate no-field-obligations))
 
 (def (named-symbol? value)
@@ -50,7 +50,7 @@ proposed domain admission. They must not be described as existing guarantees.
 ;; The existing low-level predicate retains its runtime name. Only the proposed
 ;; public field/Contract and this design helper use task-oriented naming.
 (def (commands? value)
-  (and (poo-flow-cicd-command-vector? value)
+  (and (yuanxu-cicd-command-vector? value)
        (positive? (string-length (car value)))))
 
 (def (optional-object? value)
@@ -69,7 +69,7 @@ proposed domain admission. They must not be described as existing guarantees.
 
 (def (durable-action? value)
   (and (symbol? value)
-       (if (memq value +poo-flow-durable-action-classes+) #t #f)))
+       (if (memq value +yuanxu-durable-action-classes+) #t #f)))
 
 (def RequiredSymbolContract
   (field-contract 'funflow/named-symbol named-symbol?))
@@ -82,7 +82,7 @@ proposed domain admission. They must not be described as existing guarantees.
   (field-contract 'funflow/argv commands?))
 (def SandboxReferenceContract
   (field-contract 'funflow/sandbox-reference
-                  poo-flow-cicd-profile-ref?))
+                  yuanxu-cicd-profile-ref?))
 (def ProperListContract
   (field-contract 'funflow/proper-list list?))
 (def OptionalObjectContract
@@ -99,10 +99,10 @@ proposed domain admission. They must not be described as existing guarantees.
   (field-contract 'funflow/empty-list null?))
 (def CheckKindContract
   (field-contract 'funflow/check-kind
-                  (cut eq? <> 'poo-flow.funflow.check.prototype)))
+                  (cut eq? <> 'yuanxu.funflow.check.prototype)))
 (def PipelineKindContract
   (field-contract 'funflow/pipeline-kind
-                  (cut eq? <> 'poo-flow.funflow.pipeline.prototype)))
+                  (cut eq? <> 'yuanxu.funflow.pipeline.prototype)))
 
 ;; These aliases deliberately prove structure only.
 (def InputBindingsContract ProperListContract)

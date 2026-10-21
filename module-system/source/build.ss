@@ -7,17 +7,17 @@
         (only-in :std/string/path path-absolute? path-default-extension)
         (only-in :std/list/list find)
         (only-in :clan/poo/object .o .cc .ref .slot? .all-slots object?)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
-        (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
-        (only-in :core/feature-system/capability-model feature-projection-request?)
-        (only-in :core/module-system/source/declaration current-module-build-phase?)
-        (only-in :core/module-system/building/package write-selected-package))
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :yuanxu/feature-system/capability-model feature-projection-request?)
+        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :yuanxu/module-system/building/package write-selected-package))
 (export module-build-graph unique-build-inputs BuildContributionContract ExternalPackageContributionContract
         BuildPublicationContract)
 (def BuildPublicationContract
-  (poo-flow-predicate-contract 'module/build-publication
+  (yuanxu-predicate-contract 'module/build-publication
     (lambda (value)
       (and (object? value) (.slot? value '.restore-build)
            (procedure? (.ref value '.restore-build))))
@@ -32,9 +32,9 @@
        (eq? (.ref value 'kind) 'module/build)
        (list? (.ref value 'roots)) (andmap native-build-root? (.ref value 'roots))))
 (def BuildContributionContract
-  (poo-flow-predicate-contract 'module/build-contribution build-contribution? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'module/build-contribution build-contribution? (lambda (_v _c) '())))
 (def ExternalPackageContributionContract
-  (poo-flow-predicate-contract 'module/external-package
+  (yuanxu-predicate-contract 'module/external-package
     (lambda (value)
       (and (object? value)
            (andmap (cut .slot? value <>) '(kind identity .prepare))
@@ -131,12 +131,12 @@
     (def (add-source! path options-value owner contributor (observed-input #f))
       (if (hash-key? by-path path)
         (add! 'source (.ref (hash-ref by-path path) 'input) options-value owner contributor)
-        (add! 'source (or observed-input (poo-flow-prepare-module-build-source path void))
+        (add! 'source (or observed-input (yuanxu-prepare-module-build-source path void))
               options-value owner contributor)))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
-             (metadata (poo-flow-module-source-ref-metadata (.ref publication 'source)))
+             (metadata (yuanxu-module-source-ref-metadata (.ref publication 'source)))
              (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata)))
              (id (.ref projection 'identity))
              ;; Bound filesystem names even for deep module identities. The
@@ -191,7 +191,7 @@
                 (eq? (.ref projection 'kind) 'module/build))
            (admit-module-value! BuildContributionContract projection selected-value)
            (let* ((publication (owner-preparation owner))
-                  (metadata (poo-flow-module-source-ref-metadata (.ref publication 'source)))
+                  (metadata (yuanxu-module-source-ref-metadata (.ref publication 'source)))
                   (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
              (unless root (error "build contribution has no admitted source root" owner))
              (for-each

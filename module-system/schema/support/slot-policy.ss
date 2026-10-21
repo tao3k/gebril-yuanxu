@@ -8,16 +8,16 @@
 
 (import :gerbil/core)
 
-(export poo-flow-module-slot-apply-policy
-        poo-flow-module-slot-value-index
-        poo-flow-module-slot-append-distinct
-        poo-flow-module-slot-append-distinct/indexed
-        poo-flow-module-slot-remove-elements
-        poo-flow-module-slot-list-value
-        poo-flow-module-slot-policy?)
+(export yuanxu-module-slot-apply-policy
+        yuanxu-module-slot-value-index
+        yuanxu-module-slot-append-distinct
+        yuanxu-module-slot-append-distinct/indexed
+        yuanxu-module-slot-remove-elements
+        yuanxu-module-slot-list-value
+        yuanxu-module-slot-policy?)
 
 ;; : (-> [PooModuleSlotValue] HashTable)
-(def (poo-flow-module-slot-value-index values)
+(def (yuanxu-module-slot-value-index values)
   (let (index (make-hash-table))
     (for-each
      (lambda (value)
@@ -28,14 +28,14 @@
 ;;; Distinct append preserves the base list and indexes only when extra values
 ;;; need admission. The indexed entry is reused by sparse field resolution.
 ;; : (-> [PooModuleSlotValue] [PooModuleSlotValue] [PooModuleSlotValue])
-(def (poo-flow-module-slot-append-distinct base extra)
+(def (yuanxu-module-slot-append-distinct base extra)
   (if (null? extra)
     base
-    (poo-flow-module-slot-append-distinct/indexed
-     base extra (poo-flow-module-slot-value-index base))))
+    (yuanxu-module-slot-append-distinct/indexed
+     base extra (yuanxu-module-slot-value-index base))))
 
 ;; : (-> [PooModuleSlotValue] HashTable [PooModuleSlotValue] [PooModuleSlotValue])
-(def (poo-flow-module-slot-append-distinct-added/rev extra seen added-rev)
+(def (yuanxu-module-slot-append-distinct-added/rev extra seen added-rev)
   (append
    (reverse
     (filter-map
@@ -48,30 +48,30 @@
    added-rev))
 
 ;; : (-> [PooModuleSlotValue] [PooModuleSlotValue] HashTable [PooModuleSlotValue])
-(def (poo-flow-module-slot-append-distinct/indexed base extra seen)
+(def (yuanxu-module-slot-append-distinct/indexed base extra seen)
   (let (added
-        (poo-flow-module-slot-append-distinct-added/rev extra seen '()))
+        (yuanxu-module-slot-append-distinct-added/rev extra seen '()))
     (if (null? added)
       base
       (append base (reverse added)))))
 
 ;; : (-> [PooModuleSlotValue] [PooModuleSlotValue] [PooModuleSlotValue])
-(def (poo-flow-module-slot-remove-elements values removed)
+(def (yuanxu-module-slot-remove-elements values removed)
   (if (null? removed)
     values
-    (let (removed-index (poo-flow-module-slot-value-index removed))
+    (let (removed-index (yuanxu-module-slot-value-index removed))
       (filter (lambda (value)
                 (not (hash-get removed-index value)))
               values))))
 
 ;; : (-> PooModuleSlotValue [PooModuleSlotValue])
-(def (poo-flow-module-slot-list-value value)
+(def (yuanxu-module-slot-list-value value)
   (cond ((null? value) '())
         ((list? value) value)
         (else (list value))))
 
 ;; : (-> Symbol Boolean)
-(def (poo-flow-module-slot-policy? policy)
+(def (yuanxu-module-slot-policy? policy)
   (or (eq? policy 'override)
       (eq? policy 'append)
       (eq? policy 'prepend)
@@ -80,19 +80,19 @@
 ;;; Unknown policies leave the current value unchanged. Contract admission
 ;;; rejects invalid user rows before they reach this pure operation.
 ;; : (-> Symbol PooModuleSlotValue PooModuleSlotValue PooModuleSlotValue)
-(def (poo-flow-module-slot-apply-policy policy current value)
+(def (yuanxu-module-slot-apply-policy policy current value)
   (cond
    ((eq? policy 'override) value)
    ((eq? policy 'append)
-    (poo-flow-module-slot-append-distinct
-     (poo-flow-module-slot-list-value current)
-     (poo-flow-module-slot-list-value value)))
+    (yuanxu-module-slot-append-distinct
+     (yuanxu-module-slot-list-value current)
+     (yuanxu-module-slot-list-value value)))
    ((eq? policy 'prepend)
-    (poo-flow-module-slot-append-distinct
-     (poo-flow-module-slot-list-value value)
-     (poo-flow-module-slot-list-value current)))
+    (yuanxu-module-slot-append-distinct
+     (yuanxu-module-slot-list-value value)
+     (yuanxu-module-slot-list-value current)))
    ((eq? policy 'remove)
-    (poo-flow-module-slot-remove-elements
-     (poo-flow-module-slot-list-value current)
-     (poo-flow-module-slot-list-value value)))
+    (yuanxu-module-slot-remove-elements
+     (yuanxu-module-slot-list-value current)
+     (yuanxu-module-slot-list-value value)))
    (else current)))

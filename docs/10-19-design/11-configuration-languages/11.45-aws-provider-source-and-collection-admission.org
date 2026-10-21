@@ -105,7 +105,7 @@ publisher supplies its artifact reader; ordinary configuration need not know
 about signatures, SourceLock internals, candidate ledgers or =.prove=.
 
 #+begin_src scheme
-(import :core/modules/opentofu/interface
+(import :yuanxu/modules/opentofu/interface
         "t/fixtures/opentofu/aws-5.100.0/qualification.ss"
         (only-in :std/misc/ports read-all-as-u8vector)
         :clan/poo/object)
@@ -116,9 +116,9 @@ about signatures, SourceLock internals, candidate ledgers or =.prove=.
     read-all-as-u8vector))
 
 (def AWS
-  (poo-flow-opentofu-aws-provider
+  (yuanxu-opentofu-aws-provider
     (.o provider: "registry.terraform.io/hashicorp/aws" version: "5.100.0")
-    (poo-flow-opentofu-aws-sources-lock)
+    (yuanxu-opentofu-aws-sources-lock)
     read-source))
 
 (def Membership (.call AWS .contract 'aws_iam_group_membership))

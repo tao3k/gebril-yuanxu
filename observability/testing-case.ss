@@ -6,35 +6,35 @@
 ;;; A POO policy around native std/test cases.  This does not own test
 ;;; discovery, assertion semantics, or the gxtest runner.
 (import (only-in :std/test test-case)
-        (only-in :core/ops/progress call-with-execution-progress execution-progress!
+        (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!
                  execution-idle-seconds execution-total-seconds)
         (only-in :clan/poo/object .call .o .cc .ref .slot? object?)
         (only-in :gerbil/expander core-resolve-identifier core-context-root
                  feature-binding? current-expander-context make-top-context eval-syntax)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/observability/memory
-                 poo-flow-debug-memory-policy
-                 poo-flow-debug-allocation-current?
-                 poo-flow-debug-cpu-microseconds
-                 poo-flow-debug-memory-snapshot poo-flow-debug-memory-checkpoint
-                 call-with-poo-flow-debug-memory-case-watchdog))
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/observability/memory
+                 yuanxu-debug-memory-policy
+                 yuanxu-debug-allocation-current?
+                 yuanxu-debug-cpu-microseconds
+                 yuanxu-debug-memory-snapshot yuanxu-debug-memory-checkpoint
+                 call-with-yuanxu-debug-memory-case-watchdog))
 
-(export poo-flow-testing-case-profile-prototype
-        poo-flow-testing-case-profile?
-        poo-flow-default-testing-case-profile
-        poo-flow-current-testing-case-profile
-        poo-flow-selected-testing-case-profile
-        poo-flow-test-checkpoint
-        poo-flow-test-observe
-        poo-flow-test-case
-        poo-flow-test-case/with)
+(export yuanxu-testing-case-profile-prototype
+        yuanxu-testing-case-profile?
+        yuanxu-default-testing-case-profile
+        yuanxu-current-testing-case-profile
+        yuanxu-selected-testing-case-profile
+        yuanxu-test-checkpoint
+        yuanxu-test-observe
+        yuanxu-test-case
+        yuanxu-test-case/with)
 
 ;;; All declared POO Flow cases receive this default.  The heap counters are
 ;;; process-wide, so the memory policy is a guard on a Case execution span,
 ;;; not a claim of independent thread-local heap accounting.  Assertions stay
 ;;; on the native harness thread; a separate sampler may interrupt it.  The native
 ;;; worker's hard managed-heap cap is set by the Testing Interface.
-(def poo-flow-testing-case-profile-prototype
+(def yuanxu-testing-case-profile-prototype
   (.o (testing-case-profile? #t)
       (identity 'testing/default-case)
       (heap-limit-bytes 2147483648)
@@ -47,14 +47,14 @@
       (max-idle-milliseconds (* 1000 execution-idle-seconds))
       (emit? #f)
       .run: (lambda (self description thunk)
-              (let (problem (poo-flow-testing-case-profile-problem self))
+              (let (problem (yuanxu-testing-case-profile-problem self))
                 (when problem
                   (error "invalid POO Flow testing Case profile"
                          problem)))
               (unless (and (string? description) (procedure? thunk))
                 (error "invalid POO Flow testing Case" description thunk))
               (def policy
-               (poo-flow-debug-memory-policy
+               (yuanxu-debug-memory-policy
                 (.ref self 'identity)
                 heap-limit-bytes: (.ref self 'heap-limit-bytes)
                 live-growth-limit-bytes:
@@ -69,10 +69,10 @@
               ;; and receipt Contract as the existing watchdog, not a sampler.
               (def observing? (.ref self 'emit?))
               (def baseline
-                (and observing? (poo-flow-debug-memory-snapshot 'case-entry)))
+                (and observing? (yuanxu-debug-memory-snapshot 'case-entry)))
               (def started (and observing? (current-jiffy)))
               (def started-cpu
-                (and observing? (poo-flow-debug-cpu-microseconds)))
+                (and observing? (yuanxu-debug-cpu-microseconds)))
               (def counts (and observing? (make-hash-table-eq)))
               (def allocation-previous #f)
               (def allocation-current? #t)
@@ -85,25 +85,25 @@
                   (hash-put! counts key next) next))
               (def (observed-checkpoint phase)
                 (def checkpoint-started (current-jiffy))
-                (def checkpoint-cpu (poo-flow-debug-cpu-microseconds))
-                (let (receipt (poo-flow-debug-memory-checkpoint
+                (def checkpoint-cpu (yuanxu-debug-cpu-microseconds))
+                (let (receipt (yuanxu-debug-memory-checkpoint
                                 policy baseline phase emit?: #t))
-                  (poo-flow-write-observation-line!
+                  (yuanxu-write-observation-line!
                     "test-phase %s elapsed-ms=%s cpu-ms=%s process-cpu-ms=%s" phase
                     (quotient (* (- (current-jiffy) started) 1000)
                               (jiffies-per-second))
-                    (quotient (- (poo-flow-debug-cpu-microseconds) started-cpu) 1000)
+                    (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
                     ;; Includes native source imports before the Case begins.
                     ;; This is the existing SDK process counter, not a probe or
                     ;; a claim that parent and worker CPU clocks share an epoch.
-                    (quotient (poo-flow-debug-cpu-microseconds) 1000))
+                    (quotient (yuanxu-debug-cpu-microseconds) 1000))
                   (def allocated (.ref (.ref receipt 'after) 'allocated-bytes))
                   (set! allocation-current?
-                    (poo-flow-debug-allocation-current? allocation-current?
+                    (yuanxu-debug-allocation-current? allocation-current?
                       (or allocation-previous (.ref (.ref receipt 'before) 'allocated-bytes))
                       allocated))
                   (set! allocation-previous allocated)
-                  (poo-flow-write-observation-line!
+                  (yuanxu-write-observation-line!
                     "test-work phase=%s allocation-current?=%s counts=%s"
                     phase allocation-current? (hash->list counts))
                   ;; Attribute explicit receipt construction/output separately
@@ -113,7 +113,7 @@
                     (quotient (* (- (current-jiffy) checkpoint-started) 1000000)
                               (jiffies-per-second)))
                   (observe 'checkpoint-cpu-microseconds
-                    (- (poo-flow-debug-cpu-microseconds) checkpoint-cpu))
+                    (- (yuanxu-debug-cpu-microseconds) checkpoint-cpu))
                   receipt))
               (parameterize ((current-case-checkpoint (if counts observed-checkpoint void))
                              (current-case-observer (and counts observe)))
@@ -124,31 +124,31 @@
                       (.ref self 'max-idle-milliseconds)
                       (.ref self 'max-duration-milliseconds)
                       (lambda (_progress)
-                        (call-with-poo-flow-debug-memory-case-watchdog
+                        (call-with-yuanxu-debug-memory-case-watchdog
                           policy (string->symbol description) thunk
                           emit?: (.ref self 'emit?)
                           max-duration-milliseconds:
                           (.ref self 'max-duration-milliseconds)))))
                   (lambda ()
                     (when counts
-                      (poo-flow-write-observation-line!
+                      (yuanxu-write-observation-line!
                         "test-work case=%s allocation-current?=%s final-counts=%s"
                         description allocation-current? (hash->list counts)))))))))
 
 (def current-case-checkpoint (make-parameter void))
 (def current-case-observer (make-parameter #f))
-(def (poo-flow-test-observe key (amount 1))
+(def (yuanxu-test-observe key (amount 1))
   ;; Only scalar totals escape into a Case-owned table. No source context,
   ;; syntax, candidate object or callback result becomes an observation root.
   (let (observe (current-case-observer))
     (if observe (observe key amount) 0)))
-(def (poo-flow-test-checkpoint phase)
+(def (yuanxu-test-checkpoint phase)
   (unless (symbol? phase) (error "test checkpoint requires a phase symbol" phase))
   ;; A completed named boundary counts once, even when emission is disabled.
   (execution-progress! (list 'checkpoint phase) 1)
   ((current-case-checkpoint) phase))
 
-(def (poo-flow-testing-case-profile-problem value)
+(def (yuanxu-testing-case-profile-problem value)
   (cond
    ((not (object? value)) 'not-poo-object)
    ((or (not (.slot? value 'testing-case-profile?))
@@ -197,14 +197,14 @@
     'missing-run-slot)
    (else #f)))
 
-(def (poo-flow-testing-case-profile? value)
-  (not (poo-flow-testing-case-profile-problem value)))
+(def (yuanxu-testing-case-profile? value)
+  (not (yuanxu-testing-case-profile-problem value)))
 
-(def poo-flow-default-testing-case-profile
-  (.o (:: @ poo-flow-testing-case-profile-prototype)))
+(def yuanxu-default-testing-case-profile
+  (.o (:: @ yuanxu-testing-case-profile-prototype)))
 
-(def poo-flow-current-testing-case-profile
-  (make-parameter poo-flow-default-testing-case-profile))
+(def yuanxu-current-testing-case-profile
+  (make-parameter yuanxu-default-testing-case-profile))
 
 ;; The native harness binds -D features in its root before importing tests.
 ;; Resolve at execution time, including for compiled test modules. A lexical
@@ -213,28 +213,28 @@
   (delay
     ;; Capture native harness features before entering the private import frame.
     (let (trace? (feature-binding?
-                  (core-resolve-identifier 'poo-flow-module-test-trace 0 (core-context-root))))
+                  (core-resolve-identifier 'yuanxu-module-test-trace 0 (core-context-root))))
       (parameterize ((current-expander-context (make-top-context)))
-        (eval-syntax '(import :core/module-system/building/test-observation))
+        (eval-syntax '(import :yuanxu/module-system/building/test-observation))
         (.cc (eval-syntax 'ModuleTestingProfile.) 'emit? #t 'trace-enabled? trace?)))))
-(def (poo-flow-selected-testing-case-profile)
-  (let (profile (poo-flow-current-testing-case-profile))
-    (if (and (eq? profile poo-flow-default-testing-case-profile)
+(def (yuanxu-selected-testing-case-profile)
+  (let (profile (yuanxu-current-testing-case-profile))
+    (if (and (eq? profile yuanxu-default-testing-case-profile)
              (feature-binding?
-               (core-resolve-identifier 'poo-flow-module-test-observation
+               (core-resolve-identifier 'yuanxu-module-test-observation
                                         0 (core-context-root))))
       (force module-observation-profile)
       profile)))
 
 ;;; Hygienic syntax projects directly to the upstream test-case macro.  The
 ;;; native harness still registers and reports the resulting TestCase.
-(defrules poo-flow-test-case ()
+(defrules yuanxu-test-case ()
   ((_ description body rest ...)
-   (poo-flow-test-case/with
-    (poo-flow-selected-testing-case-profile)
+   (yuanxu-test-case/with
+    (yuanxu-selected-testing-case-profile)
     description body rest ...)))
 
-(defrules poo-flow-test-case/with ()
+(defrules yuanxu-test-case/with ()
   ((_ profile description body rest ...)
    (test-case description
      (let (active-profile profile)

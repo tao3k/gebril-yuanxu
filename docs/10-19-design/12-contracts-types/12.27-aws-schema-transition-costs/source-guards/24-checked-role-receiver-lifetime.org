@@ -149,7 +149,7 @@ covers later parent changes, including after the temporary receiver is gone.
 Ten expected outcomes distinguish acceptance from those deliberately invalid
 implementations; no second Graph model is introduced.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] retains arbitrary-identity frontier/currentness proofs and
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] retains arbitrary-identity frontier/currentness proofs and
 adds parent-snapshot refusal and ancestor-policy preservation under explicit
 coverage. It does not repeat Quint's schedule exploration. Runtime premises
 remain native revision fidelity, complete traversal of actual supers, weak
@@ -170,7 +170,7 @@ just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-testing-isolation-test.ss
 python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/checked-role-reads.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 
 Native controls cover unchanged result identity, one field-validation call,

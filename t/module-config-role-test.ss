@@ -4,9 +4,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
-        (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
 (export module-config-role-test)
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -21,7 +21,7 @@
       (let* ((source (path-expand "config.ss" root))
              (wrapper (path-expand "wrapped.ss" root)))
         (write-source source text)
-        (let (prepared (poo-flow-prepare-module-build-source source void))
+        (let (prepared (yuanxu-prepare-module-build-source source void))
           (call-with-output-file wrapper
             (lambda (port)
               (for-each (lambda (form) (write form port) (newline port))
@@ -31,7 +31,7 @@
             (test source prepared)))))))
 (def module-config-role-test
   (test-suite "Native config role defaults"
-    (poo-flow-test-case "bare Config gets native POO and only its conventional export"
+    (yuanxu-test-case "bare Config gets native POO and only its conventional export"
       (with-config
         "(def Private 41) (.def Base answer: Private) (.def (Config @ Base) answer: => 1+)"
         (lambda (_source _prepared)
@@ -40,38 +40,38 @@
             (with-catch (lambda (_e) #t) (lambda () (eval-syntax 'Private) #f)))
           (assert 'private-prototype-not-exported
             (with-catch (lambda (_e) #t) (lambda () (eval-syntax 'Base) #f))))))
-    (poo-flow-test-case "native explicit headers remain valid without exporting all names"
+    (yuanxu-test-case "native explicit headers remain valid without exporting all names"
       (with-config
         "prelude: :gerbil/core\n(import :clan/poo/object) (def Private 7) (def Config (.o answer: Private)) (export Config)"
         (lambda (_source _prepared)
           (assert 'explicit-native-header (= (.get (eval-syntax 'Config) answer) 7)))))
-    (poo-flow-test-case "explicit POO extension imports retain their native binding"
+    (yuanxu-test-case "explicit POO extension imports retain their native binding"
       (with-config
-        "(import (only-in :core/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
+        "(import (only-in :yuanxu/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
         (lambda (_source _prepared)
           (assert 'explicit-object-syntax (= (.get (eval-syntax 'Config) answer) 9)))))
-    (poo-flow-test-case "native inclusion retains the original config source location"
+    (yuanxu-test-case "native inclusion retains the original config source location"
       (with-config
         "(import (only-in :std/source this-source-file)) (def Config (.o origin: (this-source-file)))"
         (lambda (source _prepared)
           (assert 'native-source-location
             (equal? (path-normalize (.get (eval-syntax 'Config) origin)) (path-normalize source))))))
-    (poo-flow-test-case "unrelated config bindings do not acquire an unbound Config export"
+    (yuanxu-test-case "unrelated config bindings do not acquire an unbound Config export"
       (with-config "(def Greeting \"hello\") (export Greeting)"
         (lambda (_source _prepared)
           (assert 'non-config-explicit-export (equal? (eval-syntax 'Greeting) "hello")))))
-    (poo-flow-test-case "source identity and receiver-local values survive headerless revisions"
+    (yuanxu-test-case "source identity and receiver-local values survive headerless revisions"
       (call-with-temporary-directory "config-role-revision"
         (lambda (root)
           (write-source (path-expand "gerbil.pkg" root)
             (string-append "(package: " (symbol->string (gensym 'config-revision-)) ")"))
           (let (source (path-expand "config.ss" root))
             (write-source source "(def Config (.o answer: 1))")
-            (let (original (poo-flow-core-configuration-source source 'Config void))
+            (let (original (yuanxu-configuration-source source 'Config void))
               (assert 'original-source-retained (assoc source (.get original source-inputs)))
               (write-source source "(def Config (.o answer: 2))")
               (assert 'changed-source-rejected
                 (with-catch (lambda (_e) #t) (lambda () ((.get original admit-current)) #f)))
-              (let (updated (poo-flow-core-configuration-source source 'Config void))
+              (let (updated (yuanxu-configuration-source source 'Config void))
                 (assert 'updated-config (= (.get updated value answer) 2))
                 (assert 'prior-config-cache-isolated (= (.get original value answer) 1))))))))))

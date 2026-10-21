@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss" "./objects.ss"
-        (only-in :core/modules/opentofu/objects poo-flow-opentofu-provider-from-directory))
+        (only-in :yuanxu/modules/opentofu/objects yuanxu-opentofu-provider-from-directory))
 (export null-scope)
 (def (null-scope directory)
-  (def selected-provider (poo-flow-opentofu-provider-from-directory directory))
+  (def selected-provider (yuanxu-opentofu-provider-from-directory directory))
   (unless (eq? (.get selected-provider status) 'ready)
     (error "Null provider package build required" directory))
   (def baseline Scenario)

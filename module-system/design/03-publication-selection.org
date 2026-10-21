@@ -92,7 +92,7 @@ must retain both the exact init source and the module root; neither filename
 placement nor category grouping introduces another object container. Resolve
 relative references against that declared source, not an incidental process cwd.
 The current product uses a root init.ss containing an inert source collection.
-The existing poo-flow-load-modules collection projection remains unchanged;
+The existing yuanxu-load-modules collection projection remains unchanged;
 init-file resolution, discovery and selected build integration are still pending.
 
 * Concrete SourceRef-to-scope refinement

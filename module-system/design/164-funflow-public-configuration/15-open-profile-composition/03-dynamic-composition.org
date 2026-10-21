@@ -26,7 +26,7 @@ Seven tasks are a fixture outcome only.
 
 (def (composition-object-classify identity-value candidate context)
   (let ((accepted (object? candidate)))
-    (poo-flow-classification-evidence
+    (yuanxu-classification-evidence
       identity-value candidate accepted
       (if accepted '() '(expected-composition-object)) context)))
 
@@ -60,7 +60,7 @@ Seven tasks are a fixture outcome only.
 (def CICDFailurePolicyContract
   (field-contract 'cicd/failure-policy cicd-failure-policy?))
 
-(define-type (CompositionStructureContract @ PooFlowResponsibilityContract.)
+(define-type (CompositionStructureContract @ YuanxuResponsibilityContract.)
   identity: 'composition/structure
   .classify: (cut composition-object-classify identity <> <>)
   responsibilities:
@@ -74,7 +74,7 @@ Seven tasks are a fixture outcome only.
   (.o handoffs: CICDHandoffsContract
       failure-policy: CICDFailurePolicyContract))
 
-(define-type (CompositionContract @ PooFlowNativeObjectContract.)
+(define-type (CompositionContract @ YuanxuObjectContract.)
   identity: 'composition/v4
   proto: CompositionScenario.
   responsibilities: (.o composition: CompositionStructureContract))
@@ -117,7 +117,7 @@ Seven tasks are a fixture outcome only.
     records))
 
 (def (cicd-selected-nodes scenario-value context-value prepared-value)
-  (poo-flow-append-map
+  (yuanxu-append-map
     (lambda (record)
       (let* ((binding-name (.get record binding))
              (profile-value (.get record profile))
@@ -125,7 +125,7 @@ Seven tasks are a fixture outcome only.
              (modules (.get association-value plan-modules)))
         (unless (nonempty-unique-symbols? modules)
           (error "invalid-plan-module-selection" binding-name modules))
-        (poo-flow-append-map
+        (yuanxu-append-map
           (lambda (module-name)
             (unless (and (.slot? profile-value module-name)
                          (.slot? (.get association-value module-policies) module-name)
@@ -153,7 +153,7 @@ Seven tasks are a fixture outcome only.
     (cicd-assert-preparation scenario-value context-value prepared-value)))
 
 (def (cicd-node-at nodes path-value)
-  (poo-flow-find (lambda (node) (equal? (.get node path) path-value)) nodes))
+  (yuanxu-find (lambda (node) (equal? (.get node path) path-value)) nodes))
 
 (def (cicd-linked-nodes nodes handoffs)
   (for-each
@@ -183,7 +183,7 @@ Seven tasks are a fixture outcome only.
     (if (null? remaining)
       (reverse result)
       (let ((ready
-             (poo-flow-find
+             (yuanxu-find
                (lambda (node)
                  (every (lambda (dependency) (if (member dependency completed) #t #f))
                         (.get node after)))
@@ -248,16 +248,16 @@ Seven tasks are a fixture outcome only.
       (.o stage: 'blocked cause: caught runtime-executed: #f))
     (lambda ()
       (let* ((context-value (cicd-admission-context scenario-value binding-declarations))
-             (receipt (poo-flow-contract-admit
+             (receipt (yuanxu-contract-admit
                         CICDCompositionContract scenario-value context-value)))
         (.o context: context-value
             admission: receipt
             candidate:
-            (if (poo-flow-validation-evidence-accepted? receipt)
+            (if (yuanxu-validation-evidence-accepted? receipt)
               (cicd-scenario->candidate scenario-value context-value)
               #f)
             stage:
-            (if (poo-flow-validation-evidence-accepted? receipt)
+            (if (yuanxu-validation-evidence-accepted? receipt)
               'projected-unadmitted 'blocked)
             runtime-executed: #f)))))
 #+end_src

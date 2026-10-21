@@ -3,10 +3,10 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads! slot-read-receiver)
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/source/admission current-module-source-observer module-source-read)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  ServicesFixture DirectoryFixture write-source)
         "qualification/mop-state/snapshot.ss")
 (export mop-snapshot-lifetime-test test-cleanup!)
@@ -24,7 +24,7 @@
   (check-equal? (Error-message failure) message))
 (def mop-snapshot-lifetime-test
  (test-suite "Revision ABA and dynamic snapshot lifetime"
-  (poo-flow-test-case "supported value ABA invalidates a shared diamond twice, not four times"
+  (yuanxu-test-case "supported value ABA invalidates a shared diamond twice, not four times"
     (.def Shared port: 5432 unused: (error "unselected branch forced"))
     (.def (Left @ Shared))
     (.def (Right @ Shared))
@@ -41,7 +41,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (error "must not observe"))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "a receiver revision alone does not cover its observed external slot dependency"
+  (yuanxu-test-case "a receiver revision alone does not cover its observed external slot dependency"
     (.def Database port: 5432)
     (.def Application route: (.get Database port))
     (check-equal? (.get Application route) 5432)
@@ -56,7 +56,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "supported protocol ABA also leaves a revision trace"
+  (yuanxu-test-case "supported protocol ABA also leaves a revision trace"
     (.def Root port: 5432)
     (def roots (recorded (cut .get Root port)))
     (def snapshot (capture-state roots))
@@ -74,7 +74,7 @@
     (.putslot! protocol 'marker ($constant-slot-spec 'changed))
     (check-equal? (object-revision Root) (+ restored 1))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "active dependent computation vetoes the entire mutation before revision changes"
+  (yuanxu-test-case "active dependent computation vetoes the entire mutation before revision changes"
     (.def Shared port: 5432)
     (def observed '())
     (def previous (active-slot-computations))
@@ -90,7 +90,7 @@
     (check-equal? (map object-revision (list Shared Child)) before)
     (check-equal? (.get Shared port) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an entry guard does not fence a later supported mutation or undo use"
+  (yuanxu-test-case "an entry guard does not fence a later supported mutation or undo use"
     (.def Root port: 5432)
     (def roots (recorded (cut .get Root port)))
     (def captured (.get Root port))
@@ -107,7 +107,7 @@
     (check-equal? delivered 5432)
     (check-equal? (.get Root port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "observer ABA preserves MOP endpoints but independent admission rejects changed JSON first"
+  (yuanxu-test-fixture "observer ABA preserves MOP endpoints but independent admission rejects changed JSON first"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Parent (.get publication value))
@@ -144,7 +144,7 @@
     (refuses "configuration source changed" (cut .call Contract .admit final Context))
     (check-equal? (.get cached postgresql port) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "exception unwinds the dynamic binding but does not roll back its file effect"
+  (yuanxu-test-fixture "exception unwinds the dynamic binding but does not roll back its file effect"
     (fixture DirectoryFixture)
     (.def Root port: 5432)
     (def snapshot (capture-state (recorded (cut .get Root port))))

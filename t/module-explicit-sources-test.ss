@@ -4,9 +4,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata))
 (export module-explicit-sources-test)
 (def (write-source path text)
   (create-directory* (path-directory path))
@@ -25,7 +25,7 @@
    (lambda (entry)
      (let ((directory (path-expand (car entry) root)) (id (cdr entry)))
        (write-source (path-expand "types.ss" directory)
-         "(import (only-in :core/types poo-flow-predicate-contract) :clan/poo/object) (def Scope (poo-flow-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
+         "(import (only-in :yuanxu/types yuanxu-predicate-contract) :clan/poo/object) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
        (write-source (path-expand "objects.ss" directory)
          "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")
@@ -40,31 +40,31 @@
   (write-source (path-expand "unselected/interface.ss" root) "(((must-not-read"))
 (def module-explicit-sources-test
   (test-suite "Explicit authorization and native SourceRef bindings"
-    (poo-flow-test-case "required dependencies must be declared and cannot be disabled"
+    (yuanxu-test-case "required dependencies must be declared and cannot be disabled"
       (call-with-temporary-directory "explicit-denied"
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(poo-flow! mode: explicit :app (main))")
+            (write-source init "(yuanxu! mode: explicit :app (main))")
             (assert 'undeclared-required-rejected
               (rejects? "required module not explicitly declared"
-                (lambda () (.get (poo-flow-load-modules init) selected-graph))))
-            (write-source init "(poo-flow! mode: explicit :core (dependency @ \"./missing\" disable: #t) :app (main))")
+                (lambda () (.get (yuanxu-load-modules init) selected-graph))))
+            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./missing\" disable: #t) :app (main))")
             (assert 'disabled-required-rejected-before-source-read
               (rejects? "required module disabled"
-                (lambda () (.get (poo-flow-load-modules init) selected-graph))))))))
-    (poo-flow-test-case "one explicit source tree admits physical sources without copies or fallback"
+                (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))
+    (yuanxu-test-case "one explicit source tree admits physical sources without copies or fallback"
       (call-with-temporary-directory "explicit-source-tree"
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(poo-flow! mode: explicit :core (dependency @ \"./contribution\") :app (main) :unused (bomb @ \"./unselected\" disable: #t))")
-            (def view (poo-flow-load-modules init))
+            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./contribution\") :app (main) :unused (bomb @ \"./unselected\" disable: #t))")
+            (def view (yuanxu-load-modules init))
             (assert 'declared-dependency-order
               (equal? (.get view dependency-order) '(core/dependency app/main)))
             (assert 'bound-module-scope (= (.get view modules core dependency value) 42))
             (def source (.get (car (.get view selected-records)) source))
-            (def metadata (poo-flow-module-source-ref-metadata source))
+            (def metadata (yuanxu-module-source-ref-metadata source))
             (assert 'native-explicit-source-ref (eq? (cdr (assq 'source-binding metadata)) 'explicit))
             (assert 'physical-owner-retained
               (equal? (path-normalize (cdr (assq 'module-root metadata)))
@@ -74,7 +74,7 @@
             (write-source (path-expand "contribution/config.ss" root) "(def Config (.o changed: #t))")
             (assert 'external-source-currentness-rejected
               (rejects? "stale|changed|refused" (lambda () ((.get graph admit-current)))))))))
-    (poo-flow-test-case "auto discovery exposes explicitly bound origins through the same tree"
+    (yuanxu-test-case "auto discovery exposes explicitly bound origins through the same tree"
       (call-with-temporary-directory "auto-source-tree"
         (lambda (root)
           (fixture root)
@@ -82,16 +82,16 @@
           (delete-directory (path-expand "modules/core/dependency" root))
           (delete-directory (path-expand "modules/core" root))
           (let (init (path-expand "init.ss" root))
-            (write-source init "(poo-flow! mode: auto :core (dependency @ \"./contribution\"))")
-            (let (view (poo-flow-load-modules init))
+            (write-source init "(yuanxu! mode: auto :core (dependency @ \"./contribution\"))")
+            (let (view (yuanxu-load-modules init))
               (assert 'auto-bound-virtual-namespace (= (.get view modules core dependency value) 42))
               (assert 'auto-local-demand-retained (= (.get view modules app main value) 42)))))))
-    (poo-flow-test-case "missing explicit origin cannot use a matching local module"
+    (yuanxu-test-case "missing explicit origin cannot use a matching local module"
       (call-with-temporary-directory "explicit-no-fallback"
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(poo-flow! mode: explicit :core (dependency @ \"./missing\") :app (main))")
+            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./missing\") :app (main))")
             (assert 'missing-origin-rejected
               (rejects? "module source is not a directory"
-                (lambda () (.get (poo-flow-load-modules init) selected-graph))))))))))
+                (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))))

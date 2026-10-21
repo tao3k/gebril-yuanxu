@@ -3,8 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Trusted build-time declaration evaluation using the native expander. This
 ;;; neither compiles selected roots nor invokes their deferred core.link scopes.
-(import (only-in :core/configuration/json current-configuration-input-observer)
-        (only-in :core/ops/progress execution-progress!)
+(import (only-in :yuanxu/configuration/json current-configuration-input-observer)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :gerbil/expander current-expander-context make-top-context
@@ -13,18 +13,18 @@
                  current-expander-compile current-expander-eval current-expander-phi
                  expander-context-table module-context-import)
         (only-in :clan/poo/object .o .cc .ref .slot? object? object-protocol compute-precedence-list! replay-slot-reads!)
-        (only-in :core/object-family/read-projection current-owned-read-open-guard)
+        (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :core/module-system/source/publication
+        (only-in :yuanxu/module-system/source/publication
                  module-publication-contract-current? module-publication-dependency-projection)
         (only-in :clan/poo/slot-observation
                  %call-with-recorded-slot-reads %deliver-slot-read slot-read-value)
-        :core/module-system/source/admission
-        :core/module-system/source/preparation
-        (only-in :core/module-system/source/declaration current-module-build-resolver)
-        :core/module-system/source/objects
-        (only-in :core/module-system/building/source-closure for-each-build-module poo-flow-core-bootstrap-contexts
-                 poo-flow-core-bootstrap-source-path))
+        :yuanxu/module-system/source/admission
+        :yuanxu/module-system/source/preparation
+        (only-in :yuanxu/module-system/source/declaration current-module-build-resolver)
+        :yuanxu/module-system/source/objects
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module yuanxu-bootstrap-contexts
+                 yuanxu-bootstrap-source-path yuanxu-library-identity?))
 (export module-publication-reader module-prepared-source-binding)
 ;; One unpublished operation's support. It is released after execution; the
 ;; existing reader owns the retained sources for the final Graph boundary.
@@ -213,10 +213,10 @@
                   (lambda ()
                     (if prepared
                       (begin ((.ref prepared 'admit-current)) prepared)
-                      (poo-flow-prepare-module-tool-source path void)))))
+                      (yuanxu-prepare-module-tool-source path void)))))
          (identity (and input (.ref input 'compiler-identity)))
          (external? (and (symbol? identity)
-                         (not (string-prefix? "core/" (symbol->string identity)))))
+                         (not (yuanxu-library-identity? identity))))
          (resolved
           (and external?
             (with-catch (lambda (_error) #f)
@@ -247,7 +247,7 @@
           (error "compiler tool source path changed" path))
         ((.ref (cdr previous) 'admit-current))
         (cdr previous))
-      (let (input (poo-flow-prepare-module-tool-source path void))
+      (let (input (yuanxu-prepare-module-tool-source path void))
         (unless (eq? (expander-context-id context) (.ref input 'compiler-identity))
           (error "compiler tool source identity mismatch" (expander-context-id context) path))
         (hash-put! compiler-tool-inputs context (cons normalized input))
@@ -261,7 +261,7 @@
           (error "inconsistent compiler tool source observations" file))
         (hash-put! observations file (cdr observation)))) rows))
 (def (module-compiler-tools)
-  (def tool-contexts (poo-flow-core-bootstrap-contexts))
+  (def tool-contexts (yuanxu-bootstrap-contexts))
   (def tool-paths (make-hash-table))
   (def tool-inputs (make-hash-table-eq))
   (def tool-observations (make-hash-table))
@@ -315,7 +315,7 @@
                  (native-path (module-context-path context))
                  (path (if (and (string? native-path) (string=? (path-extension native-path) ".ss"))
                          native-path
-                         (poo-flow-core-bootstrap-source-path context compiler-core-root))))
+                         (yuanxu-bootstrap-source-path context compiler-core-root))))
             ;; The captured native SDK closure also contains gerbil-poo and
             ;; other source libraries. Guard those actual inputs in the SAME
             ;; dependency index, rather than importing them again as unknown
@@ -332,7 +332,7 @@
   ;; The interpreter itself is always used, independently of author imports.
   ;; Preserve its exact native closure; later imports monotonically add demands.
   ;; The catalog grants import eligibility, never evidence of actual use.
-  (inputs-for (hash-ref tool-contexts 'core/module-system/source/reader))
+  (inputs-for (hash-ref tool-contexts 'yuanxu/module-system/source/reader))
   (values tool-contexts tool-paths inputs-for tool-observations))
 (def (module-publication-reader)
   (let ((guards '()) (dependencies (make-hash-table)) (refused? #f)
@@ -349,11 +349,11 @@
     ;; This does not retain an evaluated publication or skip macro/initializer
     ;; execution. Fresh SourceRef provenance is attached to the returned view.
     (def (preparation-key source)
-      (unless (poo-flow-module-source-ref? source)
+      (unless (yuanxu-module-source-ref? source)
         (error "publication preparation requires a SourceRef" source))
-      (let (metadata (poo-flow-module-source-ref-metadata source))
-        (cons (poo-flow-module-source-ref-kind source)
-                    (cons (path-normalize (poo-flow-module-source-ref-value source))
+      (let (metadata (yuanxu-module-source-ref-metadata source))
+        (cons (yuanxu-module-source-ref-kind source)
+                    (cons (path-normalize (yuanxu-module-source-ref-value source))
                       (map (lambda (name) (assq name metadata))
                            '(module-id module-root module-tree-root))))))
     (def (prepare-publication source)
@@ -367,7 +367,7 @@
                  (begin
                    (when (current-module-source-observer)
                      ((current-module-source-observer) 'publication-policy-checks 1))
-                   (poo-flow-prepare-module-publication source)))
+                   (yuanxu-prepare-module-publication source)))
             (when (current-module-source-observer)
               ((current-module-source-observer) 'publication-preparation-walks 1))
             (hash-put! preparations key value)
@@ -377,10 +377,10 @@
       ;; Never cache authoring admission: MOP policy objects may change without
       ;; changing source bytes. Recheck the actual policy before using syntax.
       (let* ((source (.ref prepared 'source))
-             (metadata (poo-flow-module-source-ref-metadata source))
+             (metadata (yuanxu-module-source-ref-metadata source))
              (owner (cdr (assq 'module-id metadata)))
              (root (cdr (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
-             (policy poo-flow-default-module-style-policy))
+             (policy yuanxu-default-module-style-policy))
         (when (current-module-source-observer)
           ((current-module-source-observer) 'publication-policy-checks 1))
         ((.ref policy 'validate) policy owner root module-source-read)
@@ -518,15 +518,15 @@
            (set! source-prefix #f))
          (when (current-module-source-observer)
            ((current-module-source-observer)
-             (list 'publication-start (poo-flow-module-source-ref-value source-value)) 1))
+             (list 'publication-start (yuanxu-module-source-ref-value source-value)) 1))
          (unless located?
            (parameterize ((current-module-source-phase 'declaration-before)) (current!)))
          (let* ((prepared (or discovered (prepare-publication source-value)))
-                (interface-path (path-normalize (poo-flow-module-source-ref-value source-value)))
+                (interface-path (path-normalize (yuanxu-module-source-ref-value source-value)))
                 (root (path-directory interface-path))
-                (tree-row (assq 'collection-root (poo-flow-module-source-ref-metadata source-value)))
+                (tree-row (assq 'collection-root (yuanxu-module-source-ref-metadata source-value)))
                 (tree (and tree-row (path-normalize (cdr tree-row))))
-                (source-tree-row (assq 'source-tree (poo-flow-module-source-ref-metadata source-value)))
+                (source-tree-row (assq 'source-tree (yuanxu-module-source-ref-metadata source-value)))
                 (source-tree (and source-tree-row (cdr source-tree-row)))
                 (package-input (find (lambda (row) (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
                                      (.ref prepared 'source-inputs)))
@@ -639,7 +639,7 @@
                (when (equal? path interface-path)
                  (error "publication bootstrap cannot import its own interface" interface-path))
                (or (hash-get wrappers path)
-                   (let (input (poo-flow-prepare-module-private-source allowed-root original-path void))
+                   (let (input (yuanxu-prepare-module-private-source allowed-root original-path void))
                      (set! guards (cons (.ref input 'admit-current) guards))
                      (record-input! input)
                      (write-wrapper path (reader-body (.ref input 'compiler-forms)))))))
@@ -730,7 +730,7 @@
                                        (identity (expander-context-id child)))
                                    (cond
                                     ((and (symbol? identity)
-                                          (string-prefix? "core/" (symbol->string identity)))
+                                          (yuanxu-library-identity? identity))
                                      (tool-context child #f))
                                     ((and (string? file) (string=? (path-extension file) ".ss"))
                                      (unless (prepare-public-dependency (path-normalize file))
@@ -746,9 +746,9 @@
            (def (resolve-build!)
              (parameterize ((current-module-source-phase 'build-role-before)) (current!))
              (let* ((path (.ref prepared 'build-source))
-                    (input (poo-flow-prepare-module-build-source path void))
+                    (input (yuanxu-prepare-module-build-source path void))
                     (related (map (lambda (file)
-                                    (poo-flow-prepare-module-build-source file void))
+                                    (yuanxu-prepare-module-build-source file void))
                                   (.ref prepared 'role-sources))))
                (let (value (module-prepared-source-binding input 'Build related role-imports?: #t
                  shared-contexts: kernel-contexts shared-inputs: kernel-inputs
@@ -810,7 +810,7 @@
                                  (owned-path (if (and (string? native-path)
                                                       (string=? (path-extension native-path) ".ss"))
                                                native-path
-                                               (poo-flow-core-bootstrap-source-path context compiler-core-root)))
+                                               (yuanxu-bootstrap-source-path context compiler-core-root)))
                                  (owner (and source-tree owned-path
                                              ((.ref source-tree 'locate-owner) owned-path))))
                             ;; Symbol and exact source-path imports share the same
@@ -958,7 +958,7 @@
           ;; Only a successfully observed declaration may supply this capability.
           ;; This is the same inert projection, not another publication reader.
           (current!)
-          (unless (hash-key? dependencies (path-normalize (poo-flow-module-source-ref-value source)))
+          (unless (hash-key? dependencies (path-normalize (yuanxu-module-source-ref-value source)))
             (error "publication preparation requires a completed read"))
           (let (prepared (hash-get preparations (preparation-key source)))
             (unless prepared (error "publication preparation owner mismatch"))
@@ -967,10 +967,10 @@
             ;; inert preparation was cached. Both views share this one guard.
             (.cc prepared 'source source
               'source-dependencies
-              (hash-ref dependencies (path-normalize (poo-flow-module-source-ref-value source))))))
+              (hash-ref dependencies (path-normalize (yuanxu-module-source-ref-value source))))))
         inputs: (lambda (source)
                   (parameterize ((current-module-source-phase 'publication-inputs)) (current!))
-                  (hash-ref dependencies (path-normalize (poo-flow-module-source-ref-value source)))))))
+                  (hash-ref dependencies (path-normalize (yuanxu-module-source-ref-value source)))))))
 
 ;; Explicit build-tool role evaluation uses the same private native-wrapper
 ;; boundary as publication reading. It is not an import/Loader implementation.

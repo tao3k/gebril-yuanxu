@@ -1,13 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Run only with the temporary dispatcher produced by the bounded Just recipe.
 (import :std/test :clan/poo/object
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :yuanxu/module-system/source/admission
                  current-module-source-observer current-module-source-phase module-source-read)
-        (only-in :core/t/qualification/mop-state/closed-tail probe on-file refuses)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture ServicesFixture write-source))
 (export source-admission-gateway-test test-cleanup!)
 (def completed 0)
@@ -21,7 +21,7 @@
         (.call Contract .admit value context)))))
 (def source-admission-gateway-test
  (test-suite "Temporary producer-owned event gate, actual SourceAdmissionContract"
-  (poo-flow-test-fixture "no opaque tail callback permits cold and hot admission without sealing objects"
+  (yuanxu-test-fixture "no opaque tail callback permits cold and hot admission without sealing objects"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -32,7 +32,7 @@
     (.putslot! (.get sample candidate) 'port ($constant-slot-spec 5433))
     (check-equal? (.get sample candidate port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "producer denies all three late object attacks before invocation"
+  (yuanxu-test-fixture "producer denies all three late object attacks before invocation"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -55,7 +55,7 @@
         (check-equal? (object-revision receiver) before))
       '(receiver candidate external))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "producer denies second file callback before it can write the first"
+  (yuanxu-test-fixture "producer denies second file callback before it can write the first"
     (fixture DirectoryFixture)
     (def first (path-expand "first.json" (.get fixture root)))
     (def second (path-expand "second.json" (.get fixture root)))
@@ -70,7 +70,7 @@
     (check-equal? (module-source-read first) "{}")
     (check-equal? (module-source-read second) "{}")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "earlier callback rebinding the observer cannot replace the producer gate"
+  (yuanxu-test-fixture "earlier callback rebinding the observer cannot replace the producer gate"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -89,7 +89,7 @@
     (check-equal? (object-revision dependency) before)
     (check-equal? (eq? prior (current-module-source-observer)) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "verification-segment gate denies the cache-exit attack before it can remove itself"
+  (yuanxu-test-fixture "verification-segment gate denies the cache-exit attack before it can remove itself"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -119,7 +119,7 @@
        (check-equal? (object-revision dependency) before))
       (else (error "unknown compiled policy expectation")))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "earlier source mismatch keeps priority over object staleness and tail denial"
+  (yuanxu-test-fixture "earlier source mismatch keeps priority over object staleness and tail denial"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -131,7 +131,7 @@
     (refuses (admit (.get sample contract) (.get sample candidate) context (lambda (_k _n) (void)))
              "configuration source changed")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real two-party service admission keeps child obligations, final plan and parent cache"
+  (yuanxu-test-fixture "real two-party service admission keeps child obligations, final plan and parent cache"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Contract (.get publication contract))

@@ -86,7 +86,7 @@ separate pending migration from current role conventions.
 
 * One loader facade consumes publication and user intent
 
-The public call should converge at poo-flow-load-modules. That does not move
+The public call should converge at yuanxu-load-modules. That does not move
 module definitions into init.ss or hide a second parser/resolver behind the name.
 Existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][source collection code]] already projects interface.ss entrypoints.
 The target enhancement combines a directory source and normalized init policy,
@@ -95,7 +95,7 @@ then delegates each responsibility to its existing owner.
 | Input/operation | Owning mechanism |
 |-----------------+------------------|
 | Directory/root and explicit contribution source | Directory Contract/source resolver; admitted interface.ss metadata |
-| init.ss declarations | Existing bounded poo-flow! lowering, with reviewed mode/root/disable extension |
+| init.ss declarations | Existing bounded yuanxu! lowering, with reviewed mode/root/disable extension |
 | Module Core inclusion and owner disable | Module System descriptor/import closure |
 | Optional flag selection and capability binding | Existing Feature System model/resolver/binding |
 | Build entries and compiler closure | Selected Core + selected feature projections, then PackageSpec build owner |
@@ -106,8 +106,8 @@ shorthand for its auto-policy default. Neither signature is implemented by the
 current one-collection SourceRef projector. These are target public calls:
 
 #+begin_src scheme
-(def AutoModules (poo-flow-load-modules AutoInit))
-(def ExplicitModules (poo-flow-load-modules ExplicitInit))
+(def AutoModules (yuanxu-load-modules AutoInit))
+(def ExplicitModules (yuanxu-load-modules ExplicitInit))
 #+end_src
 
 The facade must resolve the selected source graph before exposing executable module

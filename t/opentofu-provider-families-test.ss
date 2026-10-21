@@ -2,21 +2,21 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope.)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope.)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-provider-families-test)
 
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? evidence) (poo-flow-validation-evidence-accepted? evidence))
+(def (accepted? evidence) (yuanxu-validation-evidence-accepted? evidence))
 (def (different? a b c) (and (not (eq? a b)) (not (eq? a c)) (not (eq? b c))))
 (def (path? result expected)
   (find (lambda (d)
-          (equal? (cdr (assoc 'path (poo-flow-json-schema-validation-diagnostic-metadata d))) expected))
+          (equal? (cdr (assoc 'path (yuanxu-json-schema-validation-diagnostic-metadata d))) expected))
         (.get result diagnostics)))
 (def (verify-publication module contract address version directory)
   (assert 'contract-provider (equal? (.get contract provider) address))
@@ -30,7 +30,7 @@
 
 (def opentofu-provider-families-test
   (test-suite "opentofu-provider-families-test"
-    (poo-flow-test-case "three real Provider packages, native publication and admission"
+    (yuanxu-test-case "three real Provider packages, native publication and admission"
       ;; One package collection supplies all leaf scopes, without per-provider ENV.
       (def AWS (.get OpenTofuScope. modules aws))
       (def AWSCC (.get OpenTofuScope. modules awscc))

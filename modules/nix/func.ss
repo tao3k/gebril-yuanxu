@@ -3,17 +3,17 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/misc/process run-process)
-        (only-in :core/ops/func run-script)
-        (only-in :core/ops/progress execution-idle-seconds execution-total-seconds
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/progress execution-idle-seconds execution-total-seconds
                  make-nix-progress-reader)
         (only-in :std/string/misc string-subst)
         (only-in :std/encoding/json write-json)
-        (only-in :core/module-system/source/admission module-source-type module-source-read
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read
                  current-module-source-observer current-module-process-trace-budget)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode))
-(export poo-flow-core-nix-flake-source-inputs poo-flow-core-nix-flake-instantiate current-nix-process-observer current-nix-process-completion-observer poo-flow-core-nix-instantiate poo-flow-core-nix-realize poo-flow-core-nix-source-inputs call-with-nix-derivation-query)
-(export poo-flow-core-nix-verify-store)
+(export yuanxu-nix-flake-source-inputs yuanxu-nix-flake-instantiate current-nix-process-observer current-nix-process-completion-observer yuanxu-nix-instantiate yuanxu-nix-realize yuanxu-nix-source-inputs call-with-nix-derivation-query)
+(export yuanxu-nix-verify-store)
 ;; Optional build-tool observability at the actual process boundary. No cache or
 ;; Provider-specific instrumentation; default execution has no observer.
 (def current-nix-process-observer (make-parameter #f))
@@ -126,7 +126,7 @@
       (observer (list 'nix-store-validity (if valid? 'hit 'miss)) 1))
     valid?))
 
-(def (poo-flow-core-nix-verify-store executable path)
+(def (yuanxu-nix-verify-store executable path)
   (unless (and (string? path) (string-prefix? "/nix/store/" path)
                (not (string-index (substring path 11 (string-length path)) #\/))
                (eq? (module-source-type path) 'directory))
@@ -138,7 +138,7 @@
       (call-with-nix-process-observation argv (cut run-nix-process <> #t)))
     '("--check-validity" "--verify-path")))
 
-(def (poo-flow-core-nix-instantiate executable expression arguments
+(def (yuanxu-nix-instantiate executable expression arguments
                                    (store-command (lambda () "nix-store")))
   ;; Nix owns the cache. Always evaluate the CURRENT expression/arguments first;
   ;; do not reuse a Scheme result or assume our source list closes Nix imports.
@@ -170,7 +170,7 @@
         (string-subst (string-subst text "\\" "\\\\") "\"" "\\\"")
         "$" "\\$")
       "\n" "\\n") "\""))
-(def (poo-flow-core-nix-flake-instantiate executable reference attribute
+(def (yuanxu-nix-flake-instantiate executable reference attribute
         (arguments (.o)) (inputs (.o)))
   (let* ((applied? (pair? (.all-slots arguments)))
          ;; A fully qualified output is an exact path, not a package shorthand.
@@ -209,7 +209,7 @@
           (list "--apply" (string-append "function: (function (builtins.fromJSON "
                                          (nix-string json) ")).drvPath"))
           '())))))
-(def (poo-flow-core-nix-flake-source-inputs reference)
+(def (yuanxu-nix-flake-source-inputs reference)
   ;; No tree scan. Native Nix checks transitive derivation dependencies. Remote
   ;; roots have no local byte observations; transport/pinning remains upstream.
   (let (root (cond ((string-prefix? "path:/" reference) (substring reference 5 (string-length reference)))
@@ -220,11 +220,11 @@
                (cons path (and (module-source-type path) (module-source-read path)))))
            '("flake.nix" "flake.lock"))
       '())))
-(def (poo-flow-core-nix-realize executable derivation)
+(def (yuanxu-nix-realize executable derivation)
   (store-path-command (list executable "--realise" derivation)))
 
 ;; Project already-observed Core source bytes; no extra filesystem scan.
-(def (poo-flow-core-nix-source-inputs observations)
+(def (yuanxu-nix-source-inputs observations)
   (list->vector
    (map (lambda (row)
           (list->hash-table

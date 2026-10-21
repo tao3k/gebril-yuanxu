@@ -8,11 +8,11 @@
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
                  slot-read-revision slot-read-instance slot-read-value
                  slot-read-dependencies replay-slot-reads! %deliver-slot-read)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
         (only-in "qualification/mop-state/closed-tail" probe)
         (only-in "qualification/mop-state/snapshot" capture-state state-current! state-closed?)
         "qualification/mop-state/checker-origin.ss")
@@ -33,7 +33,7 @@
     (slot-read-dependencies read) checker))
 (def mop-checker-origin-test
  (test-suite "MOP checker identity and receiver ownership boundaries"
-  (poo-flow-test-case "native cold and hot records remain owned without recomputation"
+  (yuanxu-test-case "native cold and hot records remain owned without recomputation"
     (def calls 0)
     (.def Root port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))
@@ -47,7 +47,7 @@
     (replay-slot-reads! warm (lambda (_receiver _key) (void)))
     (check-equal? calls 1)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "copying a native symbolic record does not copy its ownership"
+  (yuanxu-test-case "copying a native symbolic record does not copy its ownership"
     (.def Root port: 5432)
     (def genuine (port-read (recorded (cut .get Root port))))
     (def forged (copy-read genuine object-read-current?))
@@ -56,7 +56,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! (list forged) (lambda (_r _k) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "bootstrap checker success alone does not authenticate issuance"
+  (yuanxu-test-case "bootstrap checker success alone does not authenticate issuance"
     (def hooks 0)
     (def protocol (bootstrap-protocol
       (.o (compute-precedence-list (lambda (_self next) (next)))
@@ -70,7 +70,7 @@
     (check-equal? (require-owned-reads! roots) #t)
     (check-equal? hooks 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "a synthetic cache miss also passes native currentness without issuance"
+  (yuanxu-test-case "a synthetic cache miss also passes native currentness without issuance"
     (.def Root port: 5432)
     (.get Root port)
     (def genuine (recorded (cut .ref/cached Root 'missing (lambda () #f))))
@@ -85,7 +85,7 @@
     (check-equal? (object-read-current? forged) #t)
     (refuses "unowned slot-read record" (cut require-owned-reads! (list forged)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "native replay executes a foreign checker; preflight refuses without calling it"
+  (yuanxu-test-case "native replay executes a foreign checker; preflight refuses without calling it"
     (.def Root port: 5432)
     (.def Victim port: 5432)
     (.get Root port)
@@ -100,7 +100,7 @@
     (check-equal? calls 2)
     (check-equal? (.get Victim port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "owned root does not hide a foreign checker in its dependency graph"
+  (yuanxu-test-case "owned root does not hide a foreign checker in its dependency graph"
     (.def External port: 5432)
     (.get External port)
     (def calls 0)
@@ -115,7 +115,7 @@
     (refuses "foreign slot-read checker" (cut require-owned-reads! roots))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "raw record or ownership-table mutation is outside producer authenticity"
+  (yuanxu-test-case "raw record or ownership-table mutation is outside producer authenticity"
     (.def Root port: 5432)
     (def genuine (port-read (recorded (cut .get Root port))))
     (def calls 0)
@@ -129,7 +129,7 @@
     (check-equal? (require-owned-reads! (list forged)) #t)
     (check-equal? (object-read-current? forged) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "actual SourceAdmissionContract consumes an injected checker without authenticity gate"
+  (yuanxu-test-case "actual SourceAdmissionContract consumes an injected checker without authenticity gate"
     (def sample (probe '()))
     (def candidate (.get sample candidate))
     (def dependency (.get sample external))
@@ -147,7 +147,7 @@
     (check-equal? (> calls 0) #t)
     (check-equal? (.get dependency port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "fixed checker identity still depends on trusted metadata table methods"
+  (yuanxu-test-case "fixed checker identity still depends on trusted metadata table methods"
     (.def Root port: 5432)
     (.def Victim port: 5432)
     (def genuine (port-read (recorded (cut .get Root port))))
@@ -168,7 +168,7 @@
     (check-equal? (> calls 0) #t)
     (check-equal? (.get Victim port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real services retain two requirements, child evidence, ordering and parent cache"
+  (yuanxu-test-fixture "real services retain two requirements, child evidence, ordering and parent cache"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Parent (.get publication value))

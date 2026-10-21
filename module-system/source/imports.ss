@@ -17,34 +17,34 @@
 ;; | PooModuleSourceRefCandidate = Value
 
 (import (only-in :clan/poo/object .o .ref .slot? object?)
-        (only-in :core/module-system/config poo-flow-module-kind=?)
-        :core/module-system/source/objects)
+        (only-in :yuanxu/module-system/config yuanxu-module-kind=?)
+        :yuanxu/module-system/source/objects)
 
-(export make-poo-flow-module-custom-interface-source
-        make-poo-flow-module-custom-collection-source
-        poo-flow-module-custom-interface-entrypoint
-        poo-flow-local-source
-        poo-flow-custom-source
-        poo-flow-standard-library-source
-        poo-flow-source-ref
-        poo-flow-module-import-source-ref?
-        poo-flow-module-import-local-source?
-        poo-flow-module-import-normalize-source
-        poo-flow-import
-        poo-flow-imports
-        poo-flow-imports-append
-        poo-flow-extensions
-        poo-flow-extensions-append
-        poo-flow-import?)
+(export make-yuanxu-module-custom-interface-source
+        make-yuanxu-module-custom-collection-source
+        yuanxu-module-custom-interface-entrypoint
+        yuanxu-local-source
+        yuanxu-custom-source
+        yuanxu-standard-library-source
+        yuanxu-source-ref
+        yuanxu-module-import-source-ref?
+        yuanxu-module-import-local-source?
+        yuanxu-module-import-normalize-source
+        yuanxu-import
+        yuanxu-imports
+        yuanxu-imports-append
+        yuanxu-extensions
+        yuanxu-extensions-append
+        yuanxu-import?)
 
-(def poo-flow-module-import-kind "poo-flow.modules.import.v1")
-(def poo-flow-module-import-source-ref-kind "poo-flow.modules.import.source-ref.v1")
-(def poo-flow-module-import-local-source-kind "poo-flow.modules.import.local-source.v1")
+(def yuanxu-module-import-kind "yuanxu.modules.import.v1")
+(def yuanxu-module-import-source-ref-kind "yuanxu.modules.import.source-ref.v1")
+(def yuanxu-module-import-local-source-kind "yuanxu.modules.import.local-source.v1")
 
 ;;; Boundary: custom module directories are user-owned; the module-system only
 ;;; records the interface.ss entrypoint that a future loader may consume.
 ;; : (-> Path Path)
-(def (poo-flow-module-custom-interface-entrypoint module-root-path)
+(def (yuanxu-module-custom-interface-entrypoint module-root-path)
   (let ((path-length (string-length module-root-path)))
     (if (and (> path-length 0)
              (char=? (string-ref module-root-path (- path-length 1)) #\/))
@@ -54,13 +54,13 @@
 ;;; Boundary: custom sources stay local source refs so loader matching remains
 ;;; deterministic; root/entrypoint details live in metadata.
 ;; : (-> Path PooModuleSourceRef)
-(def (make-poo-flow-module-custom-interface-source module-root-path)
+(def (make-yuanxu-module-custom-interface-source module-root-path)
   (let ((entrypoint
-         (poo-flow-module-custom-interface-entrypoint module-root-path)))
-    (make-poo-flow-module-source-ref 'local entrypoint
+         (yuanxu-module-custom-interface-entrypoint module-root-path)))
+    (make-yuanxu-module-source-ref 'local entrypoint
                                      (list
                                       (cons 'kind
-                                            poo-flow-module-import-local-source-kind)
+                                            yuanxu-module-import-local-source-kind)
                                       (cons 'custom-module-root module-root-path)
                                       (cons 'entrypoint entrypoint)
                                       (cons 'entrypoint-role 'interface)))))
@@ -69,8 +69,8 @@
 ;;; loader expands its direct child module trees; the declaration macro does no
 ;;; filesystem discovery itself.
 ;; : (-> Path PooModuleSourceRef)
-(def (make-poo-flow-module-custom-collection-source modules-root-path)
-  (make-poo-flow-module-source-ref
+(def (make-yuanxu-module-custom-collection-source modules-root-path)
+  (make-yuanxu-module-source-ref
    'local
    modules-root-path
    (list (cons 'kind 'custom-module-collection)
@@ -79,98 +79,98 @@
 
 ;;; Boundary: import-local sources are catalog-compatible source refs.
 ;; : (-> Path PooModuleSourceRef)
-(def (poo-flow-local-source source-path)
-  (make-poo-flow-module-source-ref 'local source-path
-                                   (list (cons 'kind poo-flow-module-import-local-source-kind))))
+(def (yuanxu-local-source source-path)
+  (make-yuanxu-module-source-ref 'local source-path
+                                   (list (cons 'kind yuanxu-module-import-local-source-kind))))
 
 ;;; Boundary: user-facing shorthand for a custom module directory.
 ;; : (-> Path PooModuleSourceRef)
-(def (poo-flow-custom-source module-root-path)
-  (make-poo-flow-module-custom-interface-source module-root-path))
+(def (yuanxu-custom-source module-root-path)
+  (make-yuanxu-module-custom-interface-source module-root-path))
 
 ;;; Boundary: shorthand for upstream standard-library module source refs.
 ;; : (-> Symbol PooModuleSourceRef)
-(def (poo-flow-standard-library-source module-name)
-  (make-poo-flow-module-standard-library-source module-name))
+(def (yuanxu-standard-library-source module-name)
+  (make-yuanxu-module-standard-library-source module-name))
 
 ;;; Boundary: arbitrary source values are wrapped without interpretation.
 ;; : (-> SourceRefInput PooModuleSourceRef)
-(def (poo-flow-source-ref source-value)
+(def (yuanxu-source-ref source-value)
   (cond
-   ((poo-flow-module-source-ref? source-value) source-value)
+   ((yuanxu-module-source-ref? source-value) source-value)
    (else
-    (make-poo-flow-module-source-ref
+    (make-yuanxu-module-source-ref
      'source
      source-value
-     (list (cons 'kind poo-flow-module-import-source-ref-kind))))))
+     (list (cons 'kind yuanxu-module-import-source-ref-kind))))))
 
 ;; : (-> SourceRefInput Boolean)
-(def (poo-flow-module-import-source-ref? value)
-  (poo-flow-module-source-ref? value))
+(def (yuanxu-module-import-source-ref? value)
+  (yuanxu-module-source-ref? value))
 
 ;; : (-> SourceRefInput Boolean)
-(def (poo-flow-module-import-local-source? value)
-  (and (poo-flow-module-source-ref? value)
-       (eq? (poo-flow-module-source-ref-kind value) 'local)))
+(def (yuanxu-module-import-local-source? value)
+  (and (yuanxu-module-source-ref? value)
+       (eq? (yuanxu-module-source-ref-kind value) 'local)))
 
 ;;; Boundary: module import normalize source is the policy-visible edge for
 ;;; module-system behavior, keeping validation, lookup, or projection
 ;;; responsibilities centralized for callers.
 ;; : (-> SourceRefInput PooModuleSourceRef)
-(def (poo-flow-module-import-normalize-source source-value)
+(def (yuanxu-module-import-normalize-source source-value)
   (cond
    ((string? source-value)
-    (poo-flow-local-source source-value))
-   ((poo-flow-module-import-source-ref? source-value)
+    (yuanxu-local-source source-value))
+   ((yuanxu-module-import-source-ref? source-value)
     source-value)
    (else
-    (poo-flow-source-ref source-value))))
+    (yuanxu-source-ref source-value))))
 
 ;;; Boundary: import values keep source identity separate from profile payloads.
 ;;; Intent: a source/profile pair can be resolved or projected without parsing a file path.
 ;; : (-> MaybePooModuleSourceRef ModuleImportProfile PooImport)
-(def (make-poo-flow-import source-ref-value profile-value)
-  (.o kind: poo-flow-module-import-kind
+(def (make-yuanxu-import source-ref-value profile-value)
+  (.o kind: yuanxu-module-import-kind
       source-ref: source-ref-value
       profile: profile-value))
 
 ;;; Boundary: one-arg import is profile-only, two-arg import binds source+profile.
 ;; : (-> ModuleImportArg... PooImport)
-(def (poo-flow-import . import-values)
+(def (yuanxu-import . import-values)
   (cond
    ;; Profile-only imports are already in-memory module/profile values.
    ((= (length import-values) 1)
-    (make-poo-flow-import #f (car import-values)))
+    (make-yuanxu-import #f (car import-values)))
    ;; Source/profile imports preserve source identity without invoking a loader.
    ((= (length import-values) 2)
-    (make-poo-flow-import
-     (poo-flow-module-import-normalize-source (car import-values))
+    (make-yuanxu-import
+     (yuanxu-module-import-normalize-source (car import-values))
      (cadr import-values)))
    (else
-    (error "poo-flow-import expects profile or source/profile"))))
+    (error "yuanxu-import expects profile or source/profile"))))
 
 ;;; Boundary: import lists preserve caller order for closure expansion.
 ;; : (-> ModuleImportValue... [ModuleImportValue])
-(def (poo-flow-imports . import-values)
+(def (yuanxu-imports . import-values)
   import-values)
 
 ;;; Boundary: inherited imports are prepended before direct imports.
 ;; : (-> [PooImport] [PooImport] [PooImport])
-(def (poo-flow-imports-append inherited-imports direct-imports)
+(def (yuanxu-imports-append inherited-imports direct-imports)
   (append inherited-imports direct-imports))
 
 ;;; Boundary: extensions stay first-class values until projection.
 ;; : (-> ModuleExtension... [ModuleExtension])
-(def (poo-flow-extensions . extension-values)
+(def (yuanxu-extensions . extension-values)
   extension-values)
 
 ;;; Boundary: inherited extensions are prepended before direct extensions.
 ;; : (-> [ModuleExtension] [ModuleExtension] [ModuleExtension])
-(def (poo-flow-extensions-append inherited-extensions direct-extensions)
+(def (yuanxu-extensions-append inherited-extensions direct-extensions)
   (append inherited-extensions direct-extensions))
 
 ;; : (-> ModuleImportCandidate Boolean)
-(def (poo-flow-import? value)
+(def (yuanxu-import? value)
   (and (object? value)
        (.slot? value 'kind)
-       (poo-flow-module-kind=? (.ref value 'kind) poo-flow-module-import-kind)))
+       (yuanxu-module-kind=? (.ref value 'kind) yuanxu-module-import-kind)))

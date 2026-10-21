@@ -4,7 +4,7 @@
 
 ;;; Boundary: exposes hygienic syntax for declaring POO-native features and profiles.
 ;;; Invariant: macros expand to ordinary model constructors without owning runtime behavior.
-(import :core/feature-system/model)
+(import :yuanxu/feature-system/model)
 
 (export defpoo-feature
         defpoo-feature-profile)

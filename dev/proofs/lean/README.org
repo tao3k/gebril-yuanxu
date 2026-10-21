@@ -12,7 +12,7 @@ under complete monotonic write tracking. The current SDK does not provide that
 tracking: the raw restoration counterexample is preserved, not discharged by
 an assumed purity annotation or a generated Birth.
 
-One =PooFlowCoreProof= Lake library owns all Core models and their axiom audit.
+One =YuanxuProof= Lake library owns all Core models and their axiom audit.
 LeanPoo is a dependency, not another local proof implementation. The dependency
 is pinned at =6e6a706e14fa6f8199e4f36711440355b42ef335=, using Lean 4.34.0. The parent Lean consumer uses the same toolchain.
 Its Cedar pin is the upstream Lean-4.34 upgrade commit
@@ -20,7 +20,7 @@ Its Cedar pin is the upstream Lean-4.34 upgrade commit
 
 * Organization follows source ownership
 
-All source modules and theorem namespaces live under =PooFlowCoreProof=.
+All source modules and theorem namespaces live under =YuanxuProof=.
 Directory names correspond to the Core owner; filenames describe the local
 subject rather than a project-wide slogan or an unrelated inheritance algorithm.
 
@@ -76,7 +76,7 @@ from their computed results. None accepts the desired conclusion as a record fie
 
 | Source function | Model / derived property | LeanPoo API |
 |-----------------+--------------------------+-------------|
-| =profile-bundle.ss:poo-flow-compose-profile-bundles= | =ProfileComposition/Composition=: ordered flattening, grouping equivalence, conflict-prefix abort, retention of existing selections, stable-union membership and final self | =Prototype.composeAll=, =Factory=; shared =BundleIdentity.insert= |
+| =profile-bundle.ss:yuanxu-compose-profile-bundles= | =ProfileComposition/Composition=: ordered flattening, grouping equivalence, conflict-prefix abort, retention of existing selections, stable-union membership and final self | =Prototype.composeAll=, =Factory=; shared =BundleIdentity.insert= |
 | =control-plane/strategy.ss=, =policy.ss=, =runner-support/validation.ss= | =Modules/Funflow/Policy=: frozen metadata, strategy-before-adapter refusal, accepted task capability, frontier capability, all-or-error plan validation | =Factory.map=, =Validation.traverse= and its first-error law |
 | =admission/publication.ss:schema-observations= | =Admission/Publication=: actual node/normalization equality, diagnostics, absolute nonempty inputs, source checks jointly certify the publication; mismatches refuse | =ProofObject.withObligation= and =Certificate= over =Admission/Source= |
 | =admission/publication.ss:publish-current= | =Admission/Publication.stale_return_keeps_previous=: accepted output with changed return-time bytes cannot publish tentative state | =DeclarativeMetadata.Contract.invoke/publish= |
@@ -146,7 +146,7 @@ because replacing it with C4 changes the native admission semantics.
 
 * Validation
 
-From Core run =just proofs-lean= (or =lake build= here). =PooFlowCoreProof.lean=
+From Core run =just proofs-lean= (or =lake build= here). =YuanxuProof.lean=
 imports every model and rejects =sorryAx= and project-specific axioms throughout
 the imported Core closure. Only =propext=, =Classical.choice= and =Quot.sound= are
 allowed. The aggregate also rejects arbitrary =Prop=-valued structure fields;

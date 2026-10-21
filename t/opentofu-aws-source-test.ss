@@ -4,34 +4,34 @@
 (import :std/test
         "./fixtures/opentofu/aws-5.100.0/qualification.ss"
         (only-in :std/misc/ports read-all-as-u8vector)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/feature-system/source-lock-feature sources-lock-value)
-        (only-in :core/modules/opentofu/objects poo-flow-opentofu-configuration-contract)
-        (only-in :core/modules/opentofu/aws-hash poo-flow-opentofu-aws-string-hash poo-flow-opentofu-aws-rule-hash)
-        (only-in :core/modules/opentofu/types ProviderSelectionContract)
-        (only-in :core/modules/opentofu/aws-hash poo-flow-opentofu-aws-rule-key)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        :core/types
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/feature-system/source-lock-feature sources-lock-value)
+        (only-in :yuanxu/modules/opentofu/objects yuanxu-opentofu-configuration-contract)
+        (only-in :yuanxu/modules/opentofu/aws-hash yuanxu-opentofu-aws-string-hash yuanxu-opentofu-aws-rule-hash)
+        (only-in :yuanxu/modules/opentofu/types ProviderSelectionContract)
+        (only-in :yuanxu/modules/opentofu/aws-hash yuanxu-opentofu-aws-rule-key)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        :yuanxu/types
         :clan/poo/object)
 (export opentofu-aws-source-test)
 
 (def root "t/fixtures/opentofu/aws-5.100.0/")
 (def (read-source id) (call-with-input-file (string-append root id) read-all-as-u8vector))
-(def (read-control id) (poo-flow-json-schema-read-file (string-append root id)))
+(def (read-control id) (yuanxu-json-schema-read-file (string-append root id)))
 (def (ref rows key) (cdr (assoc key rows)))
 
 (def opentofu-aws-source-test
   (test-suite "opentofu-aws-source-test"
-    (poo-flow-test-case "real pinned AWS source, Schema and native collection admission"
+    (yuanxu-test-case "real pinned AWS source, Schema and native collection admission"
       (def (assert label value)
         (unless value (error "assertion failed" label))
         (displayln "ASSERT-OK " label) (force-output))
-      (def (accepted? r) (poo-flow-validation-evidence-accepted? r))
+      (def (accepted? r) (yuanxu-validation-evidence-accepted? r))
       (def (reason? r reason)
         (find (lambda (d) (eq? (.get d reason) reason)) (.get r diagnostics)))
       (def selection (.o provider: "registry.terraform.io/hashicorp/aws" version: "5.100.0"))
-      (def lock (poo-flow-opentofu-aws-sources-lock))
+      (def lock (yuanxu-opentofu-aws-sources-lock))
       (def request (.cc (.o) 'selection selection 'lock lock 'read read-source))
       (assert 'selection-contract (accepted? (.call ProviderSelectionContract .admit selection #f)))
       (assert 'malformed-selection
@@ -64,7 +64,7 @@
       (assert 'repinned-version-rejected
         (reason? (.call AwsProviderSourceContract .admit (.cc request 'lock changed-lock) #f)
                  'provider-source-lock-mismatch))
-      (def aws (poo-flow-opentofu-aws-provider selection lock read-source))
+      (def aws (yuanxu-opentofu-aws-provider selection lock read-source))
       (let (public-block (.call aws .block 'aws_iam_group_membership))
         (set-cdr! public-block '((description . "tampered")))
         (assert 'published-block-does-not-alias-source
@@ -85,9 +85,9 @@
                 (ref (ref controls 'membership) 'normalized)))
       (assert 'sdk-collision-hash
         (every (lambda (text)
-                 (= (poo-flow-opentofu-aws-string-hash text) (ref (ref controls 'collision) 'hash)))
+                 (= (yuanxu-opentofu-aws-string-hash text) (ref (ref controls 'collision) 'hash)))
                (ref (ref controls 'collision) 'strings)))
-      (assert 'crc32-ieee-vector (= (poo-flow-opentofu-aws-string-hash "123456789") #xcbf43926))
+      (assert 'crc32-ieee-vector (= (yuanxu-opentofu-aws-string-hash "123456789") #xcbf43926))
       (def binding (.call Membership .prove value))
       (assert 'real-string-proof (= (length (.get binding receipts)) 1))
       (assert 'ordinary-admit-needs-no-manual-evidence
@@ -109,15 +109,15 @@
       ;; CRC vector. Hash correspondence does NOT certify all SDK resource rules.
       (def rule (ref controls 'rule))
       (assert 'security-group-rule-hash
-        (= (poo-flow-opentofu-aws-rule-hash rule) (ref controls 'rule_hash)))
+        (= (yuanxu-opentofu-aws-rule-hash rule) (ref controls 'rule_hash)))
       (assert 'protocol-alias
-        (= (poo-flow-opentofu-aws-rule-hash (.cc (.o) 'from_port 443 'to_port 443
+        (= (yuanxu-opentofu-aws-rule-hash (.cc (.o) 'from_port 443 'to_port 443
              'protocol "6" 'security_groups '("sg-a")
              'cidr_blocks '("10.0.0.0/16" "10.1.0.0/16")))
-           (poo-flow-opentofu-aws-rule-hash rule)))
+           (yuanxu-opentofu-aws-rule-hash rule)))
       (assert 'description-affects-identity
-        (not (= (poo-flow-opentofu-aws-rule-hash rule)
-                (poo-flow-opentofu-aws-rule-hash
+        (not (= (yuanxu-opentofu-aws-rule-hash rule)
+                (yuanxu-opentofu-aws-rule-hash
                   (cons '(description . "different") (filter (lambda (r) (not (eq? (car r) 'description))) rule))))))
       (def SG (.call aws .contract 'aws_security_group))
       (def sg (.o name: "example" ingress: (list rule)))
@@ -140,7 +140,7 @@
           (.o name: "example" ingress:
             (list (.o to_port: 443 protocol: "tcp"))) #f)))
       (def ConfigSG
-        (poo-flow-opentofu-configuration-contract '()
+        (yuanxu-opentofu-configuration-contract '()
           (list (cons 'aws_security_group (.call aws .block 'aws_security_group))) '()))
       (assert 'real-security-group-configuration-contract
         (accepted? (.call ConfigSG .admit
@@ -152,7 +152,7 @@
       (assert 'configuration-type-path-preserved
         (find (lambda (diagnostic)
                 (equal? (cdr (assoc 'path
-                          (poo-flow-json-schema-validation-diagnostic-metadata diagnostic)))
+                          (yuanxu-json-schema-validation-diagnostic-metadata diagnostic)))
                         '(resource aws_security_group example ingress 0 from_port)))
               (.get wrong-config diagnostics)))
       (assert 'admit-does-not-prove-or-normalize
@@ -165,14 +165,14 @@
         (reason? (.call (.get SG collection-contract) .admit sg-normal (.call SG .prove sg-normal))
                  'provider-set-identity-unresolved))
       (def Config
-        (poo-flow-opentofu-configuration-contract '()
+        (yuanxu-opentofu-configuration-contract '()
           (list (cons 'aws_iam_group_membership (.call aws .block 'aws_iam_group_membership))) '()
           (.o resource: (.o aws_iam_group_membership: (.call aws .authority 'aws_iam_group_membership)))))
       (def config `((resource . ((aws_iam_group_membership . ((example . ,value)))))))
       (assert 'final-configuration-admitted (accepted? (.call Config .admit config #f)))
       ;; Native source checks remain live after an earlier admission.
       (def active-read read-source)
-      (def live-aws (poo-flow-opentofu-aws-provider selection lock (lambda (id) (active-read id))))
+      (def live-aws (yuanxu-opentofu-aws-provider selection lock (lambda (id) (active-read id))))
       (def Live (.call live-aws .contract 'aws_iam_group_membership))
       (def old-binding (.call Live .prove value))
       (set! active-read wrong-schema)

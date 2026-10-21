@@ -50,7 +50,7 @@ just test-file t/contribution-publication-isolation-test.ss
 | Selected/build graph | Production select-module-graph and module-build-graph | Source publications/preparation are small fixtures |
 | Contribution collector | Test-local exact edge/record/export coverage and revision fences | Not production core.contributions indexing or .selected-record linking |
 | Domain dispatch | Real .defgeneric/.defmethod-bundle and explicit fresh Generic composition | One policy family; no method collision or dynamic method-update control |
-| Admission | Public native .admit backed by Core PooFlowContract. | Small connection/plan classifier, not complete service field Contracts |
+| Admission | Public native .admit backed by Core YuanxuContract. | Small connection/plan classifier, not complete service field Contracts |
 | Checked publication | Production AdmissionPublication. .publish and source Context | No new .for-export adapter is installed |
 | File currentness | Real module-source-admit-current! on temporary source bytes | Local observations, not remote publisher authentication |
 

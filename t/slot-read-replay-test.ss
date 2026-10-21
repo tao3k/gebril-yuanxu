@@ -2,14 +2,14 @@
 ;;; Consumer regression tests for the gerbil-poo MOP read protocol.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/scenarios/gitea-postgresql/gitea/objects gitea-application)
-        (only-in :core/scenarios/gitea-postgresql/gitea/types ApplicationContract)
-        (only-in :core/scenarios/gitea-postgresql/postgresql/types Port PostgreSQLConfigContract)
-        (only-in :core/configuration/json config-json-file)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/objects gitea-application)
+        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/types ApplicationContract)
+        (only-in :yuanxu/scenarios/gitea-postgresql/postgresql/types Port PostgreSQLConfigContract)
+        (only-in :yuanxu/configuration/json config-json-file)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture write-source read-overrides)
-        (only-in :core/admission/source call-with-source-slot-reads)
+        (only-in :yuanxu/admission/source call-with-source-slot-reads)
         (only-in :clan/poo/slot-layout make-slot-cache))
 (export slot-read-replay-test test-cleanup!)
 (def completed 0)
@@ -50,7 +50,7 @@
   (Error-message cause))
 (def slot-read-replay-test
   (test-suite "MOP cold records and warm replay"
-    (poo-flow-test-fixture "parent warm, child final receiver and child obligations"
+    (yuanxu-test-fixture "parent warm, child final receiver and child obligations"
       (fixture ReplayFixture)
       (def Parent (.get fixture parent))
       (def cached (.get Parent plan))
@@ -76,7 +76,7 @@
       (check-equal? (.get rejected accepted?) #f)
       (check-equal? (.get (car (.get rejected diagnostics)) kind) 'stale-parent-plan)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "warm hit replays a Scheme dependency without running getter"
+    (yuanxu-test-fixture "warm hit replays a Scheme dependency without running getter"
       (fixture DirectoryFixture)
       (def path (path-expand "port.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")
@@ -92,7 +92,7 @@
       (check-equal? (Error-message failure) "Scheme configuration source changed")
       (check-equal? calls 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "changed source during child obligations refuses before return"
+    (yuanxu-test-fixture "changed source during child obligations refuses before return"
       (fixture ReplayFixture)
       (def path (path-expand "postgresql.json" (.get fixture root)))
       (.def (Changing @ (.get fixture contract))
@@ -102,7 +102,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "full admit refuses a cached dependency on changed Scheme source"
+    (yuanxu-test-fixture "full admit refuses a cached dependency on changed Scheme source"
       (fixture ReplayFixture)
       (def path (path-expand "port.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")
@@ -118,7 +118,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "Scheme configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "unselected computed sibling stays cold"
+    (yuanxu-test-fixture "unselected computed sibling stays cold"
       (fixture ReplayFixture)
       (def calls 0)
       (def branches (.o selected: (.get fixture parent)
@@ -126,7 +126,7 @@
       (check-equal? (.get (admit (.get fixture contract) (.get branches selected)) accepted?) #t)
       (check-equal? calls 0)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "explicit mismatch preserves its diagnostic path"
+    (yuanxu-test-fixture "explicit mismatch preserves its diagnostic path"
       (fixture ReplayFixture)
       (def path (path-expand "client-port.ss" (.get fixture root)))
       (write-source path "(.def Override database: (.o port: 5440))\n")
@@ -143,7 +143,7 @@
       (check-equal? (path-strip-directory (.get issue origin source)) "client-port.ss")
       (check-equal? (.get issue origin baseline kind) 'default)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "all derived value accessors retain warm source dependencies"
+    (yuanxu-test-fixture "all derived value accessors retain warm source dependencies"
       (fixture DirectoryFixture)
       (for-each
         (lambda (access)
@@ -159,7 +159,7 @@
                         "Scheme configuration source changed")
           (check-equal? calls 1)) accessors)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "cached-only hit replays source without getter execution"
+    (yuanxu-test-fixture "cached-only hit replays source without getter execution"
       (fixture DirectoryFixture)
       (def path (path-expand "cached.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")
@@ -176,7 +176,7 @@
                     "Scheme configuration source changed")
       (check-equal? calls 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "cache absence cannot survive later cache population"
+    (yuanxu-test-fixture "cache absence cannot survive later cache population"
       (fixture DirectoryFixture)
       (def calls 0)
       (def target (.o port: (begin (set! calls (+ 1 calls)) 5432)))
@@ -189,7 +189,7 @@
                     "stale slot dependency")
       (check-equal? calls 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "presence and names observe structure without forcing fields"
+    (yuanxu-test-fixture "presence and names observe structure without forcing fields"
       (fixture DirectoryFixture)
       (def calls 0)
       (def target (.o port: (begin (set! calls (+ 1 calls)) (error "not selected"))))
@@ -205,7 +205,7 @@
                     "stale slot dependency")
       (check-equal? calls 0)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "native fallback retains delegate source on warm reads"
+    (yuanxu-test-fixture "native fallback retains delegate source on warm reads"
       (fixture DirectoryFixture)
       (def path (path-expand "delegate.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")
@@ -217,7 +217,7 @@
       (check-equal? (failure-message (cut call-with-source-slot-reads (cut .get value port)))
                     "Scheme configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "failed cold computation installs no dependency receipt"
+    (yuanxu-test-fixture "failed cold computation installs no dependency receipt"
       (fixture DirectoryFixture)
       (def calls 0)
       (def target (.o port: (begin (set! calls (+ 1 calls)) (error "cold failure"))))
@@ -226,14 +226,14 @@
       (check-equal? (failure-message (cut .get target port)) "cold failure")
       (check-equal? calls 2)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "cached read keeps explicit false distinct from absence"
+    (yuanxu-test-fixture "cached read keeps explicit false distinct from absence"
       (fixture DirectoryFixture)
       (def target (.o value: #f))
       (check-equal? (.ref/cached target 'value (lambda () 'missing)) 'missing)
       (check-equal? (.get target value) #f)
       (check-equal? (call-with-source-slot-reads (cut .ref/cached target 'value (lambda () 'missing))) #f)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "structural query retains MOP preparation dependencies"
+    (yuanxu-test-fixture "structural query retains MOP preparation dependencies"
       (fixture DirectoryFixture)
       (def path (path-expand "protocol.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")
@@ -251,7 +251,7 @@
                     "Scheme configuration source changed")
       (check-equal? calls 0)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "staged null refusal precedes derived port and child obligations"
+    (yuanxu-test-fixture "staged null refusal precedes derived port and child obligations"
       (fixture ReplayFixture)
       (def Parent (.get fixture parent))
       (def cached (.get Parent plan))
@@ -264,7 +264,7 @@
                     '(config postgresql settings))
       (check-equal? (unbox (.get fixture child-calls)) 0)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "unknown field diagnosis does not evaluate the unknown getter"
+    (yuanxu-test-fixture "unknown field diagnosis does not evaluate the unknown getter"
       (fixture ReplayFixture)
       (def calls 0)
       (.def (Typo @ (.get fixture parent))

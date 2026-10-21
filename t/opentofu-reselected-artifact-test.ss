@@ -3,17 +3,17 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         (only-in :std/encoding/json write-json)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope.) :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope.) :yuanxu/types :clan/poo/object)
 (export opentofu-reselected-artifact-test)
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 (def opentofu-reselected-artifact-test
   (test-suite "opentofu-reselected-artifact-test"
-    (poo-flow-test-case "cached AWS parent, explicit rebuild, new native child scope"
+    (yuanxu-test-case "cached AWS parent, explicit rebuild, new native child scope"
       (.def Configuration
         resource: (.o aws_security_group: (.o web: (.o name: "web"))))
       (def ParentContract (.get OpenTofuScope. types configuration))
@@ -28,13 +28,13 @@
         (equal? (.get Demand providers) '("aws" "null")))
       (assert 'old-collection-rejects-new-provider
         (not (accepted? (.call ParentContract .admit Release #f))))
-      (let (output (getenv "POO_FLOW_OPENTOFU_TEST_SELECTION" #f))
+      (let (output (getenv "YUANXU_OPENTOFU_TEST_SELECTION" #f))
         (when output
           (call-with-output-file output
             (lambda (port)
               (write-json port (list->hash-table
                 (list (cons 'providers (list->vector (.get Demand providers))))))))))
-      (let (rebuilt (getenv "POO_FLOW_OPENTOFU_TEST_REBUILT" #f))
+      (let (rebuilt (getenv "YUANXU_OPENTOFU_TEST_REBUILT" #f))
         (when rebuilt
           (let ()
             (.def (Updated @ OpenTofuScope.)

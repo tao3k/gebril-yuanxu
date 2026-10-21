@@ -6,7 +6,7 @@
 * Publication-owned analysis and request callback attribution
 
 The next audit identifies a missing integration, rather than a missing cache.
-The AWS root now uses a public value Contract and an ordinary PooFlowContract.
+The AWS root now uses a public value Contract and an ordinary YuanxuContract.
 The existing one-shot responsibility analysis was entered by the source
 Contract wrapper, but publication did not enter it for this ordinary root.
 Consequently registered children repeated the complete Context source check.
@@ -15,7 +15,7 @@ Publication now uses the existing producer boundary:
 
 #+begin_src scheme
 (call-with-contract-analysis-root descriptor value context-value
-  (cut poo-flow-contract-admit descriptor value context-value))
+  (cut yuanxu-contract-admit descriptor value context-value))
 #+end_src
 
 The token matches the exact Contract, candidate and Context. The producer

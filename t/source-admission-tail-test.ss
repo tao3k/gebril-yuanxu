@@ -2,13 +2,13 @@
 ;;; Production return-currentness events; known misses remain expected witnesses.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-source-phase module-source-read module-source-admit-current!)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture ServicesFixture write-source))
 (export source-admission-tail-test test-cleanup!)
 (def completed 0)
@@ -24,7 +24,7 @@
     marker: 0
     source-inputs: (map (lambda (path) (cons path "{}")) paths)
     .classify: (lambda (candidate context)
-                 (poo-flow-classification-evidence identity candidate #t '() context))
+                 (yuanxu-classification-evidence identity candidate #t '() context))
     .obligations:
     (lambda (candidate _context)
       (def sampled (list (.get Descriptor marker) (.get candidate port) (.get Dependency port)))
@@ -60,7 +60,7 @@
   (check-equal? (Error-message outcome) message))
 (def source-admission-tail-test
  (test-suite "Final source pass is not an object or multi-file transaction"
-  (poo-flow-test-fixture "context callback before replay is caught by the real MOP sweep"
+  (yuanxu-test-fixture "context callback before replay is caught by the real MOP sweep"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -71,7 +71,7 @@
     (requires-error result "stale slot dependency")
     (check-equal? (.get dependency port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "observer at replay entry is still caught"
+  (yuanxu-test-fixture "observer at replay entry is still caught"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -82,7 +82,7 @@
         (lambda () (.putslot! dependency 'port ($constant-slot-spec 5433)))))
     (requires-error (.get result outcome) "stale slot dependency")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "post-replay source observer can change receiver candidate or external value without a second MOP sweep"
+  (yuanxu-test-fixture "post-replay source observer can change receiver candidate or external value without a second MOP sweep"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (for-each
@@ -110,7 +110,7 @@
         (check-equal? (.get (.call Contract .admit candidate #f) accepted?) #f))
       '(receiver candidate external))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "late source mismatch still rejects before return despite simultaneous object mutation"
+  (yuanxu-test-fixture "late source mismatch still rejects before return despite simultaneous object mutation"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -123,7 +123,7 @@
           (write-source path "{\"changed\":true}")) path))
     (requires-error (.get result outcome) "configuration source changed")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "later file observer changes an already checked file and escapes the ordered final pass"
+  (yuanxu-test-fixture "later file observer changes an already checked file and escapes the ordered final pass"
     (fixture DirectoryFixture)
     (def first (path-expand "first.json" (.get fixture root)))
     (def second (path-expand "second.json" (.get fixture root)))
@@ -140,7 +140,7 @@
              "configuration source changed"))
       "configuration source changed")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real service plan can become stale during final source inspection while requirements and parent remain"
+  (yuanxu-test-fixture "real service plan can become stale during final source inspection while requirements and parent remain"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Contract (.get publication contract))

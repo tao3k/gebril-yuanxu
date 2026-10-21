@@ -344,8 +344,8 @@ root-module:
 root-declaration:
   PooFlowProof.PooC4.Enterprise.Core.baseAdmissionRequiresAuthorityEvidence
 owner-modules:
-  PooFlowCoreProof.ModuleSystem.Graph.Aggregation
-  PooFlowCoreProof.Contribution.Qualification
+  YuanxuProof.ModuleSystem.Graph.Aggregation
+  YuanxuProof.Contribution.Qualification
   PooFlowProof.PooC4.Enterprise.Core
 lean-constant-count: 22
 axle-source-declaration-count: 10

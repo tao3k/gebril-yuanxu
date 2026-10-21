@@ -4,16 +4,16 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop element? validate)
         :clan/poo/object-contract
-        :core/modules/json-schema/contracts
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
-        (only-in :core/modules/opentofu/func poo-flow-opentofu-block->schema))
+        :yuanxu/modules/json-schema/contracts
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref)
+        (only-in :yuanxu/modules/opentofu/func yuanxu-opentofu-block->schema))
 (export json-schema-aws-value-contract-test)
 
-(def (ref value key) (poo-flow-contract-object-ref value key #f))
+(def (ref value key) (yuanxu-contract-object-ref value key #f))
 (def source-path (or (getenv "POO_JSON_SCHEMA_AWS_EXPORT")
                      (error "Set POO_JSON_SCHEMA_AWS_EXPORT to the acquired AWS provider export")))
-(def provider-export (poo-flow-json-schema-read-file source-path))
+(def provider-export (yuanxu-json-schema-read-file source-path))
 (def providers (ref provider-export 'provider_schemas))
 (def tofu-provider (ref providers 'registry.opentofu.org/hashicorp/aws))
 (def terraform-provider (ref providers 'registry.terraform.io/hashicorp/aws))
@@ -22,8 +22,8 @@
 (def provider (or tofu-provider terraform-provider))
 (unless provider (error "Expected the AWS provider export"))
 (def resources (ref provider 'resource_schemas))
-(def vpc-input (poo-flow-opentofu-block->schema (ref (ref resources 'aws_vpc) 'block)))
-(def instance-input (poo-flow-opentofu-block->schema (ref (ref resources 'aws_instance) 'block)))
+(def vpc-input (yuanxu-opentofu-block->schema (ref (ref resources 'aws_vpc) 'block)))
+(def instance-input (yuanxu-opentofu-block->schema (ref (ref resources 'aws_instance) 'block)))
 (def VpcContract (schema-value-contract 'aws/vpc vpc-input))
 (def InstanceContract (schema-value-contract 'aws/instance instance-input))
 (def ProfileContract

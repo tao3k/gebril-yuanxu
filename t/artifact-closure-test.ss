@@ -5,16 +5,16 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/encoding/json write-json)
         (only-in :gerbil/runtime/loader load-path set-load-path! load-module)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
         "qualification/mop-state/artifact-closure")
 (export artifact-closure-test test-cleanup!)
 (def completed 0)
 (def observations '())
 (def root (getenv "CORE_STORE_ROOT"))
-(def entry "core/t/qualification/mop-state/precompiled-stores")
-(def prefix "core/t/qualification/mop-state/")
+(def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
+(def prefix "yuanxu/t/qualification/mop-state/")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
 (def (write-bytes path data)
   (create-directory* (path-directory path))
@@ -37,7 +37,7 @@
           (path-expand "forbidden-bindings.ss" (.get resource root)))
     (.cc resource lib: prepared-lib)))
 (def (with-closure verify)
-  (with-poo-flow-fixture (resource ClosureFixture)
+  (with-yuanxu-fixture (resource ClosureFixture)
     (def previous (load-path))
     (dynamic-wind
       (lambda () (set-load-path! (cons (.get resource lib) previous)))
@@ -67,31 +67,31 @@
   (path-expand (string-append prefix name suffix) (.get resource lib)))
 (def artifact-closure-test
  (test-suite "Compiler artifact closure before callback loading"
-  (poo-flow-test-case "actual native closure admits without loading callback code"
+  (yuanxu-test-case "actual native closure admits without loading callback code"
     (with-closure (lambda (_resource issued)
       (check-equal? (> (length (.get issued units)) 2) #t)
       (check-equal? (.get (observe "selected" issued) issues) '())))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "replacing an issued runtime binary refuses"
+  (yuanxu-test-case "replacing an issued runtime binary refuses"
     (with-closure (lambda (resource issued)
       (copy (path-expand (string-append "lib/" prefix "unlowered-store~0.o1") root)
             (local resource "precompiled-stores" "~0.o1"))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "native highest oN resolution rejects a newly mixed binary"
+  (yuanxu-test-case "native highest oN resolution rejects a newly mixed binary"
     (with-closure (lambda (resource issued)
       (copy (local resource "precompiled-stores" "~0.o1")
             (local resource "precompiled-stores" "~0.o2"))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "replacing a selected transitive dependency refuses"
+  (yuanxu-test-case "replacing a selected transitive dependency refuses"
     (with-closure (lambda (resource issued)
       (for-each (lambda (suffix)
         (copy (path-expand (string-append "lib/" prefix "store-policy" suffix) root)
               (local resource "store-policy" suffix))) '(".scm" ".o1" "~0.scm" "~0.o1"))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "old emitted callback body is recognized without an attestation flag"
+  (yuanxu-test-case "old emitted callback body is recognized without an attestation flag"
     (with-closure (lambda (resource issued)
       (copy (path-expand (string-append "lib/" prefix "unlowered-store~0.scm") root)
             (local resource "precompiled-stores" "~0.scm"))
@@ -102,7 +102,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "unprocessed callback artifact")))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an old binary mixed before capture cannot become a newly issued baseline"
+  (yuanxu-test-case "an old binary mixed before capture cannot become a newly issued baseline"
     (with-closure (lambda (resource issued)
       (copy (path-expand (string-append "lib/" prefix "unlowered-store~0.o1") root)
             (local resource "precompiled-stores" "~0.o1"))
@@ -112,29 +112,29 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "unissued or changed compiler artifact")))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "adding an old dependency edge changes the discovered closure"
+  (yuanxu-test-case "adding an old dependency edge changes the discovered closure"
     (with-closure (lambda (resource issued)
       (def path (local resource "precompiled-stores" ".scm"))
       (write-form path `(begin ,@(read-forms path)
-        (load-module "core/t/qualification/mop-state/unlowered-store")))
+        (load-module "yuanxu/t/qualification/mop-state/unlowered-store")))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "omitting a selected dependency from the issued closure refuses"
+  (yuanxu-test-case "omitting a selected dependency from the issued closure refuses"
     (with-closure (lambda (_resource issued)
       (def omitted (.cc issued units: (cdr (.get issued units))))
       (check-equal? (has-issue? omitted 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "changing optimizer metadata refuses"
+  (yuanxu-test-case "changing optimizer metadata refuses"
     (with-closure (lambda (resource issued)
       (write-form (local resource "precompiled-stores" ".ssxi.ss") '(begin))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "changing observed compiler routing inputs refuses"
+  (yuanxu-test-case "changing observed compiler routing inputs refuses"
     (with-closure (lambda (resource issued)
       (write-form (path-expand "forbidden-bindings.ss" (.get resource root)) '())
       (check-equal? (has-issue? issued 'stale-compiler-input) #t)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "changing the compiler-owned kernel resource refuses and restores cleanly"
+  (yuanxu-test-case "changing the compiler-owned kernel resource refuses and restores cleanly"
     (with-closure (lambda (_resource issued)
       (def path (path-expand "store-runtime.o1" root))
       (def original (bytes path))
@@ -144,12 +144,12 @@
         (lambda () (write-bytes path original)))
       (check-equal? (closure-issues issued) '())))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an unselected broken module is not discovered or loaded"
+  (yuanxu-test-case "an unselected broken module is not discovered or loaded"
     (with-closure (lambda (resource issued)
       (write-form (local resource "unselected" ".scm") '(error "unselected artifact executed"))
       (check-equal? (.get (observe "unselected" issued) issues) '())))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "loading selected callback before admission refuses even when files are unchanged"
+  (yuanxu-test-case "loading selected callback before admission refuses even when files are unchanged"
     ;; Last case: native loaded-module state intentionally persists to process exit.
     (with-closure (lambda (_resource issued)
       (load-module entry)

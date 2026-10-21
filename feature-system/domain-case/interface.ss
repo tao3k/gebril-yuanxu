@@ -13,38 +13,38 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)
-        :core/object-family/role-syntax
-        :core/composition/roles
-        (only-in :core/utilities/functional
-                 poo-flow-fold-left
-                 poo-flow-fold-right
-                 poo-flow-map
-                 poo-flow-find
-                 poo-flow-filter-map
-                 poo-flow-remove
-                 poo-flow-append-map
-                 poo-flow-all?
-                 poo-flow-member?
-                 poo-flow-list-of?))
+        :yuanxu/object-family/role-syntax
+        :yuanxu/composition/roles
+        (only-in :yuanxu/utilities/functional
+                 yuanxu-fold-left
+                 yuanxu-fold-right
+                 yuanxu-map
+                 yuanxu-find
+                 yuanxu-filter-map
+                 yuanxu-remove
+                 yuanxu-append-map
+                 yuanxu-all?
+                 yuanxu-member?
+                 yuanxu-list-of?))
 
 ;; : (-> PooDomainCaseCache)
-(def (poo-flow-domain-case-cache)
+(def (yuanxu-domain-case-cache)
   (poo-core-role-object
-   (slots ((kind +poo-flow-domain-case-cache-kind+)
+   (slots ((kind +yuanxu-domain-case-cache-kind+)
            (entries (make-hash-table))
            (metrics (vector 0 0))))
    (supers)))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-domain-case-cache? value)
-  (domain-case-object-kind? value +poo-flow-domain-case-cache-kind+))
+(def (yuanxu-domain-case-cache? value)
+  (domain-case-object-kind? value +yuanxu-domain-case-cache-kind+))
 
 ;; : (-> PooDomainCaseCache Integer)
-(def (poo-flow-domain-case-cache-closure-count cache)
+(def (yuanxu-domain-case-cache-closure-count cache)
   (vector-ref (.ref cache 'metrics) 0))
 
 ;; : (-> PooDomainCaseCache Integer)
-(def (poo-flow-domain-case-cache-hit-count cache)
+(def (yuanxu-domain-case-cache-hit-count cache)
   (vector-ref (.ref cache 'metrics) 1))
 
 ;; : (-> PooDomainCaseCache Integer Unit)
@@ -53,11 +53,11 @@
     (vector-set! metrics index (+ 1 (vector-ref metrics index)))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-domain-case? value)
-  (domain-case-object-kind? value +poo-flow-domain-case-kind+))
+(def (yuanxu-domain-case? value)
+  (domain-case-object-kind? value +yuanxu-domain-case-kind+))
 
 ;; : (-> PooDomainCase Integer)
-(def (poo-flow-domain-case-instance-mix-count domain-case)
+(def (yuanxu-domain-case-instance-mix-count domain-case)
   (vector-ref (.ref domain-case 'metrics) 0))
 
 ;; : (-> PooDomainCase Unit)
@@ -66,7 +66,7 @@
     (vector-set! metrics 0 (+ 1 (vector-ref metrics 0)))))
 
 ;; : (-> PooDomainCase Integer)
-(def (poo-flow-domain-case-instance-overlay-count domain-case)
+(def (yuanxu-domain-case-instance-overlay-count domain-case)
   (vector-ref (.ref domain-case 'metrics) 1))
 
 ;; : (-> PooDomainCase Unit)
@@ -78,7 +78,7 @@
 (def (domain-case-make-closure-receipt accepted? key case-value diagnostics
                                        cache-hit?)
   (poo-core-role-object
-   (slots ((kind +poo-flow-domain-case-closure-receipt-kind+)
+   (slots ((kind +yuanxu-domain-case-closure-receipt-kind+)
            (accepted? accepted?)
            (key key)
            (domain-case case-value)
@@ -92,10 +92,10 @@
                                             local-overrides
                                             selected-projection-ids)
   (append
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (diagnostic) diagnostic)
     (list
-     (and (not (poo-flow-domain-case-cache? cache))
+     (and (not (yuanxu-domain-case-cache? cache))
           (domain-case-diagnostic 'invalid-domain-case-cache '(cache) cache))
      (and (not (domain-case-id? schema-id-value))
           (domain-case-diagnostic
@@ -108,17 +108,17 @@
      (and (not (and (list? components) (pair? components)))
           (domain-case-diagnostic
            'missing-case-components '(components) components))
-     (and (not (poo-flow-list-of? case-slot-contract-valid?
+     (and (not (yuanxu-list-of? case-slot-contract-valid?
                                   local-overrides))
           (domain-case-diagnostic
            'invalid-local-overrides '(local-overrides) local-overrides))
-     (and (not (poo-flow-list-of? domain-case-id?
+     (and (not (yuanxu-list-of? domain-case-id?
                                   selected-projection-ids))
           (domain-case-diagnostic
            'invalid-projection-selection '(selected-projections)
            selected-projection-ids))))
    (if (list? selected-projection-ids)
-       (poo-flow-map
+       (yuanxu-map
         (lambda (projection-id)
           (domain-case-diagnostic
            'duplicate-projection-selection '(selected-projections)
@@ -126,9 +126,9 @@
         (domain-case-duplicates selected-projection-ids))
        '())
    (if (list? components)
-       (poo-flow-filter-map
+       (yuanxu-filter-map
         (lambda (component)
-          (and (not (poo-flow-case-component-valid? component))
+          (and (not (yuanxu-case-component-valid? component))
                (domain-case-diagnostic
                 'invalid-case-component '(components) component)))
         components)
@@ -137,12 +137,12 @@
 ;; : (-> [PooCaseComponent] [PooCaseProjection] [Alist])
 (def (domain-case-closure-structural-diagnostics components projections)
   (append
-   (poo-flow-map
+   (yuanxu-map
     (lambda (component-id)
       (domain-case-diagnostic
        'duplicate-component-id '(components) component-id))
     (domain-case-duplicates
-     (poo-flow-map
+     (yuanxu-map
       (lambda (component) (.ref component 'component-id))
       components)))
    (domain-case-parent-diagnostics components)
@@ -158,7 +158,7 @@
    (lambda ()
      (apply role-compose
             (reverse
-             (poo-flow-map
+             (yuanxu-map
               (lambda (component) (.ref component 'role-prototype))
               components))))))
 
@@ -192,7 +192,7 @@
                                     strategy-algebra)
   (poo-core-role-object
    (slots
-    ((kind +poo-flow-domain-case-kind+)
+    ((kind +yuanxu-domain-case-kind+)
      (schema-id schema-id-value)
      (schema-version schema-version-value)
      (key key)
@@ -202,7 +202,7 @@
      (instance-overlay-compatible?
       (role-instance-overlay-compatible? composition))
      (type-contracts
-      (poo-flow-map
+      (yuanxu-map
        (lambda (component) (.ref component 'type-contract))
        components))
      (effective-slots effective-slots)
@@ -246,7 +246,7 @@
      (else
       (let (composition (domain-case-compose-components components))
         (if (domain-case-object-kind?
-             composition 'poo-flow.domain-case-diagnostic.v1)
+             composition 'yuanxu.domain-case-diagnostic.v1)
             (domain-case-make-closure-receipt
              #f key #f (list composition) #f)
             (let (case-value
@@ -278,7 +278,7 @@
 
 ;;; Closure boundary: normalize inputs once, resolve every contract family, then admit the cache entry atomically.
 ;; : (-> PooDomainCaseCache Symbol Integer [PooCaseComponent] [PooCaseSlotContract] [Symbol] PooDomainCaseClosureReceipt)
-(def (poo-flow-domain-case-close cache schema-id-value schema-version-value
+(def (yuanxu-domain-case-close cache schema-id-value schema-version-value
                                  components
                                  (local-overrides '())
                                  (selected-projection-ids '()))
@@ -297,15 +297,15 @@
                (all-slots
                 (append
                  normalized-local-overrides
-                 (poo-flow-append-map
+                 (yuanxu-append-map
                   domain-case-component-slot-contracts
                   components)))
                (all-contracts
-                (poo-flow-append-map
+                (yuanxu-append-map
                  domain-case-component-method-contracts
                  components))
                (all-projections
-                (poo-flow-append-map
+                (yuanxu-append-map
                  domain-case-component-projections
                  components))
                (structural-diagnostics
@@ -334,11 +334,11 @@
                             policy-diagnostics
                             strategy-diagnostics))
                    (descriptor
-                    (poo-flow-domain-case-canonical-descriptor
+                    (yuanxu-domain-case-canonical-descriptor
                      schema-id-value schema-version-value components
                      normalized-local-overrides
                      normalized-selected-projection-ids))
-                   (key (poo-flow-domain-case-canonical-key descriptor)))
+                   (key (yuanxu-domain-case-canonical-key descriptor)))
               (if (pair? diagnostics)
                   (domain-case-make-closure-receipt
                    #f key #f diagnostics #f)
@@ -365,11 +365,11 @@
                        (domain-case/key (.ref domain-case 'key))
                        (domain-case/instance-overlay-kind
                         (and overlay-compatible?
-                             'poo-flow.role-instance-overlay.v1))
+                             'yuanxu.role-instance-overlay.v1))
                        (domain-case/instance-composition-kind
                         (if overlay-compatible?
-                          'poo-flow.role-instance-overlay.v1
-                          'poo-flow.role-compose-mix.v1))
+                          'yuanxu.role-instance-overlay.v1
+                          'yuanxu.role-compose-mix.v1))
                        (domain-case/instance-overlay-resolver-depth
                         (and overlay-compatible? 1))))
                (supers)))
@@ -428,15 +428,15 @@
 ;; : (-> PooDomainCase PooRole [Alist])
 (def (domain-case-instance-diagnostics domain-case instance)
   (append
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (slot-contract)
       (domain-case-slot-instance-diagnostic instance slot-contract))
     (.ref domain-case 'effective-slots))
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (type-contract)
       (domain-case-type-instance-diagnostic instance type-contract))
     (.ref domain-case 'type-contracts))
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (contract)
       (domain-case-state-instance-diagnostic instance contract))
     (.ref domain-case 'effective-contracts))))
@@ -444,7 +444,7 @@
 ;; : (-> Boolean MaybePOOObject [Diagnostic] PooDomainCaseInstanceReceipt)
 (def (domain-case-instance-receipt accepted? instance diagnostics)
   (poo-core-role-object
-   (slots ((kind +poo-flow-domain-case-instance-receipt-kind+)
+   (slots ((kind +yuanxu-domain-case-instance-receipt-kind+)
            (accepted? accepted?)
            (instance instance)
            (diagnostics diagnostics)))
@@ -511,24 +511,24 @@
       (domain-case-finish-instance domain-case mode result))))
 
 ;; : (-> PooDomainCase PooRole PooDomainCaseInstanceReceipt)
-(def (poo-flow-domain-case-instantiate domain-case local-role)
-  (if (not (and (poo-flow-domain-case? domain-case)
+(def (yuanxu-domain-case-instantiate domain-case local-role)
+  (if (not (and (yuanxu-domain-case? domain-case)
                 (.ref domain-case 'closed?)
                 (role-object? local-role)))
     (domain-case-invalid-instance-receipt local-role)
     (domain-case-instantiate-valid domain-case local-role)))
 
 ;; : (-> PooDomainCase Symbol Object PooDomainCaseMethodReceipt)
-(def (poo-flow-domain-case-check-method domain-case subject-id-value context)
+(def (yuanxu-domain-case-check-method domain-case subject-id-value context)
   (let (contract
-        (and (poo-flow-domain-case? domain-case)
+        (and (yuanxu-domain-case? domain-case)
              (hash-get (.ref domain-case 'method-contract-index)
                        subject-id-value)))
     (let (accepted?
           (and contract
                (domain-case-safe-call (.ref contract 'validator) context)))
       (poo-core-role-object
-       (slots ((kind +poo-flow-domain-case-method-receipt-kind+)
+       (slots ((kind +yuanxu-domain-case-method-receipt-kind+)
                (accepted? accepted?)
                (subject-id subject-id-value)
                (contract-id (and contract (.ref contract 'contract-id)))
@@ -543,14 +543,14 @@
        (supers)))))
 
 ;; : (-> PooDomainCase Symbol PooRole PooDomainCaseProjectionReceipt)
-(def (poo-flow-domain-case-project domain-case projection-id-value instance)
+(def (yuanxu-domain-case-project domain-case projection-id-value instance)
   (let (projection
-        (and (poo-flow-domain-case? domain-case)
+        (and (yuanxu-domain-case? domain-case)
              (hash-get (.ref domain-case 'projection-index)
                        projection-id-value)))
     (if (not projection)
         (poo-core-role-object
-         (slots ((kind +poo-flow-domain-case-projection-receipt-kind+)
+         (slots ((kind +yuanxu-domain-case-projection-receipt-kind+)
                  (accepted? #f)
                  (projection-id projection-id-value)
                  (schema-id #f)
@@ -567,7 +567,7 @@
                               ((.ref projection 'projector) instance))))
                (accepted? (not (eq? payload failure-marker))))
           (poo-core-role-object
-           (slots ((kind +poo-flow-domain-case-projection-receipt-kind+)
+           (slots ((kind +yuanxu-domain-case-projection-receipt-kind+)
                    (accepted? accepted?)
                    (projection-id projection-id-value)
                    (schema-id (.ref projection 'schema-id))

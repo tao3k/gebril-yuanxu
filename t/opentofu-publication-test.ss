@@ -5,14 +5,14 @@
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/nix/func current-nix-process-observer)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
-        (only-in :core/module-system/observability/presentation
-                 poo-flow-poo-slot-authoring-self-reference?)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/interface poo-flow-load-modules))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/nix/func current-nix-process-observer)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/observability/presentation
+                 yuanxu-poo-slot-authoring-self-reference?)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export opentofu-publication-test)
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -22,18 +22,18 @@
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def opentofu-publication-test
   (test-suite "Maintained OpenTofu publication and unconfigured build boundary"
-    (poo-flow-test-case "native method names are paths, receivers and arguments remain expressions"
+    (yuanxu-test-case "native method names are paths, receivers and arguments remain expressions"
       (.def Source .prepare: (lambda (value) value))
       (.def Adapter .prepare: (lambda (value) (.call Source .prepare value)))
       (assert 'native-call-correspondence (= (.call Adapter .prepare 42) 42))
       (assert 'method-name-is-not-free-reference
-        (not (poo-flow-poo-slot-authoring-self-reference?
+        (not (yuanxu-poo-slot-authoring-self-reference?
                '.prepare '(lambda (value) (.call Source .prepare value)))))
       (assert 'receiver-reference-still-checked
-        (poo-flow-poo-slot-authoring-self-reference? '.prepare '(.call .prepare another)))
+        (yuanxu-poo-slot-authoring-self-reference? '.prepare '(.call .prepare another)))
       (assert 'argument-reference-still-checked
-        (poo-flow-poo-slot-authoring-self-reference? '.prepare '(.call Source another .prepare))))
-    (poo-flow-test-case "identity reuse requires exact bytes and native package resolution"
+        (yuanxu-poo-slot-authoring-self-reference? '.prepare '(.call Source another .prepare))))
+    (yuanxu-test-case "identity reuse requires exact bytes and native package resolution"
       (call-with-temporary-directory "opentofu-source-identity"
         (lambda (root)
           (let* ((package (path-expand "gerbil.pkg" root))
@@ -43,7 +43,7 @@
                  (package-text (string-append "(package: " (symbol->string (gensym 'source-identity-)) ")")))
             (write-source package package-text)
             (write-source path text)
-            (let (input (poo-flow-prepare-module-build-source path void))
+            (let (input (yuanxu-prepare-module-build-source path void))
               ((.get input admit-current))
               (write-source path (string-append text "\nnamespace: changed\n"))
               (check-exception ((.get input admit-current)) error?)
@@ -56,7 +56,7 @@
               (delete-file closer)
               ((.get input admit-current))
               (assert 'restored-bytes-and-package-resolution-current #t))))))
-    (poo-flow-test-case "one real publication is inert until a consumer needs construction"
+    (yuanxu-test-case "one real publication is inert until a consumer needs construction"
       (call-with-temporary-directory "opentofu-publication"
         (lambda (root)
           (let ((maintained (path-expand "../modules" (path-directory (this-source-file))))
@@ -66,7 +66,7 @@
               (write-source init
                 (call-with-output-string
                   (lambda (port)
-                    (write `(poo-flow! mode: explicit
+                    (write `(yuanxu! mode: explicit
                               (json-schema @ ,(path-expand "json-schema" maintained))
                               (nix @ ,(path-expand "nix" maintained))
                               (opentofu @ ,(path-expand "opentofu" maintained))
@@ -78,14 +78,14 @@
               (string-append "(package: " (symbol->string (gensym 'opentofu-publication-)) ")"))
             (write-init #f)
             (parameterize ((current-nix-process-observer (lambda (_argv) (set! starts (1+ starts)))))
-              (let* ((view (poo-flow-load-modules init))
+              (let* ((view (yuanxu-load-modules init))
                      (scope (.get view modules opentofu)))
                 (assert 'scope-without-artifact (not (.ref/cached scope 'modules)))
                 (assert 'default-source-unconfigured (not (.get scope config source)))
                 (assert 'native-schema-function
                   (equal? (.call (.get scope schema) type "string") '((type . "string"))))
                 (assert 'source-contract-rejects-strings
-                  (not (poo-flow-validation-evidence-accepted?
+                  (not (yuanxu-validation-evidence-accepted?
                          (.call (.get scope types config) .admit
                                 (.cc (.get scope config) 'source "path:/not-a-source") #f))))
                 (assert 'builder-alone-does-not-prepare (null? (.get view build-graph external-packages)))
@@ -100,14 +100,14 @@
                           (.get prepared source-dependencies)))))
               (let (consumer (path-expand "modules/app/infrastructure" root))
                 (write-source (path-expand "types.ss" consumer)
-                  "(import (only-in :core/modules/opentofu/types OpenTofuScopeContract)) (export OpenTofuScopeContract)")
+                  "(import (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract)) (export OpenTofuScopeContract)")
                 (write-source (path-expand "objects.ss" consumer)
                   "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
                 (write-source (path-expand "config.ss" consumer) "(def Config (.o))")
                 (write-source (path-expand "interface.ss" consumer)
                   "(.def Infrastructure identity: 'app/infrastructure core: (.o requires: (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract)) scope-contract: OpenTofuScopeContract exports: (.o config: Config)) features: (.o))")
                 (write-init #t)
-                (def graph (.get (poo-flow-load-modules init) build-graph))
+                (def graph (.get (yuanxu-load-modules init) build-graph))
                 (assert 'consumer-keeps-package-preparation-deferred
                   (not (.ref/cached graph 'external-packages)))
                 (assert 'missing-source-reported

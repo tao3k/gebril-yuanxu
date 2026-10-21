@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Core Proof Ownership
+#+title: Yuanxu Proof Ownership
 
 The Core-owned proof projects live under =core/dev/proofs/=. Runtime module
 discovery and packaging do not treat this development directory as a Module.
@@ -16,7 +16,7 @@ Product proof consumers retain their own package and depend on this location.
 
 Run =just proofs= in Core. =just proofs-quint= checks the finite models separately;
 =just check-core-lean= in the consuming workspace checks the Lean packages only.
-Core file/module paths use =PooFlowCoreProof= to avoid Lake assigning shared
+Core file/module paths use =YuanxuProof= to avoid Lake assigning shared
 modules to the product library. Existing theorem namespaces remain unchanged,
 so statements and callers retain their logical identities. Imports target the
 single Core-owned Lake dependency; no forwarding source files are needed. Product Cedar/runtime/FFI, temporal, Context, Funflow and Healthcare

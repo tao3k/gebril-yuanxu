@@ -16,7 +16,7 @@ it does not replace main, bind a source alias, or generate another build.ss.
 
 ;; init.ss
 (import "./module-system/selection/init-syntax.ss")
-(poo-flow! mode: explicit source: "./modules" (json-schema))
+(yuanxu! mode: explicit source: "./modules" (json-schema))
 #+end_src
 
 [[file:../../../core-spec.ss][core-spec.ss]] is the retained non-Module target inventory. The spec function
@@ -33,7 +33,7 @@ The current adapter requires init.ss and its owning build.ss beside each other.
 
 * One selected source epoch
 
-The existing poo-flow! macro exports init.build-spec and init.build-current!.
+The existing yuanxu! macro exports init.build-spec and init.build-current!.
 Importing init does not prepare a Graph. The first spec call prepares one Graph
 and caches its ordinary spec list; repeated equal retained roots reuse that same
 list. Different roots require a new init source epoch. The imported init

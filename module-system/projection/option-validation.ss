@@ -6,63 +6,63 @@
 ;;; Pure option validation over Core Module POO values. Descriptor-specific
 ;;; schema discovery remains with the product adapter.
 
-(import (only-in :core/module-system/config poo-flow-module-kind=?)
-        :core/module-system/projection/option-objects)
+(import (only-in :yuanxu/module-system/config yuanxu-module-kind=?)
+        :yuanxu/module-system/projection/option-objects)
 
-(export poo-flow-module-find-schema
-        poo-flow-module-missing-schema-receipt
-        poo-flow-module-option-schema-validation-receipt
-        poo-flow-module-options-validate)
+(export yuanxu-module-find-schema
+        yuanxu-module-missing-schema-receipt
+        yuanxu-module-option-schema-validation-receipt
+        yuanxu-module-options-validate)
 
-(def (poo-flow-module-find-schema schemas option-id-value)
+(def (yuanxu-module-find-schema schemas option-id-value)
   (find (lambda (schema)
-          (poo-flow-module-kind=? (poo-flow-module-option-schema-id schema)
+          (yuanxu-module-kind=? (yuanxu-module-option-schema-id schema)
                                   option-id-value))
         schemas))
 
-(def (poo-flow-module-missing-schema-receipt config)
-  (make-poo-flow-module-option-validation-receipt
-   (poo-flow-module-option-config-id config)
-   (poo-flow-module-option-config-source-module config)
+(def (yuanxu-module-missing-schema-receipt config)
+  (make-yuanxu-module-option-validation-receipt
+   (yuanxu-module-option-config-id config)
+   (yuanxu-module-option-config-source-module config)
    #f
    'missing-schema
    '("option schema is not declared")
    '()))
 
-(def (poo-flow-module-option-schema-valid? schema config)
-  (if (eq? (poo-flow-module-option-schema-rule schema) 'constant)
-    (equal? (poo-flow-module-option-config-value config)
-            (poo-flow-module-option-schema-value schema))
+(def (yuanxu-module-option-schema-valid? schema config)
+  (if (eq? (yuanxu-module-option-schema-rule schema) 'constant)
+    (equal? (yuanxu-module-option-config-value config)
+            (yuanxu-module-option-schema-value schema))
     #t))
 
-(def (poo-flow-module-option-schema-validation-receipt schema config)
-  (if (poo-flow-module-option-schema-valid? schema config)
-    (make-poo-flow-module-option-validation-receipt
-     (poo-flow-module-option-config-id config)
-     (poo-flow-module-option-config-source-module config)
+(def (yuanxu-module-option-schema-validation-receipt schema config)
+  (if (yuanxu-module-option-schema-valid? schema config)
+    (make-yuanxu-module-option-validation-receipt
+     (yuanxu-module-option-config-id config)
+     (yuanxu-module-option-config-source-module config)
      #t
      'ok
      '()
-     (poo-flow-module-option-schema-metadata schema))
-    (make-poo-flow-module-option-validation-receipt
-     (poo-flow-module-option-config-id config)
-     (poo-flow-module-option-config-source-module config)
+     (yuanxu-module-option-schema-metadata schema))
+    (make-yuanxu-module-option-validation-receipt
+     (yuanxu-module-option-config-id config)
+     (yuanxu-module-option-config-source-module config)
      #f
      'constant-mismatch
      '("option value does not match constant schema")
-     (poo-flow-module-option-schema-metadata schema))))
+     (yuanxu-module-option-schema-metadata schema))))
 
 ;; Preserve input order while traversing only once; schema-ref is supplied by
 ;; the owner of the concrete Module Interface or descriptor.
-(def (poo-flow-module-options-validate schema-ref configs)
+(def (yuanxu-module-options-validate schema-ref configs)
   (let loop ((remaining configs) (receipts-rev '()))
     (if (null? remaining)
       (reverse receipts-rev)
       (let* ((config (car remaining))
-             (schema (schema-ref (poo-flow-module-option-config-id config))))
+             (schema (schema-ref (yuanxu-module-option-config-id config))))
         (loop (cdr remaining)
               (cons (if schema
-                      (poo-flow-module-option-schema-validation-receipt
+                      (yuanxu-module-option-schema-validation-receipt
                        schema config)
-                      (poo-flow-module-missing-schema-receipt config))
+                      (yuanxu-module-missing-schema-receipt config))
                     receipts-rev))))))

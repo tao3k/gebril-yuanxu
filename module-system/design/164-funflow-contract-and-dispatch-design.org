@@ -335,25 +335,25 @@ funflow-check binding or cross-source lookalike is accepted from user config.
 
 #+begin_src scheme
 (def (funflow-profile-contract check-proto pipeline-proto profile-proto)
-  (define-type (CheckContract @ PooFlowNativeObjectContract.)
+  (define-type (CheckContract @ YuanxuObjectContract.)
     identity: 'funflow/check
     proto: check-proto
     responsibilities: (.o)
     .obligations: funflow-check-obligations)
 
   (def ChecksContract
-    (poo-flow-predicate-contract
+    (yuanxu-predicate-contract
       'funflow/check-list
       list?
       (cut funflow-check-list-obligations CheckContract <> <>)))
 
-  (define-type (PipelineContract @ PooFlowNativeObjectContract.)
+  (define-type (PipelineContract @ YuanxuObjectContract.)
     identity: 'funflow/pipeline
     proto: pipeline-proto
     responsibilities: (.o checks: ChecksContract)
     .obligations: funflow-pipeline-obligations)
 
-  (define-type (ProfileContract @ PooFlowNativeObjectContract.)
+  (define-type (ProfileContract @ YuanxuObjectContract.)
     identity: 'funflow/gerbil-profile
     proto: profile-proto
     responsibilities:
@@ -370,14 +370,14 @@ funflow-check binding or cross-source lookalike is accepted from user config.
   (filter-map
     (lambda (check)
       (let ((evidence
-             (poo-flow-contract-admit check-contract check context)))
-        (and (not (poo-flow-validation-evidence-accepted? evidence))
+             (yuanxu-contract-admit check-contract check context)))
+        (and (not (yuanxu-validation-evidence-accepted? evidence))
              evidence)))
     checks))
 #+end_src
 
-The design reuses existing define-type, PooFlowNativeObjectContract., predicate
-Contract construction and slot-based poo-flow-contract-admit. The predicates
+The design reuses existing define-type, YuanxuObjectContract., predicate
+Contract construction and slot-based yuanxu-contract-admit. The predicates
 and obligations remain pure. No unconditional empty obligations may stand in
 for a missing check. Concrete proposed obligations must satisfy:
 

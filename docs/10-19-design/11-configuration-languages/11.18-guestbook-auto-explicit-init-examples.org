@@ -12,7 +12,7 @@
 Doom uses (package! name :disable t). Gerbil/Scheme uses boolean #t and its
 keyword style is disable: #t. An unbound t is an identifier, not Scheme true.
 There is no reason to add a second truth spelling to our declaration parser.
-The attribute values use Gerbil syntax; the additional poo-flow! attribute
+The attribute values use Gerbil syntax; the additional yuanxu! attribute
 semantics below still require the reviewed extension described in [[file:11.17-init-selection-core-features-and-build.org][module 16]].
 
 * One maintained package, two init policies
@@ -36,7 +36,7 @@ Those role/dependency facts belong to the Feature System, not user categories.
 Auto-discovery user-interface/init.ss (complete selection file):
 
 #+begin_src scheme
-(poo-flow! mode: auto root: "./modules"
+(yuanxu! mode: auto root: "./modules"
   :infrastructure
   (kubernetes)
   :sandbox
@@ -48,7 +48,7 @@ Auto-discovery user-interface/init.ss (complete selection file):
 Explicit user-interface/init.ss (alternative complete selection file):
 
 #+begin_src scheme
-(poo-flow! mode: explicit root: "./modules"
+(yuanxu! mode: explicit root: "./modules"
   :infrastructure
   (kubernetes)
   :sandbox
@@ -145,7 +145,7 @@ exports alone cannot magically infer arbitrary Scheme behavior.
 These are alternative negative controls, not additions to the successful init:
 
 #+begin_src scheme
-(poo-flow! mode: auto root: "./modules"
+(yuanxu! mode: auto root: "./modules"
   :core
   (json-schema disable: #t)
   :custom
@@ -163,7 +163,7 @@ no implicit re-enable, no admitted preview
 Second negative control:
 
 #+begin_src scheme
-(poo-flow! mode: explicit root: "./modules"
+(yuanxu! mode: explicit root: "./modules"
   :infrastructure
   (kubernetes disable: #t)
   :custom

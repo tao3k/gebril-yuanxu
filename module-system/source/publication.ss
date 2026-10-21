@@ -8,13 +8,13 @@
                  object-%precedence-list object-%all-slots)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type element?)
-        (only-in :core/types PooFlowContract. poo-flow-predicate-contract))
+        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract
         module-publication? module-scope-context?
         module-publication-contract-current? module-publication-dependency-projection)
 ;; Use the existing closed empty operation, rather than another wrapper which
 ;; the unified producer correctly classifies as an open obligation callback.
-(def no-publication-obligations (.ref PooFlowContract. '.obligations))
+(def no-publication-obligations (.ref YuanxuContract. '.obligations))
 (def (has-slots? value names)
   (and (object? value) (andmap (cut .slot? value <>) names)))
 (def (contract-descriptor? value)
@@ -34,7 +34,7 @@
        (let (path (.ref value 'export-path))
          (and (list? path) (pair? path) (andmap symbol? path)))))
 (def ContributionRouteContract
-  (poo-flow-predicate-contract 'module/contribution-route contribution-route?
+  (yuanxu-predicate-contract 'module/contribution-route contribution-route?
                               no-publication-obligations))
 (def (module-publication? value)
   (and (has-slots? value '(identity core features))
@@ -68,7 +68,7 @@
               (contract-descriptor? (.ref baseline 'scope-contract))
               (procedure? (.ref baseline 'link))))))
 (def ModulePublicationContract
-  (poo-flow-predicate-contract 'module/publication module-publication?
+  (yuanxu-predicate-contract 'module/publication module-publication?
                               no-publication-obligations))
 ;; Capture at definition, before contributors can extend the descriptor. A
 ;; restored method/value Contract is still another native revision and falls
@@ -123,5 +123,5 @@
        (andmap (lambda (id) (memq id (.ref value 'module-ids)))
                (.ref value 'selected)) #t))
 (def ModuleScopeContextContract
-  (poo-flow-predicate-contract 'module/scope-context module-scope-context?
+  (yuanxu-predicate-contract 'module/scope-context module-scope-context?
                               no-publication-obligations))

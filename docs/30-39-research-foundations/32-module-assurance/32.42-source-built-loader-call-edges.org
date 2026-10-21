@@ -103,7 +103,7 @@ changed-source rejection still apply. Loader authorization is not domain policy.
 
 * Lean, actual observations and QNT
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SourceLoader.lean][SourceLoader.lean]] proves =changed_cache_refused=, =stable_cache_allowed=,
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean][SourceLoader.lean]] proves =changed_cache_refused=, =stable_cache_allowed=,
 =saved_edge_independent_of_rebinding= and =both_requirements=. Its explicit
 =old_edge_counterexample= distinguishes an old unchecked procedure from the
 rebuilt checked one. These are call-edge protocol theorems, not compiler proofs.

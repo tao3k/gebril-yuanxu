@@ -18,11 +18,11 @@ export index and trusted revision/source association remain pending adapters.
 Core types.ss already declares the following single-receiver slot generic:
 
 #+begin_src scheme
-(.defgeneric (poo-flow-contract-admit contract candidate context)
+(.defgeneric (yuanxu-contract-admit contract candidate context)
   slot: .admit)
 #+end_src
 
-poo-flow-contract-admit is an admission operation dispatched through the supplied
+yuanxu-contract-admit is an admission operation dispatched through the supplied
 Contract descriptor's .admit slot. It is neither a Module Contract nor a new
 universal CI/CD Contract. The result is validation evidence, not a boolean or an
 execution receipt. Call sites must name the expected Contract, actual candidate
@@ -183,7 +183,7 @@ and planning owners, not implemented behavior of plain .def:
    policies retained through TeamCIProfile's recorded derivation, but the
    candidate is the final ProjectCI.application object, not the upstream default.
 5. Build its context with the final Scenario, binding, effective-profile and
-   applicable module policies. Invoke poo-flow-contract-admit on that expected
+   applicable module policies. Invoke yuanxu-contract-admit on that expected
    Contract; responsibilities derive each configured-feature context and invoke
    the corresponding configured-feature/Check/Pipeline admission.
 6. Project only after checking accepted evidence against the exact descriptor,

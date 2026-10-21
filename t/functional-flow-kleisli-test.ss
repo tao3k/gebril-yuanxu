@@ -6,11 +6,11 @@
 ;;; Boundary: Kleisli tests cover value-dependent Functional + POO flow binding.
 ;;; Invariant: binders return ordinary flow declarations; runner owns execution.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
                  test-suite)
-        :core/modules/funflow/control-plane/api)
+        :yuanxu/modules/funflow/control-plane/api)
 
 (export functional-flow-kleisli-test)
 
@@ -31,13 +31,13 @@
    (else
     (kleisli-alist-value key (cdr entries)))))
 
-(defpoo-flow-arr kleisli-macro-inc
+(defyuanxu-arr kleisli-macro-inc
   kleisli-macro-inc
   (lambda (x) (+ x 1))
   'number
   'number)
 
-(defpoo-flow-bind kleisli-macro-bound
+(defyuanxu-bind kleisli-macro-bound
   kleisli-macro-bound
   kleisli-macro-inc
   (lambda (value)
@@ -47,7 +47,7 @@
               'number))
   'number)
 
-(defpoo-flow-kleisli kleisli-macro-kleisli
+(defyuanxu-kleisli kleisli-macro-kleisli
   kleisli-macro-kleisli
   kleisli-macro-inc
   (lambda (value)
@@ -61,7 +61,7 @@
 ;; : TestSuite
 (def functional-flow-kleisli-test
   (test-suite "functional flow kleisli"
-    (poo-flow-test-case "binds dynamically through the category object"
+    (yuanxu-test-case "binds dynamically through the category object"
       (let* ((category default-flow-category)
              (inc (flow-category-arr category
                                      'inc
@@ -95,7 +95,7 @@
         (check-equal? (receipt-kind kleisli-receipt) 'kleisli)
         (check-equal? (receipt-status kleisli-receipt) 'ok)
         (check-equal? (length (receipt-children kleisli-receipt)) 2)))
-    (poo-flow-test-case "rejects binders that do not return flows"
+    (yuanxu-test-case "rejects binders that do not return flows"
       (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
              (bad (flow-bind 'bad-bind
                              inc
@@ -107,7 +107,7 @@
         (check-equal? (execution-failure? failure) #t)
         (check-equal? (execution-failure-code failure)
                       'invalid-kleisli-binder-result)))
-    (poo-flow-test-case "authors bind flows with hygienic macros"
+    (yuanxu-test-case "authors bind flows with hygienic macros"
       (check-equal? (flow-name kleisli-macro-bound) 'kleisli-macro-bound)
       (check-equal? (flow-name kleisli-macro-kleisli) 'kleisli-macro-kleisli)
       (check-equal? (kleisli-run kleisli-macro-bound 3) 8)

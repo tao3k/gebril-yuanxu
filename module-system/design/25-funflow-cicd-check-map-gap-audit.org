@@ -23,7 +23,7 @@ The Bass audit already made the boundary decision:
 
 Current source state:
 - =modules/funflow/config.ss= already exports
-  =poo-flow-funflow-cicd-default-payload= with =checks=, =artifacts=,
+  =yuanxu-funflow-cicd-default-payload= with =checks=, =artifacts=,
   =release=, =webhook=, and =runtime= rows.
 - =user-interface/custom/my-module/profiles/cicd.ss= already declares concrete
   sandbox profiles for =ci/check=, =ci/build=, =cd/release=, and
@@ -59,7 +59,7 @@ produce generic runtime manifests, but there is no stable POO-level bridge from
 Add a workflow-owned CI/CD data object, not an adapter:
 
 #+begin_src scheme
-(poo-flow-cicd-check-map
+(yuanxu-cicd-check-map
  'default
  (checks
   (check 'build

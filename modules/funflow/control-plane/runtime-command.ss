@@ -6,8 +6,8 @@
 ;;; Boundary: public facade for runtime command invocation and descriptors.
 ;;; Invariant: leaf owners keep command execution separate from manifest data.
 
-(import :core/modules/funflow/control-plane/runtime-command-invocation
-        :core/modules/funflow/control-plane/runtime-command-descriptor)
+(import :yuanxu/modules/funflow/control-plane/runtime-command-invocation
+        :yuanxu/modules/funflow/control-plane/runtime-command-descriptor)
 
-(export (import: :core/modules/funflow/control-plane/runtime-command-invocation)
-        (import: :core/modules/funflow/control-plane/runtime-command-descriptor))
+(export (import: :yuanxu/modules/funflow/control-plane/runtime-command-invocation)
+        (import: :yuanxu/modules/funflow/control-plane/runtime-command-descriptor))

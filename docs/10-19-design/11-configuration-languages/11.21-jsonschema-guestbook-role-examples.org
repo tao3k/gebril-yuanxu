@@ -24,7 +24,7 @@ PooFlowObjectContract. export rename remains pending independently. See the
 All Core-owned procedure bindings in the proposed code below use the target
 poo-flow-core- prefix. Their mechanisms may already exist under legacy names;
 the renamed exports do not yet exist. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][current/target naming ledger]].
-Product poo-flow-load-modules is not a dependency of these role implementations.
+Product yuanxu-load-modules is not a dependency of these role implementations.
 
 * JsonSchema/types.ss: one configuration boundary
 

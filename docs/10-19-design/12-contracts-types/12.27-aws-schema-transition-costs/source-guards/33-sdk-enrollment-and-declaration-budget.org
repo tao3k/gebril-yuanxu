@@ -72,7 +72,7 @@ control must find a successful demand; rejecting everything is not success.
 The existing candidate models continue to own open effects, final commit,
 previous-value preservation and cleanup; this model does not replace them.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] owns arbitrary-list work accounting:
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] owns arbitrary-list work accounting:
 
 - =enrollment_covers_demands= and =enrollment_preserves_source_support=
   establish complete source coverage from existing and newly enrolled roots;
@@ -160,7 +160,7 @@ just test-file t/module-declaration-calibration-test.ss true
 just test-file t/module-testing-isolation-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix CompilerEnrollment --typecheck-scope selected --receipt ../.data/qualification/compiler-enrollment.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 The observed real JsonSchema/Funflow/AWS init-owned qualification also passes:

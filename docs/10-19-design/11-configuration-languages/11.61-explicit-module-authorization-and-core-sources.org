@@ -26,7 +26,7 @@ ordinary directory sources, rather than copying, symlinking or searching for an
 alternative implementation. Relative bindings resolve against the init file.
 
 #+begin_src scheme
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   (json-schema @ "./core/modules/json-schema")
   (nix @ "./core/modules/nix")
   (opentofu @ "./core/modules/opentofu")

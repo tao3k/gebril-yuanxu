@@ -52,10 +52,10 @@ ancestry, extension, composition, delegation, super, and precedence.
 
 Current parser-owned discovery identifies project selectors named:
 
-- =poo-flow-option-policy=;
-- =poo-flow-option-override=;
-- =poo-flow-option-conflict=;
-- =poo-flow-option-append=;
+- =yuanxu-option-policy=;
+- =yuanxu-option-override=;
+- =yuanxu-option-conflict=;
+- =yuanxu-option-append=;
 - Module import kind and source selectors.
 
 Their exact bodies are unavailable. The exact provider blocker is:

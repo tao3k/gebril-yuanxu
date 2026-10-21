@@ -54,7 +54,7 @@ are not silently classified as pure by this model.
 
 * Lean: cardinality-independent work accounting
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.lean]] reuses TestAdmission's discovery semantics instead of
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.lean]] reuses TestAdmission's discovery semantics instead of
 defining another closure relation. The costed state projects to the existing
 discovery exactly. It proves:
 
@@ -118,7 +118,7 @@ From Core, use the existing qualification tools:
 #+begin_src text
 python3 dev/proofs/quint/check.py --case-prefix SourceClosureWork --typecheck-scope selected --receipt .data/qualification/source-closure-work.scm
 cd dev/proofs/lean
-lake env lean PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean
+lake env lean YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean
 cd ../..
 just test-file t/module-closure-work-test.ss true
 #+end_src

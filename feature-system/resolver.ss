@@ -5,8 +5,8 @@
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
 (import (only-in :clan/poo/object .ref)
-        :core/feature-system/model
-        :core/utilities/functional)
+        :yuanxu/feature-system/model
+        :yuanxu/utilities/functional)
 
 (export resolve-feature-profile)
 
@@ -26,7 +26,7 @@
     (values
      index
      (reverse
-      (poo-flow-fold-left
+      (yuanxu-fold-left
        (lambda (selection diagnostics)
          (let ((feature-id (selection-id selection)))
            (if (hash-key? index feature-id)
@@ -41,12 +41,12 @@
        selections)))))
 
 (def (missing-dependency-diagnostics selections index)
-  (poo-flow-fold-right
+  (yuanxu-fold-right
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
        (append
-        (poo-flow-filter-map
+        (yuanxu-filter-map
          (lambda (required-id)
            (and (not (hash-key? index required-id))
                 (feature-diagnostic
@@ -57,12 +57,12 @@
    selections))
 
 (def (conflict-diagnostics selections index)
-  (poo-flow-fold-right
+  (yuanxu-fold-right
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
        (append
-        (poo-flow-filter-map
+        (yuanxu-filter-map
          (lambda (conflict-id)
            (and (hash-key? index conflict-id)
                 (feature-diagnostic
@@ -74,11 +74,11 @@
 
 (def (selected-dependencies descriptor index)
   (append
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (required-id)
       (and (hash-key? index required-id) required-id))
     (.ref descriptor 'requires))
-   (poo-flow-filter-map
+   (yuanxu-filter-map
     (lambda (optional-id)
       (and (hash-key? index optional-id) optional-id))
     (.ref descriptor 'optional-requires))))
@@ -130,5 +130,5 @@
            profile
            status
            ordered
-           (poo-flow-map selection-id ordered)
+           (yuanxu-map selection-id ordered)
            diagnostics))))))

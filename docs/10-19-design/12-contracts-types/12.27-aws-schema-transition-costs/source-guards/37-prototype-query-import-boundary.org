@@ -30,7 +30,7 @@ re-exports these functions. =dispatch.ss= gets them from its existing objects
 import and no longer imports Class construction. The existing full
 =interface.ss= still exposes the query and explicitly loads Class lifecycle
 support when that full interface is requested. The product C4 scenario's direct
-query import moves to =:core/poo-clos/objects=; there is no forwarding layer.
+query import moves to =:yuanxu/poo-clos/objects=; there is no forwarding layer.
 
 This implements the distinction between a native POO projection and a heavier
 Class lifecycle style. It does not make Class data untyped or bypass multiple

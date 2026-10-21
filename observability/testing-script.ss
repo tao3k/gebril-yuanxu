@@ -3,13 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Testing policy over Ops and the original std/test harness, not a runner.
 (import :clan/poo/object
-        (only-in :core/ops/progress make-test-progress-reader)
+        (only-in :yuanxu/ops/progress make-test-progress-reader)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/ops/process-script ProcessScript.)
-        (only-in :core/ops/func run-script)
-        (only-in "./testing-case.ss" poo-flow-selected-testing-case-profile
-                 poo-flow-testing-case-profile? poo-flow-test-checkpoint)
-        (only-in "./testing-fixture.ss" call-with-poo-flow-fixture))
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in "./testing-case.ss" yuanxu-selected-testing-case-profile
+                 yuanxu-testing-case-profile? yuanxu-test-checkpoint)
+        (only-in "./testing-fixture.ss" call-with-yuanxu-fixture))
 (export TestingScript. admit-testing-result testing-script-for-source)
 
 ;; Use the original harness's feature channel, not an environment probe or a
@@ -21,8 +21,8 @@
     (list "-D"
       (if (and (.slot? (.get script profile) 'trace-enabled?)
                (.get script profile trace-enabled?))
-        "poo-flow-module-test-observation,poo-flow-module-test-trace"
-        "poo-flow-module-test-observation"))
+        "yuanxu-module-test-observation,yuanxu-module-test-trace"
+        "yuanxu-module-test-observation"))
     '()))
 
 ;; Called only at the explicit execution boundary, never while selecting init.
@@ -93,21 +93,21 @@
   (def current! (.get source admit-current))
   (check-testing-spec files)
   (unless (and (procedure? current!)
-               (poo-flow-testing-case-profile? (.get script profile))
+               (yuanxu-testing-case-profile? (.get script profile))
                (> (.get script profile heap-limit-bytes) 0))
     (error "invalid testing script guard or resource profile"))
   ;; The existing fixture boundary retains both process and post-check errors.
-  (call-with-poo-flow-fixture
+  (call-with-yuanxu-fixture
     (.o .acquire: (lambda () (current!) files)
         .release: (lambda (_files) (current!)))
     (lambda (_files)
-      (poo-flow-test-checkpoint 'test-worker-launch)
+      (yuanxu-test-checkpoint 'test-worker-launch)
       (let* ((receipt (run-script (testing-execution-script script files)))
              (result (if (.get receipt log)
                        (.cc receipt 'output
                          (call-with-input-file (.get receipt log) read-all-as-string))
                        receipt)))
-        (poo-flow-test-checkpoint 'test-worker-returned)
+        (yuanxu-test-checkpoint 'test-worker-returned)
         (admit-testing-result result files)))))
 
 (.def (TestingScript. script [ProcessScript.])
@@ -115,7 +115,7 @@
   directory: (if (.slot? (.get script source) 'source-root)
                (.get script source source-root)
                (.get script config directory))
-  profile: (poo-flow-selected-testing-case-profile)
+  profile: (yuanxu-selected-testing-case-profile)
   runtime-options:
   (let (bytes (.get script profile heap-limit-bytes))
     ;; Gambit defaults unsuffixed sizes to KiB. Do not turn a byte budget into

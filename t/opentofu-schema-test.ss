@@ -2,36 +2,36 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/opentofu/objects poo-flow-opentofu-block-contract poo-flow-opentofu-configuration-contract poo-flow-opentofu-normalize-block)
-        (only-in :core/modules/opentofu/func poo-flow-opentofu-cty->schema)
-        (only-in :core/modules/json-schema/json-schema-contract poo-flow-json-schema->contract)
-        (only-in :core/modules/json-schema/json-schema-receipt poo-flow-json-schema->contract-artifact poo-flow-json-schema-contract-artifact-normalization)
-        (only-in :core/modules/json-schema/json-schema-validate poo-flow-json-schema-contract-artifact-validate)
-        (only-in :core/modules/json-schema/json-schema-valid poo-flow-json-schema-node-valid?)
-        (only-in :core/modules/json-schema/json-schema-validate poo-flow-json-schema-node-validate poo-flow-json-schema-object-contract-validation-valid?)
-        (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization-schema)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        (only-in :core/modules/json-schema/json-schema-ir
-                 poo-flow-json-schema-normalization-schema)
-        :core/types
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/opentofu/objects yuanxu-opentofu-block-contract yuanxu-opentofu-configuration-contract yuanxu-opentofu-normalize-block)
+        (only-in :yuanxu/modules/opentofu/func yuanxu-opentofu-cty->schema)
+        (only-in :yuanxu/modules/json-schema/json-schema-contract yuanxu-json-schema->contract)
+        (only-in :yuanxu/modules/json-schema/json-schema-receipt yuanxu-json-schema->contract-artifact yuanxu-json-schema-contract-artifact-normalization)
+        (only-in :yuanxu/modules/json-schema/json-schema-validate yuanxu-json-schema-contract-artifact-validate)
+        (only-in :yuanxu/modules/json-schema/json-schema-valid yuanxu-json-schema-node-valid?)
+        (only-in :yuanxu/modules/json-schema/json-schema-validate yuanxu-json-schema-node-validate yuanxu-json-schema-object-contract-validation-valid?)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir
+                 yuanxu-json-schema-normalization-schema)
+        :yuanxu/types
         :clan/poo/object)
 (export opentofu-schema-test)
 (def opentofu-schema-test
   (test-suite "opentofu-schema-test"
-    (poo-flow-test-case "provider conversion and native admission"
+    (yuanxu-test-case "provider conversion and native admission"
         (def (assert label value) (unless value (error "assertion failed" label)) (displayln "ASSERT-OK " label) (force-output))
         (def (accepted? contract candidate)
-          (poo-flow-validation-evidence-accepted? (.call contract .admit candidate #f)))
+          (yuanxu-validation-evidence-accepted? (.call contract .admit candidate #f)))
         (def (collection-accepted? contract candidate)
-          (poo-flow-validation-evidence-accepted?
+          (yuanxu-validation-evidence-accepted?
             (.call (.get contract collection-contract) .admit candidate #f)))
         (def (node schema)
-          (poo-flow-json-schema-normalization-schema
-            (poo-flow-json-schema-contract-artifact-normalization
-              (poo-flow-json-schema->contract-artifact schema))))
-        (def (valid? schema value) (poo-flow-json-schema-node-valid? (node schema) value))
+          (yuanxu-json-schema-normalization-schema
+            (yuanxu-json-schema-contract-artifact-normalization
+              (yuanxu-json-schema->contract-artifact schema))))
+        (def (valid? schema value) (yuanxu-json-schema-node-valid? (node schema) value))
         (def (reason? diagnostics reason)
           (find (lambda (d) (eq? (.get d reason) reason)) diagnostics))
         (def unique-schema '((type . "array") (uniqueItems . #t) (items . #t)))
@@ -44,34 +44,34 @@
           (not (valid? unique-schema '(#("a" "b") #("a" "b")))))
         (assert 'unique-false (valid? '((type . "array") (uniqueItems . #f)) '("a" "a")))
         ;; Synthetic tuple; neither downloaded AWS fixture contains one.
-        (def tuple-schema (poo-flow-opentofu-cty->schema '("tuple" ("string" "number"))))
+        (def tuple-schema (yuanxu-opentofu-cty->schema '("tuple" ("string" "number"))))
         (assert 'tuple-valid (valid? tuple-schema '("x" 2)))
         (assert 'tuple-index (not (valid? tuple-schema '(2 "x"))))
         (assert 'tuple-short (not (valid? tuple-schema '("x"))))
         (assert 'tuple-long (not (valid? tuple-schema '("x" 2 3))))
-        (assert 'tuple-empty (valid? (poo-flow-opentofu-cty->schema '("tuple" ())) '()))
-        (def tuple-artifact (poo-flow-json-schema->contract-artifact
+        (assert 'tuple-empty (valid? (yuanxu-opentofu-cty->schema '("tuple" ())) '()))
+        (def tuple-artifact (yuanxu-json-schema->contract-artifact
           `((type . "object") (properties . ((pair . ,tuple-schema))))))
         (assert 'tuple-emitted
-          (poo-flow-json-schema-object-contract-validation-valid?
-            (poo-flow-json-schema-contract-artifact-validate tuple-artifact '((pair . ("x" 2))))))
+          (yuanxu-json-schema-object-contract-validation-valid?
+            (yuanxu-json-schema-contract-artifact-validate tuple-artifact '((pair . ("x" 2))))))
         (assert 'tuple-emitted-invalid
-          (not (poo-flow-json-schema-object-contract-validation-valid?
-            (poo-flow-json-schema-contract-artifact-validate tuple-artifact '((pair . (2 "x")))))))
-        (def aws (poo-flow-json-schema-read-file "t/fixtures/opentofu/aws-security-group.json"))
-        (def awscc (poo-flow-json-schema-read-file "t/fixtures/opentofu/awscc-provider.json"))
-        (def AwsContract (poo-flow-opentofu-block-contract 'aws/security-group aws))
-        (def AwsccContract (poo-flow-opentofu-block-contract 'awscc/provider awscc))
+          (not (yuanxu-json-schema-object-contract-validation-valid?
+            (yuanxu-json-schema-contract-artifact-validate tuple-artifact '((pair . (2 "x")))))))
+        (def aws (yuanxu-json-schema-read-file "t/fixtures/opentofu/aws-security-group.json"))
+        (def awscc (yuanxu-json-schema-read-file "t/fixtures/opentofu/awscc-provider.json"))
+        (def AwsContract (yuanxu-opentofu-block-contract 'aws/security-group aws))
+        (def AwsccContract (yuanxu-opentofu-block-contract 'awscc/provider awscc))
         (assert 'awscc-nested (accepted? AwsccContract '((assume_role . ((duration . "900"))))))
         (assert 'awscc-nested-wrong (not (accepted? AwsccContract '((assume_role . ((duration . 900)))))))
         (assert 'awscc-unknown (not (accepted? AwsccContract '((assume_role . ((duraton . "900")))))))
         (def StringsBlock '((attributes . ((accounts . ((type . ("set" "string")) (required . #t)))))))
-        (def StringsContract (poo-flow-opentofu-block-contract 'string-set StringsBlock))
-        (def normalized (poo-flow-opentofu-normalize-block StringsBlock '((accounts . ("b" "a" "b")))))
+        (def StringsContract (yuanxu-opentofu-block-contract 'string-set StringsBlock))
+        (def normalized (yuanxu-opentofu-normalize-block StringsBlock '((accounts . ("b" "a" "b")))))
         (assert 'string-set-normalized (equal? (.get normalized value) '((accounts . ("b" "a")))))
         (assert 'string-set-no-issue (null? (.get normalized diagnostics)))
         (assert 'string-set-shape-admit
-          (accepted? (poo-flow-json-schema->contract 'cty/string-set (.get StringsContract schema))
+          (accepted? (yuanxu-json-schema->contract 'cty/string-set (.get StringsContract schema))
                      (.get normalized value)))
         (assert 'string-set-provider-identity-unresolved
           (not (collection-accepted? StringsContract (.get normalized value))))
@@ -81,13 +81,13 @@
         (def sg '((name . "demo") (ingress . (((from_port . 443) (to_port . 443) (protocol . "tcp")
                                                (security_groups . ("sg-a" "sg-a")))))))
         (def unresolved (.call (.get AwsContract collection-contract) .admit sg #f))
-        (assert 'custom-hash-unresolved (not (poo-flow-validation-evidence-accepted? unresolved)))
+        (assert 'custom-hash-unresolved (not (yuanxu-validation-evidence-accepted? unresolved)))
         (assert 'custom-hash-reason (reason? (.get unresolved diagnostics) 'provider-set-identity-unresolved))
         (assert 'forged-proof-rejected
-          (not (poo-flow-validation-evidence-accepted?
+          (not (yuanxu-validation-evidence-accepted?
             (.call (.get AwsContract collection-contract) .admit sg (.o accepted?: #t)))))
         (def ConfigurationContract
-          (poo-flow-opentofu-configuration-contract (list (cons 'awscc awscc)) (list (cons 'aws_security_group aws)) '()))
+          (yuanxu-opentofu-configuration-contract (list (cons 'awscc awscc)) (list (cons 'aws_security_group aws)) '()))
         (assert 'custom-hash-not-required-for-configuration (accepted? AwsContract sg))
         (assert 'duplicates-are-config-not-identity
           (accepted? StringsContract '((accounts . ("a" "a")))))
@@ -103,26 +103,26 @@
         (assert 'computed-only-rejected
           (not (accepted? AwsContract '((arn . "arn:aws:ec2:demo")))))
         ;; Every entrypoint must agree, not just the boolean fast path.
-        (def UniqueContract (poo-flow-json-schema->contract 'unique unique-schema))
+        (def UniqueContract (yuanxu-json-schema->contract 'unique unique-schema))
         (assert 'unique-public-admit (not (accepted? UniqueContract '("a" "a")) ))
         (assert 'unique-diagnostic (pair? (.get (.call UniqueContract .admit '("a" "a") #f) diagnostics)))
         (assert 'unique-path-validate
-          (pair? (poo-flow-json-schema-node-validate (node unique-schema) '("a" "a") '(outputs))))
-        (def unique-object-artifact (poo-flow-json-schema->contract-artifact
+          (pair? (yuanxu-json-schema-node-validate (node unique-schema) '("a" "a") '(outputs))))
+        (def unique-object-artifact (yuanxu-json-schema->contract-artifact
           `((type . "object") (properties . ((outputs . ,unique-schema))))))
         (assert 'unique-emitted-records
-          (poo-flow-json-schema-object-contract-validation-valid?
-            (poo-flow-json-schema-contract-artifact-validate unique-object-artifact
+          (yuanxu-json-schema-object-contract-validation-valid?
+            (yuanxu-json-schema-contract-artifact-validate unique-object-artifact
               '((outputs . (((name . "a")) ((name . "b"))))))))
         (assert 'unique-emitted-reject
-          (not (poo-flow-json-schema-object-contract-validation-valid?
-            (poo-flow-json-schema-contract-artifact-validate unique-object-artifact
+          (not (yuanxu-json-schema-object-contract-validation-valid?
+            (yuanxu-json-schema-contract-artifact-validate unique-object-artifact
               '((outputs . (((name . "a")) ((name . "a")))))))))
         (assert 'tuple-vector (valid? tuple-schema '#("x" 2)))
         (assert 'tuple-index-path
           (equal? (cdr (assoc 'path
-            (poo-flow-json-schema-validation-diagnostic-metadata
-              (car (poo-flow-json-schema-node-validate (node tuple-schema) '("x" "bad") '(pair))))))
+            (yuanxu-json-schema-validation-diagnostic-metadata
+              (car (yuanxu-json-schema-node-validate (node tuple-schema) '("x" "bad") '(pair))))))
             '(pair 1)))
         (assert 'tuple-reference
           (valid? '((type . "array") (items . ((($ref . "#/$defs/Name")) ((type . "number"))))
@@ -131,21 +131,21 @@
         (assert 'computed-optional-retained (accepted? AwsContract '((id . "sg-123"))))
         (def wrong (.call AwsccContract .admit '((assume_role . ((duration . 900)))) #f))
         (assert 'native-error-path
-          (equal? (cdr (assoc 'path (poo-flow-json-schema-validation-diagnostic-metadata
+          (equal? (cdr (assoc 'path (yuanxu-json-schema-validation-diagnostic-metadata
                                      (car (.get wrong diagnostics))))) '(assume_role duration)))
         (assert 'normalize-malformed-safe
-          (pair? (.get (poo-flow-opentofu-normalize-block awscc
+          (pair? (.get (yuanxu-opentofu-normalize-block awscc
                           '((assume_role . ((duration . 900))))) diagnostics)))
         (assert 'native-object-normalization
-          (equal? (.get (poo-flow-opentofu-normalize-block StringsBlock
+          (equal? (.get (yuanxu-opentofu-normalize-block StringsBlock
                           (.o accounts: '("a" "a"))) value) '((accounts . ("a")))))
         (def nested-tuple-block
           '((attributes . ((pair . ((type . ("tuple" ("string" ("set" "string")))) (required . #t)))))))
-        (def NestedTupleContract (poo-flow-opentofu-block-contract 'tuple-set nested-tuple-block))
+        (def NestedTupleContract (yuanxu-opentofu-block-contract 'tuple-set nested-tuple-block))
         (def nested-normal (.call NestedTupleContract .normalize '((pair . ("x" ("a" "a"))))))
         (assert 'nested-tuple-normalize (equal? (.get nested-normal value) '((pair . ("x" ("a"))))))
         (assert 'nested-tuple-shape-admit
-          (accepted? (poo-flow-json-schema->contract 'cty/tuple-set (.get NestedTupleContract schema))
+          (accepted? (yuanxu-json-schema->contract 'cty/tuple-set (.get NestedTupleContract schema))
                      (.get nested-normal value)))
         (assert 'nested-tuple-provider-identity-unresolved
           (not (collection-accepted? NestedTupleContract (.get nested-normal value))))
@@ -153,7 +153,7 @@
           '((attributes . ((rules . ((optional . #t)
                     (nested_type . ((nesting_mode . "set")
                                     (attributes . ((name . ((type . "string") (required . #t)))))))))))))
-        (def NestedSetContract (poo-flow-opentofu-block-contract 'nested-set nested-set-block))
+        (def NestedSetContract (yuanxu-opentofu-block-contract 'nested-set nested-set-block))
         (assert 'empty-object-set-unresolved (not (collection-accepted? NestedSetContract '((rules . ())))))
         (def final-unresolved (.call (.get ConfigurationContract collection-contract) .admit
                                 `((resource . ((aws_security_group . ((web . ,sg)))))) #f))
@@ -163,7 +163,7 @@
                 (.get final-unresolved diagnostics)))
         (assert 'unsupported-dynamic-rejected
           (with-catch (lambda (_) #t)
-                      (lambda () (poo-flow-opentofu-cty->schema "dynamic") #f)))
+                      (lambda () (yuanxu-opentofu-cty->schema "dynamic") #f)))
         (def sg-normalized (.call AwsContract .normalize sg))
         (assert 'inner-string-set-normalized
           (equal? (cdr (assoc 'security_groups
@@ -179,6 +179,6 @@
         (assert 'invalid-unique-schema-rejected
           (with-catch (lambda (_) #t)
             (lambda ()
-              (poo-flow-json-schema->contract 'invalid-unique
+              (yuanxu-json-schema->contract 'invalid-unique
                 '((type . "array") (uniqueItems . "true"))) #f)))
         (displayln "OPENTOFU-COLLECTIONS-OK"))))

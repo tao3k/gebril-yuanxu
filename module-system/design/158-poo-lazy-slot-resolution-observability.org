@@ -71,7 +71,7 @@ remains lexical and becomes the computed-slot result after tracing finishes.
 The upstream printer therefore sees a symbolic label, no arguments, and one
 closed result symbol.
 
-Each phase also has a native =PooFlowDebugSlotReceiptContract= value:
+Each phase also has a native =YuanxuDebugSlotReceiptContract= value:
 
 | Outcome | Accepted | Stable reason |
 |---------+----------+---------------|

@@ -5,22 +5,22 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/process run-process)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/modules/nix/objects NixSource. NixFlakeSource.)
+        (only-in :yuanxu/modules/nix/objects NixSource. NixFlakeSource.)
         (only-in :std/encoding/json read-json write-json)
-        (only-in :core/modules/nix/func current-nix-process-observer current-nix-process-completion-observer)
+        (only-in :yuanxu/modules/nix/func current-nix-process-observer current-nix-process-completion-observer)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/string/misc string-subst)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/debug PooFlowDebugDurationAnomaly? PooFlowDebugMemoryAnomaly?)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-source->json-like)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
-        (only-in :core/modules/json-schema/json-schema-validate poo-flow-json-schema-validation-diagnostic-metadata)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/source/admission module-source-read current-module-source-observer)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/source/directory module-directory-context)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/debug YuanxuDebugDurationAnomaly? YuanxuDebugMemoryAnomaly?)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-source->json-like)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref)
+        (only-in :yuanxu/modules/json-schema/json-schema-validate yuanxu-json-schema-validation-diagnostic-metadata)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/directory module-directory-context)
         (only-in "./qualification/opentofu/objects.ss" Ops))
 (export opentofu-selected-graph-test)
 (def SelectedPackages. (.get Ops prototypes SelectedPackages))
@@ -30,7 +30,7 @@
 (def (rejects? pattern thunk)
   (with-catch
     (lambda (exception)
-      (when (or (PooFlowDebugDurationAnomaly? exception) (PooFlowDebugMemoryAnomaly? exception))
+      (when (or (YuanxuDebugDurationAnomaly? exception) (YuanxuDebugMemoryAnomaly? exception))
         (raise exception))
       (let* ((text (call-with-output-string (cut display-exception exception <>)))
              (matched (pregexp-match pattern text)))
@@ -58,7 +58,7 @@
             (let (build (.get baseline configuration-build))
               (.cc build 'module (configure (.get build module)))))))))
   (def context (module-directory-context init read-publication))
-  (poo-flow-load-modules
+  (yuanxu-load-modules
     (.cc context
       'publication-inputs (.get reader inputs)
       'current? (lambda (generation)
@@ -90,11 +90,11 @@
 (def source-observations (make-hash-table))
 (def nix-seconds 0.)
 (def (trace-row row)
-  (when (getenv "POO_FLOW_OPENTOFU_GRAPH_TRACE" #f)
+  (when (getenv "YUANXU_OPENTOFU_GRAPH_TRACE" #f)
     (call-with-output-file
-      (list path: (getenv "POO_FLOW_OPENTOFU_GRAPH_TRACE") append: #t)
+      (list path: (getenv "YUANXU_OPENTOFU_GRAPH_TRACE") append: #t)
       (lambda (port) (write-json port (list->hash-table row)) (newline port)))))
-(def flake-root (getenv "POO_FLOW_OPENTOFU_GRAPH_FLAKE" #f))
+(def flake-root (getenv "YUANXU_OPENTOFU_GRAPH_FLAKE" #f))
 (def evaluator (if flake-root "nix" "nix-instantiate"))
 (def measurements '())
 (def (process-count name) (hash-ref processes name 0))
@@ -169,9 +169,9 @@
                                           (cons 'completed completed?)))))
                      (current-nix-process-observer
                        (lambda (argv)
-                         (when (getenv "POO_FLOW_NIX_ARGV_TRACE" #f)
+                         (when (getenv "YUANXU_NIX_ARGV_TRACE" #f)
                            (call-with-output-file
-                             (list path: (getenv "POO_FLOW_NIX_ARGV_TRACE") append: #t)
+                             (list path: (getenv "YUANXU_NIX_ARGV_TRACE") append: #t)
                              (lambda (port) (write-json port (list->vector argv)) (newline port))))
                          (hash-update! processes (path-strip-directory (car argv)) 1+ 0)
                          (cond
@@ -199,13 +199,13 @@
           (write-source init
             (call-with-output-string
               (lambda (port)
-                (write `(poo-flow! mode: explicit
+                (write `(yuanxu! mode: explicit
                           (json-schema @ ,(path-expand "modules/json-schema" (current-directory)))
                           (nix @ ,(path-expand "modules/nix" (current-directory)))
                           (opentofu @ ,upstream)
                           :app (infrastructure) :unused (bomb disable: #t)) port))))
           (write-source (path-expand "types.ss" owner)
-                        "(import :clan/poo/object (only-in :core/types poo-flow-predicate-contract)) (def Scope (poo-flow-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
+                        "(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
           (write-source (path-expand "objects.ss" owner)
                         "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
           (write-source config (if invalid-only?
@@ -226,7 +226,7 @@
                   (map (lambda (path) (cons path (module-source-read path)))
                        (list expression catalog collector checker))))))
           (write-source (path-expand "types.ss" owner)
-            (string-append "(import (only-in :core/modules/opentofu/types OpenTofuScopeContract)) "
+            (string-append "(import (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract)) "
                            (string-subst (module-source-read (path-expand "types.ss" owner)) "(export Scope)" "(export Scope OpenTofuScopeContract)")))
           (write-source (path-expand "interface.ss" owner)
             "(.def Infrastructure identity: 'app/infrastructure core: (.o requires: (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract)) scope-contract: Scope exports: (.o config: Config)) features: (.o))")
@@ -281,7 +281,7 @@
           (def parent-contract (.get parent-scope types configuration))
           (assert 'build-returned-admitted-parent
             (= (.call (.get parent-scope modules aws provider) .contract-compile-count) 1))
-          (assert 'parent-admitted (measure "aws-first-admission" (lambda () (poo-flow-validation-evidence-accepted? (.get parent-package admission))) 0
+          (assert 'parent-admitted (measure "aws-first-admission" (lambda () (yuanxu-validation-evidence-accepted? (.get parent-package admission))) 0
             types: (lambda (_) (type-counts parent-scope '(aws)))))
           (def parent-counts (type-counts parent-scope '(aws)))
           (measure "aws-hot-slots" (lambda ()
@@ -305,8 +305,8 @@
             (equal? (.get sg schema-digest) "7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c"))
           (assert 'request-has-source-revision
             (let (wire (call-with-input-file (path-expand (string-append "parent/external/" (symbol->string (package-id parent)) "/selection.json") root) read-json))
-              (and (poo-flow-contract-object-ref (poo-flow-json-schema-source->json-like wire) 'configuration-source #f)
-                   (poo-flow-contract-object-ref (poo-flow-json-schema-source->json-like wire) 'configuration-sha256 #f))))
+              (and (yuanxu-contract-object-ref (yuanxu-json-schema-source->json-like wire) 'configuration-source #f)
+                   (yuanxu-contract-object-ref (yuanxu-json-schema-source->json-like wire) 'configuration-sha256 #f))))
           (write-source config (configuration #t))
           (assert 'stale-graph-rejected (rejects? "stale|refused" (lambda () ((.get parent-graph admit-current)))))
           (assert 'stale-artifact-rejected (rejects? "stale|refused" (lambda () ((.get parent admit-current)))))
@@ -324,7 +324,7 @@
             (equal? (list-sort string<? (map symbol->string (.all-slots (.get child-scope modules)))) '("aws" "null")))
           (assert 'build-returned-admitted-child
             (every (lambda (owner) (= (.call (.get (.ref (.get child-scope modules) owner) provider) .contract-compile-count) 1)) '(aws null)))
-          (assert 'child-admitted (measure "aws-null-first-admission" (lambda () (poo-flow-validation-evidence-accepted? (.get child-package admission))) 0
+          (assert 'child-admitted (measure "aws-null-first-admission" (lambda () (yuanxu-validation-evidence-accepted? (.get child-package admission))) 0
             types: (lambda (_) (type-counts child-scope '(aws null)))))
           (def child-counts (type-counts child-scope '(aws null)))
           (measure "aws-null-hot-slots" (lambda ()
@@ -345,10 +345,10 @@
                                       (.o web: (.o name: 42)))))
           (def rejected (.call (.get child-scope types configuration) .admit invalid #f))
           (assert 'generated-contract-still-rejects-invalid-field
-            (not (poo-flow-validation-evidence-accepted? rejected)))
+            (not (yuanxu-validation-evidence-accepted? rejected)))
           (assert 'complete-error-path-preserved
             (find (lambda (diagnostic)
-                    (equal? (cdr (assoc 'path (poo-flow-json-schema-validation-diagnostic-metadata diagnostic)))
+                    (equal? (cdr (assoc 'path (yuanxu-json-schema-validation-diagnostic-metadata diagnostic)))
                             '(resource aws_security_group web name)))
                   (.get rejected diagnostics)))
           (when flake-root
@@ -425,15 +425,15 @@
               (delete-directory (string-append flake-root "-unlocked")))
             (assert 'flake-lock-unchanged-across-config-generations
               (equal? lock-text (module-source-read (path-expand "flake.lock" flake-root)))))
-          (when (getenv "POO_FLOW_OPENTOFU_GRAPH_METRICS" #f)
-            (call-with-output-file (list path: (getenv "POO_FLOW_OPENTOFU_GRAPH_METRICS") truncate: #t)
+          (when (getenv "YUANXU_OPENTOFU_GRAPH_METRICS" #f)
+            (call-with-output-file (list path: (getenv "YUANXU_OPENTOFU_GRAPH_METRICS") truncate: #t)
               (lambda (port) (write-json port (list->hash-table (list (cons 'phases (list->vector (reverse measurements))) (cons 'parent-types (list->vector (map list->vector parent-counts))) (cons 'child-types (list->vector (map list->vector child-counts)))))))))
           (assert 'tampered-demand-kept-for-diagnosis
             (equal? (module-source-read selection) "{\"providers\":[\"aws\"]}"))))))))
 
 (def opentofu-selected-graph-test
   (test-suite "opentofu-selected-graph-test"
-    (poo-flow-test-case "selected graph builds packages and preserves parent cache"
+    (yuanxu-test-case "selected graph builds packages and preserves parent cache"
       (run-selected-graph-control #f))
-    (poo-flow-test-case "invalid final configuration prevents build success"
+    (yuanxu-test-case "invalid final configuration prevents build success"
       (run-selected-graph-control #t))))

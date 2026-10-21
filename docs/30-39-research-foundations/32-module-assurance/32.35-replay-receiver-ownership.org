@@ -118,7 +118,7 @@ new diagnostic and verifies the original value and revision remain unchanged.
 
 * Lean and Quint
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReplayOwnership.lean][ReplayOwnership.lean]] models actual receiver sets and the affected invalidation
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean][ReplayOwnership.lean]] models actual receiver sets and the affected invalidation
 closure. =selected_write_refused= and =nested_frame_keeps_outer= establish
 pre-write refusal under complete membership. =rejected_edit_has_no_partial_clear=
 requires preflight before state update. =independent_edit_allowed= and

@@ -192,27 +192,27 @@ preserves the original diagnostic object and embeds it under the caller's path.
 ;; Boolean membership shares the existing node evaluator; diagnosis retains
 ;; the original structured diagnostic and its precise nested instance path.
 (define-type (SchemaContract. @ Type. identity node)
-  .element?: (cut poo-flow-json-schema-node-valid? node <>)
+  .element?: (cut yuanxu-json-schema-node-valid? node <>)
   .diagnose:
   (lambda (value location)
     (map (lambda (diagnostic-value)
            (let (instance-path
-                  (poo-flow-contract-object-ref
-                    (poo-flow-json-schema-validation-diagnostic-metadata diagnostic-value)
+                  (yuanxu-contract-object-ref
+                    (yuanxu-json-schema-validation-diagnostic-metadata diagnostic-value)
                     'path location))
              (.o kind: 'schema-rejected path: instance-path diagnostic: diagnostic-value)))
-         (poo-flow-json-schema-node-validate node value location))))
+         (yuanxu-json-schema-node-validate node value location))))
 
 (def (schema-value-contract identity-value schema-value)
   (using (identity-value :~ symbol?)
-    (let (normalization (poo-flow-json-schema-normalize schema-value))
+    (let (normalization (yuanxu-json-schema-normalize schema-value))
       ;; Warnings/unsupported constraints may not silently weaken validation.
-      (unless (null? (poo-flow-json-schema-normalization-diagnostics normalization))
+      (unless (null? (yuanxu-json-schema-normalization-diagnostics normalization))
         (error "Schema contains invalid or unsupported constraints" identity-value
-               (poo-flow-json-schema-normalization-diagnostics normalization)))
+               (yuanxu-json-schema-normalization-diagnostics normalization)))
       (.cc SchemaContract.
            'identity identity-value
-           'node (poo-flow-json-schema-normalization-schema normalization)))))
+           'node (yuanxu-json-schema-normalization-schema normalization)))))
 
 ;; Project the CURRENT value, never a captured parent. The original object is
 ;; returned by ordinary Type validation; projection is not normalization.
@@ -367,7 +367,7 @@ resolve authority from a candidate-supplied .type or Contract-looking slot.
 * Core: adapt diagnosis to existing evidence, retain exact inputs
 
 The following is proposed Core adapter code using CURRENT evidence constructors
-and =poo-flow-contract-admit=. It does not require a new evidence hierarchy.
+and =yuanxu-contract-admit=. It does not require a new evidence hierarchy.
 The snapshot is produced by Core selection/publication, never treated as an
 authenticated user assertion merely because it has the right slots.
 
@@ -378,7 +378,7 @@ authenticated user assertion merely because it has the right slots.
                  (eq? descriptor-value (.get snapshot-value profile-contract)))
       (error "Admission inputs disagree with selected snapshot"))
     (let* ((adapter
-             (.cc PooFlowContract.
+             (.cc YuanxuContract.
                   'identity (.get descriptor-value identity)
                   '.classify
                   (lambda (value context-value)
@@ -386,11 +386,11 @@ authenticated user assertion merely because it has the right slots.
                                  (eq? context-value snapshot-value))
                       (error "Admission receiver/context changed"))
                     (let (failures (diagnose descriptor-value value '()))
-                      (poo-flow-classification-evidence
+                      (yuanxu-classification-evidence
                         (.get descriptor-value identity) value
                         (null? failures) failures context-value)))))
            (evidence
-             (poo-flow-contract-admit adapter candidate-value snapshot-value)))
+             (yuanxu-contract-admit adapter candidate-value snapshot-value)))
       (.cc evidence
            'value-contract descriptor-value
            'selected-graph (.get snapshot-value selected-graph)
@@ -398,7 +398,7 @@ authenticated user assertion merely because it has the right slots.
            'schema-generation (.get snapshot-value schema-generation)))))
 
 (def (configuration-evidence-current? evidence-value current-snapshot)
-  (and (poo-flow-validation-evidence-accepted? evidence-value)
+  (and (yuanxu-validation-evidence-accepted? evidence-value)
        (eq? (.get evidence-value candidate)
             (.get current-snapshot effective-root))
        (eq? (.get evidence-value value-contract)

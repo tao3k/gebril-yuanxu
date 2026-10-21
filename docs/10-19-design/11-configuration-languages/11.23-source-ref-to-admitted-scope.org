@@ -10,14 +10,14 @@
 * Where the file actually is, and what users should see
 
 The current file is [[file:../../../modules/json-schema/interface.ss][core/modules/json-schema/interface.ss]]. Gerbil package
-core makes its module path :core/modules/json-schema/interface. It exists and
+core makes its module path :yuanxu/modules/json-schema/interface. It exists and
 currently re-exports implementation procedures. The direct imports printed in
 module 21 describe available implementation APIs, not the desired configuration
 interface. The explicit JsonSchema publication below is a proposed change
 to that file, not something already exported by it.
 
 Root init declares source ownership. A module interface publishes its declaration.
-The existing product poo-flow-load-modules name should remain the single consumer
+The existing product yuanxu-load-modules name should remain the single consumer
 facade for obtaining selected native scopes; shared source/link Contracts and pure
 composition belong to Core. Core must not import a product's facade, filesystem
 policy, PackageSpec or Kubernetes implementation to realize this protocol.
@@ -26,7 +26,7 @@ policy, PackageSpec or Kubernetes implementation to realize this protocol.
 
 Every Core-owned public procedure in proposed code below uses poo-flow-core-;
 Core compiler paths use :poo-flow-core/.... The product facade alone retains
-poo-flow-load-modules. Existing implementations with :core paths and poo-flow-
+yuanxu-load-modules. Existing implementations with :core paths and poo-flow-
 procedure names are recorded in [[file:11.22-migrated-core-guestbook-chain.org][the current-state audit]], not mixed into target
 code. The [[file:../../../module-system/design/05-namespace-and-build-ownership.org][migration ledger]] maps old bindings to proposed names. Renaming is pending;
 existing mechanism support is not availability of its renamed API.
@@ -44,7 +44,7 @@ proposed; this chapter does not connect the Loader.
 ** Root init.ss: selection, sources and retained negative decisions
 
 #+begin_src scheme
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :infrastructure
   (kubernetes)
   :sandbox
@@ -149,7 +149,7 @@ Source preparation resolves the role graph and supplies syntax plus binding/sour
 provenance. A bounded hygienic lowering generates imports, the factory and the
 compiler export. Expansion does not scan directories, run a Loader, compile a
 Schema or mutate a registry. Runtime linking consumes the normalized publication.
-poo-flow-load-modules is the single facade over these phases, not permission to
+yuanxu-load-modules is the single facade over these phases, not permission to
 collapse them into macro-time I/O.
 
 Do not treat the existing poo-flow-module constructor as a Type value. A type slot
@@ -323,7 +323,7 @@ identity to distinguish descriptors from arbitrary objects with a named slot:
 #+begin_src scheme
 (def (scope-contract-descriptor? value)
   (and (object? value)
-       (memq PooFlowContract. (compute-precedence-list! value))
+       (memq YuanxuContract. (compute-precedence-list! value))
        (.slot? value 'identity) (symbol? (.get value identity))
        (procedure-scope? value '(.classify .obligations .admit))))
 
@@ -452,7 +452,7 @@ design algorithm.
 
 * One facade; no manual per-application linking steps
 
-Target poo-flow-load-modules delegates source/intent admission, metadata Module
+Target yuanxu-load-modules delegates source/intent admission, metadata Module
 closure, retained denial checks, linking and selected graph projections to Core.
 It supplies product source/default/provider policy and exposes the consumer entry;
 it does not maintain a second resolver or selected graph. Feature resolution and
@@ -465,7 +465,7 @@ namespace and build adapter consume that publication through the same facade.
 The target application route is:
 
 #+begin_src scheme
-(def Modules (poo-flow-load-modules "./init.ss"))
+(def Modules (yuanxu-load-modules "./init.ss"))
 
 (use-module (.get Modules custom guestbook) as gb
   (.def (Development @ (.get gb baseline))

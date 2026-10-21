@@ -71,9 +71,9 @@ The exact public identifiers are recorded in
 
 The current POO Flow interface exports:
 
-- =poo-flow-module-interface-prototype=;
-- =poo-flow-module-object-ref/default=;
-- =poo-flow-module-object->alist=.
+- =yuanxu-module-interface-prototype=;
+- =yuanxu-module-object-ref/default=;
+- =yuanxu-module-object->alist=.
 
 These names are project-owned adapters. Their export status does not prove that
 they belong in the future public architecture.
@@ -85,12 +85,12 @@ combination of native object recognition, slot enumeration, and membership
 testing. It had no Module-specific invariant; callers now use upstream
 =.slot?= directly.
 
-The exact owner for =poo-flow-module-object-ref/default= shows a generic
+The exact owner for =yuanxu-module-object-ref/default= shows a generic
 slot-presence check followed by native projection or a caller-supplied default.
 No Module-specific invariant is present.
 
-The exact owner bytes for =poo-flow-module-interface-prototype= and
-=poo-flow-module-object->alist= are missing from the current snapshot. Their
+The exact owner bytes for =yuanxu-module-interface-prototype= and
+=yuanxu-module-object->alist= are missing from the current snapshot. Their
 complete implementation semantics are therefore not claimed as verified.
 
 The architecture can still classify their roles:
@@ -152,7 +152,7 @@ A POO Flow abstraction may be public when it introduces domain meaning such as:
 - a validator that proves a POO Flow contract and emits actionable evidence;
 - a semantic projection whose result remains a POO object.
 
-The current =poo-flow-module-interface-prototype= is a KEEP-DOMAIN candidate
+The current =yuanxu-module-interface-prototype= is a KEEP-DOMAIN candidate
 because the concept of a POO Flow Module prototype is domain-owned.
 
 Its existing implementation is admitted only after exact owner evidence proves
@@ -170,10 +170,10 @@ A helper remains internal when it serves:
 - test-only observation;
 - source compatibility inside one implementation owner before replacement.
 
-=poo-flow-module-object-ref/default= is INTERNAL. It is a generic convenience
+=yuanxu-module-object-ref/default= is INTERNAL. It is a generic convenience
 helper and adds no Module invariant.
 
-=poo-flow-module-object->alist= is INTERNAL diagnostic projection if it remains
+=yuanxu-module-object->alist= is INTERNAL diagnostic projection if it remains
 at all. An alist may appear in a receipt encoder or bounded debugger, but it
 cannot become a Module value, extension operand, or composition input.
 
@@ -336,10 +336,10 @@ Every decision edge records why the adapter has or lacks semantic ownership.
 | Identifier | Current owner | Target class | Reason |
 |------------+---------------+--------------+--------|
 | =object-ref= and native object operations | =gerbil-poo= | KEEP-NATIVE | Upstream owns generic object mechanics. |
-| =poo-flow-module-interface-prototype= | POO Flow | KEEP-DOMAIN candidate | Module semantics are domain-owned; current body still requires exact proof. |
+| =yuanxu-module-interface-prototype= | POO Flow | KEEP-DOMAIN candidate | Module semantics are domain-owned; current body still requires exact proof. |
 | =poo-flow-module-object-has-slot?= | removed | REMOVED | Upstream =.slot?= owns generic slot presence. |
-| =poo-flow-module-object-ref/default= | POO Flow | INTERNAL | Exact body is generic defaulting convenience. |
-| =poo-flow-module-object->alist= | POO Flow | INTERNAL diagnostic | Representation conversion cannot own semantics. |
+| =yuanxu-module-object-ref/default= | POO Flow | INTERNAL | Exact body is generic defaulting convenience. |
+| =yuanxu-module-object->alist= | POO Flow | INTERNAL diagnostic | Representation conversion cannot own semantics. |
 | profile-composition stage and clause helpers | POO Flow | legacy INTERNAL | They support the rejected parallel clause architecture. |
 
 This table records the target architecture and completed native-operation

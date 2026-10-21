@@ -7,23 +7,23 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/opentofu/objects poo-flow-opentofu-provider-from-directory)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/opentofu/objects yuanxu-opentofu-provider-from-directory)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-provider-artifact-test)
 
 (def opentofu-provider-artifact-test
   (test-suite "opentofu-provider-artifact-test"
-    (poo-flow-test-case "package artifact to native Security Group admission"
+    (yuanxu-test-case "package artifact to native Security Group admission"
       (def (assert label value)
         (unless value (error "assertion failed" label))
         (displayln "ASSERT-OK " label) (force-output))
-      (def (accepted? evidence) (poo-flow-validation-evidence-accepted? evidence))
-      (def directory (getenv "POO_FLOW_OPENTOFU_TEST_ARTIFACT" "t/fixtures/opentofu/aws-5.100.0"))
-      (def manifest (poo-flow-json-schema-read-file (string-append directory "/manifest.json")))
-      (def AWS (poo-flow-opentofu-provider-from-directory directory))
+      (def (accepted? evidence) (yuanxu-validation-evidence-accepted? evidence))
+      (def directory (getenv "YUANXU_OPENTOFU_TEST_ARTIFACT" "t/fixtures/opentofu/aws-5.100.0"))
+      (def manifest (yuanxu-json-schema-read-file (string-append directory "/manifest.json")))
+      (def AWS (yuanxu-opentofu-provider-from-directory directory))
       (assert 'artifact-ready (eq? (.get AWS status) 'ready))
       (assert 'package-version-preserved (equal? (.get AWS version) (cdr (assoc 'version manifest))))
       (def SecurityGroup (.call AWS .contract 'aws_security_group))
@@ -38,7 +38,7 @@
       (assert 'wrong-port-rejected (not (accepted? wrong)))
       (assert 'wrong-port-path
         (find (lambda (d)
-                (equal? (cdr (assoc 'path (poo-flow-json-schema-validation-diagnostic-metadata d)))
+                (equal? (cdr (assoc 'path (yuanxu-json-schema-validation-diagnostic-metadata d)))
                         '(ingress 0 from_port)))
               (.get wrong diagnostics)))
       (assert 'spelling-rejected
@@ -56,9 +56,9 @@
       (call-with-temporary-directory "opentofu-artifact"
         (lambda (tmp)
           (assert 'missing-artifact-build-required
-            (eq? (.get (poo-flow-opentofu-provider-from-directory tmp) status) 'build-required))
+            (eq? (.get (yuanxu-opentofu-provider-from-directory tmp) status) 'build-required))
           (copy-file (string-append directory "/manifest.json") (string-append tmp "/manifest.json"))
-          (def Lazy (poo-flow-opentofu-provider-from-directory tmp))
+          (def Lazy (yuanxu-opentofu-provider-from-directory tmp))
           (assert 'manifest-does-not-demand-indexes (eq? (.get Lazy status) 'ready))
           (assert 'missing-selected-index-rejected
             (with-catch (lambda (_) #t)
@@ -95,11 +95,11 @@
                        (call-with-input-file (path relative) read-all-as-u8vector))))))
                  '(provider resource data)))
           (write-object "manifest.json"
-            (list '(format . "poo-flow/provider-schema-v2")
+            (list '(format . "yuanxu/provider-schema-v2")
                   '(provider . "test/provider") '(version . "1.0.0")
                   (cons 'schema-sha256 (make-string 64 #\0))
                   (cons 'indexes (list->hash-table index-digests))))
-          (def Scope (poo-flow-opentofu-provider-from-directory tmp))
+          (def Scope (yuanxu-opentofu-provider-from-directory tmp))
           (assert 'unselected-resource-not-compiled
             (accepted? (.call (.call Scope .contract 'selected) .admit (.o name: "ok") #f)))
           (assert 'selected-unsupported-resource-rejected

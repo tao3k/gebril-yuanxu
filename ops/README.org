@@ -65,8 +65,8 @@ re-exports implementation bindings as an unrelated library API.
 
 #+begin_src scheme
 ;; core/init.ss
-(import :core/module-system/selection/init-syntax)
-(poo-flow! mode: explicit source: "./modules" (json-schema)
+(import :yuanxu/module-system/selection/init-syntax)
+(yuanxu! mode: explicit source: "./modules" (json-schema)
   (ops @ "./ops"))
 
 ;; core/build.ss is unchanged.
@@ -133,7 +133,7 @@ file or direct import of the old execution-object export surface.
 
 #+begin_src scheme
 (def OpsScope
-  (.get (poo-flow-load-modules
+  (.get (yuanxu-load-modules
           (path-expand "../../../init.ss" (path-directory (this-source-file))))
         modules ops))
 

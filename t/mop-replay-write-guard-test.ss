@@ -4,7 +4,7 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-key)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-replay-write-guard-test test-cleanup!)
 (def completed 0)
 (def (reads-of receiver key)
@@ -18,7 +18,7 @@
   (check-equal? (Error-message failure) "object mutation during read replay"))
 (def mop-replay-write-guard-test
  (test-suite "Receiver-owned replay write boundary"
-  (poo-flow-test-case "selected receiver mutation is refused before a first write or restoration"
+  (yuanxu-test-case "selected receiver mutation is refused before a first write or restoration"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (def roots (reads-of Root 'port))
     (def revision (object-revision Root))
@@ -36,7 +36,7 @@
     (.put! Root 'port 5433)
     (check-equal? (.get Root port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "ancestor edits preflight the full affected closure before clearing any cache"
+  (yuanxu-test-case "ancestor edits preflight the full affected closure before clearing any cache"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (def cached (.get Parent port))
     (.def (Child @ Parent) port: 5433)
@@ -50,7 +50,7 @@
     (check-equal? (.get Parent port) cached)
     (check-equal? (.get Child port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested replay preserves outer protection and releases inner ownership"
+  (yuanxu-test-case "nested replay preserves outer protection and releases inner ownership"
     (.def Outer port: 5432)
     (.def Inner port: 5433)
     (def outer (reads-of Outer 'port))
@@ -69,7 +69,7 @@
     (.put! Outer 'port 5442)
     (check-equal? (.get Outer port) 5442)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "unselected independent receiver writes do not impose a global freeze"
+  (yuanxu-test-case "unselected independent receiver writes do not impose a global freeze"
     (.def Selected port: 5432 unused: (error "unselected branch forced"))
     (.def Independent port: 5433)
     (replay-slot-reads! (reads-of Selected 'port)
@@ -77,7 +77,7 @@
     (check-equal? (.get Selected port) 5432)
     (check-equal? (.get Independent port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "callback exceptions retain identity and release the frame"
+  (yuanxu-test-case "callback exceptions retain identity and release the frame"
     (.def Root port: 5432)
     (def problem (with-catch values (lambda () (error "callback sentinel"))))
     (def failure (with-catch values
@@ -87,7 +87,7 @@
     (.put! Root 'port 5433)
     (check-equal? (.get Root port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "a transient miss owns its receiver without entering the read cache"
+  (yuanxu-test-case "a transient miss owns its receiver without entering the read cache"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (.get Root port)
     (def roots '())
@@ -100,7 +100,7 @@
     (check-equal? (object-revision Root) revision)
     (check-equal? (hash-key? (object-%instance Root) 'missing) #f)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "raw runtime mutation and restoration remains an explicit negative control"
+  (yuanxu-test-case "raw runtime mutation and restoration remains an explicit negative control"
     (.def Root port: 5432)
     (def roots (reads-of Root 'port))
     (def table (object-%reads Root))

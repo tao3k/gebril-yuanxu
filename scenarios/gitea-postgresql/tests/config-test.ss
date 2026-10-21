@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Scenario public behavior only; no Core provenance/relocation machinery.
 (import :std/test :clan/poo/object
-        (only-in :core/scenarios/gitea-postgresql/objects application-scope)
-        (only-in :core/scenarios/gitea-postgresql/gitea/objects gitea-application)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/scenarios/gitea-postgresql/objects application-scope)
+        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/objects gitea-application)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export config-test)
 ;; Minimal dependency scopes supply the actual public constructor's input shape.
 ;; Only Scenario is demanded; admission/publication metadata is not simulated.
@@ -18,16 +18,16 @@
           (.o postgresql: defaults gitea: (.o database: (.o)))) Scenario))
 (def config-test
   (test-suite "Scenario ordinary defaults and explicit service data"
-    (poo-flow-test-case "Scenario fills a missing value in a compatible supplied scope"
+    (yuanxu-test-case "Scenario fills a missing value in a compatible supplied scope"
       (def value (scenario (.o settings: (.o) allowed-ports: '(5432 5433))
                           (.o settings: (.o port: 5433))))
       (check-equal? (.get value config postgresql settings port) 5433)
       (check-equal? (.get value config gitea database port) 5433)
       (check-equal? (.get value config postgresql allowed-ports) '(5432 5433)))
-    (poo-flow-test-case "final derived scope wins over defaults and old JSON baseline"
+    (yuanxu-test-case "final derived scope wins over defaults and old JSON baseline"
       (def value (scenario (.o settings: (.o port: 5440)) (.o settings: (.o port: 5433))))
       (check-equal? (.get value config postgresql settings port) 5440)
       (check-equal? (.get value config gitea database port) 5440))
-    (poo-flow-test-case "explicit null is not filled as missing"
+    (yuanxu-test-case "explicit null is not filled as missing"
       (def value (scenario (.o settings: 'json-null) (.o settings: (.o port: 5433))))
       (check-equal? (.get value config postgresql settings) 'json-null))))

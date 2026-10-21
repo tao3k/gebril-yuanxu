@@ -2,8 +2,8 @@
 (import :clan/poo/object
         :clan/poo/object-contract
         (only-in :clan/poo/type True)
-        (only-in :core/modules/json-schema/contracts ProjectionContract.)
-        (only-in :core/types poo-flow-predicate-contract))
+        (only-in :yuanxu/modules/json-schema/contracts ProjectionContract.)
+        (only-in :yuanxu/types yuanxu-predicate-contract))
 (export ScopeContract null-admission)
 (def ScopeShape
   (.cc ProjectionContract.
@@ -16,10 +16,10 @@
             provider: (.slot? scope 'provider)
             types: (.slot? scope 'types))))))
 (def ScopeContract
-  (.cc (poo-flow-predicate-contract 'null/scope object? (lambda (_v _c) '()))
+  (.cc (yuanxu-predicate-contract 'null/scope object? (lambda (_v _c) '()))
     'value-contract ScopeShape))
 (def (null-admission input-type)
-  (.cc (poo-flow-predicate-contract 'null/input object? (lambda (_v _c) '()))
+  (.cc (yuanxu-predicate-contract 'null/input object? (lambda (_v _c) '()))
     'value-contract
     (.cc ProjectionContract. 'constraint input-type
       'project (lambda (scenario) (.get scenario resource)))))

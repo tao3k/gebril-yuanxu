@@ -5,11 +5,11 @@
         (only-in :clan/poo/mop element?)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :core/modules/json-schema/contracts
-        (only-in :core/types
-          PooFlowContract. poo-flow-contract-admit
-          poo-flow-classification-evidence
-          poo-flow-validation-evidence-accepted?))
+        :yuanxu/modules/json-schema/contracts
+        (only-in :yuanxu/types
+          YuanxuContract. yuanxu-contract-admit
+          yuanxu-classification-evidence
+          yuanxu-validation-evidence-accepted?))
 (export evidence-binding-test)
 
 ;; Small local schema; real provider-schema controls are a separate suite.
@@ -23,12 +23,12 @@
        project: (lambda (scenario) (.get scenario config))))
 
 (def Admission
-  (.cc PooFlowContract.
+  (.cc YuanxuContract.
     identity: 'fixture/scenario
     .classify:
     (lambda (candidate context)
       (let (issues (diagnose ScenarioContract candidate))
-        (poo-flow-classification-evidence
+        (yuanxu-classification-evidence
           'fixture/scenario candidate (null? issues) issues context)))))
 
 (def (evidence-view evidence)
@@ -41,7 +41,7 @@
     (metadata.typed "final configuration" ScenarioContract)
     (metadata.predicate "accepted Core evidence with descriptor"
       (lambda (evidence)
-        (and (poo-flow-validation-evidence-accepted? evidence)
+        (and (yuanxu-validation-evidence-accepted? evidence)
              (.slot? evidence 'admission-contract))))
     (lambda (_atom _request _result) #t)
     metadata.truth))
@@ -52,7 +52,7 @@
 (def (publish-admission previous subject descriptor context)
   (metadata.publish (bind subject descriptor context) previous
     (lambda (candidate)
-      (values (poo-flow-contract-admit descriptor candidate context) candidate))
+      (values (yuanxu-contract-admit descriptor candidate context) candidate))
     subject))
 
 ;; Replay is a deliberately faulty executor. Success next-state must never leak
@@ -76,8 +76,8 @@
 (def evidence-binding-test
   (test-suite "Bound evidence through existing invocation and publication"
     (test-case "unified producer records the exact .admit descriptor"
-      (def receipt (poo-flow-contract-admit Admission Parent Context))
-      (check-equal? (poo-flow-validation-evidence-accepted? receipt) #t)
+      (def receipt (yuanxu-contract-admit Admission Parent Context))
+      (check-equal? (yuanxu-validation-evidence-accepted? receipt) #t)
       (check-equal? (eq? (.get receipt admission-contract) Admission) #t)
       (check-equal? (eq? (.get receipt candidate) Parent) #t)
       (check-equal? (eq? (.get receipt context) Context) #t)
@@ -90,11 +90,11 @@
 
     (test-case "same name does not make different contracts interchangeable"
       (def other (.cc Admission .obligations: (lambda (_candidate _context) '())))
-      (def old (poo-flow-contract-admit Admission Parent Context))
+      (def old (yuanxu-contract-admit Admission Parent Context))
       (check-equal? (.get other identity) (.get Admission identity))
       (check-equal? (eq? other Admission) #f)
-      (check-equal? (poo-flow-validation-evidence-accepted?
-                      (poo-flow-contract-admit other Parent Context)) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted?
+                      (yuanxu-contract-admit other Parent Context)) #t)
       (reject-replay Parent Parent other Context old)
       (defvalues (fresh next refusal) (publish-admission Parent Parent other Context))
       (check-equal? refusal #f)
@@ -102,10 +102,10 @@
       (check-equal? (eq? next Parent) #t))
 
     (test-case "an invalid descriptor reference cannot masquerade as accepted evidence"
-      (def raw (.cc (poo-flow-contract-admit Admission Parent Context)
+      (def raw (.cc (yuanxu-contract-admit Admission Parent Context)
                    admission-contract: #f))
       (def previous (.cc Parent))
-      (check-equal? (poo-flow-validation-evidence-accepted? raw) #f)
+      (check-equal? (yuanxu-validation-evidence-accepted? raw) #f)
       (defvalues (result next refusal)
         (metadata.publish (bind Parent Admission Context) previous
           (lambda (_candidate) (values raw Parent)) Parent))
@@ -115,7 +115,7 @@
 
     (test-case "cached parent does not supply a derived receiver's final value or evidence"
       (def cached (.get Parent resource instance_type))
-      (def parent-receipt (poo-flow-contract-admit Admission Parent Context))
+      (def parent-receipt (yuanxu-contract-admit Admission Parent Context))
       (.def (Release @ Parent)
         config: =>.+ (.o instance_type: "t3.medium"))
       (check-equal? cached "t3.small")
@@ -128,7 +128,7 @@
       (check-equal? (.get (.get fresh candidate) resource instance_type) "t3.medium"))
 
     (test-case "Graph source and Schema changes each require current context evidence"
-      (def old (poo-flow-contract-admit Admission Parent Context))
+      (def old (yuanxu-contract-admit Admission Parent Context))
       (for-each
         (lambda (current)
           (reject-replay Parent Parent Admission current old)
@@ -144,7 +144,7 @@
       (def current (.cc Context))
       (check-equal? (eq? current Context) #f)
       (reject-replay Parent Parent Admission current
-                     (poo-flow-contract-admit Admission Parent Context)))
+                     (yuanxu-contract-admit Admission Parent Context)))
 
     (test-case "fresh rejected admission never publishes the proposed next value"
       (.def (Proposed @ Parent)
@@ -167,14 +167,14 @@
       (defvalues (result next refusal)
         (metadata.publish (bind proposed Admission Context guarded) Parent
           (lambda (candidate)
-            (values (poo-flow-contract-admit Admission candidate Context) candidate)) proposed))
+            (values (yuanxu-contract-admit Admission candidate Context) candidate)) proposed))
       (check-equal? result #f)
       (check-equal? (eq? next Parent) #t)
       (check-equal? (metadata.failure-phase refusal) 'logic))
 
     (test-case "binding identity does not claim authentication of copied evidence"
       (def other (.cc Admission))
-      (def old (poo-flow-contract-admit Admission Parent Context))
+      (def old (yuanxu-contract-admit Admission Parent Context))
       ;; Explicit limit: trusted-producer discipline is a premise. A caller can
       ;; forge ordinary POO fields; this control prevents an authentication claim.
       (def forged (.cc old admission-contract: other))

@@ -166,7 +166,7 @@ currentness. No publish/deploy effect is executed or claimed qualified here.
 
 * Lean: historical checks versus applicable return
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
 versions, the successful earlier MOP check, and the source versions seen at each
 file comparison. These are projections of the native controls, not new runtime
 epochs or trusted user labels.
@@ -280,7 +280,7 @@ cases, each with MODULE-OK, HARNESS-OK and final OK, without harness/heap/stack
 error markers. The tail cases include expected stale-acceptance witnesses.
 
 The first service regression attempt failed during import: the compiled fixture
-could not resolve =AdmissionPublication.= from =:core/admission/publication=.
+could not resolve =AdmissionPublication.= from =:yuanxu/admission/publication=.
 The current compiled publication interface was inspected and contained that
 export. Repeating the unchanged default command completed all eleven cases.
 The first failed log is retained; the exact cause of the transient import failure

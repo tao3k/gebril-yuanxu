@@ -9,47 +9,47 @@
 (import (only-in :clan/poo/object .def .o .ref .slot? object?)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :std/list/list any filter-map find)
-        (only-in :core/utilities/algorithms
-                 poo-flow-read-datums/append-map
-                 poo-flow-scheme-datum-find)
-        (only-in :core/module-system/source/interface
-                 poo-flow-module-interface-prototype
-                 poo-flow-module-interface?
-                 poo-flow-module-interface-id
-                 poo-flow-module-interface-authoring)
-        (only-in :core/module-system/observability/presentation
-                 poo-flow-poo-slot-authoring-datum-bindings
-                 poo-flow-poo-slot-authoring-self-reference?)
+        (only-in :yuanxu/utilities/algorithms
+                 yuanxu-read-datums/append-map
+                 yuanxu-scheme-datum-find)
+        (only-in :yuanxu/module-system/source/interface
+                 yuanxu-module-interface-prototype
+                 yuanxu-module-interface?
+                 yuanxu-module-interface-id
+                 yuanxu-module-interface-authoring)
+        (only-in :yuanxu/module-system/observability/presentation
+                 yuanxu-poo-slot-authoring-datum-bindings
+                 yuanxu-poo-slot-authoring-self-reference?)
         ;; Role admission needs dispatch and immutable method declarations, not
         ;; the aggregate class evolution/reflection/load-form publication.
-        (only-in :core/poo-clos/objects
+        (only-in :yuanxu/poo-clos/objects
                  poo-clos-generic-protocol
                  poo-clos-generic-binding-current poo-clos-compose-method-bundle
                  clos-call-carrier-policy-guard)
-        (only-in :core/object-family/read-projection call-with-owned-read-projection)
-        (only-in :core/poo-clos/generic-syntax .defgeneric .defmethod)
-        (only-in :core/poo-clos/dispatch poo-clos-call)
-        (only-in :core/poo-clos/method-bundle-syntax .defmethod-bundle)
-        (only-in :core/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
+        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection)
+        (only-in :yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
+        (only-in :yuanxu/poo-clos/dispatch poo-clos-call)
+        (only-in :yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
+        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
 (export ModuleAuthoringAdmissionProtocol
         ModuleAuthoringAdmissionGeneric
         ModuleAuthoringCoreMethods
-        PooFlowModuleAuthoringDiagnostic
-        PooFlowModuleAuthoringAdmission
-        poo-flow-module-authoring-role
-        poo-flow-module-authoring-admit-datum
-        poo-flow-module-authoring-admit-datums
-        poo-flow-module-authoring-admit-port
+        YuanxuModuleAuthoringDiagnostic
+        YuanxuModuleAuthoringAdmission
+        yuanxu-module-authoring-role
+        yuanxu-module-authoring-admit-datum
+        yuanxu-module-authoring-admit-datums
+        yuanxu-module-authoring-admit-port
         call-with-module-authoring-read-scope
-        poo-flow-module-authoring-admission?
-        poo-flow-module-authoring-admission-accepted?
-        poo-flow-module-authoring-admission-diagnostics)
+        yuanxu-module-authoring-admission?
+        yuanxu-module-authoring-admission-accepted?
+        yuanxu-module-authoring-admission-diagnostics)
 
 ;; Stable receipt identities. Module/source revisions remain owned by their
 ;; existing publication Metadata and currentness guards, not by kind names.
 (.def ModuleAuthoringDiagnostic
-  kind: 'poo-flow.module-authoring.diagnostic
+  kind: 'yuanxu.module-authoring.diagnostic
   module: #f
   role: #f
   code: #f
@@ -61,19 +61,19 @@
   runtime-executed?: #f)
 
 (.def ModuleAuthoringAdmission
-  kind: 'poo-flow.module-authoring.admission
+  kind: 'yuanxu.module-authoring.admission
   module: #f
   role: #f
   accepted?: #f
   diagnostics: '()
   runtime-executed?: #f)
 
-(def (poo-flow-module-authoring-diagnostic-shape? value)
+(def (yuanxu-module-authoring-diagnostic-shape? value)
   (and (object? value)
        (andmap (cut .slot? value <>)
                '(kind module role code subject rule recommendation
                       repair-operators freedom runtime-executed?))
-       (eq? (.ref value 'kind) 'poo-flow.module-authoring.diagnostic)
+       (eq? (.ref value 'kind) 'yuanxu.module-authoring.diagnostic)
        (string? (.ref value 'module))
        (symbol? (.ref value 'role))
        (symbol? (.ref value 'code))
@@ -84,29 +84,29 @@
        (symbol? (.ref value 'freedom))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowModuleAuthoringDiagnostic @ Type.)
-  .element?: poo-flow-module-authoring-diagnostic-shape?)
+(define-type (YuanxuModuleAuthoringDiagnostic @ Type.)
+  .element?: yuanxu-module-authoring-diagnostic-shape?)
 
-(def (poo-flow-module-authoring-admission-shape? value)
+(def (yuanxu-module-authoring-admission-shape? value)
   (and (object? value)
        (andmap (cut .slot? value <>)
                '(kind module role accepted? diagnostics runtime-executed?))
-       (eq? (.ref value 'kind) 'poo-flow.module-authoring.admission)
+       (eq? (.ref value 'kind) 'yuanxu.module-authoring.admission)
        (string? (.ref value 'module))
        (symbol? (.ref value 'role))
        (boolean? (.ref value 'accepted?))
        (list? (.ref value 'diagnostics))
-       (andmap (cut element? PooFlowModuleAuthoringDiagnostic <>)
+       (andmap (cut element? YuanxuModuleAuthoringDiagnostic <>)
                (.ref value 'diagnostics))
        (eq? (.ref value 'accepted?)
             (null? (.ref value 'diagnostics)))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowModuleAuthoringAdmission @ Type.)
-  .element?: poo-flow-module-authoring-admission-shape?)
+(define-type (YuanxuModuleAuthoringAdmission @ Type.)
+  .element?: yuanxu-module-authoring-admission-shape?)
 
 ;; : (-> Symbol [Symbol] (Maybe Symbol))
-(def (poo-flow-module-authoring-forbidden-slot-verb slot verbs)
+(def (yuanxu-module-authoring-forbidden-slot-verb slot verbs)
   (and (symbol? slot)
        (let* ((name (symbol->string slot))
               (plain (if (string-prefix? "." name)
@@ -119,10 +119,10 @@
                verbs))))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole Symbol PooModuleAuthoringDiagnostic)
-(def (poo-flow-module-authoring-slot-diagnostic interface source-role slot)
-  (validate PooFlowModuleAuthoringDiagnostic
+(def (yuanxu-module-authoring-slot-diagnostic interface source-role slot)
+  (validate YuanxuModuleAuthoringDiagnostic
     (.o (:: @ ModuleAuthoringDiagnostic)
-        module: (poo-flow-module-interface-id interface)
+        module: (yuanxu-module-interface-id interface)
         role: (.ref source-role 'identity)
         code: 'poo-domain-slot-must-be-noun
         subject: slot
@@ -132,24 +132,24 @@
         freedom: (.ref source-role 'freedom))))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole SchemeDatum [PooModuleAuthoringDiagnostic])
-(def (poo-flow-module-authoring-slot-diagnostics interface role bindings)
+(def (yuanxu-module-authoring-slot-diagnostics interface role bindings)
   (filter-map
    (lambda (binding)
-     (and (poo-flow-module-authoring-forbidden-slot-verb
+     (and (yuanxu-module-authoring-forbidden-slot-verb
            (car binding)
            (.ref role 'forbidden-slot-verbs))
-          (poo-flow-module-authoring-slot-diagnostic
+          (yuanxu-module-authoring-slot-diagnostic
            interface role (car binding))))
    bindings))
 
 ;; A lazy POO slot can recurse before runtime observability has a chance to
 ;; report progress. Reuse the inert-source observation at the admission edge.
-(def (poo-flow-module-authoring-self-reference-diagnostics interface role bindings)
+(def (yuanxu-module-authoring-self-reference-diagnostics interface role bindings)
   (filter-map
    (lambda (binding)
-     (and (poo-flow-poo-slot-authoring-self-reference?
+     (and (yuanxu-poo-slot-authoring-self-reference?
            (car binding) (cdr binding))
-          (poo-flow-module-authoring-surface-diagnostic
+          (yuanxu-module-authoring-surface-diagnostic
            interface role
            'poo-slot-initializer-shadows-slot
            (car binding)
@@ -161,7 +161,7 @@
 ;;; Walk executable child forms, but never reinterpret quoted values or import
 ;;; leaf symbols as calls.  This catches a hidden (.o ...) under a root
 ;;; composition without turning the Contract into a Scheme parser/evaluator.
-(def (poo-flow-module-authoring-forbidden-root-form datum forbidden recursive?)
+(def (yuanxu-module-authoring-forbidden-root-form datum forbidden recursive?)
   (let (forbidden-form
         (lambda (candidate)
           (and (pair? candidate)
@@ -169,21 +169,21 @@
                (memq (car candidate) forbidden)
                (car candidate))))
     (if recursive?
-      (poo-flow-scheme-datum-find forbidden-form datum)
+      (yuanxu-scheme-datum-find forbidden-form datum)
       (forbidden-form datum))))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole SchemeDatum [PooModuleAuthoringDiagnostic])
-(def (poo-flow-module-authoring-root-diagnostics interface source-role datum)
+(def (yuanxu-module-authoring-root-diagnostics interface source-role datum)
   (let (form
-        (poo-flow-module-authoring-forbidden-root-form
+        (yuanxu-module-authoring-forbidden-root-form
          datum
          (.ref source-role 'forbidden-root-forms)
          (.ref source-role 'recursive-root-forms?)))
     (if form
       (list
-       (validate PooFlowModuleAuthoringDiagnostic
+       (validate YuanxuModuleAuthoringDiagnostic
          (.o (:: @ ModuleAuthoringDiagnostic)
-             module: (poo-flow-module-interface-id interface)
+             module: (yuanxu-module-interface-id interface)
              role: (.ref source-role 'identity)
              code: 'poo-config-must-compose-maintained-values
              subject: form
@@ -197,30 +197,30 @@
 ;;; Import wrappers keep the imported module in their second position.  This
 ;;; reads only the native Scheme import datum; it does not expand or evaluate
 ;;; an alternate module language.
-(def (poo-flow-module-authoring-import-module import-spec)
+(def (yuanxu-module-authoring-import-module import-spec)
   (cond
    ((symbol? import-spec) import-spec)
    ((and (pair? import-spec)
          (memq (car import-spec)
                '(only-in except-in rename-in prefix-in)))
-    (poo-flow-module-authoring-import-module (cadr import-spec)))
+    (yuanxu-module-authoring-import-module (cadr import-spec)))
    (else #f)))
 
 ;; : (-> SchemeDatum [Symbol] (Maybe Symbol))
-(def (poo-flow-module-authoring-forbidden-import datum forbidden)
+(def (yuanxu-module-authoring-forbidden-import datum forbidden)
   (and (pair? datum)
        (eq? (car datum) 'import)
        (any (lambda (import-spec)
               (let (module-name
-                    (poo-flow-module-authoring-import-module import-spec))
+                    (yuanxu-module-authoring-import-module import-spec))
                 (and module-name
                      (memq module-name forbidden)
                      module-name)))
             (cdr datum))))
 
 ;; : (-> SchemeDatum [Symbol] (Maybe Symbol))
-(def (poo-flow-module-authoring-forbidden-form datum forbidden)
-  (poo-flow-scheme-datum-find
+(def (yuanxu-module-authoring-forbidden-form datum forbidden)
+  (yuanxu-scheme-datum-find
    (lambda (candidate)
      (and (pair? candidate)
           (symbol? (car candidate))
@@ -229,8 +229,8 @@
    datum))
 
 ;; : (-> SchemeDatum Boolean)
-(def (poo-flow-module-authoring-raw-behavior-hook? datum)
-  (if (poo-flow-scheme-datum-find
+(def (yuanxu-module-authoring-raw-behavior-hook? datum)
+  (if (yuanxu-scheme-datum-find
        (lambda (candidate)
          (and (pair? candidate)
               (eq? (car candidate) 'lambda)
@@ -245,7 +245,7 @@
 ;;; text remains valid behind a named projection object such as `gql-source`;
 ;;; only slots that claim Query identity are governed here.
 ;; : (-> Symbol Boolean)
-(def (poo-flow-module-authoring-query-slot? slot)
+(def (yuanxu-module-authoring-query-slot? slot)
   (and (symbol? slot)
        (let (name (symbol->string slot))
          (or (member slot '(query queries query-predicate query-predicates))
@@ -253,7 +253,7 @@
              (string-suffix? "-queries" name)))))
 
 ;; : (-> SchemeDatum Boolean)
-(def (poo-flow-module-authoring-raw-query-initializer? initializer)
+(def (yuanxu-module-authoring-raw-query-initializer? initializer)
   (cond
    ((string? initializer) #t)
    ((not (pair? initializer)) #f)
@@ -265,13 +265,13 @@
    (else #f)))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole SchemeDatum [PooModuleAuthoringDiagnostic])
-(def (poo-flow-module-authoring-query-diagnostics interface role bindings)
+(def (yuanxu-module-authoring-query-diagnostics interface role bindings)
   (if (.ref role 'forbid-raw-query-initializers?)
     (filter-map
      (lambda (binding)
-       (and (poo-flow-module-authoring-query-slot? (car binding))
-            (poo-flow-module-authoring-raw-query-initializer? (cdr binding))
-            (poo-flow-module-authoring-surface-diagnostic
+       (and (yuanxu-module-authoring-query-slot? (car binding))
+            (yuanxu-module-authoring-raw-query-initializer? (cdr binding))
+            (yuanxu-module-authoring-surface-diagnostic
              interface role
              'poo-query-must-be-native-object
              (car binding)
@@ -280,12 +280,12 @@
      bindings)
     '()))
 
-(def (poo-flow-module-authoring-surface-diagnostic
+(def (yuanxu-module-authoring-surface-diagnostic
       interface source-role code-value subject-value rule-value
       recommendation-value)
-  (validate PooFlowModuleAuthoringDiagnostic
+  (validate YuanxuModuleAuthoringDiagnostic
     (.o (:: @ ModuleAuthoringDiagnostic)
-        module: (poo-flow-module-interface-id interface)
+        module: (yuanxu-module-interface-id interface)
         role: (.ref source-role 'identity)
         code: code-value
         subject: subject-value
@@ -295,20 +295,20 @@
         freedom: (.ref source-role 'freedom))))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole SchemeDatum [PooModuleAuthoringDiagnostic])
-(def (poo-flow-module-authoring-default-surface-diagnostics interface role datum)
+(def (yuanxu-module-authoring-default-surface-diagnostics interface role datum)
   (let* ((forbidden-import
-          (poo-flow-module-authoring-forbidden-import
+          (yuanxu-module-authoring-forbidden-import
            datum (.ref role 'forbidden-imports)))
          (forbidden-form
-          (poo-flow-module-authoring-forbidden-form
+          (yuanxu-module-authoring-forbidden-form
            datum (.ref role 'forbidden-forms)))
          (raw-hook?
           (and (.ref role 'forbid-raw-behavior-hooks?)
-               (poo-flow-module-authoring-raw-behavior-hook? datum))))
+               (yuanxu-module-authoring-raw-behavior-hook? datum))))
     (filter-map
      (lambda (rule-row)
        (and (car rule-row)
-            (apply poo-flow-module-authoring-surface-diagnostic
+            (apply yuanxu-module-authoring-surface-diagnostic
                    interface role (cdr rule-row))))
      (list
       (list forbidden-import
@@ -325,35 +325,35 @@
             'move-behavior-to-named-maintained-operation)))))
 
 ;; : (-> PooModuleInterface PooModuleSourceRole [PooModuleAuthoringDiagnostic] PooModuleAuthoringAdmission)
-(def (poo-flow-module-authoring-admission interface source-role diagnostic-values)
-  (validate PooFlowModuleAuthoringAdmission
+(def (yuanxu-module-authoring-admission interface source-role diagnostic-values)
+  (validate YuanxuModuleAuthoringAdmission
     (.o (:: @ ModuleAuthoringAdmission)
-        module: (poo-flow-module-interface-id interface)
+        module: (yuanxu-module-interface-id interface)
         role: (.ref source-role 'identity)
         accepted?: (null? diagnostic-values)
         diagnostics: diagnostic-values)))
 
-(def (poo-flow-module-authoring-admit/common interface role datum)
-  (let (bindings (poo-flow-poo-slot-authoring-datum-bindings datum))
-    (poo-flow-module-authoring-admission
+(def (yuanxu-module-authoring-admit/common interface role datum)
+  (let (bindings (yuanxu-poo-slot-authoring-datum-bindings datum))
+    (yuanxu-module-authoring-admission
      interface role
      (append
-      (poo-flow-module-authoring-slot-diagnostics interface role bindings)
-      (poo-flow-module-authoring-self-reference-diagnostics
+      (yuanxu-module-authoring-slot-diagnostics interface role bindings)
+      (yuanxu-module-authoring-self-reference-diagnostics
        interface role bindings)
-      (poo-flow-module-authoring-query-diagnostics interface role bindings)))))
+      (yuanxu-module-authoring-query-diagnostics interface role bindings)))))
 
-(def (poo-flow-module-authoring-admit/config interface role datum)
-  (let (bindings (poo-flow-poo-slot-authoring-datum-bindings datum))
-    (poo-flow-module-authoring-admission
+(def (yuanxu-module-authoring-admit/config interface role datum)
+  (let (bindings (yuanxu-poo-slot-authoring-datum-bindings datum))
+    (yuanxu-module-authoring-admission
      interface role
      (append
-      (poo-flow-module-authoring-slot-diagnostics interface role bindings)
-      (poo-flow-module-authoring-self-reference-diagnostics
+      (yuanxu-module-authoring-slot-diagnostics interface role bindings)
+      (yuanxu-module-authoring-self-reference-diagnostics
        interface role bindings)
-      (poo-flow-module-authoring-query-diagnostics interface role bindings)
-      (poo-flow-module-authoring-root-diagnostics interface role datum)
-      (poo-flow-module-authoring-default-surface-diagnostics
+      (yuanxu-module-authoring-query-diagnostics interface role bindings)
+      (yuanxu-module-authoring-root-diagnostics interface role datum)
+      (yuanxu-module-authoring-default-surface-diagnostics
        interface role datum)))))
 
 ;;; Executor strategy and SourceRole are independently extensible. Module
@@ -377,14 +377,14 @@
    (.defmethod (module-authoring-admit
                  (executor (prototype ModuleAuthoringExecutor.))
                  (role (prototype role-prototype))
-                 (interface (prototype poo-flow-module-interface-prototype))
+                 (interface (prototype yuanxu-module-interface-prototype))
                  datum)
      (admit interface role datum))))
 
 (.defmethod-bundle ModuleAuthoringCoreMethods
   ModuleAuthoringAdmissionProtocol
-  (authoring-method ModuleSourceRole. poo-flow-module-authoring-admit/common)
-  (authoring-method ConfigSourceRole. poo-flow-module-authoring-admit/config))
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-admit/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-admit/config))
 
 (poo-clos-compose-method-bundle
  ModuleAuthoringAdmissionGeneric
@@ -402,56 +402,56 @@
     (clos-call-carrier-policy-guard) action))
 
 ;; : (-> PooModuleInterface Symbol PooModuleSourceRole)
-(def (poo-flow-module-authoring-role interface role-name)
-  (unless (poo-flow-module-interface? interface)
+(def (yuanxu-module-authoring-role interface role-name)
+  (unless (yuanxu-module-interface? interface)
     (error "module authoring admission requires a POO Module Interface"
            interface))
-  (let (authoring (poo-flow-module-interface-authoring interface))
+  (let (authoring (yuanxu-module-interface-authoring interface))
     (unless (.slot? authoring role-name)
       (error "module authoring Profile does not define the requested source role"
              role-name))
     (.ref authoring role-name)))
 
 ;; : (-> PooModuleInterface Symbol SchemeDatum PooModuleAuthoringAdmission)
-(def (poo-flow-module-authoring-admit-datum interface role-name datum)
-  (let* ((authoring (poo-flow-module-interface-authoring interface))
+(def (yuanxu-module-authoring-admit-datum interface role-name datum)
+  (let* ((authoring (yuanxu-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
-         (role (poo-flow-module-authoring-role interface role-name)))
+         (role (yuanxu-module-authoring-role interface role-name)))
     (call-with-module-authoring-read-scope
       (cut poo-clos-call ModuleAuthoringAdmissionGeneric
            executor role interface datum))))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
-(def (poo-flow-module-authoring-admit-datums interface role-name datums)
+(def (yuanxu-module-authoring-admit-datums interface role-name datums)
   ;; Consume the caller's inert source snapshot. Dispatch and validation still
   ;; run for every datum; neither method selection nor acceptance is cached.
-  (poo-flow-module-authoring-admission
+  (yuanxu-module-authoring-admission
    interface
-   (poo-flow-module-authoring-role interface role-name)
+   (yuanxu-module-authoring-role interface role-name)
    (foldr append '()
      (map (lambda (datum)
-            (.ref (poo-flow-module-authoring-admit-datum interface role-name datum)
+            (.ref (yuanxu-module-authoring-admit-datum interface role-name datum)
                   'diagnostics))
           datums))))
 
 ;; The public port API keeps its original streaming reader semantics.
 ;; : (-> PooModuleInterface Symbol InputPort PooModuleAuthoringAdmission)
-(def (poo-flow-module-authoring-admit-port interface role-name port)
-  (poo-flow-module-authoring-admission
+(def (yuanxu-module-authoring-admit-port interface role-name port)
+  (yuanxu-module-authoring-admission
    interface
-   (poo-flow-module-authoring-role interface role-name)
-   (poo-flow-read-datums/append-map
+   (yuanxu-module-authoring-role interface role-name)
+   (yuanxu-read-datums/append-map
     (lambda (datum)
-      (.ref (poo-flow-module-authoring-admit-datum
+      (.ref (yuanxu-module-authoring-admit-datum
              interface role-name datum)
             'diagnostics))
     port)))
 
-(def (poo-flow-module-authoring-admission? value)
-  (element? PooFlowModuleAuthoringAdmission value))
+(def (yuanxu-module-authoring-admission? value)
+  (element? YuanxuModuleAuthoringAdmission value))
 
-(def (poo-flow-module-authoring-admission-accepted? admission)
+(def (yuanxu-module-authoring-admission-accepted? admission)
   (.ref admission 'accepted?))
 
-(def (poo-flow-module-authoring-admission-diagnostics admission)
+(def (yuanxu-module-authoring-admission-diagnostics admission)
   (.ref admission 'diagnostics))

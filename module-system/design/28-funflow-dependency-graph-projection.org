@@ -17,8 +17,8 @@ Funflow =:needs= lowers into workflow-owned CI/CD dependency facts:
   for =:needs=.
 - Non-symbol dependency refs are rejected at the Funflow config boundary.
 - =modules/workflow/interface.ss= exposes
-  =poo-flow-cicd-check-dependency-refs= and
-  =poo-flow-cicd-check-map->dependency-graph=.
+  =yuanxu-cicd-check-dependency-refs= and
+  =yuanxu-cicd-check-map->dependency-graph=.
 - The dependency graph projects =nodes=, =duplicate-nodes=, =edges=,
   =unresolved-dependency-refs=, =cycle-nodes=, =order-policy=,
   =ready-order=, =unordered-nodes=, =blocked-order?=, =diagnostics=,

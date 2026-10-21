@@ -68,7 +68,7 @@ omit request policy. It is not an accepted optimization.
 
 * Root admission is not the proposed SourceAdmission shortcut
 
-The AWS descriptor is AWSAdmissionContract., derived from PooFlowContract.;
+The AWS descriptor is AWSAdmissionContract., derived from YuanxuContract.;
 its Scenario value-contract supplies AWSScenarioContract. Its Profile child
 uses AWSProfileAdmissionContract. This actual root is not wrapped by
 SourceAdmissionContract. Removing a repeated check in that other wrapper

@@ -5,30 +5,30 @@
 ;;; Package input: manifest -> kind index -> one hashed Contract input.
 ;;; schema.json is an audit export, never a runtime input. No legacy fallback.
 (import :clan/poo/object
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/encoding/json read-json JSONReadOptions current-json-read-options)
-        (only-in :core/modules/json-schema/json-schema-source
-                 poo-flow-json-schema-source->json-like poo-flow-json-schema-read-port)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
+        (only-in :yuanxu/modules/json-schema/json-schema-source
+                 yuanxu-json-schema-source->json-like yuanxu-json-schema-read-port)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref)
         "./types.ss")
-(export poo-flow-opentofu-read-provider-artifact)
+(export yuanxu-opentofu-read-provider-artifact)
 
 (def (required rows key)
-  (or (poo-flow-contract-object-ref rows key #f)
+  (or (yuanxu-contract-object-ref rows key #f)
       (error "provider-schema-field-missing" key)))
 
 (def (decode-input bytes)
   (parameterize ((current-json-read-options (JSONReadOptions key-as-symbol: #t)))
-    (poo-flow-json-schema-source->json-like
+    (yuanxu-json-schema-source->json-like
       (call-with-input-string (utf8->string bytes) read-json))))
 
 (def (admit-artifact contract value message)
   (let (result (.call contract .admit value #f))
-    (unless (poo-flow-validation-evidence-accepted? result)
+    (unless (yuanxu-validation-evidence-accepted? result)
       (error message (.get result diagnostics)))))
 
 (def (indexed-artifact directory manifest manifest-input)
@@ -83,11 +83,11 @@
          '.index-loaded? (lambda (kind) (hash-key? indexes kind))
          '.entry-read-count (lambda (name kind) (hash-ref reads (cons kind name) 0)))))
 
-(def (poo-flow-opentofu-read-provider-artifact directory)
+(def (yuanxu-opentofu-read-provider-artifact directory)
   (let (path (string-append directory "/manifest.json"))
     (if (not (file-exists? path))
       (.cc (.o) 'status 'build-required 'directory directory 'missing '("manifest.json"))
       (let* ((text (call-with-input-file path (lambda (port) (utf8->string (read-all-as-u8vector port)))))
-             (manifest (call-with-input-string text poo-flow-json-schema-read-port)))
+             (manifest (call-with-input-string text yuanxu-json-schema-read-port)))
         (admit-artifact ProviderArtifactContract manifest "provider-artifact-manifest-rejected")
         (indexed-artifact directory manifest (cons path text))))))

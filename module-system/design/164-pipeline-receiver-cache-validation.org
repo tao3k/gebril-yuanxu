@@ -47,7 +47,7 @@ GERBIL_LOADPATH=/tmp/pooflow-core-prototype-specializer \
 /opt/homebrew/bin/gxi /tmp/pooflow-core-prototype-specializer/run-path-slots.ss
 #+end_src
 
-The runner imports :std/test/base and :core/t/path-slots-test, calls
+The runner imports :std/test/base and :yuanxu/t/path-slots-test, calls
 =test-suite!= and exits nonzero unless =test-result-ok?= holds. The adapter and
 test module also pass gxc -S source compilation. The existing 56 CLOS declaration,
 dispatch, combination and method-bundle cases pass separately. This is local

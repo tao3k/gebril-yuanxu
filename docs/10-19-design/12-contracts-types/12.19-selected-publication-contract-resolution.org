@@ -18,7 +18,7 @@ export-path/contract-path. It retains the ACTUAL Core descriptor from that scope
 No descriptor is reconstructed from an identity label.
 
 #+begin_src scheme
-(def selection (poo-flow-load-modules "./init.ss"))
+(def selection (yuanxu-load-modules "./init.ss"))
 (def release
   (.call AdmissionPublication. .for-export selection 'aws 'Scenario))
 ;; Internally reuse selection.build-graph, the selected owner's publication,

@@ -203,7 +203,7 @@ separate capabilities too.
 
 * Lean and QNT correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedLoading.lean][IssuedLoading.lean]] proves changed source/record, artifact and private-snapshot
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean][IssuedLoading.lean]] proves changed source/record, artifact and private-snapshot
 facts refuse the declared protocol. It also separates byte consumption from
 latest-path state:
 

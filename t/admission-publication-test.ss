@@ -4,22 +4,22 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence
-                 poo-flow-predicate-contract poo-flow-contract-admit
-                 poo-flow-validation-evidence-accepted?)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/source/selection select-module-graph)
-        (only-in :core/module-system/source/build module-build-graph)
-        (only-in :core/module-system/source/objects make-poo-flow-module-source-ref)
-        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-receipt
-          poo-flow-json-schema->contract-artifact
-          poo-flow-json-schema-contract-artifact-normalization)
-        (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization-schema)
-        :core/modules/json-schema/contracts
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence
+                 yuanxu-predicate-contract yuanxu-contract-admit
+                 yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/source/selection select-module-graph)
+        (only-in :yuanxu/module-system/source/build module-build-graph)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-receipt
+          yuanxu-json-schema->contract-artifact
+          yuanxu-json-schema-contract-artifact-normalization)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        :yuanxu/modules/json-schema/contracts
         (only-in :clan/poo/object-contract diagnose))
 (export admission-publication-test)
 
@@ -53,24 +53,24 @@
       (lambda (id)
         (.o identity: id generation: "graph-1"
             compiler-identity: 'fixture/interface
-            source: (make-poo-flow-module-source-ref 'local source-path '())
+            source: (make-yuanxu-module-source-ref 'local source-path '())
             role-sources: '() source-inputs: sources
             admit-current: (lambda () (current!) (module-source-admit-current! sources))))))
   (def artifact
-    (poo-flow-json-schema->contract-artifact
-      (poo-flow-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
+    (yuanxu-json-schema->contract-artifact
+      (yuanxu-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
   (def value-contract
     (.cc SchemaContract. identity: 'test/server
-      node: (poo-flow-json-schema-normalization-schema
-              (poo-flow-json-schema-contract-artifact-normalization artifact))))
+      node: (yuanxu-json-schema-normalization-schema
+              (yuanxu-json-schema-contract-artifact-normalization artifact))))
   (def projection (.cc ProjectionContract. constraint: value-contract
                       project: (lambda (value) (.get value config))))
   (def descriptor
-    (.cc PooFlowContract. identity: 'test/application
+    (.cc YuanxuContract. identity: 'test/application
       .classify:
       (lambda (value context-value)
         (let (issues (diagnose projection value))
-          (poo-flow-classification-evidence
+          (yuanxu-classification-evidence
             'test/application value (null? issues) issues context-value)))))
   (.o publication: (.cc AdmissionPublication. graph: build schemas: (list artifact) contract: descriptor)
       admission: descriptor replace-graph!: (lambda () (set! revision 2))))
@@ -98,19 +98,19 @@
   (def inputs (list (cons source-path (module-source-read source-path))))
   (def (current!) (module-source-admit-current! inputs "assembly source changed"))
   (def artifact
-    (poo-flow-json-schema->contract-artifact
-      (poo-flow-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
+    (yuanxu-json-schema->contract-artifact
+      (yuanxu-json-schema-read-file schema-path) (list (cons 'source-ref schema-path))))
   (def fields
     (.o (:: @ SchemaContract.)
       identity: 'assembly/fields
-      node: (poo-flow-json-schema-normalization-schema
-              (poo-flow-json-schema-contract-artifact-normalization artifact))
+      node: (yuanxu-json-schema-normalization-schema
+              (yuanxu-json-schema-contract-artifact-normalization artifact))
       schema-artifact: (begin (during-schema) artifact)
-      schema: (poo-flow-json-schema-read-file schema-path)
+      schema: (yuanxu-json-schema-read-file schema-path)
       source-inputs: (list (cons schema-path (module-source-read schema-path)))))
   (def descriptor
     (refine-descriptor
-      (.cc PooFlowContract. identity: 'assembly/application
+      (.cc YuanxuContract. identity: 'assembly/application
         value-contract: (.cc ProjectionContract. constraint: fields
                          project: (lambda (value) (.get value config))))))
   (def module-publication
@@ -129,7 +129,7 @@
       (lambda (owner)
         (.o identity: owner generation: "assembly-1"
             compiler-identity: 'fixture/interface
-            source: (make-poo-flow-module-source-ref 'local source-path '())
+            source: (make-yuanxu-module-source-ref 'local source-path '())
             role-sources: '() source-inputs: inputs admit-current: current!))))
   (.o build-graph: graph selected-graph: selected package-current: #f
       sources-current: current!
@@ -140,7 +140,7 @@
 
 (def admission-publication-test
   (test-suite "Platform admission context and publication currentness"
-    (poo-flow-test-case "selected assembly has one final Context check; standalone construction retains its own"
+    (yuanxu-test-case "selected assembly has one final Context check; standalone construction retains its own"
       (with-inputs
         (lambda (source schema)
           (def selection (assembly-selection source schema))
@@ -172,7 +172,7 @@
           (parameterize ((current-module-source-observer observe))
             (.get standalone context))
           (check-equal? reads 2))))
-    (poo-flow-test-case "a cold contribution declaration still requires source admission before its getter"
+    (yuanxu-test-case "a cold contribution declaration still requires source admission before its getter"
       (with-inputs
         (lambda (source schema)
           (def demanded 0)
@@ -193,7 +193,7 @@
           (check-equal? demanded 0)
           (check-equal? (Error? refusal) #t)
           (check-equal? (Error-message refusal) "route source changed"))))
-    (poo-flow-test-case "a route-free index is not authority after its Core changes"
+    (yuanxu-test-case "a route-free index is not authority after its Core changes"
       (with-inputs
         (lambda (source schema)
           (def selection (assembly-selection source schema))
@@ -205,7 +205,7 @@
             (lambda (exception)
               (and (Error? exception)
                    (string=? (Error-message exception) "contribution object changed")))))))
-    (poo-flow-test-case "route-free indexing still checks sources before a cold Contract handler"
+    (yuanxu-test-case "route-free indexing still checks sources before a cold Contract handler"
       (with-inputs
         (lambda (source schema)
           (def handlers 0)
@@ -231,7 +231,7 @@
           (check-equal? handlers 0)
           (check-equal? (Error? refusal) #t)
           (check-equal? (Error-message refusal) "assembly source changed"))))
-    (poo-flow-test-case "the enclosing assembly check refuses changes made while resolving Schema metadata"
+    (yuanxu-test-case "the enclosing assembly check refuses changes made while resolving Schema metadata"
       (with-inputs
         (lambda (source schema)
           (def selection
@@ -242,7 +242,7 @@
             (lambda (exception)
               (and (Error? exception)
                    (string=? (Error-message exception) "assembly source changed")))))))
-    (poo-flow-test-case "selected Context source collection cannot bypass entry or final request policy"
+    (yuanxu-test-case "selected Context source collection cannot bypass entry or final request policy"
       (for-each
         (lambda (refuse-at)
           (with-inputs
@@ -271,7 +271,7 @@
               (check-equal? requests refuse-at)
               (check-equal? schemas (if (= refuse-at 1) 0 1)))))
         '(1 2)))
-    (poo-flow-test-case "intermediate source collection checks request inputs before cold Schema getters"
+    (yuanxu-test-case "intermediate source collection checks request inputs before cold Schema getters"
       (with-inputs
         (lambda (source schema)
           (def schemas 0)
@@ -300,7 +300,7 @@
           (check-equal? schemas 0)
           (check-equal? (Error? failure) #t)
           (check-equal? (Error-message failure) "admission source input changed"))))
-    (poo-flow-test-case "no package callback means no second pre-admission boundary"
+    (yuanxu-test-case "no package callback means no second pre-admission boundary"
       (with-inputs
         (lambda (source schema)
           (def pub (.get (platform source schema) publication))
@@ -334,25 +334,25 @@
                 (lambda (_candidate _context)
                   (write-file schema (string-append SchemaText "\n")) '()))))
           (check-refused changed 'source 'logic))))
-    (poo-flow-test-case "publication owns child analysis but not admissions inside obligations"
+    (yuanxu-test-case "publication owns child analysis but not admissions inside obligations"
       (with-inputs
         (lambda (source schema)
           (def view (platform source schema))
           (def double-admit? #f)
-          (def child-base (poo-flow-predicate-contract 'test/child object? (lambda (_v _c) '())))
+          (def child-base (yuanxu-predicate-contract 'test/child object? (lambda (_v _c) '())))
           (.def (Child @ child-base)
             (.admit (inherited)
               (lambda (candidate context)
                 (def first ((inherited) candidate context))
                 (if double-admit? ((inherited) candidate context) first))))
           (def child Child)
-          (def other (poo-flow-predicate-contract 'test/independent object? (lambda (_v _c) '())))
+          (def other (yuanxu-predicate-contract 'test/independent object? (lambda (_v _c) '())))
           (def descriptor
             (.cc (.get view admission) responsibilities: (.o config: child)
               .obligations:
               (lambda (candidate context)
-                (unless (poo-flow-validation-evidence-accepted?
-                          (poo-flow-contract-admit other (.get candidate config) context))
+                (unless (yuanxu-validation-evidence-accepted?
+                          (yuanxu-contract-admit other (.get candidate config) context))
                   (error "independent admission refused"))
                 '())))
           (def publisher (.cc (.get view publication) contract: descriptor))
@@ -402,7 +402,7 @@
           (check-refused target 'source 'output)
           (check-equal? analytic-child 3)
           (check-equal? independent 2))))
-    (poo-flow-test-case "one Context source window reads once; an independent window observes edits"
+    (yuanxu-test-case "one Context source window reads once; an independent window observes edits"
       (with-inputs
         (lambda (source schema)
           (def pub (.get (platform source schema) publication))

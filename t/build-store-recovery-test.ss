@@ -7,11 +7,11 @@
         (only-in :std/encoding/json write-json)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :core/ops/func run-script)
-        (only-in :core/ops/config Config)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/ops/progress execution-progress!)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture write-source)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/config Config)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/ops/progress execution-progress!)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source)
         "./qualification/build-publication/store")
 (export build-store-recovery-test test-cleanup!)
 (def observations '())
@@ -29,7 +29,7 @@
     (lambda (port) (write-subu8vector data 0 (u8vector-length data) port))))
 (def build-store-recovery-test
  (test-suite "Core recovery from a selected Nix publication"
-  (poo-flow-test-fixture "issuer exits; restarted readers preserve release association"
+  (yuanxu-test-fixture "issuer exits; restarted readers preserve release association"
    (fixture DirectoryFixture)
    (with-slots (root) fixture
     (def completed-processes 0)

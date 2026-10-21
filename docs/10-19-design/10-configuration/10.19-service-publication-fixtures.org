@@ -10,7 +10,7 @@ in [[file:../../../t/qualification/service-publication/fixtures.ss][t/qualificat
 no TestSuite or runner. Test files no longer import another test file to acquire
 services, and the callback-shaped =with-services= helper is removed.
 
-This reuses =poo-flow-test-fixture= and =with-poo-flow-fixture= from the existing
+This reuses =yuanxu-test-fixture= and =with-poo-flow-fixture= from the existing
 [[file:../../../observability/testing-fixture.ss][Fixture owner]]. Those macros keep the existing native std/test lifecycle and
 POO Case policy. No new fixture DSL, scheduler, product Loader or production
 module loading behavior is added.
@@ -94,7 +94,7 @@ implementation, not one copy per test.
 The service cases now declare resources rather than nesting setup callbacks:
 
 #+begin_src scheme
-(poo-flow-test-fixture "cached parent retains its plan and child reads final port"
+(yuanxu-test-fixture "cached parent retains its plan and child reads final port"
   (fixture ServicesFixture)
   (with-slots (root selection publication) fixture
     (def parent (.get publication value))
@@ -115,10 +115,10 @@ Exceptional input is an ordinary Fixture refinement, not positional flags:
 (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
 #+end_src
 
-These are the resource clauses of =poo-flow-test-fixture= declarations, not a
+These are the resource clauses of =yuanxu-test-fixture= declarations, not a
 new =fixture= macro. Ordinary JSON value tests and the JSON-baseline origin
 case use =DirectoryFixture= without loading any services. Pure specification
-tests continue to use =poo-flow-test-case=; creating a directory for a pure
+tests continue to use =yuanxu-test-case=; creating a directory for a pure
 case would add an unnecessary resource dependency.
 
 * Failure and independence controls
@@ -154,7 +154,7 @@ case would add an unnecessary resource dependency.
 Expected faults are caught around =with-poo-flow-fixture= inside an ordinary
 Fixture case, so the outer harness can assert cleanup without registering an
 intentional failing Case as a success. This exercises the same lifecycle used
-by =poo-flow-test-fixture=; it is not a subprocess-crash cleanup claim.
+by =yuanxu-test-fixture=; it is not a subprocess-crash cleanup claim.
 
 * Retained acceptance boundary
 
@@ -167,7 +167,7 @@ laziness. The four JSON cases retain missing/null/explicit input distinctions
 and database-before-client demand. The eight service cases retain joint
 requirements, final plan admission and source/contribution replacement refusal.
 
-All resource-owning cases in these four files use =poo-flow-test-fixture=.
+All resource-owning cases in these four files use =yuanxu-test-fixture=.
 Cleanup and preparation are consolidated without modifying the production MOP,
 the public native operators, the shared Fixture lifecycle or the product Loader.
 The new lifecycle suite is registered in Core's existing Justfile test list.
@@ -190,7 +190,7 @@ both exception objects:
   (raise cause))
 #+end_src
 
-Two additional native =poo-flow-test-fixture= cases raise distinct Error objects
+Two additional native =yuanxu-test-fixture= cases raise distinct Error objects
 in preparation/body and in rollback/release. They assert the wrapper's exact
 message and exactly two =Error-irritants=, each =eq?= to its original exception.
 A preparation failure never calls =.release=; body failure reaches the existing
@@ -214,10 +214,10 @@ The repeated fault injection and ownership assertions now live in
 select one ordinary slot; no macro, patch language or new runner is introduced:
 
 #+begin_src scheme
-(poo-flow-test-fixture "preparation and rollback failures preserve causes and sibling ownership"
+(yuanxu-test-fixture "preparation and rollback failures preserve causes and sibling ownership"
   (probe (.cc DirectoryFailureFixture failure-phase: 'preparation))
   (.call probe .verify))
-(poo-flow-test-fixture "body and release failures preserve causes and sibling ownership"
+(yuanxu-test-fixture "body and release failures preserve causes and sibling ownership"
   (probe (.cc DirectoryFailureFixture failure-phase: 'body))
   (.call probe .verify))
 #+end_src

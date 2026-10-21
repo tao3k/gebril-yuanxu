@@ -178,7 +178,7 @@ The default host runtime passed all five focused files (33 cases): the six
 slot-origin cases, four Core relocation cases, eleven existing path-slot cases,
 four JSON configuration cases and eight service publication cases. After the
 ownership/macro migration, the six and four changed cases were rerun serially
-through =just test-file= using =poo-flow-test-case=. The unchanged 1 GiB process
+through =just test-file= using =yuanxu-test-case=. The unchanged 1 GiB process
 heap fence, 120-second worker timeout and inherited Case policy were retained.
 All runs required =MODULE-OK=, =HARNESS-OK=, final =OK= and no error/overflow
 markers. This is not a full-suite, custom-MOP or AOT qualification.
@@ -186,20 +186,20 @@ markers. This is not a full-suite, custom-MOP or AOT qualification.
 * Test ownership and declaration
 
 The follow-up [[file:10.19-service-publication-fixtures.org][10.19]] consolidates service/relocation preparation into native
-POO Fixtures. Resource cases now use =poo-flow-test-fixture=, while pure cases
-retain =poo-flow-test-case=. Their source/MOP assertions and ownership stay here.
+POO Fixtures. Resource cases now use =yuanxu-test-fixture=, while pure cases
+retain =yuanxu-test-case=. Their source/MOP assertions and ownership stay here.
 
 =core/t/slot-origin-test.ss= owns the native specification/MOP controls.
 =core/t/gitea-postgresql-relocation-test.ss= owns filesystem relocation, source
 currentness, selected packaging and cross-module cached publication controls.
 The latter moved out of =scenarios/gitea-postgresql/tests/=: using a real
 Scenario as input does not make a Core implementation qualification a module
-unit test. Both suites use the existing =poo-flow-test-case= macro; assertions
+unit test. Both suites use the existing =yuanxu-test-case= macro; assertions
 and discovery remain native =std/test=.
 
 =modules/<name>/tests/= and =scenarios/<name>/tests/= are for the owner's own
 public Contract, configuration and behavior. Resource-owning cases can use
-=poo-flow-test-fixture=, as the existing JsonSchema/Funflow atomic suites do.
+=yuanxu-test-fixture=, as the existing JsonSchema/Funflow atomic suites do.
 They do not own Core reader/packager internals or temporary source trees solely
 to revalidate Core. No artificial Scenario unit suite is added to keep an
 otherwise empty directory, and no new testing DSL or runner is introduced.

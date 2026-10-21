@@ -152,7 +152,7 @@ interpret it and would not exercise this compiler pass.
 
 * Lean correspondence and Quint controls
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] reuses MetadataAllocation and IdentityDFS, including the
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean][StoreLowering.lean]] reuses MetadataAllocation and IdentityDFS, including the
 existing LeanPoo-backed graph reasoning. Four direct allocations plus two
 dependency edges derive the owner list; completeness is not supplied as a list
 field. Key statements:

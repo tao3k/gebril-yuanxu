@@ -149,7 +149,7 @@ parent relations become directed Bundle v1 edges:
 
 - source: child component;
 - target: parent component;
-- relation: =poo-flow.bundle-v1.component-parent=.
+- relation: =yuanxu.bundle-v1.component-parent=.
 
 No legacy graph ABI or compatibility wrapper is introduced.
 

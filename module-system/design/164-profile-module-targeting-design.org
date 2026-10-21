@@ -381,7 +381,7 @@ Scenario compositions. Domain Contracts refine that foundation; Scenario values
 inherit the matching Contract proto and are admitted by that Contract. A Scenario
 also supplies CompositionContracts, the native POO family of concrete Contracts
 and resolution rules. The plural family is not itself the singular base Contract
-or the existing Core PooFlowProfileCompositionStrategy. The Scenario family owns the Project
+or the existing Core YuanxuProfileCompositionStrategy. The Scenario family owns the Project
 schema, Profiles collection admission, dynamic Profile-name resolution and the
 concrete responsibilities for each resolved Profile.
 
@@ -422,7 +422,7 @@ itself. Shared proto identity matters: equal-looking reconstructed objects do
 not prove native ancestry. The prototype/domain symbols below are proposed.
 
 #+begin_src scheme
-(define-type (CompositionContract @ PooFlowNativeObjectContract.)
+(define-type (CompositionContract @ YuanxuObjectContract.)
   identity: 'composition
   proto:
   (.o Profiles: (.get CompositionProfilesContract proto))
@@ -506,13 +506,13 @@ arbitrary Module or Type to join a composition.
 
 ;; Publish all three contributions through one user-owned Module.
 (def MyChecksModule
-  (poo-flow-semantic-module
-    (poo-flow-semantic-identity 'user 'checks)
+  (yuanxu-semantic-module
+    (yuanxu-semantic-identity 'user 'checks)
     profiles:
-    (poo-flow-module-profiles
-      (poo-flow-profile-export 'build MyBuildProfile)
-      (poo-flow-profile-export 'build-variant MyBuildVariant)
-      (poo-flow-profile-export 'fresh-build FreshBuildProfile))))
+    (yuanxu-module-profiles
+      (yuanxu-profile-export 'build MyBuildProfile)
+      (yuanxu-profile-export 'build-variant MyBuildVariant)
+      (yuanxu-profile-export 'fresh-build FreshBuildProfile))))
 
 ;; Fresh Scenario: initialize from the domain CompositionContract.
 (.def (FreshTeamScenario @ SDLCCompositionContract)
@@ -562,13 +562,13 @@ helpers where domain admission/projection still needs implementation:
     report: 'team-build-report))
 
 (def MyChecksModule
-  (poo-flow-semantic-module
-    (poo-flow-semantic-identity 'user 'checks)
+  (yuanxu-semantic-module
+    (yuanxu-semantic-identity 'user 'checks)
     profiles:
-    (poo-flow-module-profiles
-      (poo-flow-profile-export 'build MyBuildProfile)
-      (poo-flow-profile-export 'build-variant MyBuildVariant)
-      (poo-flow-profile-export 'fresh-build FreshBuildProfile))))
+    (yuanxu-module-profiles
+      (yuanxu-profile-export 'build MyBuildProfile)
+      (yuanxu-profile-export 'build-variant MyBuildVariant)
+      (yuanxu-profile-export 'fresh-build FreshBuildProfile))))
 
 (.def (FreshTeamScenario @ (.get SDLCCompositionContract proto))
   (Profiles => .+
@@ -607,7 +607,7 @@ helpers where domain admission/projection still needs implementation:
 production Contract. Its source-selection step is the existing operation:
 
 #+begin_src scheme
-(poo-flow-select-module-profiles
+(yuanxu-select-module-profiles
   MyChecksModule 'checks '(build build-variant fresh-build))
 #+end_src
 
@@ -1060,7 +1060,7 @@ profile-contract. Its sandbox case has this native operation shape:
 #+begin_src scheme
 (let* ((module-contract (.get profile-contract responsibilities sandbox))
        (selected-bundle
-        (poo-flow-select-module-profiles SandboxModule 'sandbox '(ci)))
+        (yuanxu-select-module-profiles SandboxModule 'sandbox '(ci)))
        (domain-prototype (car (.get selected-bundle profiles))))
   (.o (:: module-self [(.get module-contract proto) domain-prototype])
     source-module: SandboxModule

@@ -1,6 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Compile changed Core libraries with the installed, unmodified compiler.
-(import :gerbil/compiler :gerbil/compiler/compile
+(import (for-syntax
+          (only-in :std/source this-source-file)
+          (only-in "../../../module-system/building/source-package.ss" register-yuanxu-build-source!)))
+(begin-syntax
+  (register-yuanxu-build-source! (path-expand "../../.." (path-directory (this-source-file)))))
+
+(import (only-in "../../../prelude.ss")
+        :gerbil/compiler :gerbil/compiler/compile
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/misc/ports read-all-as-u8vector))
@@ -33,10 +40,12 @@
         (execute-pending-compile-jobs!)))
     (unless (equal? before (digest source)) (error "Core source changed during compilation" source))
     (set! observations (cons (cons (path-expand source) before) observations)))
-  '(;; Compile the CURRENT macro/prelude closure into this owned overlay too.
+  '("prelude.ss"
+    ;; Compile the CURRENT macro/prelude closure into this owned overlay too.
     ;; Never pair an old installed prelude .ssi with new declaration exports.
     "module-system/building/source-closure.ss"
     "module-system/source/role-forms.ss"
+    "module-system/bootstrap/body-inclusion.ss"
     "module-system/source/declaration.ss"
     "module-system/source/module-prelude.ss"
     "module-system/source/config-prelude.ss"

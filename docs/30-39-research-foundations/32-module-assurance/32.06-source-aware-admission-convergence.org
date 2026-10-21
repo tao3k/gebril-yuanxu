@@ -36,7 +36,7 @@ expense of contextual child obligations, independent contributions or plan ident
 | Port agreement, joint policies and plan identity | Gitea/Application Contract | Entire rule remains here |
 
 Do not put filesystem checks in the foundational types.ss. A reusable
-SourceAdmissionContract. belongs above PooFlowContract. in the Core admission
+SourceAdmissionContract. belongs above YuanxuContract. in the Core admission
 layer, importing the existing source facilities. Do not copy .for-export's
 collector, coverage checks or publish-current into that adapter.
 
@@ -77,7 +77,7 @@ prototype implementation is linked above.
   .classify:
   (lambda (candidate context)
     (let (issues (application-issues candidate))
-      (poo-flow-classification-evidence
+      (yuanxu-classification-evidence
         identity candidate (null? issues) issues context)))
   requirement-type:
   (.cc ObjectContract. responsibilities:

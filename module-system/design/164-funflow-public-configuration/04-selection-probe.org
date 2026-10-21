@@ -26,7 +26,7 @@ claim that the proposed admission rule already rejects it.
 * Complete executed program
 
 #+begin_src scheme
-(import :core/object-syntax/path-slots
+(import :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .ref))
 
 ;; Domain-free design probe, not a product selector/admission implementation.
@@ -87,7 +87,7 @@ claim that the proposed admission rule already rejects it.
 * Reproduction and remaining gate
 
 Save the source block to a temporary .ss file. Resolve the canonical
-:clan/poo/object and :core/object-syntax/path-slots modules against the pinned
+:clan/poo/object and :yuanxu/object-syntax/path-slots modules against the pinned
 POO source and current Core working tree, then run it with gxi. The isolated
 GERBIL_PATH/GERBIL_LOADPATH must not silently resolve another installed POO copy.
 No packages were installed or removed and no runtime repository file was changed.

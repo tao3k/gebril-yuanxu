@@ -188,7 +188,7 @@ These controls establish semantic behavior, not a performance improvement.
 
 * Lean and QNT correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/CheckerOrigin.lean][CheckerOrigin.lean]] reuses the existing LeanPoo-backed admission models.
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean][CheckerOrigin.lean]] reuses the existing LeanPoo-backed admission models.
 It proves that a passing identity/membership gate retains both comparisons,
 every member of the supplied closure passes, both requirements and child
 ownership remain necessary, and the prior source fault keeps priority. Concrete

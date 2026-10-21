@@ -2,12 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        :core/ops/progress
-        (only-in :core/ops/process-script ProcessScript.)
-        (only-in :core/observability/testing-case poo-flow-test-case
-                 poo-flow-default-testing-case-profile)
-        (only-in :core/observability/memory
-                 PooFlowDebugDurationAnomaly? PooFlowDebugDurationAnomaly-receipt)
+        :yuanxu/ops/progress
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case
+                 yuanxu-default-testing-case-profile)
+        (only-in :yuanxu/observability/memory
+                 YuanxuDebugDurationAnomaly? YuanxuDebugDurationAnomaly-receipt)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/os/signal kill)
         (only-in :std/error Error? Error-message Error-irritants)
@@ -27,12 +27,12 @@
        (equal? (Error-irritants failure) '(idle))))
 (def execution-progress-test
   (test-suite "Shared execution progress, idle deadline and finite total"
-    (poo-flow-test-case "declared budgets reject infinity before execution"
+    (yuanxu-test-case "declared budgets reject infinity before execution"
       (check-exception (call-with-execution-progress +inf.0 1000 void) error?)
       (check-exception (call-with-execution-progress 1000 +inf.0 void) error?)
       (.def (Invalid @ ProcessScript.) command: '("true") timeout: +inf.0)
       (check-exception (.call Invalid .run) error?))
-    (poo-flow-test-case "native counters advance; duplicate logs, expectations and replays do not"
+    (yuanxu-test-case "native counters advance; duplicate logs, expectations and replays do not"
       (def now 0)
       (call-with-execution-progress 100 1000
         (lambda (state)
@@ -63,7 +63,7 @@
           (set! now 111)
           (check-equal? (execution-progress-status state) 'idle))
         clock: (lambda () now)))
-    (poo-flow-test-case "native observations share decoding but never renew liveness"
+    (yuanxu-test-case "native observations share decoding but never renew liveness"
       (def now 0)
       (def observations 0)
       (call-with-execution-progress 100 1000
@@ -79,7 +79,7 @@
           (check-equal? (execution-progress-status state) 'idle))
         clock: (lambda () now))
       (check-exception (make-nix-progress-reader observe: 'invalid) error?))
-    (poo-flow-test-case "relayed progress has a boundary after unterminated stdout"
+    (yuanxu-test-case "relayed progress has a boundary after unterminated stdout"
       (def now 0)
       (def wire
         (call-with-output-string
@@ -90,7 +90,7 @@
                 (lambda (_state) (set! now 1500) (execution-progress! 'completed 1))
                 clock: (lambda () now))))))
       (check-equal? (string-prefix? "unterminated\n@poo-progress " wire) #t))
-    (poo-flow-test-case "progress never extends the total budget or replays worker evidence"
+    (yuanxu-test-case "progress never extends the total budget or replays worker evidence"
       (def now 0)
       (call-with-execution-progress 100 300
         (lambda (state)
@@ -104,12 +104,12 @@
           (read-progress "@poo-progress [\"worker\",4]")
           (check-equal? (execution-progress-status state) 'total))
         clock: (lambda () now)))
-    (poo-flow-test-case "Ops keeps genuine progress alive past idle and rejects a noisy stall"
+    (yuanxu-test-case "Ops keeps genuine progress alive past idle and rejects a noisy stall"
       (.def (Transfer @ ProcessScript.)
         timeout: 5 idle-timeout: 0.6 progress: make-nix-progress-reader
         command: (list scheme-runtime "-:max-heap=2G,debug=q" "-e"
                    (object->string (program (cons start (map done '(1 2 3 4 5 6 7 8 9 10)))))))
-      (def parent (.cc poo-flow-default-testing-case-profile
+      (def parent (.cc yuanxu-default-testing-case-profile
                      'emit? #f 'max-idle-milliseconds 600 'max-duration-milliseconds 5000))
       (defvalues (receipt _memory)
         (.call parent .run parent "parent follows child progress"
@@ -119,14 +119,14 @@
         command: (list scheme-runtime "-:max-heap=2G,debug=q" "-e"
                    (object->string (program (cons start (make-list 30 (done 1)))))))
       (check-exception (.call Repeated .run) idle-failure?))
-    (poo-flow-test-case "Case idle guard stays active when observation emission is disabled"
-      (def policy (.cc poo-flow-default-testing-case-profile
+    (yuanxu-test-case "Case idle guard stays active when observation emission is disabled"
+      (def policy (.cc yuanxu-default-testing-case-profile
                      'emit? #f 'max-idle-milliseconds 100 'max-duration-milliseconds 2000))
       (check-exception
         (.call policy .run policy "idle, no output" (lambda () (thread-sleep! 1)))
-        PooFlowDebugDurationAnomaly?))
-    (poo-flow-test-case "Case reports its triggering idle budget inside a nested progress extent"
-      (def policy (.cc poo-flow-default-testing-case-profile
+        YuanxuDebugDurationAnomaly?))
+    (yuanxu-test-case "Case reports its triggering idle budget inside a nested progress extent"
+      (def policy (.cc yuanxu-default-testing-case-profile
                      'emit? #f 'max-idle-milliseconds 100 'max-duration-milliseconds 2000))
       (check-exception
         (.call policy .run policy "outer idle, inner still current"
@@ -134,11 +134,11 @@
             (call-with-execution-progress 1000 2000
               (lambda (_inner) (thread-sleep! 1)))))
         (lambda (failure)
-          (and (PooFlowDebugDurationAnomaly? failure)
-               (let (receipt (PooFlowDebugDurationAnomaly-receipt failure))
+          (and (YuanxuDebugDurationAnomaly? failure)
+               (let (receipt (YuanxuDebugDurationAnomaly-receipt failure))
                  (and (eq? (.get receipt reason) 'idle-exceeded)
                       (= (.get receipt limit-milliseconds) 100)))))))
-    (poo-flow-test-case "Ops idle cancellation cleans up its owned descendants"
+    (yuanxu-test-case "Ops idle cancellation cleans up its owned descendants"
       (call-with-temporary-directory "progress-cleanup"
         (lambda (root)
           (def file (path-expand "child.pid" root))

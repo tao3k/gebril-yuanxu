@@ -4,7 +4,7 @@
 
 * 10.06.44 Current Project Programming Style
 
-This file is the normative router for POO Flow programming style.  It is not a
+This file is the normative router for Yuanxu programming style.  It is not a
 monolithic Gerbil guide and does not repeat every module rule.  An author first
 classifies the source role, then follows exactly the owning style module below.
 

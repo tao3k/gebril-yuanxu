@@ -6,10 +6,11 @@
 (import (only-in :gerbil/expander core-import-module current-expander-context make-top-context
                  current-expander-module-import expander-context-id
                  module-context? module-context-import module-context-path
+                 core-context-prelude prelude-context? prelude-context-import
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source))
-(export poo-flow-core-bootstrap-spec for-each-build-module poo-flow-core-bootstrap-contexts
-        poo-flow-core-bootstrap-source-path)
+(export yuanxu-bootstrap-spec for-each-build-module yuanxu-bootstrap-contexts
+        yuanxu-bootstrap-source-path yuanxu-library-identity?)
 (def (for-each-build-module root visit
                            (seen (make-hash-table-eq))
                            (descend? (lambda (_context) #t)))
@@ -21,6 +22,23 @@
      ((module-export? value) (context-of (module-export-context value)))
      ((import-set? value) (context-of (import-set-source value)))
      (else value)))
+  (def (dependencies context)
+    ;; Native prelude exports point back to their module owner. Project that
+    ;; owner once, rather than walking thousands of aliases to the SAME module.
+    ;; Its e field is a delayed evaluator and is never forced for discovery.
+    (let* ((prelude (core-context-prelude context))
+           (entries (and (prelude-context? prelude) (prelude-context-import prelude)))
+           (imports (module-context-import context)))
+      (if (and entries (pair? entries))
+        (let (owner (context-of (car entries)))
+          (unless (and (module-context? owner)
+                       (eq? (expander-context-id owner) (expander-context-id prelude)))
+            (error "selected prelude export owner mismatch" (expander-context-id context)))
+          (cons owner imports))
+        (begin
+          (when (and (prelude-context? prelude) (expander-context-id prelude))
+            (error "selected prelude has no observable export owner" (expander-context-id context)))
+          imports))))
   ;; Each frame owns remaining siblings and the context to visit AFTER them.
   ;; Preserve the original postorder, shared seen identity and callback timing.
   ;; Host continuation depth no longer follows native import depth. No context
@@ -36,23 +54,23 @@
               (begin
                 (hash-put! seen value #t)
                 (if (descend? value)
-                  (walk (cons (cons (module-context-import value) value) remaining))
+                  (walk (cons (cons (dependencies value) value) remaining))
                   (begin (visit value) (walk remaining))))
               (walk remaining))))))))
 ;; Closed Core tools: build projection and ordinary data construction. Published
 ;; Modules remain selected dependencies, never implicit bootstrap capabilities.
-(def bootstrap-roots '(:core/module-system/building/build-projection
-                      :core/module-system/building/configuration-source
+(def bootstrap-roots '(:yuanxu/module-system/building/build-projection
+                      :yuanxu/module-system/building/configuration-source
                       ;; Public artifact/IR identity is shared with Core admission.
                       ;; These are library definitions, not a linked Module scope.
-                      :core/modules/json-schema/json-schema-receipt
+                      :yuanxu/modules/json-schema/json-schema-receipt
                       ;; Source-bound contracts are ordinary Core definitions
                       ;; used by relocated publications, not a Module scope.
-                      :core/admission/source
-                      :core/configuration/diagnostics
-                      :core/object-family/role-syntax
-                      :core/configuration/json))
-(def (poo-flow-core-bootstrap-contexts)
+                      :yuanxu/admission/source
+                      :yuanxu/configuration/diagnostics
+                      :yuanxu/object-family/role-syntax
+                      :yuanxu/configuration/json))
+(def (yuanxu-bootstrap-contexts)
   ;; Finish native imports before sharing DFS state. No observation window or
   ;; successful source check crosses a macro/initializer boundary here.
   (let ((roots (map core-import-module bootstrap-roots))
@@ -63,21 +81,26 @@
                   seen))
               roots)
     ids))
-(def (poo-flow-core-bootstrap-source-path context core-root)
+(def (library-relative-source identity)
+  (and (symbol? identity)
+    (if (eq? identity 'tao3k/yuanxu/prelude) "prelude.ss"
+      (let (text (symbol->string identity))
+        (and (string-prefix? "yuanxu/" text)
+          (string-append (substring text (string-length "yuanxu/") (string-length text)) ".ss"))))))
+(def (yuanxu-library-identity? identity)
+  (and (library-relative-source identity) #t))
+(def (yuanxu-bootstrap-source-path context core-root)
   ;; A caller supplies an already SDK-observed context and the trusted Core
   ;; source root. This is the same source projection used by bootstrap itself.
-  (let (id (expander-context-id context))
-    (and (symbol? id)
-         (let (text (symbol->string id))
-           (and (string-prefix? "core/" text)
-                (let (source (path-expand (string-append (substring text 5 (string-length text)) ".ss") core-root))
-                  (and (file-exists? source) source)))))))
-(def (poo-flow-core-bootstrap-spec core-root)
+  (let (relative (library-relative-source (expander-context-id context)))
+    (and relative (let (source (path-expand relative core-root))
+                    (and (file-exists? source) source)))))
+(def (yuanxu-bootstrap-spec core-root)
   (using (core-root :~ string?)
     (let* ((root (string-append (path-strip-trailing-directory-separator (path-expand core-root)) "/")) (seen (make-hash-table)) (rows '())
            (native-import (current-expander-module-import)))
       (def (source-for context)
-        (poo-flow-core-bootstrap-source-path context root))
+        (yuanxu-bootstrap-source-path context root))
       (def (visit context)
         (let (source (source-for context))
           (when (and source (not (hash-key? seen source)))
@@ -92,8 +115,9 @@
                   (native-import source reload?) context)))))
         (for-each
           (lambda (identity)
-            (let (name (symbol->string identity))
+            (let (relative (library-relative-source
+                            (string->symbol (substring (symbol->string identity) 1 (string-length (symbol->string identity))))))
               (for-each-build-module
-                (core-import-module (path-expand (string-append (substring name 6 (string-length name)) ".ss") root)) visit)))
+                (core-import-module (path-expand relative root)) visit)))
           bootstrap-roots))
       (reverse rows))))

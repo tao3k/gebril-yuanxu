@@ -33,9 +33,9 @@ the existing source admission owner:
 
 #+begin_src scheme
 (import
-  (only-in :core/module-system/building/configuration-source
-           poo-flow-core-configuration-source)
-  (only-in :core/module-system/source/admission
+  (only-in :yuanxu/module-system/building/configuration-source
+           yuanxu-configuration-source)
+  (only-in :yuanxu/module-system/source/admission
            call-with-module-source-read-cache module-source-admit-current!))
 
 (def (current!)

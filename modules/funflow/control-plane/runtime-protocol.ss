@@ -6,7 +6,7 @@
 ;;; Boundary: runtime request/response protocol data shared by adapters.
 ;;; Invariant: this module owns durable schemas and normalization only.
 
-(import :core/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-adapter-result
         adapter-result?
@@ -47,23 +47,23 @@
   transparent: #t)
 
 ;; : (-> Unit Symbol)
-(def +runtime-request-schema+ 'poo-flow.runtime-request.v1)
+(def +runtime-request-schema+ 'yuanxu.runtime-request.v1)
 
 ;; : (-> Unit Symbol)
-(def +runtime-response-schema+ 'poo-flow.runtime-response.v1)
+(def +runtime-response-schema+ 'yuanxu.runtime-response.v1)
 
 ;; : (-> Unit Symbol)
-(def +runtime-command-descriptor-schema+ 'poo-flow.runtime-command-descriptor.v1)
+(def +runtime-command-descriptor-schema+ 'yuanxu.runtime-command-descriptor.v1)
 
 ;; : (-> Symbol Symbol Alist)
 (def (runtime-response-family family-name schema)
-  (list (cons 'kind 'poo-flow-runtime-response-family)
+  (list (cons 'kind 'yuanxu-runtime-response-family)
         (cons 'name family-name)
         (cons 'schema schema)))
 
 ;; : Alist
 (def +runtime-response-family+
-  (runtime-response-family 'poo-flow-runtime-response-family
+  (runtime-response-family 'yuanxu-runtime-response-family
                            +runtime-response-schema+))
 
 ;;; Runtime responses are the durable schema projection for adapter results.

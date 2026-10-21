@@ -5,12 +5,12 @@
 
 ;;; Boundary: runner validation checks planned steps against strategy/adapter support.
 
-(import :core/modules/funflow/control-plane/projection-syntax
-        :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/task
-        :core/modules/funflow/control-plane/graph
-        :core/modules/funflow/control-plane/strategy
-        :core/modules/funflow/control-plane/runtime-adapter)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/task
+        :yuanxu/modules/funflow/control-plane/graph
+        :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/runtime-adapter)
 
 (export validate-plan-node)
 

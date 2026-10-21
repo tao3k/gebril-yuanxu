@@ -119,7 +119,7 @@ Target consumer spelling (the adapter is proposed, not implemented):
 
 poo-flow-core-build-spec is a proposed functional adapter, not a new syntax form or
 second Loader. It requests the init-owned graph through the shared Core orchestration also used by the product
-poo-flow-load-modules facade, checks its admission/currentness and lowers
+yuanxu-load-modules facade, checks its admission/currentness and lowers
 it to the existing Gerbil build-spec value. Its spelling/module export is not
 currently available. Resolve the path against the build source, not an arbitrary
 process working directory. The directory/role wrapper prepares init publication;

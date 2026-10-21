@@ -90,7 +90,7 @@ publication-reader declaration wrapper. The relevant existing path is:
 
 #+begin_src text
 init.ss
-  -> poo-flow-load-modules
+  -> yuanxu-load-modules
   -> selected publication reader
   -> source-context / source-wrapper for Core declaration.ss
   -> generated include-module-body wrapper
@@ -116,8 +116,8 @@ The user's intended boundary is retained: init selection is the authority for a
 deferred selected build Graph and its derived native list. Compiler filenames are
 internal output, never a handwritten JsonSchema inventory.
 
-Today poo-flow! exports poo-flow-module-init as selection intent. Existing
-poo-flow-load-modules can derive a build-graph from that source, but init does not
+Today yuanxu! exports yuanxu-module-init as selection intent. Existing
+yuanxu-load-modules can derive a build-graph from that source, but init does not
 yet export a completed lazy build Graph/native spec capability. That declaration
 integration is still missing; the failed fixture must not be reported as its
 implementation. Future Graph and list views must share one observation/selection

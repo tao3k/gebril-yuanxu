@@ -58,7 +58,7 @@
     (lambda () (set-load-path! (cons (path-expand "lib" artifact-root) previous)))
     (lambda ()
       (def input-rows (append (car compilation) (list-ref compilation 3) resources))
-      (def issued (capture-closure "core/t/qualification/mop-state/precompiled-stores"
+      (def issued (capture-closure "yuanxu/t/qualification/mop-state/precompiled-stores"
         input-rows (list-ref compilation 2) (list-ref compilation 1)))
       (unless (null? (closure-issues issued)) (error "compiler pipe artifact admission failed"))
       (def index (make-hash-table))
@@ -89,7 +89,7 @@
   (when active
    (let* ((state active) (row (hash-get (authority-index state) name)))
     (event! state 'request name #f)
-    (when (and row (string=? name "core/t/qualification/mop-state/precompiled-stores"))
+    (when (and row (string=? name "yuanxu/t/qualification/mop-state/precompiled-stores"))
       (let* ((inputs (authority-inputs state))
              (units (.get (authority-issued state) units))
              (source-expected (call-with-output-string (cut write inputs <>)))
@@ -112,10 +112,10 @@
            (error "issued source or record changed" (car entry))))
          (authority-inputs state))
        (check-row! name row)
-       (when (string=? name "core/t/qualification/mop-state/precompiled-stores")
+       (when (string=? name "yuanxu/t/qualification/mop-state/precompiled-stores")
          (for-each (lambda (entry) (check-row! (.get entry name) entry))
            (.get (authority-issued state) units)))
-       (when (string-prefix? "core/t/qualification/mop-state/precompiled-stores" name)
+       (when (string-prefix? "yuanxu/t/qualification/mop-state/precompiled-stores" name)
          (let (resident (hash-get __modules name))
            (when (and (string? resident)
                       (not (equal? resident (hash-get (authority-loaded state) name))))

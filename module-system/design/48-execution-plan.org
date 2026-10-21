@@ -206,8 +206,8 @@ Tasks:
 - Connect Funflow CI/CD cases to sandbox and loop profiles without introducing raw alist authoring.
 - Keep runtime execution in this repo minimal and test-oriented: enough to validate lowering, dependency projection, and report-only receipts.
 Current implementation slice:
-- =modules/funflow/config.ss= now exposes Funflow functional DAG POO objects and edge POO objects. Users still author =funflow-check= and =funflow-pipeline= values; =poo-flow-funflow-check-map->functional-dag= and =poo-flow-funflow-poo-pipeline->functional-dag= return POO-native DAG values.
-- Boundary alists remain explicit projections through =poo-flow-funflow-functional-dag->alist= and =poo-flow-funflow-dag-edge->alist=.
+- =modules/funflow/config.ss= now exposes Funflow functional DAG POO objects and edge POO objects. Users still author =funflow-check= and =funflow-pipeline= values; =yuanxu-funflow-check-map->functional-dag= and =yuanxu-funflow-poo-pipeline->functional-dag= return POO-native DAG values.
+- Boundary alists remain explicit projections through =yuanxu-funflow-functional-dag->alist= and =yuanxu-funflow-dag-edge->alist=.
 - The current DAG object records =composition-style: arrow-kleisli=, POO =composition-steps=, =composition-step-count=, node order, POO edge objects, entry nodes, terminal nodes, ready order, diagnostics, runtime owner, and =runtime-executed: #f=.
 
 Deliverables:

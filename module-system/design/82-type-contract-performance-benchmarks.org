@@ -14,10 +14,10 @@ Type descriptors, generic dispatch, contract admission, or evidence reuse.
 
 ** 10.06.82.10 Benchmark Boundary
 Measure Scheme hot-path work:
-- =poo-flow-contract-check-slot!= against reusable native slot schemas;
-- native =PooFlowContract. -> alist= projection;
-- native =PooFlowContract. -> PooFlowTypeFactContract= projection;
-- native =PooFlowContract. -> PooFlowLeanFactContract= projection;
+- =yuanxu-contract-check-slot!= against reusable native slot schemas;
+- native =YuanxuContract. -> alist= projection;
+- native =YuanxuContract. -> YuanxuTypeFactContract= projection;
+- native =YuanxuContract. -> YuanxuLeanFactContract= projection;
 - native session policy / tool-grant descriptor projection and slot admission;
 - cached projection reads used by doctor, observability, and runtime-handoff presentation.
 

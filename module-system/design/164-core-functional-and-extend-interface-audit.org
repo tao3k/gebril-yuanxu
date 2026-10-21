@@ -22,7 +22,7 @@ not another branch or a live GitHub PR. No implementation, export removal,
 Core commit or gitlink update is made by this design change.
 
 Functional and Extend are responsibility boundaries, not new module names or
-an eager umbrella import. Existing precise =:core/...= imports remain the
+an eager umbrella import. Existing precise =:yuanxu/...= imports remain the
 source owners. An exported binding is not automatically an ordinary user API.
 [[file:164-core-interface-export-inventory.org][The export inventory]] assigns every non-test Core export occurrence to a
 surface, including support exports and facade reexports.
@@ -105,12 +105,12 @@ decision for each current owner and the interface that users should see.
 | Existing Core owner/API family | Default Functional surface | Extend or deeper surface |
 |-------------------------------+----------------------------+---------------------------|
 | Upstream =clan/poo/object= | product keyword settings and capability selection yielding POO values | native =.o= / =.def=, raw =.ref=, inheritance and slot refinement for facade/extension authors; mutation is R |
-| =types= | supplied Types/Contracts; =poo-flow-type-classify=, =poo-flow-contract-admit= and evidence inspection | predicate Type/Contract construction, =.classify= / =.obligations= / =.admit= specialization |
+| =types= | supplied Types/Contracts; =yuanxu-type-classify=, =yuanxu-contract-admit= and evidence inspection | predicate Type/Contract construction, =.classify= / =.obligations= / =.admit= specialization |
 | =module-system/types= | inspect/use supplied Module Contracts | changing Module source-role and authoring policy |
 | =module-system/objects= | select an already admitted SemanticModule | =SemanticModule.=, =ModuleSourceRole.=, =ModuleAuthoringProfile.= and =make-semantic-module= authoring |
 | =module-system/schema/relations= | use maintained identity/import/profile/capability values | build Module identities, import contributions and extensible relation prototypes |
 | =module-system/config= | inspect an existing Interface id, schemas, schema spec, authoring and metadata | =make-module-interface=, String schema and option-policy declarations; schema-index construction is I |
-| =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =poo-flow-contract-value-type=, =poo-flow-contract-slot=, =poo-flow-native-contract= and new predicates |
+| =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =yuanxu-contract-value-type=, =yuanxu-contract-slot=, =yuanxu-native-contract= and new predicates |
 | =module-system/schema/interface= | use maintained admitted objects and supplied Types | schema/object/field/transformer authoring and explicit field-resolution; internal caches/indexes remain I |
 | =module-system/schema/validation= | product-owned validation of declared values | low-level validation helpers stay E; they are not a new root config vocabulary |
 | =module-system/projection/option-objects= | inspect option validation receipts | construct option projections bound to their owning Interface |
@@ -122,18 +122,18 @@ decision for each current owner and the interface that users should see.
 | =module-system/funs=, =graph/funs= | bounded phase/flag/dependency queries on admitted data | caller-supplied hook/accessor callbacks are E; closure helpers are not root graph syntax |
 | =profile-composition/profile-bundle= | =profiles=, =compose=, selection and immutable Bundle inspection/conflict presentation | publish exports, module profile sets and composition strategy; StageSpace construction is maintainer-owned |
 | =profile-composition/selection-syntax= | =use-module= selects existing named Profiles | hygienic selection only; it is not a clause interpreter |
-| =profile-composition/bindings= | =poo-flow-profile-ref= | Scenario/Module binding adapters are E |
+| =profile-composition/bindings= | =yuanxu-profile-ref= | Scenario/Module binding adapters are E |
 | =contribution/objects= | =contribution?=, diagnostics and =admit-contributions= on supplied values | =Contribution.= / =make-contribution= publication; admission grants no execution authority |
 | =contribution/verification= | consume an already returned host receipt through the product interface | adapter definition is E; verification, validity callbacks, receipt issuance and revocation are R |
 | =composition/lineage= | pure lineage/cycle/productive-recursion analysis on supplied identity lists | lineage result prototype publication is E; this owner takes data, not accessor callbacks |
 | =graph/interface= | consume the effective result through ordinary POO values | every graph operation, contribution and ordered application stays E; no generic patch language in root config |
 | =object-family/interface= | consume maintained family values and domain accessors | =defpoo-object-family= and indexed-family authoring are E; positional indexes/lenses are I |
 | =observability/objects=, =funcs= | bounded receipt facts, summaries, diagnostics, next-action and pure projections | observation prototypes and overridable protocols are E; custom callbacks retain their contract |
-| =observability/slot-presentation= | =poo-flow-slot-presentation= at default level | provenance/composition use authored source metadata; advanced/source views are opt-in, not causal effect traces |
+| =observability/slot-presentation= | =yuanxu-slot-presentation= at default level | provenance/composition use authored source metadata; advanced/source views are opt-in, not causal effect traces |
 | =observability/types= | supplied observation/receipt Contracts | author new Contracts; shape helpers stay I and explicit requirement checks are E |
 | =observability/debug=, =slot-debug= | inspect returned receipts through ordinary presentation | debug calls and monitors are R; slot probing may evaluate computations, so cannot promise purity |
 | =observability/testing-case= | select a maintained test Profile | test declaration and Profile specialization are E; current-profile parameterization is R |
-| =observability/output= | obtain an inert presentation value | =poo-flow-write-observation-line!= is R |
+| =observability/output= | obtain an inert presentation value | =yuanxu-write-observation-line!= is R |
 | =poo-clos/interface= | call a domain operation published by its owner | generic/method/bundle declarations and specializers are E; lifecycle/mutation is R, meta changes are M |
 | =poo-clos/*= leaf support | no direct ordinary config vocabulary | implementation/IR/cache helpers are I; facade bindings retain E/R/M classification |
 
@@ -150,7 +150,7 @@ source evidence, not a list of required ordinary user concepts.
 This design does not claim that every existing export or POO slot already
 enforces the two-category public contract. Specific current gaps are:
 
-1. =PooFlowStageSpace= rejects a direct procedure but permits other non-procedure
+1. =YuanxuStageSpace= rejects a direct procedure but permits other non-procedure
    values, including nested containers without a recursive inertness check.
    Its current predicate is evidence for a partial boundary, not full closure.
 2. Source collections expose a =locate= procedure and Loader Backends expose
@@ -164,7 +164,7 @@ enforces the two-category public contract. Specific current gaps are:
    inspectable. Their representation does not become a public configurable slot.
 5. The broad CLOS facade includes declarations, lifecycle, mutation and MOP.
    Default product facades must expose owned domain operations, not reexport it.
-6. =poo-flow-settings= forwards arbitrary native slot forms rather than enforcing
+6. =yuanxu-settings= forwards arbitrary native slot forms rather than enforcing
    a bounded keyword/value surface. Plain options must remain the ordinary
    interface; advanced native slot authoring belongs to Extend. This audit does
    not implement that restriction.

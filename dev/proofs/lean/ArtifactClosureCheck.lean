@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.ArtifactClosure
+import YuanxuProof.Admission.ArtifactClosure
 
-open Lean PooFlowCoreProof.Admission.ArtifactClosure
+open Lean YuanxuProof.Admission.ArtifactClosure
 
 def checkArtifactRow (j : Json) : Except String (String × Bool) := do
   let a ← j.getArr?

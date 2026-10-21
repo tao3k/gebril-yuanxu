@@ -24,7 +24,7 @@ not implemented. The package pins remain the existing fixture pins; this local
 * One collection input
 
 Current multi-Provider recipes accept one =COLLECTION_OUTPUT= from
-=family-artifacts.nix=. =POO_FLOW_OPENTOFU_ARTIFACT= denotes this Nix link-farm
+=family-artifacts.nix=. =YUANXU_OPENTOFU_ARTIFACT= denotes this Nix link-farm
 directory, not a single Provider output. The default OpenTofu object projects
 its immediate names into lazy native =modules= slots. No per-Provider environment
 variables or manual Scheme declarations are required. The older per-family
@@ -38,14 +38,14 @@ just test-opentofu-configuration-discovery COLLECTION_OUTPUT
 
 * Current indexed artifact format
 
-The current module reader accepts only =poo-flow/provider-schema-v2= artifacts.
+The current module reader accepts only =yuanxu/provider-schema-v2= artifacts.
 The Nix producer generates hashed kind indexes and per-type inputs; runtime
 never reads the retained audit =schema.json=. Rebuild old Nix outputs rather
 than using a legacy reader fallback. =aws-5.100.0/= now includes v2 indexes and
 two real selected input entries; its historical audit Schema stays unchanged.
 It is still a selected-subtree fixture, not a complete new Provider export.
 
-Development injection is the single collection =POO_FLOW_OPENTOFU_ARTIFACT=.
+Development injection is the single collection =YUANXU_OPENTOFU_ARTIFACT=.
 Per-family environment variables have been removed. The
 =test-opentofu-indexed-inputs= gate tests actual Nix outputs, selected IO,
 tamper/missing-input rejection and matched whole-export Contract semantics.

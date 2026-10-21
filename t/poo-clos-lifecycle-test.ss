@@ -5,12 +5,12 @@
 
 ;;; POO-native CLOS class, slot, and instance lifecycle conformance.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .ref object?)
         (only-in :clan/poo/mop Type element?)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-lifecycle-test)
 
@@ -29,7 +29,7 @@
 
 (def poo-clos-lifecycle-test
   (test-suite "POO-native CLOS class and instance lifecycle"
-    (poo-flow-test-case "class descriptors and identities stay on the native MOP spine"
+    (yuanxu-test-case "class descriptors and identities stay on the native MOP spine"
       (let (class-value (poo-clos-class 'native-mop-spine))
         (check (element? Type ClosClass) => #t)
         (check (eq? (.ref (.ref class-value 'instance-prototype)
@@ -40,7 +40,7 @@
                     class-value)
                => #t)))
 
-    (poo-flow-test-case "native POO C4 closes a diamond and effective slot options merge"
+    (yuanxu-test-case "native POO C4 closes a diamond and effective slot options merge"
       (let* ((root-slot
               (poo-clos-direct-slot-definition
                'payload initargs: (list root:)
@@ -72,7 +72,7 @@
         (check-equal? (poo-clos-slot-value instance-value 'payload) 'right)
         (check (poo-clos-class-subclass? leaf root) => #t)))
 
-    (poo-flow-test-case "native POO C4 preserves monotonic pedalo precedence"
+    (yuanxu-test-case "native POO C4 preserves monotonic pedalo precedence"
       ;; Barrett et al., figure 2, separates the historical ANSI topological
       ;; order from C4. POO CLOS intentionally follows upstream prototype
       ;; linearization, so day-boat remains before wheel-boat in pedalo.
@@ -111,7 +111,7 @@
          '(pedalo pedal-wheel-boat engineless small-catamaran
                   small-multihull day-boat wheel-boat boat standard-object))))
 
-    (poo-flow-test-case "explicit and default initargs precede initforms with leftmost wins"
+    (yuanxu-test-case "explicit and default initargs precede initforms with leftmost wins"
       (let ((default-count 0)
             (initform-count 0))
         (def slot
@@ -137,7 +137,7 @@
           (check-equal? default-count 1)
           (check-equal? initform-count 0))))
 
-    (poo-flow-test-case "class names are registered ANSI class designators"
+    (yuanxu-test-case "class names are registered ANSI class designators"
       (let* ((source (poo-clos-class 'registered-source))
              (target (poo-clos-class 'registered-target))
              (instance (poo-clos-make-instance 'registered-source)))
@@ -164,7 +164,7 @@
         (check-exception (poo-clos-make-instance 'missing-class)
                          (failure-code? 'class-not-found))))
 
-    (poo-flow-test-case "standard lifecycle entry points are extensible generic functions"
+    (yuanxu-test-case "standard lifecycle entry points are extensible generic functions"
       (let* ((slot
               (poo-clos-direct-slot-definition
                'initialized initform: (lambda () 'default)))
@@ -192,7 +192,7 @@
             (lambda () (poo-clos-function-keywords method)) list)
            (list (list custom:) #f)))))
 
-    (poo-flow-test-case "class-allocated cells are shared and a redefining subclass owns a new cell"
+    (yuanxu-test-case "class-allocated cells are shared and a redefining subclass owns a new cell"
       (let (class-init-count 0)
         (def shared-slot
           (poo-clos-direct-slot-definition
@@ -221,7 +221,7 @@
           (check-equal? (poo-clos-slot-value two 'counter) 11)
           (check-equal? (poo-clos-slot-value three 'counter) 30))))
 
-    (poo-flow-test-case "bound state and missing or unbound hooks have exact operations"
+    (yuanxu-test-case "bound state and missing or unbound hooks have exact operations"
       (let (events '())
         (def plain-slot (poo-clos-direct-slot-definition 'plain))
         (def hooked
@@ -251,7 +251,7 @@
              (missing setf (8))
              (missing slot-makunbound ()))))))
 
-    (poo-flow-test-case "default hooks raise typed failures and makunbound preserves identity"
+    (yuanxu-test-case "default hooks raise typed failures and makunbound preserves identity"
       (let* ((slot (poo-clos-direct-slot-definition 'state))
              (class-value (poo-clos-class 'plain direct-slots: (list slot)))
              (instance-value (poo-clos-allocate-instance class-value)))
@@ -269,7 +269,7 @@
                     instance-value) => #t)
         (check-equal? (poo-clos-slot-bound? instance-value 'state) #f)))
 
-    (poo-flow-test-case "unbound slot failures retain their condition subtype and instance"
+    (yuanxu-test-case "unbound slot failures retain their condition subtype and instance"
       (let* ((slot (poo-clos-direct-slot-definition 'state))
              (class-value
               (poo-clos-class 'typed-unbound-slot direct-slots: (list slot)))
@@ -284,7 +284,7 @@
                     instance-value) => #t)
         (check-equal? (.ref condition 'slot) 'state)))
 
-    (poo-flow-test-case "slot-missing and slot-unbound are ordinary mutable generics"
+    (yuanxu-test-case "slot-missing and slot-unbound are ordinary mutable generics"
       (let* ((slot (poo-clos-direct-slot-definition 'state))
              (class-value
               (poo-clos-class 'generic-slot-protocol
@@ -324,7 +324,7 @@
         (poo-clos-remove-method poo-clos-slot-unbound-generic
                                 slot-unbound-method)))
 
-    (poo-flow-test-case "reinitialize uses initargs only while shared-initialize can rerun initforms"
+    (yuanxu-test-case "reinitialize uses initargs only while shared-initialize can rerun initforms"
       (let (init-count 0)
         (def slot
           (poo-clos-direct-slot-definition
@@ -346,7 +346,7 @@
           (poo-clos-shared-initialize instance-value '(state))
           (check-equal? (poo-clos-slot-value instance-value 'state) 2))))
 
-    (poo-flow-test-case "reader and writer methods participate in ordinary multiple dispatch"
+    (yuanxu-test-case "reader and writer methods participate in ordinary multiple dispatch"
       (let* ((slot
               (poo-clos-direct-slot-definition
                'name initargs: (list name:)
@@ -367,7 +367,7 @@
         (check-equal? (poo-clos-call writer 'new instance-value) 'new)
         (check-equal? (poo-clos-call reader instance-value) 'new)))
 
-    (poo-flow-test-case "rejected C4 redefinition leaves the live class and edges intact"
+    (yuanxu-test-case "rejected C4 redefinition leaves the live class and edges intact"
       (let* ((x (poo-clos-class 'redefine-precedence-x))
              (y (poo-clos-class 'redefine-precedence-y))
              (xy (poo-clos-class 'redefine-precedence-xy
@@ -391,7 +391,7 @@
                => #t)
         (check (memq current (.ref yx 'direct-subclasses)) => #f)))
 
-    (poo-flow-test-case "invalid declarations and initialization arguments fail before effects"
+    (yuanxu-test-case "invalid declarations and initialization arguments fail before effects"
       (let (slot (poo-clos-direct-slot-definition 'only initargs: (list only:)))
         (check-exception
          (poo-clos-direct-slot-definition 'bad allocation: 'dynamic)

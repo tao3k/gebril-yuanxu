@@ -21,7 +21,7 @@ the selected graph and its guarded build entry. The product Loader is not wired.
 
 ** Module selection is not Provider selection
 
-=poo-flow-load-modules= discovers and selects Module declarations and their
+=yuanxu-load-modules= discovers and selects Module declarations and their
 contributions. It must not recognize AWS, Null, OpenTofu resource names or
 Provider versions. A selected OpenTofu contribution projects external package
 demand from its final configuration. The generic Core build mechanism consumes
@@ -68,7 +68,7 @@ it does not automatically route an arbitrary root =config.ss= into OpenTofu.
 
 #+begin_src scheme
 ;; project/init.ss -- supported declarative selection
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :app
   (infrastructure))
 #+end_src
@@ -94,7 +94,7 @@ it does not automatically route an arbitrary root =config.ss= into OpenTofu.
 
 The Module-local build contribution derives Provider demand from this Module's
 final configuration. Its =build.ss= must not reopen the root =init.ss= or call
-=poo-flow-load-modules= to rediscover the application. Root selection passes
+=yuanxu-load-modules= to rediscover the application. Root selection passes
 admitted contributions to generic Core build orchestration. That orchestration
 owns generation allocation, currentness, native build invocation and final
 admission. No AWS/Null-specific branch belongs in root discovery or orchestration.
@@ -131,7 +131,7 @@ that missing adapter today. No new syntax or publication object is proposed.
 
 #+begin_src scheme
 ;; project/init.ss -- root authority, unchanged across both config revisions
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :app
   (infrastructure))
 #+end_src
@@ -164,7 +164,7 @@ maintained =types.ss=, distinct from generated Provider configuration Contracts:
 
 #+begin_src scheme
 (def InfrastructureScopeContract
-  (poo-flow-predicate-contract 'app/infrastructure-scope
+  (yuanxu-predicate-contract 'app/infrastructure-scope
     (lambda (scope)
       (and (object? scope) (.slot? scope 'config)
            (object? (.get scope config))))

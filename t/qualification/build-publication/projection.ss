@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; One compiler unit; service selection and admission use production Core.
 (import :clan/poo/object :std/build-script
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/module-system/building/artifacts current-build-output-directory))
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/building/artifacts current-build-output-directory))
 (export probe-projection probe-build)
 (def (probe-projection selection root identity)
   (def graph (.get selection build-graph))

@@ -106,7 +106,7 @@ The following is target design source, not installed or compiled publication.
   (.o check: FunflowCheckContract pipeline: FunflowPipelineContract))
 
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.) source: source-handle))
 

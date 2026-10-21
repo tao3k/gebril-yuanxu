@@ -210,7 +210,7 @@ The current code slice lands M4: a report-only runtime handoff ABI for Marlin.
 Status 2026-06-20:
 - Implemented =poo-flow-cicd-check-map->marlin-runtime-handoff-abi=.
 - Implemented =poo-flow-cicd-runtime-command-manifest-map->marlin-runtime-handoff-abi=.
-- The ABI uses =+poo-flow-cicd-marlin-runtime-handoff-abi-schema+= and sets =runtime-owner= to =marlin-agent-core=.
+- The ABI uses =+yuanxu-cicd-marlin-runtime-handoff-abi-schema+= and sets =runtime-owner= to =marlin-agent-core=.
 - Entries whitelist the Marlin-facing fields from runtime command manifests and preserve =handoff-required #t=, =runtime-executed #f=, =runtime-parses-scheme-source #f=, and =scheme-manufactures-runtime-handlers #f=.
 - =t/workflow-cicd-check-map-test.ss= now verifies the ABI map, dependency graph, entry payloads, argv, request data, policy refs, runtime owner, and non-execution flags.
 

@@ -11,39 +11,39 @@
 (import :gerbil/core
         (only-in :clan/poo/object .mix .o .ref)
         (only-in :clan/poo/mop .defgeneric)
-        :core/graph/contribution
-        :core/graph/payload-operations)
+        :yuanxu/graph/contribution
+        :yuanxu/graph/payload-operations)
 
-(export poo-flow-graph-operation-prototype
-        poo-flow-graph-slot-override-prototype
-        poo-flow-graph-slot-append-prototype
-        poo-flow-graph-slot-prepend-prototype
-        poo-flow-graph-slot-remove-prototype
-        poo-flow-graph-node-extend-prototype
-        poo-flow-graph-node-remove-prototype
-        poo-flow-graph-slot-override
-        poo-flow-graph-slot-append
-        poo-flow-graph-slot-prepend
-        poo-flow-graph-slot-remove
-        poo-flow-graph-node-extend
-        poo-flow-graph-node-remove
-        poo-flow-graph-apply-operation
-        poo-flow-graph-operation-state
-        poo-flow-graph-local-operation?
-        poo-flow-graph-node-extend-operation?
-        poo-flow-graph-slot-append-operation?
-        poo-flow-graph-flush-slot-append
-        poo-flow-graph-coalesce-slot-appends)
+(export yuanxu-graph-operation-prototype
+        yuanxu-graph-slot-override-prototype
+        yuanxu-graph-slot-append-prototype
+        yuanxu-graph-slot-prepend-prototype
+        yuanxu-graph-slot-remove-prototype
+        yuanxu-graph-node-extend-prototype
+        yuanxu-graph-node-remove-prototype
+        yuanxu-graph-slot-override
+        yuanxu-graph-slot-append
+        yuanxu-graph-slot-prepend
+        yuanxu-graph-slot-remove
+        yuanxu-graph-node-extend
+        yuanxu-graph-node-remove
+        yuanxu-graph-apply-operation
+        yuanxu-graph-operation-state
+        yuanxu-graph-local-operation?
+        yuanxu-graph-node-extend-operation?
+        yuanxu-graph-slot-append-operation?
+        yuanxu-graph-flush-slot-append
+        yuanxu-graph-coalesce-slot-appends)
 
 ;;; Ordinary operation application flushes pending batches before invoking the
 ;;; receiver-owned method. Specialized prototypes replace only this stage slot.
 ;; : (-> PooGraphOperation PooGraphOperationState PooGraphOperationState)
-(def (poo-flow-graph-stage-operation operation state)
+(def (yuanxu-graph-stage-operation operation state)
   (match state
     ([current pending-node-extends pending-slot-overrides]
-     [(poo-flow-graph-operation-apply
+     [(yuanxu-graph-operation-apply
        operation
-       (poo-flow-graph-flush-pending current
+       (yuanxu-graph-flush-pending current
                                                 pending-node-extends
                                                 pending-slot-overrides))
       '()
@@ -51,32 +51,32 @@
 
 ;;; Node extension batches preserve encounter order until the merge boundary.
 ;; : (-> PooGraphOperation PooGraphOperationState PooGraphOperationState)
-(def (poo-flow-graph-stage-node-extend operation state)
+(def (yuanxu-graph-stage-node-extend operation state)
   (match state
     ([current pending-node-extends pending-slot-overrides]
      [current
-      (cons (poo-flow-graph-operation-node operation)
+      (cons (yuanxu-graph-operation-node operation)
             pending-node-extends)
       pending-slot-overrides])))
 
 ;;; Slot overrides batch as key/value rows and use the common deterministic
 ;;; slot merge only when an operation family requires a flush.
 ;; : (-> PooGraphOperation PooGraphOperationState PooGraphOperationState)
-(def (poo-flow-graph-stage-slot-override operation state)
+(def (yuanxu-graph-stage-slot-override operation state)
   (match state
     ([current pending-node-extends pending-slot-overrides]
      [current
       pending-node-extends
-      (cons (cons (poo-flow-graph-operation-slot operation)
-                  (poo-flow-graph-operation-value operation))
+      (cons (cons (yuanxu-graph-operation-slot operation)
+                  (yuanxu-graph-operation-value operation))
             pending-slot-overrides)])))
 
 ;;; The base prototype supplies total identity behavior and common semantic
 ;;; facets. Concrete operation prototypes refine `.apply` and, when batchable,
 ;;; `.stage`; adding a family therefore does not extend a central action switch.
-(def poo-flow-graph-operation-prototype
+(def yuanxu-graph-operation-prototype
   (.o (:: self)
-      kind: poo-flow-graph-operation-kind
+      kind: yuanxu-graph-operation-kind
       action: 'identity
       local?: #f
       node-extend?: #f
@@ -84,102 +84,102 @@
       (.apply (lambda (node) node))
       (.stage
        (lambda (state)
-         (poo-flow-graph-stage-operation self state)))))
+         (yuanxu-graph-stage-operation self state)))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-slot-override-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-slot-override-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'slot-override
       local?: #t
       (.apply
        (lambda (node)
-         (poo-flow-graph-root-replace
+         (yuanxu-graph-root-replace
           node
-          (poo-flow-graph-alist-set
-           (poo-flow-graph-root-payload node)
-           (poo-flow-graph-operation-slot self)
-           (poo-flow-graph-operation-value self))
-          (poo-flow-graph-root-children node))))
+          (yuanxu-graph-alist-set
+           (yuanxu-graph-root-payload node)
+           (yuanxu-graph-operation-slot self)
+           (yuanxu-graph-operation-value self))
+          (yuanxu-graph-root-children node))))
       (.stage
        (lambda (state)
-         (poo-flow-graph-stage-slot-override self state)))))
+         (yuanxu-graph-stage-slot-override self state)))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-slot-append-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-slot-append-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'slot-append
       local?: #t
       slot-append?: #t
       (.apply
        (lambda (node)
-         (poo-flow-graph-apply-slot-list-op node self #t)))))
+         (yuanxu-graph-apply-slot-list-op node self #t)))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-slot-prepend-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-slot-prepend-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'slot-prepend
       local?: #t
       (.apply
        (lambda (node)
-         (poo-flow-graph-apply-slot-list-op node self #f)))))
+         (yuanxu-graph-apply-slot-list-op node self #f)))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-slot-remove-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-slot-remove-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'slot-remove
       local?: #t
       (.apply
        (lambda (node)
-         (let* ((slot (poo-flow-graph-operation-slot self))
+         (let* ((slot (yuanxu-graph-operation-slot self))
                 (current
-                 (poo-flow-graph-list-value
-                  (poo-flow-graph-alist-ref/default
-                   (poo-flow-graph-root-payload node) slot '())))
+                 (yuanxu-graph-list-value
+                  (yuanxu-graph-alist-ref/default
+                   (yuanxu-graph-root-payload node) slot '())))
                 (removed
-                 (poo-flow-graph-list-value
-                  (poo-flow-graph-operation-value self))))
-           (poo-flow-graph-root-replace
+                 (yuanxu-graph-list-value
+                  (yuanxu-graph-operation-value self))))
+           (yuanxu-graph-root-replace
             node
-            (poo-flow-graph-alist-set
-             (poo-flow-graph-root-payload node)
+            (yuanxu-graph-alist-set
+             (yuanxu-graph-root-payload node)
              slot
-             (poo-flow-graph-remove-elements current removed))
-            (poo-flow-graph-root-children node)))))))
+             (yuanxu-graph-remove-elements current removed))
+            (yuanxu-graph-root-children node)))))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-node-extend-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-node-extend-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'node-extend
       node-extend?: #t
       (.apply
        (lambda (node)
-         (poo-flow-graph-root-replace
+         (yuanxu-graph-root-replace
           node
-          (poo-flow-graph-root-payload node)
-          (poo-flow-graph-children-merge-one
-           (poo-flow-graph-root-children node)
-           (poo-flow-graph-operation-node self)))))
+          (yuanxu-graph-root-payload node)
+          (yuanxu-graph-children-merge-one
+           (yuanxu-graph-root-children node)
+           (yuanxu-graph-operation-node self)))))
       (.stage
        (lambda (state)
-         (poo-flow-graph-stage-node-extend self state)))))
+         (yuanxu-graph-stage-node-extend self state)))))
 
 ;; : PooGraphOperationPrototype
-(def poo-flow-graph-node-remove-prototype
-  (.o (:: self poo-flow-graph-operation-prototype)
+(def yuanxu-graph-node-remove-prototype
+  (.o (:: self yuanxu-graph-operation-prototype)
       action: 'node-remove
       (.apply
        (lambda (node)
-         (poo-flow-graph-root-replace
+         (yuanxu-graph-root-replace
           node
-          (poo-flow-graph-root-payload node)
-          (poo-flow-graph-children-remove
-           (poo-flow-graph-root-children node)
-           (poo-flow-graph-operation-target self)))))))
+          (yuanxu-graph-root-payload node)
+          (yuanxu-graph-children-remove
+           (yuanxu-graph-root-children node)
+           (yuanxu-graph-operation-target self)))))))
 
 ;;; Dynamic payloads are constant defaults on a static operation prototype.
 ;;; This preserves inspectable slots without rebuilding method closures per row.
-;; : (-> PooGraphOperationPrototype MaybeSymbol PooModuleSlotValue MaybePooFlowGraph MaybeSymbol PooGraphOperation)
-(def (poo-flow-graph-operation-instance prototype slot value node target)
+;; : (-> PooGraphOperationPrototype MaybeSymbol PooModuleSlotValue MaybeYuanxuGraph MaybeSymbol PooGraphOperation)
+(def (yuanxu-graph-operation-instance prototype slot value node target)
   (.mix prototype
     defaults: (list (cons 'slot slot)
                     (cons 'value value)
@@ -187,78 +187,78 @@
                     (cons 'target target))))
 
 ;; : (-> Symbol PooModuleSlotValue PooGraphOperation)
-(def (poo-flow-graph-slot-override slot value)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-slot-override-prototype slot value #f #f))
+(def (yuanxu-graph-slot-override slot value)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-slot-override-prototype slot value #f #f))
 
 ;; : (-> Symbol [PooModuleSlotValue] PooGraphOperation)
-(def (poo-flow-graph-slot-append slot values)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-slot-append-prototype slot values #f #f))
+(def (yuanxu-graph-slot-append slot values)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-slot-append-prototype slot values #f #f))
 
 ;; : (-> Symbol [PooModuleSlotValue] PooGraphOperation)
-(def (poo-flow-graph-slot-prepend slot values)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-slot-prepend-prototype slot values #f #f))
+(def (yuanxu-graph-slot-prepend slot values)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-slot-prepend-prototype slot values #f #f))
 
 ;; : (-> Symbol [PooModuleSlotValue] PooGraphOperation)
-(def (poo-flow-graph-slot-remove slot values)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-slot-remove-prototype slot values #f #f))
+(def (yuanxu-graph-slot-remove slot values)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-slot-remove-prototype slot values #f #f))
 
-;; : (-> PooFlowGraph PooGraphOperation)
-(def (poo-flow-graph-node-extend node)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-node-extend-prototype #f #f node #f))
+;; : (-> YuanxuGraph PooGraphOperation)
+(def (yuanxu-graph-node-extend node)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-node-extend-prototype #f #f node #f))
 
 ;; : (-> Symbol PooGraphOperation)
-(def (poo-flow-graph-node-remove target)
-  (poo-flow-graph-operation-instance
-   poo-flow-graph-node-remove-prototype #f #f #f target))
+(def (yuanxu-graph-node-remove target)
+  (yuanxu-graph-operation-instance
+   yuanxu-graph-node-remove-prototype #f #f #f target))
 
 ;;; Apply dispatch is supplied by the concrete operation prototype.
-;; : (-> PooGraphOperation PooFlowGraph PooFlowGraph)
-(.defgeneric (poo-flow-graph-operation-apply operation node)
+;; : (-> PooGraphOperation YuanxuGraph YuanxuGraph)
+(.defgeneric (yuanxu-graph-operation-apply operation node)
   slot: .apply)
 
 ;;; Public order remains node-first while semantic dispatch stays receiver-first.
-;; : (-> PooFlowGraph PooGraphOperation PooFlowGraph)
-(def (poo-flow-graph-apply-operation node operation)
-  (poo-flow-graph-operation-apply operation node))
+;; : (-> YuanxuGraph PooGraphOperation YuanxuGraph)
+(def (yuanxu-graph-apply-operation node operation)
+  (yuanxu-graph-operation-apply operation node))
 
 ;;; Batch-state dispatch is likewise owned by operation prototypes.
 ;; : (-> PooGraphOperation PooGraphOperationState PooGraphOperationState)
-(.defgeneric (poo-flow-graph-operation-state operation state)
+(.defgeneric (yuanxu-graph-operation-state operation state)
   slot: .stage)
 
 ;; : (-> PooGraphOperation Boolean)
-(def (poo-flow-graph-local-operation? operation)
+(def (yuanxu-graph-local-operation? operation)
   (.ref operation 'local?))
 
 ;; : (-> PooGraphOperation Boolean)
-(def (poo-flow-graph-node-extend-operation? operation)
+(def (yuanxu-graph-node-extend-operation? operation)
   (.ref operation 'node-extend?))
 
 ;; : (-> PooGraphOperation Boolean)
-(def (poo-flow-graph-slot-append-operation? operation)
+(def (yuanxu-graph-slot-append-operation? operation)
   (.ref operation 'slot-append?))
 
 ;; : (forall (a) (-> [a] [a] [a]))
 ;; : (-> [PooModuleSlotValue] [PooModuleSlotValue] [PooModuleSlotValue])
-(def (poo-flow-graph-slot-values/rev-onto values tail)
+(def (yuanxu-graph-slot-values/rev-onto values tail)
   (foldl cons tail values))
 
 ;;; Emit the pending slot append batch when coalescing changes families.
 ;; : (-> Boolean MaybeSymbol [PooModuleSlotValue] [PooGraphOperation] [PooGraphOperation])
-(def (poo-flow-graph-flush-slot-append pending? slot reversed-values output)
+(def (yuanxu-graph-flush-slot-append pending? slot reversed-values output)
   (if pending?
-    (cons (poo-flow-graph-slot-append
+    (cons (yuanxu-graph-slot-append
            slot
            (reverse reversed-values))
           output)
     output))
 
-;; poo-flow-graph-coalesce-slot-appends
+;; yuanxu-graph-coalesce-slot-appends
 ;;   : (-> [PooGraphOperation] [PooGraphOperation])
 ;;   | doc m%
 ;;       Adjacent appends for one slot collapse before generic application.
@@ -266,11 +266,11 @@
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-coalesce-slot-appends operations)
+;;       (yuanxu-graph-coalesce-slot-appends operations)
 ;;       ;; => ordered operations with adjacent same-slot appends combined
 ;;       ```
 ;;     %
-(def (poo-flow-graph-coalesce-slot-appends operations)
+(def (yuanxu-graph-coalesce-slot-appends operations)
   (let loop ((remaining operations)
              (pending? #f)
              (pending-slot #f)
@@ -278,33 +278,33 @@
              (output '()))
     (if (null? remaining)
       (reverse
-       (poo-flow-graph-flush-slot-append pending?
+       (yuanxu-graph-flush-slot-append pending?
                                                     pending-slot
                                                     pending-values
                                                     output))
       (let (operation (car remaining))
-        (if (poo-flow-graph-slot-append-operation? operation)
-          (let* ((slot (poo-flow-graph-operation-slot operation))
+        (if (yuanxu-graph-slot-append-operation? operation)
+          (let* ((slot (yuanxu-graph-operation-slot operation))
                  (values
-                  (poo-flow-graph-list-value
-                   (poo-flow-graph-operation-value operation))))
+                  (yuanxu-graph-list-value
+                   (yuanxu-graph-operation-value operation))))
             (if (and pending? (equal? pending-slot slot))
               (loop (cdr remaining)
                     #t
                     pending-slot
-                    (poo-flow-graph-slot-values/rev-onto
+                    (yuanxu-graph-slot-values/rev-onto
                      values pending-values)
                     output)
               (loop (cdr remaining)
                     #t
                     slot
                     (reverse values)
-                    (poo-flow-graph-flush-slot-append
+                    (yuanxu-graph-flush-slot-append
                      pending? pending-slot pending-values output))))
           (loop (cdr remaining)
                 #f
                 #f
                 '()
                 (cons operation
-                      (poo-flow-graph-flush-slot-append
+                      (yuanxu-graph-flush-slot-append
                        pending? pending-slot pending-values output))))))))

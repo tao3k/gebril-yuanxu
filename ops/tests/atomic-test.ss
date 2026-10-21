@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Ops-only controls: no selected product/configuration Graph or Nix process.
 (import :std/test :clan/poo/object
-        (only-in :core/ops/process-script ProcessScript.)
-        (only-in :core/ops/func prepare-script-command)
-        (only-in :core/observability/testing-fixture call-with-poo-flow-fixture)
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/ops/func prepare-script-command)
+        (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :std/error Error? Error-message Error-irritants))
 (export ops-watchdog-test)
 (def ops-watchdog-test
@@ -23,7 +23,7 @@
                     (set! released? #t)))
       (.def (Script @ ProcessScript.) command: '("sleep" "5") timeout: 0.1)
       (check-exception
-        (call-with-poo-flow-fixture Fixture (lambda (_resource) (.call Script .run)))
+        (call-with-yuanxu-fixture Fixture (lambda (_resource) (.call Script .run)))
         (lambda (exception)
           (and (Error? exception)
                (string=? (Error-message exception) "Ops script failed")

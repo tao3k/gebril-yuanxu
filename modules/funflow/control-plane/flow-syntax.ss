@@ -6,23 +6,23 @@
 ;;; Boundary: hygienic authoring macros for the functional flow kernel.
 ;;; Invariant: macros expand to public flow/plan combinators, not a workflow DSL.
 
-(import :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/graph)
+(import :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/graph)
 
-(export defpoo-flow-arr
-        defpoo-flow-identity
-        defpoo-flow-compose
-        defpoo-flow-map
-        defpoo-flow-bind
-        defpoo-flow-kleisli
-        defpoo-flow-fanout
-        defpoo-flow-dag
-        defpoo-flow-dag-artifacts
-        defpoo-flow-try
-        defpoo-flow-first
-        defpoo-flow-second)
+(export defyuanxu-arr
+        defyuanxu-identity
+        defyuanxu-compose
+        defyuanxu-map
+        defyuanxu-bind
+        defyuanxu-kleisli
+        defyuanxu-fanout
+        defyuanxu-dag
+        defyuanxu-dag-artifacts
+        defyuanxu-try
+        defyuanxu-first
+        defyuanxu-second)
 
-;; defpoo-flow-define-binding-macro
+;; defyuanxu-define-binding-macro
 ;;   : (-> Identifier Identifier SyntaxList MacroDefinition)
 ;;   | doc m%
 ;;       Internal macro family generator for public flow binding forms. It
@@ -31,168 +31,168 @@
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-define-binding-macro defpoo-flow-arr flow-arr
+;;       (defyuanxu-define-binding-macro defyuanxu-arr flow-arr
 ;;         (proc input-contract output-contract))
 ;;       ;; => macro definition for an arrow-flow binding form
 ;;       ```
 ;;     %
-(defrules defpoo-flow-define-binding-macro ()
+(defrules defyuanxu-define-binding-macro ()
   ((_ macro-name constructor (arg ...))
    (defrules macro-name ()
      ((_ binding flow-name arg ...)
       (def binding
         (constructor 'flow-name arg ...))))))
 
-;; defpoo-flow-arr
+;; defyuanxu-arr
 ;;   : (-> Identifier Identifier ProcedureExpr ContractExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-arr` defines a pure arrow flow with an identifier-owned
+;;       `defyuanxu-arr` defines a pure arrow flow with an identifier-owned
 ;;       flow name while leaving the procedure and contracts as caller
 ;;       expressions.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-arr parse-flow parse-request parse request-contract result-contract)
+;;       (defyuanxu-arr parse-flow parse-request parse request-contract result-contract)
 ;;       ;; => flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-arr
+(defyuanxu-define-binding-macro
+ defyuanxu-arr
  flow-arr
  (proc input-contract output-contract))
 
-;; defpoo-flow-identity
+;; defyuanxu-identity
 ;;   : (-> Identifier Identifier ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-identity` defines a category identity flow for one
+;;       `defyuanxu-identity` defines a category identity flow for one
 ;;       contract boundary.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-identity id-flow identity request-contract)
+;;       (defyuanxu-identity id-flow identity request-contract)
 ;;       ;; => identity flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-identity
+(defyuanxu-define-binding-macro
+ defyuanxu-identity
  flow-identity
  (contract))
 
-;; defpoo-flow-compose
+;; defyuanxu-compose
 ;;   : (-> Identifier Identifier FlowExpr FlowExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-compose` defines sequential composition over already-built
+;;       `defyuanxu-compose` defines sequential composition over already-built
 ;;       flows.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-compose checked-flow checked parse-flow validate-flow)
+;;       (defyuanxu-compose checked-flow checked parse-flow validate-flow)
 ;;       ;; => composed flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-compose
+(defyuanxu-define-binding-macro
+ defyuanxu-compose
  flow-then
  (left right))
 
-;; defpoo-flow-map
+;; defyuanxu-map
 ;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-map` defines a functional output map over an existing
+;;       `defyuanxu-map` defines a functional output map over an existing
 ;;       flow.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-map rendered render checked-flow render-result output-contract)
+;;       (defyuanxu-map rendered render checked-flow render-result output-contract)
 ;;       ;; => mapped flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-map
+(defyuanxu-define-binding-macro
+ defyuanxu-map
  flow-map
  (source proc output-contract))
 
-;; defpoo-flow-bind
+;; defyuanxu-bind
 ;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-bind` defines a Kleisli bind where the binder returns the
+;;       `defyuanxu-bind` defines a Kleisli bind where the binder returns the
 ;;       next flow.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-bind routed route source-flow choose-flow output-contract)
+;;       (defyuanxu-bind routed route source-flow choose-flow output-contract)
 ;;       ;; => bound flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-bind
+(defyuanxu-define-binding-macro
+ defyuanxu-bind
  flow-bind
  (source binder output-contract))
 
-;; defpoo-flow-kleisli
+;; defyuanxu-kleisli
 ;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-kleisli` is the authoring-layer alias for the Kleisli bind
+;;       `defyuanxu-kleisli` is the authoring-layer alias for the Kleisli bind
 ;;       form.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-kleisli routed route source-flow choose-flow output-contract)
+;;       (defyuanxu-kleisli routed route source-flow choose-flow output-contract)
 ;;       ;; => bound flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-kleisli
+(defyuanxu-define-binding-macro
+ defyuanxu-kleisli
  flow-kleisli
  (source binder output-contract))
 
-;; defpoo-flow-fanout
+;; defyuanxu-fanout
 ;;   : (-> Identifier Identifier FlowExpr FlowExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-fanout` defines Arrow-style fanout without selecting a
+;;       `defyuanxu-fanout` defines Arrow-style fanout without selecting a
 ;;       scheduler.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-fanout split-flow split left-flow right-flow)
+;;       (defyuanxu-fanout split-flow split left-flow right-flow)
 ;;       ;; => fanout flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-fanout
+(defyuanxu-define-binding-macro
+ defyuanxu-fanout
  flow-fanout
  (left right))
 
-;; defpoo-flow-dag
+;; defyuanxu-dag
 ;;   : (-> Identifier Identifier FlowExpr FlowExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-dag` defines a functional DAG flow as Arrow fanout while
+;;       `defyuanxu-dag` defines a functional DAG flow as Arrow fanout while
 ;;       keeping receipt and manifest projection separate.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-dag dag-flow dag left-flow right-flow)
+;;       (defyuanxu-dag dag-flow dag left-flow right-flow)
 ;;       ;; => dag flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-dag
+(defyuanxu-define-binding-macro
+ defyuanxu-dag
  flow-fanout
  (left right))
 
-;; defpoo-flow-dag-artifacts
+;; defyuanxu-dag-artifacts
 ;;   : (-> Identifier Identifier FlowExpr RequestIdExpr DagArtifactBindings)
 ;;   | doc m%
-;;       `defpoo-flow-dag-artifacts` defines report-only DAG artifacts for an
+;;       `defyuanxu-dag-artifacts` defines report-only DAG artifacts for an
 ;;       existing flow binding without executing runtime work.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-dag-artifacts receipt manifest dag-flow request-id)
+;;       (defyuanxu-dag-artifacts receipt manifest dag-flow request-id)
 ;;       ;; => artifact bindings
 ;;       ```
 ;;     %
-(defrules defpoo-flow-dag-artifacts ()
+(defrules defyuanxu-dag-artifacts ()
   ((_ receipt-binding manifest-binding source request-id)
    (begin
      (def receipt-binding
@@ -200,51 +200,51 @@
      (def manifest-binding
        (flow->dag-runtime-manifest source request-id)))))
 
-;; defpoo-flow-try
+;; defyuanxu-try
 ;;   : (-> Identifier Identifier FlowExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-try` defines a Funflow-style try boundary over an existing
+;;       `defyuanxu-try` defines a Funflow-style try boundary over an existing
 ;;       flow.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-try guarded-flow guarded source-flow)
+;;       (defyuanxu-try guarded-flow guarded source-flow)
 ;;       ;; => try flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-try
+(defyuanxu-define-binding-macro
+ defyuanxu-try
  try-flow
  (source))
 
-;; defpoo-flow-first
+;; defyuanxu-first
 ;;   : (-> Identifier Identifier FlowExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-first` defines Arrow `first` over a pair-shaped value.
+;;       `defyuanxu-first` defines Arrow `first` over a pair-shaped value.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-first first-flow first source-flow second-contract)
+;;       (defyuanxu-first first-flow first source-flow second-contract)
 ;;       ;; => first flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-first
+(defyuanxu-define-binding-macro
+ defyuanxu-first
  flow-first
  (source second-contract))
 
-;; defpoo-flow-second
+;; defyuanxu-second
 ;;   : (-> Identifier Identifier FlowExpr ContractExpr FlowBinding)
 ;;   | doc m%
-;;       `defpoo-flow-second` defines Arrow `second` over a pair-shaped value.
+;;       `defyuanxu-second` defines Arrow `second` over a pair-shaped value.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defpoo-flow-second second-flow second source-flow first-contract)
+;;       (defyuanxu-second second-flow second source-flow first-contract)
 ;;       ;; => second flow binding
 ;;       ```
 ;;     %
-(defpoo-flow-define-binding-macro
- defpoo-flow-second
+(defyuanxu-define-binding-macro
+ defyuanxu-second
  flow-second
  (source first-contract))

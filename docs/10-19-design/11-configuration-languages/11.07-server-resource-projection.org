@@ -53,8 +53,8 @@ No limits, persistent volume, ingress, TLS or deployment execution is inferred.
   (let ((server (at input 'server))
         (evidence (at input 'configuration-evidence))
         (namespace (at input 'namespace)))
-    (and (poo-flow-validation-evidence? evidence)
-         (poo-flow-validation-evidence-accepted? evidence)
+    (and (yuanxu-validation-evidence? evidence)
+         (yuanxu-validation-evidence-accepted? evidence)
          (equal? (at evidence 'contract-identity) 'server/object)
          (eq? (at evidence 'candidate) server)
          (dns-name? namespace)
@@ -66,7 +66,7 @@ No limits, persistent volume, ingress, TLS or deployment execution is inferred.
                 (unique? (map (lambda (p) (.get p port)) ports)))))))
 
 (def ProjectionInputContract
-  (poo-flow-predicate-contract 'server/projection-input
+  (yuanxu-predicate-contract 'server/projection-input
     projection-input? no-obligations))
 #+end_src
 
@@ -215,7 +215,7 @@ and integer resource fields retain their respective Kubernetes representation.
       (list (.o kind: 'resource-link-mismatch)))))
 
 (def ResourcePlanContract
-  (poo-flow-predicate-contract 'server/resource-links plan-shape? plan-links))
+  (yuanxu-predicate-contract 'server/resource-links plan-shape? plan-links))
 #+end_src
 
 This is a concrete linkage guard, not a complete Kubernetes OpenAPI admission
@@ -230,8 +230,8 @@ full Kubernetes label/image rules are not proved by this guard.
 
 #+begin_src scheme
 (def (require-admitted contract candidate context)
-  (let ((receipt (poo-flow-contract-admit contract candidate context)))
-    (unless (poo-flow-validation-evidence-accepted? receipt)
+  (let ((receipt (yuanxu-contract-admit contract candidate context)))
+    (unless (yuanxu-validation-evidence-accepted? receipt)
       (error "configuration/plan admission rejected" (.get receipt diagnostics)))
     receipt))
 

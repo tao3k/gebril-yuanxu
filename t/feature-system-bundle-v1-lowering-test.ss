@@ -4,10 +4,10 @@
 
 (export feature-system-bundle-v1-lowering-test)
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/feature-system/bundle-v1-lowering)
+        :yuanxu/feature-system/bundle-v1-lowering)
 
 (def (sample-component component-id composition-order)
   (feature-bundle-v1-component
@@ -24,7 +24,7 @@
   (test-suite
    "feature-system Bundle v1 lowering"
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "compact identities are deterministic and domain separated"
     (let ((first
            (feature-bundle-v1-lower-compact-id 'component 'agent-a))
@@ -36,7 +36,7 @@
       (check (feature-bundle-v1-compact-id=? first second) => #t)
       (check (feature-bundle-v1-compact-id=? first other-domain) => #f)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "compact identity segments retain the full SHA-256 prefix"
     (let ((zero
            (feature-bundle-v1-lower-compact-id 'obligation 0))
@@ -48,7 +48,7 @@
       (check (.ref zero 'low) => 10580127755728368254)
       (check (feature-bundle-v1-compact-id=? zero one) => #f)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "POO-native values lower into the frozen C layout"
     (let* ((component-b (sample-component 'agent-b 1))
            (component-a (sample-component 'agent-a 0))
@@ -120,7 +120,7 @@
              => #t)
       (check (eq? (car input-components) component-b) => #t)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
    "equivalent input produces an identical digest"
     (let* ((symbols
             (list (sample-symbol 'agent-b "Agent B")
@@ -152,7 +152,7 @@
                      (.ref (.ref renamed 'descriptor) 'digest))
              => #f)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
    "duplicate and non-POO Bundle surfaces fail closed"
     (let* ((component (sample-component 'agent-a 0))
            (duplicate-symbol
@@ -195,7 +195,7 @@
       (check (.ref (car (.ref invalid-epoch 'diagnostics)) 'code)
              => 'invalid-bundle-epoch)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "an empty Bundle still receives one aligned arena page"
     (let* ((plan (feature-bundle-v1-lowering
                   'empty-bundle 0 '() '() '()))

@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Native default Profile construction, with no import of the publishing scope.
-(import :core/profile-composition/selection-syntax
+(import :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .o .get))
 (export make-gerbil-scheme-ci-profile)
 

@@ -7,11 +7,15 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
-                 make-top-context syntax->list)
-        (only-in :core/module-system/source/admission module-source-read))
+                 make-top-context syntax->list core-read-module/sexp)
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export module-source-spec-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
 (def owner (path-expand ".." (path-directory (this-source-file))))
+(def (compiled-path root lib name)
+  (let-values (((_prelude identity _namespace _body)
+                (core-read-module/sexp (path-expand (string-append name ".ss") root))))
+    (path-expand (string-append (symbol->string identity) ".ssi") lib)))
 (def retained '("utilities/algorithms" "types" "core-spec"))
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
@@ -44,7 +48,7 @@
     (if root
     (test-suite "User-owned standard build script consumes direct source spec"
       (test-case "real JsonSchema spec compile clean without source relocation"
-        (check-equal? (file-exists? (path-expand "lib/core" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
         ;; The author-facing declaration stays byte-for-byte unchanged.
         (check-equal? (module-source-read (path-expand "modules/json-schema/interface.ss" root))
                       (module-source-read (path-expand "modules/json-schema/interface.ss" owner)))
@@ -75,12 +79,12 @@
           (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
           (for-each (lambda (name)
                       (check-equal? (file-exists?
-                        (path-expand (string-append "core/" name ".ssi") lib)) #t)) names)
+                        (compiled-path root lib name)) #t)) names)
           (run "clean")
           (current!)
           (for-each (lambda (name)
                       (check-equal? (file-exists?
-                        (path-expand (string-append "core/" name ".ssi") lib)) #f)) names)
+                        (compiled-path root lib name)) #f)) names)
           ;; The spec expression is evaluated for each SDK invocation.
           (for-each
             (lambda (control)

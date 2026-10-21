@@ -6,16 +6,16 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
         "qualification/mop-state/artifact-authority"
         "qualification/mop-state/artifact-closure")
 (export source-loader-authority-test test-cleanup!)
 (extern namespace: #f
-  core/t/qualification/mop-state/source-loader#load-module
-  core/t/qualification/mop-state/source-loader#reload-module!
-  core/t/qualification/mop-state/source-loader#set-load-path!)
-(extern namespace: core/t/qualification/mop-state/precompiled-stores
+  yuanxu/t/qualification/mop-state/source-loader#load-module
+  yuanxu/t/qualification/mop-state/source-loader#reload-module!
+  yuanxu/t/qualification/mop-state/source-loader#set-load-path!)
+(extern namespace: yuanxu/t/qualification/mop-state/precompiled-stores
   precompiled-subjects precompiled-store)
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
 (def original-path (load-path))
@@ -30,7 +30,7 @@
 (def resource (.call SourceLoaderFixture .acquire))
 (def state (.get resource issuer))
 (def artifacts (authority-artifacts state))
-(def entry "core/t/qualification/mop-state/precompiled-stores")
+(def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
 (def (write-bytes path data)
   (call-with-output-file (list path: path truncate: #t)
@@ -48,11 +48,11 @@
       (- (length (.get (authority-status state) consumed)) before)) observations)))
 (def source-loader-authority-test
  (test-suite "Native-source loader call edges"
-  (poo-flow-test-case "saved compiled entry and reload retain admission"
+  (yuanxu-test-case "saved compiled entry and reload retain admission"
     (prepare-source-authority! state)
-    (core/t/qualification/mop-state/source-loader#set-load-path! (load-path))
+    (yuanxu/t/qualification/mop-state/source-loader#set-load-path! (load-path))
     ;; Capture the actual compiled native entry BEFORE first target loading.
-    (def saved core/t/qualification/mop-state/source-loader#load-module)
+    (def saved yuanxu/t/qualification/mop-state/source-loader#load-module)
     (check-equal? (eq? load-module old-sdk-entry) #t)
     (check-equal? (string? (saved entry)) #t)
     (def loaded-count (length (.get (authority-status state) consumed)))
@@ -71,16 +71,16 @@
     (dynamic-wind
       (lambda ()
         (write-bytes binary (bytes (path-expand
-          "lib/core/t/qualification/mop-state/unlowered-store~0.o1" artifacts)))
+          "lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" artifacts)))
         (call-with-output-file (list path: record truncate: #t)
           (cut write (compiler-code-facts entry '()) <>)))
       (lambda ()
         (expect-refusal "saved-hot-changed-record" saved)
         (expect-refusal "direct-hot-changed-record"
-          core/t/qualification/mop-state/source-loader#load-module)
+          yuanxu/t/qualification/mop-state/source-loader#load-module)
         ;; Same-path reload is itself a cached early-return path in the SDK.
         (expect-refusal "reload-hot-changed-record"
-          core/t/qualification/mop-state/source-loader#reload-module!))
+          yuanxu/t/qualification/mop-state/source-loader#reload-module!))
       (lambda () (write-bytes record original-record) (write-bytes binary original-binary)))
     (check-equal? (string? (saved entry)) #t)
     (check-equal? (eq? load-module old-sdk-entry) #t)

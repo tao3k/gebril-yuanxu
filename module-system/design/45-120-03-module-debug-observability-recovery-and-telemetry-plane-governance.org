@@ -583,7 +583,7 @@ gate in RFC 45-120-15; this section does not invent their implementation path.
 On 2026-09-08 the normal ASP Search command could not supply that gate:
 
 #+begin_src sh
-./.devenv/devenv-profile-exec asp search playbook --languages gerbil-scheme --rg 'poo-flow-classification-evidence|poo-flow-module-observation' src/module-system/types.ss src/user-interface/module-presentation.ss
+./.devenv/devenv-profile-exec asp search playbook --languages gerbil-scheme --rg 'yuanxu-classification-evidence|poo-flow-module-observation' src/module-system/types.ss src/user-interface/module-presentation.ss
 #+end_src
 
 The sandboxed call returned =host-operation-not-permitted=. The exact command
@@ -605,11 +605,11 @@ tracer or strict-struct replacement is introduced. The parser checks below
 remain unclosed rather than being inferred from local text discovery.
 
 The concrete pure entry points are
-=poo-flow-observation-identity=, =poo-flow-observation-provenance=,
-=poo-flow-observation-context=, =poo-flow-observe-contract-admission=,
-=poo-flow-observe-admission-evidence=, =poo-flow-observation-explain=, and
-=poo-flow-observation-summary=. They operate on native POO values.
-=poo-flow-observation-debug= is a separately imported development-output
+=yuanxu-observation-identity=, =yuanxu-observation-provenance=,
+=yuanxu-observation-context=, =yuanxu-observe-contract-admission=,
+=yuanxu-observe-admission-evidence=, =yuanxu-observation-explain=, and
+=yuanxu-observation-summary=. They operate on native POO values.
+=yuanxu-observation-debug= is a separately imported development-output
 adapter; it hands only freshly projected aggregate facts to upstream debug.
 
 The observation preserves explicit source, generation, causal references, and

@@ -6,13 +6,13 @@
         (only-in :clan/poo/mop define-type)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :core/poo-clos/interface
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/source/selection select-module-graph)
-        (only-in :core/module-system/source/build module-build-graph)
-        (only-in :core/module-system/source/objects make-poo-flow-module-source-ref)
-        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!))
+        :yuanxu/poo-clos/interface
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/source/selection select-module-graph)
+        (only-in :yuanxu/module-system/source/build module-build-graph)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
 (export contribution-publication-isolation-test test-cleanup!)
 
 (def completed 0)
@@ -34,7 +34,7 @@
     (lambda () (for-each delete-file paths) (delete-directory directory))))
 
 (.def PortRequirement.)
-(define-type (PortAdmission. @ PooFlowContract.))
+(define-type (PortAdmission. @ YuanxuContract.))
 (def RequirementProtocol (poo-clos-generic-protocol 'isolation/port-requirement))
 (.defgeneric project-port (admission payload origin) (protocol RequirementProtocol))
 (def (dispatcher)
@@ -117,7 +117,7 @@
   (def ids '(application operations security))
   (def inputs (map (lambda (path) (cons path (module-source-read path))) paths))
   (def (current!) (module-source-admit-current! inputs))
-  (def sources (map (lambda (path) (make-poo-flow-module-source-ref 'local path '())) paths))
+  (def sources (map (lambda (path) (make-yuanxu-module-source-ref 'local path '())) paths))
   (def publications
     (map (lambda (id) (.cc (.o) identity: id core: (.cc (.o) requires: (.cc (.o))) features: (.cc (.o)))) ids))
   (def selected
@@ -150,7 +150,7 @@
       identity: 'isolation/application
       .classify: (lambda (candidate context)
                    (def issues (local-relations candidate))
-                   (poo-flow-classification-evidence
+                   (yuanxu-classification-evidence
                      'isolation/application candidate (null? issues) issues context))
       .obligations:
       (lambda (candidate _context)
@@ -210,7 +210,7 @@
         (def view (platform paths '(5433 5433)))
         (def rows (.get view rows))
         (def forged (.cc (.get (car rows) origin)
-                      source: (make-poo-flow-module-source-ref 'local (cadr paths) '())))
+                      source: (make-yuanxu-module-source-ref 'local (cadr paths) '())))
         (check-exception
           (coverage! (.get view edges)
             (cons (.cc (car rows) origin: forged) (cdr rows)))

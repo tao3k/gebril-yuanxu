@@ -1,10 +1,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :core/object-syntax/path-slots
+(import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/module-system/building/test-projection
+        (only-in :yuanxu/module-system/building/test-projection
                  module-test-file-source module-test-execution))
 (export module-case-profile-test)
 (def probe
@@ -17,8 +17,8 @@
   (check-equal? (.get Request profile emit?) enabled?)
   (check-equal? (.get Request profile trace-enabled?) trace?)
   (check-equal?
-    (and (member (if trace? "poo-flow-module-test-observation,poo-flow-module-test-trace"
-                   "poo-flow-module-test-observation") (.get Request command)) #t)
+    (and (member (if trace? "yuanxu-module-test-observation,yuanxu-module-test-trace"
+                   "yuanxu-module-test-observation") (.get Request command)) #t)
     enabled?)
   (check-equal? (eq? (.get Request source) (.get execution source)) #t)
   (def result (.call Request .run))

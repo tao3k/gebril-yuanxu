@@ -2,13 +2,13 @@
 ;;; Real provider packages and maintained AWS publication; no cloud effects.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/observability/testing-case
-                 poo-flow-test-checkpoint poo-flow-test-observe)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/observability/testing-case
+                 yuanxu-test-checkpoint yuanxu-test-observe)
         (only-in "./fixtures.ss"
                  Workspace prepare-aws-selection! realize-aws-selection write-aws-version!)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
         (prefix-in :clan/poo/declarative-metadata metadata.))
 (export aws-context-publication-test)
 
@@ -19,9 +19,9 @@
 
 (def aws-context-publication-test
   (test-suite "AWS public fields, contextual child admission and publication"
-    (poo-flow-test-fixture "real Schema upgrade refuses stale evidence and keeps accepted values"
+    (yuanxu-test-fixture "real Schema upgrade refuses stale evidence and keeps accepted values"
       (root Workspace)
-      (def (phase name) (poo-flow-test-checkpoint name))
+      (def (phase name) (yuanxu-test-checkpoint name))
       (let ()
         (phase 'start)
         (def fixture (prepare-aws-selection! root phase))
@@ -54,7 +54,7 @@
         (defvalues (receipt next failure) (.call publication .publish Scenario Release))
         (phase 'parent-published)
         (check-equal? failure #f)
-        (check-equal? (poo-flow-validation-evidence-accepted? receipt) #t)
+        (check-equal? (yuanxu-validation-evidence-accepted? receipt) #t)
         (check-equal? (.get next resource instance_type) "t3.medium")
         (check-equal? (.get parent-cached instance_type) "t3.small")
         (check-equal? (eq? (.get receipt candidate) next) #t)
@@ -156,14 +156,14 @@
                   (previous)
                   (set! boundaries (+ boundaries 1))
                   (when (= boundaries 2)
-                    (poo-flow-test-observe 'publication-fault-boundary)
+                    (yuanxu-test-observe 'publication-fault-boundary)
                     ((.get row change) Transition)))))
             (phase name)
             (defvalues (changed kept failure)
               (.call Transition .publish accepted Release))
             (refused accepted changed kept failure)
             (check-equal? boundaries 2)
-            (poo-flow-test-observe 'publication-fault-refused)
+            (yuanxu-test-observe 'publication-fault-refused)
 
             (when (eq? name 'schema)
               (let ()

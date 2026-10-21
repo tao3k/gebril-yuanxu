@@ -5,23 +5,23 @@
 (import (only-in :clan/poo/object .o .ref .ref/cached object? object-%instance object-protocol
                  object-revision object-supers)
         (only-in :clan/poo/slot-observation %slot-read-active?)
-        (only-in :core/module-system/source/role-forms poo-flow-module-allowed-entrypoint-roles)
+        (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles)
         (only-in :std/list/list any)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
-        :core/module-system/source/objects
-        :core/module-system/source/publication
-        (only-in :core/module-system/source/interface poo-flow-module-interface)
-        (only-in :core/module-system/authoring/import-policy
-                 SourceInspectionPolicy. poo-flow-module-owner-import-datum-observations)
-        (only-in :core/module-system/authoring/admission
+        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/publication
+        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :yuanxu/module-system/authoring/import-policy
+                 SourceInspectionPolicy. yuanxu-module-owner-import-datum-observations)
+        (only-in :yuanxu/module-system/authoring/admission
                  call-with-module-authoring-read-scope
-                 poo-flow-module-authoring-admit-datums
-                 poo-flow-module-authoring-admission-accepted?
-                 poo-flow-module-authoring-admission-diagnostics)
-        (only-in :core/module-system/authoring/roles make-default-module-authoring-profile))
-(export poo-flow-module-required-role-files poo-flow-module-allowed-entrypoint-roles
-        poo-flow-module-style-policy-prototype poo-flow-default-module-style-policy
+                 yuanxu-module-authoring-admit-datums
+                 yuanxu-module-authoring-admission-accepted?
+                 yuanxu-module-authoring-admission-diagnostics)
+        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile))
+(export yuanxu-module-required-role-files yuanxu-module-allowed-entrypoint-roles
+        yuanxu-module-style-policy-prototype yuanxu-default-module-style-policy
         module-source-type module-source-read module-source-name? module-source-admit-current!
         call-with-module-source-read-cache call-with-module-source-fresh-reads
         call-with-collected-module-sources
@@ -55,7 +55,7 @@
                    (or (not reject-protocols?)
                        (not (object-protocol (car entry)))))) entries)))
 
-(def poo-flow-module-required-role-files '("types.ss" "objects.ss" "config.ss" "interface.ss"))
+(def yuanxu-module-required-role-files '("types.ss" "objects.ss" "config.ss" "interface.ss"))
 
 ;; Structural decomposition of ONE operation, not a source approval or cache.
 ;; Only this constructor creates the paired entry/resume procedures. Neither
@@ -233,7 +233,7 @@
       (for-each (lambda (collect!) (collect! entry message)) (source-collectors)))
     observations))
 
-(def (poo-flow-module-role-reference? datum module-name role)
+(def (yuanxu-module-role-reference? datum module-name role)
   (let ((leaf (string-append role ".ss"))
         (relative (string-append "./" role))
         (suffix (string-append "/" (if (symbol? module-name) (symbol->string module-name) module-name) "/" role)))
@@ -245,22 +245,22 @@
      ((string? datum)
       (or (string=? datum leaf) (string-suffix? suffix datum)))
      ((pair? datum)
-      (or (poo-flow-module-role-reference? (car datum) module-name role)
-          (poo-flow-module-role-reference? (cdr datum) module-name role)))
+      (or (yuanxu-module-role-reference? (car datum) module-name role)
+          (yuanxu-module-role-reference? (cdr datum) module-name role)))
      ((vector? datum)
-      (poo-flow-module-role-reference? (vector->list datum) module-name role))
+      (yuanxu-module-role-reference? (vector->list datum) module-name role))
      (else #f))))
 
-(def (poo-flow-module-top-form-references-role? datums head module-name role)
+(def (yuanxu-module-top-form-references-role? datums head module-name role)
   (and (any (lambda (form)
               (and (pair? form)
                    (eq? (car form) head)
-                   (poo-flow-module-role-reference?
+                   (yuanxu-module-role-reference?
                     (cdr form) module-name role)))
             datums)
        #t))
 
-(def (poo-flow-module-dependency-direction-validate! module-name module-root read-datums)
+(def (yuanxu-module-dependency-direction-validate! module-name module-root read-datums)
   (let ((layers '((types objects func config interface build)
                   (func objects config interface build)
                   (objects config interface build)
@@ -276,7 +276,7 @@
            (let (datums (read-datums path))
              (for-each
               (lambda (forbidden-role)
-                (when (poo-flow-module-top-form-references-role?
+                (when (yuanxu-module-top-form-references-role?
                        datums 'import module-name
                        (symbol->string forbidden-role))
                   (error "POO-FLOW-MODULE-E007 reversed module role dependency"
@@ -287,14 +287,14 @@
 ;;; The loader applies the Interface-owned authoring Profile to each stable
 ;;; role before exposing any entrypoint.  Admission reads inert datums only;
 ;;; it neither expands nor evaluates module source.
-(def (poo-flow-module-role-authoring-validate! policy module-name module-root reader read-datums)
+(def (yuanxu-module-role-authoring-validate! policy module-name module-root reader read-datums)
   ;; Interface creation validates the authoring Profile and its child roles.
   ;; Their temporary evidence belongs to the SAME region as datum dispatch.
   (call-with-module-authoring-read-scope
     (lambda ()
       (let* ((authoring (.ref policy 'authoring))
              (interface
-              (poo-flow-module-interface
+              (yuanxu-module-interface
                 (if (symbol? module-name) (symbol->string module-name) module-name) (.o)
                 (list (cons 'module-root module-root))
                 authoring: authoring)))
@@ -303,19 +303,19 @@
             (let* ((path
                     (path-expand (string-append (symbol->string role) ".ss") module-root))
                    (admission
-                    (poo-flow-module-authoring-admit-datums
+                    (yuanxu-module-authoring-admit-datums
                       interface (if (eq? role 'func) 'funs role) (read-datums path))))
-              (unless (poo-flow-module-authoring-admission-accepted? admission)
+              (unless (yuanxu-module-authoring-admission-accepted? admission)
                 (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
                        module-name role path
-                       (car (poo-flow-module-authoring-admission-diagnostics admission))))))
+                       (car (yuanxu-module-authoring-admission-diagnostics admission))))))
           (filter
             (lambda (role)
               (reader (path-expand (string-append (symbol->string role) ".ss") module-root) #f))
             '(types objects func config interface build)))))))
 
 
-(def (poo-flow-module-source-admit! policy module-name module-root reader)
+(def (yuanxu-module-source-admit! policy module-name module-root reader)
   (unless (eq? (module-source-type module-root) 'directory)
     (error "module source must be a directory" module-name module-root))
   (when (file-exists? (path-expand "init.ss" module-root))
@@ -337,7 +337,7 @@
                (error "module role cannot be empty" module-name role path))
              (hash-put! texts path text)
              (hash-put! parsed path datums)))))
-     poo-flow-module-allowed-entrypoint-roles)
+     yuanxu-module-allowed-entrypoint-roles)
     (def (read-role path (required? #t))
       (if (hash-key? texts path) (hash-ref texts path)
         (if required? (error "source role was not admitted" path) #f)))
@@ -345,22 +345,22 @@
     ;; One private parse per role/policy invocation. Structural checks and the
     ;; authoring protocol inspect the SAME source datums. Discard this snapshot
     ;; after the call; re-read/reparse and re-dispatch on the next invocation.
-    (poo-flow-module-dependency-direction-validate!
+    (yuanxu-module-dependency-direction-validate!
      (path-strip-directory (path-strip-trailing-directory-separator module-root)) module-root read-datums)
     (hash-for-each
      (lambda (path text)
        (for-each
         (lambda (datum)
-          (let (findings (poo-flow-module-owner-import-datum-observations
+          (let (findings (yuanxu-module-owner-import-datum-observations
                            (string->symbol path) datum (.ref policy 'source-policy)))
             (when (pair? findings)
               (error "POO-FLOW-MODULE-E008 module owner imports aggregate facade"
                      module-name path (car findings)))))
         (read-datums path))) texts)
-    (poo-flow-module-role-authoring-validate! policy module-name module-root read-role read-datums))
+    (yuanxu-module-role-authoring-validate! policy module-name module-root read-role read-datums))
   module-root)
 
-(def poo-flow-module-style-policy-prototype
+(def yuanxu-module-style-policy-prototype
   (.o (module-style-policy? #t)
       ;; Construct here, validate at make-module-interface. Validation inside
       ;; this computed default would retain its constructor receipts in every
@@ -368,14 +368,14 @@
       ;; fresh defaults; this is not a shared accepted-Profile cache.
       (authoring (make-default-module-authoring-profile))
       source-policy: SourceInspectionPolicy.
-      validate: poo-flow-module-source-admit!))
-(def poo-flow-default-module-style-policy
-  (.o (:: @ poo-flow-module-style-policy-prototype)))
+      validate: yuanxu-module-source-admit!))
+(def yuanxu-default-module-style-policy
+  (.o (:: @ yuanxu-module-style-policy-prototype)))
 
 ;; Capture the maintained policy BEFORE exposing it for extension. Include its
 ;; actual Profile children; changing a role need not edit the containing slot.
 (def (module-source-style-policy-support)
-  (let* ((policy poo-flow-default-module-style-policy)
+  (let* ((policy yuanxu-default-module-style-policy)
          (profile (.ref policy 'authoring)))
     (append (list policy profile (.ref policy 'source-policy))
         (filter object?
@@ -391,18 +391,18 @@
     reject-protocols?: #f))
 
 (def (admit-module-value! contract candidate context-value)
-  (let (evidence (poo-flow-contract-admit contract candidate context-value))
-    (unless (poo-flow-validation-evidence-accepted? evidence)
+  (let (evidence (yuanxu-contract-admit contract candidate context-value))
+    (unless (yuanxu-validation-evidence-accepted? evidence)
       (error "module scope admission refused" (.ref contract 'identity) evidence))
     evidence))
 (def (admit-module-publication! source expected-id publication context-value)
-  (unless (poo-flow-module-source-ref? source)
+  (unless (yuanxu-module-source-ref? source)
     (error "module publication requires a SourceRef" expected-id source))
   (let* ((evidence (admit-module-value! ModulePublicationContract publication context-value))
          ;; The public value Contract may return a different checked receiver.
          ;; Owner checks must describe THAT subject, not the pre-check input.
          (checked (.ref evidence 'candidate))
-         (owner (assq 'module-id (poo-flow-module-source-ref-metadata source))))
+         (owner (assq 'module-id (yuanxu-module-source-ref-metadata source))))
     (unless (and (eq? expected-id (.ref checked 'identity))
                  (or (not owner) (eq? expected-id (cdr owner))))
       (error "publication source owner mismatch" expected-id source))

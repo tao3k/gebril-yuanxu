@@ -29,9 +29,9 @@ source, a Loader integration or a new execution receipt.
 
 Existing dependencies are native .o/.get/.ref/.slot?/.all-slots,
 compute-precedence-list!, Core's classification/validation constructors and
-protocols, PooFlowContract., the source-ref predicate, with-catch, standard
-list/hash operations, and the existing poo-flow-append-map, poo-flow-find and
-poo-flow-stable-duplicates functions from
+protocols, YuanxuContract., the source-ref predicate, with-catch, standard
+list/hash operations, and the existing yuanxu-append-map, yuanxu-find and
+yuanxu-stable-duplicates functions from
 [[file:../../../utilities/functional.ss][utilities/functional.ss]]. named-symbol?, unique-symbols?,
 nonempty-unique-symbols?, metadata-shape? and funflow-check come from the already
 shown field/default owners. There is no omitted domain validation procedure or
@@ -62,7 +62,7 @@ a bag of fabricated execution evidence.
        (if (memq prototype (compute-precedence-list! value)) #t #f)))
 
 (def (ff-contract? value)
-  (ff-derives? value PooFlowContract.))
+  (ff-derives? value YuanxuContract.))
 
 (def (ff-safe-path context)
   (with-catch
@@ -75,9 +75,9 @@ a bag of fabricated execution evidence.
 
 (def (ff-admit-problems contract-value candidate context path-value code-value)
   (let ((evidence
-         (poo-flow-contract-admit contract-value candidate context)))
+         (yuanxu-contract-admit contract-value candidate context)))
     (cond
-      ((not (poo-flow-validation-evidence? evidence))
+      ((not (yuanxu-validation-evidence? evidence))
        (list (ff-issue 'invalid-validation-evidence path-value evidence)))
       ((not
          (and
@@ -89,11 +89,11 @@ a bag of fabricated execution evidence.
              (equal? candidate (.get evidence candidate)))
            (eq? context (.get evidence context))))
        (list (ff-issue 'admission-input-mismatch path-value evidence)))
-      ((poo-flow-validation-evidence-accepted? evidence) '())
+      ((yuanxu-validation-evidence-accepted? evidence) '())
       (else (list (ff-issue code-value path-value evidence))))))
 
 (def (ff-reject descriptor candidate context classification problems)
-  (poo-flow-validation-evidence
+  (yuanxu-validation-evidence
     (.get descriptor identity) candidate classification problems #f
     (append (.get classification diagnostics) problems) context))
 
@@ -102,10 +102,10 @@ a bag of fabricated execution evidence.
           (list (ff-issue 'configuration-evaluation-failed
                           (ff-safe-path context) caught)))
          (classification
-          (poo-flow-classification-evidence
+          (yuanxu-classification-evidence
             (.get descriptor identity) candidate #f problems context)))
     ;; The result is rejection, not a fabricated successful family proof.
-    (poo-flow-validation-evidence
+    (yuanxu-validation-evidence
       (.get descriptor identity) candidate classification problems #f
       problems context)))
 
@@ -160,7 +160,7 @@ remain outside this exception wrapper.
     (list? (.get context profile-path))
     (every named-symbol? (.get context profile-path))
     (ff-slots? (.get context owner) '(source contracts))
-    (poo-flow-module-source-ref? (.get context owner source))
+    (yuanxu-module-source-ref? (.get context owner source))
     (ff-slots? (.get context owner contracts) '(check))
     (ff-contract? (.get context check-contract))
     (eq? (.get context check-contract) (.get context owner contracts check))
@@ -246,7 +246,7 @@ source receipt. Context validation also cannot attest a caller-chosen owner.
     names))
 
 (def (ff-selection-problems profile names path-value)
-  (poo-flow-append-map
+  (yuanxu-append-map
     (lambda (name)
       (cond
         ((eq? name 'pipeline)
@@ -294,8 +294,8 @@ demand checks. A direct selector call retains ordinary Scheme error behavior.
       (ff-evaluation-rejection descriptor candidate context caught))
     (lambda ()
       (let ((classification
-             (poo-flow-type-classify descriptor candidate context)))
-        (if (not (poo-flow-classification-evidence-accepted? classification))
+             (yuanxu-type-classify descriptor candidate context)))
+        (if (not (yuanxu-classification-evidence-accepted? classification))
           (base-admit candidate context)
           (with-catch
             (lambda (caught)
@@ -369,7 +369,7 @@ trust association, not something a candidate.contract field can authorize.
       (map car (.get candidate metadata)))))
 
 (def (ff-payload-problems check context)
-  (poo-flow-append-map
+  (yuanxu-append-map
     (lambda (field-name)
       (let* ((path-value (append (.get context path) (list field-name)))
              (field-context (.o (:: @ context) path: path-value))
@@ -441,7 +441,7 @@ establish source authentication or deployed readiness.
         (hash-put! dependents name '()))
       names checks)
     (let* ((missing
-            (poo-flow-append-map
+            (yuanxu-append-map
               (lambda (name)
                 (map
                   (lambda (dependency)
@@ -453,7 +453,7 @@ establish source authentication or deployed readiness.
            (duplicate-tasks
             (map (lambda (task-id)
                    (ff-issue 'duplicate-durable-task-id path-value task-id))
-                 (poo-flow-stable-duplicates
+                 (yuanxu-stable-duplicates
                    (map (cut .ref <> 'durable-task-id) checks)))))
       (if (pair? missing)
         (.o order: '() problems: (append missing duplicate-tasks))
@@ -472,7 +472,7 @@ establish source authentication or deployed readiness.
               (let ((order-value (reverse order-rev)))
                 (.o order: order-value problems: duplicate-tasks))
               (let ((ready-name
-                     (poo-flow-find
+                     (yuanxu-find
                        (lambda (name) (zero? (hash-get indegrees name)))
                        remaining)))
                 (if ready-name
@@ -567,7 +567,7 @@ unchanged. The full integration point is:
             capabilities: GerbilCICDCapabilities.
             effective-profile: selected-profile-value
             profile-path: '(ExtendedCI funflow profiles gerbil-scheme))))
-  (poo-flow-contract-admit
+  (yuanxu-contract-admit
     (.get Funflow contracts profile) selected-profile-value context-value))
 #+end_src
 

@@ -4,9 +4,9 @@
 ;;; Operational consumer of Core's selected external-package contributions.
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/source/build unique-build-inputs)
-        (only-in :core/module-system/source/admission module-source-type module-source-name?
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/source/build unique-build-inputs)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-name?
                  module-source-read module-source-admit-current! call-with-module-source-read-cache
                  module-source-operation-resume
                  current-module-source-observer))
@@ -81,7 +81,7 @@
            (script
             (package-stage 'guard-script
              (lambda () (forms-text
-             `((import :gerbil/core :core/module-system/source/admission
+             `((import :gerbil/core :yuanxu/module-system/source/admission
                        ,@(foldr append '() (map (cut .get <> guard-imports) values)))
                ;; A normal operational guard, not a build specification.
                (def (main . arguments)
@@ -117,7 +117,7 @@
        (lambda () (for-each
         (lambda (value)
           (when (.slot? value 'admission)
-            (unless (poo-flow-validation-evidence-accepted? (.get value admission))
+            (unless (yuanxu-validation-evidence-accepted? (.get value admission))
               (error "external package configuration admission rejected")))) values)))
       ;; Admission may execute arbitrary validators. No candidate escapes until
       ;; every package identity and source is rechecked AFTER those validators.

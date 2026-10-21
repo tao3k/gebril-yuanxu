@@ -128,7 +128,7 @@ engine. Selection does not alter the chosen package, version, manifest digest,
 kind index, per-type input or source identity. There is one injection:
 
 #+begin_example
-POO_FLOW_OPENTOFU_ARTIFACT=/nix/store/aw9dlhhxs5lkgpr3yrqp7h07mly21rxa-opentofu-artifacts
+YUANXU_OPENTOFU_ARTIFACT=/nix/store/aw9dlhhxs5lkgpr3yrqp7h07mly21rxa-opentofu-artifacts
   aws -> locked AWS 5.100.0 indexed Schema artifact
 #+end_example
 

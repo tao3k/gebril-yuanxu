@@ -188,9 +188,9 @@ runtime memory sampling is not a substitute for this pre-execution check.
 The Testing Interface owns test-worker memory Profiles and batching; the
 build script does not create a process for each test or claim to observe each
 child worker's heap from the parent process.  Every worker gets the inherited
-managed-heap limit.  POO Flow's =poo-flow-test-case= projects to native
+managed-heap limit.  POO Flow's =yuanxu-test-case= projects to native
 =std/test= and adds a default Case execution-span Profile; the corresponding
-=poo-flow-test-case/with= form inherits the POO prototype and overrides Case
+=yuanxu-test-case/with= form inherits the POO prototype and overrides Case
 slots such as memory policy and maximum duration.  It does not replace
 =gxtest=, its assertions, or its reporting.  Existing native =test-case=
 declarations retain worker-level protection but are not silently instrumented
@@ -247,7 +247,7 @@ There are two views of that one object model:
 1. the ordinary root =user-interface/config.ss= selects and composes maintained
    values; it MUST NOT require =.o=, =.def= or nested Stage construction;
 2. the maintainer or vertical owner MAY publish an advanced Profile whose
-   =stages= slot is a =PooFlowStageSpace= POO object.  Each named Stage slot may
+   =stages= slot is a =YuanxuStageSpace= POO object.  Each named Stage slot may
    be either an inert direct value or another POO object that opts into native
    inheritance and override.
 
@@ -500,7 +500,7 @@ For example, a user first sees that =retries= is =5=.  The next view explains
 that =ProductionProfile= overrides =BaseProfile=.  Only an explicit advanced
 view exposes the C4 precedence or the source-level POO form.
 
-The public =poo-flow-slot-presentation= follows that order with
+The public =yuanxu-slot-presentation= follows that order with
 =default=, =provenance=, =composition=, =advanced= and =source= levels.  The
 default level needs only the POO object and slot name; it reads the effective
 value through =clan/poo/object= =.ref= and does not require source metadata. Detailed levels
@@ -523,7 +523,7 @@ selection evidence, but the ordinary message MUST remain understandable
 without those concepts.
 
 =compose profiles= reports identity collisions and incompatible selected
-revisions through =PooFlowProfileCompositionConflict=.  Its default POO
+revisions through =YuanxuProfileCompositionConflict=.  Its default POO
 presentation names the Profile identity, conflict reason, constraint and
 both declared source locations; =advanced= additionally exposes the two
 original values or selection proofs.  A missing maintainer source claim is
@@ -635,7 +635,7 @@ Migration MUST retain semantic and performance evidence:
   composition.  =t/module-authoring-contract-test.ss= now reads every
   maintained =user-interface/*.ss= source as inert Scheme datums and checks its
   declared module role, including new files discovered under =custom/=.
-  =init.ss= is the separate native =poo-flow!= declaration surface and remains
+  =init.ss= is the separate native =yuanxu!= declaration surface and remains
   qualified by =t/user-interface-root-config-test.ss=.  The Healthcare README
   distinguishes ordinary selection/observation from maintained Case and
   Profile declarations.
@@ -665,7 +665,7 @@ Migration MUST retain semantic and performance evidence:
   Profiles with captured =self= governance methods still require an explicit
   rebinding contract before this split is applied to them.
 - [X] Add Effective Object and provenance-first presentation evidence.  The
-  public =poo-flow-slot-presentation= reads the effective value through
+  public =yuanxu-slot-presentation= reads the effective value through
   =clan/poo/object= =.ref= and reveals identity-checked declaration lineage,
   slot shape, prototype precedence and declared source location only on request.
   =t/poo-slot-algebra-test.ss= and =t/profile-bundle-test.ss= cover

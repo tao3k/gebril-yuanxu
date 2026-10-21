@@ -9,20 +9,20 @@
 ;;; emission belongs in json-schema-emit.
 
 (import (only-in "./functional.ss"
-                 poo-flow-contract-json-object?)
+                 yuanxu-contract-json-object?)
         (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-normalization-record)
+                 yuanxu-json-schema-normalization-record)
         (only-in "./json-schema-normalize-core.ss"
-                 +poo-flow-json-schema-missing+
-                 poo-flow-json-schema-parse)
+                 +yuanxu-json-schema-missing+
+                 yuanxu-json-schema-parse)
         (only-in "./json-schema-normalize-parse.ss"
-                 poo-flow-json-schema-parse-definitions)
+                 yuanxu-json-schema-parse-definitions)
         (only-in "./json-schema-normalize-resolve.ss"
-                 poo-flow-json-schema-resolve-node))
+                 yuanxu-json-schema-resolve-node))
 
-(export poo-flow-json-schema-normalize
-        poo-flow-json-schema-parse
-        +poo-flow-json-schema-missing+)
+(export yuanxu-json-schema-normalize
+        yuanxu-json-schema-parse
+        +yuanxu-json-schema-missing+)
 
 ;; Engineering boundary: this facade only orchestrates parse, definition
 ;; collection, and reference resolution. It must not grow local parser logic;
@@ -30,7 +30,7 @@
 
 ;; Boundary: normalization is orchestration only; parser, definition, and
 ;; resolver semantics must remain in their dedicated owners.
-;; poo-flow-json-schema-normalize
+;; yuanxu-json-schema-normalize
 ;;   : (-> JsonSchema JsonSchemaNormalization)
 ;;   | doc m%
 ;;       Parse root schema, collect local definitions, resolve local references,
@@ -39,22 +39,22 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-json-schema-normalize schema)
+;;       (yuanxu-json-schema-normalize schema)
 ;;       ;; => json-schema-normalization-record
 ;;       ```
 ;;     %
-(def (poo-flow-json-schema-normalize schema)
+(def (yuanxu-json-schema-normalize schema)
   (let* ((definitions-result
-          (if (poo-flow-contract-json-object? schema)
-            (poo-flow-json-schema-parse-definitions schema)
+          (if (yuanxu-contract-json-object? schema)
+            (yuanxu-json-schema-parse-definitions schema)
             (cons '() '())))
-         (root-result (poo-flow-json-schema-parse schema))
+         (root-result (yuanxu-json-schema-parse schema))
          (resolved-result
-          (poo-flow-json-schema-resolve-node
+          (yuanxu-json-schema-resolve-node
            (car root-result)
            (car definitions-result)
            '())))
-    (poo-flow-json-schema-normalization-record
+    (yuanxu-json-schema-normalization-record
      (car resolved-result)
      (car definitions-result)
      (append (cdr root-result)

@@ -16,7 +16,7 @@ construction results use defstruct, not another public configuration model.
 
 CoreObjectAdmissionContract. below is a documentation-local name for the older
 Core prototype-aware admission base, currently exported as
-PooFlowNativeObjectContract. It is not the public ObjectContract. value Type
+YuanxuObjectContract. It is not the public ObjectContract. value Type
 from :clan/poo/object-contract. The older descriptor carries proto and recursive
 Core admission responsibilities; the public Type carries value responsibilities
 and validate/diagnose. This proposal does not add an alias export, rename the
@@ -70,7 +70,7 @@ discarding fields. The objectification body can reuse native JSON representation
 
 (def (require-admission contract value context path)
   (let (evidence (.call contract .admit value context))
-    (unless (and (poo-flow-validation-evidence-accepted? evidence)
+    (unless (and (yuanxu-validation-evidence-accepted? evidence)
                  (eq? (.ref evidence 'candidate) value))
       (construction-error 'contract-rejected path evidence))
     evidence))
@@ -164,7 +164,7 @@ second validator or an arbitrary expression evaluator.
 (def (no-obligations _value _context) '())
 
 (def (scalar-contract identity predicate)
-  (.cc (poo-flow-predicate-contract identity predicate no-obligations)
+  (.cc (yuanxu-predicate-contract identity predicate no-obligations)
        'input-combine replace-value))
 
 (def (record-contract identity prototype fields)
@@ -173,12 +173,12 @@ second validator or an arbitrary expression evaluator.
 
 (def (sequence-contract identity item-contract)
   (.cc
-   (poo-flow-predicate-contract identity list?
+   (yuanxu-predicate-contract identity list?
     (lambda (values context)
       (filter-map
        (lambda (value index)
          (let (evidence (.call item-contract .admit value context))
-           (and (not (poo-flow-validation-evidence-accepted? evidence))
+           (and (not (yuanxu-validation-evidence-accepted? evidence))
                 (.o kind: 'item-rejected index: index admission: evidence))))
        values (iota (length values)))))
    'item-contract item-contract 'input-combine replace-sequence))
@@ -382,7 +382,7 @@ Concrete inert publication, using the current descriptor shape:
 #+begin_src scheme
 ;; types.ss -- this scope check does not force a configured preview.
 (def GuestbookScopeContract
-  (poo-flow-predicate-contract 'guestbook/scope
+  (yuanxu-predicate-contract 'guestbook/scope
     (lambda (scope)
       (and (object? scope)
            (every (cut .slot? scope <>) '(entry types functions))))
@@ -455,7 +455,7 @@ module cycles remain the existing linker's responsibility.
   (let ((effective (.ref constructed 'configuration))
         (evidence (.ref constructed 'admission)))
     (unless (and (eq? effective expected)
-                 (poo-flow-validation-evidence-accepted? evidence)
+                 (yuanxu-validation-evidence-accepted? evidence)
                  (eq? (.ref evidence 'candidate) effective)
                  (eq? (.ref evidence 'context) context))
       (construction-error 'preview-input-mismatch '() evidence))

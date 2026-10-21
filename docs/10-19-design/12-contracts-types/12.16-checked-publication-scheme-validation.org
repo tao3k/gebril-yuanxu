@@ -107,7 +107,7 @@ false result, exact previous-state identity and a public metadata failure.
 The final-value path exercised is:
 
 #+begin_src scheme
-(def evidence (poo-flow-contract-admit descriptor raw context-value))
+(def evidence (yuanxu-contract-admit descriptor raw context-value))
 (def checked (.get evidence candidate))
 (def bound
   (metadata.bind-evidence call checked descriptor context-value evidence-view))
@@ -123,7 +123,7 @@ list of completed child checks is used.
 
 Actual libraries exercised: public ObjectContract/refine/validate and Function
 validation; JsonSchema schema-value-contract and its evaluator; Core public
-poo-flow-contract-admit with its existing producer; public metadata binding,
+yuanxu-contract-admit with its existing producer; public metadata binding,
 invocation and publication. Parent/child receiver behavior is actual POO code.
 
 Test-only integration: counted descriptor adapter, AWS-shaped small Schema,

@@ -15,8 +15,8 @@ The following is extracted verbatim from [[file:../../../../modules/funflow/nati
 
 ;;; Local native publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
-        (only-in :core/module-system/source/objects
-                 make-poo-flow-module-local-source poo-flow-module-source-ref?)
+        (only-in :yuanxu/module-system/source/objects
+                 make-poo-flow-module-local-source yuanxu-module-source-ref?)
         (only-in :poo-flow/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
         (only-in :poo-flow/modules/funflow/profiles/gerbil-scheme
@@ -40,7 +40,7 @@ The following is extracted verbatim from [[file:../../../../modules/funflow/nati
       (make-gerbil-scheme-ci-profile prototype-scope)))
 
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow local publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.)
     source: source-handle))
@@ -71,7 +71,7 @@ hypothetical future library:
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Native default Profile construction, with no import of the publishing scope.
-(import :core/profile-composition/selection-syntax
+(import :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .o .get))
 (export make-gerbil-scheme-ci-profile)
 
@@ -137,8 +137,8 @@ scope alias is lexically bounded; the body can capture it in delayed slots.
 * Layer one: business configuration over an existing published default
 
 #+begin_src scheme
-(import :core/object-syntax/path-slots
-        :core/profile-composition/selection-syntax
+(import :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
         (only-in :poo-flow/modules/funflow/native-scope Funflow))
 
 (.def ProjectCI

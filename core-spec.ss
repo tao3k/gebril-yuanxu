@@ -5,7 +5,7 @@
 
 ;; Ordinary Core roots only. Published Module implementations belong to init.ss.
 (def core-spec
-  '("yuanxu/prelude"
+  '("prelude"
     "core-spec"
     "feature-system/adapter-projection-binding"
     "feature-system/bundle-v1-domain-case-projection"
@@ -133,6 +133,7 @@
     "admission/source"
     "admission/contributions"
     "admission/publication"
+    "module-system/bootstrap/body-inclusion"
     "module-system/source/declaration"
     "module-system/source/module-prelude"
     "module-system/source/config-prelude"

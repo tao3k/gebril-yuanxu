@@ -2,13 +2,13 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/composition/roles
-        :core/feature-system/interface
-        :core/feature-system/domain-case/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/interface
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-policy-strategy-binding-test)
 
@@ -20,15 +20,15 @@
 (def (binding-test-value? value) #t)
 
 (def binding-base-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'binding-base-type '() binding-test-value?))
 
 (def binding-agent-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'binding-agent-type '(binding-base-type) binding-test-value?))
 
 (def binding-base-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'binding-base-component
    1
    (binding-test-role '((binding-base-role . #t)))
@@ -41,7 +41,7 @@
    'agent-strategy-algebra))
 
 (def binding-agent-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'binding-agent-component
    1
    (binding-test-role '((binding-agent-role . #t)))
@@ -107,7 +107,7 @@
 (defpoo-feature-composition-plan binding-composition-plan
   (from-bundle binding-feature-bundle))
 
-(def binding-domain-case-cache (poo-flow-domain-case-cache))
+(def binding-domain-case-cache (yuanxu-domain-case-cache))
 
 (defpoo-feature-domain-case-assembly binding-domain-case-assembly
   (using-cache binding-domain-case-cache)
@@ -182,11 +182,11 @@
     binding-domain-case (list binding-invalid-prototype-contribution) '())))
 
 (def binding-no-algebra-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'binding-no-algebra-component
    1
    (binding-test-role '((binding-no-algebra-role . #t)))
-   (poo-flow-case-type-contract
+   (yuanxu-case-type-contract
     'binding-no-algebra-type '() binding-test-value?)
    '()
    '()
@@ -236,7 +236,7 @@
   (from-assembly binding-invalid-component-assembly))
 
 (def (binding-diagnostic-codes binding)
-  (poo-flow-map
+  (yuanxu-map
    (lambda (diagnostic) (.ref diagnostic 'code))
    (.ref binding 'diagnostics)))
 
@@ -284,7 +284,7 @@
 
 (def feature-system-policy-strategy-binding-test
   (test-suite "Feature policy/strategy algebra binding"
-    (poo-flow-test-case "accepted assembly binds ordered POO role contributions"
+    (yuanxu-test-case "accepted assembly binds ordered POO role contributions"
       (let* ((policy-binding (.ref binding-ready 'policy-binding))
              (strategy-binding (.ref binding-ready 'strategy-binding))
              (policy-prototype (.ref policy-binding 'prototype))
@@ -315,7 +315,7 @@
         (check (.ref strategy-prototype 'binding-base-strategy) => #t)
         (check (.ref strategy-prototype 'binding-agent-strategy) => #t)))
 
-    (poo-flow-test-case "invalid contribution shapes and algebra conflicts reject"
+    (yuanxu-test-case "invalid contribution shapes and algebra conflicts reject"
       (check (.ref binding-raw-policy-rejected 'status) => 'rejected)
       (check (memq 'invalid-policy-contribution
                    (binding-diagnostic-codes binding-raw-policy-rejected))
@@ -330,14 +330,14 @@
                    (binding-diagnostic-codes binding-composition-rejected))
              ? values))
 
-    (poo-flow-test-case "contributions require an algebra declared by the Domain Case"
+    (yuanxu-test-case "contributions require an algebra declared by the Domain Case"
       (check (.ref binding-no-algebra-assembly 'accepted?) => #t)
       (check (.ref binding-no-algebra-rejected 'accepted?) => #f)
       (check (memq 'missing-policy-algebra
                    (binding-diagnostic-codes binding-no-algebra-rejected))
              ? values))
 
-    (poo-flow-test-case "a rejected Domain Case assembly cannot reach binding"
+    (yuanxu-test-case "a rejected Domain Case assembly cannot reach binding"
       (check (.ref binding-invalid-component-assembly 'accepted?) => #f)
       (check (.ref binding-invalid-assembly-rejected 'accepted?) => #f)
       (check (.ref binding-invalid-assembly-rejected 'policy-binding) => #f)
@@ -346,7 +346,7 @@
                     binding-invalid-assembly-rejected))
              ? values))
 
-    (poo-flow-test-case "256 Feature contributions bind in resolver order"
+    (yuanxu-test-case "256 Feature contributions bind in resolver order"
       (let* ((descriptors (binding-stress-descriptors 256))
              (bundle
               (feature-manifest-bundle
@@ -354,7 +354,7 @@
              (plan (feature-composition-plan bundle))
              (assembly
               (feature-domain-case-assembly
-               (poo-flow-domain-case-cache)
+               (yuanxu-domain-case-cache)
                'feature-policy-strategy-binding-stress
                1
                plan))

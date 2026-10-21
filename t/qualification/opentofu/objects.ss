@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in "../../../init.ss" init.Modules)
-        (only-in :core/profile-composition/selection-syntax use-module))
+        (only-in :yuanxu/profile-composition/selection-syntax use-module))
 (export Ops)
 ;; One admitted scope from the maintained Core selection; no operation starts here.
 (def OpsScope (.get init.Modules ops scope))

@@ -388,7 +388,7 @@ fully defined in chapter 01. No worker is called from this operation.
       (let* ((Tofu (.get available value))
              (wire ((.get Tofu seal) (.get candidate terraform)))
              (receipt ((.get Tofu types Configuration .admit) wire #f)))
-        (if (poo-flow-validation-evidence-accepted? receipt)
+        (if (yuanxu-validation-evidence-accepted? receipt)
           (.o status: 'projected-unadmitted
               config: final terraform: wire
               configuration-evidence: receipt)

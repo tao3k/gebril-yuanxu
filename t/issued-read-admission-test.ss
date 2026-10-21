@@ -3,11 +3,11 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop make-slot-read object-read-issued? %deliver-slot-read)
         (only-in :std/error Error? Error-message)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
         (only-in "qualification/mop-state/checker-origin" recorded)
         (only-in "qualification/mop-state/closed-tail" probe))
 (export issued-read-admission-test test-cleanup!)
@@ -21,7 +21,7 @@
   (check-equal? (Error-message failure) message))
 (def issued-read-admission-test
  (test-suite "Native read issuance and admission consumers"
-  (poo-flow-test-case "actual SourceAdmissionContract refuses an injected checker without calling it"
+  (yuanxu-test-case "actual SourceAdmissionContract refuses an injected checker without calling it"
     (def sample (probe '()))
     (def dependency (.get sample external))
     (.get dependency port)
@@ -34,7 +34,7 @@
       (cut .call Contract .admit (.get sample candidate) #f))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real two-party services retain final child values, obligations and source ordering"
+  (yuanxu-test-fixture "real two-party services retain final child values, obligations and source ordering"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Parent (.get publication value))

@@ -5,9 +5,9 @@
 ;;; Boundary: composes resolved feature manifests into an immutable plan object.
 ;;; Invariant: composition order is explicit and preserves POO role precedence.
 (import (only-in :clan/poo/object .ref object<-alist)
-        :core/composition/roles
-        :core/feature-system/feature-manifest
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/feature-manifest
+        :yuanxu/utilities/functional)
 
 (export feature-composition-plan
         defpoo-feature-composition-plan)
@@ -61,7 +61,7 @@
   (let* ((bundle (require-valid-feature-manifest-bundle bundle))
          (feature-ids (.ref bundle 'feature-ids))
          (manifests
-          (poo-flow-map
+          (yuanxu-map
            (lambda (feature-id)
              (require-feature-manifest-bundle-ref bundle feature-id))
            feature-ids)))

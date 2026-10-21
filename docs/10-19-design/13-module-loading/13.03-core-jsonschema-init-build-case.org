@@ -61,7 +61,7 @@ protocol is involved.
 
 The SDK reader gives init.ss the identity core/init. The adapter projects native
 entry filenames relative to that prefix, prepares all selected/retained sources
-under output, and writes matching (package: core) metadata there. Native
+under output, and writes matching (package: yuanxu) metadata there. Native
 defbuild-script must use that source root through its ordinary lexical
 this-source-file binding. Its complete closure expression is in 05.
 

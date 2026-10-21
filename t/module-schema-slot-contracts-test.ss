@@ -5,7 +5,7 @@
 
 ;;; Contract: shared slot schemas and Contracts are native POO Type values.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test)
 
 (def (contract-schema-eval expr)
@@ -18,23 +18,23 @@
 
 (def module-schema-slot-contracts-test
   (test-suite "module-schema-slot-contracts-test"
-    (poo-flow-test-case "validates the native contract"
+    (yuanxu-test-case "validates the native contract"
       (eval '(import "./module-system/schema/slot-contracts.ss"))
       (eval '(import :clan/poo/object :clan/poo/mop))
       (contract-schema-eval
  '(begin
     (def +contract-schema-fixture-slot+
-      (poo-flow-contract-slot
+      (yuanxu-contract-slot
        'contract-schema.fixture/schema
        'schema
-       (poo-flow-contract-value-type 'String string? 'String 'string?)
+       (yuanxu-contract-value-type 'String string? 'String 'string?)
        #t
        '((boundary . contract-schema))))
     (def +contract-schema-fixture-contract+
-      (poo-flow-native-contract
+      (yuanxu-native-contract
        'contract-schema/fixture
        'module-system
-       'PooFlowContractSchemaFixture
+       'YuanxuContractSchemaFixture
        object?
        (list +contract-schema-fixture-slot+)
        (lambda (candidate slot) (.slot? candidate slot))
@@ -44,7 +44,7 @@
 (unless
  (contract-schema-eval
   '(and (element? Type
-                  (poo-flow-contract-slot-type
+                  (yuanxu-contract-slot-type
                    +contract-schema-fixture-slot+))
         (element? Type +contract-schema-fixture-contract+)
         (element? +contract-schema-fixture-contract+
@@ -53,10 +53,10 @@
 
 (let (row
       (contract-schema-eval
-       '(poo-flow-native-contract->alist
+       '(yuanxu-native-contract->alist
          +contract-schema-fixture-contract+)))
   (unless (and (eq? (contract-schema-test-ref row 'object-kind)
-                    'PooFlowContractSchemaFixture)
+                    'YuanxuContractSchemaFixture)
                (pair? (contract-schema-test-ref row 'slots))
                (eq? (contract-schema-test-ref
                      (car (contract-schema-test-ref row 'slots))
@@ -72,7 +72,7 @@
 (unless
  (equal?
   (contract-schema-eval
-   '(poo-flow-contract-check-slot!
+   '(yuanxu-contract-check-slot!
      +contract-schema-fixture-slot+
      "schema/v1"))
   "schema/v1")

@@ -5,31 +5,31 @@
 (import :clan/poo/object
         (only-in :std/list/list-builder with-list-builder)
         (only-in "./execution.ss" OpenTofuExecution. opentofu-execution)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence
-                 poo-flow-classification-evidence-accepted? poo-flow-validation-evidence-accepted?)
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence
+                 yuanxu-classification-evidence-accepted? yuanxu-validation-evidence-accepted?)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/modules/json-schema/json-schema-contract poo-flow-json-schema->contract)
+        (only-in :yuanxu/modules/json-schema/json-schema-contract yuanxu-json-schema->contract)
         "./func.ss" "./collections.ss" "./types.ss" "./config.ss" "./source.ss"
-        (only-in :core/module-system/source/objects make-poo-flow-module-source-ref)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
         (only-in :clan/poo/mop element?)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref
-                 poo-flow-contract-key->symbol poo-flow-contract-json-array->list)
-        (only-in :core/modules/json-schema/json-schema-diagnostics
-                 make-poo-flow-json-schema-validation-diagnostic
-                 poo-flow-json-schema-validation-diagnostic-severity
-                 poo-flow-json-schema-validation-diagnostic-reason
-                 poo-flow-json-schema-validation-diagnostic-message
-                 poo-flow-json-schema-validation-diagnostic-value
-                 poo-flow-json-schema-validation-diagnostic-contract
-                 poo-flow-json-schema-validation-diagnostic-metadata)
-        (only-in :core/modules/json-schema/json-schema-validation-core
-                 poo-flow-json-schema-candidate-rows poo-flow-json-schema-path->symbol
-                 poo-flow-json-schema-candidate-slot))
-(export poo-flow-opentofu-block-contract poo-flow-opentofu-configuration-contract
-        poo-flow-opentofu-configuration-from-types
-        poo-flow-opentofu-normalize-block
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref
+                 yuanxu-contract-key->symbol yuanxu-contract-json-array->list)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics
+                 make-yuanxu-json-schema-validation-diagnostic
+                 yuanxu-json-schema-validation-diagnostic-severity
+                 yuanxu-json-schema-validation-diagnostic-reason
+                 yuanxu-json-schema-validation-diagnostic-message
+                 yuanxu-json-schema-validation-diagnostic-value
+                 yuanxu-json-schema-validation-diagnostic-contract
+                 yuanxu-json-schema-validation-diagnostic-metadata)
+        (only-in :yuanxu/modules/json-schema/json-schema-validation-core
+                 yuanxu-json-schema-candidate-rows yuanxu-json-schema-path->symbol
+                 yuanxu-json-schema-candidate-slot))
+(export yuanxu-opentofu-block-contract yuanxu-opentofu-configuration-contract
+        yuanxu-opentofu-configuration-from-types
+        yuanxu-opentofu-normalize-block
         OpenTofuModule. OpenTofuScope. OpenTofuConfiguration.
-        poo-flow-opentofu-provider-from-directory)
+        yuanxu-opentofu-provider-from-directory)
 
 ;; Configuration admission is structural. Provider collection identity belongs
 ;; to the explicit collection-contract, never a prerequisite for configuration.
@@ -46,14 +46,14 @@
             (else 'provider-set-identity-unresolved))))))
 
 (def (contract-with-collections identity block authority-for)
-  (let (shape-contract (poo-flow-json-schema->contract identity
-                         (poo-flow-opentofu-block->schema block)))
+  (let (shape-contract (yuanxu-json-schema->contract identity
+                         (yuanxu-opentofu-block->schema block)))
     (def (walk candidate context issue? lifetime)
       (let (diagnostics '())
         (let (receipts
                (with-list-builder (emit)
                  (set! diagnostics
-                   (poo-flow-opentofu-block-obligations block candidate context
+                   (yuanxu-opentofu-block-obligations block candidate context
                      (lambda (path values literal?)
                        (collection-step (authority-for path) candidate context
                          issue? lifetime emit path values literal?))))))
@@ -65,14 +65,14 @@
          '.prove
          (lambda (candidate (lifetime 300))
            (let (shape (.call shape-contract .classify candidate #f))
-             (if (poo-flow-classification-evidence-accepted? shape)
+             (if (yuanxu-classification-evidence-accepted? shape)
                (walk candidate #f #t lifetime)
                (.o receipts: '() diagnostics: (.get shape diagnostics)))))
          '.normalize
          (lambda (candidate)
            (let (evidence (.call shape-contract .classify candidate #f))
-             (if (poo-flow-classification-evidence-accepted? evidence)
-               (poo-flow-opentofu-block-normalization block candidate
+             (if (yuanxu-classification-evidence-accepted? evidence)
+               (yuanxu-opentofu-block-normalization block candidate
                  (lambda (path values)
                    (let (binding (authority-for path))
                      (if (and binding (.has? (car binding) .normalize-values))
@@ -85,19 +85,19 @@
        (.call authority .matches? block)
        (cons authority field)))
 
-(def (poo-flow-opentofu-block-contract identity block (authority #f))
+(def (yuanxu-opentofu-block-contract identity block (authority #f))
   (when (and authority (not (checked-authority authority block '())))
     (error "collection authority Schema does not match block" identity))
   (contract-with-collections identity block
     (lambda (path) (checked-authority authority block path))))
 
-(def (poo-flow-opentofu-normalize-block block candidate)
-  (.call (poo-flow-opentofu-block-contract 'opentofu/normalization block)
+(def (yuanxu-opentofu-normalize-block block candidate)
+  (.call (yuanxu-opentofu-block-contract 'opentofu/normalization block)
          .normalize candidate))
 
 ;; A selected configuration is just another block shape. Selection is explicit
 ;; and inert; provider acquisition, lock verification and publication are not here.
-(def (poo-flow-opentofu-configuration-contract providers resources data (authorities #f))
+(def (yuanxu-opentofu-configuration-contract providers resources data (authorities #f))
   (let (instance-block
          (lambda (members mode)
            `((attributes . ())
@@ -117,18 +117,18 @@
                                    ((eq? kind 'resource) resources)
                                    ((eq? kind 'data) data) (else '())))
                     (block-row (assoc name members))
-                    (authority (poo-flow-contract-object-ref
-                                 (poo-flow-json-schema-candidate-rows
-                                   (poo-flow-contract-object-ref
-                                     (poo-flow-json-schema-candidate-rows authorities) kind #f)) name #f)))
+                    (authority (yuanxu-contract-object-ref
+                                 (yuanxu-json-schema-candidate-rows
+                                   (yuanxu-contract-object-ref
+                                     (yuanxu-json-schema-candidate-rows authorities) kind #f)) name #f)))
                (and block-row
                     (checked-authority authority (cdr block-row) (cdddr path)))))))))
 
 ;; Compose selected generated input schemas, not raw provider exports. The
 ;; selected native Contracts remain attached for provenance/inspection. This
 ;; structural boundary does not discharge collection identity or Provider RPC.
-(def (poo-flow-opentofu-configuration-from-types selected)
-  (def (rows value) (poo-flow-json-schema-candidate-rows value))
+(def (yuanxu-opentofu-configuration-from-types selected)
+  (def (rows value) (yuanxu-json-schema-candidate-rows value))
   (def (object-schema properties)
     `((type . "object") (additionalProperties . #f) (properties . ,properties)))
   (unless (and (object? selected) (= (length (.all-slots selected)) 3)
@@ -154,7 +154,7 @@
                  `((type . "array") (items . ,(.get contract schema)))
                  `((type . "object") (additionalProperties . ,(.get contract schema)))))))
          (rows (.ref selected kind))))
-  (.cc (poo-flow-json-schema->contract 'opentofu/configuration
+  (.cc (yuanxu-json-schema->contract 'opentofu/configuration
          (object-schema
            (map (lambda (kind) (cons kind (object-schema (section kind))))
                 '(provider resource data))))
@@ -162,13 +162,13 @@
 
 ;; Package parsing is a lower role; native publication belongs to objects.
 (def (required rows key)
-  (or (poo-flow-contract-object-ref rows key #f)
+  (or (yuanxu-contract-object-ref rows key #f)
       (error "provider-schema-field-missing" key)))
 
 (def (provider-scope directory manifest artifact)
   (let* ((address (required manifest 'provider))
          (version (required manifest 'version))
-         (origin (make-poo-flow-module-source-ref 'generated directory
+         (origin (make-yuanxu-module-source-ref 'generated directory
                    (.cc (.o) 'provider address 'version version
                         'schema-digest (required manifest 'schema-sha256)
                         'index-digests (required manifest 'indexes))))
@@ -180,7 +180,7 @@
         (or (hash-ref contracts key #f)
             (let* ((input (.call artifact .read-entry name kind))
                    (entry (.get input schema))
-                   (generated (poo-flow-opentofu-block-contract
+                   (generated (yuanxu-opentofu-block-contract
                                 (string->symbol
                                   (string-append address "@" version "/"
                                     (symbol->string kind) "/" (symbol->string name)
@@ -221,8 +221,8 @@
          '.contract-cached? (lambda (name kind) (hash-key? contracts (cons kind name))))))
 
 
-(def (poo-flow-opentofu-provider-from-directory directory)
-  (let (artifact (poo-flow-opentofu-read-provider-artifact directory))
+(def (yuanxu-opentofu-provider-from-directory directory)
+  (let (artifact (yuanxu-opentofu-read-provider-artifact directory))
     (if (eq? (.get artifact status) 'ready)
       (provider-scope directory (.get artifact manifest) artifact)
       artifact)))
@@ -230,7 +230,7 @@
 (def (required-provider directory)
   (unless (string? directory)
     (error "build-required: OpenTofu provider artifact has not been injected"))
-  (let (scope (poo-flow-opentofu-provider-from-directory directory))
+  (let (scope (yuanxu-opentofu-provider-from-directory directory))
     (unless (eq? (.get scope status) 'ready)
       (error "build-required: OpenTofu provider artifact is incomplete" (.get scope missing)))
     scope))
@@ -246,20 +246,20 @@
 ;; Diagnostic composition preserves the child's exact path/constraint and adds
 ;; its original package SourceRef. It does not re-evaluate the candidate.
 (def (configuration-diagnostic reason message path value source)
-  (make-poo-flow-json-schema-validation-diagnostic
-    'error reason message (poo-flow-json-schema-path->symbol path) value '()
+  (make-yuanxu-json-schema-validation-diagnostic
+    'error reason message (yuanxu-json-schema-path->symbol path) value '()
     `((owner . opentofu/configuration) (path . ,path) (source . ,source))))
 
 (def (configuration-child-diagnostic diagnostic prefix contract)
-  (let* ((metadata (poo-flow-json-schema-validation-diagnostic-metadata diagnostic))
-         (path (append prefix (poo-flow-contract-object-ref metadata 'path '()))))
-    (make-poo-flow-json-schema-validation-diagnostic
-      (poo-flow-json-schema-validation-diagnostic-severity diagnostic)
-      (poo-flow-json-schema-validation-diagnostic-reason diagnostic)
-      (poo-flow-json-schema-validation-diagnostic-message diagnostic)
-      (poo-flow-json-schema-path->symbol path)
-      (poo-flow-json-schema-validation-diagnostic-value diagnostic)
-      (poo-flow-json-schema-validation-diagnostic-contract diagnostic)
+  (let* ((metadata (yuanxu-json-schema-validation-diagnostic-metadata diagnostic))
+         (path (append prefix (yuanxu-contract-object-ref metadata 'path '()))))
+    (make-yuanxu-json-schema-validation-diagnostic
+      (yuanxu-json-schema-validation-diagnostic-severity diagnostic)
+      (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
+      (yuanxu-json-schema-validation-diagnostic-message diagnostic)
+      (yuanxu-json-schema-path->symbol path)
+      (yuanxu-json-schema-validation-diagnostic-value diagnostic)
+      (yuanxu-json-schema-validation-diagnostic-contract diagnostic)
       (append `((path . ,path) (source . ,(.get contract source))
                 (contract-identity . ,(.get contract identity)))
               (filter (lambda (row) (not (memq (car row) '(path source contract-identity)))) metadata)))))
@@ -277,8 +277,8 @@
 (def (configuration-build-inputs candidate)
   (def (keys value path)
     (cond ((object? value) (.all-slots value))
-          ((hash-table? value) (map poo-flow-contract-key->symbol (hash-keys value)))
-          ((list? value) (map (lambda (row) (poo-flow-contract-key->symbol (car row))) value))
+          ((hash-table? value) (map yuanxu-contract-key->symbol (hash-keys value)))
+          ((list? value) (map (lambda (row) (yuanxu-contract-key->symbol (car row))) value))
           (else (error "invalid-opentofu-build-container" path))))
   (let* ((kinds (keys candidate '()))
          (owners (make-hash-table-eq))
@@ -288,7 +288,7 @@
              (lambda (kind)
                (unless (memq kind '(provider resource data))
                  (error "invalid-opentofu-build-section" (list kind)))
-               (let (container (poo-flow-json-schema-candidate-slot candidate kind))
+               (let (container (yuanxu-json-schema-candidate-slot candidate kind))
                  (for-each
                   (lambda (name)
                     (let (owner (if (eq? kind 'provider) name (configuration-owner name)))
@@ -302,7 +302,7 @@
 
 (def (configuration-classify bindings candidate context)
   (let (envelope (.call ConfigurationEnvelopeContract .classify candidate context))
-    (if (not (poo-flow-classification-evidence-accepted? envelope))
+    (if (not (yuanxu-classification-evidence-accepted? envelope))
       (.cc envelope 'type-identity 'opentofu/configuration 'children '())
       (let ((failures '()) (children '()))
         (def (reject reason message path value source)
@@ -325,31 +325,31 @@
         (def (admit contract value path)
           (let (result (.call contract .admit value context))
             (set! children (cons (.cc (.o) 'path path 'contract contract 'admission result) children))
-            (unless (poo-flow-validation-evidence-accepted? result)
+            (unless (yuanxu-validation-evidence-accepted? result)
               (set! failures
                 (append (reverse (map (cut configuration-child-diagnostic <> path contract)
                                       (.get result diagnostics))) failures)))))
         (def (visit kind)
           (for-each
             (lambda (row)
-              (let* ((name (poo-flow-contract-key->symbol (car row)))
+              (let* ((name (yuanxu-contract-key->symbol (car row)))
                      (contract (resolve kind name)))
                 (when contract
                   (if (eq? kind 'provider)
-                    (let loop ((values (poo-flow-contract-json-array->list (cdr row))) (index 0))
+                    (let loop ((values (yuanxu-contract-json-array->list (cdr row))) (index 0))
                       (unless (null? values)
                         (admit contract (car values) (list kind name index))
                         (loop (cdr values) (1+ index))))
                     (for-each
                       (lambda (instance)
                         (admit contract (cdr instance)
-                               (list kind name (poo-flow-contract-key->symbol (car instance)))))
-                      (poo-flow-json-schema-candidate-rows (cdr row)))))))
-            (poo-flow-json-schema-candidate-rows
-              (poo-flow-contract-object-ref
-                (poo-flow-json-schema-candidate-rows candidate) kind '()))))
+                               (list kind name (yuanxu-contract-key->symbol (car instance)))))
+                      (yuanxu-json-schema-candidate-rows (cdr row)))))))
+            (yuanxu-json-schema-candidate-rows
+              (yuanxu-contract-object-ref
+                (yuanxu-json-schema-candidate-rows candidate) kind '()))))
         (for-each visit '(provider resource data))
-        (.cc (poo-flow-classification-evidence 'opentofu/configuration candidate
+        (.cc (yuanxu-classification-evidence 'opentofu/configuration candidate
                (null? failures) (reverse failures) context)
              'children (reverse children))))))
 
@@ -360,7 +360,7 @@
   modules: (.o)
   types:
   (.o configuration:
-      (.cc PooFlowContract. 'identity 'opentofu/configuration
+      (.cc YuanxuContract. 'identity 'opentofu/configuration
            '.classify (cut configuration-classify modules <> <>))))
 
 ;; Enumerate only collection names. Creating/finding a leaf object never reads
@@ -385,7 +385,7 @@
   prototypes: (.o provider: OpenTofuModule. configuration: OpenTofuConfiguration.
                    execution: OpenTofuExecution.)
   execution: opentofu-execution
-  schema: (.o type: poo-flow-opentofu-cty->schema block: poo-flow-opentofu-block->schema)
-  normalize: poo-flow-opentofu-normalize-block
-  configuration-from-types: poo-flow-opentofu-configuration-from-types
-  provider-from-directory: poo-flow-opentofu-provider-from-directory)
+  schema: (.o type: yuanxu-opentofu-cty->schema block: yuanxu-opentofu-block->schema)
+  normalize: yuanxu-opentofu-normalize-block
+  configuration-from-types: yuanxu-opentofu-configuration-from-types
+  provider-from-directory: yuanxu-opentofu-provider-from-directory)

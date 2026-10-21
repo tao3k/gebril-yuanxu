@@ -7,17 +7,17 @@
         (only-in :std/list/list find)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
         (only-in :clan/poo/object .o .+ .ref .get .call object?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/feature-system/model feature-descriptor)
-        (only-in :core/feature-system/capability-model feature-projection-request)
-        (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
-        (only-in :core/module-system/source/admission module-source-type module-source-read current-module-source-observer
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/feature-system/model feature-descriptor)
+        (only-in :yuanxu/feature-system/capability-model feature-projection-request)
+        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/building/build-projection poo-flow-core-project-source-spec))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
-(def Scope (poo-flow-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
+(def Scope (yuanxu-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
 (def (write-file path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
@@ -32,12 +32,12 @@
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root) (string-append "(package: " prefix ")"))
        (write-file (path-expand "init.ss" root)
-                   "(poo-flow! mode: explicit :core (schema) :app (web +late +early -off) :unused (bomb disable: #t))")
+                   "(yuanxu! mode: explicit :core (schema) :app (web +late +early -off) :unused (bomb disable: #t))")
        (for-each
         (lambda (id)
           (let (directory (path-expand (string-append "modules/" id) root))
             (write-file (path-expand "types.ss" directory)
-             "(import (only-in :clan/poo/object object?) (only-in :core/types poo-flow-predicate-contract)) (def Scope (poo-flow-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export Scope)")
+             "(import (only-in :clan/poo/object object?) (only-in :yuanxu/types yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export Scope)")
             (write-file (path-expand "objects.ss" directory)
              "(import (only-in :clan/poo/object .o) \"types.ss\") (def Defaults (.o retained: #t)) (export Defaults)")
             (write-file (path-expand "config.ss" directory) "(import (only-in :std/source this-source-file)) (def Greeting \"ready\") (def Origin (this-source-file)) (export Greeting Origin)")
@@ -63,10 +63,10 @@
        owner-module-id: 'app/web requires: dependencies
        projections: (list (apply build-contribution paths)))))
 (def (fixture-view root (feature-values #f) (core-projections '()))
-  (poo-flow-load-modules (path-expand "init.ss" root)
+  (yuanxu-load-modules (path-expand "init.ss" root)
    read-publication:
    (lambda (source)
-     (let (id (cdr (assq 'module-id (poo-flow-module-source-ref-metadata source))))
+     (let (id (cdr (assq 'module-id (yuanxu-module-source-ref-metadata source))))
        (.o identity: id
            features: (if (eq? id 'app/web)
                        (or feature-values (.o early: (optional 'early '("extra/early"))
@@ -80,7 +80,7 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
-    (poo-flow-test-case "package handoff retains the selected source Graph without linking scopes"
+    (yuanxu-test-case "package handoff retains the selected source Graph without linking scopes"
       (with-source
        (lambda (root _prefix)
          (def view (fixture-view root))
@@ -95,7 +95,7 @@
          (check-equal? (eq? (.get realized selected-graph) selected) #t)
          (write-file (path-expand "modules/app/web/config.ss" root) "(def Config 'changed)")
          (check-exception ((.get realized admit-current)) error?))))
-    (poo-flow-test-case "one pure window shares a Graph traversal but independent calls recheck"
+    (yuanxu-test-case "one pure window shares a Graph traversal but independent calls recheck"
       (with-source
        (lambda (root _prefix)
          (def view (fixture-view root))
@@ -117,18 +117,18 @@
            (check-equal? (> (- checks previous) 1) #t))
          (write-file (path-expand "modules/app/web/config.ss" root) "(def Config 'changed)")
          (check-exception ((.get graph admit-current)) error?))))
-    (poo-flow-test-case "init to publication to build uses the default reader and never links scopes"
+    (yuanxu-test-case "init to publication to build uses the default reader and never links scopes"
       (with-source
        (lambda (root prefix)
          (let (path (path-expand "modules/app/web/interface.ss" root))
            (write-file path
             (string-append
-             "(import (only-in :core/feature-system/model feature-descriptor)) "
+             "(import (only-in :yuanxu/feature-system/model feature-descriptor)) "
              "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
              "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list (.o kind: 'module/build roots: '(\"extra/early\"))))) "
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list (.o kind: 'module/build roots: '(\"extra/late\"))))) "
              "off: (error \"negative feature must not evaluate\")))")))
-         (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                 (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(core/schema app/web))
            (check-equal? (.get view selected-graph feature-order) '(app/web/early app/web/late))
@@ -147,7 +147,7 @@
              ;; tools stay guarded, but must not become its compiler targets.
              (check-equal? (length (filter (lambda (name)
                                             (string-prefix? (string-append prefix "/") name)) names)) 10)
-             (check-equal? (ormap (cut string-prefix? "core/" <>) names) #f)
+             (check-equal? (ormap (cut string-prefix? "yuanxu/" <>) names) #f)
              (def reads '())
              (parameterize ((current-module-source-observer
                              (lambda (key _amount)
@@ -159,7 +159,7 @@
                  (check-equal? (ormap (cut string-suffix? suffix <>) reads) #t))
                '("/module-system/source/declaration.ss" "/types.ss")))
            (check-exception (.get view modules app web) error?)))))
-    (poo-flow-test-case "roles derive once, Core dependency precedes consumer, optional order follows Graph"
+    (yuanxu-test-case "roles derive once, Core dependency precedes consumer, optional order follows Graph"
       (with-source
        (lambda (root prefix)
          (let* ((v (fixture-view root)) (graph (.get v build-graph))
@@ -172,26 +172,26 @@
                "app/web/extra/early" "app/web/extra/late")))
            (check-equal? (.get v selected-graph feature-order) '(app/web/early app/web/late))
            (check-equal? (length (.get graph other-projections)) 0)))))
-    (poo-flow-test-case "a different selected generation cannot reuse the parent's preparations"
+    (yuanxu-test-case "a different selected generation cannot reuse the parent's preparations"
       (with-source
        (lambda (root _prefix)
          (let* ((v (fixture-view root)) (parent (.get v build-graph))
                 (other (.+ v (.o selected-graph: (.+ (.get v selected-graph) (.o generation: "other"))))))
            (check-equal? (length (.get parent entries)) 10)
            (check-exception (.get other build-graph) error?)))))
-    (poo-flow-test-case "optional func role becomes a root without a second inventory"
+    (yuanxu-test-case "optional func role becomes a root without a second inventory"
       (with-source
        (lambda (root prefix)
          (write-file (path-expand "modules/app/web/func.ss" root) "(def (identity-value x) x) (export identity-value)")
          (let (names (entry-names (.get (fixture-view root) build-graph)))
            (check-equal? (length names) 11)
            (check-equal? (and (memq (string->symbol (string-append prefix "/modules/app/web/func")) names) #t) #t)))))
-    (poo-flow-test-case "additional Core and Feature contributions use one ordered projection"
+    (yuanxu-test-case "additional Core and Feature contributions use one ordered projection"
       (with-source
        (lambda (root _prefix)
          (let (graph (.get (fixture-view root #f (list (build-contribution "extra/core"))) build-graph))
            (check-equal? (length (.get graph entries)) 12)))))
-    (poo-flow-test-case "identical contributions deduplicate and differing options conflict"
+    (yuanxu-test-case "identical contributions deduplicate and differing options conflict"
       (with-source
        (lambda (root _prefix)
          (let* ((v (fixture-view root
@@ -205,7 +205,7 @@
                   (.o early: (optional 'early '("extra/early"))
                       late: (optional 'late '((gxc: "extra/early" "-debug")) '(app/web/early))
                       off: (error "negative Feature forced"))) build-graph) error?))))
-    (poo-flow-test-case "foreign requests are retained; unknown and unresolved build projections reject"
+    (yuanxu-test-case "foreign requests are retained; unknown and unresolved build projections reject"
       (with-source
        (lambda (root _prefix)
          (let (graph (.get (fixture-view root #f (list (feature-projection-request 'r 'runtime 'v1))) build-graph))
@@ -214,7 +214,7 @@
           (lambda (projection)
             (check-exception (.get (fixture-view root #f (list projection)) build-graph) error?))
           (list 'bad (.o kind: 'module/build roots: '(42)) (feature-projection-request 'r 'build 'v1))))))
-    (poo-flow-test-case "owner-relative paths cannot escape or traverse symlinks"
+    (yuanxu-test-case "owner-relative paths cannot escape or traverse symlinks"
       (with-source
        (lambda (root _prefix)
          (for-each
@@ -228,12 +228,12 @@
           (.get (fixture-view root
                   (.o early: (optional 'early '("extra/link"))
                       late: (optional 'late '("extra/late") '(app/web/early)) off: #f)) build-graph) error?))))
-    (poo-flow-test-case "direct projection preserves targets and never writes a prepared tree"
+    (yuanxu-test-case "direct projection preserves targets and never writes a prepared tree"
       (with-source
        (lambda (root prefix)
          (write-file (path-expand "build.ss" root) "(export #t)")
          (let* ((v (fixture-view root))
-                (artifact (poo-flow-core-project-source-spec v '() root (path-expand "build.ss" root)))
+                (artifact (yuanxu-project-source-spec v '() root (path-expand "build.ss" root)))
                 (names (map cadr (.get artifact spec))))
            (check-equal? (eq? (.get artifact build-graph) (.get v build-graph)) #t)
            (check-equal? (length names) 10)
@@ -241,14 +241,14 @@
            (check-equal? (file-exists? (path-expand ".gerbil" root)) #f)
            (write-file (path-expand "modules/app/web/config.ss" root) ";; changed")
            (check-exception ((.get artifact admit-current)) error?)))))
-    (poo-flow-test-case "unconsumed generated contributions cannot silently disappear from spec"
+    (yuanxu-test-case "unconsumed generated contributions cannot silently disappear from spec"
       (with-source
        (lambda (root _prefix)
          (write-file (path-expand "build.ss" root) "(export #t)")
          (let (v (fixture-view root #f (list (feature-projection-request 'r 'runtime 'v1))))
            (check-exception
-            (poo-flow-core-project-source-spec v '() root (path-expand "build.ss" root)) error?)))))
-    (poo-flow-test-case "stale init, role and contribution inputs refuse reuse"
+            (yuanxu-project-source-spec v '() root (path-expand "build.ss" root)) error?)))))
+    (yuanxu-test-case "stale init, role and contribution inputs refuse reuse"
       (for-each
        (lambda (file)
          (with-source
@@ -257,6 +257,6 @@
               (write-file (path-expand file root) ";; changed")
               (check-exception ((.get graph admit-current)) error?)
               (check-exception (module-source-admit-current! (.get graph source-inputs)) error?)
-              (check-exception (poo-flow-core-project-source-spec v '() root (path-expand "init.ss" root)) error?)
+              (check-exception (yuanxu-project-source-spec v '() root (path-expand "init.ss" root)) error?)
               (check-equal? (module-source-type (path-expand "build.ss" out)) #f)))))
        '("init.ss" "modules/app/web/config.ss" "modules/app/web/extra/late.ss" "modules/app/web/func.ss" "modules/app/web/extra/gerbil.pkg")))))

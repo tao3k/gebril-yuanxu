@@ -9,105 +9,105 @@
 ;;; Graph control analysis receipts and diagnostics.
 ;;; - Keep graph traversal evidence explicit before projecting bounded analysis receipts.
 (import (only-in :clan/poo/object .ref)
-        :core/graph/types-core
-        :core/graph/algorithms
-        :core/graph/control-utils)
+        :yuanxu/graph/types-core
+        :yuanxu/graph/algorithms
+        :yuanxu/graph/control-utils)
 
-(export poo-flow-graph-entry-ids
-        poo-flow-graph-finish-ids
-        poo-flow-graph-conditional-edge-pairs
-        poo-flow-graph-loop-edge-pairs
-        poo-flow-graph-undeclared-edge-pairs
-        poo-flow-graph-unreachable-ids
-        poo-flow-graph-dead-end-ids
-        poo-flow-graph-finish-reachable-ids
-        poo-flow-graph-branch-targets-declared?
-        poo-flow-graph-finish-total?
-        poo-flow-graph-control-diagnostics
-        poo-flow-graph-control-analysis-receipt)
+(export yuanxu-graph-entry-ids
+        yuanxu-graph-finish-ids
+        yuanxu-graph-conditional-edge-pairs
+        yuanxu-graph-loop-edge-pairs
+        yuanxu-graph-undeclared-edge-pairs
+        yuanxu-graph-unreachable-ids
+        yuanxu-graph-dead-end-ids
+        yuanxu-graph-finish-reachable-ids
+        yuanxu-graph-branch-targets-declared?
+        yuanxu-graph-finish-total?
+        yuanxu-graph-control-diagnostics
+        yuanxu-graph-control-analysis-receipt)
 
-;; : (-> PooFlowGraph [Object])
-(def (poo-flow-graph-entry-ids graph-value)
+;; : (-> YuanxuGraph [Object])
+(def (yuanxu-graph-entry-ids graph-value)
   (graph-entry-ids graph-value
-                   (poo-flow-graph-root-ids graph-value)))
+                   (yuanxu-graph-root-ids graph-value)))
 
-;; : (-> PooFlowGraph [Object])
-(def (poo-flow-graph-finish-ids graph-value)
+;; : (-> YuanxuGraph [Object])
+(def (yuanxu-graph-finish-ids graph-value)
   (graph-finish-ids graph-value
-                    (poo-flow-graph-terminal-ids graph-value)))
+                    (yuanxu-graph-terminal-ids graph-value)))
 
-;; : (-> PooFlowGraph [[Object Object]])
-(def (poo-flow-graph-conditional-edge-pairs graph-value)
-  (edge-pairs-by-kinds graph-value +poo-flow-graph-conditional-edge-kinds+))
+;; : (-> YuanxuGraph [[Object Object]])
+(def (yuanxu-graph-conditional-edge-pairs graph-value)
+  (edge-pairs-by-kinds graph-value +yuanxu-graph-conditional-edge-kinds+))
 
-;; : (-> PooFlowGraph [[Object Object]])
-(def (poo-flow-graph-loop-edge-pairs graph-value)
-  (edge-pairs-by-kinds graph-value +poo-flow-graph-loop-edge-kinds+))
+;; : (-> YuanxuGraph [[Object Object]])
+(def (yuanxu-graph-loop-edge-pairs graph-value)
+  (edge-pairs-by-kinds graph-value +yuanxu-graph-loop-edge-kinds+))
 
-;; : (-> PooFlowGraph [[Object Object]])
-(def (poo-flow-graph-undeclared-edge-pairs graph-value)
+;; : (-> YuanxuGraph [[Object Object]])
+(def (yuanxu-graph-undeclared-edge-pairs graph-value)
   (reverse
    (undeclared-edge-pairs/rev
-    (poo-flow-graph-edges graph-value)
-    (poo-flow-graph-node-ids graph-value)
+    (yuanxu-graph-edges graph-value)
+    (yuanxu-graph-node-ids graph-value)
     '())))
 
-;; : (-> PooFlowGraph [Object] [Object])
-(def (poo-flow-graph-unreachable-ids graph-value . maybe-start)
+;; : (-> YuanxuGraph [Object] [Object])
+(def (yuanxu-graph-unreachable-ids graph-value . maybe-start)
   (let* ((start-ids (if (null? maybe-start)
-                      (poo-flow-graph-entry-ids graph-value)
+                      (yuanxu-graph-entry-ids graph-value)
                       (car maybe-start)))
-         (reachable-ids (poo-flow-graph-reachable-ids graph-value
+         (reachable-ids (yuanxu-graph-reachable-ids graph-value
                                                        start-ids)))
     (remove-ids reachable-ids
-                (poo-flow-graph-node-ids graph-value))))
+                (yuanxu-graph-node-ids graph-value))))
 
-;; : (-> PooFlowGraph [Object] [Object] [Object])
-(def (poo-flow-graph-dead-end-ids graph-value . maybe-entry+finish)
+;; : (-> YuanxuGraph [Object] [Object] [Object])
+(def (yuanxu-graph-dead-end-ids graph-value . maybe-entry+finish)
   (let* ((entry-ids (if (null? maybe-entry+finish)
-                      (poo-flow-graph-entry-ids graph-value)
+                      (yuanxu-graph-entry-ids graph-value)
                       (car maybe-entry+finish)))
          (finish-ids (if (or (null? maybe-entry+finish)
                              (null? (cdr maybe-entry+finish)))
-                       (poo-flow-graph-finish-ids graph-value)
+                       (yuanxu-graph-finish-ids graph-value)
                        (cadr maybe-entry+finish)))
-         (reachable-ids (poo-flow-graph-reachable-ids graph-value
+         (reachable-ids (yuanxu-graph-reachable-ids graph-value
                                                        entry-ids)))
     (graph-dead-end-ids graph-value reachable-ids finish-ids)))
 
-;; : (-> PooFlowGraph [Object] [Object])
-(def (poo-flow-graph-finish-reachable-ids graph-value . maybe-finish)
+;; : (-> YuanxuGraph [Object] [Object])
+(def (yuanxu-graph-finish-reachable-ids graph-value . maybe-finish)
   (let* ((finish-ids (if (null? maybe-finish)
-                       (poo-flow-graph-finish-ids graph-value)
+                       (yuanxu-graph-finish-ids graph-value)
                        (car maybe-finish)))
-         (dependency-cone (poo-flow-graph-dependency-cone graph-value
+         (dependency-cone (yuanxu-graph-dependency-cone graph-value
                                                           finish-ids)))
-    (intersection-ids (poo-flow-graph-node-ids graph-value)
+    (intersection-ids (yuanxu-graph-node-ids graph-value)
                       dependency-cone)))
 
-;; : (-> PooFlowGraph Boolean)
-(def (poo-flow-graph-branch-targets-declared? graph-value)
+;; : (-> YuanxuGraph Boolean)
+(def (yuanxu-graph-branch-targets-declared? graph-value)
   (ids-subset? (edge-targets-by-kinds graph-value
-                                      +poo-flow-graph-conditional-edge-kinds+)
-               (poo-flow-graph-node-ids graph-value)))
+                                      +yuanxu-graph-conditional-edge-kinds+)
+               (yuanxu-graph-node-ids graph-value)))
 
-;; : (-> PooFlowGraph [Object] [Object] Boolean)
-(def (poo-flow-graph-finish-total? graph-value . maybe-entry+finish)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
+;; : (-> YuanxuGraph [Object] [Object] Boolean)
+(def (yuanxu-graph-finish-total? graph-value . maybe-entry+finish)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
          (entry-ids (if (null? maybe-entry+finish)
-                      (poo-flow-graph-entry-ids graph-value)
+                      (yuanxu-graph-entry-ids graph-value)
                       (car maybe-entry+finish)))
          (finish-ids (if (or (null? maybe-entry+finish)
                              (null? (cdr maybe-entry+finish)))
-                       (poo-flow-graph-finish-ids graph-value)
+                       (yuanxu-graph-finish-ids graph-value)
                        (cadr maybe-entry+finish)))
-         (reachable-ids (poo-flow-graph-reachable-ids graph-value
+         (reachable-ids (yuanxu-graph-reachable-ids graph-value
                                                        entry-ids))
-         (finish-reachable-ids (poo-flow-graph-finish-reachable-ids
+         (finish-reachable-ids (yuanxu-graph-finish-reachable-ids
                                 graph-value
                                 finish-ids))
          (undeclared-edge-pairs
-          (poo-flow-graph-undeclared-edge-pairs graph-value))
+          (yuanxu-graph-undeclared-edge-pairs graph-value))
          (dead-end-ids
           (graph-dead-end-ids graph-value reachable-ids finish-ids)))
     (control-finish-total? node-ids
@@ -118,34 +118,34 @@
                            undeclared-edge-pairs
                            dead-end-ids)))
 
-;; : (-> PooFlowGraph [Object] [Object] Alist)
-(def (poo-flow-graph-control-diagnostics graph-value . maybe-entry+finish)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
+;; : (-> YuanxuGraph [Object] [Object] Alist)
+(def (yuanxu-graph-control-diagnostics graph-value . maybe-entry+finish)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
          (entry-ids (if (null? maybe-entry+finish)
-                      (poo-flow-graph-entry-ids graph-value)
+                      (yuanxu-graph-entry-ids graph-value)
                       (car maybe-entry+finish)))
          (finish-ids (if (or (null? maybe-entry+finish)
                              (null? (cdr maybe-entry+finish)))
-                       (poo-flow-graph-finish-ids graph-value)
+                       (yuanxu-graph-finish-ids graph-value)
                        (cadr maybe-entry+finish)))
-         (reachable-ids (poo-flow-graph-reachable-ids graph-value
+         (reachable-ids (yuanxu-graph-reachable-ids graph-value
                                                        entry-ids))
-         (dependency-cone (poo-flow-graph-dependency-cone graph-value
+         (dependency-cone (yuanxu-graph-dependency-cone graph-value
                                                           finish-ids))
          (finish-reachable-ids (intersection-ids node-ids dependency-cone))
          (undeclared-edge-pairs
-          (poo-flow-graph-undeclared-edge-pairs graph-value))
+          (yuanxu-graph-undeclared-edge-pairs graph-value))
          (branch-target-ids
           (edge-targets-by-kinds graph-value
-                                 +poo-flow-graph-conditional-edge-kinds+))
+                                 +yuanxu-graph-conditional-edge-kinds+))
          (unreachable-ids (remove-ids reachable-ids node-ids))
          (dead-end-ids (graph-dead-end-ids graph-value
                                            reachable-ids
                                            finish-ids))
          (finish-unreachable-ids
           (remove-ids finish-reachable-ids reachable-ids))
-         (cycle-path (poo-flow-graph-cycle-path graph-value))
-         (loop-edge-pairs (poo-flow-graph-loop-edge-pairs graph-value))
+         (cycle-path (yuanxu-graph-cycle-path graph-value))
+         (loop-edge-pairs (yuanxu-graph-loop-edge-pairs graph-value))
          (unexpected-cycle-path
           (if (and cycle-path (null? loop-edge-pairs))
             cycle-path
@@ -161,15 +161,15 @@
                              unexpected-cycle-path)))
 
 ;;; Boundary: optional caller-provided entry ids are normalized before the receipt is built.
-;; : (-> PooFlowGraph GraphRootIds MaybeEntryFinish GraphEntryIds)
-(def (poo-flow-graph-control-entry-ids graph-value root-ids maybe-entry+finish)
+;; : (-> YuanxuGraph GraphRootIds MaybeEntryFinish GraphEntryIds)
+(def (yuanxu-graph-control-entry-ids graph-value root-ids maybe-entry+finish)
   (if (null? maybe-entry+finish)
     (graph-entry-ids graph-value root-ids)
     (car maybe-entry+finish)))
 
 ;;; Boundary: optional caller-provided finish ids share the same rest-argument protocol as entry ids.
-;; : (-> PooFlowGraph GraphTerminalIds MaybeEntryFinish GraphFinishIds)
-(def (poo-flow-graph-control-finish-ids graph-value
+;; : (-> YuanxuGraph GraphTerminalIds MaybeEntryFinish GraphFinishIds)
+(def (yuanxu-graph-control-finish-ids graph-value
                                        terminal-ids
                                        maybe-entry+finish)
   (if (or (null? maybe-entry+finish)
@@ -178,24 +178,24 @@
     (cadr maybe-entry+finish)))
 
 ;;; Invariant: cyclic graphs do not expose a topological order in the analysis receipt.
-;; : (-> PooFlowGraph CyclePathMaybe TopologicalOrderMaybe)
-(def (poo-flow-graph-control-topological-order graph-value cycle-path)
+;; : (-> YuanxuGraph CyclePathMaybe TopologicalOrderMaybe)
+(def (yuanxu-graph-control-topological-order graph-value cycle-path)
   (if cycle-path
     #f
-    (poo-flow-graph-topological-order/acyclic graph-value)))
+    (yuanxu-graph-topological-order/acyclic graph-value)))
 
 ;;; Boundary: cycle diagnostics are unexpected only when no explicit loop edge explains the cycle.
 ;; : (-> CyclePathMaybe LoopEdgePairs UnexpectedCyclePathMaybe)
-(def (poo-flow-graph-control-unexpected-cycle-path cycle-path loop-edge-pairs)
+(def (yuanxu-graph-control-unexpected-cycle-path cycle-path loop-edge-pairs)
   (if (and cycle-path (null? loop-edge-pairs))
     cycle-path
     #f))
 
 ;;; Boundary: this receipt projects graph traversal facts without executing any runtime work.
-;; : (-> PooFlowGraph [Object] [Object] PooFlowGraphAnalysis)
-(def (poo-flow-graph-control-analysis-receipt graph-value
+;; : (-> YuanxuGraph [Object] [Object] YuanxuGraphAnalysis)
+(def (yuanxu-graph-control-analysis-receipt graph-value
                                              . maybe-entry+finish)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
          (requested-entry-ids
           (if (null? maybe-entry+finish)
             (graph-entry-ids graph-value #f)
@@ -206,7 +206,7 @@
             (graph-finish-ids graph-value #f)
             (cadr maybe-entry+finish)))
          (base-analysis
-          (poo-flow-graph-analysis-receipt graph-value
+          (yuanxu-graph-analysis-receipt graph-value
                                            requested-entry-ids
                                            requested-finish-ids))
          (root-ids (.ref base-analysis 'root-ids))
@@ -219,14 +219,14 @@
          (dependency-cone (.ref base-analysis 'dependency-cone))
          (conditional-edge-pairs
           (edge-pairs-by-kinds graph-value
-                               +poo-flow-graph-conditional-edge-kinds+))
+                               +yuanxu-graph-conditional-edge-kinds+))
          (loop-edge-pairs
           (edge-pairs-by-kinds graph-value
-                               +poo-flow-graph-loop-edge-kinds+))
+                               +yuanxu-graph-loop-edge-kinds+))
          (undeclared-edge-pairs
           (reverse
            (undeclared-edge-pairs/rev
-            (poo-flow-graph-edges graph-value)
+            (yuanxu-graph-edges graph-value)
             node-ids
             '())))
          (unreachable-ids (remove-ids reachable-ids node-ids))
@@ -236,13 +236,13 @@
          (finish-reachable-ids (intersection-ids node-ids dependency-cone))
          (branch-target-ids
           (edge-targets-by-kinds graph-value
-                                 +poo-flow-graph-conditional-edge-kinds+))
+                                 +yuanxu-graph-conditional-edge-kinds+))
          (branch-targets-declared?
           (ids-subset? branch-target-ids node-ids))
          (finish-unreachable-ids
           (remove-ids finish-reachable-ids reachable-ids))
          (unexpected-cycle-path
-          (poo-flow-graph-control-unexpected-cycle-path cycle-path
+          (yuanxu-graph-control-unexpected-cycle-path cycle-path
                                                         loop-edge-pairs))
          (finish-total?
           (control-finish-total? node-ids
@@ -274,10 +274,10 @@
            (control-row 'finish-reachable-ids finish-reachable-ids)
            (control-row 'branch-targets-declared? branch-targets-declared?)
            (control-row 'finish-total? finish-total?))))
-    (poo-flow-graph-analysis
-     (poo-flow-graph-id graph-value)
+    (yuanxu-graph-analysis
+     (yuanxu-graph-id graph-value)
      (length node-ids)
-     (length (poo-flow-graph-edges graph-value))
+     (length (yuanxu-graph-edges graph-value))
      root-ids
      terminal-ids
      reachable-ids

@@ -7,15 +7,15 @@
 (import :clan/poo/object
         :std/text/pregexp
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref poo-flow-contract-key->symbol)
-        (only-in :core/modules/json-schema/json-schema-validation-core
-                 poo-flow-json-schema-candidate-rows)
-        (only-in :core/modules/json-schema/json-schema-values poo-flow-json-schema-null?))
-(export poo-flow-opentofu-cty->schema poo-flow-opentofu-block->schema
-        poo-flow-opentofu-block-normalization poo-flow-opentofu-block-obligations)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref yuanxu-contract-key->symbol)
+        (only-in :yuanxu/modules/json-schema/json-schema-validation-core
+                 yuanxu-json-schema-candidate-rows)
+        (only-in :yuanxu/modules/json-schema/json-schema-values yuanxu-json-schema-null?))
+(export yuanxu-opentofu-cty->schema yuanxu-opentofu-block->schema
+        yuanxu-opentofu-block-normalization yuanxu-opentofu-block-obligations)
 
 (def (ref value key (default #f))
-  (poo-flow-contract-object-ref value key default))
+  (yuanxu-contract-object-ref value key default))
 (def (nullable schema) `((anyOf . (((type . "null")) ,schema))))
 (def (array-schema item declaration)
   (append `((type . "array") (items . ,item))
@@ -25,7 +25,7 @@
                       '((min_items . minItems) (max_items . maxItems)))))
 
 ;; cty is a different source format, not another JSON Schema evaluator.
-(def (poo-flow-opentofu-cty->schema type)
+(def (yuanxu-opentofu-cty->schema type)
   (cond
    ((member type '("string" "number" "bool"))
     `((type . ,(if (equal? type "bool") "boolean" type))))
@@ -33,17 +33,17 @@
     (let ((kind (car type)) (child (cadr type)))
       (cond
        ((member kind '("list" "set"))
-        `((type . "array") (items . ,(poo-flow-opentofu-cty->schema child))))
+        `((type . "array") (items . ,(yuanxu-opentofu-cty->schema child))))
        ((equal? kind "map")
-        `((type . "object") (additionalProperties . ,(poo-flow-opentofu-cty->schema child))))
+        `((type . "object") (additionalProperties . ,(yuanxu-opentofu-cty->schema child))))
        ((equal? kind "tuple")
         `((type . "array")
-          (items . ,(if (null? child) #f (map poo-flow-opentofu-cty->schema child)))
+          (items . ,(if (null? child) #f (map yuanxu-opentofu-cty->schema child)))
           (minItems . ,(length child)) (maxItems . ,(length child))))
        ((equal? kind "object")
         `((type . "object") (additionalProperties . #f)
           (properties . ,(map (lambda (row)
-                                (cons (car row) (nullable (poo-flow-opentofu-cty->schema (cdr row))))) child))))
+                                (cons (car row) (nullable (yuanxu-opentofu-cty->schema (cdr row))))) child))))
        (else (error "unsupported cty constructor" type)))))
    (else (error "unsupported cty type" type))))
 
@@ -64,11 +64,11 @@
   (let* ((nested (ref attr 'nested_type))
          (schema (if nested
                    (collection-schema (ref nested 'nesting_mode)
-                     (poo-flow-opentofu-block->schema nested) nested)
-                   (poo-flow-opentofu-cty->schema (ref attr 'type)))))
+                     (yuanxu-opentofu-block->schema nested) nested)
+                   (yuanxu-opentofu-cty->schema (ref attr 'type)))))
     (if (ref attr 'required) schema (nullable schema))))
 
-(def (poo-flow-opentofu-block->schema block)
+(def (yuanxu-opentofu-block->schema block)
   (let ((attributes (filter (lambda (row) (input-attribute? (cdr row)))
                             (ref block 'attributes '())))
         (blocks (ref block 'block_types '())))
@@ -83,7 +83,7 @@
         (map (lambda (row)
                (cons (car row)
                  (collection-schema (ref (cdr row) 'nesting_mode)
-                   (poo-flow-opentofu-block->schema (ref (cdr row) 'block)) (cdr row)))) blocks))))))
+                   (yuanxu-opentofu-block->schema (ref (cdr row) 'block)) (cdr row)))) blocks))))))
 
 (def (issue code location)
   (.o reason: code path: location))
@@ -96,7 +96,7 @@
   (cond
    ((equal? mode "single") (child value path))
    ((equal? mode "map")
-    (walk-rows value (lambda (key item) (child item (append path (list (poo-flow-contract-key->symbol key)))))))
+    (walk-rows value (lambda (key item) (child item (append path (list (yuanxu-contract-key->symbol key)))))))
    ((member mode '("set" "list"))
     (let* ((value (if (vector? value) (vector->list value) value))
            (parts (map (lambda (item index) (child item (append path (list index))))
@@ -128,14 +128,14 @@
    (else (error "unsupported nesting mode" mode))))
 
 (def (walk-rows rows transform)
-  (let* ((rows (poo-flow-json-schema-candidate-rows rows))
+  (let* ((rows (yuanxu-json-schema-candidate-rows rows))
          (parts (map (lambda (row) (cons (car row) (transform (car row) (cdr row)))) rows)))
     (cons (map (lambda (row) (cons (car row) (cadr row))) parts)
           (apply append (cons '() (map cddr parts))))))
 
 (def (walk-type type value path (admission? #f) (verify #f) (normalize #f))
   (cond
-   ((or (string? type) (poo-flow-json-schema-null? value)) (cons value '()))
+   ((or (string? type) (yuanxu-json-schema-null? value)) (cons value '()))
    (else
     (let ((kind (car type)) (child (cadr type)))
       (cond
@@ -148,7 +148,7 @@
                           (iota (length child))))
           (cons (map car parts) (apply append (cons '() (map cdr parts))))))
        ((equal? kind "object")
-        (walk-rows value (lambda (key item) (walk-type (ref child key) item (append path (list (poo-flow-contract-key->symbol key))) admission? verify normalize))))
+        (walk-rows value (lambda (key item) (walk-type (ref child key) item (append path (list (yuanxu-contract-key->symbol key))) admission? verify normalize))))
        (else (error "unsupported cty constructor" type)))))))
 
 (def (walk-block block candidate path (admission? #f) (verify #f) (normalize #f))
@@ -156,9 +156,9 @@
     (lambda (key value)
       (let ((attr (ref (ref block 'attributes '()) key))
             (nested-block (ref (ref block 'block_types '()) key))
-            (child-path (append path (list (poo-flow-contract-key->symbol key)))))
+            (child-path (append path (list (yuanxu-contract-key->symbol key)))))
         (cond
-         ((poo-flow-json-schema-null? value) (cons value '()))
+         ((yuanxu-json-schema-null? value) (cons value '()))
          (attr
           (let (nested (ref attr 'nested_type))
             (if nested
@@ -171,12 +171,12 @@
             value child-path nested-block #f admission? verify normalize))
          (else (error "shape must be admitted before normalization" child-path)))))))
 
-(def (poo-flow-opentofu-block-normalization block candidate (normalize #f))
+(def (yuanxu-opentofu-block-normalization block candidate (normalize #f))
   (let (result (walk-block block candidate '() #f #f normalize))
     (.o value: (car result)
         diagnostics: (filter (lambda (diagnostic)
                                (not (eq? (.get diagnostic reason) 'set-normalization-required)))
                              (cdr result)))))
 
-(def (poo-flow-opentofu-block-obligations block candidate context (verify #f))
+(def (yuanxu-opentofu-block-obligations block candidate context (verify #f))
   (cdr (walk-block block candidate '() #t verify)))

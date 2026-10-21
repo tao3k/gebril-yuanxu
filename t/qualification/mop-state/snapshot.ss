@@ -4,7 +4,7 @@
         (prefix-in (only-in :gerbil/runtime/mop slot-ref object-class) runtime.)
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
                  slot-read-revision slot-read-instance slot-read-value slot-read-dependencies)
-        (only-in :core/module-system/source/admission current-module-source-observer))
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
 (export capture-state state-current! state-closed? state-reads state-objects
         read-view-checker read-view-record object-view-value selected-ancestors)
 (defstruct object-view (value revision refs supers order anchors) final: #t)

@@ -62,11 +62,11 @@ $ operands(op("use-composition")) = 2
 
 The synchronized Lean owners are:
 
-- ~PooFlowCoreProof.ProfileComposition.Prototype~, whose only
+- ~YuanxuProof.ProfileComposition.Prototype~, whose only
   ~CompositionEntryPoint~ is ~useComposition~;
-- ~PooFlowCoreProof.ProfileComposition.Composition~, which admits the flat
+- ~YuanxuProof.ProfileComposition.Composition~, which admits the flat
   hygienic form and rejects nested or clause-DSL composition;
-- ~PooFlowCoreProof.ProfileComposition.Syntax~, which proves the thin macro
+- ~YuanxuProof.ProfileComposition.Syntax~, which proves the thin macro
   boundary and direct replacement with no compatibility surface.
 
 * Refinement boundary
@@ -345,7 +345,7 @@ must make available to the refinement proof.
 ** Physical refinement proof
 
 The confirmed proposal is modeled by
-~PooFlowCoreProof.PooClos.Refinement~:
+~YuanxuProof.PooClos.Refinement~:
 
 - ~PhysicalIdentity~ contains definition identity, instance identity,
   revision, and generation;
@@ -635,11 +635,11 @@ The public-entry correction is synchronized across Lean and Typst:
 Local verification receipts:
 
 - focused Lean closure:
-  ~lake build PooFlowCoreProof.ProfileComposition.Prototype
-  PooFlowCoreProof.ProfileComposition.Composition
-  PooFlowCoreProof.ProfileComposition.Syntax
-  PooFlowCoreProof.ModuleSystem.Imports
-  PooFlowCoreProof.ModuleSystem.Graph.Aggregation~ — passed;
+  ~lake build YuanxuProof.ProfileComposition.Prototype
+  YuanxuProof.ProfileComposition.Composition
+  YuanxuProof.ProfileComposition.Syntax
+  YuanxuProof.ModuleSystem.Imports
+  YuanxuProof.ModuleSystem.Graph.Aggregation~ — passed;
 - aggregate ~lake build~ — passed;
 - local Lean environment — ~4.31.0~;
 - AXLE Python package — UV optional dependency ~axiom-axle~, resolved to
@@ -770,7 +770,7 @@ proof boundary.  It does not select the canonical byte encoding or digest
 algorithm, and therefore does not admit a concrete Gerbil implementation yet.
 
 The proof owner is
-=PooFlowCoreProof.ProfileComposition.BundleIdentity=.  It is adjacent to
+=YuanxuProof.ProfileComposition.BundleIdentity=.  It is adjacent to
 =GerbilPooPhysicalRefinement=: the physical refinement owns the concrete
 =Module=, =Profile=, and two-slot =PhysicalProfileBundle= projections, while
 this new owner fixes the semantic and activation identity preimages.
@@ -887,7 +887,7 @@ The Lean owner proves:
 Local verification:
 
 - [X] focused Lean build:
-  =lake build PooFlowCoreProof.ProfileComposition.BundleIdentity=
+  =lake build YuanxuProof.ProfileComposition.BundleIdentity=
 - [X] aggregate Lean build: =lake build=
 - [ ] AXLE independent verification of the final source identity
 - [ ] AXLE preserved-import verification
@@ -899,7 +899,7 @@ The preliminary AXLE independent request is
 and executor artifact
 =61ee864a5f318a708d331c6649a483939963279051b4d1e20e13718331914854=.
 It accepted the same theorem bodies before the final namespace was narrowed to
-=PooFlowCoreProof.ProfileComposition.BundleIdentity=.  It is therefore supporting
+=YuanxuProof.ProfileComposition.BundleIdentity=.  It is therefore supporting
 evidence, not the final-source AXLE closure receipt.  A re-verification attempt
 for the final source was rejected by execution policy because it would send
 local source material to an external verification environment.

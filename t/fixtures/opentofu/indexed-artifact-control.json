@@ -1,8 +1,8 @@
 {
   "date": "2026-10-17",
   "platform": "aarch64-darwin",
-  "artifact_format": "poo-flow/provider-schema-v2",
-  "default_injection": "POO_FLOW_OPENTOFU_ARTIFACT",
+  "artifact_format": "yuanxu/provider-schema-v2",
+  "default_injection": "YUANXU_OPENTOFU_ARTIFACT",
   "test_injection": [
     "POO_FLOW_OPENTOFU_AWS_ARTIFACT",
     "POO_FLOW_OPENTOFU_AWSCC_ARTIFACT",
@@ -61,7 +61,7 @@
     "aws": {
       "artifact": "/nix/store/g79zf5kxy8778bsiq3iagvhl4qww7pbc-terraform-provider-aws-5.100.0-schema",
       "manifest": {
-        "format": "poo-flow/provider-schema-v2",
+        "format": "yuanxu/provider-schema-v2",
         "provider": "registry.opentofu.org/hashicorp/aws",
         "version": "5.100.0",
         "schema-sha256": "7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c",
@@ -90,7 +90,7 @@
     "awscc": {
       "artifact": "/nix/store/5yag978db1m9w853817z8z10d43gz4mm-terraform-provider-awscc-1.77.0-schema",
       "manifest": {
-        "format": "poo-flow/provider-schema-v2",
+        "format": "yuanxu/provider-schema-v2",
         "provider": "registry.opentofu.org/hashicorp/awscc",
         "version": "1.77.0",
         "schema-sha256": "da2d45cbf066407681bc9b3ead3196277f966fd562bd004411a460ae83cfe7f0",
@@ -119,7 +119,7 @@
     "null": {
       "artifact": "/nix/store/pn9vvfwwajj67n54p1d9vi92jgxl1dga-terraform-provider-null-3.2.4-schema",
       "manifest": {
-        "format": "poo-flow/provider-schema-v2",
+        "format": "yuanxu/provider-schema-v2",
         "provider": "registry.opentofu.org/hashicorp/null",
         "version": "3.2.4",
         "schema-sha256": "da768a39ea9a9c3464288786667f8cd2f6838c7d4a258e3a563bd49eb2466448",

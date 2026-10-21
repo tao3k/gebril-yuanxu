@@ -121,13 +121,13 @@ primary before registration, proving the consumer reaches the native slot.
    (.defmethod (module-authoring-admit
                  (executor (prototype ModuleAuthoringExecutor.))
                  (role (prototype role-prototype))
-                 (interface (prototype poo-flow-module-interface-prototype))
+                 (interface (prototype yuanxu-module-interface-prototype))
                  datum)
      (admit interface role datum))))
 
 (.defmethod-bundle ModuleAuthoringCoreMethods ModuleAuthoringAdmissionProtocol
-  (authoring-method ModuleSourceRole. poo-flow-module-authoring-admit/common)
-  (authoring-method ConfigSourceRole. poo-flow-module-authoring-admit/config))
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-admit/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-admit/config))
 #+end_src
 
 The exported =ModuleAuthoringAdmissionGeneric= is the generated binding's

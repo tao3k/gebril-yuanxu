@@ -55,7 +55,7 @@ child obligations disappear or convert an arbitrary child body into a pure one.
 * Executable test ownership
 
 [[file:../../../t/source-admission-body-test.ss][source-admission-body-test.ss]] imports the actual SourceAdmissionContract,
-PooFlowContract and existing test/Directory/Services fixtures. It imports neither
+YuanxuContract and existing test/Directory/Services fixtures. It imports neither
 =recorded= nor =replay-slot-reads!= and does not wrap =.admit= in a substitute
 observer, replace its implementation or install synthetic active frames.
 
@@ -89,7 +89,7 @@ An unused candidate branch throws if evaluated and remains unforced.
 
 ** Nested obligation edits its Contract receiver
 
-An ordinary PooFlowContract child reads its marker and changes that same
+An ordinary YuanxuContract child reads its marker and changes that same
 Contract receiver. The warm method's acquisition frame has already unwound, so
 the supported write succeeds and advances the child Contract revision once.
 The child and root obligation bodies each complete for the second time, but
@@ -124,7 +124,7 @@ stays unchanged. Both configurations use the same production root adapter:
 
 | Child prototype | Child obligation count | Root obligation count | Refusal boundary |
 |-----------------+------------------------+-----------------------+------------------|
-| PooFlowContract. | 2 | 2 | Root adapter's return replay |
+| YuanxuContract. | 2 | 2 | Root adapter's return replay |
 | SourceAdmissionContract. | 2 | 1 | Child adapter's own return replay |
 
 Counts include the initial successful warm admission. The ordinary-child row
@@ -176,7 +176,7 @@ child plan authority.
 
 * Lean correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] imports the existing CallPhases and LeanPoo-backed
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] imports the existing CallPhases and LeanPoo-backed
 admission closure. Its =Read= rows project actual receiver identities and
 revisions, not configuration field names. This is a necessary revision projection: native currentness also checks cache,
 instance, checker and dependency identity. Unchanged projected revisions alone

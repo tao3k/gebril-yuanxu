@@ -201,7 +201,7 @@ just test-file t/module-testing-isolation-test.ss
 just test-file t/execution-cancellation-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix ReaderEffectSupport --typecheck-scope selected
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 The Python command is the existing formal-verification orchestrator, not a new

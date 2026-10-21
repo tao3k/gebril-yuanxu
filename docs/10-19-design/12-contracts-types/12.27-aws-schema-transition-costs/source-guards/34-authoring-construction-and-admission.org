@@ -38,7 +38,7 @@ The existing default fields now have one internal construction function:
       build: BuildSourceRole.))
 
 ;; The public constructor keeps immediate validation.
-(def (poo-flow-default-module-authoring-profile)
+(def (yuanxu-default-module-authoring-profile)
   (validate ModuleAuthoringProfileContract
     (make-default-module-authoring-profile)))
 
@@ -111,7 +111,7 @@ freshness, and prove non-vacuous acceptance through an expected counterexample.
 Existing candidate/location models still own ambient effects, complete Graph
 commit, previous-value retention and termination.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] adds independent functional and cost laws:
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] adds independent functional and cost laws:
 
 - =refused_profile_cannot_reach_inspection=;
 - =inspection_receives_actual_checked_profile=;
@@ -256,7 +256,7 @@ just test-file t/execution-cancellation-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix AuthoringStage --typecheck-scope selected --receipt ../.data/qualification/authoring-stage.scm
 python3 dev/proofs/quint/check.py --case-prefix Candidate --typecheck-scope selected --receipt ../.data/qualification/candidate.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 These relative receipt destinations are ignored qualification artifacts outside

@@ -266,7 +266,7 @@ The first code slice is now the shared observability feedback builder:
 
 The accepted agent feedback top level is:
 #+begin_src scheme
-((kind . poo-flow-agent-feedback)
+((kind . yuanxu-agent-feedback)
  (next-action . repair-sandbox-resource)
  (family . observability/receipt)
  (graph . ...)

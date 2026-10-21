@@ -4,11 +4,11 @@
 
 (export feature-system-bundle-v1-domain-case-projection-test)
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/utilities/functional
-        :core/feature-system/interface
+        :yuanxu/utilities/functional
+        :yuanxu/feature-system/interface
         "./fixtures/bundle-v1-domain-case-projection.ss")
 
 (def ready-runtime-handoff-plan
@@ -24,7 +24,7 @@
   (test-suite
    "Bundle v1 projection from accepted Domain Case owners"
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "accepted runtime handoff projects components, inheritance and evidence"
     (let* ((projection
             (feature-bundle-v1-project-domain-case
@@ -35,13 +35,13 @@
            (lowering (.ref projection 'lowering-plan))
            (descriptor (.ref lowering 'descriptor))
            (base
-            (poo-flow-find
+            (yuanxu-find
              (lambda (component)
                (eq? (.ref component 'component-id)
                     'bundle-component-0))
              components))
            (child
-            (poo-flow-find
+            (yuanxu-find
              (lambda (component)
                (eq? (.ref component 'component-id)
                     'bundle-component-1))
@@ -60,7 +60,7 @@
       (check (length edges) => 1)
       (check (length evidence) => 1)
       (check (.ref base 'capability-id) => 'bundle-runtime-capability-0)
-      (check (.ref base 'adapter-id) => 'poo-flow/python-runtime-cffi)
+      (check (.ref base 'adapter-id) => 'yuanxu/python-runtime-cffi)
       (check (.ref base 'projection-id) => 'bundle-runtime-projection-0)
       (check (.ref child 'capability-id)
              => +feature-bundle-v1-no-capability-id+)
@@ -79,11 +79,11 @@
       (check (.ref (car evidence) 'evidence-type-id)
              => 'bundle-evidence-schema-0)
       (check (.ref (car evidence) 'proof-system-id)
-             => 'poo-flow/lean-evidence-adapter)
+             => 'yuanxu/lean-evidence-adapter)
       (check (.ref lowering 'accepted?) => #t)
       (check (.ref descriptor 'arena-bytes) => 576)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "duplicate Runtime Bundle handoffs for one component fail closed"
     (let ((projection
            (feature-bundle-v1-project-domain-case
@@ -96,7 +96,7 @@
       (check (projection-diagnostic-code projection)
              => 'duplicate-runtime-bundle-handoff-owner)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "rejected upstream and invalid epoch never reach a native receipt"
     (let ((upstream-rejected
            (feature-bundle-v1-project-domain-case 1 '()))

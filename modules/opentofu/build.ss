@@ -6,31 +6,31 @@
         (only-in :std/encoding/json write-json)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source)
-        (only-in :core/module-system/source/admission call-with-module-source-read-cache
+        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source)
+        (only-in :yuanxu/module-system/source/admission call-with-module-source-read-cache
                  module-source-admit-current!)
         ;; Build-tool native owners, not a second runtime facade or Loader.
-        (only-in :core/modules/nix/types NixFlakeSourceContract)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/modules/nix/func poo-flow-core-nix-source-inputs))
+        (only-in :yuanxu/modules/nix/types NixFlakeSourceContract)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/modules/nix/func yuanxu-nix-source-inputs))
 ;; The native outer module slot keeps source/config refinements receiver-local.
 (.def Build
   module: OpenTofuScope.
   kind: 'module/external-package identity: 'opentofu
   .prepare:
   (lambda (root context-current! publication)
-    (unless (poo-flow-validation-evidence-accepted?
+    (unless (yuanxu-validation-evidence-accepted?
               (.call OpenTofuConfigContract .admit (.get module config) #f))
       (error "invalid OpenTofu upstream Config; expected a native Nix Source"))
     (unless (.get module config source)
       (error "build-required: OpenTofu Config.source must supply a Nix Source"))
     (let* ((source (.cc (.get module config source)))
-           (flake? (poo-flow-validation-evidence-accepted?
+           (flake? (yuanxu-validation-evidence-accepted?
                      (.call NixFlakeSourceContract .admit source #f)))
            (selection-input (and (.slot? (.get module config) 'selection-input)
                                  (.get module config selection-input)))
            (path (path-expand "config.ss" root))
-           (configuration-input (poo-flow-core-configuration-source path 'Config context-current!
+           (configuration-input (yuanxu-configuration-source path 'Config context-current!
                                   role-sources: (.get publication role-sources)))
            (observed (append (.get configuration-input source-inputs) (.get source source-inputs)))
            (source-text (cdr (assoc path observed)))
@@ -44,7 +44,7 @@
                              (cons 'configuration-source path)
                              (cons 'configuration-sha256 source-digest)
                              (cons 'binding "Config")
-                             (cons 'source-inputs (poo-flow-core-nix-source-inputs observed)))))))))
+                             (cons 'source-inputs (yuanxu-nix-source-inputs observed)))))))))
       (def (current!)
         ;; Both are source-only observations of this same prepared request.
         ;; Keep its full requirements while sharing bytes inside this check;

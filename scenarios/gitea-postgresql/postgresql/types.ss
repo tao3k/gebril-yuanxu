@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/type List)
-        (only-in :core/types PooFlowContract. poo-flow-predicate-contract))
+        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract))
 (export Port PostgreSQLValueContract PostgreSQLConfigContract PostgreSQLScopeContract valid-port?)
 (def Port (IntegerRange min: 1 max: 65535))
 (def (valid-port? value) (element? Port value))
@@ -13,10 +13,10 @@
     responsibilities:
     (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port))
         allowed-ports: (List Port))))
-(define-type (PostgreSQLConfigContract @ PooFlowContract.)
+(define-type (PostgreSQLConfigContract @ YuanxuContract.)
   identity: 'postgresql/config
   value-contract: PostgreSQLValueContract)
 ;; Scope presence is intentionally metadata-only; it must not force payloads.
 (def PostgreSQLScopeContract
-  (poo-flow-predicate-contract 'postgresql/scope
+  (yuanxu-predicate-contract 'postgresql/scope
     (o?/slots '(config document))))

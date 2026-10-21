@@ -4,32 +4,32 @@
 
 ;;; Boundary: re-exports the public POO-native feature-system surface.
 ;;; Invariant: implementation ownership remains in the imported feature modules.
-(import :core/feature-system/model
-        :core/feature-system/resolver
-        :core/feature-system/feature-manifest
-        :core/feature-system/composition
-        :core/feature-system/capability-model
-        :core/feature-system/domain-case-assembly
-        :core/feature-system/policy-strategy-binding
-        :core/feature-system/adapter-projection-binding
-        :core/feature-system/runtime-handoff-plan
-        :core/feature-system/bundle-v1-domain-case-projection
-        :core/feature-system/bundle-v1-foreign-arena
-        :core/feature-system/bundle-v1-writer
+(import :yuanxu/feature-system/model
+        :yuanxu/feature-system/resolver
+        :yuanxu/feature-system/feature-manifest
+        :yuanxu/feature-system/composition
+        :yuanxu/feature-system/capability-model
+        :yuanxu/feature-system/domain-case-assembly
+        :yuanxu/feature-system/policy-strategy-binding
+        :yuanxu/feature-system/adapter-projection-binding
+        :yuanxu/feature-system/runtime-handoff-plan
+        :yuanxu/feature-system/bundle-v1-domain-case-projection
+        :yuanxu/feature-system/bundle-v1-foreign-arena
+        :yuanxu/feature-system/bundle-v1-writer
         "source-lock-feature.ss"
-        :core/feature-system/syntax)
+        :yuanxu/feature-system/syntax)
 
-(export (import: :core/feature-system/model)
-        (import: :core/feature-system/resolver)
-        (import: :core/feature-system/feature-manifest)
-        (import: :core/feature-system/composition)
-        (import: :core/feature-system/capability-model)
-        (import: :core/feature-system/domain-case-assembly)
-        (import: :core/feature-system/policy-strategy-binding)
-        (import: :core/feature-system/adapter-projection-binding)
-        (import: :core/feature-system/runtime-handoff-plan)
-        (import: :core/feature-system/bundle-v1-domain-case-projection)
-        (import: :core/feature-system/bundle-v1-foreign-arena)
-        (import: :core/feature-system/bundle-v1-writer)
+(export (import: :yuanxu/feature-system/model)
+        (import: :yuanxu/feature-system/resolver)
+        (import: :yuanxu/feature-system/feature-manifest)
+        (import: :yuanxu/feature-system/composition)
+        (import: :yuanxu/feature-system/capability-model)
+        (import: :yuanxu/feature-system/domain-case-assembly)
+        (import: :yuanxu/feature-system/policy-strategy-binding)
+        (import: :yuanxu/feature-system/adapter-projection-binding)
+        (import: :yuanxu/feature-system/runtime-handoff-plan)
+        (import: :yuanxu/feature-system/bundle-v1-domain-case-projection)
+        (import: :yuanxu/feature-system/bundle-v1-foreign-arena)
+        (import: :yuanxu/feature-system/bundle-v1-writer)
         (import: "source-lock-feature.ss")
-        (import: :core/feature-system/syntax))
+        (import: :yuanxu/feature-system/syntax))

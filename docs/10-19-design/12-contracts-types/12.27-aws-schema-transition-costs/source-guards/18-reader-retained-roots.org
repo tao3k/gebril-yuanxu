@@ -5,8 +5,8 @@
 * Stable identities and existing Metadata
 
 Authoring admission and diagnostic kind names are now stable:
-=poo-flow.module-authoring.admission= and
-=poo-flow.module-authoring.diagnostic=. Construction, shape predicates and the
+=yuanxu.module-authoring.admission= and
+=yuanxu.module-authoring.diagnostic=. Construction, shape predicates and the
 bounded observation classifier use the same names. There is no version alias
 or forwarding path. Version suffixes do not belong in namespaces or type-kind
 names; revision policy belongs to the existing publication/source Metadata.
@@ -56,7 +56,7 @@ are demanded. Additional domain policy fields remain allowed through the
 existing delegated-extra-fields policy, preserving the previous open envelope.
 
 #+begin_src scheme
-(define-type (ModuleSourceRoleContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleSourceRoleContract @ YuanxuObjectContract.)
   identity: 'module-source-role
   proto: (semantic-empty-prototype)
   value-contract:
@@ -127,7 +127,7 @@ cutting an unregistered intermediate node, omitted sources, missing fresh guards
 and reject-everything behavior. These are seven expected outcomes, not a heap
 model. ContextWalk separately owns finite callback-order controls.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] proves that streaming current registrations yields the
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] proves that streaming current registrations yields the
 same ordered input sequence, including multiplicity before publication-level
 deduplication. It also states the premise for a safe private projection cut and
 shows later registrations cannot be omitted. Lean does not prove SDK wrapper

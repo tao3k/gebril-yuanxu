@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.CoreStoreRecovery
-open Lean PooFlowCoreProof.Admission.CoreStoreRecovery
+import YuanxuProof.Admission.CoreStoreRecovery
+open Lean YuanxuProof.Admission.CoreStoreRecovery
 
 def checkRecovery (j : Json) : Except String Unit := do
   let rows ← j.getArr?

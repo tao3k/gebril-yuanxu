@@ -1,19 +1,19 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :core/object-syntax/path-slots
-        (only-in :core/observability/testing-case poo-flow-test-case)
+(import :std/test :yuanxu/object-syntax/path-slots
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots)
         (prefix-in (only-in :clan/poo/object make-object) poo-)
         (only-in :clan/poo/mop Slot)
-        (only-in :core/configuration/slot-origin field-slot-origins/value admit-field-sources!)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/configuration/json config-json-file config-field-origin)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture))
+        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/configuration/json config-json-file config-field-origin)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture))
 (export slot-origin-test)
 (def slot-origin-test
   (test-suite "Native slot-attached Scheme provenance"
-    (poo-flow-test-case "assignment, native transform, inheritance and right-hand copy keep their own origins"
+    (yuanxu-test-case "assignment, native transform, inheritance and right-hand copy keep their own origins"
       (.def Base port: 5432)
       (.def (First @ Base) (port => + 1))
       (.def (Second @ First) port: 5440)
@@ -46,7 +46,7 @@
       (check-equal? (.get (car (field-slot-origins/value paired '(port))) operation) 'assign)
       ;; An uninstrumented explicit .cc write cannot borrow an inherited locator.
       (check-equal? (field-slot-origins/value (.cc Second port: 5600) '(port)) '()))
-    (poo-flow-test-case "shared prefixes, payload hygiene and undemanded fields remain native"
+    (yuanxu-test-case "shared prefixes, payload hygiene and undemanded fields remain native"
       (def left-count 0)
       (def unused-count 0)
       (.def Base service: (.o left: (.o port: 5432) right: (.o port: 5432)))
@@ -61,7 +61,7 @@
       (check-equal? (.get Child service left port) 5433)
       (check-equal? (list left-count unused-count) '(1 0))
       (check-equal? (.get (car (field-slot-origins/value Child '(service left port))) operation) 'assign))
-    (poo-flow-test-case "native cc retains untouched specifications and never borrows an overwritten field source"
+    (yuanxu-test-case "native cc retains untouched specifications and never borrows an overwritten field source"
       (.def Parent port: 5432 label: 'database)
       (def cached (.get Parent port))
       (def parent-origin (car (field-slot-origins/value Parent '(port))))
@@ -79,7 +79,7 @@
       (.def Container database: replacement)
       (check-equal? (field-slot-origins/value Container '(database port)) '())
       (check-equal? (.get Parent port) cached))
-    (poo-flow-test-case "native explicit instance assignments shadow declaration sources without becoming inherited caches"
+    (yuanxu-test-case "native explicit instance assignments shadow declaration sources without becoming inherited caches"
       (.def Parent port: 5432)
       (check-equal? (.get Parent port) 5432)
       (.put! Parent 'port 5440)
@@ -89,7 +89,7 @@
       (def copy (.cc Parent))
       (check-equal? (.get copy port) 5432)
       (check-equal? (length (field-slot-origins/value copy '(port))) 1))
-    (poo-flow-test-case "native declaration compilation cannot inherit a replaced field's source"
+    (yuanxu-test-case "native declaration compilation cannot inherit a replaced field's source"
       (.def Parent port: 5432)
       (check-equal? (.get Parent port) 5432)
       (def descriptor (.o (:: @ (.get Slot proto)) constant: 5440))
@@ -99,7 +99,7 @@
       (check-equal? (.get child port) 5440)
       (check-equal? (field-slot-origins/value child '(port)) '())
       (check-equal? (.get Parent port) 5432))
-    (poo-flow-test-fixture "JSON baseline remains attached to the effective Scheme field diagnostic"
+    (yuanxu-test-fixture "JSON baseline remains attached to the effective Scheme field diagnostic"
       (fixture DirectoryFixture)
       (with-slots (root) fixture
         (def path (path-expand "postgresql.json" root))

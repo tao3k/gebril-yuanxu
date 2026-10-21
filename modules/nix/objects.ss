@@ -2,15 +2,15 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./config.ss" "./types.ss" "./func.ss" "./build-publication.ss"
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/source/admission module-source-admit-current! module-source-type module-source-read
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/source/admission module-source-admit-current! module-source-type module-source-read
                  module-source-checked-operation module-source-operation-procedure))
-(export NixSource. NixFlakeSource. poo-flow-core-nix-admit-generation
-        poo-flow-core-nix-flake-admit-generation)
+(export NixSource. NixFlakeSource. yuanxu-nix-admit-generation
+        yuanxu-nix-flake-admit-generation)
 (.def (NixSource. source [])
   .restore-build:
   (lambda (graph)
-    (poo-flow-core-nix-restore-build-publication! source graph))
+    (yuanxu-nix-restore-build-publication! source graph))
   expression: #f
   ;; A configured Source owns its byte observations. Flake Sources override this
   ;; with their lock/source closure; expression callers may refine it upstream.
@@ -20,20 +20,20 @@
   config: NixConfig
   .instantiate:
   (lambda ()
-    (unless (poo-flow-validation-evidence-accepted? (.call NixSourceContract .admit source #f))
+    (unless (yuanxu-validation-evidence-accepted? (.call NixSourceContract .admit source #f))
       (error "invalid Nix Source"))
-    (poo-flow-core-nix-instantiate
+    (yuanxu-nix-instantiate
       (.get config instantiate) expression arguments
       ;; Readonly guards do not need the realization capability.
       (lambda () (.get config realize))))
   .realize:
   (lambda (derivation)
-    (poo-flow-core-nix-realize (.get config realize) derivation))
+    (yuanxu-nix-realize (.get config realize) derivation))
   .guard-form:
   (lambda (expected)
     (let ((rows (map (lambda (name) (cons name (.ref arguments name))) (.all-slots arguments)))
           (tools (map (lambda (name) (cons name (.ref config name))) '(instantiate realize))))
-      `(poo-flow-core-nix-admit-generation ,expression ',rows ,expected ',tools)))
+      `(yuanxu-nix-admit-generation ,expression ',rows ,expected ',tools)))
   ;; A native phase object: derivation and realization are receiver-local lazy
   ;; slots. Core may write its guarded entry between preparation and validation.
   ;; This is a candidate until admit-current succeeds; .build keeps the eager
@@ -59,7 +59,7 @@
           ;; entry guard when its caller has immediately run that exact guard.
           ;; Tail checks and all external effect boundaries remain unchanged.
           admit-current: (module-source-operation-procedure %source-operation)
-          guard-imports: '(:core/modules/nix/objects)
+          guard-imports: '(:yuanxu/modules/nix/objects)
           guard-forms:
           (list (.call source-value .guard-form derivation)))))
   .build:
@@ -73,20 +73,20 @@
   ;; Explicit local data inputs are hashed by Nix on every query. They are not
   ;; Scheme argument/result caches and never permit implicit lock-file updates.
   inputs: (.o)
-  source-inputs: (poo-flow-core-nix-flake-source-inputs reference)
+  source-inputs: (yuanxu-nix-flake-source-inputs reference)
   .instantiate:
   (lambda ()
-    (unless (poo-flow-validation-evidence-accepted?
+    (unless (yuanxu-validation-evidence-accepted?
               (.call NixFlakeSourceContract .admit source #f))
       (error "invalid Nix Flake Source"))
     (module-source-admit-current! source-inputs)
-    (let (result (poo-flow-core-nix-flake-instantiate
+    (let (result (yuanxu-nix-flake-instantiate
                    (.get config nix) reference attribute arguments inputs))
       (module-source-admit-current! source-inputs)
       result))
   .guard-form:
   (lambda (expected)
-    `(poo-flow-core-nix-flake-admit-generation
+    `(yuanxu-nix-flake-admit-generation
        ,reference ,attribute ,expected ,(.get config nix)
        ',(map (lambda (key) (cons key (.ref arguments key))) (.all-slots arguments))
        ',source-inputs
@@ -97,11 +97,11 @@
     (error "stale external package derivation; regenerate the selected build graph" expected)))
 
 ;; Serialized generated build guard: rows are a private wire boundary, not a DSL.
-(def (poo-flow-core-nix-admit-generation expression-path argument-rows expected (tools #f))
+(def (yuanxu-nix-admit-generation expression-path argument-rows expected (tools #f))
   (let (source (.cc NixSource. 'expression expression-path 'arguments (object<-alist argument-rows)
                     'config (if tools (object<-alist tools) NixConfig)))
     (admit-derivation! source expected)))
-(def (poo-flow-core-nix-flake-admit-generation reference attribute expected executable
+(def (yuanxu-nix-flake-admit-generation reference attribute expected executable
         (argument-rows '()) (observations '()) (input-rows '()))
   (admit-derivation!
     (.cc NixFlakeSource. 'reference reference 'attribute attribute

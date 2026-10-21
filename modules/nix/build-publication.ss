@@ -1,13 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Restore from a governed Nix Source, never a candidate-selected release pin.
 (import :clan/poo/object
-        (only-in "./func.ss" poo-flow-core-nix-verify-store)
-        (only-in :core/module-system/source/admission module-source-type module-source-admit-current!)
-        (only-in :core/module-system/building/artifacts
+        (only-in "./func.ss" yuanxu-nix-verify-store)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current!)
+        (only-in :yuanxu/module-system/building/artifacts
           accept-build-artifact-handoff! read-build-artifact-handoff
           admit-build-artifacts! invalidate-build-artifacts!))
-(export poo-flow-core-nix-restore-build-publication!)
-(def (poo-flow-core-nix-restore-build-publication! source graph)
+(export yuanxu-nix-restore-build-publication!)
+(def (yuanxu-nix-restore-build-publication! source graph)
   (with-catch
     (lambda (failure) (invalidate-build-artifacts! graph) (raise failure))
     (lambda ()
@@ -20,7 +20,7 @@
       (def root (.get publication artifact))
       (def executable (.get source config realize))
       (def (approved-current!)
-        (poo-flow-core-nix-verify-store executable root)
+        (yuanxu-nix-verify-store executable root)
         ((.get publication admit-current)))
       (approved-current!)
       (def asset (path-expand "issuance.ss" root))

@@ -24,7 +24,7 @@
       (test-case "native resolver distinguishes a residual loader from the source module"
         (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
         (def source (path-expand "object-family/syntax.ss" root))
-        (def loader (path-expand "core/object-family/syntax.scm" lib))
+        (def loader (path-expand "yuanxu/object-family/syntax.scm" lib))
         (def original (load-path))
         ;; Run after the first compile/clean. Never delete or quarantine residue.
         (check-equal? (file-exists? loader) #t)
@@ -32,18 +32,18 @@
         (dynamic-wind
           (lambda () (set-load-path! (cons lib (cons root original))))
           (lambda ()
-            (check-equal? (core-resolve-library-module-path ':core/object-family/syntax)
+            (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
                           (path-normalize loader)))
           (lambda () (set-load-path! original)))
         ;; The production init entry owns source registration, not the launcher.
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax `(import ,(path-expand "init.ss" root))))
-        (check-equal? (core-resolve-library-module-path ':core/object-family/syntax)
+        (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
                       (path-normalize source)))
       (test-case "source macro exports and use-site accessor bindings survive clean"
         (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :gerbil/core :core/object-family/syntax))
-          (check-equal? (module-context-path (core-import-module ':core/object-family/syntax))
+          (eval-syntax '(import :gerbil/core :yuanxu/object-family/syntax))
+          (check-equal? (module-context-path (core-import-module ':yuanxu/object-family/syntax))
                         (path-normalize (path-expand "object-family/syntax.ss" root)))
           (eval-syntax '(defpoo-object-family
                          (prototype Sample. sample? sample?)
@@ -53,9 +53,9 @@
           (check-equal? (eval-syntax '(sample-kind (make-sample 'ready))) 'ready)))
       (test-case "real source objects import in a new process with residue intact"
         (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :gerbil/core :core/module-system/source/objects))
-          (check-equal? (eval-syntax '(poo-flow-module-source-ref-kind
-                                      (make-poo-flow-module-local-source "probe"))) 'local)))
+          (eval-syntax '(import :gerbil/core :yuanxu/module-system/source/objects))
+          (check-equal? (eval-syntax '(yuanxu-module-source-ref-kind
+                                      (make-yuanxu-module-local-source "probe"))) 'local)))
       (test-case "same Graph spec compiles and cleans real JsonSchema again"
         (def owner (path-expand ".." (path-directory (this-source-file))))
         (check-equal? (source-text (path-expand "build.ss" root))
@@ -80,7 +80,7 @@
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
                                       (string-prefix? "modules/opentofu/" name))) names) '())
-          (def lib (path-expand "lib/core" (getenv "GERBIL_PATH")))
+          (def lib (path-expand "lib/yuanxu" (getenv "GERBIL_PATH")))
           (run "compile")
           (current!)
           (for-each (lambda (name)

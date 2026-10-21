@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.StoreLowering
+import YuanxuProof.Admission.StoreLowering
 
-open Lean PooFlowCoreProof.Admission.StoreLowering
+open Lean YuanxuProof.Admission.StoreLowering
 
 def routeFor (name : String) : Except String Route :=
   match name with

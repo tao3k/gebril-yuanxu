@@ -5,11 +5,11 @@
 ;;; Boundary: assembles accepted feature plans into one DomainCase receipt;
 ;;; component closure semantics remain owned by module-system/domain-case.
 (import (only-in :clan/poo/object .ref object<-alist)
-        :core/composition/roles
-        :core/feature-system/capability-model
-        :core/feature-system/composition
-        :core/feature-system/domain-case/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/capability-model
+        :yuanxu/feature-system/composition
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/utilities/functional)
 
 (export feature-domain-case-assembly
         require-feature-domain-case-assembly
@@ -19,14 +19,14 @@
 ;; : (-> Object Alist)
 (def (feature-domain-case-projection-request-diagnostic request)
   (object<-alist
-   `((kind . poo-flow.feature-domain-case-assembly-diagnostic.v1)
+   `((kind . yuanxu.feature-domain-case-assembly-diagnostic.v1)
      (code . invalid-feature-projection-request)
      (channel . projections)
      (observed . ,request))))
 
 ;; : (-> [Object] [Alist])
 (def (feature-domain-case-projection-request-diagnostics requests)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (request)
      (and (not (feature-projection-request? request))
           (feature-domain-case-projection-request-diagnostic request)))
@@ -75,11 +75,11 @@
        domain-case-id domain-case-version composition-plan components
        projection-requests '() #f #f #f #f request-diagnostics)
       (let* ((selected-projection-ids
-              (poo-flow-map
+              (yuanxu-map
                (lambda (request) (.ref request 'projection-id))
                projection-requests))
              (closure-receipt
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache
                domain-case-id
                domain-case-version

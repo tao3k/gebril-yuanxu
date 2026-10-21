@@ -89,7 +89,7 @@ Every module object should have:
 Use Gerbil POO supers for inheritance:
 
 #+begin_src scheme
-(poo-flow-module-object
+(yuanxu-module-object
  'objects.nono-sandbox.profile
  (list poo-flow-sandbox-core-profile-object
        poo-flow-nono-sandbox-object)
@@ -165,7 +165,7 @@ declarative:
 (load! "objects/sandbox-profile")
 #+end_src
 
-The loaded fragment returns a list of =poo-flow-module-object= values. It does
+The loaded fragment returns a list of =yuanxu-module-object= values. It does
 not define doctor commands, runtime adapters, or backend execution. The =load!=
 macro applies the same validation gate as first-party object catalogs.
 
@@ -210,7 +210,7 @@ Do not:
 - put field contracts, profile prototypes, or transformer contracts in
   =extension.ss=;
 - let user-interface files define validation or doctor logic;
-- load object fragments without the =poo-flow-require-module-objects-validation!=
+- load object fragments without the =yuanxu-require-module-objects-validation!=
   gate;
 - create a second merge language when a POO slot transform is enough;
 - hide object inheritance behind ad hoc alist recursion;

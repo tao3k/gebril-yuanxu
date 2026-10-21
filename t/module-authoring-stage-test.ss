@@ -7,11 +7,11 @@
                  slot-read-receiver call-with-slot-read-observer)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./module-publication-test" write-file)
-        (only-in :core/module-system/source/admission poo-flow-module-style-policy-prototype)
-        (only-in :core/module-system/source/interface poo-flow-module-interface)
-        (only-in :core/module-system/types ModuleAuthoringProfileContract)
-        (only-in :core/module-system/authoring/roles poo-flow-default-module-authoring-profile)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/module-system/source/admission yuanxu-module-style-policy-prototype)
+        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract)
+        (only-in :yuanxu/module-system/authoring/roles yuanxu-default-module-authoring-profile)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-authoring-stage-test)
 
 (def (stale-native-dependency? failure)
@@ -28,16 +28,16 @@
            (let* ((receiver (slot-read-receiver read))
                   (instance (and (object? receiver) (object-%instance receiver)))
                   (kind (and instance (hash-get instance 'kind))))
-             (or (memq kind '(poo-flow.type.classification-evidence
-                              poo-flow.contract.validation-evidence))
+             (or (memq kind '(yuanxu.type.classification-evidence
+                              yuanxu.contract.validation-evidence))
                  (ormap visit (slot-read-dependencies read)))))))
   (if (ormap visit roots) #t #f))
 
 (def module-authoring-stage-test
   (test-suite "Default authoring construction and Interface admission"
-    (poo-flow-test-case "computed defaults keep fresh receivers without constructor evidence dependencies"
-      (def left (.o (:: @ poo-flow-module-style-policy-prototype)))
-      (def right (.o (:: @ poo-flow-module-style-policy-prototype)))
+    (yuanxu-test-case "computed defaults keep fresh receivers without constructor evidence dependencies"
+      (def left (.o (:: @ yuanxu-module-style-policy-prototype)))
+      (def right (.o (:: @ yuanxu-module-style-policy-prototype)))
       (defvalues (profile reads)
         (%call-with-recorded-slot-reads (lambda () (.get left authoring))))
       (def authoring-reads (filter (lambda (read) (eq? (slot-read-key read) 'authoring)) reads))
@@ -49,12 +49,12 @@
       (check-equal? (eq? (.get profile types) (.get right authoring types)) #t)
       (.put! profile 'types #f)
       (check-exception
-        (poo-flow-module-interface "invalid" (.o) '() authoring: profile) error?)
+        (yuanxu-module-interface "invalid" (.o) '() authoring: profile) error?)
       ;; Mutating one default does not mutate another receiver's default.
       (check-equal? (object? (.get right authoring types)) #t)
-      (check-equal? (object? (poo-flow-module-interface "valid" (.o) '()
+      (check-equal? (object? (yuanxu-module-interface "valid" (.o) '()
                              authoring: (.get right authoring))) #t))
-    (poo-flow-test-case "Interface validates once and the public factory still validates immediately"
+    (yuanxu-test-case "Interface validates once and the public factory still validates immediately"
       (def validations 0)
       (call-with-slot-read-observer
         (lambda (read)
@@ -62,25 +62,25 @@
                      (eq? (slot-read-key read) '.validate))
             (set! validations (+ validations 1))))
         (lambda ()
-          (def policy (.o (:: @ poo-flow-module-style-policy-prototype)))
+          (def policy (.o (:: @ yuanxu-module-style-policy-prototype)))
           (def raw (.get policy authoring))
           (check-equal? validations 0)
-          (def interface (poo-flow-module-interface "checked" (.o) '() authoring: raw))
+          (def interface (yuanxu-module-interface "checked" (.o) '() authoring: raw))
           (check-equal? validations 1)
           (check-equal? (eq? (.get interface authoring) raw) #t)
           ;; The public factory still validates immediately, independently of
           ;; the internal source-policy construction stage.
-          (def public (poo-flow-default-module-authoring-profile))
+          (def public (yuanxu-default-module-authoring-profile))
           (check-equal? validations 2)
           (check-equal? (object? public) #t))))
-    (poo-flow-test-case "actual authoring Contract changes invalidate completed Graph evidence"
+    (yuanxu-test-case "actual authoring Contract changes invalidate completed Graph evidence"
       (def previous (.get ModuleAuthoringProfileContract value-contract))
       (dynamic-wind void
         (lambda ()
           (with-other-source
             (lambda (root _first _other)
               (write-file (path-expand "init.ss" root)
-                "(poo-flow! mode: explicit :custom (example))"))
+                "(yuanxu! mode: explicit :custom (example))"))
             (lambda (_root _first _other view)
               (def graph (.get view selected-graph))
               (check-equal? (.get graph status) 'ready)

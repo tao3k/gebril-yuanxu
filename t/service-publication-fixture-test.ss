@@ -2,9 +2,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error-irritants)
-        (only-in :core/observability/testing-fixture
-                 poo-flow-test-fixture with-poo-flow-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-fixture
+                 yuanxu-test-fixture with-yuanxu-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture DirectoryFailureFixture ServicesFixture RelocatedServicesFixture write-source))
 (export service-publication-fixture-test)
 (def (check-distinct-verification-state first second releases)
@@ -41,7 +41,7 @@
 (def (retry-same-resource _fixture resource verify)
   (verify resource))
 (def (retry-acquired-resource fixture _resource verify)
-  (with-poo-flow-fixture (next fixture) (verify next)))
+  (with-yuanxu-fixture (next fixture) (verify next)))
 
 (def (check-interrupted-recovery control phase with-retry)
   (def control-root (.get control root))
@@ -65,7 +65,7 @@
     (.cc DirectoryFailureFixture failure-phase: phase
       prefix: (path-expand "recovery-" control-root)
       .after-failure: interrupt-once))
-  (with-poo-flow-fixture (probe Fixture)
+  (with-yuanxu-fixture (probe Fixture)
     (set! owner-root (.get probe root))
     (def caught (with-catch values (lambda () (.call probe .verify))))
     (check-equal? (eq? caught interruption) #t)
@@ -106,7 +106,7 @@
 
 (def service-publication-fixture-test
   (test-suite "Native service Fixture ownership"
-    (poo-flow-test-fixture "declaration is inert and cached acquire creates independently owned resources"
+    (yuanxu-test-fixture "declaration is inert and cached acquire creates independently owned resources"
       (control DirectoryFixture)
       (def preparations 0)
       (def first-root #f)
@@ -115,10 +115,10 @@
         .prepare: (lambda (resource) (set! preparations (+ preparations 1)) resource))
       (check-equal? (eq? (.get Observed .acquire) (.get Observed .acquire)) #t)
       (check-equal? preparations 0)
-      (with-poo-flow-fixture (first Observed)
+      (with-yuanxu-fixture (first Observed)
         (set! first-root (.get first root))
         (write-source (path-expand "first/nested/input.json" first-root) "{}")
-        (with-poo-flow-fixture (second Observed)
+        (with-yuanxu-fixture (second Observed)
           (set! second-root (.get second root))
           (check-equal? (equal? first-root second-root) #f)
           (write-source (path-expand "second/input.json" second-root) "{}"))
@@ -127,7 +127,7 @@
       (check-equal? preparations 2)
       (check-equal? (file-exists? first-root) #f)
       (check-equal? (file-exists? (.get control root)) #t))
-    (poo-flow-test-fixture "a real service body failure cleans its tree and a later acquisition still admits"
+    (yuanxu-test-fixture "a real service body failure cleans its tree and a later acquisition still admits"
       (control DirectoryFixture)
       (def sentinel (gensym 'body-failure))
       (def failed-root #f)
@@ -135,14 +135,14 @@
       (def caught
         (with-catch values
           (lambda ()
-            (with-poo-flow-fixture (resource ServicesFixture)
+            (with-yuanxu-fixture (resource ServicesFixture)
               (set! failed-root (.get resource root))
               (check-equal? (file-exists? (path-expand "modules/services/postgresql/postgresql.json" failed-root)) #t)
               (write-source (path-expand "partial/nested/result" failed-root) "partial")
               (raise sentinel)))))
       (check-equal? (eq? caught sentinel) #t)
       (check-equal? (file-exists? failed-root) #f)
-      (with-poo-flow-fixture (resource ServicesFixture)
+      (with-yuanxu-fixture (resource ServicesFixture)
         (set! healthy-root (.get resource root))
         (check-equal? (equal? failed-root healthy-root) #f)
         (def publication (.get resource publication))
@@ -152,7 +152,7 @@
         (check-equal? (.get evidence accepted?) #t))
       (check-equal? (file-exists? healthy-root) #f)
       (check-equal? (file-exists? (.get control root)) #t))
-    (poo-flow-test-fixture "failed relocated preparation rolls back before returning a resource"
+    (yuanxu-test-fixture "failed relocated preparation rolls back before returning a resource"
       (control DirectoryFixture)
       (def sentinel (gensym 'preparation-failure))
       (def failed-root #f)
@@ -170,23 +170,23 @@
       (def caught
         (with-catch values
           (lambda ()
-            (with-poo-flow-fixture (_resource Broken)
+            (with-yuanxu-fixture (_resource Broken)
               (error "failed acquisition unexpectedly returned")))))
       (check-equal? (eq? caught sentinel) #t)
       (check-equal? released? #f)
       (check-equal? (file-exists? failed-root) #f)
       (check-equal? (file-exists? (.get control root)) #t))
-    (poo-flow-test-fixture "preparation and rollback failures preserve causes and sibling ownership"
+    (yuanxu-test-fixture "preparation and rollback failures preserve causes and sibling ownership"
       (probe (.cc DirectoryFailureFixture failure-phase: 'preparation))
       (.call probe .verify))
-    (poo-flow-test-fixture "body and release failures preserve causes and sibling ownership"
+    (yuanxu-test-fixture "body and release failures preserve causes and sibling ownership"
       (probe (.cc DirectoryFailureFixture failure-phase: 'body))
       (.call probe .verify))
-    (poo-flow-test-fixture "two verifies of the same resource keep fresh exceptions counters and directories"
+    (yuanxu-test-fixture "two verifies of the same resource keep fresh exceptions counters and directories"
       (control DirectoryFixture)
       (for-each
         (lambda (phase)
-          (with-poo-flow-fixture
+          (with-yuanxu-fixture
             (probe (.cc DirectoryFailureFixture failure-phase: phase
                      prefix: (path-expand "repeat-" (.get control root))))
             (check-equal? (eq? (.get probe .verify) (.get probe .verify)) #t)
@@ -196,7 +196,7 @@
             (check-equal? (.get first owner-root) (.get probe root))
             (check-equal? (.get second owner-root) (.get probe root))))
         '(preparation body)))
-    (poo-flow-test-fixture "independent acquisitions of one Fixture isolate their verification state"
+    (yuanxu-test-fixture "independent acquisitions of one Fixture isolate their verification state"
       (control DirectoryFixture)
       (for-each
         (lambda (phase)
@@ -205,10 +205,10 @@
               prefix: (path-expand "independent-" (.get control root))))
           (def first-root #f)
           (def second-root #f)
-          (with-poo-flow-fixture (first Fixture)
+          (with-yuanxu-fixture (first Fixture)
             (set! first-root (.get first root))
             (def first-observation (.call first .verify))
-            (with-poo-flow-fixture (second Fixture)
+            (with-yuanxu-fixture (second Fixture)
               (set! second-root (.get second root))
               (check-equal? (equal? (.get first root) second-root) #f)
               (def second-observation (.call second .verify))
@@ -221,7 +221,7 @@
           (check-equal? (file-exists? first-root) #f)
           (check-equal? (file-exists? second-root) #f))
         '(preparation body)))
-    (poo-flow-test-fixture "interrupted verification leaves residual cleanup to its outer owner"
+    (yuanxu-test-fixture "interrupted verification leaves residual cleanup to its outer owner"
       (control DirectoryFixture)
       (def marker (path-expand "keep/input" (.get control root)))
       (write-source marker "keep")
@@ -238,7 +238,7 @@
           (def caught
             (with-catch values
               (lambda ()
-                (with-poo-flow-fixture
+                (with-yuanxu-fixture
                   (probe (.cc DirectoryFailureFixture failure-phase: phase
                            prefix: (path-expand "interrupted-" (.get control root))
                            .after-failure: interrupt))
@@ -252,13 +252,13 @@
           (check-equal? (file-exists? (.get control root)) #t)
           (check-equal? (call-with-input-file marker read-line) "keep"))
         '(preparation body)))
-    (poo-flow-test-fixture "same resource verifies again without consuming interrupted residuals"
+    (yuanxu-test-fixture "same resource verifies again without consuming interrupted residuals"
       (control DirectoryFixture)
       (for-each
         (lambda (phase)
           (check-interrupted-recovery control phase retry-same-resource))
         '(preparation body)))
-    (poo-flow-test-fixture "same Fixture reacquires without consuming another owner's interrupted residuals"
+    (yuanxu-test-fixture "same Fixture reacquires without consuming another owner's interrupted residuals"
       (control DirectoryFixture)
       (for-each
         (lambda (phase)

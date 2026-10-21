@@ -5,7 +5,7 @@
 
 * Implemented declaration
 
-The canonical =:core/profile-composition/selection-syntax= use-module accepts
+The canonical =:yuanxu/profile-composition/selection-syntax= use-module accepts
 one compound expression after =module as alias=. The source identifier denotes
 an already available native POO scope. It is evaluated once, checked with
 object?, and bound unchanged. No source, prototype or Profile slot is forced by
@@ -27,7 +27,7 @@ Profile construction and downstream Module derivation use the same declaration.
 The bounded form lowers hygienically to:
 
 #+begin_src scheme
-(let ((ff (poo-flow-module-scope Funflow)))
+(let ((ff (yuanxu-module-scope Funflow)))
   (.o (:: @ ff)))
 #+end_src
 

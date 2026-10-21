@@ -2,12 +2,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/utilities/functional
-        :core/feature-system/bundle-v1-lowering
-        :core/feature-system/bundle-v1-foreign-arena)
+        :yuanxu/utilities/functional
+        :yuanxu/feature-system/bundle-v1-lowering
+        :yuanxu/feature-system/bundle-v1-foreign-arena)
 
 (export feature-system-bundle-v1-foreign-arena-test)
 
@@ -16,7 +16,7 @@
 (def +byte-offsets/u64+ '(0 1 2 3 4 5 6 7))
 
 (def (read-unsigned-le bytes offset byte-offsets)
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (byte-offset state)
      (+ state
         (* (u8vector-ref bytes (+ offset byte-offset))
@@ -58,7 +58,7 @@
   (test-suite
    "feature system Bundle v1 foreign arena"
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "accepted lowering plan becomes a packed native arena image"
     (let* ((plan (sample-lowering-plan))
            (descriptor (.ref plan 'descriptor))
@@ -116,7 +116,7 @@
                       'high))
       (check (.ref image 'diagnostics) => '())))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "empty lowering plan still creates one aligned arena quantum"
     (let* ((plan (feature-bundle-v1-lowering 'empty-bundle 0 '() '() '()))
            (image (feature-bundle-v1-write-foreign-arena plan)))
@@ -125,7 +125,7 @@
       (check (u8vector-length (.ref image 'arena-image)) => 64)
       (check (read-u64 (.ref image 'descriptor-image) 72) => 64)))
 
-   (poo-flow-test-case
+   (yuanxu-test-case
     "invalid lowering owner fails closed with a POO diagnostic"
     (let* ((image (feature-bundle-v1-write-foreign-arena 'not-a-plan))
            (diagnostic (car (.ref image 'diagnostics))))

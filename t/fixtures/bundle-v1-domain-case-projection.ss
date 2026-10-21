@@ -1,9 +1,9 @@
 (export make-bundle-v1-domain-case-runtime-handoff-plan)
 
 (import :clan/poo/object
-        :core/utilities/functional
-        :core/feature-system/domain-case/interface
-        :core/feature-system/interface)
+        :yuanxu/utilities/functional
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/feature-system/interface)
 
 (def (fixture-id prefix index)
   (string->symbol
@@ -17,21 +17,21 @@
 (def (fixture-project value) value)
 
 (def (runtime-projection index)
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    (fixture-id "bundle-runtime-projection" index)
    (fixture-id "bundle-component" index)
    (fixture-id "bundle-runtime-schema" index)
    fixture-project))
 
 (def (evidence-projection index)
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    (fixture-id "bundle-evidence-projection" index)
    (fixture-id "bundle-component" index)
    (fixture-id "bundle-evidence-schema" index)
    fixture-project))
 
 (def duplicate-runtime-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'bundle-runtime-projection-duplicate
    'bundle-component-0
    'bundle-runtime-schema-duplicate
@@ -61,11 +61,11 @@
          (if (= index 0)
              '()
              (list (fixture-id "bundle-component" (- index 1))))))
-    (poo-flow-case-component
+    (yuanxu-case-component
      (fixture-id "bundle-component" index)
      1
      (fixture-role index)
-     (poo-flow-case-type-contract
+     (yuanxu-case-type-contract
       type-id parent-type-ids fixture-value?)
      '()
      '()
@@ -76,43 +76,43 @@
 (def (runtime-capability index)
   (feature-adapter-capability
    (fixture-id "bundle-runtime-capability" index)
-   'poo-flow/python-runtime-cffi
-   'poo-flow.runtime-c.bundle
+   'yuanxu/python-runtime-cffi
+   'yuanxu.runtime-c.bundle
    +feature-runtime-c-bundle-version+))
 
 (def (evidence-capability index)
   (feature-adapter-capability
    (fixture-id "bundle-evidence-capability" index)
-   'poo-flow/lean-evidence-adapter
-   'poo-flow.lean-evidence
+   'yuanxu/lean-evidence-adapter
+   'yuanxu.lean-evidence
    1))
 
 (def duplicate-runtime-capability
   (feature-adapter-capability
    'bundle-runtime-capability-duplicate
-   'poo-flow/rust-runtime
-   'poo-flow.runtime-c.bundle-duplicate
+   'yuanxu/rust-runtime
+   'yuanxu.runtime-c.bundle-duplicate
    1))
 
 (def (runtime-requirement index)
   (feature-adapter-requirement
    (fixture-id "bundle-runtime-requirement" index)
    (fixture-id "bundle-runtime-capability" index)
-   'poo-flow.runtime-c.bundle
+   'yuanxu.runtime-c.bundle
    +feature-runtime-c-bundle-version+))
 
 (def (evidence-requirement index)
   (feature-adapter-requirement
    (fixture-id "bundle-evidence-requirement" index)
    (fixture-id "bundle-evidence-capability" index)
-   'poo-flow.lean-evidence
+   'yuanxu.lean-evidence
    1))
 
 (def duplicate-runtime-requirement
   (feature-adapter-requirement
    'bundle-runtime-requirement-duplicate
    'bundle-runtime-capability-duplicate
-   'poo-flow.runtime-c.bundle-duplicate
+   'yuanxu.runtime-c.bundle-duplicate
    1))
 
 (def (runtime-request index)
@@ -138,7 +138,7 @@
    (fixture-id "bundle-runtime-handoff" index)
    (fixture-id "bundle-runtime-requirement" index)
    (fixture-id "bundle-runtime-request" index)
-   'poo-flow.runtime-c.bundle
+   'yuanxu.runtime-c.bundle
    +feature-runtime-c-bundle-version+
    (fixture-id "bundle-runtime-schema" index)))
 
@@ -147,7 +147,7 @@
    (fixture-id "bundle-evidence-obligation" index)
    (fixture-id "bundle-evidence-requirement" index)
    (fixture-id "bundle-evidence-request" index)
-   'poo-flow.lean-evidence
+   'yuanxu.lean-evidence
    1
    (fixture-id "bundle-evidence-schema" index)))
 
@@ -156,7 +156,7 @@
    'bundle-runtime-handoff-duplicate
    'bundle-runtime-requirement-duplicate
    'bundle-runtime-request-duplicate
-   'poo-flow.runtime-c.bundle-duplicate
+   'yuanxu.runtime-c.bundle-duplicate
    1
    'bundle-runtime-schema-duplicate))
 
@@ -166,32 +166,32 @@
          (runtime-indexes (iota runtime-count))
          (evidence-indexes (iota evidence-count))
          (components
-          (poo-flow-map
+          (yuanxu-map
            (lambda (index)
              (case-component
               index runtime-count evidence-count duplicate-runtime-owner?))
            component-indexes))
          (capabilities
           (append
-           (poo-flow-map runtime-capability runtime-indexes)
+           (yuanxu-map runtime-capability runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-capability)
                '())
-           (poo-flow-map evidence-capability evidence-indexes)))
+           (yuanxu-map evidence-capability evidence-indexes)))
          (requirements
           (append
-           (poo-flow-map runtime-requirement runtime-indexes)
+           (yuanxu-map runtime-requirement runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-requirement)
                '())
-           (poo-flow-map evidence-requirement evidence-indexes)))
+           (yuanxu-map evidence-requirement evidence-indexes)))
          (requests
           (append
-           (poo-flow-map runtime-request runtime-indexes)
+           (yuanxu-map runtime-request runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-request)
                '())
-           (poo-flow-map evidence-request evidence-indexes)))
+           (yuanxu-map evidence-request evidence-indexes)))
          (feature
           (feature-descriptor
            (feature-spec-compose
@@ -208,7 +208,7 @@
           (feature-composition-plan feature-bundle))
          (assembly
           (feature-domain-case-assembly
-           (poo-flow-domain-case-cache)
+           (yuanxu-domain-case-cache)
            'bundle-domain-case
            1
            composition-plan))
@@ -222,11 +222,11 @@
            capability-catalog policy-binding))
          (handoffs
           (append
-           (poo-flow-map runtime-handoff runtime-indexes)
+           (yuanxu-map runtime-handoff runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-handoff)
                '())
-           (poo-flow-map evidence-handoff evidence-indexes)))
+           (yuanxu-map evidence-handoff evidence-indexes)))
          (handoff-manifest
           (feature-runtime-handoff-manifest
            'bundle-domain-case-handoffs handoffs)))

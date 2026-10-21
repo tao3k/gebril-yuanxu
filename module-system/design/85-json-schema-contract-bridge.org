@@ -16,7 +16,7 @@ emitter. The target is the existing POO Flow contract spine:
 #+begin_src text
 JSON-like schema value
   -> normalized schema IR
-  -> PooFlowObjectTypeContract / PooFlowSlotContract
+  -> YuanxuObjectTypeContract / YuanxuSlotContract
   -> type facts / Lean fact contracts / bounded receipt
 #+end_src
 
@@ -143,7 +143,7 @@ owners.
 The first public shape is intentionally small:
 
 #+begin_src scheme
-(poo-flow-json-schema->contract-artifact
+(yuanxu-json-schema->contract-artifact
  schema
  '((source-ref . github-workflow-schema)
    (owner . workflow)
@@ -189,7 +189,7 @@ uv run --project packages/python-runtime poo-flow-jsonschema-contract \
   --output user-interface/custom/my-module/contracts/custom-stage.ss
 #+end_src
 
-The generated Scheme still calls =poo-flow-json-schema->contract-artifact=.
+The generated Scheme still calls =yuanxu-json-schema->contract-artifact=.
 Python does not own contract semantics; it only projects user-provided JSON
 Schema into Scheme source that the normal POO Flow contract bridge can
 normalize, validate, and inspect.

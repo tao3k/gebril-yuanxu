@@ -114,7 +114,7 @@ The public downstream shape should be:
     checks: (list funflow/build funflow/test)))
 #+end_src
 
-The macro expansion should construct a =poo-flow-cicd-check-map= through a new
+The macro expansion should construct a =yuanxu-cicd-check-map= through a new
 Funflow config helper. The helper should live beside the module owner, not in
 =user-interface/module-selection.ss=:
 
@@ -183,7 +183,7 @@ removed. Current implementation uses native POO =.def= declarations with
 =funflow-check= and =funflow-pipeline= prototypes.
 
 1. Extend =modules/funflow/config.ss= with helpers that turn pipeline/check
-   clauses into =poo-flow-cicd-check-map= objects.
+   clauses into =yuanxu-cicd-check-map= objects.
 2. Import that helper from =src/user-interface/init-syntax.ss= and add only the
    =funflow :config (pipeline ...)= syntax branch.
 3. Keep the =use-module= contract gate on the new branch so =(use-module

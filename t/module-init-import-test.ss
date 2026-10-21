@@ -6,10 +6,10 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context
                  eval-syntax core-import-module expander-context-id)
-        (only-in :core/module-system/building/source-closure for-each-build-module)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/observability/testing-case poo-flow-test-observe))
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-observe))
 (export module-init-import-test)
 (def Workspace
   (.o .acquire: (lambda ()
@@ -20,7 +20,7 @@
                   (check-equal? (file-exists? root) #f))))
 (def module-init-import-test
   (test-suite "Init import owns no eager Reader or build execution closure"
-    (poo-flow-test-fixture "native init import defers missing source and execution owners"
+    (yuanxu-test-fixture "native init import defers missing source and execution owners"
       (root Workspace)
       (def init (path-expand "init.ss" root))
       (call-with-output-file (path-expand "gerbil.pkg" root)
@@ -28,21 +28,21 @@
       ;; Deliberately absent module root: importing a declaration is not demand.
       (call-with-output-file init
         (lambda (out)
-          (pretty-print '(import :core/module-system/selection/init-syntax) out)
-          (pretty-print '(poo-flow! source: "./modules" mode: explicit (missing)) out)))
+          (pretty-print '(import :yuanxu/module-system/selection/init-syntax) out)
+          (pretty-print '(yuanxu! source: "./modules" mode: explicit (missing)) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax `(import ,init))
         (def contexts '())
         (for-each-build-module (core-import-module init)
           (lambda (context) (set! contexts (cons (expander-context-id context) contexts))))
-        (poo-flow-test-observe 'init-import-contexts (length contexts))
+        (yuanxu-test-observe 'init-import-contexts (length contexts))
         (for-each
           (lambda (identity) (check-equal? (and (memq identity contexts) #t) #f))
-          '(core/module-system/source/reader
-            core/module-system/source/link
-            core/module-system/building/build-projection
-            core/module-system/building/artifacts
-            core/observability/testing-script))
+          '(yuanxu/module-system/source/reader
+            yuanxu/module-system/source/link
+            yuanxu/module-system/building/build-projection
+            yuanxu/module-system/building/artifacts
+            yuanxu/observability/testing-script))
         (def tests (eval-syntax 'init.tests))
         (check-equal? (.slot? tests '.run) #t)
         (check-equal? (.ref/cached tests 'execution) #f)
@@ -51,7 +51,7 @@
         ;; The first explicit namespace demand must fail, not publish an empty
         ;; successful selection or hide the missing source behind the promise.
         (check-exception (eval-syntax 'init.modules) error?)))
-    (poo-flow-test-fixture "namespace enumeration does not construct a publication Reader"
+    (yuanxu-test-fixture "namespace enumeration does not construct a publication Reader"
       (root Workspace)
       (def directory (path-expand "modules/example" root))
       (create-directory* directory)
@@ -65,8 +65,8 @@
       (def init (path-expand "init.ss" root))
       (call-with-output-file init
         (lambda (out)
-          (pretty-print '(import :core/module-system/selection/init-syntax) out)
-          (pretty-print '(poo-flow! source: "./modules" mode: auto) out)))
+          (pretty-print '(import :yuanxu/module-system/selection/init-syntax) out)
+          (pretty-print '(yuanxu! source: "./modules" mode: auto) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax `(import ,init))
         (def counts (make-hash-table-eq))

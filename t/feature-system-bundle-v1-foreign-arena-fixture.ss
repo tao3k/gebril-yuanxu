@@ -3,8 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import :clan/poo/object
-        :core/feature-system/bundle-v1-lowering
-        :core/feature-system/bundle-v1-foreign-arena)
+        :yuanxu/feature-system/bundle-v1-lowering
+        :yuanxu/feature-system/bundle-v1-foreign-arena)
 
 (def (required-output-path variable)
   (let (path (getenv variable))
@@ -45,9 +45,9 @@
 
 (def (write-fixture!)
   (let* ((descriptor-path
-          (required-output-path "POO_FLOW_BUNDLE_V1_DESCRIPTOR_OUT"))
+          (required-output-path "YUANXU_BUNDLE_V1_DESCRIPTOR_OUT"))
          (arena-path
-          (required-output-path "POO_FLOW_BUNDLE_V1_ARENA_OUT"))
+          (required-output-path "YUANXU_BUNDLE_V1_ARENA_OUT"))
          (image
           (require-feature-bundle-v1-foreign-arena-image
            (feature-bundle-v1-write-foreign-arena
@@ -56,7 +56,7 @@
          (arena-image (.ref image 'arena-image)))
     (write-u8vector-file! descriptor-path descriptor-image)
     (write-u8vector-file! arena-path arena-image)
-    (display "schema=poo-flow.bundle-v1.scheme-c-fixture.1\n")
+    (display "schema=yuanxu.bundle-v1.scheme-c-fixture.1\n")
     (display "descriptor-bytes=")
     (display (u8vector-length descriptor-image))
     (newline)

@@ -43,7 +43,7 @@
       (policy-algebra policy-algebra-value)
       (strategy-algebra strategy-algebra-value))
    (def binding
-     (poo-flow-case-component
+     (yuanxu-case-component
       'component-id
       component-version
       role-prototype
@@ -82,7 +82,7 @@
       (select-projections projection-id ...))
    (begin
      (def closure-receipt-binding
-       (poo-flow-domain-case-close
+       (yuanxu-domain-case-close
         cache-value
         'schema-id
         schema-version

@@ -38,16 +38,16 @@ descriptor retains BOTH actual object references. Symbolic identities are labels
 ;; Proposed Core adapter. PlatformPolicy is the selected existing Core policy;
 ;; it classifies contextual eligibility and supplies contextual obligations.
 ;; Its complete definition depends on the selected publication, not AWS fields.
-(.def (AwsAdmission @ PooFlowContract.)
+(.def (AwsAdmission @ YuanxuContract.)
   identity: 'aws/profile-admission
   value-contract: AwsProfileContract
   policy: PlatformPolicy
   .classify:
   (lambda (value context)
-    (poo-flow-type-classify policy value context))
+    (yuanxu-type-classify policy value context))
   .obligations:
   (lambda (value context)
-    (poo-flow-contract-obligations policy value context))
+    (yuanxu-contract-obligations policy value context))
   (.admit =>
     (lambda (previous)
       (lambda (candidate context)
@@ -153,7 +153,7 @@ The nested invocation checks the exact normalized subject AFTER .admit returns.
     (lambda (raw)
       ((.get context-value admit-current))
       (def evidence
-        (poo-flow-contract-admit descriptor raw context-value))
+        (yuanxu-contract-admit descriptor raw context-value))
       (def checked (.get evidence candidate))
       (def bound
         (metadata.bind-evidence current-call checked descriptor context-value

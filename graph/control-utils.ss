@@ -7,11 +7,11 @@
 ;;; Invariant: no runtime execution; helpers only shape graph facts.
 
 (import (only-in :std/list/list any every filter fold)
-        :core/graph/types-core
-        :core/graph/algorithms)
+        :yuanxu/graph/types-core
+        :yuanxu/graph/algorithms)
 
-(export +poo-flow-graph-conditional-edge-kinds+
-        +poo-flow-graph-loop-edge-kinds+
+(export +yuanxu-graph-conditional-edge-kinds+
+        +yuanxu-graph-loop-edge-kinds+
         control-row
         control-row-if
         graph-entry-ids
@@ -29,11 +29,11 @@
         ids-subset?)
 
 ;; : [Symbol]
-(def +poo-flow-graph-conditional-edge-kinds+
+(def +yuanxu-graph-conditional-edge-kinds+
   '(conditional branch router))
 
 ;; : [Symbol]
-(def +poo-flow-graph-loop-edge-kinds+
+(def +yuanxu-graph-loop-edge-kinds+
   '(loop back-edge retry self-loop))
 
 ;; : (-> Symbol Object Pair)
@@ -46,7 +46,7 @@
     (cons (cons key value) rows)
     rows))
 
-;; : (-> PooFlowGraph [Object] [Object])
+;; : (-> YuanxuGraph [Object] [Object])
 (def (graph-entry-ids graph-value root-ids)
   (let ((explicit-ids (graph-metadata-ref/default graph-value
                                                   'entry-ids
@@ -60,7 +60,7 @@
           (list explicit-id)
           root-ids)))))
 
-;; : (-> PooFlowGraph [Object] [Object])
+;; : (-> YuanxuGraph [Object] [Object])
 (def (graph-finish-ids graph-value terminal-ids)
   (let ((explicit-ids (graph-metadata-ref/default graph-value
                                                   'finish-ids
@@ -74,11 +74,11 @@
           (list explicit-id)
           terminal-ids)))))
 
-;; : (-> PooFlowGraph [Object] [Object] [Object])
+;; : (-> YuanxuGraph [Object] [Object] [Object])
 (def (graph-dead-end-ids graph-value reachable-ids finish-ids)
   (let ((finish-index (ids->membership-index finish-ids))
         (outgoing-node-index
-         (edge-source-index (poo-flow-graph-edges graph-value))))
+         (edge-source-index (yuanxu-graph-edges graph-value))))
     (select-ids
      (lambda (id)
        (and (not (hash-key? finish-index id))
@@ -151,10 +151,10 @@
                                 rows)))
      rows)))
 
-;; : (-> PooFlowGraph Symbol Object)
+;; : (-> YuanxuGraph Symbol Object)
 (def (graph-metadata-ref/default graph-value key default)
   (metadata-ref/default key
-                        (poo-flow-graph-metadata graph-value)
+                        (yuanxu-graph-metadata graph-value)
                         default))
 
 ;; : (-> Symbol Alist Object Object)
@@ -164,43 +164,43 @@
       (cdr entry)
       default)))
 
-;; : (-> PooFlowGraph [Symbol] [[Object Object]])
+;; : (-> YuanxuGraph [Symbol] [[Object Object]])
 (def (edge-pairs-by-kinds graph-value edge-kinds)
   (reverse
-   (edge-pairs-by-kinds/rev (poo-flow-graph-edges graph-value)
+   (edge-pairs-by-kinds/rev (yuanxu-graph-edges graph-value)
                             edge-kinds
                             '())))
 
-;; : (-> [PooFlowGraphEdge] [Symbol] [[Object Object]] [[Object Object]])
+;; : (-> [YuanxuGraphEdge] [Symbol] [[Object Object]] [[Object Object]])
 (def (edge-pairs-by-kinds/rev edges edge-kinds pairs-rev)
   (fold
    (lambda (edge pairs)
-     (if (symbol-member? (poo-flow-graph-edge-kind edge) edge-kinds)
-       (cons (list (poo-flow-graph-edge-from edge)
-                   (poo-flow-graph-edge-to edge))
+     (if (symbol-member? (yuanxu-graph-edge-kind edge) edge-kinds)
+       (cons (list (yuanxu-graph-edge-from edge)
+                   (yuanxu-graph-edge-to edge))
              pairs)
        pairs))
    pairs-rev
    edges))
 
-;; : (-> PooFlowGraph [Symbol] [Object])
+;; : (-> YuanxuGraph [Symbol] [Object])
 (def (edge-targets-by-kinds graph-value edge-kinds)
   (reverse
-   (edge-targets-by-kinds/rev (poo-flow-graph-edges graph-value)
+   (edge-targets-by-kinds/rev (yuanxu-graph-edges graph-value)
                               edge-kinds
                               '())))
 
-;; : (-> [PooFlowGraphEdge] [Symbol] [Object] [Object])
+;; : (-> [YuanxuGraphEdge] [Symbol] [Object] [Object])
 (def (edge-targets-by-kinds/rev edges edge-kinds ids-rev)
   (fold
    (lambda (edge ids)
-     (if (symbol-member? (poo-flow-graph-edge-kind edge) edge-kinds)
-       (cons (poo-flow-graph-edge-to edge) ids)
+     (if (symbol-member? (yuanxu-graph-edge-kind edge) edge-kinds)
+       (cons (yuanxu-graph-edge-to edge) ids)
        ids))
    ids-rev
    edges))
 
-;; : (-> [PooFlowGraphEdge] [Object] [[Object Object]] [[Object Object]])
+;; : (-> [YuanxuGraphEdge] [Object] [[Object Object]] [[Object Object]])
 (def (undeclared-edge-pairs/rev edges node-ids pairs-rev)
   (undeclared-edge-pairs/indexed/rev
    edges (ids->membership-index node-ids) pairs-rev))
@@ -208,11 +208,11 @@
 (def (undeclared-edge-pairs/indexed/rev edges node-index pairs-rev)
   (fold
    (lambda (edge pairs)
-     (if (and (hash-key? node-index (poo-flow-graph-edge-from edge))
-              (hash-key? node-index (poo-flow-graph-edge-to edge)))
+     (if (and (hash-key? node-index (yuanxu-graph-edge-from edge))
+              (hash-key? node-index (yuanxu-graph-edge-to edge)))
        pairs
-       (cons (list (poo-flow-graph-edge-from edge)
-                   (poo-flow-graph-edge-to edge))
+       (cons (list (yuanxu-graph-edge-from edge)
+                   (yuanxu-graph-edge-to edge))
              pairs)))
    pairs-rev
    edges))
@@ -249,7 +249,7 @@
   (let (index (make-hash-table))
     (for-each
      (lambda (edge)
-       (hash-put! index (poo-flow-graph-edge-from edge) #t))
+       (hash-put! index (yuanxu-graph-edge-from edge) #t))
      edges)
     index))
 

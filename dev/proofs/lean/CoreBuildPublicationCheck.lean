@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.CoreBuildPublication
-open Lean PooFlowCoreProof.Admission.CoreBuildPublication
+import YuanxuProof.Admission.CoreBuildPublication
+open Lean YuanxuProof.Admission.CoreBuildPublication
 
 def checkTrace (j : Json) : Except String Unit := do
   let rows ← j.getArr?

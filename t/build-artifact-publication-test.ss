@@ -6,13 +6,13 @@
         (only-in :std/encoding/json write-json)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture with-poo-flow-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
-        (only-in :core/module-system/building/artifacts
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/module-system/building/artifacts
           call-with-build-artifact-issuance admit-build-artifacts!
           run-build-artifact-process)
         "./qualification/build-publication/projection"
-        (only-in :core/admission/publication AdmissionPublication.))
+        (only-in :yuanxu/admission/publication AdmissionPublication.))
 (export build-artifact-publication-test test-cleanup!)
 (def observations '())
 (def handoff-observations '())
@@ -45,14 +45,14 @@
     (.cc services lib: lib projection: projection native-main: run
       binary: binary
       record: (path-expand
-        (find (cut string-prefix? ".poo-flow-build-issuance-" <>)
+        (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
           (directory-files (list path: lib ignore-hidden: #f))) lib))))
 (def (invoke-publication publish parent candidate)
   (defvalues (receipt next failure) (publish parent candidate))
   (values receipt next failure))
 (def build-artifact-publication-test
  (test-suite "Core native-build issuance and cached publication"
-  (poo-flow-test-fixture "saved publication rejects joint record/artifact replacement"
+  (yuanxu-test-fixture "saved publication rejects joint record/artifact replacement"
     (fixture CompiledServicesFixture)
     (with-slots (selection publication binary record) fixture
       (def Parent (.get publication value))
@@ -128,7 +128,7 @@
           (check-equal? (Error-message refused) "Core compiled artifacts changed"))
         (cut delete-file higher))
       ;; An unrelated graph/build uses its own output and retained issuance.
-      (with-poo-flow-fixture (peer CompiledServicesFixture)
+      (with-yuanxu-fixture (peer CompiledServicesFixture)
         (admit-build-artifacts! (.get peer selection build-graph))
         (accepted "saved-after-peer-build"))
       (def warm-output

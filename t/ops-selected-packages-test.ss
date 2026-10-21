@@ -4,13 +4,13 @@
 (import :std/test :clan/poo/object "./qualification/opentofu/objects.ss"
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!)
-        (only-in :core/modules/nix/objects NixSource.)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/types poo-flow-predicate-contract))
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
+        (only-in :yuanxu/modules/nix/objects NixSource.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/types yuanxu-predicate-contract))
 (export ops-selected-packages-test)
 (def SelectedPackages. (.get Ops prototypes SelectedPackages))
-(def ObjectContract (poo-flow-predicate-contract 'ops/test-object object? (lambda (_v _c) '())))
+(def ObjectContract (yuanxu-predicate-contract 'ops/test-object object? (lambda (_v _c) '())))
 (def (selection accepted? (other '()) (observe void))
   (let (request
         (.o identity: 'package input-files: '(("selection.json" . "{}"))
@@ -23,7 +23,7 @@
             admit-current: void))))
 (def ops-selected-packages-test
   (test-suite "Native Ops consumes selected external packages"
-    (poo-flow-test-case "native chains normalize boundaries and opaque callbacks keep fresh guards"
+    (yuanxu-test-case "native chains normalize boundaries and opaque callbacks keep fresh guards"
       (call-with-temporary-directory "ops-native-package-prefix"
         (lambda (root)
           ;; Real Nix publication and SelectedPackages composition; only the
@@ -148,7 +148,7 @@
           (set! change? #f)
           (set! entry-to-change (.get result guard-entry))
           (check-exception (.call result admit-current) stale?))))
-    (poo-flow-test-case "a warm package callback cannot borrow its preceding source window"
+    (yuanxu-test-case "a warm package callback cannot borrow its preceding source window"
       (call-with-temporary-directory "ops-package-warm-source"
         (lambda (root)
           ;; A callback probe, not a Nix fixture: the real AWS Case exercises
@@ -185,7 +185,7 @@
               (and (Error? exception)
                    (string=? (Error-message exception)
                      "stale selected build input; regenerate the build entry")))))))
-    (poo-flow-test-case "source guard never repeats external package checking"
+    (yuanxu-test-case "source guard never repeats external package checking"
       (call-with-temporary-directory "ops-package-guards"
         (lambda (root)
           (def checks 0)
@@ -198,7 +198,7 @@
           (check-equal? checks 1)
           (.call result admit-current)
           (check-equal? checks 2))))
-    (poo-flow-test-case "publishes only after final admission and rechecks an edited guard"
+    (yuanxu-test-case "publishes only after final admission and rechecks an edited guard"
       (call-with-temporary-directory "ops-packages"
         (lambda (root)
           (let (operation (.cc SelectedPackages. 'selection (selection #t) 'directory root))
@@ -208,7 +208,7 @@
               (call-with-output-file (list path: (.get result guard-entry) truncate: #t)
                 (cut display "tampered" <>))
               (check-exception (.call result admit-current) error?))))))
-    (poo-flow-test-case "rejects failed admission and unsupported selected projections"
+    (yuanxu-test-case "rejects failed admission and unsupported selected projections"
       (call-with-temporary-directory "ops-packages-reject"
         (lambda (root)
           (check-exception
@@ -217,7 +217,7 @@
           (check-exception
            (.call (.cc SelectedPackages. 'selection (selection #t '(unsupported)) 'directory (path-expand "other" root)) .run)
            error?))))
-    (poo-flow-test-case "value validation cannot publish after changing package provenance"
+    (yuanxu-test-case "value validation cannot publish after changing package provenance"
       (call-with-temporary-directory "ops-package-admission-mutation"
         (lambda (root)
           (def current? #t)

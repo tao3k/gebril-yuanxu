@@ -39,8 +39,8 @@ diagnostics.
 
 The ordering boundary is explicit: C4 happens before graph analysis.  C4
 resolves inherited POO definitions and slot precedence; the graph-loop layer
-analyzes the final validated facts through public =poo-flow-graph= and
-=poo-flow-graph-loop-analysis= receipts.  This keeps graph algorithms reusable
+analyzes the final validated facts through public =yuanxu-graph= and
+=yuanxu-graph-loop-analysis= receipts.  This keeps graph algorithms reusable
 and prevents each downstream DSL or loop profile from manufacturing its own
 cycle/SCC interpretation.
 Gerbil POO gives us an object graph naturally:
@@ -94,7 +94,7 @@ result later, but Scheme should still emit receipts and manifests with
 
 ** 10.06.33.35 Graph Role In Loop Engineering
 
-Graph-loop semantics are an application of =poo-flow-graph-loop-analysis=.
+Graph-loop semantics are an application of =yuanxu-graph-loop-analysis=.
 Loop engines, workflow profiles, and C4 projections supply POO-native graph
 facts; they do not define a second private Tarjan/SCC/condensation algorithm.
 The reusable graph API owns those receipts so loop engineering can focus on
@@ -258,7 +258,7 @@ Edges should be POO-native where they carry policy.
 Example shape:
 
 #+begin_src scheme
-(poo-flow-graph-edge 'build 'test 'dependency
+(yuanxu-graph-edge 'build 'test 'dependency
                      '((composition-style . kleisli)))
 #+end_src
 

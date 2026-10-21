@@ -237,7 +237,7 @@ not from construction-parent order. No fixed language set is assumed.
 | Close and preview | All demanded admission obligations have correlated successful receipts in one unchanged view | Runtime commands remain unexecuted |
 | Publish plan | Revalidate the view/dependency evidence; retry/refuse on change | Session/executor work remains behind the runtime handoff |
 
-Each node uses the existing public poo-flow-contract-admit protocol. Track
+Each node uses the existing public yuanxu-contract-admit protocol. Track
 candidate/Contract/context/view work identities to skip completed shared demands
 and reject unsupported recursive in-progress admission, rather than infinitely
 forcing a cycle. Newly discovered selected dependencies extend the worklist;

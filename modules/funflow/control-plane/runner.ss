@@ -6,21 +6,21 @@
 ;;; Boundary: runner interprets plans and emits receipts.
 ;;; Invariant: adapter calls remain behind runtime-adapter functions.
 
-(import :core/modules/funflow/control-plane/projection-syntax
-        :core/utilities/algorithms
-        :core/modules/funflow/control-plane/receipt
-        :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/task
-        :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/graph
-        :core/modules/funflow/control-plane/strategy
-        :core/modules/funflow/control-plane/policy
-        :core/modules/funflow/control-plane/runtime-protocol
-        :core/modules/funflow/control-plane/runtime-adapter
-        :core/modules/funflow/control-plane/replay
-        :core/modules/funflow/control-plane/runner-support/validation
-        :core/modules/funflow/control-plane/runner-support/receipt
-        :core/modules/funflow/control-plane/runner-support/adapter-dispatch)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/utilities/algorithms
+        :yuanxu/modules/funflow/control-plane/receipt
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/task
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/graph
+        :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/policy
+        :yuanxu/modules/funflow/control-plane/runtime-protocol
+        :yuanxu/modules/funflow/control-plane/runtime-adapter
+        :yuanxu/modules/funflow/control-plane/replay
+        :yuanxu/modules/funflow/control-plane/runner-support/validation
+        :yuanxu/modules/funflow/control-plane/runner-support/receipt
+        :yuanxu/modules/funflow/control-plane/runner-support/adapter-dispatch)
 
 (export make-run-result
         run-result?
@@ -153,17 +153,17 @@
     (let ((plan (runner-plan runner flow)))
       (runner-validate-plan runner plan)
       (let* ((frontier-state
-              (poo-flow-make-frontier-state
+              (yuanxu-make-frontier-state
                (execution-plan-nodes plan)
                plan-node-id plan-node-ordinal plan-node-dependencies))
              (root-frontier
               (strategy-admit-ready-frontier-ids
                strategy
-               (poo-flow-frontier-state-ready-ids frontier-state)))
+               (yuanxu-frontier-state-ready-ids frontier-state)))
              (result
               (run-plan-nodes
                runner plan strategy (execution-plan-nodes plan) input
-               '() (poo-flow-make-value-index) frontier-state)))
+               '() (yuanxu-make-value-index) frontier-state)))
         (let ((value (car result))
               (children (reverse (cdr result))))
           (make-run-result
@@ -223,13 +223,13 @@
            (frontier
             (strategy-admit-ready-frontier-ids
              strategy
-             (poo-flow-frontier-state-ready-ids frontier-state)))
+             (yuanxu-frontier-state-ready-ids frontier-state)))
            (node-input (node-input-value node value-index input))
            (step-result (run-plan-node runner plan strategy node node-input frontier))
            (value (car step-result))
            (receipt (cdr step-result)))
-      (poo-flow-value-index-put! value-index (plan-node-id node) value)
-      (poo-flow-frontier-state-complete! frontier-state (plan-node-id node))
+      (yuanxu-value-index-put! value-index (plan-node-id node) value)
+      (yuanxu-frontier-state-complete! frontier-state (plan-node-id node))
       (run-plan-nodes runner plan strategy (cdr nodes) input
                       (cons receipt receipts) value-index frontier-state))))
 
@@ -538,7 +538,7 @@
 ;; : (-> Id HashTable Value)
 (def (value-for-node-id id value-index)
   (let-values (((present? value)
-                (poo-flow-value-index-ref value-index id)))
+                (yuanxu-value-index-ref value-index id)))
     (if present?
       value
       (raise-control-plane-failure

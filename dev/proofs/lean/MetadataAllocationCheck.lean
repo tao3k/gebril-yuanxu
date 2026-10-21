@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.MetadataAllocation
+import YuanxuProof.Admission.MetadataAllocation
 
-open Lean PooFlowCoreProof.Admission.MetadataAllocation
+open Lean YuanxuProof.Admission.MetadataAllocation
 
 def checkRow (j : Json) : Except String String := do
   let a ← j.getArr?

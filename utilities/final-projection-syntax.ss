@@ -7,12 +7,12 @@
 ;;; Invariant: generated functions are inspection, receipt, or presentation
 ;;; boundaries only; module activation and resolver logic stay explicit.
 
-(import :core/utilities/product-syntax)
+(import :yuanxu/utilities/product-syntax)
 
-(export poo-flow-product-rows/tail
-        poo-flow-product-rows-into/rev
-        poo-flow-product-field-rows
-        poo-flow-product-field-rows/tail
+(export yuanxu-product-rows/tail
+        yuanxu-product-rows-into/rev
+        yuanxu-product-field-rows
+        yuanxu-product-field-rows/tail
         defpoo-final-projection
         defpoo-final-projection-batch)
 

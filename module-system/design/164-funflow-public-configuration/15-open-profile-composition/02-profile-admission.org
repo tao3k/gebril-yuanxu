@@ -6,12 +6,12 @@
 
 See [[file:../16-profile-publication-and-contract-resolution.org][module 16]] for the pending publication/provenance resolver that supplies
 the internal profile-bindings association. Users do not repeat ExampleBindings.
-poo-flow-contract-admit is the existing admission protocol; the supplied Profile
+yuanxu-contract-admit is the existing admission protocol; the supplied Profile
 Contract, rather than that protocol name, defines this candidate boundary.
 
-[[file:../21-scheme-dfs-admission-correspondence.org][Module 21 public-API audit]] found that PooFlowResponsibilityContract. is a
+[[file:../21-scheme-dfs-admission-correspondence.org][Module 21 public-API audit]] found that YuanxuResponsibilityContract. is a
 Core-private binding. The constructor below is design source, not an executable
-external-package API. The real probe uses public PooFlowNativeObjectContract.
+external-package API. The real probe uses public YuanxuObjectContract.
 with a declared proto; the domain builder boundary remains an adaptation task.
 
 * Independent contracts, dynamic occurrence contexts
@@ -32,7 +32,7 @@ that every DevOps service is a Funflow Pipeline.
 #+begin_src scheme
 (def (cicd-profile-classify identity-value candidate context)
   (let ((accepted (object? candidate)))
-    (poo-flow-classification-evidence
+    (yuanxu-classification-evidence
       identity-value candidate accepted
       (if accepted '() '(expected-profile-object)) context)))
 
@@ -61,7 +61,7 @@ that every DevOps service is a Funflow Pipeline.
                                path-value 'configured-feature-admission-failed)))))))
 
 (def (cicd-module-position-contract module-name config-contract)
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'cicd/module-position object?
     (cut cicd-module-position-obligations module-name config-contract <> <>)))
 
@@ -69,7 +69,7 @@ that every DevOps service is a Funflow Pipeline.
   (unknown-field-problems descriptor profile-value (.get context profile-path)))
 
 (def (make-cicd-profile-contract identity-value declared-responsibilities)
-  (.o (:: @ PooFlowResponsibilityContract.)
+  (.o (:: @ YuanxuResponsibilityContract.)
     identity: identity-value
     .classify: (cut cicd-profile-classify identity <> <>)
     responsibilities: declared-responsibilities
@@ -157,8 +157,8 @@ protocol. No catalog-wide source scan or factory call is implied by this value.
 
 #+begin_src scheme
 (def (cicd-checked-evidence contract-value candidate context evidence)
-  (unless (and (poo-flow-validation-evidence? evidence)
-               (poo-flow-validation-evidence-accepted? evidence)
+  (unless (and (yuanxu-validation-evidence? evidence)
+               (yuanxu-validation-evidence-accepted? evidence)
                (eq? (.get evidence contract-identity) (.get contract-value identity))
                (equal? (.get evidence classification type-identity)
                        (.get contract-value identity))
@@ -189,7 +189,7 @@ protocol. No catalog-wide source scan or factory call is implied by this value.
                         profile-path: (list binding-name)
                         module-policies: (.get association-value module-policies)))
                    (evidence
-                    (poo-flow-contract-admit contract-value profile-value child-context-value)))
+                    (yuanxu-contract-admit contract-value profile-value child-context-value)))
               (cicd-checked-evidence contract-value profile-value child-context-value evidence)
               (.o binding: binding-name
                   profile: profile-value

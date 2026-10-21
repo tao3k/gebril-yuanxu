@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :core/scenarios/aws/objects WebProfile)
-        (only-in :core/modules/opentofu/execution OpenTofuExecution.))
+        (only-in :yuanxu/scenarios/aws/objects WebProfile)
+        (only-in :yuanxu/modules/opentofu/execution OpenTofuExecution.))
 (export Profile Scenario)
 ;; Syntactically valid example AMI, not a claim that it exists in any account.
 (.def (Profile @ WebProfile) ami: "ami-0123456789abcdef0")

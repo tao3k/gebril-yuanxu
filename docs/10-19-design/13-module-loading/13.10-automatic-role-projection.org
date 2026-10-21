@@ -27,8 +27,8 @@ qualification. It contains its Module .def and no imports.
 The repository's module-tree owner declares one ordinary modules/gerbil.pkg:
 
 #+begin_src scheme
-(package: core/modules
- prelude: :core/module-system/source/module-prelude)
+(package: yuanxu/modules
+ prelude: :yuanxu/module-system/source/module-prelude)
 #+end_src
 
 Gerbil already reads package and prelude from this file. The namespace remains
@@ -41,7 +41,7 @@ The prelude itself is an ordinary module:
 #+begin_src scheme
 (import (except-in :gerbil/core object? make-object)
         (except-in :clan/poo/object .def)
-        (only-in :core/module-system/source/declaration .def))
+        (only-in :yuanxu/module-system/source/declaration .def))
 (export (import: :gerbil/core :clan/poo/object) .def)
 #+end_src
 

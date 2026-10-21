@@ -5,12 +5,12 @@
                  slot-read-dependencies)
         (only-in :clan/poo/t/closure-measure measure)
         (only-in :std/error Error? Error-message)
-        (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  ServicesFixture write-source))
 (export slot-read-cost-test test-cleanup!)
 
@@ -36,7 +36,7 @@
   identity: 'test/cost-envelope
   .classify:
   (lambda (candidate context)
-    (poo-flow-classification-evidence identity candidate #t '() context)))
+    (yuanxu-classification-evidence identity candidate #t '() context)))
 
 (def (check-plan receipt)
   (check-equal? (.get receipt accepted?) #t)
@@ -110,7 +110,7 @@
 
 (def slot-read-cost-test
   (test-suite "Real Scenario read/replay costs"
-    (poo-flow-test-fixture "maintained contracts cold warm and nested admission"
+    (yuanxu-test-fixture "maintained contracts cold warm and nested admission"
       (fixture ServicesFixture)
       (def publication (.get fixture publication))
       (def Contract (.get publication contract))
@@ -158,7 +158,7 @@
       (check-equal? (.get rejected accepted?) #f)
       (check-equal? (.get (car (.get rejected diagnostics)) kind) 'stale-parent-plan)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "shared endpoint dependencies replay once per token"
+    (yuanxu-test-fixture "shared endpoint dependencies replay once per token"
       (fixture ServicesFixture)
       (def publication (.get fixture publication))
       (def Parent (.get publication value))
@@ -176,7 +176,7 @@
           (check-equal? value 5432)
           (report (list 'DEPENDENCY-COST width round 20 costs))))
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "nested final currentness refuses a post-child source change"
+    (yuanxu-test-fixture "nested final currentness refuses a post-child source change"
       (fixture ServicesFixture)
       (def publication (.get fixture publication))
       (def Parent (.get publication value))

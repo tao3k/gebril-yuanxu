@@ -15,38 +15,38 @@
                  PureAList?
                  walist->list))
 
-(export poo-flow-json-schema-source->json-like
-        poo-flow-json-schema-read-file
-        poo-flow-json-schema-read-port)
+(export yuanxu-json-schema-source->json-like
+        yuanxu-json-schema-read-file
+        yuanxu-json-schema-read-port)
 
 ;; : (-> Pair Pair)
-(def (poo-flow-json-schema-source-row->json-like row)
+(def (yuanxu-json-schema-source-row->json-like row)
   (cons (car row)
-        (poo-flow-json-schema-source->json-like (cdr row))))
+        (yuanxu-json-schema-source->json-like (cdr row))))
 
 ;; : (-> JsonRuntimeDatum JsonLikeDatum)
-(def (poo-flow-json-schema-source->json-like value)
+(def (yuanxu-json-schema-source->json-like value)
   (cond
    ((PureAList? value)
-    (map poo-flow-json-schema-source-row->json-like
+    (map yuanxu-json-schema-source-row->json-like
          (walist->list value)))
    ((vector? value)
-    (map poo-flow-json-schema-source->json-like
+    (map yuanxu-json-schema-source->json-like
          (vector->list value)))
    ((list? value)
-    (map poo-flow-json-schema-source->json-like value))
+    (map yuanxu-json-schema-source->json-like value))
    (else value)))
 
 ;;; Boundary: the bridge consumes symbol-key walists so downstream contract
 ;;; logic stays independent from hash-table iteration order and string/symbol
 ;;; key drift.
 ;; : (-> InputPort JsonLikeSchema)
-(def (poo-flow-json-schema-read-port port)
+(def (yuanxu-json-schema-read-port port)
   (parameterize ((current-json-read-options
                   (JSONReadOptions key-as-symbol: #t)))
-    (poo-flow-json-schema-source->json-like
+    (yuanxu-json-schema-source->json-like
      (read-json port))))
 
 ;; : (-> PathString JsonLikeSchema)
-(def (poo-flow-json-schema-read-file path)
-  (call-with-input-file path poo-flow-json-schema-read-port))
+(def (yuanxu-json-schema-read-file path)
+  (call-with-input-file path yuanxu-json-schema-read-port))

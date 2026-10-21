@@ -5,7 +5,7 @@
 
 ;;; Boundary: receipt traversal helpers used by runner recovery projections.
 
-(import :core/modules/funflow/control-plane/receipt)
+(import :yuanxu/modules/funflow/control-plane/receipt)
 
 (export first-failed-receipt)
 

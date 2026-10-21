@@ -3304,7 +3304,7 @@ Prototype contribution is semantically owned by the Mix Profile. The graph plan
 contains only a stable contribution reference and materialization information.
 
 The private Mix slots MUST be constructed through the existing
-=pooFlowUserProfileExtend= path. They MUST NOT be encoded as ordinary settings
+=yuanxuUserProfileExtend= path. They MUST NOT be encoded as ordinary settings
 keys, raw alists, or public raw lambda hooks.
 
 * Ownership and closure flow
@@ -3798,7 +3798,7 @@ No item below is authorized by this RFC's current implementation state.
 
 - [ ] Prove and pin the published =clan/poo= dependency.
 - [ ] Add the private =import-graph-plan.ss= POO object family.
-- [ ] Extend private Mix Profile slots through =pooFlowUserProfileExtend=.
+- [ ] Extend private Mix Profile slots through =yuanxuUserProfileExtend=.
 - [ ] Implement the canonical =compose-proto*= / =instantiate-proto= handoff.
 - [ ] Implement Decision-first path-scoped capability checking.
 - [ ] Add the private observation substage adapter.

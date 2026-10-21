@@ -21,7 +21,7 @@ selection; they do not report what has been admitted.
 The upstream schema owns fixed responsibilities, a maintained Check family
 Contract, optional per-name stricter Check Contracts and protected role names.
 The admission owner reads the FINAL pipeline.selected-checks and builds a fresh
-native Contract projection. Public poo-flow-contract-admit then walks the
+native Contract projection. Public yuanxu-contract-admit then walks the
 projected responsibilities. Actual child receipts, not user names, are the work
 result. No public selection/completion DSL or per-child publication wrapper is
 introduced.
@@ -32,7 +32,7 @@ Pipeline.checks against that ordered selector.
 
 Source finding: core/types.ss:302--346 enumerates EVERY slot of descriptor-owned
 responsibilities, reads that child on the candidate and delegates via public
-poo-flow-contract-admit. It does not accept a dynamic selection parameter. Own
+yuanxu-contract-admit. It does not accept a dynamic selection parameter. Own
 obligations execute only after classification and responsibility success. Putting
 all possible Checks in that map would eagerly admit all of them; calling an
 obligation afterwards cannot undo that demand.
@@ -87,18 +87,18 @@ capability Contract; object? alone is not sufficient domain validation.
     (list (.o kind: 'invalid-selected-checks))))
 
 (def PipelineSelectionContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'funflow/pipeline-selection object? selection-obligations))
 
 ;; Only fixed roles here; do not enumerate optional Check values.
-(.def (ProfileShapeContract @ PooFlowNativeObjectContract.)
+(.def (ProfileShapeContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-shape
   proto: Root
   responsibilities: (.o pipeline: PipelineSelectionContract)
   .obligations: empty-obligations)
 
 ;; This descriptor retains native proto checking and final identity obligations.
-(.def (SelectedChecksContract @ PooFlowNativeObjectContract.)
+(.def (SelectedChecksContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-selected
   proto: Root
   responsibilities: (.o)
@@ -207,14 +207,14 @@ The adapter uses public evidence construction for a boundary refusal:
 
 #+begin_src scheme
 (def (selection-refusal descriptor candidate context failures)
-  (poo-flow-validation-evidence
+  (yuanxu-validation-evidence
     (.get descriptor identity) candidate
-    (poo-flow-type-classify descriptor candidate context)
+    (yuanxu-type-classify descriptor candidate context)
     failures #f failures context))
 
 (def (admit-selected-profile policy candidate context)
   (let* ((shape (.get policy shape))
-         (shape-evidence (poo-flow-contract-admit shape candidate context)))
+         (shape-evidence (yuanxu-contract-admit shape candidate context)))
     (if (not (covers-responsibilities? shape candidate context shape-evidence))
       (selection-refusal shape candidate context
         (list (.o kind: 'profile-prerequisite-refused evidence: shape-evidence)))
@@ -224,7 +224,7 @@ The adapter uses public evidence construction for a boundary refusal:
           (selection-refusal (.get policy selected) candidate context errors)
           (let* ((descriptor (project-selected-contract policy names))
                  (evidence
-                  (poo-flow-contract-admit descriptor candidate context)))
+                  (yuanxu-contract-admit descriptor candidate context)))
             (if (covers-responsibilities? descriptor candidate context evidence)
               (.cc evidence
                 'prerequisite-evidence (list shape-evidence)
@@ -278,7 +278,7 @@ plain .admit on an unprojected static descriptor does not gain this behavior.
 
 * Corresponding checked Lean properties
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
 Contracts and candidates are resolved PER SLOT, so two Checks sharing one
 Contract still require two differently correlated receipts. A demand ID is
 scoped to its receiver/view, not a globally ambiguous Check name.
@@ -315,6 +315,6 @@ publication integration remain unimplemented. No Loader or production module
 code is changed.
 
 Validation on 2026-10-15: the new Lean file checks directly, and the existing
-PooFlowCoreProof.ModuleSystem.Schema.Association target builds successfully (48 jobs). Five new
+YuanxuProof.ModuleSystem.Schema.Association target builds successfully (48 jobs). Five new
 theorems and two controls use no sorry or custom axioms. See
 [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/26-selected-responsibility-discovery/lean-build.log][build/axiom output]] and [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/26-selected-responsibility-discovery/receipt.json][source-bound receipt]].

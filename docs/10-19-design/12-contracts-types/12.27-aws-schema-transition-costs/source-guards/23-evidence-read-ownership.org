@@ -33,7 +33,7 @@ actual candidate, Contract, Context, classification and child references:
 
 #+begin_src scheme
 (owned-read-leaf!
-  (.o kind: 'poo-flow.contract.validation-evidence
+  (.o kind: 'yuanxu.contract.validation-evidence
       ;; Original producer fields and formulas remain unchanged.
       admission-contract: contract-value
       candidate: candidate-value
@@ -142,7 +142,7 @@ frontier omissions, shared policy, missing live tokens, unknown execution,
 borrowed constructor authority, changed constructor generation and acceptance.
 These checks reuse the existing model rather than create another Graph.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] proves arbitrary-identity frontier coverage using the existing
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] proves arbitrary-identity frontier coverage using the existing
 worklist theorem, original-replay requirements for live values and refusal of
 borrowed/mutated construction certificates. It does not repeat finite schedule
 search or prove a GC implementation, heap bound or SDK capacity.
@@ -165,7 +165,7 @@ just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-testing-isolation-test.ss
 python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/evidence-owned-reads.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 
 The receipt test checks actual identity payloads, collected temporary versus

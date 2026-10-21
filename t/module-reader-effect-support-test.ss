@@ -4,14 +4,14 @@
 ;;; An import closure describes code use, not all effects of native Scheme.
 (import :std/test :clan/poo/object
         (only-in "./module-publication-test.ss" with-publication-source write-file)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-reader-effect-support-test)
 (def module-reader-effect-support-test
   (test-suite "Reader import support versus ambient effects"
-    (poo-flow-test-case "entry and return retain ambient source obligations"
+    (yuanxu-test-case "entry and return retain ambient source obligations"
       (for-each
         (lambda (phase)
           (with-publication-source
@@ -38,7 +38,7 @@
                   "(def Greeting \"other\") (export Greeting)"))
               (write-file (path-expand "interface.ss" second-root)
                 "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
-              (def view (poo-flow-load-modules (path-expand "modules" root)))
+              (def view (yuanxu-load-modules (path-expand "modules" root)))
               (def locate (.get view context locate))
               (def reader (module-publication-reader))
               (.call reader read (locate 'custom/example))

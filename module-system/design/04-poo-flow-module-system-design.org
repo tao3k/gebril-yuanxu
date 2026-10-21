@@ -72,7 +72,7 @@ dependencies express ordering, while profiles independently select defaults.
 
 The ownership split is explicit: =src/module-system/= is the source-neutral
 loader mechanism, while maintained, contributor and user collections all enter
-through =poo-flow-load-modules=.  It discovers direct module directories and
+through =yuanxu-load-modules=.  It discovers direct module directories and
 projects only =modules/<module>/interface.ss=; no maintained init file or
 parallel list repeats module roots or role filenames.
 
@@ -346,7 +346,7 @@ The public interface contract is:
 - inspect descriptor metadata with =poo-module-name=, =poo-module-group=, =poo-module-flags=, =poo-module-features=, =poo-module-phase-file=, and =poo-module-hook-values=;
 - ask active/flag questions with =poo-module-active?= and =poo-flow-module-value-catalog-active?=;
 - inspect final option composition with =poo-module-option-merge-receipts= and =poo-module-merged-option-alist=;
-- load source refs into catalogs with =poo-flow-module-static-loader=, =poo-flow-module-load-source-receipts=, and =poo-flow-module-load-catalog=;
+- load source refs into catalogs with =yuanxu-module-static-loader=, =yuanxu-module-load-source-receipts=, and =poo-flow-module-load-catalog=;
 - group modules with =pooModuleCatalog=;
 - project runtime-facing receipts with =poo-module-workflow=, =pooEvalModules=, and =pooModuleSystemPresentation=;
 - project pre-runtime doctor summaries with =pooModuleDoctorPresentation= and =pooModuleSourceDoctorPresentation=;

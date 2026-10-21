@@ -6,34 +6,56 @@
 
 * Yuanxu: Model · Compose · Evolve
 
-The repository is [[https://github.com/tao3k/yuanxu][tao3k/yuanxu]]. Existing =:core/...= module identities
-remain unchanged in this first naming step. The repository checkout may still
-be named =core= in a consumer; its directory is not its public brand.
+The repository is [[https://github.com/tao3k/gebril-yuanxu][tao3k/gebril-yuanxu]]. The root [[file:gerbil.pkg][gerbil.pkg]] owns the
+single =yuanxu= Gerbil package. Library modules use =:yuanxu/...=;
+there is no second package root or old-namespace forwarding layer. A consumer's
+checkout directory may still be called =core=; this filesystem choice does not
+change a module's identity.
 
-The initial public package is declared in [[file:yuanxu/gerbil.pkg][yuanxu/gerbil.pkg]]:
+** Ordinary dependency usage
+
+Consumers declare the dependency and explicitly import the libraries they need.
+They do NOT need to select a Yuanxu prelude:
 
 #+begin_src scheme
-(package: tao3k/yuanxu
- prelude: :tao3k/yuanxu/prelude)
+;; Consumer gerbil.pkg
+(package: my-application
+ depend: ("github.com/tao3k/gebril-yuanxu"))
+
+;; Consumer source
+(import :yuanxu/module-system/source/link)
 #+end_src
 
-[[file:yuanxu/prelude.ss][The prelude]] reexports ordinary Gerbil and gerbil-poo bindings. Its own
-explicit =:gerbil/core= prelude prevents self-import during bootstrap. It does
-not load modules, execute processes, or introduce a new language/DSL. Core's
-role-specific declaration and config preludes keep their existing phase duties.
-The root =gerbil.pkg= retains =package: core=; it does not impose this new
-prelude on the implementation closure. A new consumer can use the package
-declaration above after building/installing the library.
+Use a chosen revision in the dependency reference when reproducibility requires
+it. Merely declaring a dependency does not execute a Script or select modules.
 
-The ordinary build specification includes the prelude before Core roots. Its
-focused test is =yuanxu/tests/prelude-test.ss= and checks implicit prelude
-bindings and inherited values without an explicit POO import.
+** Optional prelude
 
-* What Core owns
+[[file:prelude.ss][prelude.ss]] lives directly beside =gerbil.pkg=. Its file-local
+=package: tao3k/yuanxu= gives this single entry the public identity
+=:tao3k/yuanxu/prelude=; the root library package remains =yuanxu=.
+There is no =lang/= directory or =:yuanxu/prelude= forwarding alias.
+Consumers may deliberately select the optional language in their own package:
 
-Core is the =core= Gerbil package: reusable POO-native mechanisms shared by
+#+begin_src scheme
+(package: my-configuration
+ prelude: :tao3k/yuanxu/prelude
+ depend: ("github.com/tao3k/gebril-yuanxu"))
+#+end_src
+
+Ordinary library imports do not require this choice. Yuanxu itself defaults to
+its own prelude; the prelude and its small build bootstrap explicitly use
+=:gerbil/core=. The build binds the actual root prelude's native module context
+before reading implementation sources, so source-only bootstrap does not need
+a previously installed Yuanxu language. Role-specific module/config preludes
+retain their phase duties. [[file:t/prelude-test.ss][The focused prelude test]] checks phase bindings;
+[[file:t/package-bootstrap-test.ss][the cold bootstrap test]] checks the source-only build entry.
+
+* What Yuanxu owns
+
+Yuanxu is the =yuanxu= Gerbil package: reusable POO-native mechanisms shared by
 POO Flow, gerbil-parser, and other consumers. The package root is the module
-root, so consumers import a precise owner such as =:core/module-system/config=.
+root, so consumers import a precise owner such as =:yuanxu/module-system/config=.
 There is no eager umbrella module or compatibility alias.
 
 Core depends on Gerbil v0.19 and =gerbil-poo=; it does not depend on POO Flow,

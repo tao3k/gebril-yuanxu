@@ -4,15 +4,15 @@
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .get object?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
-        :core/module-system/source/collection
-        :core/module-system/source/objects
-        :core/module-system/source/admission
-        :core/module-system/interface)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        :yuanxu/module-system/source/collection
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/admission
+        :yuanxu/module-system/interface)
 (export module-source-admission-test)
 (def ScopeContract
-  (poo-flow-predicate-contract 'test/source-scope object? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'test/source-scope object? (lambda (_v _c) '())))
 (def (write-role root role text)
   (let (path (path-expand (string-append "modules/custom/example/" role ".ss") root))
     (create-directory* (path-directory path))
@@ -38,11 +38,11 @@
       core: (.o requires: (.o) scope-contract: ScopeContract
                 link: (lambda (_dependencies) (.o ready: #t)))))
 (def (collection-source root)
-  (let (collection (make-poo-flow-module-source-collection
+  (let (collection (make-yuanxu-module-source-collection
                    'fixture 'test root "modules/custom"))
-    (poo-flow-module-source-collection-locate collection '(custom . example))))
+    (yuanxu-module-source-collection-locate collection '(custom . example))))
 (def (directory-scope root reader)
-  (.get (poo-flow-load-modules (path-expand "modules" root) read-publication: reader)
+  (.get (yuanxu-load-modules (path-expand "modules" root) read-publication: reader)
         modules custom example))
 (def (both-refuse root)
   (let (reads 0)
@@ -51,7 +51,7 @@
     (check-equal? reads 0)))
 (def module-source-admission-test
   (test-suite "One source-role admission for directory and collection"
-    (poo-flow-test-case "collected replay starts fresh and shares only its own pure reads"
+    (yuanxu-test-case "collected replay starts fresh and shares only its own pure reads"
       (with-module
         (lambda (root)
           (def file (path-expand "modules/custom/example/types.ss" root))
@@ -82,7 +82,7 @@
                 ;; must not conceal a source mutation from the fresh replay.
                 (write-role root "types" "(def PublicContract 'changed)")
                 (check-exception (replay) error?)))))))
-    (poo-flow-test-case "file kind is shared while each collector retains its own evidence"
+    (yuanxu-test-case "file kind is shared while each collector retains its own evidence"
       (with-module
        (lambda (root)
          (def file (path-expand "modules/custom/example/types.ss" root))
@@ -114,7 +114,7 @@
          (create-directory file)
          (call-with-module-source-read-cache
            (lambda () (check-equal? (module-source-type file) 'directory))))))
-    (poo-flow-test-case "each policy invocation parses each role once and rechecks changed roles"
+    (yuanxu-test-case "each policy invocation parses each role once and rechecks changed roles"
       (with-module
         (lambda (root)
           (def parses 0)
@@ -129,7 +129,7 @@
             (write-role root "config" "(stage provider runtime)")
             (check-exception (collection-source root) error?)
             (check-equal? parses 12)))))
-    (poo-flow-test-case "source guards require exact Unicode content and EOF"
+    (yuanxu-test-case "source guards require exact Unicode content and EOF"
       (with-module
         (lambda (root)
           (def file (path-expand "modules/custom/example/types.ss" root))
@@ -145,7 +145,7 @@
           (write-role root "types" "")
           (check-exception (module-source-admit-current! (list (cons file text))) error?)
           (module-source-admit-current! (list (cons file ""))))))
-    (poo-flow-test-case "nested pure guards reuse reads but independent validation observes changes"
+    (yuanxu-test-case "nested pure guards reuse reads but independent validation observes changes"
       (with-module
        (lambda (root)
          (let ((file (path-expand "modules/custom/example/types.ss" root))
@@ -183,7 +183,7 @@
                (check-equal? reads 2)
                (check-equal? (hash-ref events 'checks) 3)
                (check-equal? (hash-ref events 'read-windows) 2)))))))
-    (poo-flow-test-case "file-kind observations expire before a later validation"
+    (yuanxu-test-case "file-kind observations expire before a later validation"
       (with-module
        (lambda (root)
          (def file (path-expand "modules/custom/example/types.ss" root))
@@ -199,7 +199,7 @@
          (create-symbolic-link (path-expand "modules/custom/example/objects.ss" root) file)
          (check-exception
            (call-with-module-source-read-cache (lambda () (module-source-read file))) error?))))
-    (poo-flow-test-case "a memoized guard enrolls each new admission collector"
+    (yuanxu-test-case "a memoized guard enrolls each new admission collector"
       (with-module
        (lambda (root)
          (def file (path-expand "modules/custom/example/types.ss" root))
@@ -224,7 +224,7 @@
          ;; observation of these same bytes preceded that collector's scope.
          (write-role root "types" "(def PublicContract 'changed)")
          (check-exception (replay) error?))))
-    (poo-flow-test-case "comparison hits still enroll new collectors and cannot hide conflicting expectations"
+    (yuanxu-test-case "comparison hits still enroll new collectors and cannot hide conflicting expectations"
       (with-module
         (lambda (root)
           (def file (path-expand "modules/custom/example/types.ss" root))
@@ -243,16 +243,16 @@
                 (module-source-admit-current! (list (cons file "different bytes"))) error?)))
           (write-role root "types" "(def PublicContract 'changed-after-window)")
           (check-exception (replay) error?))))
-    (poo-flow-test-case "one public Module object needs no flat private re-exports"
+    (yuanxu-test-case "one public Module object needs no flat private re-exports"
       (with-module
        (lambda (root)
          (let (sources (collection-source root))
            (check-equal? (length sources) 1)
            (check-equal?
-            (poo-flow-validation-evidence-accepted?
+            (yuanxu-validation-evidence-accepted?
              (admit-module-publication! (car sources) 'custom/example (publication) (.o))) #t))
          (check-equal? (.get (directory-scope root (lambda (_source) (publication))) ready) #t))))
-    (poo-flow-test-case "missing, empty, nonregular and symlinked required roles are refused"
+    (yuanxu-test-case "missing, empty, nonregular and symlinked required roles are refused"
       (for-each
        (lambda (damage)
          (with-module
@@ -263,12 +263,12 @@
              (lambda (path _root) (call-with-output-file path (lambda (_port) (void))))
              (lambda (path _root) (create-directory path))
              (lambda (path root) (create-symbolic-link (path-expand "modules/custom/example/objects.ss" root) path)))))
-    (poo-flow-test-case "reversed role imports and forbidden config behavior fail before publication"
+    (yuanxu-test-case "reversed role imports and forbidden config behavior fail before publication"
       (for-each
        (lambda (text)
          (with-module (lambda (root) (write-role root "config" text) (both-refuse root))))
        '("(import \"interface.ss\") (def Config 'invalid)" "(stage provider runtime)")))
-    (poo-flow-test-case "objects may consume optional pure functions; func cannot import interface"
+    (yuanxu-test-case "objects may consume optional pure functions; func cannot import interface"
       (with-module
        (lambda (root)
          (write-role root "func" "(import \"types.ss\") (def (adjust value) value)")
@@ -277,47 +277,47 @@
          (check-equal? (.get (directory-scope root (lambda (_source) (publication))) ready) #t)
          (write-role root "func" "(import \"interface.ss\") (def (adjust value) value)")
          (both-refuse root))))
-    (poo-flow-test-case "unselected broken siblings stay unread and optional func edits invalidate"
+    (yuanxu-test-case "unselected broken siblings stay unread and optional func edits invalidate"
       (with-module
        (lambda (root)
          (write-role root "func" "(def (adjust value) value)")
          (create-directory (path-expand "modules/custom/unused" root))
          (check-equal? (length (collection-source root)) 1)
-         (let (view (poo-flow-load-modules (path-expand "modules" root)
+         (let (view (yuanxu-load-modules (path-expand "modules" root)
                       read-publication: (lambda (_source) (publication))))
            (check-equal? (.get view modules custom example ready) #t)
            ((.get view admit-current))
            (write-role root "func" "(def (adjust value) 'changed)")
            (check-exception ((.get view admit-current)) error?)))))
-    (poo-flow-test-case "collection keys cannot escape their source and optional roles must be regular"
+    (yuanxu-test-case "collection keys cannot escape their source and optional roles must be regular"
       (with-module
        (lambda (root)
-         (let (collection (make-poo-flow-module-source-collection 'fixture 'test root "modules/custom"))
+         (let (collection (make-yuanxu-module-source-collection 'fixture 'test root "modules/custom"))
            (check-exception
-            (poo-flow-module-source-collection-locate collection '(custom . ../example)) error?))
+            (yuanxu-module-source-collection-locate collection '(custom . ../example)) error?))
          (create-directory (path-expand "modules/custom/example/func.ss" root))
          (both-refuse root))))
-    (poo-flow-test-case "explicit integration exclusions preserve strict admission of selected Modules"
+    (yuanxu-test-case "explicit integration exclusions preserve strict admission of selected Modules"
       (with-module
        (lambda (root)
-         (def collection (make-poo-flow-module-source-collection 'fixture 'test root "modules/custom"))
+         (def collection (make-yuanxu-module-source-collection 'fixture 'test root "modules/custom"))
          (def (front-end name)
            (def directory (path-expand (string-append "modules/custom/" name) root))
            (create-directory directory)
            (call-with-output-file (path-expand "interface.ss" directory)
              (lambda (port) (display "(export)" port))))
          (front-end "helper")
-         (check-exception (poo-flow-module-source-collection-interfaces collection) error?)
+         (check-exception (yuanxu-module-source-collection-interfaces collection) error?)
          (def selected (.o (:: @ collection) excluded-directories: '("helper")))
-         (check-equal? (length (poo-flow-module-source-collection-interfaces selected)) 1)
-         (check-equal? (poo-flow-module-source-collection-locate selected '(custom . helper)) '())
+         (check-equal? (length (yuanxu-module-source-collection-interfaces selected)) 1)
+         (check-equal? (yuanxu-module-source-collection-locate selected '(custom . helper)) '())
          (front-end "broken")
-         (check-exception (poo-flow-module-source-collection-interfaces selected) error?))))
-    (poo-flow-test-case "source owner and publication owner must agree before scope assembly"
-      (let ((source (make-poo-flow-module-source-ref
+         (check-exception (yuanxu-module-source-collection-interfaces selected) error?))))
+    (yuanxu-test-case "source owner and publication owner must agree before scope assembly"
+      (let ((source (make-yuanxu-module-source-ref
                      'local "example/interface.ss" '((module-id . another/owner))))
             (value (publication)))
         (check-exception (admit-module-publication! source 'custom/example value (.o)) error?)
         (check-exception
-         (admit-module-publication! (make-poo-flow-module-generated-source 'custom/example)
+         (admit-module-publication! (make-yuanxu-module-generated-source 'custom/example)
                                     'custom/example (.o identity: 'custom/example) (.o)) error?)))))

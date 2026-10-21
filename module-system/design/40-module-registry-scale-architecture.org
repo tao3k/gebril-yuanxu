@@ -89,7 +89,7 @@ process-tree footprint. Runnable process count was 6 under the native core limit
 Module admission also performs a reader-native owner-import inspection over
 every =.ss= file below each module root. An implementation role importing an
 aggregate framework surface emits
-=poo-flow.module-owner-import-observation.v1= and fails admission with
+=yuanxu.module-owner-import-observation.v1= and fails admission with
 =POO-FLOW-MODULE-E008=. The check reads datums only and never expands or
 evaluates module source. Its repository gate covers all maintained module role
 files, including nonstandard private helpers below the canonical role owners.

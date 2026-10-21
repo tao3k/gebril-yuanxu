@@ -5,10 +5,10 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .all-slots .def .get .o)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/slot-presentation
-                 poo-flow-slot-view
-                 poo-flow-slot-presentation))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/slot-presentation
+                 yuanxu-slot-view
+                 yuanxu-slot-presentation))
 
 (export slot-presentation-test)
 
@@ -20,23 +20,23 @@
 
 (def sources
   (.o refined: (.o prototype: RefinedValue
-                   source-path: "core/t/slot-presentation-test.ss"
+                   source-path: "yuanxu/t/slot-presentation-test.ss"
                    source-line: 17)
       root: (.o prototype: RootValue
-                source-path: "core/t/slot-presentation-test.ss"
+                source-path: "yuanxu/t/slot-presentation-test.ss"
                 source-line: 14)))
 
 (def slot-presentation-test
   (test-suite "POO slot presentation"
-    (poo-flow-test-case "default view evaluates the POO slot"
+    (yuanxu-test-case "default view evaluates the POO slot"
       (let (presentation
-            (poo-flow-slot-presentation RefinedValue 'entries))
+            (yuanxu-slot-presentation RefinedValue 'entries))
         (check-equal? (.all-slots presentation) '(effective-value))
         (check-equal? (.get (.get presentation effective-value) base) 'base)
         (check-equal? (.get (.get presentation effective-value) added) 'added)))
 
-    (poo-flow-test-case "source view follows prototype declarations"
-      (let (view (poo-flow-slot-view RefinedValue 'entries sources))
+    (yuanxu-test-case "source view follows prototype declarations"
+      (let (view (yuanxu-slot-view RefinedValue 'entries sources))
         (check-equal? (.get view provenance) '(refined root))
         (check-equal?
          (map (lambda (step) (.get step mode))
@@ -44,14 +44,14 @@
          '(super-aware default))
         (check-equal?
          (.get (car (.get view declaration-sources)) source-path)
-         "core/t/slot-presentation-test.ss")))
+         "yuanxu/t/slot-presentation-test.ss")))
 
-    (poo-flow-test-case "missing provenance and unknown disclosure fail closed"
+    (yuanxu-test-case "missing provenance and unknown disclosure fail closed"
       (check-exception
-       (poo-flow-slot-view
+       (yuanxu-slot-view
         RefinedValue 'entries
         (.o refined: (.get sources refined)))
        true)
       (check-exception
-       (poo-flow-slot-presentation RefinedValue 'entries 'unknown)
+       (yuanxu-slot-presentation RefinedValue 'entries 'unknown)
        true))))

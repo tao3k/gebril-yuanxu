@@ -7,219 +7,219 @@
 ;;; Invariant: graph objects describe topology; they never schedule or run it.
 
 (import (only-in :clan/poo/object .ref .slot?)
-        (only-in :core/module-system/schema/slot-contracts
-                 poo-flow-contract-slot
-                 poo-flow-contract-value-type
-                 poo-flow-native-contract
-                 poo-flow-native-contract->alist))
+        (only-in :yuanxu/module-system/schema/slot-contracts
+                 yuanxu-contract-slot
+                 yuanxu-contract-value-type
+                 yuanxu-native-contract
+                 yuanxu-native-contract->alist))
 
-(import :core/graph/types-core)
+(import :yuanxu/graph/types-core)
 
 (export #t)
 
-(def PooFlowGraphIdType
-  (poo-flow-contract-value-type
-   'PooFlowGraphId poo-flow-graph-id? 'PooFlowGraphId))
-(def PooFlowGraphAnyType
-  (poo-flow-contract-value-type 'Object (lambda (_value) #t) 'Object))
-(def PooFlowGraphMetadataType
-  (poo-flow-contract-value-type
-   'PooFlowGraphMetadata poo-flow-graph-metadata? 'Alist))
+(def YuanxuGraphIdType
+  (yuanxu-contract-value-type
+   'YuanxuGraphId yuanxu-graph-id? 'YuanxuGraphId))
+(def YuanxuGraphAnyType
+  (yuanxu-contract-value-type 'Object (lambda (_value) #t) 'Object))
+(def YuanxuGraphMetadataType
+  (yuanxu-contract-value-type
+   'YuanxuGraphMetadata yuanxu-graph-metadata? 'Alist))
 
-(def PooFlowGraphNodeIdSlot
-  (poo-flow-contract-slot
-   'graph.node/id 'id PooFlowGraphIdType #t
+(def YuanxuGraphNodeIdSlot
+  (yuanxu-contract-slot
+   'graph.node/id 'id YuanxuGraphIdType #t
    '((scope . graph) (slot . id))))
-(def PooFlowGraphNodePayloadSlot
-  (poo-flow-contract-slot
-   'graph.node/payload 'payload PooFlowGraphAnyType #f
+(def YuanxuGraphNodePayloadSlot
+  (yuanxu-contract-slot
+   'graph.node/payload 'payload YuanxuGraphAnyType #f
    '((scope . graph) (slot . payload) (optional . #t))))
-(def PooFlowGraphNodeMetadataSlot
-  (poo-flow-contract-slot
-   'graph.node/metadata 'metadata PooFlowGraphMetadataType #t
+(def YuanxuGraphNodeMetadataSlot
+  (yuanxu-contract-slot
+   'graph.node/metadata 'metadata YuanxuGraphMetadataType #t
    '((scope . graph) (slot . metadata))))
-(def PooFlowGraphNodeSlots
-  (list PooFlowGraphNodeIdSlot
-        PooFlowGraphNodePayloadSlot
-        PooFlowGraphNodeMetadataSlot))
-(def PooFlowGraphNodeContract
-  (poo-flow-native-contract
-   'graph/node 'graph 'PooFlowGraphNode poo-flow-graph-node?
-   PooFlowGraphNodeSlots
+(def YuanxuGraphNodeSlots
+  (list YuanxuGraphNodeIdSlot
+        YuanxuGraphNodePayloadSlot
+        YuanxuGraphNodeMetadataSlot))
+(def YuanxuGraphNodeContract
+  (yuanxu-native-contract
+   'graph/node 'graph 'YuanxuGraphNode yuanxu-graph-node?
+   YuanxuGraphNodeSlots
    (lambda (candidate slot) (.slot? candidate slot))
    (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-node))))
 
-(def (poo-flow-graph-node-type-contract->alist)
-  (poo-flow-native-contract->alist PooFlowGraphNodeContract))
+(def (yuanxu-graph-node-type-contract->alist)
+  (yuanxu-native-contract->alist YuanxuGraphNodeContract))
 
-(def PooFlowGraphSymbolType
-  (poo-flow-contract-value-type 'Symbol symbol? 'Symbol))
-(def PooFlowGraphEdgeFromSlot
-  (poo-flow-contract-slot
-   'graph.edge/from 'from PooFlowGraphIdType #t
+(def YuanxuGraphSymbolType
+  (yuanxu-contract-value-type 'Symbol symbol? 'Symbol))
+(def YuanxuGraphEdgeFromSlot
+  (yuanxu-contract-slot
+   'graph.edge/from 'from YuanxuGraphIdType #t
    '((scope . graph) (slot . from))))
-(def PooFlowGraphEdgeToSlot
-  (poo-flow-contract-slot
-   'graph.edge/to 'to PooFlowGraphIdType #t
+(def YuanxuGraphEdgeToSlot
+  (yuanxu-contract-slot
+   'graph.edge/to 'to YuanxuGraphIdType #t
    '((scope . graph) (slot . to))))
-(def PooFlowGraphEdgeKindSlot
-  (poo-flow-contract-slot
-   'graph.edge/edge-kind 'edge-kind PooFlowGraphSymbolType #t
+(def YuanxuGraphEdgeKindSlot
+  (yuanxu-contract-slot
+   'graph.edge/edge-kind 'edge-kind YuanxuGraphSymbolType #t
    '((scope . graph) (slot . edge-kind))))
-(def PooFlowGraphEdgeMetadataSlot
-  (poo-flow-contract-slot
-   'graph.edge/metadata 'metadata PooFlowGraphMetadataType #t
+(def YuanxuGraphEdgeMetadataSlot
+  (yuanxu-contract-slot
+   'graph.edge/metadata 'metadata YuanxuGraphMetadataType #t
    '((scope . graph) (slot . metadata))))
-(def PooFlowGraphEdgeSlots
-  (list PooFlowGraphEdgeFromSlot
-        PooFlowGraphEdgeToSlot
-        PooFlowGraphEdgeKindSlot
-        PooFlowGraphEdgeMetadataSlot))
-(def PooFlowGraphEdgeContract
-  (poo-flow-native-contract
-   'graph/edge 'graph 'PooFlowGraphEdge poo-flow-graph-edge?
-   PooFlowGraphEdgeSlots
+(def YuanxuGraphEdgeSlots
+  (list YuanxuGraphEdgeFromSlot
+        YuanxuGraphEdgeToSlot
+        YuanxuGraphEdgeKindSlot
+        YuanxuGraphEdgeMetadataSlot))
+(def YuanxuGraphEdgeContract
+  (yuanxu-native-contract
+   'graph/edge 'graph 'YuanxuGraphEdge yuanxu-graph-edge?
+   YuanxuGraphEdgeSlots
    (lambda (candidate slot) (.slot? candidate slot))
    (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-edge))))
 
-(def (poo-flow-graph-edge-type-contract->alist)
-  (poo-flow-native-contract->alist PooFlowGraphEdgeContract))
+(def (yuanxu-graph-edge-type-contract->alist)
+  (yuanxu-native-contract->alist YuanxuGraphEdgeContract))
 
-(def PooFlowGraphNodeListType
-  (poo-flow-contract-value-type
-   '[PooFlowGraphNode] poo-flow-graph-node-list? '[PooFlowGraphNode]))
-(def PooFlowGraphEdgeListType
-  (poo-flow-contract-value-type
-   '[PooFlowGraphEdge] poo-flow-graph-edge-list? '[PooFlowGraphEdge]))
-(def PooFlowGraphIdSlot
-  (poo-flow-contract-slot
-   'graph/graph-id 'graph-id PooFlowGraphIdType #t
+(def YuanxuGraphNodeListType
+  (yuanxu-contract-value-type
+   '[YuanxuGraphNode] yuanxu-graph-node-list? '[YuanxuGraphNode]))
+(def YuanxuGraphEdgeListType
+  (yuanxu-contract-value-type
+   '[YuanxuGraphEdge] yuanxu-graph-edge-list? '[YuanxuGraphEdge]))
+(def YuanxuGraphIdSlot
+  (yuanxu-contract-slot
+   'graph/graph-id 'graph-id YuanxuGraphIdType #t
    '((scope . graph) (slot . graph-id))))
-(def PooFlowGraphNodesSlot
-  (poo-flow-contract-slot
-   'graph/nodes 'nodes PooFlowGraphNodeListType #t
+(def YuanxuGraphNodesSlot
+  (yuanxu-contract-slot
+   'graph/nodes 'nodes YuanxuGraphNodeListType #t
    '((scope . graph) (slot . nodes))))
-(def PooFlowGraphEdgesSlot
-  (poo-flow-contract-slot
-   'graph/edges 'edges PooFlowGraphEdgeListType #t
+(def YuanxuGraphEdgesSlot
+  (yuanxu-contract-slot
+   'graph/edges 'edges YuanxuGraphEdgeListType #t
    '((scope . graph) (slot . edges))))
-(def PooFlowGraphMetadataSlot
-  (poo-flow-contract-slot
-   'graph/metadata 'metadata PooFlowGraphMetadataType #t
+(def YuanxuGraphMetadataSlot
+  (yuanxu-contract-slot
+   'graph/metadata 'metadata YuanxuGraphMetadataType #t
    '((scope . graph) (slot . metadata))))
-(def PooFlowGraphSlots
-  (list PooFlowGraphIdSlot
-        PooFlowGraphNodesSlot
-        PooFlowGraphEdgesSlot
-        PooFlowGraphMetadataSlot))
-(def PooFlowGraphContract
-  (poo-flow-native-contract
-   'graph 'graph 'PooFlowGraph poo-flow-graph?
-   PooFlowGraphSlots
+(def YuanxuGraphSlots
+  (list YuanxuGraphIdSlot
+        YuanxuGraphNodesSlot
+        YuanxuGraphEdgesSlot
+        YuanxuGraphMetadataSlot))
+(def YuanxuGraphContract
+  (yuanxu-native-contract
+   'graph 'graph 'YuanxuGraph yuanxu-graph?
+   YuanxuGraphSlots
    (lambda (candidate slot) (.slot? candidate slot))
    (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph))))
 
-(def (poo-flow-graph-type-contract->alist)
-  (poo-flow-native-contract->alist PooFlowGraphContract))
+(def (yuanxu-graph-type-contract->alist)
+  (yuanxu-native-contract->alist YuanxuGraphContract))
 
-(def PooFlowGraphNumberType
-  (poo-flow-contract-value-type 'Number number? 'Number))
-(def PooFlowGraphIdListType
-  (poo-flow-contract-value-type
-   '[PooFlowGraphId] poo-flow-graph-analysis-id-list? '[PooFlowGraphId]))
-(def PooFlowGraphMaybeListType
-  (poo-flow-contract-value-type
-   'MaybeList poo-flow-graph-analysis-maybe-list? 'MaybeList))
+(def YuanxuGraphNumberType
+  (yuanxu-contract-value-type 'Number number? 'Number))
+(def YuanxuGraphIdListType
+  (yuanxu-contract-value-type
+   '[YuanxuGraphId] yuanxu-graph-analysis-id-list? '[YuanxuGraphId]))
+(def YuanxuGraphMaybeListType
+  (yuanxu-contract-value-type
+   'MaybeList yuanxu-graph-analysis-maybe-list? 'MaybeList))
 
-;; : (-> PooFlowGraphContractKey Symbol PooFlowContractValueType PooFlowSlotContract)
-(def (poo-flow-graph-analysis-slot key slot value-type)
-  (poo-flow-contract-slot
+;; : (-> YuanxuGraphContractKey Symbol YuanxuContractValueType YuanxuSlotContract)
+(def (yuanxu-graph-analysis-slot key slot value-type)
+  (yuanxu-contract-slot
    key slot value-type #t
    (map cons '(scope slot) (list 'graph slot))))
 
-(def PooFlowGraphAnalysisSlots
+(def YuanxuGraphAnalysisSlots
   (list
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/graph-id 'graph-id PooFlowGraphIdType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/node-count 'node-count PooFlowGraphNumberType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/edge-count 'edge-count PooFlowGraphNumberType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/root-ids 'root-ids PooFlowGraphIdListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/terminal-ids 'terminal-ids PooFlowGraphIdListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/reachable-ids 'reachable-ids PooFlowGraphIdListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/dependency-cone 'dependency-cone PooFlowGraphIdListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/topological-order 'topological-order PooFlowGraphMaybeListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/cycle-path 'cycle-path PooFlowGraphMaybeListType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/diagnostics 'diagnostics PooFlowGraphMetadataType)
-   (poo-flow-graph-analysis-slot
-    'graph.analysis/metadata 'metadata PooFlowGraphMetadataType)))
-(def PooFlowGraphAnalysisContract
-  (poo-flow-native-contract
-   'graph/analysis 'graph 'PooFlowGraphAnalysis poo-flow-graph-analysis?
-   PooFlowGraphAnalysisSlots
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/graph-id 'graph-id YuanxuGraphIdType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/node-count 'node-count YuanxuGraphNumberType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/edge-count 'edge-count YuanxuGraphNumberType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/root-ids 'root-ids YuanxuGraphIdListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/terminal-ids 'terminal-ids YuanxuGraphIdListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/reachable-ids 'reachable-ids YuanxuGraphIdListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/dependency-cone 'dependency-cone YuanxuGraphIdListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/topological-order 'topological-order YuanxuGraphMaybeListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/cycle-path 'cycle-path YuanxuGraphMaybeListType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/diagnostics 'diagnostics YuanxuGraphMetadataType)
+   (yuanxu-graph-analysis-slot
+    'graph.analysis/metadata 'metadata YuanxuGraphMetadataType)))
+(def YuanxuGraphAnalysisContract
+  (yuanxu-native-contract
+   'graph/analysis 'graph 'YuanxuGraphAnalysis yuanxu-graph-analysis?
+   YuanxuGraphAnalysisSlots
    (lambda (candidate slot) (.slot? candidate slot))
    (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-analysis))))
 
-(def (poo-flow-graph-analysis-type-contract->alist)
-  (poo-flow-native-contract->alist PooFlowGraphAnalysisContract))
+(def (yuanxu-graph-analysis-type-contract->alist)
+  (yuanxu-native-contract->alist YuanxuGraphAnalysisContract))
 
-(def PooFlowGraphComponentListType
-  (poo-flow-contract-value-type
-   '[[PooFlowGraphId]] list? '[[PooFlowGraphId]]))
-(def PooFlowGraphCondensationEdgeListType
-  (poo-flow-contract-value-type
+(def YuanxuGraphComponentListType
+  (yuanxu-contract-value-type
+   '[[YuanxuGraphId]] list? '[[YuanxuGraphId]]))
+(def YuanxuGraphCondensationEdgeListType
+  (yuanxu-contract-value-type
    '[[Number Number]] list? '[[Number Number]]))
 
-;; : (-> PooFlowGraphContractKey Symbol PooFlowContractValueType PooFlowSlotContract)
-(def (poo-flow-graph-loop-analysis-slot key slot value-type)
-  (poo-flow-contract-slot
+;; : (-> YuanxuGraphContractKey Symbol YuanxuContractValueType YuanxuSlotContract)
+(def (yuanxu-graph-loop-analysis-slot key slot value-type)
+  (yuanxu-contract-slot
    key slot value-type #t
    (map cons '(scope slot) (list 'graph slot))))
 
-(def PooFlowGraphLoopAnalysisSlots
+(def YuanxuGraphLoopAnalysisSlots
   (list
-   (poo-flow-graph-loop-analysis-slot
-    'graph.loop-analysis/graph-id 'graph-id PooFlowGraphIdType)
-   (poo-flow-graph-loop-analysis-slot
-    'graph.loop-analysis/component-count 'component-count PooFlowGraphNumberType)
-   (poo-flow-graph-loop-analysis-slot
+   (yuanxu-graph-loop-analysis-slot
+    'graph.loop-analysis/graph-id 'graph-id YuanxuGraphIdType)
+   (yuanxu-graph-loop-analysis-slot
+    'graph.loop-analysis/component-count 'component-count YuanxuGraphNumberType)
+   (yuanxu-graph-loop-analysis-slot
     'graph.loop-analysis/cyclic-component-count
     'cyclic-component-count
-    PooFlowGraphNumberType)
-   (poo-flow-graph-loop-analysis-slot
-    'graph.loop-analysis/components 'components PooFlowGraphComponentListType)
-   (poo-flow-graph-loop-analysis-slot
+    YuanxuGraphNumberType)
+   (yuanxu-graph-loop-analysis-slot
+    'graph.loop-analysis/components 'components YuanxuGraphComponentListType)
+   (yuanxu-graph-loop-analysis-slot
     'graph.loop-analysis/cyclic-components
     'cyclic-components
-    PooFlowGraphComponentListType)
-   (poo-flow-graph-loop-analysis-slot
+    YuanxuGraphComponentListType)
+   (yuanxu-graph-loop-analysis-slot
     'graph.loop-analysis/condensation-edges
     'condensation-edges
-    PooFlowGraphCondensationEdgeListType)
-   (poo-flow-graph-loop-analysis-slot
-    'graph.loop-analysis/diagnostics 'diagnostics PooFlowGraphMetadataType)
-   (poo-flow-graph-loop-analysis-slot
-    'graph.loop-analysis/metadata 'metadata PooFlowGraphMetadataType)))
-(def PooFlowGraphLoopAnalysisContract
-  (poo-flow-native-contract
-   'graph/loop-analysis 'graph 'PooFlowGraphLoopAnalysis
-   poo-flow-graph-loop-analysis?
-   PooFlowGraphLoopAnalysisSlots
+    YuanxuGraphCondensationEdgeListType)
+   (yuanxu-graph-loop-analysis-slot
+    'graph.loop-analysis/diagnostics 'diagnostics YuanxuGraphMetadataType)
+   (yuanxu-graph-loop-analysis-slot
+    'graph.loop-analysis/metadata 'metadata YuanxuGraphMetadataType)))
+(def YuanxuGraphLoopAnalysisContract
+  (yuanxu-native-contract
+   'graph/loop-analysis 'graph 'YuanxuGraphLoopAnalysis
+   yuanxu-graph-loop-analysis?
+   YuanxuGraphLoopAnalysisSlots
    (lambda (candidate slot) (.slot? candidate slot))
    (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-loop-analysis))))
 
-(def (poo-flow-graph-loop-analysis-type-contract->alist)
-  (poo-flow-native-contract->alist PooFlowGraphLoopAnalysisContract))
+(def (yuanxu-graph-loop-analysis-type-contract->alist)
+  (yuanxu-native-contract->alist YuanxuGraphLoopAnalysisContract))

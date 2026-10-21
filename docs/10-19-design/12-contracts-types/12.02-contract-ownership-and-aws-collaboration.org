@@ -79,15 +79,15 @@ the PR above; it does not mean implementation is missing upstream everywhere.
 
 | Current definitions | Current role | Ownership decision to discuss |
 |---------------------+--------------+-------------------------------|
-| poo-flow-type-classify; PooFlowType.; poo-flow-type-element?; poo-flow-type-validate | Derive Type membership/validation from evidence-bearing classification | Keep upstream Type as foundation; classification/diagnostic adapter is generic upstream candidate; Core context policy stays Core |
-| poo-flow-contract-obligations; poo-flow-contract-empty-obligations | Dispatch pure obligations returning failure diagnostics | Generic object/value relation protocol is upstream candidate; concrete module obligations stay Core and AWS obligations stay AWS |
-| poo-flow-contract-admit; PooFlowContract.; poo-flow-contract-admit-evidence; poo-flow-contract-element?; poo-flow-contract-validate | Classification followed by obligations, receipt, boolean/throwing projections | Split generic value validation from context-bound module admission; do not duplicate upstream invocation Contract |
-| poo-flow-predicate-classifier; poo-flow-predicate-type; PooFlowPredicateType.; poo-flow-predicate-type-element?; poo-flow-predicate-contract | Predicate adaptation and unchanged-classifier boolean fast path | Reuse Gerbil predicates and upstream Type/PR Predicate; evidence adaptation only where needed |
-| poo-flow-responsibility-evidence; poo-flow-object-admit; PooFlowResponsibilityContract. | Validate declared slots, then obligations | Generic structural responsibilities belong with gerbil-poo object contracts; Core selects which module objects require admission |
-| poo-flow-native-classify; PooFlowNativeObjectContract. | Require a specified proto in the candidate precedence list before responsibilities | Generic prototype test belongs gerbil-poo; make it an explicit policy separate from structural conformance; remove Native from target naming |
-| poo-flow-evidence-object?; poo-flow-type-identity? | Recognize receipt shape and identity vocabulary | Generic diagnostic envelope may be shared; Core identity vocabulary is not a universal POO Type restriction |
-| poo-flow-classification-evidence-element?; PooFlowClassificationEvidence; poo-flow-classification-evidence; poo-flow-classification-evidence?; poo-flow-classification-evidence-accepted?; poo-flow-classification-evidence->alist | Construct, recognize and project classification receipts | Separate reusable diagnostics from Core source/selection context; serialization stays an output projection |
-| poo-flow-validation-evidence-element?; PooFlowValidationEvidence; poo-flow-validation-evidence; poo-flow-validation-evidence?; poo-flow-validation-evidence-accepted?; poo-flow-validation-evidence->alist | Construct, recognize and project validation receipts | Same separation; Core must bind module admission to actual candidate/context/revisions |
+| yuanxu-type-classify; YuanxuType.; yuanxu-type-element?; yuanxu-type-validate | Derive Type membership/validation from evidence-bearing classification | Keep upstream Type as foundation; classification/diagnostic adapter is generic upstream candidate; Core context policy stays Core |
+| yuanxu-contract-obligations; yuanxu-contract-empty-obligations | Dispatch pure obligations returning failure diagnostics | Generic object/value relation protocol is upstream candidate; concrete module obligations stay Core and AWS obligations stay AWS |
+| yuanxu-contract-admit; YuanxuContract.; yuanxu-contract-admit-evidence; yuanxu-contract-element?; yuanxu-contract-validate | Classification followed by obligations, receipt, boolean/throwing projections | Split generic value validation from context-bound module admission; do not duplicate upstream invocation Contract |
+| yuanxu-predicate-classifier; yuanxu-predicate-type; YuanxuPredicateType.; yuanxu-predicate-type-element?; yuanxu-predicate-contract | Predicate adaptation and unchanged-classifier boolean fast path | Reuse Gerbil predicates and upstream Type/PR Predicate; evidence adaptation only where needed |
+| yuanxu-responsibility-evidence; yuanxu-object-admit; YuanxuResponsibilityContract. | Validate declared slots, then obligations | Generic structural responsibilities belong with gerbil-poo object contracts; Core selects which module objects require admission |
+| yuanxu-native-classify; YuanxuObjectContract. | Require a specified proto in the candidate precedence list before responsibilities | Generic prototype test belongs gerbil-poo; make it an explicit policy separate from structural conformance; remove Native from target naming |
+| yuanxu-evidence-object?; yuanxu-type-identity? | Recognize receipt shape and identity vocabulary | Generic diagnostic envelope may be shared; Core identity vocabulary is not a universal POO Type restriction |
+| yuanxu-classification-evidence-element?; YuanxuClassificationEvidence; yuanxu-classification-evidence; yuanxu-classification-evidence?; yuanxu-classification-evidence-accepted?; yuanxu-classification-evidence->alist | Construct, recognize and project classification receipts | Separate reusable diagnostics from Core source/selection context; serialization stays an output projection |
+| yuanxu-validation-evidence-element?; YuanxuValidationEvidence; yuanxu-validation-evidence; yuanxu-validation-evidence?; yuanxu-validation-evidence-accepted?; yuanxu-validation-evidence->alist | Construct, recognize and project validation receipts | Same separation; Core must bind module admission to actual candidate/context/revisions |
 
 The current predicate fast path avoids classification receipt allocation for
 unchanged =.element?=; it is not permission to skip a refined classifier or
@@ -95,7 +95,7 @@ contextual admission. A simple value check should not require Core receipts.
 
 Adjacent mechanisms also matter. =module-system/schema/slot-contracts.ss= already
 checks slot Types through =element?= and has required/metadata fields. Meanwhile
-responsibilities calls =poo-flow-contract-admit= for each field. Those paths must
+responsibilities calls =yuanxu-contract-admit= for each field. Those paths must
 converge semantically rather than independently evolving field vocabularies.
 =modules/json-schema/json-schema-contract.ss= already builds a Contract from
 the normalization/validation machinery and preserves Schema diagnostic paths;
@@ -241,7 +241,7 @@ The object classifier alone is not presented as the full AWS Profile Contract.
 
 #+begin_src scheme
 (def AWSLocalReferenceContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'aws/local-network-reference
     object?
     (lambda (effective-profile _context)
@@ -258,7 +258,7 @@ The object classifier alone is not presented as the full AWS Profile Contract.
 ;; Inside the admission coordinator, after successful field checks:
 ;; effective-profile-value and selected-context-value are actual inputs.
 (def (admit-local-network-reference effective-profile-value selected-context-value)
-  (poo-flow-contract-admit AWSLocalReferenceContract
+  (yuanxu-contract-admit AWSLocalReferenceContract
                           effective-profile-value selected-context-value))
 #+end_src
 

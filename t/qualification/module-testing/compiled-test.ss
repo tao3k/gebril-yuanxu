@@ -7,9 +7,9 @@
         (only-in :std/misc/ports read-all-as-string)
         (only-in :gerbil/expander core-import-module module-context-path)
         (only-in :gerbil/runtime list-modules)
-        (rename-in :core/compiled-bindings/only
+        (rename-in :yuanxu/compiled-bindings/only
                    (namespace only-namespace) (atomic only-atomic))
-        (rename-in :core/compiled-bindings/renamed
+        (rename-in :yuanxu/compiled-bindings/renamed
                    (namespace renamed-namespace)))
 (export compiled-binding-test)
 (def root (path-expand "../../.." (path-directory (this-source-file))))
@@ -23,7 +23,7 @@
         (lambda (name)
           (def path (module-context-path (core-import-module name)))
           (check-equal? (string-suffix? ".ssi" path) #t))
-        '(:core/compiled-bindings/only :core/compiled-bindings/renamed))
+        '(:yuanxu/compiled-bindings/only :yuanxu/compiled-bindings/renamed))
       (check-equal? (file-exists? (path-expand "compiled-bindings/only.ss" root)) #f)
       (check-equal? (file-exists? (path-expand "compiled-bindings/renamed.ss" root)) #f)
       (for-each
@@ -31,7 +31,7 @@
           (def entry (assoc name (list-modules)))
           (check-equal? (and entry (string? (cdr entry))
                            (string-suffix? ".o1" (cdr entry))) #t))
-        '("core/init~0" "core/compiled-bindings/only~0" "core/compiled-bindings/renamed~0"))
+        '("yuanxu/init~0" "yuanxu/compiled-bindings/only~0" "yuanxu/compiled-bindings/renamed~0"))
       (check-equal? (file-exists? (path-expand "testing-execution.loaded" root)) #f))
     (test-case "only-in and rename-in return one namespace without forcing values"
       (def modules (only-namespace))

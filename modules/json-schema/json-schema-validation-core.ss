@@ -7,58 +7,58 @@
 ;;; Invariant: this owner has no receipt structs and no public validation API;
 ;;; it only normalizes candidate access, paths, shape checks, and regex rows.
 
-(import (only-in "./json-schema-constraints.ss" poo-flow-json-schema-unique-items?)
+(import (only-in "./json-schema-constraints.ss" yuanxu-json-schema-unique-items?)
         (only-in :clan/poo/object
                  .all-slots
                  .ref
                  .slot?
                  object?)
         (only-in "./functional.ss"
-                 poo-flow-contract-any?
-                 poo-flow-contract-key->string
-                 poo-flow-contract-key->symbol
-                 poo-flow-contract-json-object?
-                 poo-flow-contract-object-ref
-                 poo-flow-contract-project-list
-                 poo-flow-contract-filter-map)
+                 yuanxu-contract-any?
+                 yuanxu-contract-key->string
+                 yuanxu-contract-key->symbol
+                 yuanxu-contract-json-object?
+                 yuanxu-contract-object-ref
+                 yuanxu-contract-project-list
+                 yuanxu-contract-filter-map)
         (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-node-metadata
-                 poo-flow-json-schema-pattern-property-compiled)
+                 yuanxu-json-schema-node-metadata
+                 yuanxu-json-schema-pattern-property-compiled)
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match))
 
-(export +poo-flow-json-schema-validation-missing+
-        poo-flow-json-schema-candidate-slot
-        poo-flow-json-schema-candidate-rows
-        poo-flow-json-schema-candidate-row-slot
-        poo-flow-json-schema-path->symbol
-        poo-flow-json-schema-path-append
-        poo-flow-json-schema-schema-guided-array?
-        poo-flow-json-schema-schema-guided-array-values
-        poo-flow-json-schema-schema-guided-object?
-        poo-flow-json-schema-validation-node-constraints
-        poo-flow-json-schema-array-constraint-valid?
-        poo-flow-json-schema-object-constraint-valid?
-        poo-flow-json-schema-array-node-shape-valid?
-        poo-flow-json-schema-object-node-shape-valid?
-        poo-flow-json-schema-object-node-rows-shape-valid?
-        poo-flow-json-schema-row-key-symbol
-        poo-flow-json-schema-row-key-string
-        poo-flow-json-schema-pattern-property-matches?
-        poo-flow-json-schema-compiled-pattern
-        poo-flow-json-schema-matching-pattern-properties)
+(export +yuanxu-json-schema-validation-missing+
+        yuanxu-json-schema-candidate-slot
+        yuanxu-json-schema-candidate-rows
+        yuanxu-json-schema-candidate-row-slot
+        yuanxu-json-schema-path->symbol
+        yuanxu-json-schema-path-append
+        yuanxu-json-schema-schema-guided-array?
+        yuanxu-json-schema-schema-guided-array-values
+        yuanxu-json-schema-schema-guided-object?
+        yuanxu-json-schema-validation-node-constraints
+        yuanxu-json-schema-array-constraint-valid?
+        yuanxu-json-schema-object-constraint-valid?
+        yuanxu-json-schema-array-node-shape-valid?
+        yuanxu-json-schema-object-node-shape-valid?
+        yuanxu-json-schema-object-node-rows-shape-valid?
+        yuanxu-json-schema-row-key-symbol
+        yuanxu-json-schema-row-key-string
+        yuanxu-json-schema-pattern-property-matches?
+        yuanxu-json-schema-compiled-pattern
+        yuanxu-json-schema-matching-pattern-properties)
 
 ;; : JsonSchemaValidationMissing
-(def +poo-flow-json-schema-validation-missing+
-  (list 'poo-flow-json-schema-validation-missing))
+(def +yuanxu-json-schema-validation-missing+
+  (list 'yuanxu-json-schema-validation-missing))
 
 ;; : [(Pair String CompiledPattern)]
-(def +poo-flow-json-schema-compiled-pattern-cache+
+(def +yuanxu-json-schema-compiled-pattern-cache+
   '())
 
 ;; : (-> JsonSchemaCandidateObject Symbol JsonSchemaCandidateSlotValue)
-(def (poo-flow-json-schema-candidate-slot candidate slot)
+(def (yuanxu-json-schema-candidate-slot candidate slot)
   (cond
    ((hash-table? candidate)
     (let* ((string-slot (and (symbol? slot) (symbol->string slot)))
@@ -66,47 +66,47 @@
             (if string-slot
               (hash-ref candidate
                         string-slot
-                        +poo-flow-json-schema-validation-missing+)
-              +poo-flow-json-schema-validation-missing+)))
-      (if (eq? string-value +poo-flow-json-schema-validation-missing+)
-        (hash-ref candidate slot +poo-flow-json-schema-validation-missing+)
+                        +yuanxu-json-schema-validation-missing+)
+              +yuanxu-json-schema-validation-missing+)))
+      (if (eq? string-value +yuanxu-json-schema-validation-missing+)
+        (hash-ref candidate slot +yuanxu-json-schema-validation-missing+)
         string-value)))
-   ((poo-flow-contract-json-object? candidate)
-    (poo-flow-contract-object-ref
+   ((yuanxu-contract-json-object? candidate)
+    (yuanxu-contract-object-ref
      candidate
      slot
-     +poo-flow-json-schema-validation-missing+))
+     +yuanxu-json-schema-validation-missing+))
    ((and (object? candidate)
          (.slot? candidate slot))
     (.ref candidate slot))
-   (else +poo-flow-json-schema-validation-missing+)))
+   (else +yuanxu-json-schema-validation-missing+)))
 
 ;; : (-> JsonSchemaCandidateObject JsonSchemaCandidateRows)
-(def (poo-flow-json-schema-candidate-rows candidate)
+(def (yuanxu-json-schema-candidate-rows candidate)
   (cond
    ((hash-table? candidate) (hash->list candidate))
-   ((poo-flow-contract-json-object? candidate)
+   ((yuanxu-contract-json-object? candidate)
     candidate)
    ((object? candidate)
-    (poo-flow-contract-project-list
+    (yuanxu-contract-project-list
      (lambda (slot)
        (cons slot (.ref candidate slot)))
      (.all-slots candidate)))
    (else '())))
 
-;; poo-flow-json-schema-candidate-row-slot
+;; yuanxu-json-schema-candidate-row-slot
 ;;   : (forall (k v) (-> [(Pair k v)] k v))
 ;;   : (-> JsonObjectRows JsonObjectSlot JsonObjectValue)
-;;   | result: matched value or +poo-flow-json-schema-validation-missing+
+;;   | result: matched value or +yuanxu-json-schema-validation-missing+
 ;;   | doc m%
-;;       `poo-flow-json-schema-candidate-row-slot` returns the normalized JSON
+;;       `yuanxu-json-schema-candidate-row-slot` returns the normalized JSON
 ;;       object row value for a requested slot, or the validation missing
 ;;       sentinel when the candidate does not provide it.
 ;;
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-json-schema-candidate-row-slot '(("jobs" . jobs)) 'jobs)
+;;       (yuanxu-json-schema-candidate-row-slot '(("jobs" . jobs)) 'jobs)
 ;;       ;; => jobs
 ;;       ```
 ;;     %
@@ -115,29 +115,29 @@
 ;; while generated contracts address slots as symbols.  This is intentionally a
 ;; single-pass normalized lookup so recursive map-value validation does not pay
 ;; an assq miss plus generic object-ref fallback for every row.
-(def (poo-flow-json-schema-candidate-row-slot rows slot)
-  (let* ((slot-symbol (poo-flow-contract-key->symbol slot))
-         (slot-string (poo-flow-contract-key->string slot))
+(def (yuanxu-json-schema-candidate-row-slot rows slot)
+  (let* ((slot-symbol (yuanxu-contract-key->symbol slot))
+         (slot-string (yuanxu-contract-key->string slot))
          (row
           (find
            (lambda (candidate-row)
              (let* ((key (car candidate-row))
-                    (key-symbol (poo-flow-contract-key->symbol key)))
+                    (key-symbol (yuanxu-contract-key->symbol key)))
                (or (eq? key-symbol slot-symbol)
                    (and slot-string
-                        (equal? (poo-flow-contract-key->string key)
+                        (equal? (yuanxu-contract-key->string key)
                                 slot-string)))))
            rows)))
     (match row
       (#f
-        (poo-flow-contract-object-ref
+        (yuanxu-contract-object-ref
          rows
          slot
-         +poo-flow-json-schema-validation-missing+))
+         +yuanxu-json-schema-validation-missing+))
       ([_ . value] value))))
 
 ;; : (-> JsonSchemaPathPart String)
-(def (poo-flow-json-schema-path-part->string part)
+(def (yuanxu-json-schema-path-part->string part)
   (cond
    ((string? part) part)
    ((symbol? part) (symbol->string part))
@@ -145,52 +145,52 @@
    (else "value")))
 
 ;; : (-> JsonSchemaValidationPath String)
-(def (poo-flow-json-schema-path->string path)
+(def (yuanxu-json-schema-path->string path)
   (cond
    ((null? path) "root")
    (else
     (string-join
-     (poo-flow-contract-project-list
-      poo-flow-json-schema-path-part->string
+     (yuanxu-contract-project-list
+      yuanxu-json-schema-path-part->string
       path)
      "/"))))
 
 ;; : (-> JsonSchemaValidationPath Symbol)
-(def (poo-flow-json-schema-path->symbol path)
+(def (yuanxu-json-schema-path->symbol path)
   (string->symbol
-   (poo-flow-json-schema-path->string path)))
+   (yuanxu-json-schema-path->string path)))
 
 ;; : (-> JsonSchemaValidationPath JsonSchemaPathPart JsonSchemaValidationPath)
-(def (poo-flow-json-schema-path-append path part)
+(def (yuanxu-json-schema-path-append path part)
   (append path (list part)))
 
 ;; : (-> JsonSchemaCandidateSlotValue Boolean)
-(def (poo-flow-json-schema-schema-guided-array? value)
+(def (yuanxu-json-schema-schema-guided-array? value)
   (or (list? value)
       (vector? value)))
 
 ;; : (-> JsonSchemaCandidateSlotValue [JsonSchemaCandidateSlotValue])
-(def (poo-flow-json-schema-schema-guided-array-values value)
+(def (yuanxu-json-schema-schema-guided-array-values value)
   (cond
    ((vector? value) (vector->list value))
    ((list? value) value)
    (else '())))
 
 ;; : (-> JsonSchemaCandidateSlotValue Boolean)
-(def (poo-flow-json-schema-schema-guided-object? value)
+(def (yuanxu-json-schema-schema-guided-object? value)
   (or (hash-table? value)
-      (poo-flow-contract-json-object? value)
+      (yuanxu-contract-json-object? value)
       (object? value)))
 
-;; : (-> PooFlowJsonSchemaNode Alist)
-(def (poo-flow-json-schema-validation-node-constraints node)
-  (poo-flow-contract-object-ref
-   (poo-flow-json-schema-node-metadata node)
+;; : (-> YuanxuJsonSchemaNode Alist)
+(def (yuanxu-json-schema-validation-node-constraints node)
+  (yuanxu-contract-object-ref
+   (yuanxu-json-schema-node-metadata node)
    'constraints
    '()))
 
 ;; : (-> JsonSchemaConstraint Integer Boolean)
-(def (poo-flow-json-schema-object-constraint-valid? constraint size)
+(def (yuanxu-json-schema-object-constraint-valid? constraint size)
   (let ((key (car constraint))
         (bound (cdr constraint)))
     (cond
@@ -199,7 +199,7 @@
      (else #t))))
 
 ;; : (-> JsonSchemaConstraint Integer Boolean)
-(def (poo-flow-json-schema-array-constraint-valid? constraint size)
+(def (yuanxu-json-schema-array-constraint-valid? constraint size)
   (let ((key (car constraint))
         (bound (cdr constraint)))
     (cond
@@ -207,72 +207,72 @@
      ((eq? key 'maxItems) (<= size bound))
      (else #t))))
 
-;; : (-> PooFlowJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
-(def (poo-flow-json-schema-array-node-shape-valid? node value)
-  (and (poo-flow-json-schema-schema-guided-array? value)
-       (or (not (poo-flow-contract-object-ref
-                 (poo-flow-json-schema-validation-node-constraints node)
+;; : (-> YuanxuJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
+(def (yuanxu-json-schema-array-node-shape-valid? node value)
+  (and (yuanxu-json-schema-schema-guided-array? value)
+       (or (not (yuanxu-contract-object-ref
+                 (yuanxu-json-schema-validation-node-constraints node)
                  'uniqueItems #f))
-           (poo-flow-json-schema-unique-items? value))
+           (yuanxu-json-schema-unique-items? value))
        (let (constraints
-             (poo-flow-json-schema-validation-node-constraints node))
+             (yuanxu-json-schema-validation-node-constraints node))
          (if (null? constraints)
            #t
            (let (size
                  (length
-                  (poo-flow-json-schema-schema-guided-array-values value)))
+                  (yuanxu-json-schema-schema-guided-array-values value)))
              (not
-              (poo-flow-contract-any?
+              (yuanxu-contract-any?
                (lambda (constraint)
                  (not
-                  (poo-flow-json-schema-array-constraint-valid?
+                  (yuanxu-json-schema-array-constraint-valid?
                    constraint
                    size)))
                constraints)))))))
 
-;; : (-> PooFlowJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
-(def (poo-flow-json-schema-object-node-shape-valid? node value)
-  (and (poo-flow-json-schema-schema-guided-object? value)
-       (poo-flow-json-schema-object-node-rows-shape-valid?
+;; : (-> YuanxuJsonSchemaNode JsonSchemaCandidateSlotValue Boolean)
+(def (yuanxu-json-schema-object-node-shape-valid? node value)
+  (and (yuanxu-json-schema-schema-guided-object? value)
+       (yuanxu-json-schema-object-node-rows-shape-valid?
         node
-        (poo-flow-json-schema-candidate-rows value))))
+        (yuanxu-json-schema-candidate-rows value))))
 
-;; : (-> PooFlowJsonSchemaNode JsonSchemaCandidateRows Boolean)
-(def (poo-flow-json-schema-object-node-rows-shape-valid? node rows)
+;; : (-> YuanxuJsonSchemaNode JsonSchemaCandidateRows Boolean)
+(def (yuanxu-json-schema-object-node-rows-shape-valid? node rows)
   (let (constraints
-        (poo-flow-json-schema-validation-node-constraints node))
+        (yuanxu-json-schema-validation-node-constraints node))
     (if (null? constraints)
       #t
       (let (size (length rows))
         (not
-         (poo-flow-contract-any?
+         (yuanxu-contract-any?
           (lambda (constraint)
             (not
-             (poo-flow-json-schema-object-constraint-valid?
+             (yuanxu-json-schema-object-constraint-valid?
               constraint
               size)))
           constraints))))))
 
 ;; : (-> JsonSchemaObjectRow Symbol)
-(def (poo-flow-json-schema-row-key-symbol row)
-  (poo-flow-contract-key->symbol (car row)))
+(def (yuanxu-json-schema-row-key-symbol row)
+  (yuanxu-contract-key->symbol (car row)))
 
 ;; : (-> JsonSchemaObjectRow String)
-(def (poo-flow-json-schema-row-key-string row)
-  (or (poo-flow-contract-key->string (car row))
-      (symbol->string (poo-flow-json-schema-row-key-symbol row))))
+(def (yuanxu-json-schema-row-key-string row)
+  (or (yuanxu-contract-key->string (car row))
+      (symbol->string (yuanxu-json-schema-row-key-symbol row))))
 
-;; : (-> PooFlowJsonSchemaPatternProperty JsonObjectKey Boolean)
-(def (poo-flow-json-schema-pattern-property-matches? pattern-property key)
+;; : (-> YuanxuJsonSchemaPatternProperty JsonObjectKey Boolean)
+(def (yuanxu-json-schema-pattern-property-matches? pattern-property key)
   (let (compiled-pattern
-       (or (poo-flow-json-schema-pattern-property-compiled pattern-property)
+       (or (yuanxu-json-schema-pattern-property-compiled pattern-property)
            #f))
     (and compiled-pattern
          (if (pregexp-match compiled-pattern key) #t #f))))
 
 ;; : (-> RegexSource CompiledPattern)
-(def (poo-flow-json-schema-compiled-pattern pattern)
-  (let (entry (assoc pattern +poo-flow-json-schema-compiled-pattern-cache+))
+(def (yuanxu-json-schema-compiled-pattern pattern)
+  (let (entry (assoc pattern +yuanxu-json-schema-compiled-pattern-cache+))
     (if entry
       (cdr entry)
       (let (compiled-pattern
@@ -281,16 +281,16 @@
              (lambda ()
                (pregexp pattern))))
         (when compiled-pattern
-          (set! +poo-flow-json-schema-compiled-pattern-cache+
+          (set! +yuanxu-json-schema-compiled-pattern-cache+
                 (cons (cons pattern compiled-pattern)
-                      +poo-flow-json-schema-compiled-pattern-cache+)))
+                      +yuanxu-json-schema-compiled-pattern-cache+)))
         compiled-pattern))))
 
-;; : (-> [PooFlowJsonSchemaPatternProperty] JsonObjectKey [PooFlowJsonSchemaPatternProperty])
-(def (poo-flow-json-schema-matching-pattern-properties pattern-properties key)
-  (poo-flow-contract-filter-map
+;; : (-> [YuanxuJsonSchemaPatternProperty] JsonObjectKey [YuanxuJsonSchemaPatternProperty])
+(def (yuanxu-json-schema-matching-pattern-properties pattern-properties key)
+  (yuanxu-contract-filter-map
    (lambda (pattern-property)
-     (and (poo-flow-json-schema-pattern-property-matches?
+     (and (yuanxu-json-schema-pattern-property-matches?
            pattern-property
            key)
           pattern-property))

@@ -24,9 +24,9 @@ Source: [[file:../../composition/lineage.ss][core/composition/lineage.ss]].
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =poo-flow-lineage-analysis-prototype= | E | Define lineage result prototype. |
-| =poo-flow-lineage-cycle?= | D | Pure bounded analysis of supplied lineage identities. |
-| =poo-flow-productive-recursion?= | D | Pure bounded analysis of supplied lineage identities. |
-| =poo-flow-lineage-analysis= | D | Pure bounded analysis of supplied lineage identities. |
+| =yuanxu-lineage-cycle?= | D | Pure bounded analysis of supplied lineage identities. |
+| =yuanxu-productive-recursion?= | D | Pure bounded analysis of supplied lineage identities. |
+| =yuanxu-lineage-analysis= | D | Pure bounded analysis of supplied lineage identities. |
 | =poo-flow-lineage-analysis?= | D | Pure bounded analysis of supplied lineage identities. |
 
 * core/contribution/objects.ss
@@ -48,12 +48,12 @@ Source: [[file:../../contribution/verification.ss][core/contribution/verificatio
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-verification-adapter= | E | Host adapter definition with owned callbacks. |
-| =poo-flow-verify= | R | Host-trusted verification/validity callback, issuance or revocation. |
-| =poo-flow-verification-valid?= | R | Host-trusted verification/validity callback, issuance or revocation. |
-| =poo-flow-revoke-verification!= | R | Host-trusted verification/validity callback, issuance or revocation. |
-| =poo-flow-verification-admission= | R | Host-trusted verification/validity callback, issuance or revocation. |
-| =poo-flow-verification-admission-valid?= | R | Host-trusted verification/validity callback, issuance or revocation. |
+| =yuanxu-verification-adapter= | E | Host adapter definition with owned callbacks. |
+| =yuanxu-verify= | R | Host-trusted verification/validity callback, issuance or revocation. |
+| =yuanxu-verification-valid?= | R | Host-trusted verification/validity callback, issuance or revocation. |
+| =yuanxu-revoke-verification!= | R | Host-trusted verification/validity callback, issuance or revocation. |
+| =yuanxu-verification-admission= | R | Host-trusted verification/validity callback, issuance or revocation. |
+| =yuanxu-verification-admission-valid?= | R | Host-trusted verification/validity callback, issuance or revocation. |
 
 * core/graph/interface.ss
 
@@ -61,27 +61,27 @@ Source: [[file:../../graph/interface.ss][core/graph/interface.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/graph/rooted.ss
 
@@ -89,14 +89,14 @@ Source: [[file:../../graph/rooted.ss][core/graph/rooted.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-rooted= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-id= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-payload= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-children= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-ref= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-replace= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-transform= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-root-snapshot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-rooted= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-id= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-payload= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-children= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-ref= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-replace= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-transform= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-root-snapshot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/graph/apply.ss
 
@@ -104,15 +104,15 @@ Source: [[file:../../graph/apply.ss][core/graph/apply.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-apply-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-local-operations?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-reverse-onto= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-flush-coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-coalesce-local-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-contributions/coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-local-operations?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-reverse-onto= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-flush-coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-coalesce-local-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-contributions/coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/graph/contribution.ss
 
@@ -120,35 +120,35 @@ Source: [[file:../../graph/contribution.ss][core/graph/contribution.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-kind?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-action= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-slot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-node= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-member?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-value-index= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-append-distinct= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-append-distinct/indexed= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-remove-elements= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-list-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-entry-key= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-entry-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-entry= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-alist-set= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-alist-ref/default= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-kind?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-action= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-slot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-node= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-member?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-value-index= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-append-distinct= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-append-distinct/indexed= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-remove-elements= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-list-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-entry-key= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-entry-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-entry= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-alist-set= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-alist-ref/default= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/graph/payload-operations.ss
 
@@ -156,15 +156,15 @@ Source: [[file:../../graph/payload-operations.ss][core/graph/payload-operations.
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-slots-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-children-merge-one= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-children-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-children-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-slot-list-op= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-flush-node-extends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-flush-slot-overrides= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-flush-pending= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slots-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-children-merge-one= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-children-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-children-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-slot-list-op= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-flush-node-extends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-flush-slot-overrides= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-flush-pending= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/graph/operation.ss
 
@@ -172,26 +172,26 @@ Source: [[file:../../graph/operation.ss][core/graph/operation.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-graph-operation-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-override-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-append-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-prepend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-extend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-apply-operation= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-operation-state= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-local-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-node-extend-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-slot-append-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-flush-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =poo-flow-graph-coalesce-slot-appends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-override-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-append-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-prepend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-extend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-operation= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-state= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-local-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-node-extend-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slot-append-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-flush-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-coalesce-slot-appends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
 
 * core/module-system/catalog/objects.ss
 
@@ -199,23 +199,23 @@ Source: [[file:../catalog/objects.ss][core/module-system/catalog/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-catalog-entry-prototype= | E | Extend a source/catalog family. |
+| =yuanxu-module-catalog-entry-prototype= | E | Extend a source/catalog family. |
 | =make-poo-flow-module-catalog-entry= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-entry?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-entry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-entry-module= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-entry->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-prototype= | E | Extend a source/catalog family. |
-| =make-poo-flow-module-catalog= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-name= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-entries= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-source-refs= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-modules= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-add= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog-find-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-entry?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-entry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-entry-module= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-entry->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-prototype= | E | Extend a source/catalog family. |
+| =make-yuanxu-module-catalog= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-name= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-entries= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-source-refs= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-modules= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-add= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog-find-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =resolve-poo-flow-module-source/default= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-catalog->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-catalog->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 
 * core/module-system/config.ss
 
@@ -224,23 +224,23 @@ Source: [[file:../config.ss][core/module-system/config.ss]].
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =poo-flow-module-kind=?= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-object-ref/default= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-object->alist= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-interface-schema-index= | I | Derived index representation. |
+| =yuanxu-module-object-ref/default= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-object->alist= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-interface-schema-index= | I | Derived index representation. |
 | =make-module-interface= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-module-interface-id= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-interface-schemas= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-interface-schema-spec= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-interface-authoring= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-module-interface-metadata= | D | Read supplied Interface data or project an inspection receipt. |
-| =poo-flow-string-required= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-string-constant= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-string-default= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-string-optional= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-option-policy= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-option-append= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-option-override= | E | Interface/schema/option-policy authoring. |
-| =poo-flow-option-conflict= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-module-interface-id= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-interface-schemas= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-interface-schema-spec= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-interface-authoring= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-module-interface-metadata= | D | Read supplied Interface data or project an inspection receipt. |
+| =yuanxu-string-required= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-string-constant= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-string-default= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-string-optional= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-option-policy= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-option-append= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-option-override= | E | Interface/schema/option-policy authoring. |
+| =yuanxu-option-conflict= | E | Interface/schema/option-policy authoring. |
 
 * core/module-system/funs.ss
 
@@ -248,13 +248,13 @@ Source: [[file:../funs.ss][core/module-system/funs.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-phase-file= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-hook-values= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-flag-enabled?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-flags-enabled?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-depth-value= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-depth-before?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
-| =poo-flow-module-phase-order= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-phase-file= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-hook-values= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-flag-enabled?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-flags-enabled?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-depth-value= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-depth-before?= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
+| =yuanxu-module-phase-order= | E | Framework phase/closure helper; callbacks and domain adaptation remain owner-controlled. |
 
 * core/module-system/graph/funs.ss
 
@@ -271,17 +271,17 @@ Source: [[file:../loader/load-path.ss][core/module-system/loader/load-path.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-source-collection-prototype= | E | Define or extend a source collection/LoadPath. |
-| =poo-flow-module-source-collection?= | D | Inspect a maintained LoadPath/source collection. |
-| =poo-flow-module-source-collection-identity= | D | Inspect a maintained LoadPath/source collection. |
-| =poo-flow-module-source-collection-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
-| =poo-flow-module-load-path-prototype= | E | Define or extend a source collection/LoadPath. |
+| =yuanxu-module-source-collection-prototype= | E | Define or extend a source collection/LoadPath. |
+| =yuanxu-module-source-collection?= | D | Inspect a maintained LoadPath/source collection. |
+| =yuanxu-module-source-collection-identity= | D | Inspect a maintained LoadPath/source collection. |
+| =yuanxu-module-source-collection-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
+| =yuanxu-module-load-path-prototype= | E | Define or extend a source collection/LoadPath. |
 | =make-poo-flow-module-load-path= | E | Define or extend a source collection/LoadPath. |
 | =extend-poo-flow-module-load-path= | E | Define or extend a source collection/LoadPath. |
-| =poo-flow-module-load-path?= | D | Inspect a maintained LoadPath/source collection. |
-| =poo-flow-module-load-path-identity= | D | Inspect a maintained LoadPath/source collection. |
-| =poo-flow-module-load-path-collections= | D | Inspect a maintained LoadPath/source collection. |
-| =poo-flow-module-load-path-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
+| =yuanxu-module-load-path?= | D | Inspect a maintained LoadPath/source collection. |
+| =yuanxu-module-load-path-identity= | D | Inspect a maintained LoadPath/source collection. |
+| =yuanxu-module-load-path-collections= | D | Inspect a maintained LoadPath/source collection. |
+| =yuanxu-module-load-path-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
 
 * core/module-system/loader/objects.ss
 
@@ -289,45 +289,45 @@ Source: [[file:../loader/objects.ss][core/module-system/loader/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-loader-entry-prototype= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-module-loader-entry-prototype= | E | Loader Backend/plan/receipt authoring. |
 | =make-poo-flow-module-loader-entry= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-module-loader-entry?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-entry-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-entry-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-backend-prototype= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-module-loader-entry?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-entry-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-entry-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-backend-prototype= | E | Loader Backend/plan/receipt authoring. |
 | =make-poo-flow-module-loader-backend= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-module-loader-backend?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-backend-source-kind= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-loader-backend-load= | E | Exposes a behavior callback; not configurable noun data. |
-| =poo-flow-module-loader-backend-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-prototype= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-module-loader-backend?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-backend-source-kind= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-loader-backend-load= | E | Exposes a behavior callback; not configurable noun data. |
+| =yuanxu-module-loader-backend-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-prototype= | E | Loader Backend/plan/receipt authoring. |
 | =make-poo-flow-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-lazy-load-plan?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-backends= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-forced?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-receipt= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-plan-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-prototype= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-lazy-load-plan?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-backends= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-forced?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-receipt= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-plan-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-prototype= | E | Loader Backend/plan/receipt authoring. |
 | =make-poo-flow-module-load-receipt= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-module-load-receipt?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-loaded?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-code= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-messages= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-load-receipt-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-module-static-loader= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-module-loader-backend-supports?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =poo-flow-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
-| =poo-flow-make-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
-| =poo-flow-force-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
-| =poo-flow-force-lazy-load-plan= | R | Invokes loading/forcing callbacks. |
-| =poo-flow-module-load-source-receipt= | R | Invokes loading/forcing callbacks. |
-| =poo-flow-module-load-source-receipts= | R | Invokes loading/forcing callbacks. |
-| =poo-flow-module-load-receipt->alist= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-loaded?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-code= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-messages= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-load-receipt-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-module-static-loader= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-module-loader-backend-supports?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =yuanxu-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-make-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
+| =yuanxu-force-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-force-lazy-load-plan= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-module-load-source-receipt= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-module-load-source-receipts= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-module-load-receipt->alist= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 
 * core/module-system/objects.ss
 
@@ -346,21 +346,21 @@ Source: [[file:../observability/diagnostics.ss][core/module-system/observability
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-diagnostic-prototype= | E | Define diagnostic/report family. |
+| =yuanxu-module-diagnostic-prototype= | E | Define diagnostic/report family. |
 | =make-poo-flow-module-diagnostic= | E | Define diagnostic/report family. |
-| =poo-flow-module-diagnostic?= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-diagnostic-severity= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-diagnostic-code= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-diagnostic-target= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-diagnostic-detail= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-diagnostics-status= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-doctor-report-prototype= | E | Define diagnostic/report family. |
+| =yuanxu-module-diagnostic?= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-diagnostic-severity= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-diagnostic-code= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-diagnostic-target= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-diagnostic-detail= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-diagnostics-status= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-report-prototype= | E | Define diagnostic/report family. |
 | =make-poo-flow-module-doctor-report= | E | Define diagnostic/report family. |
-| =poo-flow-module-doctor-report?= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-doctor-report-modules= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-doctor-report-status= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-doctor-report-diagnostics= | D | Inspect diagnostic/Doctor results. |
-| =poo-flow-module-doctor-ok?= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-report?= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-report-modules= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-report-status= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-report-diagnostics= | D | Inspect diagnostic/Doctor results. |
+| =yuanxu-module-doctor-ok?= | D | Inspect diagnostic/Doctor results. |
 
 * core/module-system/projection/option-objects.ss
 
@@ -368,31 +368,31 @@ Source: [[file:../projection/option-objects.ss][core/module-system/projection/op
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-option-config-prototype= | E | Construct an Interface-bound option/receipt projection. |
+| =yuanxu-module-option-config-prototype= | E | Construct an Interface-bound option/receipt projection. |
 | =make-poo-flow-module-option-config= | E | Construct an Interface-bound option/receipt projection. |
-| =poo-flow-module-option-config?= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-config-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-config-value= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-config-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-config-metadata= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-prototype= | E | Construct an Interface-bound option/receipt projection. |
+| =yuanxu-module-option-config?= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-config-id= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-config-value= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-config-source-module= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-config-metadata= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-prototype= | E | Construct an Interface-bound option/receipt projection. |
 | =make-poo-flow-module-option-schema= | E | Construct an Interface-bound option/receipt projection. |
-| =poo-flow-module-option-schema?= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-type= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-rule= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-value= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-metadata= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-prototype= | E | Construct an Interface-bound option/receipt projection. |
+| =yuanxu-module-option-schema?= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-id= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-source-module= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-type= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-rule= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-value= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-metadata= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-prototype= | E | Construct an Interface-bound option/receipt projection. |
 | =make-poo-flow-module-option-validation-receipt= | E | Construct an Interface-bound option/receipt projection. |
-| =poo-flow-module-option-validation-receipt?= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-valid?= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-code= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-messages= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-validation-receipt-metadata= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt?= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-id= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-source-module= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-valid?= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-code= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-messages= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-validation-receipt-metadata= | D | Inspect or validate supplied Interface-bound option values. |
 
 * core/module-system/projection/option-validation.ss
 
@@ -400,10 +400,10 @@ Source: [[file:../projection/option-validation.ss][core/module-system/projection
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-find-schema= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-missing-schema-receipt= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-option-schema-validation-receipt= | D | Inspect or validate supplied Interface-bound option values. |
-| =poo-flow-module-options-validate= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-find-schema= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-missing-schema-receipt= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-option-schema-validation-receipt= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-options-validate= | D | Inspect or validate supplied Interface-bound option values. |
 
 * core/module-system/schema/interface.ss
 
@@ -411,86 +411,86 @@ Source: [[file:../schema/interface.ss][core/module-system/schema/interface.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-object-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-objects-root-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =PooFlowModuleAnyType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleListType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleMapType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleAlistType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleSymbolType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleStringType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleBooleanType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleObjectType= | D | Use supplied native Types on admitted values. |
-| =PooFlowModuleNodeType= | D | Use supplied native Types on admitted values. |
-| =poo-flow-module-list-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-value-type?= | D | Use supplied native Types on admitted values. |
-| =poo-flow-module-value-type-kind= | D | Use supplied native Types on admitted values. |
-| =poo-flow-module-value-type-accepts?= | D | Use supplied native Types on admitted values. |
-| =poo-flow-module-field-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-value-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-default= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-accepts?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contract-with-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution-target= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution-field= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution-value= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contribution->extension= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contributions->extensions= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-slot-apply-policy= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-input-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-argument-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-output-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-idempotent?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-identity-key= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-list-append-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-list-remove-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-map-set-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-diagnostics= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-contract-valid?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-transformer-field-contribution= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-contributions-resolve= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-extension-result= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-root= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-changed-passes= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-field-resolution-result-applied?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object?= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-inherits= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-fields= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-inheritance-chain-cache= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-object-validation-cache= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-object-resolved-fields= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-field= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-default-slots= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-object-node/default-slots= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-object-node= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-object-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-objects-node= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-objects-index= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-objects-ref/index= | I | Derived schema/index/cache representation. |
-| =poo-flow-module-objects-ref= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-objects-resolve-contributions/node= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =poo-flow-module-objects-resolve-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-objects-root-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =YuanxuModuleAnyType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleListType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleMapType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleAlistType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleSymbolType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleStringType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleBooleanType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleObjectType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleNodeType= | D | Use supplied native Types on admitted values. |
+| =yuanxu-module-list-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-value-type?= | D | Use supplied native Types on admitted values. |
+| =yuanxu-module-value-type-kind= | D | Use supplied native Types on admitted values. |
+| =yuanxu-module-value-type-accepts?= | D | Use supplied native Types on admitted values. |
+| =yuanxu-module-field-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-value-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-default= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-accepts?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contract-with-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution-target= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution-field= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution-value= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contribution->extension= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contributions->extensions= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-slot-apply-policy= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-merge= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-input-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-argument-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-output-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-idempotent?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-identity-key= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-list-append-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-list-remove-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-map-set-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-diagnostics= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-contract-valid?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-transformer-field-contribution= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-contributions-resolve= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-extension-result= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-root= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-changed-passes= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-field-resolution-result-applied?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object?= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-inherits= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-fields= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-metadata= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-inheritance-chain-cache= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-object-validation-cache= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-object-resolved-fields= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-field= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-default-slots= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-object-node/default-slots= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-object-node= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-object-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-objects-node= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-objects-index= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-objects-ref/index= | I | Derived schema/index/cache representation. |
+| =yuanxu-module-objects-ref= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-objects-resolve-contributions/node= | E | Low-level field/object/transformer authoring and explicit resolution. |
+| =yuanxu-module-objects-resolve-contributions= | E | Low-level field/object/transformer authoring and explicit resolution. |
 
 * core/module-system/schema/relations.ss
 
@@ -509,12 +509,12 @@ Source: [[file:../schema/relations.ss][core/module-system/schema/relations.ss]].
 | =SemanticCapabilities.= | E | Publish native Module identities/import/profile/capability relations. |
 | =ModuleIdentity.= | E | Publish native Module identities/import/profile/capability relations. |
 | =ImportContribution.= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-semantic-identity= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-empty-imports= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-empty-profiles= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-empty-capabilities= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-import-contribution= | E | Publish native Module identities/import/profile/capability relations. |
-| =poo-flow-module-imports= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-semantic-identity= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-empty-imports= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-empty-profiles= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-empty-capabilities= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-import-contribution= | E | Publish native Module identities/import/profile/capability relations. |
+| =yuanxu-module-imports= | E | Publish native Module identities/import/profile/capability relations. |
 
 * core/module-system/schema/slot-contracts.ss
 
@@ -522,24 +522,24 @@ Source: [[file:../schema/slot-contracts.ss][core/module-system/schema/slot-contr
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-contract-value-type= | E | Declare a new slot/type Contract or owner admission assertion. |
-| =poo-flow-contract-slot= | E | Declare a new slot/type Contract or owner admission assertion. |
-| =poo-flow-contract-slot-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-name= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-type= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-report-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-predicate-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-required?= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract= | E | Declare a new slot/type Contract or owner admission assertion. |
-| =poo-flow-native-contract-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract-owner= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract-object-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract-slots= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-slot->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-native-contract->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =poo-flow-contract-check-slot!= | E | Declare a new slot/type Contract or owner admission assertion. |
+| =yuanxu-contract-value-type= | E | Declare a new slot/type Contract or owner admission assertion. |
+| =yuanxu-contract-slot= | E | Declare a new slot/type Contract or owner admission assertion. |
+| =yuanxu-contract-slot-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-name= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-type= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-report-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-predicate-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-required?= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract= | E | Declare a new slot/type Contract or owner admission assertion. |
+| =yuanxu-native-contract-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract-owner= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract-object-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract-slots= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-slot->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-native-contract->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-contract-check-slot!= | E | Declare a new slot/type Contract or owner admission assertion. |
 
 * core/module-system/schema/support/contracts.ss
 
@@ -547,68 +547,68 @@ Source: [[file:../schema/support/contracts.ss][core/module-system/schema/support
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-object-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-root-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-kind?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-alist?= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleAnyType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleListType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleMapType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleAlistType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleSymbolType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleStringType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleBooleanType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleObjectType= | I | Support representation or algorithm; no default import. |
-| =PooFlowModuleNodeType= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-list-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-value-type?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-value-type-kind= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-value-type-accepts?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-value-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-default= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-metadata= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-accepts?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contract-with-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-prototype= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-target= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-field= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-value= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-field-contract?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-field-value-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-field-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-valid?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution-operation= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contribution->extension= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contributions->extensions= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-input-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-argument-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-output-type= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-idempotent?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-identity-key= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-metadata= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-list-append-contract= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-list-remove-contract= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-map-set-contract= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-type-compatible?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-diagnostic= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-diagnostics= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-contract-valid?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-transformer-field-contribution= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-root-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-kind?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-alist?= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleAnyType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleListType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleMapType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleAlistType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleSymbolType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleStringType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleBooleanType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleObjectType= | I | Support representation or algorithm; no default import. |
+| =YuanxuModuleNodeType= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-list-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-value-type?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-value-type-kind= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-value-type-accepts?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-value-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-default= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-metadata= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-accepts?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contract-with-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-prototype= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-target= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-field= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-value= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-field-contract?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-field-value-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-field-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-valid?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution-operation= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contribution->extension= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contributions->extensions= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-input-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-argument-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-output-type= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-idempotent?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-identity-key= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-metadata= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-list-append-contract= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-list-remove-contract= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-map-set-contract= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-type-compatible?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-diagnostic= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-diagnostics= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-contract-valid?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-transformer-field-contribution= | I | Support representation or algorithm; no default import. |
 
 * core/module-system/schema/support/field-resolution.ss
 
@@ -616,19 +616,19 @@ Source: [[file:../schema/support/field-resolution.ss][core/module-system/schema/
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-field-resolution-result= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-extension-result= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-contributions= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-root= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-changed-passes= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-resolution-result-applied?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-config-fast-slot-merge/in-order= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-config-slot-key-hash-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-config-fast-slot-merge/sparse= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-config-fast-slot-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-config-fast-extension-result= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-field-contributions-resolve= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-extension-result= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-contributions= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-root= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-changed-passes= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-resolution-result-applied?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-config-fast-slot-merge/in-order= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-config-slot-key-hash-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-config-fast-slot-merge/sparse= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-config-fast-slot-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-config-fast-extension-result= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-field-contributions-resolve= | I | Support representation or algorithm; no default import. |
 
 * core/module-system/schema/support/object-slots.ss
 
@@ -636,14 +636,14 @@ Source: [[file:../schema/support/object-slots.ss][core/module-system/schema/supp
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-object-constant-slot= | I | Support representation or algorithm; no default import. |
-| =+poo-flow-module-object-slot-missing+= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-constant-slot-ref/default= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-constant-slot-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-identity-hash-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-set= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot= | I | Support representation or algorithm; no default import. |
+| =+yuanxu-module-object-slot-missing+= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot-ref/default= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-identity-hash-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-set= | I | Support representation or algorithm; no default import. |
 
 * core/module-system/schema/support/object.ss
 
@@ -651,46 +651,46 @@ Source: [[file:../schema/support/object.ss][core/module-system/schema/support/ob
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-object= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object?= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-inherits= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-fields= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-metadata= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-inheritance-chain-cache= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-validation-cache= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-constant-slot= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-fields-slot= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-constant-slot-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-constant-slot-ref/default= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-identity= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-identity-hash-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field-set= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-fields-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-inherited-fields= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-resolved-fields= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-resolved-field-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field/index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field/in-fields= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-field= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-default-slots= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-alist-set= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-slots-merge= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-node/default-slots= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-contribution= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-contribution/index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-object-contributions= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-ref/index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-ref= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-contributions-by-target= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-fast-extension-child-state= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-fast-extension-result= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-resolve-contributions/node= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-objects-resolve-contributions= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-inherits= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-fields= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-metadata= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-inheritance-chain-cache= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-validation-cache= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-fields-slot= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-constant-slot-ref/default= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-identity= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-identity-hash-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field-set= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-fields-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-inherited-fields= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-resolved-fields= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-resolved-field-index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field/index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field/in-fields= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-field= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-default-slots= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-alist-set= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-slots-merge= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-node/default-slots= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-node= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-contribution= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-contribution/index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-object-contributions= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-node= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-ref/index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-ref= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-contributions-by-target= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-fast-extension-child-state= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-fast-extension-result= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-resolve-contributions/node= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-objects-resolve-contributions= | I | Support representation or algorithm; no default import. |
 
 * core/module-system/schema/support/slot-policy.ss
 
@@ -698,13 +698,13 @@ Source: [[file:../schema/support/slot-policy.ss][core/module-system/schema/suppo
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-slot-apply-policy= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-value-index= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-append-distinct= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-append-distinct/indexed= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-remove-elements= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-list-value= | I | Support representation or algorithm; no default import. |
-| =poo-flow-module-slot-policy?= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-apply-policy= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-value-index= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-append-distinct= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-append-distinct/indexed= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-remove-elements= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-list-value= | I | Support representation or algorithm; no default import. |
+| =yuanxu-module-slot-policy?= | I | Support representation or algorithm; no default import. |
 
 * core/module-system/schema/validation.ss
 
@@ -712,20 +712,20 @@ Source: [[file:../schema/validation.ss][core/module-system/schema/validation.ss]
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-object-validation-kind= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-validation-schema= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-field-contract-validation-kind= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-field-contract-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-field-contract-validation-valid?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-inheritance-chain= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-validation?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-validation-valid?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-object-validation-diagnostics= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-objects-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-module-objects-validation-summary= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-require-module-object-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
-| =poo-flow-require-module-objects-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation-kind= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation-schema= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-field-contract-validation-kind= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-field-contract-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-field-contract-validation-valid?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-inheritance-chain= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation-valid?= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-object-validation-diagnostics= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-objects-validation= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-module-objects-validation-summary= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-require-module-object-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+| =yuanxu-require-module-objects-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
 
 * core/module-system/source/objects.ss
 
@@ -733,19 +733,19 @@ Source: [[file:../source/objects.ss][core/module-system/source/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-module-source-ref-prototype= | E | Extend a source/catalog family. |
+| =yuanxu-module-source-ref-prototype= | E | Extend a source/catalog family. |
 | =make-poo-flow-module-source-ref= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref-kind= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref-value= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref-metadata= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref-kind= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref-value= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref-metadata= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =make-poo-flow-module-local-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =make-poo-flow-module-package-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =make-poo-flow-module-standard-library-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =make-poo-flow-module-registry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =make-poo-flow-module-generated-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =poo-flow-module-source-ref=?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =poo-flow-module-source-ref->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =yuanxu-module-source-ref->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 
 * core/module-system/types.ss
 
@@ -807,34 +807,34 @@ Reexports [[file:../../observability/slot-debug.ss][core/observability/slot-debu
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-observation-debug= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowObservationProjectionError?= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugMemoryPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugMemorySampleContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugMemoryReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugDurationReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugCallPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugCallReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-call-policy= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-call-receipt= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-call-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-observation-debug= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuObservationProjectionError?= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugMemoryPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugMemorySampleContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugMemoryReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugDurationReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugCallPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugCallReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-call-policy= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-call-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-call-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
 | =call-with-poo-flow-debug-trace= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =PooFlowDebugCallAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugCallAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-policy= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-policy?= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-sample= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-receipt= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-memory-snapshot= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =poo-flow-debug-memory-checkpoint= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =YuanxuDebugCallAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugCallAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-policy= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-policy?= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-sample= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-memory-snapshot= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =yuanxu-debug-memory-checkpoint= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =call-with-poo-flow-debug-memory-span= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =call-with-poo-flow-debug-memory-monitor= | R | May execute, probe slots, read clocks/memory or monitor. |
 | =call-with-poo-flow-debug-memory-case-watchdog= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =PooFlowDebugMemoryAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugMemoryAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugDurationAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugDurationAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugMemoryAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugMemoryAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugDurationAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugDurationAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
 
 * core/observability/funcs.ss
 
@@ -842,21 +842,21 @@ Source: [[file:../../observability/funcs.ss][core/observability/funcs.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-observation-admission-facts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-admission-explanation= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-admission-summary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-summary-sexp= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-debug-call-policy= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-call-receipt= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-call-receipt-sexp= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-slot-policy= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-slot-receipt= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-slot-receipt-sexp= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-memory-policy= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-memory-policy?= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-memory-sample= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-memory-receipt= | E | Define debug policy or project debug receipts. |
-| =poo-flow-debug-memory-receipt-sexp= | E | Define debug policy or project debug receipts. |
+| =yuanxu-observation-admission-facts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-admission-explanation= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-admission-summary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-summary-sexp= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-debug-call-policy= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-call-receipt= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-call-receipt-sexp= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-slot-policy= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-slot-receipt= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-slot-receipt-sexp= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-memory-policy= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-memory-policy?= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-memory-sample= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-memory-receipt= | E | Define debug policy or project debug receipts. |
+| =yuanxu-debug-memory-receipt-sexp= | E | Define debug policy or project debug receipts. |
 
 * core/observability/objects.ss
 
@@ -864,58 +864,58 @@ Source: [[file:../../observability/objects.ss][core/observability/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-observability-event-prototype= | E | Publish or specialize observation families. |
-| =poo-flow-admission-observation-prototype= | E | Publish or specialize observation families. |
-| =poo-flow-observation-identity= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-provenance= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-context= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observe-admission-evidence= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observe-contract-admission= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-explain= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observation-summary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-span-prototype= | E | Publish or specialize observation families. |
-| =poo-flow-observability-diagnostic-prototype= | E | Publish or specialize observation families. |
-| =poo-flow-observability-receipt-prototype= | E | Publish or specialize observation families. |
-| =poo-flow-observability-projection-prototype= | E | Publish or specialize observation families. |
-| =+poo-flow-observability-object-families+= | E | Publish or specialize observation families. |
-| =poo-flow-observability-family?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-prototype?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-prototype-id= | E | Publish or specialize observation families. |
-| =poo-flow-observability-prototype->alist= | E | Publish or specialize observation families. |
-| =poo-flow-observability-diagnostic?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-family= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-severity= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-boundary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-validator= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-node= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-edge= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-reason= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-message= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-repair-target= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-artifacts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-record= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic-code= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-diagnostic->alist= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-family= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-schema= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-source= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-graph= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-diagnostics= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-repair= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-readiness= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-artifacts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-record= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-valid?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-diagnostic-codes= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt-next-action= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-graph= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-repair= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-readiness= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-feedback-receipt= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-domain-next-action= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-agent-feedback= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
-| =poo-flow-observability-receipt->alist= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-event-prototype= | E | Publish or specialize observation families. |
+| =yuanxu-admission-observation-prototype= | E | Publish or specialize observation families. |
+| =yuanxu-observation-identity= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-provenance= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-context= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observe-admission-evidence= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observe-contract-admission= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-explain= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observation-summary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-span-prototype= | E | Publish or specialize observation families. |
+| =yuanxu-observability-diagnostic-prototype= | E | Publish or specialize observation families. |
+| =yuanxu-observability-receipt-prototype= | E | Publish or specialize observation families. |
+| =yuanxu-observability-projection-prototype= | E | Publish or specialize observation families. |
+| =+yuanxu-observability-object-families+= | E | Publish or specialize observation families. |
+| =yuanxu-observability-family?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-prototype?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-prototype-id= | E | Publish or specialize observation families. |
+| =yuanxu-observability-prototype->alist= | E | Publish or specialize observation families. |
+| =yuanxu-observability-diagnostic?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-family= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-severity= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-boundary= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-validator= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-node= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-edge= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-reason= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-message= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-repair-target= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-artifacts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-record= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic-code= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-diagnostic->alist= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-family= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-schema= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-source= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-graph= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-diagnostics= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-repair= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-readiness= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-artifacts= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-record= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-valid?= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-diagnostic-codes= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt-next-action= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-graph= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-repair= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-readiness= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-feedback-receipt= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-domain-next-action= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-agent-feedback= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
+| =yuanxu-observability-receipt->alist= | D | Bounded inspection/admission/presentation over supplied evidence and owned protocols. |
 
 * core/observability/output.ss
 
@@ -923,7 +923,7 @@ Source: [[file:../../observability/output.ss][core/observability/output.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-write-observation-line!= | R | Writes to a host output port. |
+| =yuanxu-write-observation-line!= | R | Writes to a host output port. |
 
 * core/observability/slot-debug.ss
 
@@ -931,15 +931,15 @@ Source: [[file:../../observability/slot-debug.ss][core/observability/slot-debug.
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =PooFlowDebugSlotPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugSlotReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-slot-policy= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-slot-receipt= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-slot-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
-| =poo-flow-debug-poo= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =poo-flow-debug-poos= | R | May execute, probe slots, read clocks/memory or monitor. |
-| =PooFlowDebugSlotAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
-| =PooFlowDebugSlotAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugSlotPolicyContract= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugSlotReceiptContract= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-slot-policy= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-slot-receipt= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-slot-receipt-sexp= | E | Advanced debug policy/receipt/exception interface. |
+| =yuanxu-debug-poo= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =yuanxu-debug-poos= | R | May execute, probe slots, read clocks/memory or monitor. |
+| =YuanxuDebugSlotAnomaly?= | E | Advanced debug policy/receipt/exception interface. |
+| =YuanxuDebugSlotAnomaly-receipt= | E | Advanced debug policy/receipt/exception interface. |
 
 * core/observability/slot-presentation.ss
 
@@ -947,8 +947,8 @@ Source: [[file:../../observability/slot-presentation.ss][core/observability/slot
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-slot-view= | E | Advanced lineage/source registry inspection. |
-| =poo-flow-slot-presentation= | D | Default effective-value view; advanced/source levels are opt-in. |
+| =yuanxu-slot-view= | E | Advanced lineage/source registry inspection. |
+| =yuanxu-slot-presentation= | D | Default effective-value view; advanced/source levels are opt-in. |
 
 * core/observability/testing-case.ss
 
@@ -956,12 +956,12 @@ Source: [[file:../../observability/testing-case.ss][core/observability/testing-c
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-testing-case-profile-prototype= | E | Test declaration or maintained test Profile publication. |
-| =poo-flow-testing-case-profile?= | E | Test declaration or maintained test Profile publication. |
-| =poo-flow-default-testing-case-profile= | E | Test declaration or maintained test Profile publication. |
-| =poo-flow-current-testing-case-profile= | R | Runtime parameterization of test context. |
-| =poo-flow-test-case= | E | Test declaration or maintained test Profile publication. |
-| =poo-flow-test-case/with= | E | Test declaration or maintained test Profile publication. |
+| =yuanxu-testing-case-profile-prototype= | E | Test declaration or maintained test Profile publication. |
+| =yuanxu-testing-case-profile?= | E | Test declaration or maintained test Profile publication. |
+| =yuanxu-default-testing-case-profile= | E | Test declaration or maintained test Profile publication. |
+| =yuanxu-current-testing-case-profile= | R | Runtime parameterization of test context. |
+| =yuanxu-test-case= | E | Test declaration or maintained test Profile publication. |
+| =yuanxu-test-case/with= | E | Test declaration or maintained test Profile publication. |
 
 * core/observability/types.ss
 
@@ -969,46 +969,46 @@ Source: [[file:../../observability/types.ss][core/observability/types.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =PooFlowObservabilityDiagnosticContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationIdentityContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationProvenanceContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationContextContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationFailureContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationFactsContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowAdmissionObservationFactsContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowAdmissionObservationContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservationSummaryContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowAuthoringObservationContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugCallPolicyContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugCallReceiptContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugSlotPolicyContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugSlotReceiptContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugMemoryPolicyContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugMemorySampleContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugMemoryReceiptContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowDebugDurationReceiptContract= | D | Use a maintained observation Contract as a POO value. |
-| =PooFlowObservabilityReceiptContract= | D | Use a maintained observation Contract as a POO value. |
-| =poo-flow-observability-alist?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-list-of?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-source-ref?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-severity?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-boundary-ref?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-validator-ref?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-graph-node-ref?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-graph-edge-ref?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-reason?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-message?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-repair-target?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-graph-shape?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-repair-shape?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-readiness-shape?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-diagnostic-contract-evidence= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-receipt-contract-evidence= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-diagnostic-contract?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-receipt-contract?= | I | Evidence shape/predicate support. |
-| =poo-flow-observability-require-diagnostic!= | E | Explicit owner admission assertion. |
-| =poo-flow-observability-require-receipt!= | E | Explicit owner admission assertion. |
+| =YuanxuObservabilityDiagnosticContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationIdentityContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationProvenanceContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationContextContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationFailureContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationFactsContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuAdmissionObservationFactsContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuAdmissionObservationContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservationSummaryContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuAuthoringObservationContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugCallPolicyContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugCallReceiptContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugSlotPolicyContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugSlotReceiptContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugMemoryPolicyContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugMemorySampleContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugMemoryReceiptContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuDebugDurationReceiptContract= | D | Use a maintained observation Contract as a POO value. |
+| =YuanxuObservabilityReceiptContract= | D | Use a maintained observation Contract as a POO value. |
+| =yuanxu-observability-alist?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-list-of?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-source-ref?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-severity?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-boundary-ref?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-validator-ref?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-graph-node-ref?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-graph-edge-ref?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-reason?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-message?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-repair-target?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-graph-shape?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-repair-shape?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-readiness-shape?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-diagnostic-contract-evidence= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-receipt-contract-evidence= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-diagnostic-contract?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-receipt-contract?= | I | Evidence shape/predicate support. |
+| =yuanxu-observability-require-diagnostic!= | E | Explicit owner admission assertion. |
+| =yuanxu-observability-require-receipt!= | E | Explicit owner admission assertion. |
 
 * core/poo-clos/class-declaration-ir.ss
 
@@ -1704,9 +1704,9 @@ Source: [[file:../../profile-composition/bindings.ss][core/profile-composition/b
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-flow-profile-ref= | D | Select an existing named Profile without declaring behavior. |
-| =poo-flow-scenario-module-binding= | E | Domain Scenario binding adapter. |
-| =poo-flow-scenario-profile-binding= | E | Domain Scenario binding adapter. |
+| =yuanxu-profile-ref= | D | Select an existing named Profile without declaring behavior. |
+| =yuanxu-scenario-module-binding= | E | Domain Scenario binding adapter. |
+| =yuanxu-scenario-profile-binding= | E | Domain Scenario binding adapter. |
 
 * core/profile-composition/profile-bundle.ss
 
@@ -1714,25 +1714,25 @@ Source: [[file:../../profile-composition/profile-bundle.ss][core/profile-composi
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =+poo-flow-profile-export-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =+poo-flow-profile-selection-proof-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =+poo-flow-profile-bundle-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =+poo-flow-profile-composition-strategy-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =PooFlowProfileExport= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =PooFlowProfileSelectionProof= | D | Select/compose maintained values or inspect results/conflicts. |
-| =PooFlowProfileBundle= | D | Select/compose maintained values or inspect results/conflicts. |
-| =PooFlowStageSpace= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =PooFlowProfileCompositionStrategy= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =+yuanxu-profile-export-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =+yuanxu-profile-selection-proof-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =+yuanxu-profile-bundle-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =+yuanxu-profile-composition-strategy-kind+= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =YuanxuProfileExport= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =YuanxuProfileSelectionProof= | D | Select/compose maintained values or inspect results/conflicts. |
+| =YuanxuProfileBundle= | D | Select/compose maintained values or inspect results/conflicts. |
+| =YuanxuStageSpace= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =YuanxuProfileCompositionStrategy= | E | Publish Profile exports, StageSpace or composition strategy. |
 | =profiles= | D | Select/compose maintained values or inspect results/conflicts. |
 | =compose= | D | Select/compose maintained values or inspect results/conflicts. |
-| =poo-flow-profile-export= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =poo-flow-module-profiles= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =poo-flow-select-module-profiles= | D | Select/compose maintained values or inspect results/conflicts. |
-| =poo-flow-profile-bundle= | E | Publish Profile exports, StageSpace or composition strategy. |
-| =poo-flow-profile-bundle?= | D | Select/compose maintained values or inspect results/conflicts. |
-| =PooFlowProfileCompositionConflict?= | D | Select/compose maintained values or inspect results/conflicts. |
-| =PooFlowProfileCompositionConflict-receipt= | D | Select/compose maintained values or inspect results/conflicts. |
-| =poo-flow-profile-composition-conflict-presentation= | D | Select/compose maintained values or inspect results/conflicts. |
+| =yuanxu-profile-export= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =yuanxu-module-profiles= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =yuanxu-select-module-profiles= | D | Select/compose maintained values or inspect results/conflicts. |
+| =yuanxu-profile-bundle= | E | Publish Profile exports, StageSpace or composition strategy. |
+| =yuanxu-profile-bundle?= | D | Select/compose maintained values or inspect results/conflicts. |
+| =YuanxuProfileCompositionConflict?= | D | Select/compose maintained values or inspect results/conflicts. |
+| =YuanxuProfileCompositionConflict-receipt= | D | Select/compose maintained values or inspect results/conflicts. |
+| =yuanxu-profile-composition-conflict-presentation= | D | Select/compose maintained values or inspect results/conflicts. |
 
 * core/profile-composition/selection-syntax.ss
 
@@ -1748,22 +1748,22 @@ Source: [[file:../../types.ss][core/types.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =PooFlowType.= | E | Define or specialize Type/Contract behavior. |
-| =PooFlowContract.= | E | Define or specialize Type/Contract behavior. |
-| =PooFlowNativeObjectContract.= | E | Define or specialize Type/Contract behavior. |
-| =PooFlowClassificationEvidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =PooFlowValidationEvidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-predicate-type= | E | Define or specialize Type/Contract behavior. |
-| =poo-flow-predicate-contract= | E | Define or specialize Type/Contract behavior. |
-| =poo-flow-type-classify= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-contract-obligations= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-contract-admit= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-classification-evidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-classification-evidence?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-classification-evidence-accepted?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-classification-evidence->alist= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-validation-evidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-validation-evidence?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-validation-evidence-accepted?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
-| =poo-flow-validation-evidence->alist= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =YuanxuType.= | E | Define or specialize Type/Contract behavior. |
+| =YuanxuContract.= | E | Define or specialize Type/Contract behavior. |
+| =YuanxuObjectContract.= | E | Define or specialize Type/Contract behavior. |
+| =YuanxuClassificationEvidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =YuanxuValidationEvidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-predicate-type= | E | Define or specialize Type/Contract behavior. |
+| =yuanxu-predicate-contract= | E | Define or specialize Type/Contract behavior. |
+| =yuanxu-type-classify= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-contract-obligations= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-contract-admit= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-classification-evidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-classification-evidence?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-classification-evidence-accepted?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-classification-evidence->alist= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-validation-evidence= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-validation-evidence?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-validation-evidence-accepted?= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
+| =yuanxu-validation-evidence->alist= | D | Use supplied descriptors and inspect bound evidence; purity follows the owning protocol. |
 

@@ -4,7 +4,7 @@
 import Lake
 open Lake DSL
 
-package PooFlowCoreProof where
+package YuanxuProof where
   version := v!"0.1.0"
 
 require LeanPoo from git
@@ -12,5 +12,5 @@ require LeanPoo from git
   @ "6e6a706e14fa6f8199e4f36711440355b42ef335"
 
 @[default_target]
-lean_lib PooFlowCoreProof where
-  roots := #[`PooFlowCoreProof]
+lean_lib YuanxuProof where
+  roots := #[`YuanxuProof]

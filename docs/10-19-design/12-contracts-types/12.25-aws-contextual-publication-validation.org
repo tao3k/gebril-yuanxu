@@ -24,7 +24,7 @@ list, value descriptor, admission path or replacement publication declaration.
 Descriptor copies appear only in explicit negative controls.
 
 #+begin_src scheme
-(def selection (poo-flow-load-modules init))
+(def selection (yuanxu-load-modules init))
 (def publication
   (.call AdmissionPublication. .for-export selection 'aws 'Scenario))
 

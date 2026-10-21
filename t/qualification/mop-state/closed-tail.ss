@@ -2,9 +2,9 @@
 ;;; Minimal probe only; real service validation is separate in each test suite.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/module-system/source/admission current-module-source-phase))
+        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/module-system/source/admission current-module-source-phase))
 (export probe on-file refuses)
 (def (refuses result message)
   (check-equal? (Error? result) #t)
@@ -17,7 +17,7 @@
     marker: 0
     source-inputs: (map (lambda (path) (cons path "{}")) paths)
     .classify: (lambda (candidate context)
-                 (poo-flow-classification-evidence identity candidate #t '() context))
+                 (yuanxu-classification-evidence identity candidate #t '() context))
     .obligations:
     (lambda (candidate _context)
       (if (equal? (list (.get Descriptor marker) (.get candidate port) (.get Dependency port))

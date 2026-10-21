@@ -162,7 +162,7 @@ to a safe selected callback.
 
 * Lean and Quint correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ArtifactClosure.lean][ArtifactClosure.lean]] defines the protocol over actual serialized facts:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean][ArtifactClosure.lean]] defines the protocol over actual serialized facts:
 
 #+begin_src lean
 def admit (issued observed : String)

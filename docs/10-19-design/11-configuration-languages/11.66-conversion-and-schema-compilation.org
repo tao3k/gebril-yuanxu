@@ -100,9 +100,9 @@ No generated scope may advertise full configuration admission on this subset.
 * Compilation into the existing Contract subsystem
 
 Within the prepared Schema capability scope, compile is bound to the EXISTING
-poo-flow-json-schema->contract-artifact. as-contract is the NEW native adapter
+yuanxu-json-schema->contract-artifact. as-contract is the NEW native adapter
 fully defined in module 38; it reuses normalized-node validation and returns a
-receipt-bearing PooFlowContract descriptor. It is not an installed facade method.
+receipt-bearing YuanxuContract descriptor. It is not an installed facade method.
 The owning modules may use current private imports internally; consumers see only
 the prepared Module scope. A concrete orchestration function is:
 

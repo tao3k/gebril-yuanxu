@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
-        (only-in :core/module-system/building/source-closure poo-flow-core-bootstrap-contexts poo-flow-core-bootstrap-spec)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/configuration/json config-json-file config-defaults config-field-origin)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/module-system/building/source-closure yuanxu-bootstrap-contexts yuanxu-bootstrap-spec)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/configuration/json config-json-file config-defaults config-field-origin)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                DirectoryFixture ServicesFixture write-source refused))
 (export gitea-json-configuration-test test-cleanup!)
 (def completed 0)
@@ -14,11 +14,11 @@
   (displayln "GITEA-JSON-CONFIGURATION: 4 cases completed"))
 (def gitea-json-configuration-test
   (test-suite "JSON construction, sources and admission"
-    (poo-flow-test-fixture "missing, null, false and explicit values stay distinct"
+    (yuanxu-test-fixture "missing, null, false and explicit values stay distinct"
       (fixture DirectoryFixture)
       (with-slots (root) fixture
-        (check-equal? (hash-key? (poo-flow-core-bootstrap-contexts) 'core/configuration/json) #t)
-        (def spec (poo-flow-core-bootstrap-spec (path-expand ".." (path-directory (this-source-file)))))
+        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'yuanxu/configuration/json) #t)
+        (def spec (yuanxu-bootstrap-spec (path-expand ".." (path-directory (this-source-file)))))
         (check-equal? (if (member '(gxc: "configuration/json") spec) #t #f) #t)
         (def path (path-expand "input.json" root))
         (write-source path "{\"settings\":{},\"nullable\":null,\"flag\":false,\"empty\":[],\"explicit\":5440}")
@@ -35,7 +35,7 @@
         (check-equal? (.get (config-field-origin document '(explicit) 5440) kind) 'json-field)
         (check-equal? (.get (config-field-origin document '(explicit) 5441) kind) 'derived-value)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "explicit JSON null is not the inherited server port"
+    (yuanxu-test-fixture "explicit JSON null is not the inherited server port"
       (fixture (.cc ServicesFixture client-port: 'null))
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -49,7 +49,7 @@
         (check-equal? (path-strip-directory (.get issue origin source)) "gitea.json")
         (refused publication parent parent)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "explicit null server settings rejects before forcing derived client"
+    (yuanxu-test-fixture "explicit null server settings rejects before forcing derived client"
       (fixture (.cc ServicesFixture null-settings?: #t))
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -63,7 +63,7 @@
         (check-equal? (.get issue origin presence) 'null)
         (refused publication parent parent)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "JSON edit after cached parent refuses publication and direct admission"
+    (yuanxu-test-fixture "JSON edit after cached parent refuses publication and direct admission"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))

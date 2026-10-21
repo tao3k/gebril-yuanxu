@@ -44,10 +44,10 @@ def main(source,destination):
     if rows[-1][0]!='pass':raise ValueError('native run did not pass')
     out=['-- SPDX-FileCopyrightText: 2026 tao3k team and Contributors',
          '-- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later',
-         'import PooFlowCoreProof.ModuleSystem.Schema.Association.Correspondence',
+         'import YuanxuProof.ModuleSystem.Schema.Association.Correspondence',
          '-- Generated only from the actual native transcript. Do not hand-edit observations.',
          '-- Transcript SHA-256: '+hashlib.sha256(raw.encode()).hexdigest(),
-         'namespace PooFlowCoreProof.ModuleSystem.Schema.Association.NativeFixtures',
+         'namespace YuanxuProof.ModuleSystem.Schema.Association.NativeFixtures',
          'open Projection',
          'def insertID (value : Nat) : List Nat → List Nat\n  | [] => [value]\n  | head :: tail => if value ≤ head then value :: head :: tail else head :: insertID value tail',
          'def canonical : List Nat → List Nat\n  | [] => []\n  | head :: tail => insertID head (canonical tail)']
@@ -128,7 +128,7 @@ def main(source,destination):
             expression=item[len('#guard '):]
             checked.append('example : ('+expression+') = true := by decide')
     out=checked
-    out.append('end PooFlowCoreProof.ModuleSystem.Schema.Association.NativeFixtures')
+    out.append('end YuanxuProof.ModuleSystem.Schema.Association.NativeFixtures')
     Path(destination).write_text('\n\n'.join(out)+'\n')
     print('Generated',case_count,'native graph cases,',len(evidence),'real Core receipts,',gate_count,'RHS gates,',cycle_count,'cycle control;',sum(x.count('#guard') for x in out),'Lean guards.')
 

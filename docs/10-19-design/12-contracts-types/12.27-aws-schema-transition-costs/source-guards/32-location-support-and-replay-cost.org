@@ -114,7 +114,7 @@ python3 dev/proofs/quint/check.py --case-prefix CandidateLocation --typecheck-sc
 From =dev/proofs/lean=:
 
 #+begin_src text
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 Native tests run serially. Qualification requires natural exit zero, MODULE-OK,

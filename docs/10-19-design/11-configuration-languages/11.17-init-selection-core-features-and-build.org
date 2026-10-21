@@ -23,7 +23,7 @@ selection and package dependency suppression are nevertheless different operatio
 Do not inherit Doom's initialization-order semantics as a POO execution or build
 ordering rule; dependency edges must determine those relationships explicitly.
 
-POO Flow already has [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][poo-flow!]], [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][poo-flow-modules!]] and an actual
+POO Flow already has [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][yuanxu!]], [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][yuanxu-modules!]] and an actual
 [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to native selection values without
 reading source files. The current grammar has fixed categories and flag rows;
 [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/selection-flags.ss][flag extension]] merges raw flag keys. Core [[file:../../../module-system/funs.ss][negative-flag queries]] exist, but a
@@ -70,7 +70,7 @@ syntax (arbitrary categories and keyword attributes require review/lowering):
 
 #+begin_src scheme
 ;; user-interface/init.ss: auto discovery, only local exceptions.
-(poo-flow! mode: auto root: "./modules"
+(yuanxu! mode: auto root: "./modules"
   :workflow
   (funflow -cicd)
   :sandbox
@@ -91,14 +91,14 @@ The Funflow example uses its source-declared CI/CD feature from
 The explicit mode describes the desired optional set instead:
 
 #+begin_src scheme
-(poo-flow! mode: explicit root: "./modules"
+(yuanxu! mode: explicit root: "./modules"
   :workflow
   (funflow +cicd)
   :custom
   (team-checks @ "./custom/team-checks" +smoke))
 #+end_src
 
-Both are target extensions of poo-flow!, not a new package! DSL. Existing grammar
+Both are target extensions of yuanxu!, not a new package! DSL. Existing grammar
 does not interpret mode:/root:/disable: this way today. The init parser should
 lower once, retaining syntax locations, to native POO decisions such as:
 
@@ -149,7 +149,7 @@ that publication. Existing Module System already uses interface.ss for public
 entrypoints; retain that division rather than renaming the public entry to init.
 
 The [[file:11.16-directory-contract-and-native-tree.org][directory projection design]] admits interface metadata and keeps unselected
-interface bodies cold. [[file:11.19-feature-system-guestbook-selection.org][poo-flow-load-modules is the common facade]] for directory
+interface bodies cold. [[file:11.19-feature-system-guestbook-selection.org][yuanxu-load-modules is the common facade]] for directory
 sources and init selection. Internally it delegates to existing module closure,
 Feature System and build owners. It is not another all-purpose resolver. Metadata
 must be inspectable without running every interface body; arbitrary Scheme

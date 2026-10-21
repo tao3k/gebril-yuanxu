@@ -4,16 +4,16 @@
         (only-in :std/source this-source-file)
         (only-in :std/encoding/json read-json)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :core/ops/func run-script)
-        (only-in :core/ops/process-script ProcessScript.)
-        (only-in :core/ops/progress execution-idle-seconds execution-total-seconds
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/ops/progress execution-idle-seconds execution-total-seconds
                  make-nix-progress-reader)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/ops/selected-packages SelectedPackages.)
-        (only-in :core/modules/nix/objects NixFlakeSource.)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/source/directory module-directory-context))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/ops/selected-packages SelectedPackages.)
+        (only-in :yuanxu/modules/nix/objects NixFlakeSource.)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/directory module-directory-context))
 (export Workspace prepare-aws-selection! realize-aws-selection write-aws-version!)
 (.def Workspace
   .acquire: (lambda ()
@@ -130,12 +130,12 @@
     output-port: (current-error-port))
   (phase 'lock-published)
   (write-source (path-expand "gerbil.pkg" project)
-    "(package: qualification prelude: :core/module-system/source/module-prelude)\n")
+    "(package: qualification prelude: :yuanxu/module-system/source/module-prelude)\n")
   (def init (path-expand "init.ss" project))
   (write-source init
     (call-with-output-string
       (lambda (port)
-        (write `(poo-flow! mode: explicit source: ,(path-expand "modules" repository)
+        (write `(yuanxu! mode: explicit source: ,(path-expand "modules" repository)
                   (aws @ ,(path-expand "scenarios/aws" repository))
                   (opentofu @ ,(path-expand "modules/opentofu" repository))
                   (nix @ ,(path-expand "modules/nix" repository))
@@ -183,7 +183,7 @@
   (def context (module-directory-context init read-publication))
   (phase 'source-context)
   (def selection
-    (poo-flow-load-modules
+    (yuanxu-load-modules
       (.cc context 'publication-inputs (.get reader inputs)
         'publication-preparation (.get reader preparation)
         'current? (lambda (generation)

@@ -8,7 +8,7 @@
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :std/encoding/json write-json)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/mop-state/reflection-surface"
                  make-private-cell private-cell-value))
 (export mop-metadata-allocation-test test-cleanup!)
@@ -62,7 +62,7 @@
                              (eq? spec (cdr entry-b))) observations)))
 (def mop-metadata-allocation-test
  (test-suite "Native metadata allocations, shared payloads and exported capabilities"
-  (poo-flow-test-case "a narrow module export does not conceal metadata from reflection"
+  (yuanxu-test-case "a narrow module export does not conceal metadata from reflection"
     (def names
       (parameterize ((current-expander-context (make-top-context)))
         (map module-export-name (module-context-export
@@ -85,20 +85,20 @@
           (lambda () (runtime.slot-set! table 'ref original)))))
     (check-equal? (> calls 0) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "opaque final storage with hidden setters is still reflectively writable"
+  (yuanxu-test-case "opaque final storage with hidden setters is still reflectively writable"
     (def cell (make-private-cell 5432))
     (runtime.slot-set! cell 'value 5440)
     (check-equal? (private-cell-value cell) 5440)
     (runtime.slot-set! cell 'value 5432)
     (check-equal? (private-cell-value cell) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "generated setter modifies shared slot payload without receiver invalidation"
+  (yuanxu-test-case "generated setter modifies shared slot payload without receiver invalidation"
     (shared-roundtrip "generated" $self-slot-spec-fun-set!)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "reflective setter has the same shared-allocation escape"
+  (yuanxu-test-case "reflective setter has the same shared-allocation escape"
     (shared-roundtrip "reflective" (lambda (spec fun) (runtime.slot-set! spec 'fun fun)))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "supported ancestor replacement preflights children and preserves unselected laziness"
+  (yuanxu-test-case "supported ancestor replacement preflights children and preserves unselected laziness"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (.def (Child @ Parent))
     (.get Parent port)
@@ -111,7 +111,7 @@
     (check-equal? (.get Parent port) 5433)
     (check-equal? (.get Child port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "shared shape does not imply shared receiver cells or instance tables"
+  (yuanxu-test-case "shared shape does not imply shared receiver cells or instance tables"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (.def (Child @ Parent) port: 5433)
     (.ref/inline Parent (make-slot-cache 'port))

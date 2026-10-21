@@ -13,7 +13,7 @@ slots. Scenario names, language names and participant count are not hardcoded.
 All helpers introduced by this source are defined below. Existing dependencies
 are Core evidence/admission constructors, POO syntax/reflection, Scheme list/hash
 operations, the predicates/constants referenced in module 05, and the existing
-poo-flow-append-map, poo-flow-find and poo-flow-stable-duplicates functions.
+yuanxu-append-map, yuanxu-find and yuanxu-stable-duplicates functions.
 No hidden module load, user callback, compiler invocation or runtime effect is
 added. Source owner bindings/exports are still a future integration concern.
 
@@ -29,7 +29,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
   '())
 
 (def (field-contract identity-value predicate)
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     identity-value predicate no-field-obligations))
 
 (def (named-symbol? value)
@@ -48,7 +48,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
 ;; The existing low-level predicate retains its runtime name. Only the proposed
 ;; public field/Contract and this design helper use task-oriented naming.
 (def (commands? value)
-  (and (poo-flow-cicd-command-vector? value)
+  (and (yuanxu-cicd-command-vector? value)
        (positive? (string-length (car value)))))
 
 (def (optional-object? value)
@@ -67,7 +67,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
 
 (def (durable-action? value)
   (and (symbol? value)
-       (if (memq value +poo-flow-durable-action-classes+) #t #f)))
+       (if (memq value +yuanxu-durable-action-classes+) #t #f)))
 
 (def RequiredSymbolContract
   (field-contract 'funflow/named-symbol named-symbol?))
@@ -80,7 +80,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
   (field-contract 'funflow/argv commands?))
 (def SandboxReferenceContract
   (field-contract 'funflow/sandbox-reference
-                  poo-flow-cicd-profile-ref?))
+                  yuanxu-cicd-profile-ref?))
 (def ProperListContract
   (field-contract 'funflow/proper-list list?))
 (def OptionalObjectContract
@@ -97,10 +97,10 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
   (field-contract 'funflow/empty-list null?))
 (def CheckKindContract
   (field-contract 'funflow/check-kind
-                  (cut eq? <> 'poo-flow.funflow.check.prototype)))
+                  (cut eq? <> 'yuanxu.funflow.check.prototype)))
 (def PipelineKindContract
   (field-contract 'funflow/pipeline-kind
-                  (cut eq? <> 'poo-flow.funflow.pipeline.prototype)))
+                  (cut eq? <> 'yuanxu.funflow.pipeline.prototype)))
 
 ;; These aliases deliberately prove structure only.
 (def InputBindingsContract ProperListContract)
@@ -115,7 +115,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
 
 
 (.def funflow-check
-  kind: 'poo-flow.funflow.check.prototype
+  kind: 'yuanxu.funflow.check.prototype
   check-name: #f
   profile-ref: #f
   commands: '()
@@ -139,7 +139,7 @@ in one namespace. These are ordinary Scheme design blocks, not installed files.
   runtime-executed: #f)
 
 (.def funflow-pipeline
-  kind: 'poo-flow.funflow.pipeline.prototype
+  kind: 'yuanxu.funflow.pipeline.prototype
   pipeline-name: #f
   checks: '()
   metadata: '()
@@ -161,7 +161,7 @@ demanded. FunflowModule. has no recipes or Profile catalog. Its declaration
 refers lazily to the Check/Pipeline Contract values, not to a Profile factory.
 
 #+begin_src scheme
-(define-type (FunflowCheckContract @ PooFlowNativeObjectContract.)
+(define-type (FunflowCheckContract @ YuanxuObjectContract.)
   identity: 'funflow/check-v2
   proto: funflow-check
   reserved-metadata:
@@ -199,7 +199,7 @@ refers lazily to the Check/Pipeline Contract values, not to a Profile factory.
       (cut funflow-admit-check @ base-admit <> <>)))
   .obligations: (cut funflow-check-obligations @ <> <>))
 
-(define-type (FunflowPipelineContract @ PooFlowNativeObjectContract.)
+(define-type (FunflowPipelineContract @ YuanxuObjectContract.)
   identity: 'funflow/pipeline-v2
   proto: FunflowPipeline.
   reserved-metadata: '(source pipeline)
@@ -215,7 +215,7 @@ refers lazily to the Check/Pipeline Contract values, not to a Profile factory.
       (cut funflow-admit-pipeline @ base-admit <> <>)))
   .obligations: (cut funflow-pipeline-obligations @ <> <>))
 
-(define-type (ConfiguredFunflowContract @ PooFlowNativeObjectContract.)
+(define-type (ConfiguredFunflowContract @ YuanxuObjectContract.)
   identity: 'funflow/config-v3
   proto: FunflowModule.
   responsibilities: (.o pipeline: FunflowPipelineContract)
@@ -233,7 +233,7 @@ Module/prototype generation and describe them as migrated instances.
 
 #+begin_src scheme
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowModule.) source: source-handle))
 (def Funflow
@@ -257,7 +257,7 @@ Module/prototype generation and describe them as migrated instances.
        (if (memq prototype (compute-precedence-list! value)) #t #f)))
 
 (def (ff-contract? value)
-  (ff-derives? value PooFlowContract.))
+  (ff-derives? value YuanxuContract.))
 
 (def (ff-safe-path context)
   (with-catch
@@ -270,9 +270,9 @@ Module/prototype generation and describe them as migrated instances.
 
 (def (ff-admit-problems contract-value candidate context path-value code-value)
   (let ((evidence
-         (poo-flow-contract-admit contract-value candidate context)))
+         (yuanxu-contract-admit contract-value candidate context)))
     (cond
-      ((not (poo-flow-validation-evidence? evidence))
+      ((not (yuanxu-validation-evidence? evidence))
        (list (ff-issue 'invalid-validation-evidence path-value evidence)))
       ((not
          (and
@@ -284,11 +284,11 @@ Module/prototype generation and describe them as migrated instances.
              (equal? candidate (.get evidence candidate)))
            (eq? context (.get evidence context))))
        (list (ff-issue 'admission-input-mismatch path-value evidence)))
-      ((poo-flow-validation-evidence-accepted? evidence) '())
+      ((yuanxu-validation-evidence-accepted? evidence) '())
       (else (list (ff-issue code-value path-value evidence))))))
 
 (def (ff-reject descriptor candidate context classification problems)
-  (poo-flow-validation-evidence
+  (yuanxu-validation-evidence
     (.get descriptor identity) candidate classification problems #f
     (append (.get classification diagnostics) problems) context))
 
@@ -297,10 +297,10 @@ Module/prototype generation and describe them as migrated instances.
           (list (ff-issue 'configuration-evaluation-failed
                           (ff-safe-path context) caught)))
          (classification
-          (poo-flow-classification-evidence
+          (yuanxu-classification-evidence
             (.get descriptor identity) candidate #f problems context)))
     ;; The result is rejection, not a fabricated successful family proof.
-    (poo-flow-validation-evidence
+    (yuanxu-validation-evidence
       (.get descriptor identity) candidate classification problems #f
       problems context)))
 
@@ -346,7 +346,7 @@ Module/prototype generation and describe them as migrated instances.
     (list? (.get context config-path))
     (every named-symbol? (.get context config-path))
     (ff-slots? (.get context owner) '(source contracts))
-    (poo-flow-module-source-ref? (.get context owner source))
+    (yuanxu-module-source-ref? (.get context owner source))
     (ff-slots? (.get context owner contracts) '(check))
     (ff-contract? (.get context check-contract))
     (eq? (.get context check-contract) (.get context owner contracts check))
@@ -424,7 +424,7 @@ Module/prototype generation and describe them as migrated instances.
     names))
 
 (def (ff-selection-problems profile names path-value)
-  (poo-flow-append-map
+  (yuanxu-append-map
     (lambda (name)
       (cond
         ((eq? name 'pipeline)
@@ -464,8 +464,8 @@ Module/prototype generation and describe them as migrated instances.
       (ff-evaluation-rejection descriptor candidate context caught))
     (lambda ()
       (let ((classification
-             (poo-flow-type-classify descriptor candidate context)))
-        (if (not (poo-flow-classification-evidence-accepted? classification))
+             (yuanxu-type-classify descriptor candidate context)))
+        (if (not (yuanxu-classification-evidence-accepted? classification))
           (base-admit candidate context)
           (with-catch
             (lambda (caught)
@@ -529,7 +529,7 @@ Module/prototype generation and describe them as migrated instances.
       (map car (.get candidate metadata)))))
 
 (def (ff-payload-problems check context)
-  (poo-flow-append-map
+  (yuanxu-append-map
     (lambda (field-name)
       (let* ((path-value (append (.get context path) (list field-name)))
              (field-context (.o (:: @ context) path: path-value))
@@ -585,7 +585,7 @@ Module/prototype generation and describe them as migrated instances.
         (hash-put! dependents name '()))
       names checks)
     (let* ((missing
-            (poo-flow-append-map
+            (yuanxu-append-map
               (lambda (name)
                 (map
                   (lambda (dependency)
@@ -597,7 +597,7 @@ Module/prototype generation and describe them as migrated instances.
            (duplicate-tasks
             (map (lambda (task-id)
                    (ff-issue 'duplicate-durable-task-id path-value task-id))
-                 (poo-flow-stable-duplicates
+                 (yuanxu-stable-duplicates
                    (map (cut .ref <> 'durable-task-id) checks)))))
       (if (pair? missing)
         (.o order: '() problems: (append missing duplicate-tasks))
@@ -616,7 +616,7 @@ Module/prototype generation and describe them as migrated instances.
               (let ((order-value (reverse order-rev)))
                 (.o order: order-value problems: duplicate-tasks))
               (let ((ready-name
-                     (poo-flow-find
+                     (yuanxu-find
                        (lambda (name) (zero? (hash-get indegrees name)))
                        remaining)))
                 (if ready-name

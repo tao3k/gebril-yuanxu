@@ -6,11 +6,11 @@
 ;;; Boundary: runtime command invocation and response normalization.
 ;;; Invariant: command execution is adapter-owned; descriptors live elsewhere.
 
-(import :core/modules/funflow/control-plane/projection-syntax
-        :core/modules/funflow/control-plane/runtime-protocol
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/runtime-protocol
         (only-in :clan/poo/object .cc .get .call)
-        (only-in :core/ops/objects ProcessScript.)
-        (only-in :core/ops/func run-script))
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script))
 
 (export make-runtime-command
         runtime-command?

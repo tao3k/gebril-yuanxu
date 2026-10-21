@@ -114,9 +114,9 @@ model must be built.
 
 The following are current project adapters, not upstream primitives:
 
-- =poo-flow-module-interface-prototype=;
-- =poo-flow-module-object-ref/default=;
-- =poo-flow-module-object->alist=.
+- =yuanxu-module-interface-prototype=;
+- =yuanxu-module-object-ref/default=;
+- =yuanxu-module-object->alist=.
 
 They may help bridge current code, but they do not define a second object model.
 Generic slot presence is not adapted: callers use upstream =.slot?= directly.
@@ -520,7 +520,7 @@ The following alternatives are rejected:
 - treating =object-mix= as the whole POO API;
 - creating local substitutes for native object extension or precedence;
 - inventing exact upstream call syntax from identifier names;
-- exposing =object->alist= or =poo-flow-module-object->alist= as the canonical
+- exposing =object->alist= or =yuanxu-module-object->alist= as the canonical
   Module interface;
 - making mutation-marked upstream procedures the ordinary public authoring
   surface;

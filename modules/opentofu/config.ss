@@ -12,7 +12,7 @@
   ;; A maintained final-package flake names its demand input here. Without one,
   ;; legacy expressions/functions retain their existing argument boundary.
   selection-input: #f
-  artifact: (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f))
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
 
 ;; A provider leaf is created from the collection; it has no environment input.
 (.def OpenTofuProviderConfig

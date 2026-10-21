@@ -8,64 +8,64 @@
 
 (import (only-in :clan/poo/object
                  .all-slots .cc .o .ref .slot? object? object<-alist)
-        :core/utilities/final-projection-syntax)
+        :yuanxu/utilities/final-projection-syntax)
 
 (export #t)
 
 ;; : Symbol
-(def +poo-flow-graph-node-prototype-kind+
-  'poo-flow.graph.node.prototype)
+(def +yuanxu-graph-node-prototype-kind+
+  'yuanxu.graph.node.prototype)
 
 ;; : Symbol
-(def +poo-flow-graph-edge-prototype-kind+
-  'poo-flow.graph.edge.prototype)
+(def +yuanxu-graph-edge-prototype-kind+
+  'yuanxu.graph.edge.prototype)
 
 ;; : Symbol
-(def +poo-flow-graph-prototype-kind+
-  'poo-flow.graph.prototype)
+(def +yuanxu-graph-prototype-kind+
+  'yuanxu.graph.prototype)
 
 ;; : Symbol
-(def +poo-flow-graph-analysis-prototype-kind+
-  'poo-flow.graph.analysis.prototype)
+(def +yuanxu-graph-analysis-prototype-kind+
+  'yuanxu.graph.analysis.prototype)
 
 ;; : Symbol
-(def +poo-flow-graph-loop-analysis-prototype-kind+
-  'poo-flow.graph.loop-analysis.prototype)
+(def +yuanxu-graph-loop-analysis-prototype-kind+
+  'yuanxu.graph.loop-analysis.prototype)
 
-(def (poo-flow-graph-alist? value)
+(def (yuanxu-graph-alist? value)
   (and (list? value)
        (andmap pair? value)))
 
-(def (poo-flow-graph-list-of? predicate values)
+(def (yuanxu-graph-list-of? predicate values)
   (and (list? values)
        (andmap predicate values)))
 
-;; : PooFlowGraphNodePrototype
+;; : YuanxuGraphNodePrototype
 (def graph-node
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-node-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.node.v1)
+    (cons 'kind +yuanxu-graph-node-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.node.v1)
     (cons 'id #f)
     (cons 'payload #f)
     (cons 'metadata '())
     (cons 'runtime-executed #f))))
 
-;; : PooFlowGraphEdgePrototype
+;; : YuanxuGraphEdgePrototype
 (def graph-edge
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-edge-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.edge.v1)
+    (cons 'kind +yuanxu-graph-edge-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.edge.v1)
     (cons 'from #f)
     (cons 'to #f)
     (cons 'edge-kind 'dependency)
     (cons 'metadata '())
     (cons 'runtime-executed #f))))
 
-;; : PooFlowGraphPrototype
-(def (poo-flow-graph-declaration-values declarations)
-  (poo-flow-graph-require
+;; : YuanxuGraphPrototype
+(def (yuanxu-graph-declaration-values declarations)
+  (yuanxu-graph-require
    "graph declarations must be a POO object"
    (object? declarations)
    declarations)
@@ -77,22 +77,22 @@
 ;; for the existing algorithm boundary.
 (def graph
   (.o
-      kind: +poo-flow-graph-prototype-kind+
-      schema: 'poo-flow.graph.v1
+      kind: +yuanxu-graph-prototype-kind+
+      schema: 'yuanxu.graph.v1
       graph-id: #f
       (node-declarations ? (.o))
       (edge-declarations ? (.o))
-      nodes: (poo-flow-graph-declaration-values node-declarations)
-      edges: (poo-flow-graph-declaration-values edge-declarations)
+      nodes: (yuanxu-graph-declaration-values node-declarations)
+      edges: (yuanxu-graph-declaration-values edge-declarations)
       metadata: '()
       runtime-executed: #f))
 
-;; : PooFlowGraphAnalysisPrototype
+;; : YuanxuGraphAnalysisPrototype
 (def graph-analysis
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-analysis-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.analysis.v1)
+    (cons 'kind +yuanxu-graph-analysis-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.analysis.v1)
     (cons 'graph-id #f)
     (cons 'node-count 0)
     (cons 'edge-count 0)
@@ -107,12 +107,12 @@
     (cons 'metadata '())
     (cons 'runtime-executed #f))))
 
-;; : PooFlowGraphLoopAnalysisPrototype
+;; : YuanxuGraphLoopAnalysisPrototype
 (def graph-loop-analysis
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-loop-analysis-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.loop-analysis.v1)
+    (cons 'kind +yuanxu-graph-loop-analysis-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.loop-analysis.v1)
     (cons 'graph-id #f)
     (cons 'component-count 0)
     (cons 'cyclic-component-count 0)
@@ -124,34 +124,34 @@
     (cons 'runtime-executed #f))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-id? value)
+(def (yuanxu-graph-id? value)
   (or (symbol? value)
       (string? value)
       (number? value)
       (pair? value)))
 
 ;; : (-> String Boolean Object Object)
-(def (poo-flow-graph-require message ok? value)
+(def (yuanxu-graph-require message ok? value)
   (if ok?
     value
     (error message value)))
 
 ;; : (-> (-> Object Boolean) List Boolean)
-(def (poo-flow-graph-every? predicate values)
+(def (yuanxu-graph-every? predicate values)
   (cond
    ((null? values) #t)
    ((predicate (car values))
-    (poo-flow-graph-every? predicate (cdr values)))
+    (yuanxu-graph-every? predicate (cdr values)))
    (else #f)))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-metadata? value)
-  (poo-flow-graph-alist? value))
+(def (yuanxu-graph-metadata? value)
+  (yuanxu-graph-alist? value))
 
-;; : (-> Object [Object] [Alist] PooFlowGraphNode)
-(def (poo-flow-graph-node id . maybe-payload+metadata)
-  (poo-flow-graph-require "graph node id must be a stable id"
-                          (poo-flow-graph-id? id)
+;; : (-> Object [Object] [Alist] YuanxuGraphNode)
+(def (yuanxu-graph-node id . maybe-payload+metadata)
+  (yuanxu-graph-require "graph node id must be a stable id"
+                          (yuanxu-graph-id? id)
                           id)
   (let* ((payload (if (null? maybe-payload+metadata)
                     #f
@@ -162,43 +162,43 @@
                      (cadr maybe-payload+metadata))))
     (object<-alist
      (list
-      (cons 'kind +poo-flow-graph-node-prototype-kind+)
-      (cons 'schema 'poo-flow.graph.node.v1)
+      (cons 'kind +yuanxu-graph-node-prototype-kind+)
+      (cons 'schema 'yuanxu.graph.node.v1)
       (cons 'id id)
       (cons 'payload payload)
       (cons 'metadata metadata)
       (cons 'runtime-executed #f)))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-node? value)
+(def (yuanxu-graph-node? value)
   (and (object? value)
        (.slot? value 'kind)
        (eq? (.ref value 'kind)
-            +poo-flow-graph-node-prototype-kind+)))
+            +yuanxu-graph-node-prototype-kind+)))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-node-list? value)
-  (poo-flow-graph-list-of? poo-flow-graph-node? value))
+(def (yuanxu-graph-node-list? value)
+  (yuanxu-graph-list-of? yuanxu-graph-node? value))
 
-;; : (-> PooFlowGraphNode Object)
-(def (poo-flow-graph-node-id node)
+;; : (-> YuanxuGraphNode Object)
+(def (yuanxu-graph-node-id node)
   (.ref node 'id))
 
-;; : (-> PooFlowGraphNode Object)
-(def (poo-flow-graph-node-payload node)
+;; : (-> YuanxuGraphNode Object)
+(def (yuanxu-graph-node-payload node)
   (.ref node 'payload))
 
-;; : (-> PooFlowGraphNode [Alist])
-(def (poo-flow-graph-node-metadata node)
+;; : (-> YuanxuGraphNode [Alist])
+(def (yuanxu-graph-node-metadata node)
   (.ref node 'metadata))
 
-;; : (-> PooFlowGraphNode Alist)
+;; : (-> YuanxuGraphNode Alist)
 (defpoo-final-projection
-  poo-flow-graph-node->alist (node)
+  yuanxu-graph-node->alist (node)
   (bindings ((checked-node
-              (poo-flow-graph-require
+              (yuanxu-graph-require
                "graph node projection requires a graph node"
-               (poo-flow-graph-node? node)
+               (yuanxu-graph-node? node)
                node))))
   (fields ((kind (.ref checked-node 'kind))
            (schema (.ref checked-node 'schema))
@@ -207,19 +207,19 @@
            (metadata (.ref checked-node 'metadata))
            (runtime-executed (.ref checked-node 'runtime-executed)))))
 
-;; : (-> [PooFlowGraphNode] [Alist])
+;; : (-> [YuanxuGraphNode] [Alist])
 (defpoo-final-projection-batch
-  poo-flow-graph-nodes->alists (nodes)
-  (projector poo-flow-graph-node->alist)
+  yuanxu-graph-nodes->alists (nodes)
+  (projector yuanxu-graph-node->alist)
   (error-message "graph node projection requires a list"))
 
-;; : (-> Object Object Symbol [Alist] PooFlowGraphEdge)
-(def (poo-flow-graph-edge from to . maybe-kind+metadata)
-  (poo-flow-graph-require "graph edge from must be a stable id"
-                          (poo-flow-graph-id? from)
+;; : (-> Object Object Symbol [Alist] YuanxuGraphEdge)
+(def (yuanxu-graph-edge from to . maybe-kind+metadata)
+  (yuanxu-graph-require "graph edge from must be a stable id"
+                          (yuanxu-graph-id? from)
                           from)
-  (poo-flow-graph-require "graph edge to must be a stable id"
-                          (poo-flow-graph-id? to)
+  (yuanxu-graph-require "graph edge to must be a stable id"
+                          (yuanxu-graph-id? to)
                           to)
   (let* ((edge-kind (if (null? maybe-kind+metadata)
                      'dependency
@@ -228,13 +228,13 @@
                            (null? (cdr maybe-kind+metadata)))
                      '()
                      (cadr maybe-kind+metadata))))
-    (poo-flow-graph-require "graph edge kind must be a symbol"
+    (yuanxu-graph-require "graph edge kind must be a symbol"
                             (symbol? edge-kind)
                             edge-kind)
     (object<-alist
      (list
-      (cons 'kind +poo-flow-graph-edge-prototype-kind+)
-      (cons 'schema 'poo-flow.graph.edge.v1)
+      (cons 'kind +yuanxu-graph-edge-prototype-kind+)
+      (cons 'schema 'yuanxu.graph.edge.v1)
       (cons 'from from)
       (cons 'to to)
       (cons 'edge-kind edge-kind)
@@ -242,39 +242,39 @@
       (cons 'runtime-executed #f)))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-edge? value)
+(def (yuanxu-graph-edge? value)
   (and (object? value)
        (.slot? value 'kind)
        (eq? (.ref value 'kind)
-            +poo-flow-graph-edge-prototype-kind+)))
+            +yuanxu-graph-edge-prototype-kind+)))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-edge-list? value)
-  (poo-flow-graph-list-of? poo-flow-graph-edge? value))
+(def (yuanxu-graph-edge-list? value)
+  (yuanxu-graph-list-of? yuanxu-graph-edge? value))
 
-;; : (-> PooFlowGraphEdge Object)
-(def (poo-flow-graph-edge-from edge)
+;; : (-> YuanxuGraphEdge Object)
+(def (yuanxu-graph-edge-from edge)
   (.ref edge 'from))
 
-;; : (-> PooFlowGraphEdge Object)
-(def (poo-flow-graph-edge-to edge)
+;; : (-> YuanxuGraphEdge Object)
+(def (yuanxu-graph-edge-to edge)
   (.ref edge 'to))
 
-;; : (-> PooFlowGraphEdge Symbol)
-(def (poo-flow-graph-edge-kind edge)
+;; : (-> YuanxuGraphEdge Symbol)
+(def (yuanxu-graph-edge-kind edge)
   (.ref edge 'edge-kind))
 
-;; : (-> PooFlowGraphEdge [Alist])
-(def (poo-flow-graph-edge-metadata edge)
+;; : (-> YuanxuGraphEdge [Alist])
+(def (yuanxu-graph-edge-metadata edge)
   (.ref edge 'metadata))
 
-;; : (-> PooFlowGraphEdge Alist)
+;; : (-> YuanxuGraphEdge Alist)
 (defpoo-final-projection
-  poo-flow-graph-edge->alist (edge)
+  yuanxu-graph-edge->alist (edge)
   (bindings ((checked-edge
-              (poo-flow-graph-require
+              (yuanxu-graph-require
                "graph edge projection requires a graph edge"
-               (poo-flow-graph-edge? edge)
+               (yuanxu-graph-edge? edge)
                edge))))
   (fields ((kind (.ref checked-edge 'kind))
            (schema (.ref checked-edge 'schema))
@@ -284,23 +284,23 @@
            (metadata (.ref checked-edge 'metadata))
            (runtime-executed (.ref checked-edge 'runtime-executed)))))
 
-;; : (-> [PooFlowGraphEdge] [Alist])
+;; : (-> [YuanxuGraphEdge] [Alist])
 (defpoo-final-projection-batch
-  poo-flow-graph-edges->alists (edges)
-  (projector poo-flow-graph-edge->alist)
+  yuanxu-graph-edges->alists (edges)
+  (projector yuanxu-graph-edge->alist)
   (error-message "graph edge projection requires a list"))
 
-;; : (-> Object [PooFlowGraphNode] [PooFlowGraphEdge] [Alist] PooFlowGraph)
-(def (poo-flow-graph graph-id nodes edges . maybe-metadata)
-  (poo-flow-graph-require "graph id must be a stable id"
-                          (poo-flow-graph-id? graph-id)
+;; : (-> Object [YuanxuGraphNode] [YuanxuGraphEdge] [Alist] YuanxuGraph)
+(def (yuanxu-graph graph-id nodes edges . maybe-metadata)
+  (yuanxu-graph-require "graph id must be a stable id"
+                          (yuanxu-graph-id? graph-id)
                           graph-id)
-  (poo-flow-graph-require "graph nodes must be graph nodes"
-                          (poo-flow-graph-every? poo-flow-graph-node?
+  (yuanxu-graph-require "graph nodes must be graph nodes"
+                          (yuanxu-graph-every? yuanxu-graph-node?
                                                  nodes)
                           nodes)
-  (poo-flow-graph-require "graph edges must be graph edges"
-                          (poo-flow-graph-every? poo-flow-graph-edge?
+  (yuanxu-graph-require "graph edges must be graph edges"
+                          (yuanxu-graph-every? yuanxu-graph-edge?
                                                  edges)
                           edges)
   (.cc graph
@@ -312,48 +312,48 @@
                    (car maybe-metadata))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph? value)
+(def (yuanxu-graph? value)
   (and (object? value)
        (.slot? value 'kind)
        (eq? (.ref value 'kind)
-            +poo-flow-graph-prototype-kind+)))
+            +yuanxu-graph-prototype-kind+)))
 
-;; : (-> PooFlowGraph Object)
-(def (poo-flow-graph-id graph-value)
+;; : (-> YuanxuGraph Object)
+(def (yuanxu-graph-id graph-value)
   (.ref graph-value 'graph-id))
 
-;; : (-> PooFlowGraph [PooFlowGraphNode])
-(def (poo-flow-graph-nodes graph-value)
+;; : (-> YuanxuGraph [YuanxuGraphNode])
+(def (yuanxu-graph-nodes graph-value)
   (.ref graph-value 'nodes))
 
-;; : (-> PooFlowGraph [PooFlowGraphEdge])
-(def (poo-flow-graph-edges graph-value)
+;; : (-> YuanxuGraph [YuanxuGraphEdge])
+(def (yuanxu-graph-edges graph-value)
   (.ref graph-value 'edges))
 
-;; : (-> PooFlowGraph [Alist])
-(def (poo-flow-graph-metadata graph-value)
+;; : (-> YuanxuGraph [Alist])
+(def (yuanxu-graph-metadata graph-value)
   (.ref graph-value 'metadata))
 
-;; : (-> PooFlowGraph Alist)
+;; : (-> YuanxuGraph Alist)
 (defpoo-final-projection
-  poo-flow-graph->alist (graph-value)
+  yuanxu-graph->alist (graph-value)
   (bindings ((checked-graph
-              (poo-flow-graph-require
+              (yuanxu-graph-require
                "graph projection requires a graph"
-               (poo-flow-graph? graph-value)
+               (yuanxu-graph? graph-value)
                graph-value))))
   (fields ((kind (.ref checked-graph 'kind))
            (schema (.ref checked-graph 'schema))
            (graph-id (.ref checked-graph 'graph-id))
            (nodes
-            (poo-flow-graph-nodes->alists (.ref checked-graph 'nodes)))
+            (yuanxu-graph-nodes->alists (.ref checked-graph 'nodes)))
            (edges
-            (poo-flow-graph-edges->alists (.ref checked-graph 'edges)))
+            (yuanxu-graph-edges->alists (.ref checked-graph 'edges)))
            (metadata (.ref checked-graph 'metadata))
            (runtime-executed (.ref checked-graph 'runtime-executed)))))
 
-;; : (-> Object Nat Nat [Object] [Object] [Object] [Object] MaybeList MaybeList [Alist] [Alist] PooFlowGraphAnalysis)
-(def (poo-flow-graph-analysis graph-id
+;; : (-> Object Nat Nat [Object] [Object] [Object] [Object] MaybeList MaybeList [Alist] [Alist] YuanxuGraphAnalysis)
+(def (yuanxu-graph-analysis graph-id
                               node-count
                               edge-count
                               root-ids
@@ -364,13 +364,13 @@
                               cycle-path
                               diagnostics
                               . maybe-metadata)
-  (poo-flow-graph-require "graph analysis id must be a stable id"
-                          (poo-flow-graph-id? graph-id)
+  (yuanxu-graph-require "graph analysis id must be a stable id"
+                          (yuanxu-graph-id? graph-id)
                           graph-id)
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-analysis-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.analysis.v1)
+    (cons 'kind +yuanxu-graph-analysis-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.analysis.v1)
     (cons 'graph-id graph-id)
     (cons 'node-count node-count)
     (cons 'edge-count edge-count)
@@ -388,37 +388,37 @@
     (cons 'runtime-executed #f))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-analysis? value)
+(def (yuanxu-graph-analysis? value)
   (and (object? value)
        (.slot? value 'kind)
        (eq? (.ref value 'kind)
-            +poo-flow-graph-analysis-prototype-kind+)))
+            +yuanxu-graph-analysis-prototype-kind+)))
 
 ;; : (-> Object [[Object]] [[Object]] [[Number Number]] [Alist]
-;;       [Alist] PooFlowGraphLoopAnalysis)
-(def (poo-flow-graph-loop-analysis
+;;       [Alist] YuanxuGraphLoopAnalysis)
+(def (yuanxu-graph-loop-analysis
       graph-id components cyclic-components condensation-edges diagnostics
       . maybe-metadata)
-  (poo-flow-graph-require
+  (yuanxu-graph-require
    "graph loop analysis id must be a stable id"
-   (poo-flow-graph-id? graph-id)
+   (yuanxu-graph-id? graph-id)
    graph-id)
-  (poo-flow-graph-require
+  (yuanxu-graph-require
    "graph loop analysis components must be a list"
    (list? components)
    components)
-  (poo-flow-graph-require
+  (yuanxu-graph-require
    "graph loop analysis cyclic components must be a list"
    (list? cyclic-components)
    cyclic-components)
-  (poo-flow-graph-require
+  (yuanxu-graph-require
    "graph loop analysis condensation edges must be a list"
    (list? condensation-edges)
    condensation-edges)
   (object<-alist
    (list
-    (cons 'kind +poo-flow-graph-loop-analysis-prototype-kind+)
-    (cons 'schema 'poo-flow.graph.loop-analysis.v1)
+    (cons 'kind +yuanxu-graph-loop-analysis-prototype-kind+)
+    (cons 'schema 'yuanxu.graph.loop-analysis.v1)
     (cons 'graph-id graph-id)
     (cons 'component-count (length components))
     (cons 'cyclic-component-count (length cyclic-components))
@@ -430,20 +430,20 @@
     (cons 'runtime-executed #f))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-loop-analysis? value)
+(def (yuanxu-graph-loop-analysis? value)
   (and (object? value)
        (.slot? value 'kind)
        (eq? (.ref value 'kind)
-            +poo-flow-graph-loop-analysis-prototype-kind+)))
+            +yuanxu-graph-loop-analysis-prototype-kind+)))
 
-;; : (-> PooFlowGraphLoopAnalysis Alist)
-(defpoo-final-projection poo-flow-graph-loop-analysis->alist
+;; : (-> YuanxuGraphLoopAnalysis Alist)
+(defpoo-final-projection yuanxu-graph-loop-analysis->alist
   (analysis)
   (bindings
    ((checked-analysis
-     (poo-flow-graph-require
+     (yuanxu-graph-require
       "graph loop analysis projection requires graph loop analysis"
-      (poo-flow-graph-loop-analysis? analysis)
+      (yuanxu-graph-loop-analysis? analysis)
       analysis))))
   (fields
    ((kind (.ref checked-analysis 'kind))
@@ -460,21 +460,21 @@
     (runtime-executed (.ref checked-analysis 'runtime-executed)))))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-analysis-id-list? value)
+(def (yuanxu-graph-analysis-id-list? value)
   (list? value))
 
 ;; : (-> Object Boolean)
-(def (poo-flow-graph-analysis-maybe-list? value)
+(def (yuanxu-graph-analysis-maybe-list? value)
   (or (not value)
       (list? value)))
 
-;; : (-> PooFlowGraphAnalysis Alist)
+;; : (-> YuanxuGraphAnalysis Alist)
 (defpoo-final-projection
-  poo-flow-graph-analysis->alist (analysis)
+  yuanxu-graph-analysis->alist (analysis)
   (bindings ((checked-analysis
-              (poo-flow-graph-require
+              (yuanxu-graph-require
                "graph analysis projection requires graph analysis"
-               (poo-flow-graph-analysis? analysis)
+               (yuanxu-graph-analysis? analysis)
                analysis))))
   (fields ((kind (.ref checked-analysis 'kind))
            (schema (.ref checked-analysis 'schema))

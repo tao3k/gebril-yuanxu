@@ -5,8 +5,8 @@
 (import (only-in :clan/poo/object .get .o .cc .+ .call)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./test-projection.ss" module-test-projection module-test-execution)
-        (only-in :core/module-system/source/admission module-source-read call-with-module-source-read-cache))
-(export poo-flow-core-init-build)
+        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-read-cache))
+(export yuanxu-init-build)
 
 ;; Like testing-executor, these promises retain native bindings, never a Graph,
 ;; source check or approval. Importing init must not import the Reader/compiler
@@ -14,22 +14,22 @@
 (def module-linker
   (delay
     (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :core/module-system/interface))
-      (eval-syntax 'poo-flow-load-modules))))
+      (eval-syntax '(import :yuanxu/module-system/interface))
+      (eval-syntax 'yuanxu-load-modules))))
 (def build-projector
   (delay
     (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :core/module-system/building/build-projection))
-      (eval-syntax 'poo-flow-core-project-source-spec))))
+      (eval-syntax '(import :yuanxu/module-system/building/build-projection))
+      (eval-syntax 'yuanxu-project-source-spec))))
 (def artifact-cleaners
   (delay
     (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :core/module-system/building/artifacts))
+      (eval-syntax '(import :yuanxu/module-system/building/artifacts))
       (eval-syntax '(cons invalidate-build-artifacts! clean-build-artifacts!)))))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
-(def (poo-flow-core-init-build source declaration)
+(def (yuanxu-init-build source declaration)
   (def prepared #f)
   (def retained #f)
   (def selection #f)
@@ -65,7 +65,7 @@
     (unless selection
       (let* ((init (path-expand source))
              (forms (call-with-input-string (module-source-read init) read-all))
-             (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'poo-flow!))) forms)))
+             (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms)))
         (unless (equal? declared (list declaration))
           (error "imported init declaration differs from its source; use a fresh source context"))
         (set! selection ((force module-linker) init module-view: module-view))))

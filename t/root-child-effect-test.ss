@@ -2,9 +2,9 @@
 (import :std/test :clan/poo/object
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source))
 (export root-child-effect-test test-cleanup!)
 (def completed 0)
 (def (cause failure)
@@ -14,8 +14,8 @@
   (displayln "REAL-PACKAGE-EFFECT: 1 case completed"))
 (def root-child-effect-test
   (test-suite "Current real service publication post-effect source check"
-    (poo-flow-test-case "silent source change after accepted admission cannot publish"
-      (with-poo-flow-fixture (fixture ServicesFixture)
+    (yuanxu-test-case "silent source change after accepted admission cannot publish"
+      (with-yuanxu-fixture (fixture ServicesFixture)
         (def publication (.get fixture publication))
         (def Parent (.get publication value))
         (def cached (.get Parent plan))

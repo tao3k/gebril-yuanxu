@@ -16,7 +16,7 @@ contracts that a module author should implement. The implementation record is
 | Public POO Type | =validate= and diagnostic adaptation | Produces the checked value; consumers must retain that result, not substitute the unchecked input. |
 | Public =ObjectContract.= | =:clan/poo/object-contract= | Field responsibilities contain value Types; constraints and obligations check the effective object. |
 | JsonSchema | =SchemaContract.= and =ProjectionContract.= | Reuses public Types for the selected provider Schema or a projected value; it does not authorize deployment. |
-| Core | =PooFlowContract.=, =.admit= and =AdmissionPublication.= | Admits the checked value against selected Context and binds actual Contract references before publication. |
+| Core | =YuanxuContract.=, =.admit= and =AdmissionPublication.= | Admits the checked value against selected Context and binds actual Contract references before publication. |
 
 The public =ObjectContract.= name always denotes the public value Type here.
 The older Core prototype-aware admission base has a different protocol. The

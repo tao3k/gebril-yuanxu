@@ -2,28 +2,28 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import :core/composition/roles
-        (only-in :core/observability/testing-case poo-flow-test-case)
+(import :yuanxu/composition/roles
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/object-family/role-syntax
-        :core/feature-system/domain-case/interface
-        :core/feature-system/domain-case/syntax)
+        :yuanxu/object-family/role-syntax
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/feature-system/domain-case/syntax)
 
 
 (import "./domain-case-test-support")
 
 (def domain-case-test
   (test-suite "POO CaseComponent and DomainCase closure"
-    (poo-flow-test-case "object, type, and contract close into one cached DomainCase"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "object, type, and contract close into one cached DomainCase"
+      (let* ((cache (yuanxu-domain-case-cache))
              (cold (close-base cache))
              (warm (close-base cache))
              (left-receipt
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                (.ref cold 'domain-case) (agent-role 'agent-1 "revision-1")))
              (right-receipt
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                (.ref cold 'domain-case) (agent-role 'agent-2 "revision-2")))
              (left (.ref left-receipt 'instance))
              (right (.ref right-receipt 'instance)))
@@ -34,12 +34,12 @@
         (check (eq? (.ref cold 'domain-case) (.ref warm 'domain-case)) => #t)
         (check (eq? (.ref (.ref cold 'domain-case) 'shared-prototype)
                     (.ref (.ref warm 'domain-case) 'shared-prototype)) => #t)
-        (check (poo-flow-domain-case-cache-closure-count cache) => 1)
-        (check (poo-flow-domain-case-cache-hit-count cache) => 1)
-        (check (poo-flow-domain-case-instance-mix-count
+        (check (yuanxu-domain-case-cache-closure-count cache) => 1)
+        (check (yuanxu-domain-case-cache-hit-count cache) => 1)
+        (check (yuanxu-domain-case-instance-mix-count
                 (.ref cold 'domain-case))
                => 0)
-        (check (poo-flow-domain-case-instance-overlay-count
+        (check (yuanxu-domain-case-instance-overlay-count
                 (.ref cold 'domain-case))
                => 2)
         (check (.ref left-receipt 'accepted?) => #t)
@@ -51,16 +51,16 @@
         (check (eq? (.ref left 'domain-case/ref) (.ref cold 'domain-case))
                => #t)
         (check (.ref left 'domain-case/instance-overlay-kind)
-               => 'poo-flow.role-instance-overlay.v1)
+               => 'yuanxu.role-instance-overlay.v1)
         (check (.ref left 'domain-case/instance-composition-kind)
-               => 'poo-flow.role-instance-overlay.v1)
+               => 'yuanxu.role-instance-overlay.v1)
         (check (.ref left 'domain-case/instance-overlay-resolver-depth) => 1)
         (check (.ref left 'qualification/versioned?) => #t)
         (check (.ref left 'qualification/revision-bound?) => #t)))
 
-    (poo-flow-test-case "instance overlay preserves marker, local, and shared precedence"
+    (yuanxu-test-case "instance overlay preserves marker, local, and shared precedence"
       (let* ((case-value
-              (.ref (close-base (poo-flow-domain-case-cache)) 'domain-case))
+              (.ref (close-base (yuanxu-domain-case-cache)) 'domain-case))
              (local-role
               (poo-core-role-object
                (slots ((agent-id 'overlay-agent)
@@ -72,26 +72,26 @@
                        (domain-case/key 'spoofed-key)))
                (supers)))
              (receipt
-              (poo-flow-domain-case-instantiate case-value local-role))
+              (yuanxu-domain-case-instantiate case-value local-role))
              (instance (.ref receipt 'instance)))
         (check (.ref receipt 'accepted?) => #t)
         (check (.ref instance 'qualification/versioned?) => 'local-override)
         (check (.ref instance 'qualification/revision-bound?) => #t)
         (check (eq? (.ref instance 'domain-case/ref) case-value) => #t)
         (check (.ref instance 'domain-case/key) => (.ref case-value 'key))
-        (check (poo-flow-domain-case-instance-mix-count case-value) => 0)
-        (check (poo-flow-domain-case-instance-overlay-count case-value) => 1)))
+        (check (yuanxu-domain-case-instance-mix-count case-value) => 0)
+        (check (yuanxu-domain-case-instance-overlay-count case-value) => 1)))
 
-    (poo-flow-test-case "computed POO slots retain native mix semantics"
+    (yuanxu-test-case "computed POO slots retain native mix semantics"
       (let* ((case-value
-              (.ref (close-base (poo-flow-domain-case-cache)) 'domain-case))
+              (.ref (close-base (yuanxu-domain-case-cache)) 'domain-case))
              (computed-local-role
               (.o (agent-id 'computed-agent)
                   (schema-id 'agent.case.v1)
                   (schema-version 1)
                   (source-revision "computed-revision")))
              (receipt
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                case-value computed-local-role))
              (instance (.ref receipt 'instance)))
         (check (.ref receipt 'accepted?) => #t)
@@ -99,37 +99,37 @@
         (check (.ref instance 'qualification/versioned?) => #t)
         (check (.ref instance 'domain-case/instance-overlay-kind) => #f)
         (check (.ref instance 'domain-case/instance-composition-kind)
-               => 'poo-flow.role-compose-mix.v1)
+               => 'yuanxu.role-compose-mix.v1)
         (check (.ref instance 'domain-case/instance-overlay-resolver-depth)
                => #f)
-        (check (poo-flow-domain-case-instance-mix-count case-value) => 1)
-        (check (poo-flow-domain-case-instance-overlay-count case-value) => 0)))
+        (check (yuanxu-domain-case-instance-mix-count case-value) => 1)
+        (check (yuanxu-domain-case-instance-overlay-count case-value) => 0)))
 
-    (poo-flow-test-case "canonical key is deterministic and excludes procedures"
+    (yuanxu-test-case "canonical key is deterministic and excludes procedures"
       (let* ((left
-              (poo-flow-domain-case-canonical-descriptor
+              (yuanxu-domain-case-canonical-descriptor
                'agent.case.v1 1
                (list versioned-component revision-component) '() '(runtime)))
              (right
-              (poo-flow-domain-case-canonical-descriptor
+              (yuanxu-domain-case-canonical-descriptor
                'agent.case.v1 1
                (list versioned-component revision-component) '() '(runtime)))
              (reversed
-              (poo-flow-domain-case-canonical-descriptor
+              (yuanxu-domain-case-canonical-descriptor
                'agent.case.v1 1
                (list revision-component versioned-component) '() '(runtime)))
-             (left-key (poo-flow-domain-case-canonical-key left))
-             (right-key (poo-flow-domain-case-canonical-key right))
-             (reversed-key (poo-flow-domain-case-canonical-key reversed)))
+             (left-key (yuanxu-domain-case-canonical-key left))
+             (right-key (yuanxu-domain-case-canonical-key right))
+             (reversed-key (yuanxu-domain-case-canonical-key reversed)))
         (check left => right)
         (check left-key => right-key)
         (check (equal? left-key reversed-key) => #f)
         (check
-         (poo-flow-domain-case-canonical-descriptor
+         (yuanxu-domain-case-canonical-descriptor
           'agent.case.v1 1 (list versioned-component revision-component)
           '() '(runtime audit))
          =>
-         (poo-flow-domain-case-canonical-descriptor
+         (yuanxu-domain-case-canonical-descriptor
           'agent.case.v1 1 (list versioned-component revision-component)
           '() '(audit runtime)))
         (check (string-contains
@@ -137,39 +137,39 @@
                 "procedure")
                => #f)))
 
-    (poo-flow-test-case "same canonical identity cannot alias different component objects"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "same canonical identity cannot alias different component objects"
+      (let* ((cache (yuanxu-domain-case-cache))
              (cold (close-base cache))
              (versioned-clone
-              (poo-flow-case-component
+              (yuanxu-case-component
                'versioned 1 versioned-role versioned-type
                (list schema-id-slot schema-version-slot)
                (list versioned-contract)
                (list runtime-projection)))
              (alias
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'agent.case.v1 1
                (list versioned-clone revision-component) '() '(runtime))))
         (check (.ref cold 'accepted?) => #t)
         (check (.ref alias 'accepted?) => #f)
         (check (diagnostic-codes alias) => '(module-owner-identity-alias))
-        (check (poo-flow-domain-case-cache-closure-count cache) => 1)))
+        (check (yuanxu-domain-case-cache-closure-count cache) => 1)))
 
-    (poo-flow-test-case "duplicate, parent, and projection declarations fail closure"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "duplicate, parent, and projection declarations fail closure"
+      (let* ((cache (yuanxu-domain-case-cache))
              (missing-parent
-              (poo-flow-case-component
+              (yuanxu-case-component
                'child 1 policy-role policy-type '() '() '()
                '(not-declared)))
              (duplicate
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'duplicate.case.v1 1
                (list versioned-component versioned-component)))
              (parent
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'parent.case.v1 1 (list missing-parent)))
              (projection
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'projection-selection.case.v1 1
                (list versioned-component) '() '(runtime runtime))))
         (check (diagnostic-codes duplicate)
@@ -178,54 +178,54 @@
                => '(missing-or-forward-parent-component))
         (check (diagnostic-codes projection)
                => '(duplicate-projection-selection))
-        (check (poo-flow-domain-case-cache-closure-count cache) => 0)))
+        (check (yuanxu-domain-case-cache-closure-count cache) => 0)))
 
-    (poo-flow-test-case "type identity and parent membership close before composition"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "type identity and parent membership close before composition"
+      (let* ((cache (yuanxu-domain-case-cache))
              (parent-role
               (poo-core-role-object (slots ((mode 'parent))) (supers)))
              (child-role
               (poo-core-role-object (slots ((mode 'child))) (supers)))
              (parent-type
-              (poo-flow-case-type-contract 'ParentMode '() (lambda (_) #t)))
+              (yuanxu-case-type-contract 'ParentMode '() (lambda (_) #t)))
              (child-type
-              (poo-flow-case-type-contract
+              (yuanxu-case-type-contract
                'ChildMode '(ParentMode) (lambda (_) #t)))
              (parent-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'parent-mode 1 parent-role parent-type '() '() '()))
              (child-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'child-mode 1 child-role child-type '() '() '()
                '(parent-mode)))
              (closed
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'precedence.case.v1 1
                (list parent-component child-component)))
              (local-role
               (poo-core-role-object (slots ((instance/local? #t))) (supers)))
              (instance
-              (.ref (poo-flow-domain-case-instantiate
+              (.ref (yuanxu-domain-case-instantiate
                      (.ref closed 'domain-case) local-role)
                     'instance))
              (missing-type-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'missing-type 1 policy-role
-               (poo-flow-case-type-contract
+               (yuanxu-case-type-contract
                 'MissingTypeChild '(NotDeclared) (lambda (_) #t))
                '() '() '()))
              (missing-type
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'missing-type.case.v1 1
                (list missing-type-component)))
              (conflicting-type-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'conflicting-type 1 policy-role
-               (poo-flow-case-type-contract
+               (yuanxu-case-type-contract
                 'ParentMode '() (lambda (_) #t))
                '() '() '()))
              (conflicting-type
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'conflicting-type.case.v1 1
                (list parent-component conflicting-type-component))))
         (check (.ref closed 'accepted?) => #t)
@@ -235,34 +235,34 @@
         (check (diagnostic-codes conflicting-type)
                => '(type-identity-conflict))))
 
-    (poo-flow-test-case "slot conflict rejects and explicit witnessed override closes"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "slot conflict rejects and explicit witnessed override closes"
+      (let* ((cache (yuanxu-domain-case-cache))
              (foreign-role
               (poo-core-role-object
                (slots ((foreign/status #t)))
                (supers)))
              (foreign-type
-              (poo-flow-case-type-contract 'Foreign '() (lambda (_) #t)))
+              (yuanxu-case-type-contract 'Foreign '() (lambda (_) #t)))
              (foreign-slot
-              (poo-flow-case-slot-contract
+              (yuanxu-case-slot-contract
                'schema-version 'foreign 'boolean 'false 'replace '() #f
                boolean?))
              (foreign-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'foreign 1 foreign-role foreign-type
                (list foreign-slot) '() '()))
              (rejected
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'conflict.case.v1 1
                (list versioned-component foreign-component)))
              (override
-              (poo-flow-case-slot-contract
+              (yuanxu-case-slot-contract
                'schema-version 'conflict.case.v1 'positive-integer
                'required 'replace '(versioned foreign)
                'schema-version-compatibility-v1
                (lambda (value) (and (exact-integer? value) (> value 0)))))
              (accepted
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'override.case.v1 1
                (list versioned-component foreign-component)
                (list override))))
@@ -270,18 +270,18 @@
         (check (diagnostic-codes rejected) => '(slot-contract-conflict))
         (check (.ref accepted 'accepted?) => #t)))
 
-    (poo-flow-test-case "method contract refinement requires an explicit witness"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "method contract refinement requires an explicit witness"
+      (let* ((cache (yuanxu-domain-case-cache))
              (base-contract
-              (poo-flow-case-method-contract
+              (yuanxu-case-method-contract
                'run-base 'base 'run 'method 'Run
                'any-agent 'receipt (lambda (_) #t)))
              (strict-contract
-              (poo-flow-case-method-contract
+              (yuanxu-case-method-contract
                'run-strict 'strict 'run 'method 'Run
                'admin-agent 'receipt+evidence (lambda (_) #t)))
              (witnessed-contract
-              (poo-flow-case-method-contract
+              (yuanxu-case-method-contract
                'run-witnessed 'strict 'run 'method 'Run
                'any-agent 'receipt+evidence
                (lambda (context) (slot/default context 'allowed? #f))
@@ -292,35 +292,35 @@
                       (equal? (.ref candidate 'precondition-id)
                               (.ref inherited 'precondition-id))))))
              (false-witness-contract
-              (poo-flow-case-method-contract
+              (yuanxu-case-method-contract
                'run-false-witness 'strict 'run 'method 'Run
                'any-agent 'receipt+evidence (lambda (_) #t)
                '(run-base) 'run-false-refinement-v1
                (lambda (_candidate _inherited) #f)))
              (base
-              (poo-flow-case-component
+              (yuanxu-case-component
                'base 1 policy-role policy-type '()
                (list base-contract) '()))
              (strict
-              (poo-flow-case-component
+              (yuanxu-case-component
                'strict 1 policy-role policy-type '()
                (list strict-contract) '()))
              (witnessed
-              (poo-flow-case-component
+              (yuanxu-case-component
                'witnessed 1 policy-role policy-type '()
                (list witnessed-contract) '()))
              (false-witness
-              (poo-flow-case-component
+              (yuanxu-case-component
                'false-witness 1 policy-role policy-type '()
                (list false-witness-contract) '()))
              (rejected
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'contract.case.v1 1 (list base strict)))
              (accepted
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'contract.witnessed.case.v1 1 (list base witnessed)))
              (false-witness-rejected
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'contract.false-witness.case.v1 1
                (list base false-witness)))
              (allowed-context
@@ -328,13 +328,13 @@
              (denied-context
               (poo-core-role-object (slots ((allowed? #f))) (supers)))
              (method-accepted
-              (poo-flow-domain-case-check-method
+              (yuanxu-domain-case-check-method
                (.ref accepted 'domain-case) 'run allowed-context))
              (method-rejected
-              (poo-flow-domain-case-check-method
+              (yuanxu-domain-case-check-method
                (.ref accepted 'domain-case) 'run denied-context))
              (method-unknown
-              (poo-flow-domain-case-check-method
+              (yuanxu-domain-case-check-method
                (.ref accepted 'domain-case) 'unknown allowed-context)))
         (check (.ref rejected 'accepted?) => #f)
         (check (diagnostic-codes rejected)
@@ -350,30 +350,30 @@
         (check (diagnostic-codes method-unknown)
                => '(unknown-method-contract))))
 
-    (poo-flow-test-case "projection and policy algebra conflicts fail before caching"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "projection and policy algebra conflicts fail before caching"
+      (let* ((cache (yuanxu-domain-case-cache))
              (other-projection
-              (poo-flow-case-projection
+              (yuanxu-case-projection
                'runtime 'other 'other.runtime.v1 (lambda (_) '(other))))
              (other-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'other 1 policy-role policy-type '() '()
                (list other-projection) '() 'permit-overrides))
              (policy-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'policy 1 policy-role policy-type '() '() '()
                '() 'deny-overrides))
              (same-projection-component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'same-projection 1 policy-role policy-type '() '()
                (list runtime-projection)))
              (same-projection
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'same-projection.case.v1 1
                (list versioned-component same-projection-component)
                '() '(runtime)))
              (receipt
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'projection.case.v1 1
                (list versioned-component other-component policy-component)
                '() '(runtime))))
@@ -382,16 +382,16 @@
                => '(projection-name-conflict policy-algebra-conflict))
         (check (diagnostic-codes same-projection)
                => '(projection-name-conflict))
-        (check (poo-flow-domain-case-cache-closure-count cache) => 0)))
+        (check (yuanxu-domain-case-cache-closure-count cache) => 0)))
 
-    (poo-flow-test-case "slot, type, and state contracts fail at instance boundary"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "slot, type, and state contracts fail at instance boundary"
+      (let* ((cache (yuanxu-domain-case-cache))
              (case-value (.ref (close-base cache) 'domain-case))
              (invalid-type
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                case-value (agent-role 'agent-invalid "revision-1" 0)))
              (invalid-state
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                case-value (agent-role 'agent-blocked "blocked")))
              (missing-slot-role
               (poo-core-role-object
@@ -400,7 +400,7 @@
                        (schema-version 1)))
                (supers)))
              (missing-slot
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                case-value missing-slot-role)))
         (check (.ref invalid-type 'accepted?) => #f)
         (check (diagnostic-codes invalid-type)
@@ -412,17 +412,17 @@
         (check (diagnostic-codes missing-slot)
                => '(required-slot-missing type-contract-rejected))))
 
-    (poo-flow-test-case "only selected projections cross the DomainCase boundary"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "only selected projections cross the DomainCase boundary"
+      (let* ((cache (yuanxu-domain-case-cache))
              (case-value (.ref (close-base cache) 'domain-case))
              (instance
-              (.ref (poo-flow-domain-case-instantiate
+              (.ref (yuanxu-domain-case-instantiate
                      case-value (agent-role 'agent-1 "revision-1"))
                     'instance))
              (selected
-              (poo-flow-domain-case-project case-value 'runtime instance))
+              (yuanxu-domain-case-project case-value 'runtime instance))
              (private
-              (poo-flow-domain-case-project case-value 'private instance)))
+              (yuanxu-domain-case-project case-value 'private instance)))
         (check (.ref selected 'accepted?) => #t)
         (check (.ref selected 'schema-id) => 'agent.runtime-projection.v1)
         (check (.ref selected 'payload)
@@ -431,8 +431,8 @@
         (check (.ref private 'accepted?) => #f)
         (check (diagnostic-codes private) => '(projection-not-selected))))
 
-    (poo-flow-test-case "1000 Agents share one closed case and remain isolated"
-      (let* ((cache (poo-flow-domain-case-cache))
+    (yuanxu-test-case "1000 Agents share one closed case and remain isolated"
+      (let* ((cache (yuanxu-domain-case-cache))
              (closure (close-base cache))
              (case-value (.ref closure 'domain-case))
              (shared (.ref case-value 'shared-prototype)))
@@ -451,7 +451,7 @@
                       (string->symbol
                        (string-append "agent-" (number->string index))))
                      (receipt
-                      (poo-flow-domain-case-instantiate
+                      (yuanxu-domain-case-instantiate
                        case-value (agent-role id "revision-fleet")))
                      (instance (.ref receipt 'instance)))
                 (loop (+ index 1)
@@ -462,12 +462,12 @@
                       (and shared-stable?
                            (eq? (.ref case-value 'shared-prototype)
                                 shared))))))
-        (check (poo-flow-domain-case-cache-closure-count cache) => 1)
-        (check (poo-flow-domain-case-instance-mix-count case-value) => 0)
-        (check (poo-flow-domain-case-instance-overlay-count case-value) => 1000)
+        (check (yuanxu-domain-case-cache-closure-count cache) => 1)
+        (check (yuanxu-domain-case-instance-mix-count case-value) => 0)
+        (check (yuanxu-domain-case-instance-overlay-count case-value) => 1000)
         (check (.ref closure 'cache-hit?) => #f)))
 
-    (poo-flow-test-case "1000 Agents use sparse U=8/32/64 role-policy-strategy cases"
+    (yuanxu-test-case "1000 Agents use sparse U=8/32/64 role-policy-strategy cases"
       (for-each
        (lambda (unique-count)
          (let (receipt (exercise-sparse-fleet unique-count))

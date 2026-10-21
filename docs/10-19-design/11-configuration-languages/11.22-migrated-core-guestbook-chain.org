@@ -45,13 +45,13 @@ Directly reusable current consumer call:
 #+begin_src scheme
 (import (only-in :poo-flow/init PooFlowModules)
         (only-in :poo-flow/modules/module-authoring/module-source-collection
-                 poo-flow-load-modules))
+                 yuanxu-load-modules))
 
 (def ProductInterfaceSources
-  (poo-flow-load-modules PooFlowModules))
+  (yuanxu-load-modules PooFlowModules))
 #+end_src
 
-Current [[file:../../../../modules/module-authoring/module-source-collection.ss][poo-flow-load-modules]] projects the collection's conventional interface.ss
+Current [[file:../../../../modules/module-authoring/module-source-collection.ss][yuanxu-load-modules]] projects the collection's conventional interface.ss
 SourceRefs and validates directory naming. It enumerates the direct collection
 when asked for the collection. It does not return a linked module namespace,
 resolve root/user init policy, normalize disable, bind Guestbook or build anything.
@@ -75,12 +75,12 @@ No JsonSchemaModule object with a new core slot is exported by that file today.
 A library can already call the migrated bridge through its interface:
 
 #+begin_src scheme
-(import (only-in :core/modules/json-schema/interface
-                 poo-flow-json-schema->contract-artifact
-                 poo-flow-json-schema-contract-artifact-validate))
+(import (only-in :yuanxu/modules/json-schema/interface
+                 yuanxu-json-schema->contract-artifact
+                 yuanxu-json-schema-contract-artifact-validate))
 
 (def (guestbook-field-artifact schema)
-  (poo-flow-json-schema->contract-artifact
+  (yuanxu-json-schema->contract-artifact
    schema
    '((owner . guestbook)
      (source-ref . guestbook/server-schema-v1)
@@ -88,7 +88,7 @@ A library can already call the migrated bridge through its interface:
      (object-key . guestbook/server))))
 
 (def (guestbook-field-validation artifact effective-profile)
-  (poo-flow-json-schema-contract-artifact-validate artifact effective-profile))
+  (yuanxu-json-schema-contract-artifact-validate artifact effective-profile))
 #+end_src
 
 These are current API signatures in a consumer example; they are not a new public
@@ -113,14 +113,14 @@ the three-workload KCL baseline or run during preview.
 Both target examples accept a directory-valued source: "./modules". Directory
 admission constructs the internal source collection; users do not supply it. The
 source: keyword is a target bounded declaration extension, not accepted by the
-current poo-flow! macro. Common Gerbil bindings must be imported/provided by the
+current yuanxu! macro. Common Gerbil bindings must be imported/provided by the
 framework's admitted source environment; no implicit global name resolution is
 claimed. Current syntax owns declaration lowering only, never runtime discovery.
 
 Auto policy:
 
 #+begin_src scheme
-(poo-flow! mode: auto source: "./modules"
+(yuanxu! mode: auto source: "./modules"
   :infrastructure
   (kubernetes)
   :sandbox
@@ -132,7 +132,7 @@ Auto policy:
 Explicit alternative:
 
 #+begin_src scheme
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :infrastructure
   (kubernetes)
   :sandbox
@@ -177,7 +177,7 @@ The following uses current Core APIs. GuestbookSmoke is the proposed optional
 contribution explicitly defined here, not an existing product feature:
 
 #+begin_src scheme
-(import :core/feature-system/interface)
+(import :yuanxu/feature-system/interface)
 
 (def SmokePreviewRequirement
   (feature-adapter-requirement

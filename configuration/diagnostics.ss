@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Field diagnostics reuse JSON baselines and native winning slot provenance.
 (import :clan/poo/object
-        (only-in :core/configuration/json config-field-origin))
+        (only-in :yuanxu/configuration/json config-field-origin))
 (export config-diagnostic-locator)
 
 (def (field-value object path)

@@ -3,17 +3,17 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/nix/objects NixSource. poo-flow-core-nix-admit-generation)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/nix/objects NixSource. yuanxu-nix-admit-generation)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
-        (only-in :core/modules/nix/func current-nix-process-observer call-with-nix-derivation-query))
+        (only-in :yuanxu/modules/nix/func current-nix-process-observer call-with-nix-derivation-query))
 (export nix-derivation-query-test)
 (def (write-input path value)
   (call-with-output-file (list path: path truncate: #t) (cut display value <>)))
 (def nix-derivation-query-test
   (test-suite "Derivation currentness queries do not register candidates"
-    (poo-flow-test-case "fresh transitive evaluation, refusal and restored registration mode"
+    (yuanxu-test-case "fresh transitive evaluation, refusal and restored registration mode"
       (call-with-temporary-directory "nix-derivation-query"
         (lambda (root)
           (def expression (path-expand "package.nix" root))
@@ -63,19 +63,19 @@
                                realize: (error "readonly query forced the store capability")))
                     .instantiate)))
               original)
-            (poo-flow-core-nix-admit-generation expression '() original)
+            (yuanxu-nix-admit-generation expression '() original)
             (check-equal? (and (member "--eval" (car argv)) #t) #t)
             (check-equal? (member "--read-write-mode" (car argv)) #f)
             ;; Neither transitive input was declared as a Scheme observation.
             (write-input transitive "\"after\"")
-            (check-exception (poo-flow-core-nix-admit-generation expression '() original) error?)
+            (check-exception (yuanxu-nix-admit-generation expression '() original) error?)
             (write-input transitive "\"before\"")
             (write-input (path-expand "optional.nix" root) "{}")
-            (check-exception (poo-flow-core-nix-admit-generation expression '() original) error?)
+            (check-exception (yuanxu-nix-admit-generation expression '() original) error?)
             ;; An exception inside the subprocess thunk must unwind query mode,
             ;; not merely a mismatch raised after a successful query returned.
             (write-input transitive "throw \"query-fixture-refused\"")
-            (check-exception (poo-flow-core-nix-admit-generation expression '() original) error?)
+            (check-exception (yuanxu-nix-admit-generation expression '() original) error?)
             (write-input transitive "\"before\"")
             (def queried (call-with-nix-derivation-query (lambda () (.call Source .instantiate))))
             (check-equal? (file-exists? queried) #f)
@@ -85,7 +85,7 @@
             (check-equal? (and (member "--read-write-mode" (car argv)) #t) #t)
             (check-equal? (equal? changed original) #f)
             (check-equal? (file-exists? changed) #t)))))
-    (poo-flow-test-case "a transitive change between cache miss and registration refuses construction"
+    (yuanxu-test-case "a transitive change between cache miss and registration refuses construction"
       (call-with-temporary-directory "nix-registration-race"
         (lambda (root)
           (def expression (path-expand "package.nix" root))

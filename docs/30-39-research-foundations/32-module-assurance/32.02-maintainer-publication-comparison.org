@@ -55,14 +55,14 @@ Actual [[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQ
 (def (valid-port? value)
   (and (exact-integer? value) (<= 1 value 65535)))
 (def Port
-  (poo-flow-predicate-type 'postgresql/port valid-port?))
+  (yuanxu-predicate-type 'postgresql/port valid-port?))
 (def (postgresql-config? value)
   (and (object? value) (.slot? value 'settings)
        (object? (.get value settings))
        (.slot? (.get value settings) 'port)
        (valid-port? (.get value settings port))))
 (def PostgreSQLConfigContract
-  (poo-flow-predicate-contract 'postgresql/config
+  (yuanxu-predicate-contract 'postgresql/config
     postgresql-config? (lambda (_v _c) '())))
 #+end_src
 
@@ -229,7 +229,7 @@ Schema-derived Type nested in public ObjectContract responsibilities. This is
 source evidence of reuse, not a fresh runtime receipt for the declaration above.
 
 The descriptor goes into contextual admission through =value-contract=; do not
-copy its fields into Core =PooFlowContract.= contextual =responsibilities=.
+copy its fields into Core =YuanxuContract.= contextual =responsibilities=.
 Connection equality, intersection of independent port requirements, source
 currentness and candidate/plan applicability remain separate checks. A descriptor
 can normalize a value, so publication must bind the final checked receiver rather

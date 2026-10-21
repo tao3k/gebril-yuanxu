@@ -6,11 +6,11 @@
 ;;; Boundary: runtime command descriptors and request-bound manifests.
 ;;; Invariant: descriptors are inert CLI contracts until materialized.
 
-(import :core/modules/funflow/control-plane/runtime-protocol
-        :core/modules/funflow/control-plane/runtime-command-invocation
+(import :yuanxu/modules/funflow/control-plane/runtime-protocol
+        :yuanxu/modules/funflow/control-plane/runtime-command-invocation
         (only-in :clan/poo/object .cc .get)
-        (only-in :core/ops/objects ProcessScript.)
-        (only-in :core/ops/func run-script))
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script))
 
 (export make-runtime-command-descriptor
         runtime-command-descriptor?

@@ -10,7 +10,7 @@
 - Status :: Normative V1 engineering standard
 - Scope :: POO Flow object construction, presentation, projection, conversion, and persistence boundaries
 - Source evidence :: Gerbil =:clan/poo= implementations in =.data/gerbil-poo/object.ss=, =mop.ss=, =io.ss=, =proto.ss=, and =.data/gerbil-persist/persist.ss=, =content-addressing.ss=
-- Lean model :: =PooFlowCoreProof.ModuleSystem.Workflow= using LeanPoo =Object=, =Codec= and =ContextSlot= APIs (conditional model, not interpreter refinement)
+- Lean model :: =YuanxuProof.ModuleSystem.Workflow= using LeanPoo =Object=, =Codec= and =ContextSlot= APIs (conditional model, not interpreter refinement)
 
 * Decision
 

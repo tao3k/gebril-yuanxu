@@ -2,11 +2,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/feature-system/interface
-        :core/utilities/functional)
+        :yuanxu/feature-system/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-manifest-test)
 
@@ -79,11 +79,11 @@
             manifest-duplicate-option-second-feature))
 
 (def (diagnostic-codes bundle)
-  (poo-flow-map (lambda (diagnostic) (.ref diagnostic 'code))
+  (yuanxu-map (lambda (diagnostic) (.ref diagnostic 'code))
                 (.ref bundle 'diagnostics)))
 
 (def (diagnostic-feature-ids bundle)
-  (poo-flow-map (lambda (diagnostic) (.ref diagnostic 'feature-id))
+  (yuanxu-map (lambda (diagnostic) (.ref diagnostic 'feature-id))
                 (.ref bundle 'diagnostics)))
 
 (def (manifest-stress-feature-id index)
@@ -128,7 +128,7 @@
 
 (def feature-system-manifest-test
   (test-suite "feature system immutable manifests"
-    (poo-flow-test-case "descriptor projects to an immutable POO manifest"
+    (yuanxu-test-case "descriptor projects to an immutable POO manifest"
       (let ((manifest (feature-manifest manifest-dependent-feature)))
         (check (.ref manifest 'kind) => 'feature-manifest)
         (check (.ref manifest 'schema-version) => 1)
@@ -137,7 +137,7 @@
                => 'feature-system-manifest-test)
         (check (.ref manifest 'requires) => '(manifest-base))))
 
-    (poo-flow-test-case "explicit bundle reuses the resolver activation plan"
+    (yuanxu-test-case "explicit bundle reuses the resolver activation plan"
       (let ((index (.ref manifest-valid-bundle 'manifest-index))
             (base-manifest (car (.ref manifest-valid-bundle 'manifests))))
         (check (.ref manifest-valid-bundle 'kind)
@@ -164,12 +164,12 @@
                     manifest-valid-bundle)
                => #t)))
 
-    (poo-flow-test-case "empty explicit bundle is a valid identity plan"
+    (yuanxu-test-case "empty explicit bundle is a valid identity plan"
       (check (.ref manifest-empty-bundle 'status) => 'ready)
       (check (.ref manifest-empty-bundle 'feature-ids) => '())
       (check (.ref manifest-empty-bundle 'diagnostics) => '()))
 
-    (poo-flow-test-case "missing requirements reject the explicit build bundle"
+    (yuanxu-test-case "missing requirements reject the explicit build bundle"
       (check (.ref manifest-missing-requirement-bundle 'status)
              => 'rejected)
       (check (.ref manifest-missing-requirement-bundle 'accepted?) => #f)
@@ -177,20 +177,20 @@
                    (diagnostic-codes manifest-missing-requirement-bundle))
              ? values))
 
-    (poo-flow-test-case "duplicate feature identities reject the bundle"
+    (yuanxu-test-case "duplicate feature identities reject the bundle"
       (check (.ref manifest-duplicate-id-bundle 'status) => 'rejected)
       (check (.ref manifest-duplicate-id-bundle 'manifest-index) => #f)
       (check (memq 'duplicate-selection
                    (diagnostic-codes manifest-duplicate-id-bundle))
              ? values))
 
-    (poo-flow-test-case "conflicting features reject the bundle"
+    (yuanxu-test-case "conflicting features reject the bundle"
       (check (.ref manifest-conflict-bundle 'status) => 'rejected)
       (check (memq 'feature-conflict
                    (diagnostic-codes manifest-conflict-bundle))
              ? values))
 
-    (poo-flow-test-case "duplicate option identities reject the bundle"
+    (yuanxu-test-case "duplicate option identities reject the bundle"
       (check (.ref manifest-duplicate-option-bundle 'status) => 'rejected)
       (check (diagnostic-codes manifest-duplicate-option-bundle)
              => '(duplicate-option-schema duplicate-option-schema))
@@ -198,7 +198,7 @@
              => '(manifest-duplicate-option
                   manifest-duplicate-option-second)))
 
-    (poo-flow-test-case "1024-Feature bundle keeps one linear manifest pass"
+    (yuanxu-test-case "1024-Feature bundle keeps one linear manifest pass"
       (let* ((descriptors (manifest-linear-feature-descriptors 1024))
              (bundle (feature-manifest-bundle
                       'manifest-linear-stress descriptors))

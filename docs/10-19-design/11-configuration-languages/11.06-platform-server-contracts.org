@@ -93,21 +93,21 @@ this code is not a proof of universal provenance preservation or cache safety.
        (every (lambda (key) (string? (.ref value key))) (.all-slots value))))
 
 (def StringContract
-  (poo-flow-predicate-contract 'server/string nonempty-string? no-obligations))
+  (yuanxu-predicate-contract 'server/string nonempty-string? no-obligations))
 (def IntegerContract
-  (poo-flow-predicate-contract 'server/positive-int positive-integer? no-obligations))
+  (yuanxu-predicate-contract 'server/positive-int positive-integer? no-obligations))
 (def LabelsContract
-  (poo-flow-predicate-contract 'server/labels string-map? no-obligations))
+  (yuanxu-predicate-contract 'server/labels string-map? no-obligations))
 (def ProtocolContract
-  (poo-flow-predicate-contract 'server/protocol
+  (yuanxu-predicate-contract 'server/protocol
     (lambda (v) (and (string? v) (if (member v '("HTTP" "TCP")) #t #f)))
     no-obligations))
 (def PortNumberContract
-  (poo-flow-predicate-contract 'server/port
+  (yuanxu-predicate-contract 'server/port
     (lambda (v) (and (positive-integer? v) (if (memv v '(80 443)) #t #f)))
     no-obligations))
 (def TargetPortContract
-  (poo-flow-predicate-contract 'server/target-port
+  (yuanxu-predicate-contract 'server/target-port
     (lambda (v) (and (positive-integer? v) (> v 1024) (<= v 65535)))
     no-obligations))
 #+end_src
@@ -146,17 +146,17 @@ Port admissions. The candidate contains the final normalized Port objects.
 
 #+begin_src scheme
 (def PortListShape
-  (poo-flow-predicate-contract 'server/ports list? no-obligations))
+  (yuanxu-predicate-contract 'server/ports list? no-obligations))
 
 (def (admit-ports descriptor ports context)
-  (let ((shape (poo-flow-contract-admit PortListShape ports context)))
-    (if (not (poo-flow-validation-evidence-accepted? shape)) shape
+  (let ((shape (yuanxu-contract-admit PortListShape ports context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape)) shape
       (let* ((children
-              (map (lambda (p) (poo-flow-contract-admit PortContract p context)) ports))
+              (map (lambda (p) (yuanxu-contract-admit PortContract p context)) ports))
              (failures
               (filter (lambda (receipt)
-                        (not (poo-flow-validation-evidence-accepted? receipt))) children)))
-        (.cc (poo-flow-validation-evidence
+                        (not (yuanxu-validation-evidence-accepted? receipt))) children)))
+        (.cc (yuanxu-validation-evidence
               (.get descriptor identity) ports (.get shape classification)
               failures (null? failures) failures context)
              'element-evidence children)))))
@@ -197,7 +197,7 @@ An unselected Profile is not normalized or admitted by this selected-server path
 * Existing versus proposed
 
 Native defaults, multiple-parent objects, lazy getters, responsibilities and the
-public poo-flow-contract-admit entry exist. All Server-domain declarations,
+public yuanxu-contract-admit entry exist. All Server-domain declarations,
 normalization, per-list receipts, contribution associations and diagnostics above
 are design additions, not installed runtime behavior. Full Kubernetes resource
 schema validation belongs to the separate resource publication boundary; these

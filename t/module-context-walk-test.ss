@@ -5,8 +5,8 @@
                  make-module-import module-import? module-import-source
                  make-module-export module-export? module-export-context
                  make-import-set import-set? import-set-source)
-        (only-in :core/module-system/building/source-closure for-each-build-module)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe))
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
 (export module-context-walk-test)
 
 ;; Independent original recursive oracle, used only on the small graph.
@@ -29,7 +29,7 @@
     (make-import-set (make-module-export context 'key 0 'key #f) 1 '()) 'key 1 #f))
 (def module-context-walk-test
   (test-suite "SDK Context traversal correspondence"
-    (poo-flow-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
+    (yuanxu-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
       (def nodes (list->vector (map (lambda (_) (context-node)) (iota 6))))
       (def (node n) (vector-ref nodes n))
       (slot-set! (node 0) 'import (list (wrapped (node 1)) (node 2)))
@@ -55,7 +55,7 @@
           (check-equal? (hash-length actual-seen) (hash-length expected-seen))
           (check-equal? (hash-key? actual-seen (node 5)) #f))
         (list #f (node 1) (node 3))))
-    (poo-flow-test-case "deep native context graphs use explicit frames and visit each identity once"
+    (yuanxu-test-case "deep native context graphs use explicit frames and visit each identity once"
       (for-each
         (lambda (size)
           (def nodes (list->vector (map (lambda (_) (context-node)) (iota size))))
@@ -77,6 +77,6 @@
           (check-equal? visits size)
           (check-equal? descents size)
           (check-equal? (hash-length seen) size)
-          (poo-flow-test-observe 'context-visits visits)
-          (poo-flow-test-observe 'context-descents descents))
+          (yuanxu-test-observe 'context-visits visits)
+          (yuanxu-test-observe 'context-descents descents))
         '(1000 5000 10000)))))

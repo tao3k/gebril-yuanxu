@@ -293,7 +293,7 @@ direct Module policy paths and global constructor names.
 | selected crew-workflow | goal/capacity fields and scheduling-policy -> CrewSchedulingPolicyContract |
 | selected tool-loop | requested tools/deadline fields and argument-validator -> ToolArgumentValidatorContract |
 
-Existing poo-flow-object-admit reads effective slots, admits each through its
+Existing yuanxu-object-admit reads effective slots, admits each through its
 responsibility Contract and then checks obligations. The domain view/collection
 Contracts and proto publications remain proposed. All mandatory selected facts
 must be checked; whole-object fixed responsibility checks are not magically

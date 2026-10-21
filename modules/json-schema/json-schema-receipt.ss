@@ -5,58 +5,58 @@
 
 ;;; Contract: public receipt for JSON Schema to POO Flow contract generation.
 
-(import (only-in :core/module-system/schema/slot-contracts
-                 poo-flow-native-contract->alist)
-        (only-in :core/type-facts/objects
-                 poo-flow-type-fact-contract->alist
-                 poo-flow-lean-fact-contract->alist
-                 poo-flow-native-contract->type-facts
-                 poo-flow-native-contract->lean-fact-contracts)
-        (only-in :core/observability/objects
-                 poo-flow-observability-diagnostic-record
-                 poo-flow-observability-diagnostic-severity
-                 poo-flow-observability-diagnostic->alist)
+(import (only-in :yuanxu/module-system/schema/slot-contracts
+                 yuanxu-native-contract->alist)
+        (only-in :yuanxu/type-facts/objects
+                 yuanxu-type-fact-contract->alist
+                 yuanxu-lean-fact-contract->alist
+                 yuanxu-native-contract->type-facts
+                 yuanxu-native-contract->lean-fact-contracts)
+        (only-in :yuanxu/observability/objects
+                 yuanxu-observability-diagnostic-record
+                 yuanxu-observability-diagnostic-severity
+                 yuanxu-observability-diagnostic->alist)
         (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-diagnostic-severity
-                 poo-flow-json-schema-diagnostic-reason
-                 poo-flow-json-schema-diagnostic-message
-                 poo-flow-json-schema-diagnostic-value
-                 poo-flow-json-schema-diagnostic->alist
-                 poo-flow-json-schema-normalization-schema
-                 poo-flow-json-schema-normalization-diagnostics
-                 poo-flow-json-schema-normalization->alist)
+                 yuanxu-json-schema-diagnostic-severity
+                 yuanxu-json-schema-diagnostic-reason
+                 yuanxu-json-schema-diagnostic-message
+                 yuanxu-json-schema-diagnostic-value
+                 yuanxu-json-schema-diagnostic->alist
+                 yuanxu-json-schema-normalization-schema
+                 yuanxu-json-schema-normalization-diagnostics
+                 yuanxu-json-schema-normalization->alist)
         (only-in "./functional.ss"
-                 poo-flow-contract-any?
-                 poo-flow-contract-option
-                 poo-flow-contract-project-list)
+                 yuanxu-contract-any?
+                 yuanxu-contract-option
+                 yuanxu-contract-project-list)
         (only-in "./json-schema-normalize.ss"
-                 poo-flow-json-schema-normalize)
+                 yuanxu-json-schema-normalize)
         (only-in "./json-schema-emit.ss"
-                 poo-flow-json-schema-node->object-type-contract))
+                 yuanxu-json-schema-node->object-type-contract))
 
-(export make-poo-flow-json-schema-contract-artifact
-        poo-flow-json-schema-contract-artifact?
-        poo-flow-json-schema-contract-artifact-kind
-        poo-flow-json-schema-contract-artifact-schema
-        poo-flow-json-schema-contract-artifact-source-ref
-        poo-flow-json-schema-contract-artifact-normalization
-        poo-flow-json-schema-contract-artifact-object-contract
-        poo-flow-json-schema-contract-artifact-diagnostics
-        poo-flow-json-schema-contract-artifact-type-facts
-        poo-flow-json-schema-contract-artifact-lean-fact-contracts
-        poo-flow-json-schema-contract-artifact-runtime-executed
-        poo-flow-json-schema-contract-artifact-valid?
-        poo-flow-json-schema-contract-artifact->alist
-        poo-flow-json-schema-diagnostic->observability
-        poo-flow-json-schema->contract-artifact)
+(export make-yuanxu-json-schema-contract-artifact
+        yuanxu-json-schema-contract-artifact?
+        yuanxu-json-schema-contract-artifact-kind
+        yuanxu-json-schema-contract-artifact-schema
+        yuanxu-json-schema-contract-artifact-source-ref
+        yuanxu-json-schema-contract-artifact-normalization
+        yuanxu-json-schema-contract-artifact-object-contract
+        yuanxu-json-schema-contract-artifact-diagnostics
+        yuanxu-json-schema-contract-artifact-type-facts
+        yuanxu-json-schema-contract-artifact-lean-fact-contracts
+        yuanxu-json-schema-contract-artifact-runtime-executed
+        yuanxu-json-schema-contract-artifact-valid?
+        yuanxu-json-schema-contract-artifact->alist
+        yuanxu-json-schema-diagnostic->observability
+        yuanxu-json-schema->contract-artifact)
 
-;; poo-flow-json-schema-contract-artifact
-;;   : (-> Symbol String SourceRef PooFlowJsonSchemaNormalization PooFlowObjectTypeContract [Diagnostic] [TypeFact] [LeanFact] Boolean Artifact)
+;; yuanxu-json-schema-contract-artifact
+;;   : (-> Symbol String SourceRef YuanxuJsonSchemaNormalization YuanxuObjectTypeContract [Diagnostic] [TypeFact] [LeanFact] Boolean Artifact)
 ;;   | doc m%
 ;;       Fixed public receipt for JSON Schema contract generation. The generated
 ;;       object contract is still Scheme data; external payloads use ->alist.
 ;;     %
-(defstruct poo-flow-json-schema-contract-artifact
+(defstruct yuanxu-json-schema-contract-artifact
   (kind
    schema
    source-ref
@@ -69,110 +69,110 @@
   transparent: #t)
 
 ;; : (-> Alist Symbol Value)
-(def (poo-flow-json-schema-option options key default-value)
-  (poo-flow-contract-option options key default-value))
+(def (yuanxu-json-schema-option options key default-value)
+  (yuanxu-contract-option options key default-value))
 
-;; : (-> PooFlowJsonSchemaDiagnostic PooFlowObservabilityDiagnostic)
-(def (poo-flow-json-schema-diagnostic->observability diagnostic)
-  (poo-flow-observability-diagnostic-record
-   (poo-flow-json-schema-diagnostic-severity diagnostic)
+;; : (-> YuanxuJsonSchemaDiagnostic YuanxuObservabilityDiagnostic)
+(def (yuanxu-json-schema-diagnostic->observability diagnostic)
+  (yuanxu-observability-diagnostic-record
+   (yuanxu-json-schema-diagnostic-severity diagnostic)
    'contract
    'json-schema-contract
    #f
    #f
-   (poo-flow-json-schema-diagnostic-reason diagnostic)
-   (poo-flow-json-schema-diagnostic-message diagnostic)
+   (yuanxu-json-schema-diagnostic-reason diagnostic)
+   (yuanxu-json-schema-diagnostic-message diagnostic)
    'contract
    (list
-    (cons 'value (poo-flow-json-schema-diagnostic-value diagnostic))
+    (cons 'value (yuanxu-json-schema-diagnostic-value diagnostic))
     (cons 'diagnostic
-          (poo-flow-json-schema-diagnostic->alist diagnostic)))))
+          (yuanxu-json-schema-diagnostic->alist diagnostic)))))
 
-;; : (-> PooFlowObservabilityDiagnostic Boolean)
-(def (poo-flow-json-schema-diagnostic-fatal? diagnostic)
-  (let (severity (poo-flow-observability-diagnostic-severity diagnostic))
+;; : (-> YuanxuObservabilityDiagnostic Boolean)
+(def (yuanxu-json-schema-diagnostic-fatal? diagnostic)
+  (let (severity (yuanxu-observability-diagnostic-severity diagnostic))
     (or (eq? severity 'error)
         (eq? severity 'fatal))))
 
-;; : (-> PooFlowJsonSchemaContractArtifact Boolean)
-(def (poo-flow-json-schema-contract-artifact-valid? artifact)
-  (and (poo-flow-json-schema-contract-artifact? artifact)
+;; : (-> YuanxuJsonSchemaContractArtifact Boolean)
+(def (yuanxu-json-schema-contract-artifact-valid? artifact)
+  (and (yuanxu-json-schema-contract-artifact? artifact)
        (not
-        (poo-flow-contract-any?
-         poo-flow-json-schema-diagnostic-fatal?
-         (poo-flow-json-schema-contract-artifact-diagnostics artifact)))))
+        (yuanxu-contract-any?
+         yuanxu-json-schema-diagnostic-fatal?
+         (yuanxu-json-schema-contract-artifact-diagnostics artifact)))))
 
-;; : (-> PooFlowJsonSchemaContractArtifact Alist)
-(def (poo-flow-json-schema-contract-artifact->alist artifact)
+;; : (-> YuanxuJsonSchemaContractArtifact Alist)
+(def (yuanxu-json-schema-contract-artifact->alist artifact)
   (list
    (cons 'kind
-         (poo-flow-json-schema-contract-artifact-kind artifact))
+         (yuanxu-json-schema-contract-artifact-kind artifact))
    (cons 'schema
-         (poo-flow-json-schema-contract-artifact-schema artifact))
+         (yuanxu-json-schema-contract-artifact-schema artifact))
    (cons 'source-ref
-         (poo-flow-json-schema-contract-artifact-source-ref artifact))
+         (yuanxu-json-schema-contract-artifact-source-ref artifact))
    (cons 'valid?
-         (poo-flow-json-schema-contract-artifact-valid? artifact))
+         (yuanxu-json-schema-contract-artifact-valid? artifact))
    (cons 'normalization
-         (poo-flow-json-schema-normalization->alist
-          (poo-flow-json-schema-contract-artifact-normalization artifact)))
+         (yuanxu-json-schema-normalization->alist
+          (yuanxu-json-schema-contract-artifact-normalization artifact)))
    (cons 'object-contract
-         (poo-flow-native-contract->alist
-          (poo-flow-json-schema-contract-artifact-object-contract artifact)))
+         (yuanxu-native-contract->alist
+          (yuanxu-json-schema-contract-artifact-object-contract artifact)))
    (cons 'diagnostics
-         (poo-flow-contract-project-list
-          poo-flow-observability-diagnostic->alist
-          (poo-flow-json-schema-contract-artifact-diagnostics artifact)))
+         (yuanxu-contract-project-list
+          yuanxu-observability-diagnostic->alist
+          (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
    (cons 'diagnostic-count
          (length
-          (poo-flow-json-schema-contract-artifact-diagnostics artifact)))
+          (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
    (cons 'type-facts
-         (poo-flow-contract-project-list
-          poo-flow-type-fact-contract->alist
-          (poo-flow-json-schema-contract-artifact-type-facts artifact)))
+         (yuanxu-contract-project-list
+          yuanxu-type-fact-contract->alist
+          (yuanxu-json-schema-contract-artifact-type-facts artifact)))
    (cons 'lean-fact-contracts
-         (poo-flow-contract-project-list
-          poo-flow-lean-fact-contract->alist
-          (poo-flow-json-schema-contract-artifact-lean-fact-contracts artifact)))
+         (yuanxu-contract-project-list
+          yuanxu-lean-fact-contract->alist
+          (yuanxu-json-schema-contract-artifact-lean-fact-contracts artifact)))
    (cons 'runtime-executed
-         (poo-flow-json-schema-contract-artifact-runtime-executed artifact))))
+         (yuanxu-json-schema-contract-artifact-runtime-executed artifact))))
 
-;; : (-> JsonLikeSchema [Alist] PooFlowJsonSchemaContractArtifact)
-(def (poo-flow-json-schema->contract-artifact schema . maybe-options)
+;; : (-> JsonLikeSchema [Alist] YuanxuJsonSchemaContractArtifact)
+(def (yuanxu-json-schema->contract-artifact schema . maybe-options)
   (let* ((options (if (null? maybe-options) '() (car maybe-options)))
          (source-ref
-          (poo-flow-json-schema-option options 'source-ref 'json-schema))
+          (yuanxu-json-schema-option options 'source-ref 'json-schema))
          (owner
-          (poo-flow-json-schema-option options 'owner 'contract))
+          (yuanxu-json-schema-option options 'owner 'contract))
          (object-kind
-          (poo-flow-json-schema-option
+          (yuanxu-json-schema-option
            options
            'object-kind
-           'PooFlowJsonSchemaObject))
+           'YuanxuJsonSchemaObject))
          (object-key
-          (poo-flow-json-schema-option
+          (yuanxu-json-schema-option
            options
            'object-key
            'json-schema/root))
          (normalization
-          (poo-flow-json-schema-normalize schema))
+          (yuanxu-json-schema-normalize schema))
          (object-contract
-          (poo-flow-json-schema-node->object-type-contract
-           (poo-flow-json-schema-normalization-schema normalization)
+          (yuanxu-json-schema-node->object-type-contract
+           (yuanxu-json-schema-normalization-schema normalization)
            owner
            object-kind
            object-key))
          (diagnostics
-          (poo-flow-contract-project-list
-           poo-flow-json-schema-diagnostic->observability
-           (poo-flow-json-schema-normalization-diagnostics normalization)))
+          (yuanxu-contract-project-list
+           yuanxu-json-schema-diagnostic->observability
+           (yuanxu-json-schema-normalization-diagnostics normalization)))
          (type-facts
-          (poo-flow-native-contract->type-facts object-contract))
+          (yuanxu-native-contract->type-facts object-contract))
          (lean-fact-contracts
-          (poo-flow-native-contract->lean-fact-contracts object-contract)))
-    (make-poo-flow-json-schema-contract-artifact
+          (yuanxu-native-contract->lean-fact-contracts object-contract)))
+    (make-yuanxu-json-schema-contract-artifact
      'json-schema-contract-artifact
-     "poo-flow-json-schema-contract-artifact/v1"
+     "yuanxu-json-schema-contract-artifact/v1"
      source-ref
      normalization
      object-contract

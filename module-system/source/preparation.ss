@@ -3,34 +3,36 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :clan/poo/object .o .ref)
-        (only-in :core/module-system/source/role-forms module-publication-role-imports)
+        (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
-        (only-in :core/module-system/source/declaration include-module-body)
-        (only-in :core/module-system/source/config-prelude)
-        (only-in :gerbil/expander core-read-module/sexp core-library-package-plist syntax->datum)
-        :core/module-system/source/objects
-        :core/module-system/source/admission)
-(export poo-flow-prepare-module-publication poo-flow-write-module-publication
-        poo-flow-prepare-module-build-source poo-flow-prepare-module-tool-source
-        poo-flow-prepare-module-retained-source
-        poo-flow-prepare-module-private-source)
+        (only-in :yuanxu/module-system/source/declaration include-module-body)
+        (only-in :yuanxu/module-system/source/config-prelude)
+        (only-in :gerbil/expander core-read-module/sexp core-library-package-plist syntax->datum
+                 module-context? module-context-path prelude-context? prelude-context-path)
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/admission)
+(export yuanxu-prepare-module-publication yuanxu-write-module-publication
+        yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
+        yuanxu-prepare-module-retained-source
+        yuanxu-prepare-module-private-source)
 (def (source-metadata source key)
-  (let (entry (assq key (poo-flow-module-source-ref-metadata source)))
+  (let (entry (assq key (yuanxu-module-source-ref-metadata source)))
     (and entry (cdr entry))))
 (def (module-compiler-identity path)
   (module-source-observe read-module-compiler-identity path))
-(def (read-module-compiler-identity path (header-free-text #f))
+(def (read-module-compiler-identity path (text #f))
   ;; Native package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
     ((current-module-source-observer) 'compiler-identity-reads 1))
   (let-values (((prelude identity namespace body) (core-read-module/sexp path)))
-    (when (and header-free-text
-               (not (equal? (syntax->datum body)
-                            (call-with-input-string header-free-text read-all))))
-      (error "compiler tool inclusion requires a header-free source body" path))
     ;; Do not return the read syntax. Interpreted slot closures retain their
     ;; lexical frame, including unused sibling bindings, until their owner dies.
-    (list prelude identity namespace)))
+    (list (cond ((module-context? prelude) (module-context-path prelude))
+                ((prelude-context? prelude) (prelude-context-path prelude))
+                (else prelude))
+          identity namespace
+          (or (not text)
+              (equal? (syntax->datum body) (call-with-input-string text read-all))))))
 (def (package-source-snapshot path)
   ;; Observe the native reader's ancestor lookup, not a second package resolver.
   ;; Negative entries matter when a closer gerbil.pkg is added later.
@@ -76,15 +78,15 @@
     (let (binding (cadr (car declarations)))
       (if (pair? binding) (car binding) binding))))
 
-(def (poo-flow-prepare-module-publication source-value
-                                          style-policy: (policy poo-flow-default-module-style-policy)
+(def (yuanxu-prepare-module-publication source-value
+                                          style-policy: (policy yuanxu-default-module-style-policy)
                                           admit-context: (context-current! void))
-  (unless (and (poo-flow-module-source-ref? source-value)
-               (eq? (poo-flow-module-source-ref-kind source-value) 'local))
+  (unless (and (yuanxu-module-source-ref? source-value)
+               (eq? (yuanxu-module-source-ref-kind source-value) 'local))
     (error "publication preparation requires a selected local SourceRef" source-value))
   (let* ((owner (source-metadata source-value 'module-id))
          (root (or (source-metadata source-value 'module-root) (source-metadata source-value 'module-tree-root)))
-         (path (poo-flow-module-source-ref-value source-value))
+         (path (yuanxu-module-source-ref-value source-value))
          (texts (make-hash-table)))
     (unless (and (symbol? owner) (string? root) (string? path)
                  (string=? (path-expand path) (path-expand "interface.ss" root)))
@@ -119,7 +121,7 @@
                              (if (hash-key? texts file)
                                (equal? (hash-ref texts file) (module-source-read file))
                                (not (module-source-type file)))))
-                         poo-flow-module-allowed-entrypoint-roles))
+                         yuanxu-module-allowed-entrypoint-roles))
             (error "stale prepared Module publication" owner path))
           (context-current!))
         ;; The interpreter redirects original sources through its admitted reader;
@@ -134,12 +136,12 @@
         (def (publication-forms imports)
           (append
            (if shared-prelude?
-             '(prelude: :core/module-system/source/config-prelude)
+             '(prelude: :yuanxu/module-system/source/config-prelude)
              (list 'prelude: (car compiler-info)))
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
-                          (only-in :core/module-system/source/declaration .def define-module-build-binding)
+                          (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
                           ,@imports))
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
@@ -151,7 +153,7 @@
                     (map (lambda (role)
                            (let (file (path-expand (string-append (symbol->string role) ".ss") root))
                              (cons file (and (hash-key? texts file) (hash-ref texts file)))))
-                         poo-flow-module-allowed-entrypoint-roles))
+                         yuanxu-module-allowed-entrypoint-roles))
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             build-source: (let (file (path-expand "build.ss" root))
                             (and (hash-key? texts file) file))
@@ -161,7 +163,7 @@
                            (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
             compiler-forms: (publication-forms
                              (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles))))))
-(def (poo-flow-write-module-publication prepared output)
+(def (yuanxu-write-module-publication prepared output)
   ;; Materialization belongs to source preparation, never to the syntax expander.
   (unless (string=? (path-strip-directory output) "interface.ss")
     (error "prepared compiler entry must retain the interface.ss basename" output))
@@ -172,7 +174,7 @@
   ;; bare config.ss into a compiler tree where its role prelude would be lost.
   (let (roles (map (lambda (path)
                     (cons (path-expand (path-strip-directory path) (path-directory output))
-                          (poo-flow-prepare-module-build-source path (.ref prepared 'admit-current))))
+                          (yuanxu-prepare-module-build-source path (.ref prepared 'admit-current))))
                   (.ref prepared 'role-sources)))
     (for-each (lambda (role)
                 (when (module-source-type (car role))
@@ -194,21 +196,21 @@
 ;;; Native reader projection, not an evaluator or a compiler dependency scanner.
 ;;; A relocatable build tree retains native identity/namespace and the reader's
 ;;; headers. Internal native inclusion retains the original source locations.
-(def (poo-flow-prepare-module-build-source source-path context-current!)
+(def (yuanxu-prepare-module-build-source source-path context-current!)
   (prepare-build-source source-path context-current! #f))
 ;; Only SDK-observed tool sources use native inclusion. In particular the
 ;; declaration compiler cannot import its own include-module-body binding.
-(def (poo-flow-prepare-module-tool-source source-path context-current!)
+(def (yuanxu-prepare-module-tool-source source-path context-current!)
   (prepare-build-source source-path context-current! #t))
 ;; Explicit non-Module roots keep their ordinary Scheme body and exports.
 ;; They do not acquire Module role imports or Config semantics by basename.
-(def (poo-flow-prepare-module-retained-source source-path context-current!)
+(def (yuanxu-prepare-module-retained-source source-path context-current!)
   (prepare-build-source source-path context-current! #t))
 (def (prepare-build-source source-path context-current! tool?)
   (context-current!)
   (let* ((text (module-source-read source-path))
          (packages (package-source-snapshot source-path)))
-    (let-values (((prelude id namespace)
+    (let-values (((prelude id namespace header-free?)
                   (apply values (read-module-compiler-identity source-path (and tool? text)))))
       ;; Header extraction owns and releases the temporary syntax frame. The
       ;; persistent POO projection retains only metadata and guarded source bytes;
@@ -229,26 +231,26 @@
           (append (cond
                     ((and (not tool?) (string=? (path-strip-directory source-path) "config.ss")
                           (or (not prelude) (eq? (syntax->datum prelude) ':gerbil/core)))
-                     '(prelude: :core/module-system/source/config-prelude))
+                     '(prelude: :yuanxu/module-system/source/config-prelude))
                     (prelude (list 'prelude: prelude))
                     (else '()))
                   (list 'package: (path-strip-trailing-directory-separator
                                    (path-directory (symbol->string id)))
                         'namespace: namespace)
                   (cond
-                    (tool? (list `(include ,source-path)))
+                    ((and tool? header-free?) (list `(include ,source-path)))
                     ((string=? (path-strip-directory source-path) "config.ss")
-                    (list '(import (only-in :core/module-system/source/declaration
+                    (list '(import (only-in :yuanxu/module-system/source/declaration
                                             include-module-body export-role-config))
                           `(include-module-body ,source-path)
                           '(export-role-config Config)))
                     (else
-                     (list '(import (only-in :core/module-system/source/declaration include-module-body))
+                     (list '(import (only-in :yuanxu/module-system/bootstrap/body-inclusion include-module-body))
                            `(include-module-body ,source-path)))))))))
 
 ;;; The native expander supplies actual imports. Only owner-confined regular
 ;;; sources may join the build declaration closure; no directory scan is needed.
-(def (poo-flow-prepare-module-private-source root source-path context-current!)
+(def (yuanxu-prepare-module-private-source root source-path context-current!)
   (let* ((base (path-normalize (path-expand root)))
          (prefix (string-append (path-strip-trailing-directory-separator base) "/"))
          (raw (path-expand source-path))
@@ -275,4 +277,4 @@
             (unless (eq? (module-source-type next) (if (pair? (cdr parts)) 'directory 'regular))
               (error "private source is missing, non-regular or a symlink" next))
             (when (pair? (cdr parts)) (walk next (cdr parts))))))))
-    (poo-flow-prepare-module-build-source path context-current!)))
+    (yuanxu-prepare-module-build-source path context-current!)))

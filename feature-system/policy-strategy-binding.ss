@@ -8,9 +8,9 @@
                  .ref
                  object<-alist
                  object?)
-        :core/composition/roles
-        :core/feature-system/domain-case-assembly
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/domain-case-assembly
+        :yuanxu/utilities/functional)
 
 (export +feature-policy-contribution-kind+
         +feature-strategy-contribution-kind+
@@ -25,10 +25,10 @@
         defpoo-feature-policy-strategy-binding)
 
 (def +feature-policy-contribution-kind+
-  'poo-flow.feature-policy-contribution.v1)
+  'yuanxu.feature-policy-contribution.v1)
 
 (def +feature-strategy-contribution-kind+
-  'poo-flow.feature-strategy-contribution.v1)
+  'yuanxu.feature-strategy-contribution.v1)
 
 ;; : (-> Alist POOObject)
 ;; : (-> Symbol Symbol Symbol POOObject PooFeatureAlgebraContribution)
@@ -85,7 +85,7 @@
 ;; : (-> Symbol Symbol Object Alist)
 (def (feature-binding-diagnostic code channel observed)
   (object<-alist
-   `((kind . poo-flow.feature-policy-strategy-binding-diagnostic.v1)
+   `((kind . yuanxu.feature-policy-strategy-binding-diagnostic.v1)
      (code . ,code)
      (channel . ,channel)
      (observed . ,observed))))
@@ -111,7 +111,7 @@
 ;; : (forall (a) (-> (-> a Boolean) (List a) (List a)))
 ;; : (-> Procedure [Object] [Object])
 (def (feature-valid-contributions contribution? contributions)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (contribution)
      (and (contribution? contribution) contribution))
    contributions))
@@ -119,7 +119,7 @@
 ;; : (-> Symbol Procedure [Object] [Alist])
 (def (feature-invalid-contribution-diagnostics
       channel contribution? contributions)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (contribution)
      (and (not (contribution? contribution))
           (feature-binding-diagnostic
@@ -133,7 +133,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (poo-flow-fold-left
+     (yuanxu-fold-left
       (lambda (contribution diagnostics)
         (let (contribution-id (.ref contribution 'contribution-id))
           (cond
@@ -156,7 +156,7 @@
 (def (feature-algebra-mismatch-diagnostics
       channel algebra-id contributions)
   (if algebra-id
-    (poo-flow-filter-map
+    (yuanxu-filter-map
      (lambda (contribution)
        (let (observed-algebra-id (.ref contribution 'algebra-id))
          (and (not (equal? algebra-id observed-algebra-id))
@@ -189,7 +189,7 @@
         #t
         (apply role-compose
                (reverse
-                (poo-flow-map
+                (yuanxu-map
                  (lambda (contribution) (.ref contribution 'prototype))
                  contributions)))
         '())))))
@@ -210,7 +210,7 @@
               (feature-binding-diagnostic
                (feature-binding-code channel 'missing-algebra)
                channel
-               (poo-flow-map
+               (yuanxu-map
                 (lambda (contribution)
                   (.ref contribution 'contribution-id))
                 valid-contributions)))
@@ -270,14 +270,14 @@
       (let* ((policy-binding
               (feature-one-algebra-binding
                'policy
-               'poo-flow.feature-policy-algebra-binding.v1
+               'yuanxu.feature-policy-algebra-binding.v1
                feature-policy-contribution?
                (.ref domain-case 'policy-algebra)
                (.ref assembly 'policy-contributions)))
              (strategy-binding
               (feature-one-algebra-binding
                'strategy
-               'poo-flow.feature-strategy-algebra-binding.v1
+               'yuanxu.feature-strategy-algebra-binding.v1
                feature-strategy-contribution?
                (.ref domain-case 'strategy-algebra)
                (.ref assembly 'strategy-contributions)))

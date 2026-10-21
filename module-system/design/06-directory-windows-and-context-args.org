@@ -58,7 +58,7 @@ Package dependency installation alone does not inject lexical identifiers.
 
 #+begin_src scheme
 ;; project/init.ss -- proposed multi-window grammar
-(poo-flow!
+(yuanxu!
   :load-modules "./modules"
   mode: explicit
   rename: modules
@@ -141,11 +141,11 @@ that current object roles already receive these names.
 
 ;; modules/checks/types.ss -- reuse the actual Script Contract
 (def ChecksScopeContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'checks/scope
     (lambda (scope)
       (and (object? scope) (.slot? scope 'Check)
-           (poo-flow-validation-evidence-accepted?
+           (yuanxu-validation-evidence-accepted?
              (.call (.get modules ops types ProcessScript)
                     .admit (.get scope Check) #f))))
     (lambda (_value _context) '())))
@@ -193,14 +193,14 @@ value transformation and no reason to use =>.+ for these two assignments.
 
 ;; scenarios/release/types.ss
 (def ReleaseScopeContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'release/scope
     (lambda (scope)
       (and (object? scope)
            (every (cut .slot? scope <>) '(Release preview run))
            (procedure? (.get scope preview))
            (procedure? (.get scope run))
-           (poo-flow-validation-evidence-accepted?
+           (yuanxu-validation-evidence-accepted?
              (.call (.get modules ops types ProcessScript)
                     .admit (.get scope Release) #f))))
     (lambda (_value _context) '())))
@@ -234,7 +234,7 @@ defaults remain inherited. There is no root reload from any module role.
 
 #+begin_src scheme
 ;; Target result shape, not the current Loader return API.
-(def System (poo-flow-load-modules "./init.ss"))
+(def System (yuanxu-load-modules "./init.ss"))
 (def ReleaseScope (.get System args scenarios release))
 
 ;; Pure inspection; no build command starts.

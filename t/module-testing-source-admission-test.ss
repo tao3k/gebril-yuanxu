@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/building/test-projection module-test-projection)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/source/admission current-module-source-observer
-                 poo-flow-default-module-style-policy)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+                 yuanxu-default-module-style-policy)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!))
 (export module-testing-source-admission-test)
 (.def Workspace
@@ -24,7 +24,7 @@
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
   (write-source (path-expand "types.ss" directory)
-    "(import (only-in :core/types poo-flow-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (poo-flow-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export ScopeContract)")
+    "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export ScopeContract)")
   (write-source (path-expand "private/helper.ss" directory)
     "(def greeting \"hello\") (export greeting)")
   (write-source (path-expand "objects.ss" directory)
@@ -43,14 +43,14 @@
                 "(error \"unrelated selected publication evaluated\")"))
     '("types.ss" "objects.ss" "config.ss" "interface.ss"))
   (write-source (path-expand "init.ss" root)
-    "(poo-flow! source: \"./modules\" mode: explicit (example) (poison))")
+    "(yuanxu! source: \"./modules\" mode: explicit (example) (poison))")
   directory)
 (def module-testing-source-admission-test
   (test-suite "Test source admission is distinct from complete Graph admission"
-    (poo-flow-test-fixture "one selected owner leaves the shared Graph and unrelated publication cold"
+    (yuanxu-test-fixture "one selected owner leaves the shared Graph and unrelated publication cold"
       (root Workspace)
       (def directory (prepare-source root))
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       (check-equal? (.get tests spec) (list (path-normalize (path-expand "tests/atomic-test.ss" directory))))
       (check-equal? (.ref/cached selection 'selected-graph) #f)
@@ -59,15 +59,15 @@
       (check-equal? (.ref/cached selection 'selected-graph) #f)
       ;; A deliberate configuration request still performs full admission.
       (check-exception (.get tests selected-graph) error?))
-    (poo-flow-test-fixture "actual private dependency edits invalidate test source admission"
+    (yuanxu-test-fixture "actual private dependency edits invalidate test source admission"
       (root Workspace)
       (def directory (prepare-source root))
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       (write-source (path-expand "private/helper.ss" directory)
         "(def greeting \"changed\") (export greeting)")
       (check-exception ((.get tests admit-current)) error?))
-    (poo-flow-test-fixture "reused native topology still projects private inputs into each publication"
+    (yuanxu-test-fixture "reused native topology still projects private inputs into each publication"
       (root Workspace)
       (def directory (prepare-source root))
       (def helper (path-normalize (path-expand "private/helper.ss" directory)))
@@ -81,7 +81,7 @@
             (write '(def Scope (.o message: greeting)) port)
             (write '(export Scope) port))))
       ;; Finish writing the fixture before recording the selected source cut.
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def source (.call (.get selection context) locate 'example))
       (def reader (module-publication-reader))
       (def preparation-requests 0)
@@ -116,15 +116,15 @@
       (write-source helper "(def greeting \"changed\") (export greeting)")
       (check-exception (.call reader admit-current) error?)
       (check-exception (read!) error?))
-    (poo-flow-test-fixture "retained syntax does not cache mutable authoring policy admission"
+    (yuanxu-test-fixture "retained syntax does not cache mutable authoring policy admission"
       (root Workspace)
       (prepare-source root)
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def source (.call (.get selection context) locate 'example))
       (def reader (module-publication-reader))
       (check-exception (.call reader preparation source) error?)
       (.call reader read source)
-      (def policy poo-flow-default-module-style-policy)
+      (def policy yuanxu-default-module-style-policy)
       (def original (.get policy validate))
       (def refused 0)
       (dynamic-wind
@@ -137,14 +137,14 @@
           (check-exception (.call reader read source) error?)
           (check-equal? refused 2))
         (lambda () (.put! policy 'validate original))))
-    (poo-flow-test-fixture "required dependency policy remains a Graph obligation"
+    (yuanxu-test-fixture "required dependency policy remains a Graph obligation"
       (root Workspace)
       (prepare-source root "(.o Missing: (.o module-id: 'absent contract: ScopeContract))")
       ;; Remove the sibling sensitivity probe: the Graph must now fail solely
       ;; because example's own required Module is unavailable.
       (write-source (path-expand "init.ss" root)
-        "(poo-flow! source: \"./modules\" mode: explicit (example))")
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       ((.get tests admit-current))
       (check-equal? (.ref/cached selection 'selected-graph) #f)
@@ -152,11 +152,11 @@
         (lambda (exception)
           (and (Error? exception)
                (string=? (Error-message exception) "required module not explicitly declared")))))
-    (poo-flow-test-fixture "explicit Graph access returns the original selection object"
+    (yuanxu-test-fixture "explicit Graph access returns the original selection object"
       (root Workspace)
       (prepare-source root)
       (write-source (path-expand "init.ss" root)
-        "(poo-flow! source: \"./modules\" mode: explicit (example))")
-      (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       (check-equal? (eq? (.get tests selected-graph) (.get selection selected-graph)) #t))))

@@ -3,8 +3,8 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
-        (only-in :core/observability/testing-script testing-script-for-source)
-        (only-in :core/module-system/building/test-projection module-test-file-source))
+        (only-in :yuanxu/observability/testing-script testing-script-for-source)
+        (only-in :yuanxu/module-system/building/test-projection module-test-file-source))
 (export aws-startup-cost-test)
 (def aws-startup-cost-test
   (test-suite "Cold source import controls"
@@ -17,9 +17,9 @@
               (lambda (port)
                 (display "(import :std/test" port)
                 (when guarded?
-                  (display " (only-in :core/observability/testing-case poo-flow-test-case)" port))
+                  (display " (only-in :yuanxu/observability/testing-case yuanxu-test-case)" port))
                 (display ")\n(export probe)\n(def probe (test-suite \"startup\" (" port)
-                (display (if guarded? "poo-flow-test-case" "test-case") port)
+                (display (if guarded? "yuanxu-test-case" "test-case") port)
                 (display " \"check\" (check-equal? 1 1) (check-equal? (##get-max-heap) 1073741824) (check-equal? (car (string-split (getenv \"PATH\") #\\:)) (string-append (getenv \"GERBIL_PATH\") \"/bin\")))))\n" port)))
             (def script (testing-script-for-source (module-test-file-source (list path))))
             (def actual
@@ -51,13 +51,13 @@
                           (for-each
                             (lambda (module)
                               (measure module (lambda () (eval-syntax `(import ,module)))))
-                            '(:gerbil/core :std/test :clan/poo/object :clan/poo/mop :core/types
-                              :core/observability/types :core/observability/funcs
-                              :core/observability/slot-debug :core/observability/debug
-                              :core/observability/testing-case
-                              :core/modules/json-schema/contracts :core/scenarios/aws/types
-                              :core/module-system/selection/init-syntax :core/init
-                              :core/module-system/source/admission))
+                            '(:gerbil/core :std/test :clan/poo/object :clan/poo/mop :yuanxu/types
+                              :yuanxu/observability/types :yuanxu/observability/funcs
+                              :yuanxu/observability/slot-debug :yuanxu/observability/debug
+                              :yuanxu/observability/testing-case
+                              :yuanxu/modules/json-schema/contracts :yuanxu/scenarios/aws/types
+                              :yuanxu/module-system/selection/init-syntax :yuanxu/init
+                              :yuanxu/module-system/source/admission))
                           (eval-syntax
                             '(def source-counts (make-hash-table)))
                           (eval-syntax '(def guard-origins '()))
@@ -125,9 +125,9 @@
                           (check-equal? (eval-syntax '(.get Profile instance_type)) "t3.medium")
                           (measure 'case-expand
                             (lambda () (core-expand
-                              '(poo-flow-test-case "guarded" (check-equal? 1 1)))))
+                              '(yuanxu-test-case "guarded" (check-equal? 1 1)))))
                           (measure 'cached-import
-                            (lambda () (eval-syntax '(import :core/observability/testing-case))))))))))))
+                            (lambda () (eval-syntax '(import :yuanxu/observability/testing-case))))))))))))
           (def imports
             (.call (testing-script-for-source (module-test-file-source (list import-probe))) .run))
           (display (.get imports output))

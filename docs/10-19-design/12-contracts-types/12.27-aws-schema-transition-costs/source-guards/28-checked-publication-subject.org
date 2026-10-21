@@ -30,7 +30,7 @@ source-guard fusion or a claim that validation callbacks are effect-free.
            ModulePublicationContract publication context-value))
        (checked (.ref evidence 'candidate))
        (owner (assq 'module-id
-                    (poo-flow-module-source-ref-metadata source))))
+                    (yuanxu-module-source-ref-metadata source))))
   (unless (and (eq? expected-id (.ref checked 'identity))
                (or (not owner) (eq? expected-id (cdr owner))))
     (error "publication source owner mismatch" expected-id source))
@@ -104,7 +104,7 @@ authorized by a normalized candidate or an accepted evidence boolean.
 checks intact; =SameAdmittedSubject= must find a counterexample. This adds an
 eleventh expected outcome to the existing callback/invalidation/cleanup family.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.checked_subject_guard_covers]] transports support only along
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.checked_subject_guard_covers]] transports support only along
 the exact admitted reference identity. Complete support and fresh revisions
 remain premises; structural object equality, a passed shape check or a Contract
 name do not establish them. The model does not prove Scheme normalization,

@@ -1,10 +1,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test (only-in :clan/poo/object .get .ref/cached .call .slot? .cc)
-        :core/object-syntax/path-slots
-        :core/modules/funflow/objects
+        :yuanxu/object-syntax/path-slots
+        :yuanxu/modules/funflow/objects
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export funflow-job-test)
 (.def (Deployment @ Job.)
   name: 'deployment
@@ -16,10 +16,10 @@
   selected: '(deploy))
 (def funflow-job-test
   (test-suite "Core Funflow declarative Job to Ops"
-    (poo-flow-test-case "Graph projection is inert and orders the selected dependency closure"
+    (yuanxu-test-case "Graph projection is inert and orders the selected dependency closure"
       (check-equal? (.get Deployment graph order) '(init validate deploy))
       (check-equal? (.ref/cached (.get Deployment tasks) 'unused) #f))
-    (poo-flow-test-case "parent Graph cached before child refinement uses final tasks"
+    (yuanxu-test-case "parent Graph cached before child refinement uses final tasks"
       (def parent (.get Deployment graph))
       (.def (Release @ Deployment) tasks.deploy: =>.+ (.o command: '("printf" "release")))
       (call-with-temporary-directory "funflow-job"
@@ -29,7 +29,7 @@
           (check-equal? (.get receipt steps deploy output) "release")
           (check-equal? (.get Deployment tasks deploy command) '("printf" "deployed"))
           (check-equal? (.ref/cached (.get Release tasks) 'unused) #f))))
-    (poo-flow-test-case "failed validation prevents deployment"
+    (yuanxu-test-case "failed validation prevents deployment"
       (call-with-temporary-directory "funflow-failure"
         (lambda (workspace)
           (def marker (path-expand "deployed" workspace))
@@ -38,7 +38,7 @@
             tasks.deploy: =>.+ (.o command: (list "touch" marker)))
           (check-exception (.call Rejected .run workspace) error?)
           (check-equal? (file-exists? marker) #f))))
-    (poo-flow-test-case "cycle, missing dependency and invalid command fail before effects"
+    (yuanxu-test-case "cycle, missing dependency and invalid command fail before effects"
       (.def (Cycle @ Deployment) tasks.init: =>.+ (.o needs: '(deploy)))
       (.def (Missing @ Deployment) tasks.deploy: =>.+ (.o needs: '(absent)))
       (.def (Invalid @ Deployment) tasks.deploy: =>.+ (.o command: '("printf" 1)))
@@ -47,7 +47,7 @@
         tasks.deploy: =>.+ (.cc (.get Deployment tasks deploy) '.run #f))
       (for-each (lambda (job) (check-exception (.call job .run ".") error?))
                 (list Cycle Missing Invalid Unchecked NotRunnable)))
-    (poo-flow-test-case "finalizer runs after attempted deployment, including process failure"
+    (yuanxu-test-case "finalizer runs after attempted deployment, including process failure"
       (.def (Recovering @ Deployment)
         finalizers: '(cleanup)
         tasks: =>.+

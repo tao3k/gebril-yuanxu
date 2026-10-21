@@ -6,11 +6,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/source/link poo-flow-load-modules)
-        (only-in :core/module-system/source/admission module-source-read module-source-type)
-        (only-in :core/module-system/source/objects
-          make-poo-flow-module-source-ref poo-flow-module-source-ref-value))
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-type)
+        (only-in :yuanxu/module-system/source/objects
+          make-yuanxu-module-source-ref yuanxu-module-source-ref-value))
 (export contribution-deep-publication-isolation-test test-cleanup!)
 (def completed 0)
 (def (done!) (set! completed (+ completed 1)))
@@ -25,11 +25,11 @@
     (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
            (delete-directory path)) (delete-file path)))
 (def TypesSource
-  "(import :clan/poo/object (only-in :core/types poo-flow-predicate-contract poo-flow-predicate-type PooFlowContract. poo-flow-classification-evidence))
-(def ScopeContract (poo-flow-predicate-contract 'fixture/scope object? (lambda (_v _c) '())))
-(def ObjectValue (poo-flow-predicate-type 'fixture/object object?))
+  "(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
+(def ScopeContract (yuanxu-predicate-contract 'fixture/scope object? (lambda (_v _c) '())))
+(def ObjectValue (yuanxu-predicate-type 'fixture/object object?))
 (def ApplicationContract
- (.cc PooFlowContract. identity: 'fixture/application value-contract: ObjectValue
+ (.cc YuanxuContract. identity: 'fixture/application value-contract: ObjectValue
   .contribution-obligations:
   (lambda (candidate rows _context)
    (def actual (.get candidate config postgresql settings port))
@@ -43,7 +43,7 @@
    (def issues (cond ((not (= server client)) (list (.o kind: 'connection-mismatch)))
                     ((not (and (= server (.get candidate plan server)) (= client (.get candidate plan client))))
                      (list (.o kind: 'stale-parent-plan))) (else '())))
-   (poo-flow-classification-evidence 'fixture/application candidate (null? issues) issues context))))
+   (yuanxu-classification-evidence 'fixture/application candidate (null? issues) issues context))))
 (export ScopeContract ApplicationContract)")
 (def ApplicationObjects
   "(import :clan/poo/object \"./types.ss\")
@@ -83,12 +83,12 @@
      '("application" "operations" "security") ports)
     (write-source (path-expand "modules/fixture/unused/interface.ss" root) "(((not readable")
     (write-source (path-expand "init.ss" root)
-      "(poo-flow! mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
+      "(yuanxu! mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
    (lambda () (consume root)) (lambda () (remove-tree root))))
 (def (error-message=? expected)
   (lambda (failure) (and (Error? failure) (equal? (Error-message failure) expected))))
 (def (platform root)
-  (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+  (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
   (def publication
     (.call AdmissionPublication. .for-export selection 'fixture/application 'Scenario))
   (.cc (.o) selection: selection publication: publication
@@ -140,8 +140,8 @@
     (refused view (.get view parent) "substituted contribution origin")
     (.put! context 'contributions (map values rows))
     (def original (.get (car rows) origin))
-    (def forged (.cc original source: (make-poo-flow-module-source-ref 'local
-      (poo-flow-module-source-ref-value (.get original source)) '())))
+    (def forged (.cc original source: (make-yuanxu-module-source-ref 'local
+      (yuanxu-module-source-ref-value (.get original source)) '())))
     (.put! context 'contributions (cons (.cc (car rows) origin: forged) (cdr rows)))
     (refused view (.get view parent) "substituted contribution origin")
     (.put! context 'contributions (map values rows))
@@ -178,7 +178,7 @@
     '(5432 5433 5440)))
   (test-case "incoming requirements without a domain protocol refuse at for-export"
    (with-module-tree (lambda (root)
-    (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+    (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/application))
     (.put! (.get record scope types Admission) '.contribution-obligations #f)
     (check-exception
@@ -187,7 +187,7 @@
     (done!))))
   (test-case "unknown selected admission is not silently dropped"
    (with-module-tree (lambda (root)
-    (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+    (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/operations))
     (.put! (.get record publication core contributions database-port) 'target-admission 'Missing)
     (check-exception
@@ -197,7 +197,7 @@
     (done!))))
   (test-case "inherited domain obligations are retained beside contributions"
    (with-module-tree (lambda (root)
-    (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+    (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/application))
     (.put! (.get record scope types Admission) '.obligations
       (lambda (_candidate _context) (list (.o kind: 'domain-obligation-refused))))
@@ -212,8 +212,8 @@
     (done!))))
   (test-case "empty contributions preserve the published Contract and still fence later routes"
    (with-module-tree (lambda (root)
-    (write-source (path-expand "init.ss" root) "(poo-flow! mode: explicit :fixture (application))")
-    (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+    (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit :fixture (application))")
+    (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/application))
     (def original (.get record scope types Admission))
     (.put! original '.contribution-obligations #f)

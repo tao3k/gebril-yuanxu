@@ -24,7 +24,7 @@ They describe parsed runtime values. The public config can still contain a strin
 
 .data/gerbil-poo/type.ss uses native define-type for String, Bytes and parameterized
 BytesN., including .element?, conversion and marshaling slots. Core types.ss adds
-PooFlowPredicateType., Contract descriptors and evidence-bearing .admit. Reuse
+YuanxuPredicateType., Contract descriptors and evidence-bearing .admit. Reuse
 those layers rather than introducing another static type checker or record DSL.
 Gerbil typed fields/annotations do not establish dependent/static correctness of
 an arbitrary configuration; domain admission is still an explicit runtime step.
@@ -68,7 +68,7 @@ library code uses existing syntax and protocol functions:
   .element?: ipv4-text?)
 
 (def (value-type-contract identity type)
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     identity
     (cut element? type <>)
     (lambda (candidate context) '())))

@@ -53,7 +53,7 @@ and Contract helpers. These are platform/compiler imports, not repeated user imp
 ;; types.ss — Type and value Contract, no duplicate Schema interpreter.
 (def (port? value)
   (and (exact-integer? value) (<= 1 value 65535)))
-(def Port (poo-flow-predicate-type 'postgresql/port port?))
+(def Port (yuanxu-predicate-type 'postgresql/port port?))
 (def PostgreSQLContract
   (.cc ObjectContract. responsibilities:
     (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port)))))
@@ -72,7 +72,7 @@ checks, not substitutes for the configuration Contracts above/below.
 
 #+begin_src scheme
 (def (scope-shape identity names)
-  (poo-flow-predicate-contract identity
+  (yuanxu-predicate-contract identity
     (lambda (scope)
       (and (object? scope)
            (every (lambda (name) (.slot? scope name)) names)))
@@ -221,14 +221,14 @@ connection policy. Do not silently apply local equality to an external endpoint.
                 database: String user: String))))
     local-application-obligations))
 
-(define-type (ApplicationAdmissionContract. @ PooFlowContract.
+(define-type (ApplicationAdmissionContract. @ YuanxuContract.
               contributions requirement-dispatch requirement-methods requirement-port-type)
   identity: 'application/local-gitea
   contributions: #f
   requirement-dispatch: #f
   .classify:
   (lambda (candidate context)
-    (poo-flow-classification-evidence identity candidate #t '() context))
+    (yuanxu-classification-evidence identity candidate #t '() context))
   .obligations:
   (lambda (candidate _context)
     (collected-port-obligations @ candidate _context)))
@@ -314,7 +314,7 @@ The platform's selected-publication path uses its actual descriptor/context:
 ;; Production is declared as above after obtaining ApplicationScenario.
 (def descriptor (.get publication contract))
 (def evidence (.call descriptor .admit Production (.get publication context)))
-(when (poo-flow-validation-evidence-accepted? evidence)
+(when (yuanxu-validation-evidence-accepted? evidence)
   (.get (.get evidence candidate) plan))
 #+end_src
 
@@ -438,7 +438,7 @@ The shared scope shape Contract is concrete:
 (def ContributionRouteContract
   (.cc ObjectContract. responsibilities:
     (.o target-owner: Symbol target-admission: Symbol
-        export-path: (poo-flow-predicate-type 'module/export-path symbol-path?))))
+        export-path: (yuanxu-predicate-type 'module/export-path symbol-path?))))
 #+end_src
 
 core.contributions is a PROPOSED ordinary POO publication field, not new syntax.
@@ -744,11 +744,11 @@ owner-name check. The field path is fixed for this bounded policy:
     (error "required contribution emitted no constraints"))
   (def Result
     (.cc ObjectContract. responsibilities:
-      (.o path: (poo-flow-predicate-type 'postgresql/requirement-path
+      (.o path: (yuanxu-predicate-type 'postgresql/requirement-path
                   (lambda (path)
                     (equal? path '(config postgresql settings port))))
           value: Port
-          origin: (poo-flow-predicate-type 'module/selected-origin
+          origin: (yuanxu-predicate-type 'module/selected-origin
                     (lambda (value) (eq? value expected-origin))))))
   (map (lambda (value) (validate Result value)) projected))
 #+end_src
@@ -924,7 +924,7 @@ AdmissionPublication. slots remain unchanged):
     (else publication)))
 #+end_src
 
-The existing publisher calls poo-flow-contract-admit on this bound descriptor and
+The existing publisher calls yuanxu-contract-admit on this bound descriptor and
 uses its evidence.candidate, which may be a normalized object, as the checked
 preview subject. It never presents the unvalidated caller value as admitted.
 Contribution Context guards run before admission and at checked publication;

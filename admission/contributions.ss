@@ -4,13 +4,13 @@
 (import :clan/poo/object
         (only-in :clan/poo/mop .defgeneric validate)
         (only-in :std/list/list every append-map)
-        (only-in :core/module-system/source/publication ContributionRouteContract)
-        (only-in :core/types poo-flow-context-contract-obligations)
-        (only-in :core/module-system/source/admission call-with-module-source-read-cache))
-(export bind-publication-contributions poo-flow-contract-contribution-obligations)
+        (only-in :yuanxu/module-system/source/publication ContributionRouteContract)
+        (only-in :yuanxu/types yuanxu-context-contract-obligations)
+        (only-in :yuanxu/module-system/source/admission call-with-module-source-read-cache))
+(export bind-publication-contributions yuanxu-contract-contribution-obligations)
 
 ;; The domain owns interpretation; the platform owns completeness/provenance.
-(.defgeneric (poo-flow-contract-contribution-obligations contract candidate rows context)
+(.defgeneric (yuanxu-contract-contribution-obligations contract candidate rows context)
   slot: .contribution-obligations)
 
 (def indexes (make-hash-table-eq weak-keys: #t))
@@ -227,7 +227,7 @@
         (observations-current! observations)
         (if (or (.slot? base '.contract-obligations) (eq? actual descriptor)
                 (not (eq? (.get @ .contract-obligations) platform-obligations)))
-          (poo-flow-context-contract-obligations @ actual candidate)
+          (yuanxu-context-contract-obligations @ actual candidate)
           '()))
       .contract-obligations:
       (lambda (actual candidate)
@@ -241,9 +241,9 @@
         ;; the kernel. Do not repeat the identical source guard before return.
         (if (not (or inherited? contributed?)) '()
           (let* ((inherited (if inherited?
-                             (poo-flow-context-contract-obligations base actual candidate) '()))
+                             (yuanxu-context-contract-obligations base actual candidate) '()))
                  (contributed (if contributed?
-                                (poo-flow-contract-contribution-obligations
+                                (yuanxu-contract-contribution-obligations
                                   actual candidate (.get @ contributions) @) '())))
             (unless (list? contributed)
               (error "contribution obligations must return diagnostics"))

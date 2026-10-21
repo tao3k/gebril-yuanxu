@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.IssuerProjection
+import YuanxuProof.Admission.IssuerProjection
 
-open Lean PooFlowCoreProof.Admission PooFlowCoreProof.Admission.IssuerProjection
+open Lean YuanxuProof.Admission YuanxuProof.Admission.IssuerProjection
 
 def fieldNat (j : Json) (key : String) : Except String Nat := do
   (← j.getObjVal? key).getNat?

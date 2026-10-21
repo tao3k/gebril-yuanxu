@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/building/artifacts admit-build-artifacts!))
+        (only-in :yuanxu/module-system/building/artifacts admit-build-artifacts!))
 (export build-recovery-boundary-test)
 (def build-recovery-boundary-test
   (test-suite "Selected publication recovery boundary"

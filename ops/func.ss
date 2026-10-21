@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
         (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
@@ -12,7 +12,7 @@
 
 ;; Pure APIs: explicit inert inputs, no environment lookup, clock, files or spawn.
 (def (validate-script script)
-  (unless (poo-flow-validation-evidence-accepted?
+  (unless (yuanxu-validation-evidence-accepted?
             (.call ProcessScriptContract .admit script #f))
     (error "invalid Ops process declaration"))
   script)
@@ -31,7 +31,7 @@
 (def (merge-script-environment inherited overrides)
   (for-each
     (lambda (value)
-      (unless (poo-flow-validation-evidence-accepted?
+      (unless (yuanxu-validation-evidence-accepted?
                 (.call OpsEnvironmentContract .admit value #f))
         (error "invalid Ops environment")))
     (list inherited overrides))

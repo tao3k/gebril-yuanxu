@@ -3,12 +3,12 @@
 
 ;;; Local native publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
-        (only-in :core/modules/funflow/objects FunflowModule.)
-        (only-in :core/module-system/source/objects
-                 make-poo-flow-module-local-source poo-flow-module-source-ref?)
-        (only-in :core/modules/funflow/config-prototypes
+        (only-in :yuanxu/modules/funflow/objects FunflowModule.)
+        (only-in :yuanxu/module-system/source/objects
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
+        (only-in :yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
-        (only-in :core/scenarios/funflow/gerbil-scheme
+        (only-in :yuanxu/scenarios/funflow/gerbil-scheme
                  make-gerbil-scheme-ci-profile))
 (export FunflowProfiles. Funflow make-funflow-scope)
 
@@ -29,11 +29,11 @@
       (make-gerbil-scheme-ci-profile prototype-scope)))
 
 (def (make-funflow-scope source-handle)
-  (unless (poo-flow-module-source-ref? source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
     (error "Funflow local publication requires a SourceRef" source-handle))
   (.o (:: @ FunflowProfiles.)
     source: source-handle))
 
 (def Funflow
   (make-funflow-scope
-    (make-poo-flow-module-local-source "scenarios/funflow")))
+    (make-yuanxu-module-local-source "scenarios/funflow")))

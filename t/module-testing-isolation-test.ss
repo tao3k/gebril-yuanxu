@@ -1,15 +1,15 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real module qualifications share init selection, guards and Ops execution.
-(import :std/test :core/object-syntax/path-slots
+(import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in "../init.ss" init.Modules init.Scenarios init.tests)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-checkpoint
-                 poo-flow-test-observe)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture with-poo-flow-fixture))
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint
+                 yuanxu-test-observe)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture))
 (export module-testing-isolation-test)
 (.def Workspace
   .acquire: (lambda ()
@@ -29,9 +29,9 @@
                   (check-equal? (file-exists? root) #f)))))
 (def module-testing-isolation-test
   (test-suite "JsonSchema, Funflow and AWS init-owned qualifications"
-    (poo-flow-test-fixture "multi-owner selection and publication share one bounded Case"
+    (yuanxu-test-fixture "multi-owner selection and publication share one bounded Case"
       (workspace Workspace)
-      (poo-flow-test-checkpoint 'selection-start)
+      (yuanxu-test-checkpoint 'selection-start)
       (def json (.get init.Modules json-schema))
       (def flow (.get init.Modules funflow))
       (def aws (.get init.Scenarios aws))
@@ -77,7 +77,7 @@
       (let (dependencies (memq 'ops (.get selected selected-graph module-order)))
         (check-equal? (and dependencies (memq 'funflow (cdr dependencies)) #t) #t))
       (check-equal? (.ref/cached selected 'execution) #f)
-      (poo-flow-test-checkpoint 'selection-verified)
+      (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)
       (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
         (list json flow aws unused))
@@ -96,11 +96,11 @@
       (check-equal? (.get Run execution profile trace-enabled?) #t)
       (check-equal? (eq? (.get Run execution source) source) #t)
       (check-equal? (eq? (.get Run admit-current) guard) #t)
-      (poo-flow-test-checkpoint 'qualification-run)
+      (yuanxu-test-checkpoint 'qualification-run)
       (def receipt (.call Run .run))
-      (poo-flow-test-observe 'test-worker-milliseconds
+      (yuanxu-test-observe 'test-worker-milliseconds
         (inexact->exact (round (* 1000 (.get receipt seconds)))))
-      (poo-flow-test-checkpoint 'qualification-complete)
+      (yuanxu-test-checkpoint 'qualification-complete)
       (check-equal? (directory-files workspace) '("harness.log"))
       ;; Shared child runtime imports are dependencies, not sibling suite runs.
       (check-equal? (.ref/cached (.get init.Scenarios null tests) 'qualification) #f)
@@ -111,7 +111,7 @@
     (test-case "Ops failure unwinds the existing fixture"
       (def acquired #f)
       (check-exception
-        (with-poo-flow-fixture (workspace Workspace)
+        (with-yuanxu-fixture (workspace Workspace)
           (set! acquired workspace)
           (.def (Failed @ (.get init.Modules funflow tests qualification))
             execution.command: '("false")

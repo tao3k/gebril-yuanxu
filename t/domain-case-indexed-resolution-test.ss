@@ -5,17 +5,17 @@
 
 ;;; Boundary: semantic equivalence checks for indexed DomainCase resolution.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         (only-in :clan/poo/object .ref)
-        :core/feature-system/domain-case/contracts)
+        :yuanxu/feature-system/domain-case/contracts)
 
 (export domain-case-indexed-resolution-test)
 
 (def (slot-contract slot-id owner-id
                     (override-owner-ids '())
                     (witness-id #f))
-  (poo-flow-case-slot-contract
+  (yuanxu-case-slot-contract
    slot-id owner-id 'value 'required 'replace
    override-owner-ids witness-id (lambda (_value) #t)))
 
@@ -24,14 +24,14 @@
                       (refines-contract-ids '())
                       (witness-id #f)
                       (witness #f))
-  (poo-flow-case-method-contract
+  (yuanxu-case-method-contract
    contract-id contract-id subject-id kind 'Resolution
    'any 'receipt (lambda (_context) #t)
    refines-contract-ids witness-id witness))
 
 (def domain-case-indexed-resolution-test
   (test-suite "DomainCase indexed resolution semantics"
-    (poo-flow-test-case "slot replacement keeps the reference source order"
+    (yuanxu-test-case "slot replacement keeps the reference source order"
       (let* ((first-a (slot-contract 'a 'owner-a))
              (slot-b (slot-contract 'b 'owner-b))
              (replacement-a
@@ -43,7 +43,7 @@
                  => '(owner-b owner-a2))
           (check diagnostics => '()))))
 
-    (poo-flow-test-case "method replacement retains interleaved state contracts"
+    (yuanxu-test-case "method replacement retains interleaved state contracts"
       (let* ((base (method-contract 'run-base 'run))
              (state (method-contract 'state-ready 'ready 'state))
              (refined

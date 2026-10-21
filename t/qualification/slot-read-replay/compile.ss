@@ -15,8 +15,8 @@
   (cond
     ((string-prefix? "clan/poo/" name)
      (path-expand (string-append (substring name 9 (string-length name)) ".ss") native))
-    ((string-prefix? "core/" name)
-     (path-expand (string-append (substring name 5 (string-length name)) ".ss") core))
+    ((string-prefix? "yuanxu/" name)
+     (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") core))
     (else #f)))
 (def (source-import path (reload? #f))
   (def datum (syntax-e path))

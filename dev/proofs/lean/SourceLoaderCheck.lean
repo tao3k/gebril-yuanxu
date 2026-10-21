@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.SourceLoader
-open Lean PooFlowCoreProof.Admission.SourceLoader
+import YuanxuProof.Admission.SourceLoader
+open Lean YuanxuProof.Admission.SourceLoader
 
 def checkSourceLoader (j : Json) : Except String Unit := do
   let rows ← j.getArr?

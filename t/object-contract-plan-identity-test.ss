@@ -5,8 +5,8 @@
         (only-in :clan/poo/mop define-type validate Object Bool Function)
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/type List)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence))
 (export object-contract-plan-identity-test test-cleanup!)
 
 ;; A source-matched copy of modules/gitea/objects.ss's pure constructor only.
@@ -73,11 +73,11 @@
              (= port (.get plan postgresql port))
              (= (.get config gitea database port) (.get plan gitea database-port)))
       '() (list (.o kind: 'stale-parent-plan path: '(plan))))))
-(define-type (Admission @ PooFlowContract.)
+(define-type (Admission @ YuanxuContract.)
   .classify:
   (lambda (candidate context)
     (def issues (application-issues candidate))
-    (poo-flow-classification-evidence 'test/service-normalization candidate
+    (yuanxu-classification-evidence 'test/service-normalization candidate
       (null? issues) issues context)))
 (def (admit shape candidate)
   (.call (.cc Admission value-contract: shape) .admit candidate #f))
@@ -100,7 +100,7 @@
   (displayln "OBJECT-CONTRACT-PLAN-IDENTITY: 6 cases completed"))
 (def object-contract-plan-identity-test
   (test-suite "Canonical config and final plan normalization"
-    (poo-flow-test-case "repeated list normalization breaks final alias after parent cache"
+    (yuanxu-test-case "repeated list normalization breaks final alias after parent cache"
       (def base (parent))
       (def cached (.get base plan))
       (check-equal? (.get cached postgresql port) 5432)
@@ -115,7 +115,7 @@
       (check-equal? (.get checked plan postgresql port) 5433)
       (check-equal? (.get cached gitea database-port) 5432)
       (done!))
-    (poo-flow-test-case "canonical config preserves service alias after parent cache"
+    (yuanxu-test-case "canonical config preserves service alias after parent cache"
       (def base (parent))
       (def cached (.get base plan))
       (def child (release base))
@@ -128,7 +128,7 @@
       (check-equal? (.get checked plan postgresql port) 5433)
       (check-equal? (.get cached gitea database-port) 5432)
       (done!))
-    (poo-flow-test-case "explicit client mismatch survives normalization and refuses"
+    (yuanxu-test-case "explicit client mismatch survives normalization and refuses"
       (def base (parent))
       (def cached (.get base plan))
       (def child (release base))
@@ -140,7 +140,7 @@
       (check-equal? (.get (.get evidence candidate) config gitea database port) 5432)
       (check-equal? (.get cached postgresql port) 5432)
       (done!))
-    (poo-flow-test-case "normalizing config independently through plan breaks alias"
+    (yuanxu-test-case "normalizing config independently through plan breaks alias"
       (def base (policy-parent))
       (def cached (.get base plan))
       (def child (release base))
@@ -154,7 +154,7 @@
       (check-equal? (kinds evidence) '(stale-parent-plan))
       (check-equal? (.get cached postgresql port) 5432)
       (done!))
-    (poo-flow-test-case "single canonical normalization rebinds lexical plan automatically"
+    (yuanxu-test-case "single canonical normalization rebinds lexical plan automatically"
       (def base (policy-parent))
       (def cached (.get base plan))
       (def child (release base))
@@ -169,7 +169,7 @@
       (check-exception ((.get checked config port-policy) "5433") error?)
       (check-equal? (.get cached postgresql port) 5432)
       (done!))
-    (poo-flow-test-case "single normalization rejects cached parent and captured raw child plans"
+    (yuanxu-test-case "single normalization rejects cached parent and captured raw child plans"
       (def base (policy-parent))
       (def cached (.get base plan))
       (def child (release base))

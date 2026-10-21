@@ -6,9 +6,9 @@
 ;;; Boundary: construct values from prototypes owned by explicit Type declarations.
 (import (only-in :clan/poo/object .o .mix .ref)
         (only-in :clan/poo/mop validate)
-        :core/module-system/schema/relations
-        :core/module-system/types
-        (only-in :core/module-system/objects
+        :yuanxu/module-system/schema/relations
+        :yuanxu/module-system/types
+        (only-in :yuanxu/module-system/objects
                  SemanticModule. ModuleSourceRole. ModuleAuthoringProfile.
                  make-semantic-module))
 (export SemanticModule. ModuleSourceRole.
@@ -18,9 +18,9 @@
         InterfaceSourceRole. BuildSourceRole.
         SemanticModuleContract
         ModuleSourceRoleContract ModuleAuthoringProfileContract
-        poo-flow-semantic-module
+        yuanxu-semantic-module
         make-default-module-authoring-profile
-        poo-flow-default-module-authoring-profile)
+        yuanxu-default-module-authoring-profile)
 
 ;;; The executor stays a native POO prototype.  CLOS specializes it through
 ;;; the explicit prototype bridge rather than requiring a duplicate class.
@@ -28,7 +28,7 @@
   (.o identity: 'module-authoring/default-executor))
 
 ;; : (-> Symbol [Symbol] [Symbol] [Symbol] Symbol PooModuleSourceRole)
-(def (poo-flow-module-source-role identity-value recommended-forms-value
+(def (yuanxu-module-source-role identity-value recommended-forms-value
                                   forbidden-slot-verbs-value
                                   forbidden-root-forms-value freedom-value)
   (validate ModuleSourceRoleContract
@@ -49,31 +49,31 @@
 ;;; admit ordinary Scheme helpers; the Contract rejects only competing public
 ;;; semantics, leaving algorithms and domain behavior open to the module owner.
 (def TypesSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'types '(define-type def defstruct) '(add remove replace delete) '()
    'open-with-boundary-contracts))
 (def ObjectsSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'objects '(.def .o .defgeneric defmethod) '(add remove replace delete) '()
    'open-native-poo))
 (def FunsSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'funs '(def lambda) '(add remove replace delete) '()
    'open-pure-functions))
 (def ConfigSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'config '(.def .o user-composition use-module)
    '(add remove replace delete)
    '(stage graph loop prove handoff provider runtime)
    'composition-only))
 
 (def InterfaceSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'interface '(import export .def .o) '(add remove replace delete) '()
    'module-assembly))
 
 (def BuildSourceRole.
-  (poo-flow-module-source-role
+  (yuanxu-module-source-role
    'build '(import def .def .o) '(add remove replace delete) '()
    'build-publication-only))
 
@@ -91,18 +91,18 @@
         interface: InterfaceSourceRole.
         build: BuildSourceRole.))
 
-(def (poo-flow-default-module-authoring-profile)
+(def (yuanxu-default-module-authoring-profile)
   ;; Public constructor retains immediate validation and checked-value identity.
   (validate ModuleAuthoringProfileContract
     (make-default-module-authoring-profile)))
 
 ;; : (-> ModuleIdentity imports: ModuleImports capabilities: ModuleCapabilities profiles: ModuleProfiles authoring: ModuleAuthoringProfile SemanticModule)
-(def (poo-flow-semantic-module identity-value
-                             imports: (imports-value (poo-flow-empty-imports))
-                             capabilities: (capabilities-value (poo-flow-empty-capabilities))
-                             profiles: (profiles-value (poo-flow-empty-profiles))
+(def (yuanxu-semantic-module identity-value
+                             imports: (imports-value (yuanxu-empty-imports))
+                             capabilities: (capabilities-value (yuanxu-empty-capabilities))
+                             profiles: (profiles-value (yuanxu-empty-profiles))
                              authoring: (authoring-value
-                                         (poo-flow-default-module-authoring-profile)))
+                                         (yuanxu-default-module-authoring-profile)))
   (make-semantic-module identity-value authoring-value
                         imports: imports-value
                         capabilities: capabilities-value

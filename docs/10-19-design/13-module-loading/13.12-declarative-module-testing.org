@@ -16,13 +16,13 @@ projection selects observation at the process boundary; authors do not repeat
 that policy in every module:
 
 #+begin_src scheme
-(poo-flow-test-fixture "publication remains current"
+(yuanxu-test-fixture "publication remains current"
   (workspace Workspace)
-  (poo-flow-test-checkpoint 'before-publication)
+  (yuanxu-test-checkpoint 'before-publication)
   (check-equal? (file-exists? workspace) #t))
 #+end_src
 
-=poo-flow-test-checkpoint= uses the same memory policy and typed receipts as
+=yuanxu-test-checkpoint= uses the same memory policy and typed receipts as
 the Case watchdog. Phase elapsed time starts at Case entry; it excludes cold
 imports and macro expansion before the body. Counters are process-wide and
 last-GC live bytes do not establish exclusive ownership. The default policy
@@ -39,9 +39,9 @@ Profile declaration. The existing init-owned execution object controls whether
 observations are enabled:
 
 #+begin_src scheme
-(poo-flow-test-fixture "Schema transition preserves accepted values"
+(yuanxu-test-fixture "Schema transition preserves accepted values"
   (workspace Workspace)
-  (poo-flow-test-checkpoint 'selected)
+  (yuanxu-test-checkpoint 'selected)
   (check-equal? (file-exists? workspace) #t))
 
 ;; Execution-site policy; never repeated in module test declarations.
@@ -51,7 +51,7 @@ observations are enabled:
 (.call Observed .run)
 #+end_src
 
-This configuration uses the existing =:core/object-syntax/path-slots= authoring
+This configuration uses the existing =:yuanxu/object-syntax/path-slots= authoring
 bindings. The assignment replaces only the =emit?= leaf; its ancestors retain
 their inherited slots. It lowers to ordinary POO, without a wrapper:
 
@@ -274,7 +274,7 @@ failure from masquerading as coverage of the publication window.
 
 The counter, boundary refinement and refusal assertions occur once in that
 Core test body, rather than once per mutation or in module author code.
-=poo-flow-test-fixture= owns the workspace and cleanup. Existing Case
+=yuanxu-test-fixture= owns the workspace and cleanup. Existing Case
 Observability records phase names and scalar =publication-fault-boundary= /
 =publication-fault-refused= totals. It never performs injection; disabling
 observation does not disable the mutation or its correctness assertions.
@@ -297,7 +297,7 @@ hook, custom receipt protocol or runner. Its enclosing init-owned execution
 continues to check source validity and fixture cleanup in both observation modes.
 
 Here, excluding additional runtime Loader work does not mean bypassing
-=poo-flow-load-modules=. That existing entry already performs directory/init
+=yuanxu-load-modules=. That existing entry already performs directory/init
 selection, lazy module namespace resolution, selected Graph construction,
 publication linking and build/test projections; this test uses it. No separate
 runtime loading backend or reload protocol is introduced by this qualification.
@@ -355,7 +355,7 @@ AWS deployment or an end-to-end performance claim. No runtime Loader, runner,
 build sweep or additional cache was introduced.
 
 The unchanged TestingScript/Ops path passes the observation decision using the
-native =gerbil test -D poo-flow-module-test-observation= channel. The fixture
+native =gerbil test -D yuanxu-module-test-observation= channel. The fixture
 macro resolves the current Case policy at execution time. Only an enabled
 default Case forces the delayed module adapter import. This is a runtime
 feature lookup, not =cond-expand=: compiled fixture users must not freeze the
@@ -399,7 +399,7 @@ An advanced explicit =profile:= argument still overrides automatic default
 selection; it is not required for ordinary module tests.
 
 The Case owns a table of at most 64 symbolic work categories, scoped to one
-invocation. =poo-flow-test-observe= increments a natural total; an explicit zero
+invocation. =yuanxu-test-observe= increments a natural total; an explicit zero
 queries that total. Compound source keys contribute only their category: SDK
 contexts, syntax and candidate objects never become table keys or values.
 The existing =check-seconds= event is a duration, not a work count; the adapter
@@ -457,7 +457,7 @@ same name as the macro's generated local.
 
 * Implemented atomic slice
 
-=poo-flow!= now exports the lazy module namespace =init.modules=, the executable
+=yuanxu!= now exports the lazy module namespace =init.modules=, the executable
 POO value =init.tests=, =init.test-spec= and
 =init.test-current!= alongside
 the unchanged build exports. Both projections share one lazily acquired
@@ -477,7 +477,7 @@ is required in =interface.ss=. The two initial real suites live at
 
 #+begin_src scheme
 ;; init.ss remains the single selection declaration.
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   (json-schema) (funflow) (ops @ "./ops"))
 
 ;; Ordinary file lists, usable by the existing std/test harness.
@@ -519,7 +519,7 @@ process effects. No runner or generated dispatch script is introduced.
 
 * One testing execution boundary
 
-=:core/observability/testing-script= provides =TestingScript.=, an ordinary
+=:yuanxu/observability/testing-script= provides =TestingScript.=, an ordinary
 prototype inheriting =ProcessScript.=. Its only process implementation is the
 existing Ops =run-script= calling the original =gxtest=. It does not enumerate
 cases, interpret assertions, schedule tests or replace =std/test=.
@@ -618,12 +618,12 @@ demands that library. There is no implementation of a Core runtime Loader here.
 
 * Init export inventory and ownership
 
-The short =poo-flow!= declaration exports these exact bindings. Dotted names
+The short =yuanxu!= declaration exports these exact bindings. Dotted names
 are Scheme identifiers, not evidence that a separate =init= object tree exists.
 
 | Export | Role | Demand boundary |
 |--------+------+-----------------|
-| =poo-flow-module-init= | Declarative selection intent | Constructed at import |
+| =yuanxu-module-init= | Declarative selection intent | Constructed at import |
 | =init.build-spec= | Function accepting retained non-module specs | Resolves selection and prepares build projection |
 | =init.build-current!= | Build-input validity check | Requires prepared build projection |
 | =init.modules= | Read-only computed identifier returning the actual module namespace | First value/reflection demand prepares source metadata; leaf slots stay lazy |
@@ -661,7 +661,7 @@ leaf, instead of linking a business scope just to reach test metadata:
 (def (module-namespace) (.get (selected!) modules))
 #+end_src
 
-The existing =poo-flow!= hygienic expansion binds this accessor to a private
+The existing =yuanxu!= hygienic expansion binds this accessor to a private
 generated name and exports =init.modules= as a computed identifier. Its native
 Gerbil =identifier-rules= expansion calls that accessor on an identifier read.
 Core already uses this pattern for the Build role binding in
@@ -671,7 +671,7 @@ variable or another POO proxy. Returned root and leaf
 identity are shared with the existing namespace; owner =tests= is identical to the cached
 =init.tests .select= projection. Namespace branch caches and source observations
 remain owned by the existing resolver. Ordinary scope-only consumers of
-=poo-flow-load-modules= keep their existing resolver behavior; init explicitly
+=yuanxu-load-modules= keep their existing resolver behavior; init explicitly
 requests the module-object leaf view. Dependency linking still obtains the
 original admitted scope, not a scope with an injected =tests= field.
 
@@ -857,19 +857,19 @@ entrypoint, without increasing its heap or timeout allowances.
 
 * Hygienic fixture binding
 
-=:core/observability/testing-fixture= exports =poo-flow-test-fixture=,
+=:yuanxu/observability/testing-fixture= exports =yuanxu-test-fixture=,
 =with-poo-flow-fixture= and their functional implementation. A fixture is an
 ordinary POO object with =.acquire= and =.release= methods. The macro introduces
 only the requested local binding and expands to existing test-case observation
 plus a dynamic-wind resource boundary:
 
 #+begin_src scheme
-(poo-flow-test-fixture "module behavior" (workspace Workspace)
+(yuanxu-test-fixture "module behavior" (workspace Workspace)
   (check-equal? (.get (.call Release .run workspace) steps build output)
                 "release"))
 
 ;; Expansion, using hygienic library bindings:
-(poo-flow-test-case "module behavior"
+(yuanxu-test-case "module behavior"
   (call-with-poo-flow-fixture Workspace
     (lambda (workspace)
       (check-equal? (.get (.call Release .run workspace) steps build output)
@@ -895,7 +895,7 @@ source identity and positive/negative Feature decisions as build selection.
 
 The existing foundation is Gerbil =std/test= and =gxtest=,
 =core/observability/testing-case.ss=, its POO testing Profiles and watchdog,
-=Selected Graph=, Ops and Funflow. The existing =poo-flow-test-case/with= macro
+=Selected Graph=, Ops and Funflow. The existing =yuanxu-test-case/with= macro
 already hygienically wraps a native case with an inherited resource Profile.
 It does not replace assertions, discovery or the standard harness.
 
@@ -903,10 +903,10 @@ Actual current syntax, without a new assertion language:
 
 #+begin_src scheme
 (import :std/test :clan/poo/object
-        :core/observability/testing-case
-        (only-in :core/modules/funflow/objects Job. Task.))
+        :yuanxu/observability/testing-case
+        (only-in :yuanxu/modules/funflow/objects Job. Task.))
 
-(.def (AtomicBudget @ poo-flow-testing-case-profile-prototype)
+(.def (AtomicBudget @ yuanxu-testing-case-profile-prototype)
   max-duration-milliseconds: 1000)
 (.def (Upstream @ Job.)
   tasks: (.o build: (.o (:: @ Task.) command: (list "printf" "build")))
@@ -919,9 +919,9 @@ Actual current syntax, without a new assertion language:
 (export module-tests)
 (def module-tests
   (test-suite "module atomic behavior"
-    (poo-flow-test-case/with AtomicBudget "final receiver preserves user value"
+    (yuanxu-test-case/with AtomicBudget "final receiver preserves user value"
       (check-equal? (.get Release tasks build command) (list "printf" "release")))
-    (poo-flow-test-case "invalid argv is refused without executing a process"
+    (yuanxu-test-case "invalid argv is refused without executing a process"
       (check-exception (.get Invalid graph) error?))))
 #+end_src
 
@@ -939,7 +939,7 @@ it in each case. Test-only dependencies must not enter ordinary build/runtime
 selection. A disabled required dependency refuses the selected test with its
 module/Feature path; it is never silently re-enabled.
 
-Implemented and proposed =poo-flow!= exports:
+Implemented and proposed =yuanxu!= exports:
 
 - =init.test-spec=: implemented ordinary native file list; callers may append
   repository-maintained test files with Scheme's =append=.
@@ -966,7 +966,7 @@ conflict, disabled-dependency and failure-path controls.
 A stronger declaration macro is justified only where hygiene or phase semantics
 remove real repeated work. Its reviewed surface should bind a fresh fixture and
 module scope, generate stable test identities, guarantee cleanup and emit native
-=test-suite= / =poo-flow-test-case/with= forms. Assertions remain =check-equal?=,
+=test-suite= / =yuanxu-test-case/with= forms. Assertions remain =check-equal?=,
 =check-exception= and other std/test operations. Domain case families can use
 internal =defrules= to generate typed positive/negative matrices instead of
 copying fixtures and lambdas throughout downstream tests.
@@ -1058,7 +1058,7 @@ are outside this selector and are not silently migrated or enrolled.
 The aggregate gate again uses one Case for discovery, Graph identity and all
 three selected suites. The earlier split-Case attempt is not an acceptance path.
 Default observation stays off. =just test-file <path> true= uses gxtest's existing
-=-D poo-flow-module-test-observation= feature; it introduces no runner or probe
+=-D yuanxu-module-test-observation= feature; it introduces no runner or probe
 environment variable. TestingScript obtains the existing selected Case Profile,
 so nested execution inherits the native feature without author-side Profiles.
 
@@ -1270,11 +1270,11 @@ different actual =init.ss= declarations:
 #+begin_src scheme
 ;; JsonSchema copy
 (import "./module-system/selection/init-syntax.ss")
-(poo-flow! mode: explicit source: "./modules" (json-schema))
+(yuanxu! mode: explicit source: "./modules" (json-schema))
 
 ;; Separate Funflow copy
 (import "./module-system/selection/init-syntax.ss")
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   (funflow) (ops @ "./ops"))
 #+end_src
 

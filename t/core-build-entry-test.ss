@@ -7,7 +7,7 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
                  make-top-context syntax->list)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export core-build-entry-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
 (def (script-main path)
@@ -35,7 +35,7 @@
     (if root
     (test-suite "Actual Core entry delegates to Module System Building"
       (test-case "cold source entry selects JsonSchema and Ops and rechecks input bytes"
-        (check-equal? (file-exists? (path-expand "lib/core" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
         (def run (script-main (path-expand "build.ss" root)))
         (displayln "ROOT-ENTRY-READY") (force-output)
@@ -86,7 +86,7 @@
         ;; after restoration. It cannot be revived by restoring bytes.
         (check-equal? (rejects? "module scope session was refused"
                                (lambda () (fresh "spec"))) #t)
-        (check-equal? (file-exists? (path-expand "lib/core" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (displayln "ROOT-ENTRY-SELECTED-TARGETS " (length spec))))
     (begin
       (displayln "SKIP core-build-entry: CORE_QUALIFICATION_ROOT is unset")

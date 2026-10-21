@@ -5,12 +5,12 @@
 
 ;;; Boundary: small pure helpers shared by workflow graph and ABI projections.
 
-(export poo-flow-cicd-alist-ref
-        poo-flow-cicd-symbol-member?)
+(export yuanxu-cicd-alist-ref
+        yuanxu-cicd-symbol-member?)
 
-(def (poo-flow-cicd-alist-ref alist key default)
+(def (yuanxu-cicd-alist-ref alist key default)
   (let (entry (assoc key alist))
     (if entry (cdr entry) default)))
 
-(def (poo-flow-cicd-symbol-member? value values)
+(def (yuanxu-cicd-symbol-member? value values)
   (and (member value values) #t))

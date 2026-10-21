@@ -2,11 +2,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object "./qualification/opentofu/objects.ss"
-        (only-in :core/ops/func run-script)
+        (only-in :yuanxu/ops/func run-script)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case
-                 poo-flow-default-testing-case-profile)
-        (only-in :core/observability/memory PooFlowDebugDurationAnomaly?)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case
+                 yuanxu-default-testing-case-profile)
+        (only-in :yuanxu/observability/memory YuanxuDebugDurationAnomaly?)
         (only-in :std/os/signal kill)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
@@ -21,7 +21,7 @@
     (lambda () (kill pid 0) #f)))
 (def ops-process-script-test
   (test-suite "POO declarative operational scripts"
-    (poo-flow-test-case "Case cancellation terminates the owned Ops descendants"
+    (yuanxu-test-case "Case cancellation terminates the owned Ops descendants"
       (call-with-temporary-directory "ops-cancel"
         (lambda (root)
           (def child-pid (path-expand "child.pid" root))
@@ -35,11 +35,11 @@
           (.def (Waiting @ ProcessScript.)
             command: (list "gxi" "-:max-heap=2G,debug=q" "-e" (object->string program))
             timeout: 10)
-          (def policy (.cc poo-flow-default-testing-case-profile
+          (def policy (.cc yuanxu-default-testing-case-profile
                          'max-duration-milliseconds 1000))
           (check-exception
             (.call policy .run policy "controlled Ops cancellation"
-                   (lambda () (.call Waiting .run))) PooFlowDebugDurationAnomaly?)
+                   (lambda () (.call Waiting .run))) YuanxuDebugDurationAnomaly?)
           (check-equal? (file-exists? child-pid) #t)
           (def pid (call-with-input-file child-pid read))
           ;; Permit launchd to reap the killed orphan; never signal a PID read
@@ -48,7 +48,7 @@
             (cond ((process-gone? pid) (check-equal? #t #t))
                   ((zero? remaining) (check-equal? (process-gone? pid) #t))
                   (else (thread-sleep! 0.01) (wait (- remaining 1))))))))
-    (poo-flow-test-case "failed process retains captured diagnostic output"
+    (yuanxu-test-case "failed process retains captured diagnostic output"
       (call-with-temporary-directory "ops-failure-output"
         (lambda (root)
           (.def (Failure @ ProcessScript.)
@@ -62,21 +62,21 @@
                           (not (zero? (car details)))
                           (not (cadr details))
                           (string-contains (caddr details) "missing-output-probe") #t))))))))
-    (poo-flow-test-case "machine stdout decoding can keep diagnostic stderr separate"
+    (yuanxu-test-case "machine stdout decoding can keep diagnostic stderr separate"
       (call-with-temporary-directory "ops-stderr"
         (lambda (workspace)
           (.def (Failure @ ProcessScript.)
             command: (list "ls" (path-expand "missing" workspace)) check-status: #f)
           (check-equal? (string-empty? (.get (run-script Failure) output)) #f)
           (check-equal? (.get (run-script Failure stderr-redirection: #f) output) ""))))
-    (poo-flow-test-case "argv is literal, inheritance uses the effective receiver, imports execute nothing"
+    (yuanxu-test-case "argv is literal, inheritance uses the effective receiver, imports execute nothing"
       (.def (Original @ ProcessScript.) command: '("printf" "%s"))
       (.def (Derived @ Original) command: '("printf" "[%s]"))
       (check-equal? (.get (.call Original .run "$(not-a-shell); spaced") output) "$(not-a-shell); spaced")
       (check-equal? (.get (.call Derived .run "value") output) "[value]")
       (check-equal? (.get (.call Original .run "value") output) "value")
       (check-equal? (.get Ops tests SelectedFlake timeout) 145))
-    (poo-flow-test-case "declaring and resolving an operation is inert; only invocation starts it"
+    (yuanxu-test-case "declaring and resolving an operation is inert; only invocation starts it"
       (call-with-temporary-directory "ops-inert"
         (lambda (root)
           (let (marker (path-expand "started" root))
@@ -86,18 +86,18 @@
             (check-equal? (file-exists? marker) #f)
             (check-equal? (.get (.call Operation .run) status) 0)
             (check-equal? (file-exists? marker) #t)))))
-    (poo-flow-test-case "environment overlays and working directory remain explicit"
+    (yuanxu-test-case "environment overlays and working directory remain explicit"
       (call-with-temporary-directory "ops-script"
         (lambda (root)
-          (.def (Env @ ProcessScript.) command: '("printenv" "POO_FLOW_OPS_PROBE")
-            environment: (.o POO_FLOW_OPS_PROBE: "literal $ value"))
+          (.def (Env @ ProcessScript.) command: '("printenv" "YUANXU_OPS_PROBE")
+            environment: (.o YUANXU_OPS_PROBE: "literal $ value"))
           (check-equal? (.get (.call Env .run) output) "literal $ value\n")
-          (check-equal? (getenv "POO_FLOW_OPS_PROBE" #f) #f)
+          (check-equal? (getenv "YUANXU_OPS_PROBE" #f) #f)
           (.def (Directory @ ProcessScript.) command: '("pwd") directory: root)
           (let (output (.get (.call Directory .run) output))
             (check-equal? (path-normalize (substring output 0 (- (string-length output) 1)))
                           (path-normalize root))))))
-    (poo-flow-test-case "status, timeout and streamed failure logs are retained"
+    (yuanxu-test-case "status, timeout and streamed failure logs are retained"
       (call-with-temporary-directory "ops-script-log"
         (lambda (root)
           (.def (Failure @ ProcessScript.) command: '("false") check-status: #f)

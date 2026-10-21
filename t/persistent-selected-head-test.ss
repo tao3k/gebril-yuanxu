@@ -2,16 +2,16 @@
 (import :std/test :clan/poo/object
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/error Error?)
-        (only-in :core/ops/objects ProcessScript.)
-        (only-in :core/ops/func run-script)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
         "./qualification/build-publication/persistent-head")
 (export persistent-selected-head-test)
 (def persistent-selected-head-test
   (test-suite "Persistent selected-head transaction"
-    (poo-flow-test-fixture "real domain admission survives process restart as an exact snapshot"
+    (yuanxu-test-fixture "real domain admission survives process restart as an exact snapshot"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -55,7 +55,7 @@
         (defvalues (_receipt _next refusal) (.call publication .publish parent Release))
         (check-equal? (metadata.failure? refusal) #t)
         (check-equal? (metadata.failure-phase refusal) 'source)))
-    (poo-flow-test-fixture "both domain requirements remain prerequisites of issuance"
+    (yuanxu-test-fixture "both domain requirements remain prerequisites of issuance"
       (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
       (with-slots (publication) fixture
         (def parent (.get publication value))

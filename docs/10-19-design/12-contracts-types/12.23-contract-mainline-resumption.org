@@ -54,10 +54,10 @@ it must not substitute the original receiver merely because its fields look equa
 
 | Path | Actual behavior | Consequence |
 |------+-----------------+-------------|
-| PooFlowContract. .admit | Validates value-contract, classifies the checked value, then runs descriptor and Context obligations | Current AWS integration uses this path. |
-| PooFlowResponsibilityContract. .admit | Calls poo-flow-object-admit, traverses child Core contracts and runs descriptor obligations | It bypasses the first path's value-contract validation and Context-obligation dispatch. |
+| YuanxuContract. .admit | Validates value-contract, classifies the checked value, then runs descriptor and Context obligations | Current AWS integration uses this path. |
+| YuanxuResponsibilityContract. .admit | Calls yuanxu-object-admit, traverses child Core contracts and runs descriptor obligations | It bypasses the first path's value-contract validation and Context-obligation dispatch. |
 
-PooFlowNativeObjectContract. inherits the second path. This is an existing
+YuanxuObjectContract. inherits the second path. This is an existing
 identifier, not a recommendation to introduce that naming pattern elsewhere.
 The current AWS positive tests do not qualify this legacy path. Do not silently
 attach a public value-contract to it and assume the first producer will run.

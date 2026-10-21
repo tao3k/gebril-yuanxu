@@ -4,7 +4,7 @@
 
 ;;; Public upstream controls, kept distinct from Core's CLOS calling grammar.
 (import (only-in :std/test test-suite check check-equal? check-exception)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .o .get .ref)
         (only-in :clan/poo/declaration .declare declaration-forms object<-declaration-forms)
         (only-in :clan/poo/mop .defgeneric Any)
@@ -21,7 +21,7 @@
 
 (def poo-clos-upstream-alignment-test
   (test-suite "Public upstream mechanisms used by Core"
-    (poo-flow-test-case "native forwarding retains keyword false and a private rest spine"
+    (yuanxu-test-case "native forwarding retains keyword false and a private rest spine"
       (def receiver (.o .forward: 'parts))
       (def supplied (list 2 3 label: #f 'tail))
       (def result (apply forward-row receiver supplied))
@@ -34,7 +34,7 @@
         '(2 3 #f (tail)))
       (set-car! (list-tail (cadr result) 5) 'changed)
       (check-equal? supplied '(2 3 label: #f tail)))
-    (poo-flow-test-case "method fragments merge upstream without a Core registry"
+    (yuanxu-test-case "method fragments merge upstream without a Core registry"
       (def events '())
       (def parent
         (.declare MethodDeclaration. (.o)
@@ -52,7 +52,7 @@
       (check-equal? (score child 2) 22)
       (check-equal? events '(before))
       (check-equal? (score parent 2) 20))
-    (poo-flow-test-case "separate upstream multimethods preserve two independent axes"
+    (yuanxu-test-case "separate upstream multimethods preserve two independent axes"
       ;; Symbolic dispatch names are deliberately explicit here. They are not
       ;; an adapter proving Core class/eql identity or next-method equivalence.
       (def generic

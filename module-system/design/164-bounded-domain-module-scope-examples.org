@@ -170,31 +170,31 @@ This alias is not a new graph engine or a currently published export.
     finish-node: 'done
     node-declarations:
     (.o dispatch:
-        (poo-flow-graph-node
+        (yuanxu-graph-node
           'dispatch (.o participant: 'graph operation: 'dispatch-crew))
         crew-run:
-        (poo-flow-graph-node
+        (yuanxu-graph-node
           'crew-run (.o participant: 'crew operation: 'start))
         tool-call:
-        (poo-flow-graph-node
+        (yuanxu-graph-node
           'tool-call (.o participant: 'tool operation: 'invoke))
         crew-resume:
-        (poo-flow-graph-node
+        (yuanxu-graph-node
           'crew-resume (.o participant: 'crew operation: 'resume))
         done:
-        (poo-flow-graph-node
+        (yuanxu-graph-node
           'done (.o participant: 'graph operation: 'finish)))
     edge-declarations:
     (.o dispatch-crew:
-        (poo-flow-graph-edge 'dispatch 'crew-run)
+        (yuanxu-graph-edge 'dispatch 'crew-run)
         request-tool:
-        (poo-flow-graph-edge 'crew-run 'tool-call 'branch)
+        (yuanxu-graph-edge 'crew-run 'tool-call 'branch)
         finish-directly:
-        (poo-flow-graph-edge 'crew-run 'done 'branch)
+        (yuanxu-graph-edge 'crew-run 'done 'branch)
         return-result:
-        (poo-flow-graph-edge 'tool-call 'crew-resume)
+        (yuanxu-graph-edge 'tool-call 'crew-resume)
         finish-after-tool:
-        (poo-flow-graph-edge 'crew-resume 'done)))
+        (yuanxu-graph-edge 'crew-resume 'done)))
 
   transition-events:
   (.o dispatch-crew: 'accepted

@@ -78,7 +78,7 @@ runCommand "${provider.pname}-${provider.version}-schema" {
   jq -n --arg provider ${lib.escapeShellArg address} \
     --arg version ${lib.escapeShellArg provider.version} --arg digest "$digest" \
     --slurpfile indexes "$TMPDIR/index-digests.json" \
-    '{format: "poo-flow/provider-schema-v2", provider: $provider,
+    '{format: "yuanxu/provider-schema-v2", provider: $provider,
       version: $version, "schema-sha256": $digest,
       indexes: $indexes[0]}' > "$out/manifest.json"
 ''

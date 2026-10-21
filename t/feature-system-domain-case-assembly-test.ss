@@ -2,13 +2,13 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/composition/roles
-        :core/feature-system/interface
-        :core/feature-system/domain-case/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/interface
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-domain-case-assembly-test)
 
@@ -24,24 +24,24 @@
 (def (domain-case-test-project value) value)
 
 (def domain-case-base-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'domain-case-base-type '() domain-case-test-value?))
 
 (def domain-case-agent-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'domain-case-agent-type
    '(domain-case-base-type)
    domain-case-test-value?))
 
 (def domain-case-runtime-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'domain-case-runtime-projection
    'domain-case-base-component
    'runtime-v1
    domain-case-test-project))
 
 (def domain-case-evidence-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'domain-case-evidence-projection
    'domain-case-agent-component
    'evidence-v1
@@ -58,7 +58,7 @@
   (schema-id 'evidence-v1))
 
 (def domain-case-base-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'domain-case-base-component
    1
    (domain-case-test-role 'domain-case-base-slot)
@@ -68,7 +68,7 @@
    (list domain-case-runtime-projection)))
 
 (def domain-case-agent-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'domain-case-agent-component
    1
    (domain-case-test-role 'domain-case-agent-slot)
@@ -104,7 +104,7 @@
   (from-bundle domain-case-feature-bundle))
 
 (def domain-case-feature-cache
-  (poo-flow-domain-case-cache))
+  (yuanxu-domain-case-cache))
 
 (defpoo-feature-domain-case-assembly domain-case-feature-assembly
   (using-cache domain-case-feature-cache)
@@ -166,7 +166,7 @@
   (from-plan domain-case-raw-projection-plan))
 
 (def (domain-case-assembly-diagnostic-codes assembly)
-  (poo-flow-map (lambda (diagnostic) (.ref diagnostic 'code))
+  (yuanxu-map (lambda (diagnostic) (.ref diagnostic 'code))
                 (.ref assembly 'diagnostics)))
 
 (def (domain-case-stress-id prefix index)
@@ -188,12 +188,12 @@
              (type-id
               (domain-case-stress-id "case-type-" index))
              (type-contract
-              (poo-flow-case-type-contract
+              (yuanxu-case-type-contract
                type-id
                (if previous-type-id (list previous-type-id) '())
                domain-case-test-value?))
              (component
-              (poo-flow-case-component
+              (yuanxu-case-component
                component-id
                1
                (domain-case-test-role
@@ -225,7 +225,7 @@
 
 (def feature-system-domain-case-assembly-test
   (test-suite "Feature composition to existing Domain Case algebra"
-    (poo-flow-test-case "accepted plan closes through the existing Domain Case owner"
+    (yuanxu-test-case "accepted plan closes through the existing Domain Case owner"
       (let ((closure (.ref domain-case-feature-assembly 'closure-receipt))
             (domain-case (.ref domain-case-feature-assembly 'domain-case)))
         (check (.ref domain-case-feature-assembly 'kind)
@@ -234,7 +234,7 @@
         (check (.ref domain-case-feature-assembly 'accepted?) => #t)
         (check (.ref closure 'accepted?) => #t)
         (check (.ref closure 'cache-hit?) => #f)
-        (check (.ref domain-case 'kind) => +poo-flow-domain-case-kind+)
+        (check (.ref domain-case 'kind) => +yuanxu-domain-case-kind+)
         (check (.ref domain-case 'closed?) => #t)
         (check (length (.ref domain-case 'type-contracts)) => 2)
         (check (.ref domain-case-feature-assembly 'components)
@@ -243,7 +243,7 @@
         (check (.ref domain-case-agent-component 'parent-component-ids)
                => '(domain-case-base-component))))
 
-    (poo-flow-test-case "contract inheritance stays separate from policy and adapters"
+    (yuanxu-test-case "contract inheritance stays separate from policy and adapters"
       (let ((domain-case (.ref domain-case-feature-assembly 'domain-case)))
         (check (.ref domain-case 'policy-algebra) => #f)
         (check (.ref domain-case 'strategy-algebra) => #f))
@@ -264,7 +264,7 @@
                       'projection-catalog))
              => 2))
 
-    (poo-flow-test-case "module-owned Domain Case cache reuses the closure"
+    (yuanxu-test-case "module-owned Domain Case cache reuses the closure"
       (let ((first-domain-case
              (.ref domain-case-feature-assembly 'domain-case))
             (second-domain-case
@@ -276,7 +276,7 @@
         (check (.ref domain-case-feature-cache-hit-assembly 'key)
                => (.ref domain-case-feature-assembly 'key))))
 
-    (poo-flow-test-case "missing Feature dependency leaves inheritance child-first"
+    (yuanxu-test-case "missing Feature dependency leaves inheritance child-first"
       (check (.ref domain-case-unordered-assembly 'status) => 'rejected)
       (check (.ref domain-case-unordered-assembly 'accepted?) => #f)
       (check (.ref domain-case-unordered-assembly 'domain-case) => #f)
@@ -289,7 +289,7 @@
                     domain-case-unordered-assembly))
              ? values))
 
-    (poo-flow-test-case "raw projection syntax is rejected before Domain Case closure"
+    (yuanxu-test-case "raw projection syntax is rejected before Domain Case closure"
       (check (.ref domain-case-raw-projection-assembly 'status) => 'rejected)
       (check (.ref domain-case-raw-projection-assembly 'closure-receipt) => #f)
       (check (.ref domain-case-raw-projection-assembly
@@ -300,14 +300,14 @@
                     domain-case-raw-projection-assembly))
              ? values))
 
-    (poo-flow-test-case "256-Feature inheritance chain closes under the memory guard"
+    (yuanxu-test-case "256-Feature inheritance chain closes under the memory guard"
       (let* ((descriptors (domain-case-stress-descriptors 256))
              (bundle (feature-manifest-bundle
                       'feature-domain-case-stress descriptors))
              (plan (feature-composition-plan bundle))
              (assembly
               (feature-domain-case-assembly
-               (poo-flow-domain-case-cache)
+               (yuanxu-domain-case-cache)
                'feature-domain-case-stress
                1
                plan))

@@ -8,8 +8,8 @@
                  .ref
                  .slot?
                  object<-alist)
-        :core/composition/roles
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/utilities/functional)
 
 (export feature-descriptor-base
         feature-spec-compose
@@ -64,7 +64,7 @@
   (one-feature-slot 'conflicts feature-ids))
 
 (def (feature-descriptor-ids descriptors)
-  (poo-flow-map
+  (yuanxu-map
    (lambda (descriptor) (.ref descriptor 'feature-id))
    descriptors))
 
@@ -126,7 +126,7 @@
     default-value))
 
 (def (copy-feature-values values)
-  (poo-flow-map (lambda (value) value) values))
+  (yuanxu-map (lambda (value) value) values))
 
 (def (feature-descriptor spec)
   (unless (.slot? spec 'feature-id)

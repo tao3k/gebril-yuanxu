@@ -3,20 +3,20 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         (only-in :std/encoding/json write-json)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope.) (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata) :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope.) (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata) :yuanxu/types :clan/poo/object)
 (export opentofu-build-selection-test)
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
 (def (inputs candidate) (.call OpenTofuScope. .build-inputs candidate))
 (def (providers candidate) (.get (inputs candidate) providers))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 
 (def opentofu-build-selection-test
   (test-suite "opentofu-build-selection-test"
-    (poo-flow-test-case "final keys select package inputs before artifact injection"
+    (yuanxu-test-case "final keys select package inputs before artifact injection"
       (.def Configuration
         resource: (.o aws_security_group: (.o web: (.o name: "web"))))
       (assert 'aws-only-demand (equal? (providers Configuration) '("aws")))
@@ -44,14 +44,14 @@
       (check-exception (inputs (.o resource: (.o typo: #f))) error?)
       (assert 'projection-never-demands-artifact (not (.ref/cached OpenTofuScope. 'modules)))
       ;; Wire projection consumed by Nix; not a second user selection list.
-      (let (output (getenv "POO_FLOW_OPENTOFU_TEST_SELECTION" #f))
+      (let (output (getenv "YUANXU_OPENTOFU_TEST_SELECTION" #f))
         (when output
           (call-with-output-file output
             (lambda (port)
               (write-json port (list->hash-table
                             (list (cons 'providers (list->vector (providers Configuration))))))))))
       ;; Second phase runs against the real AWS-only Nix output.
-      (when (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f)
+      (when (getenv "YUANXU_OPENTOFU_ARTIFACT" #f)
        (let ()
         (def Contract (.get OpenTofuScope. types configuration))
         (def parent (.call Contract .admit Configuration #f))
@@ -76,7 +76,7 @@
         (assert 'invalid-port-rejected (not (accepted? bad)))
         (assert 'full-error-path
           (find (lambda (diagnostic)
-                  (equal? (cdr (assoc 'path (poo-flow-json-schema-validation-diagnostic-metadata diagnostic)))
+                  (equal? (cdr (assoc 'path (yuanxu-json-schema-validation-diagnostic-metadata diagnostic)))
                           '(resource aws_security_group web ingress 0 from_port)))
                 (.get bad diagnostics)))
         (.def (NeedsNull @ Configuration)

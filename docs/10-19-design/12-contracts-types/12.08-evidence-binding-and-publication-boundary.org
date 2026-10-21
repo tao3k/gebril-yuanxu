@@ -88,7 +88,7 @@ insufficient. =context= is an immutable Core-produced selection snapshot.
 ;; The domain supplies only the selected contract/context and next state.
 (def (admit-aws candidate)
   (values
-    (poo-flow-contract-admit AWSAdmission candidate context)
+    (yuanxu-contract-admit AWSAdmission candidate context)
     candidate))
 
 (def (core-evidence-view evidence)
@@ -101,7 +101,7 @@ insufficient. =context= is an immutable Core-produced selection snapshot.
     (metadata.typed "AWS configuration" ScenarioContract)
     (metadata.predicate "accepted Core evidence with descriptor"
       (lambda (evidence)
-        (and (poo-flow-validation-evidence-accepted? evidence)
+        (and (yuanxu-validation-evidence-accepted? evidence)
              (.slot? evidence 'admission-contract))))
     (lambda (_atom _request _result) #t)
     metadata.truth))

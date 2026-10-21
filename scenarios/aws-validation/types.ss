@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :core/modules/json-schema/contracts ProjectionContract.)
-        (only-in :core/scenarios/aws/types AWSInterfaceContract aws-scenario-contract))
+        (only-in :yuanxu/modules/json-schema/contracts ProjectionContract.)
+        (only-in :yuanxu/scenarios/aws/types AWSInterfaceContract aws-scenario-contract))
 (export AWSInterfaceContract validation-admission)
 ;; Operational slots are not AWS fields. Reuse the maintained Scenario relation
 ;; on its data projection, preserving the original execution object on success.

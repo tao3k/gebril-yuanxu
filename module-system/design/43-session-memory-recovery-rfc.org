@@ -352,7 +352,7 @@ There is an unresolved module-system question:
 
 Should =session= become a first-class init category row, for example:
 #+begin_src scheme
-(poo-flow!
+(yuanxu!
  :session
  (session +lineage +placement +handoff +graph +transform +doctor
                +persistence +checkpoint +resume +memory-policy)

@@ -3,11 +3,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
         %deliver-slot-read slot-read-dependencies slot-read-receiver make-slot-read)
-        (only-in :core/object-family/read-projection call-with-owned-read-projection
+        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
                  owned-read-value! owned-read-derived!)
-        (only-in :core/poo-clos/objects clos-call-carrier-policy-guard)
-        (only-in :core/poo-clos/types ClosInvocationFrame)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/poo-clos/objects clos-call-carrier-policy-guard)
+        (only-in :yuanxu/poo-clos/types ClosInvocationFrame)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export issued-root-forwarding-test)
 (def (issued-closure? roots)
   (def seen (make-hash-table-eq))
@@ -19,7 +19,7 @@
   (andmap valid? roots))
 (def issued-root-forwarding-test
   (test-suite "Core forwards native issuance without synthetic bundles"
-    (poo-flow-test-case "real roots retain exact identities, parent revisions and lazy branches"
+    (yuanxu-test-case "real roots retain exact identities, parent revisions and lazy branches"
       (def policy (.o port: 5432 unused: (error "unused field forced")))
       (def saved '())
       (defvalues (value reads)
@@ -40,14 +40,14 @@
       (replay-slot-reads! reads (lambda (_receiver _key) (void)))
       (.put! policy 'port 5433)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (poo-flow-test-case "raw record remains refused before observer callbacks"
+    (yuanxu-test-case "raw record remains refused before observer callbacks"
       (def calls 0)
       (def forged (make-slot-read (.o) 'bundle 0 #f #f '() (lambda (_r) #t)))
       (def failure (with-catch values
         (lambda () (replay-slot-reads! (list forged) (lambda (_r _k) (set! calls (+ calls 1)))))))
       (check-equal? (Error-message failure) "unissued slot dependency")
       (check-equal? calls 0))
-    (poo-flow-test-case "owned derived values retain unread parent generation"
+    (yuanxu-test-case "owned derived values retain unread parent generation"
       (def base (.o port: 5432))
       (defvalues (_value reads)
         (%call-with-recorded-slot-reads
@@ -60,7 +60,7 @@
       (.put! base 'other #t)
       (.put! base 'other #f)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (poo-flow-test-case "failed actions retain original exception and native dependencies"
+    (yuanxu-test-case "failed actions retain original exception and native dependencies"
       (def policy (.o port: 5432))
       (def original (with-catch values (lambda () (error "original action failure"))))
       (defvalues (failure reads)
@@ -75,7 +75,7 @@
       (check-equal? (issued-closure? reads) #t)
       (.put! policy 'port 5440)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (poo-flow-test-case "carrier policy uses original native revision reads"
+    (yuanxu-test-case "carrier policy uses original native revision reads"
       (def guard (clos-call-carrier-policy-guard))
       (defvalues (_value reads)
         (%call-with-recorded-slot-reads

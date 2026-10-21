@@ -85,24 +85,24 @@ reader or authority supplied by the downstream user.
 (def (web-admission-binding source-context)
   (def text ((.get source-context read) 'server))
   (def path ((.get source-context source-ref) 'server))
-  (def schema (call-with-input-string text poo-flow-json-schema-read-port))
+  (def schema (call-with-input-string text yuanxu-json-schema-read-port))
   (def artifact
-    (poo-flow-json-schema->contract-artifact
+    (yuanxu-json-schema->contract-artifact
       schema (list (cons 'source-ref path))))
-  (unless (and (poo-flow-json-schema-contract-artifact-valid? artifact)
-               (null? (poo-flow-json-schema-contract-artifact-diagnostics artifact)))
+  (unless (and (yuanxu-json-schema-contract-artifact-valid? artifact)
+               (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
     (error "Unsupported or invalid Web Schema" path))
   (def node
-    (poo-flow-json-schema-normalization-schema
-      (poo-flow-json-schema-contract-artifact-normalization artifact)))
+    (yuanxu-json-schema-normalization-schema
+      (yuanxu-json-schema-contract-artifact-normalization artifact)))
   (def fields (.cc SchemaContract. identity: 'web/fields node: node))
   (def descriptor
-    (.cc PooFlowContract.
+    (.cc YuanxuContract.
       identity: 'web/profile
       .classify:
       (lambda (candidate context)
         (let (issues (diagnose fields candidate))
-          (poo-flow-classification-evidence
+          (yuanxu-classification-evidence
             'web/profile candidate (null? issues) issues context)))))
   ((.get source-context admit-current))
   (.o contract: descriptor
@@ -158,16 +158,16 @@ Contract and artifact consumers share the exact factory result.
       (def path ((.get source-context source-ref) key))
       (def text ((.get source-context read) key))
       (unless
-        (and (poo-flow-json-schema-contract-artifact? artifact)
-             (poo-flow-json-schema-contract-artifact-valid? artifact)
-             (null? (poo-flow-json-schema-contract-artifact-diagnostics artifact))
-             (equal? path (poo-flow-json-schema-contract-artifact-source-ref artifact))
+        (and (yuanxu-json-schema-contract-artifact? artifact)
+             (yuanxu-json-schema-contract-artifact-valid? artifact)
+             (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact))
+             (equal? path (yuanxu-json-schema-contract-artifact-source-ref artifact))
              (equal?
-               (poo-flow-json-schema-normalization->alist
-                 (poo-flow-json-schema-normalize
-                   (call-with-input-string text poo-flow-json-schema-read-port)))
-               (poo-flow-json-schema-normalization->alist
-                 (poo-flow-json-schema-contract-artifact-normalization artifact))))
+               (yuanxu-json-schema-normalization->alist
+                 (yuanxu-json-schema-normalize
+                   (call-with-input-string text yuanxu-json-schema-read-port)))
+               (yuanxu-json-schema-normalization->alist
+                 (yuanxu-json-schema-contract-artifact-normalization artifact))))
         (error "Schema artifact/source mismatch" key path)))
     expected)
   ((.get source-context admit-current))

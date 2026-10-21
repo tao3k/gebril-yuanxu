@@ -6,11 +6,11 @@
 ;;; Boundary: strategies choose planning policy, not runtime execution.
 ;;; Invariant: heavy execution remains in runner/runtime-adapter code.
 
-(import :core/modules/funflow/control-plane/projection-syntax
-        :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/graph
-        :core/modules/funflow/control-plane/task)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/graph
+        :yuanxu/modules/funflow/control-plane/task)
 
 (export make-strategy
         strategy?

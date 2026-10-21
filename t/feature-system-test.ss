@@ -2,11 +2,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/feature-system/interface
-        :core/utilities/functional)
+        :yuanxu/feature-system/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-test)
 
@@ -16,7 +16,7 @@
                    (conflicts '()))
   (feature-descriptor
    (feature-spec-compose
-    (feature-descriptor-base feature-id 'poo-flow-test-feature-owner)
+    (feature-descriptor-base feature-id 'yuanxu-test-feature-owner)
     (feature-schema-version 1)
     (feature-category 'test)
     (apply feature-required-dependencies requires)
@@ -27,11 +27,11 @@
   (feature-selection descriptor))
 
 (def (test-profile profile-id descriptors)
-  (feature-profile profile-id (poo-flow-map select-feature descriptors)))
+  (feature-profile profile-id (yuanxu-map select-feature descriptors)))
 
 (def (plan-has-diagnostic? plan code)
   (and
-   (poo-flow-find
+   (yuanxu-find
     (lambda (diagnostic)
       (eq? (.ref diagnostic 'code) code))
     (.ref plan 'diagnostics))
@@ -54,14 +54,14 @@
 
 (def feature-system-test
   (test-suite "POO-native Feature system"
-    (poo-flow-test-case "descriptor is an immutable module-owned POO value"
+    (yuanxu-test-case "descriptor is an immutable module-owned POO value"
       (let ((descriptor (test-feature 'memory-core)))
         (check (.ref descriptor 'kind) => 'feature-descriptor)
         (check (.ref descriptor 'feature-id) => 'memory-core)
         (check (.ref descriptor 'owner-module-id)
-               => 'poo-flow-test-feature-owner)))
+               => 'yuanxu-test-feature-owner)))
 
-    (poo-flow-test-case "resolver orders required Features before dependents"
+    (yuanxu-test-case "resolver orders required Features before dependents"
       (let* ((memory (test-feature 'memory-core))
              (session (test-feature 'session-core '(memory-core)))
              (profile (test-profile 'default-agent (list session memory)))
@@ -69,7 +69,7 @@
         (check (.ref plan 'status) => 'ready)
         (check (.ref plan 'feature-ids) => '(memory-core session-core))))
 
-    (poo-flow-test-case "two profiles share one module-owned descriptor"
+    (yuanxu-test-case "two profiles share one module-owned descriptor"
       (let* ((memory (test-feature 'memory-core))
              (first (resolve-feature-profile
                      (test-profile 'first (list memory))))
@@ -86,14 +86,14 @@
                           'descriptor))
                => #t)))
 
-    (poo-flow-test-case "missing dependency rejects the plan"
+    (yuanxu-test-case "missing dependency rejects the plan"
       (let* ((session (test-feature 'session-core '(memory-core)))
              (plan (resolve-feature-profile
                     (test-profile 'missing-memory (list session)))))
         (check (.ref plan 'status) => 'rejected)
         (check (plan-has-diagnostic? plan 'missing-dependency) => #t)))
 
-    (poo-flow-test-case "unselected optional dependency is ignored"
+    (yuanxu-test-case "unselected optional dependency is ignored"
       (let* ((session
               (test-feature 'session-core '() '(telemetry-core)))
              (plan (resolve-feature-profile
@@ -101,7 +101,7 @@
         (check (.ref plan 'status) => 'ready)
         (check (.ref plan 'feature-ids) => '(session-core))))
 
-    (poo-flow-test-case "selected optional dependency is ordered first"
+    (yuanxu-test-case "selected optional dependency is ordered first"
       (let* ((telemetry (test-feature 'telemetry-core))
              (session
               (test-feature 'session-core '() '(telemetry-core)))
@@ -113,14 +113,14 @@
         (check (.ref plan 'feature-ids)
                => '(telemetry-core session-core))))
 
-    (poo-flow-test-case "duplicate selection rejects the plan"
+    (yuanxu-test-case "duplicate selection rejects the plan"
       (let* ((memory (test-feature 'memory-core))
              (plan (resolve-feature-profile
                     (test-profile 'duplicate (list memory memory)))))
         (check (.ref plan 'status) => 'rejected)
         (check (plan-has-diagnostic? plan 'duplicate-selection) => #t)))
 
-    (poo-flow-test-case "Feature conflict rejects the plan"
+    (yuanxu-test-case "Feature conflict rejects the plan"
       (let* ((local-memory
               (test-feature 'local-memory '() '() '(remote-memory)))
              (remote-memory (test-feature 'remote-memory))
@@ -131,7 +131,7 @@
         (check (.ref plan 'status) => 'rejected)
         (check (plan-has-diagnostic? plan 'feature-conflict) => #t)))
 
-    (poo-flow-test-case "dependency cycle rejects the plan"
+    (yuanxu-test-case "dependency cycle rejects the plan"
       (let* ((feature-a (test-feature 'feature-a '(feature-b)))
              (feature-b (test-feature 'feature-b '(feature-a)))
              (plan (resolve-feature-profile
@@ -139,7 +139,7 @@
         (check (.ref plan 'status) => 'rejected)
         (check (plan-has-diagnostic? plan 'dependency-cycle) => #t)))
 
-    (poo-flow-test-case "256-Feature graph reuses constant-slot construction"
+    (yuanxu-test-case "256-Feature graph reuses constant-slot construction"
       (let* ((features (linear-test-features 256))
              (plan (resolve-feature-profile
                     (test-profile 'linear-256 (reverse features))))

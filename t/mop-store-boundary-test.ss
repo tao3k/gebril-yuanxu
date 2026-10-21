@@ -5,7 +5,7 @@
         (prefix-in (only-in :gerbil/runtime/mop slot-set!) runtime.)
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         "qualification/mop-state/store-policy"
         "qualification/mop-state/precompiled-stores"
         "qualification/mop-state/unlowered-store")
@@ -66,31 +66,31 @@
                              (.get Hot port) (.get Cold port)) observations)))
 (def mop-store-boundary-test
  (test-suite "Compiler-lowered native owned stores"
-  (poo-flow-test-case "generated setter refuses before a first store"
+  (yuanxu-test-case "generated setter refuses before a first store"
     (refusal "generated" generated-store!)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "SDK reflective store body shares the same refusal"
+  (yuanxu-test-case "SDK reflective store body shares the same refusal"
     (refusal "reflective" reflective-store!)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "constructor inlining cannot erase the store check"
+  (yuanxu-test-case "constructor inlining cannot erase the store check"
     (refusal "inline" inline-store!)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "precompiled generated callback guards its own store through an unlowered caller"
+  (yuanxu-test-case "precompiled generated callback guards its own store through an unlowered caller"
     (def invoke (unlowered-invoker))
     (def writer (precompiled-store 'generated))
     (refusal "precompiled-generated" (cut invoke writer <> <>))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "precompiled reflection callback guards its own store through an unlowered caller"
+  (yuanxu-test-case "precompiled reflection callback guards its own store through an unlowered caller"
     (def invoke (unlowered-invoker))
     (def writer (precompiled-store 'reflective))
     (refusal "precompiled-reflective" (cut invoke writer <> <>))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "precompiled inline callback guards its own store through an unlowered caller"
+  (yuanxu-test-case "precompiled inline callback guards its own store through an unlowered caller"
     (def invoke (unlowered-invoker))
     (def writer (precompiled-store 'inline))
     (refusal "precompiled-inline" (cut invoke writer <> <>))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "precompiled unlowered code remains a domain-closure counterexample"
+  (yuanxu-test-case "precompiled unlowered code remains a domain-closure counterexample"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (.def (Hot @ Parent))
     (.def (Cold @ Parent))
@@ -112,7 +112,7 @@
     (check-equal? (.get Hot port) 5432)
     (check-equal? (.get Cold port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested frames and exception identity restore after refusal"
+  (yuanxu-test-case "nested frames and exception identity restore after refusal"
     (.def Outer port: 5432)
     (.def Inner port: 5433)
     (def outer (record (cut .get Outer port)))
@@ -136,7 +136,7 @@
     (check-equal? (store-frame-depth) 0)
     (generated-store! spec original)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "inline receiver and value expressions are evaluated once before refusal"
+  (yuanxu-test-case "inline receiver and value expressions are evaluated once before refusal"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (def roots (record (cut .get Root port)))
     (def spec (cdr (assq 'port (object-slots Root))))
@@ -153,7 +153,7 @@
     (check-equal? value-count 1)
     (check-equal? (.get Root port) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an unregistered carrier refuses before its first store"
+  (yuanxu-test-case "an unregistered carrier refuses before its first store"
     (def roots (record unlowered-store-callback))
     (def spec (unlowered-carrier))
     (def invoked? #f)
@@ -166,7 +166,7 @@
     (check-equal? (Error-message failure) "unregistered specification allocation")
     (check-equal? invoked? #f)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an unread carrier still shares the selected receiver's invalidation scope"
+  (yuanxu-test-case "an unread carrier still shares the selected receiver's invalidation scope"
     (.def Parent port: 5432 spare: 1 unused: (error "unselected branch forced"))
     (.def (Hot @ Parent))
     (def roots (record (cut .get Hot port)))
@@ -177,7 +177,7 @@
     (check-equal? (Error-message failure) "object mutation during read replay")
     (check-equal? (.get Hot spare) 1)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "ordinary default data is not classified as a slot specification"
+  (yuanxu-test-case "ordinary default data is not classified as a slot specification"
     (.def Root (port ? 5432) unused: (error "unselected branch forced"))
     (def roots (record (cut .get Root port)))
     (check-equal? (specification-owners 5432) '())

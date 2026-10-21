@@ -50,7 +50,7 @@ There is no new Core object evaluator or generic cache framework in this model.
 
 * Lean: computed checks and conditional equivalence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SourceWindows.lean][SourceWindows.lean]] contains executable checks over source observations, not
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean][SourceWindows.lean]] contains executable checks over source observations, not
 just a fresh flag attached to a cache entry.
 
 - fetch calls LeanPoo ensureLookup. A missing path invokes the supplied source
@@ -239,7 +239,7 @@ already-proved 718-to-smaller performance result.
 
 * Related publication model and concurrent-work boundary
 
-The existing [[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/Publication.lean][Admission.Publication]] model is maintained separately. It uses
+The existing [[file:../../../dev/proofs/lean/YuanxuProof/Admission/Publication.lean][Admission.Publication]] model is maintained separately. It uses
 LeanPoo.DeclarativeMetadata's actual invocation/publication mechanism and derives
 stale-return refusal while retaining the previous published state. It is a
 useful foundation for the root/child source-certification target above. It does

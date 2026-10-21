@@ -6,8 +6,8 @@
 ;;; Boundary: execution policies package strategy evidence for runtime handoff.
 ;;; Invariant: policies are immutable snapshots, not schedulers or executors.
 
-(import :core/modules/funflow/control-plane/strategy
-        :core/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-execution-policy
         execution-policy?

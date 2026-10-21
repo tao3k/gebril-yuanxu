@@ -17,7 +17,7 @@ The implementation baseline is [[file:../../../../modules/funflow/config-prototy
 [[file:../../../../modules/funflow/profiles/gerbil-scheme.ss][the Gerbil Profile]] and
 [[file:../../../../modules/funflow/config-adapter.ss][the current list projection]]. The current adapter reads effective fields;
 it does not enforce the closed public surface below. Core's
-[[file:../../../types.ss][PooFlowNativeObjectContract.]] already checks prototype ancestry,
+[[file:../../../types.ss][YuanxuObjectContract.]] already checks prototype ancestry,
 recursively admits declared responsibilities, and runs obligations. It does not
 reject undeclared slots automatically. That requires an explicit domain rule.
 
@@ -78,7 +78,7 @@ these documentation examples do not already run against the old field layout.
 | compensation-refs | '() | declared cleanup/action references; compensatable requires a nonempty resolvable set |
 | durable-task-id | #f | upstream supplies a local durable name; projection checks uniqueness under qualified identity |
 | check-name | #f | identity; must equal the containing named Check slot; not an ordinary rename mechanism |
-| kind | 'poo-flow.funflow.check.prototype | structural compatibility marker; not source authentication or sufficient admission |
+| kind | 'yuanxu.funflow.check.prototype | structural compatibility marker; not source authentication or sufficient admission |
 | observability | #f | inherited advanced observability configuration; absent or supported native value |
 | observes / guards | '() / '() | supported existing declarative references; no arbitrary callback injection |
 | report | #f | inherited report configuration; absent or supported native value |
@@ -125,7 +125,7 @@ helper in [[file:07-admission-source.org][module 07]]. These replace the earlier
 without claiming that the proposed domain library is implemented.
 
 #+begin_src scheme
-(define-type (FunflowCheckContract @ PooFlowNativeObjectContract.)
+(define-type (FunflowCheckContract @ YuanxuObjectContract.)
   identity: 'funflow/check-v2
   proto: funflow-check
   reserved-metadata:
@@ -163,7 +163,7 @@ without claiming that the proposed domain library is implemented.
       (cut funflow-admit-check @ base-admit <> <>)))
   .obligations: (cut funflow-check-obligations @ <> <>))
 
-(define-type (FunflowPipelineContract @ PooFlowNativeObjectContract.)
+(define-type (FunflowPipelineContract @ YuanxuObjectContract.)
   identity: 'funflow/pipeline-v2
   proto: FunflowPipeline.
   reserved-metadata: '(source pipeline)
@@ -179,7 +179,7 @@ without claiming that the proposed domain library is implemented.
       (cut funflow-admit-pipeline @ base-admit <> <>)))
   .obligations: (cut funflow-pipeline-obligations @ <> <>))
 
-(define-type (FunflowProfileContract @ PooFlowNativeObjectContract.)
+(define-type (FunflowProfileContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-v2
   proto: FunflowProfile.
   responsibilities: (.o pipeline: FunflowPipelineContract)

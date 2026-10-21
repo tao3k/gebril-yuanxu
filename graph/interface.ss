@@ -5,34 +5,34 @@
 
 ;;; Public Graph mechanism: topology, pure analysis and POO operation values.
 
-(import :core/graph/algorithms
-        :core/graph/rooted
-        :core/graph/contribution
-        :core/graph/payload-operations
-        :core/graph/operation
-        :core/graph/apply)
+(import :yuanxu/graph/algorithms
+        :yuanxu/graph/rooted
+        :yuanxu/graph/contribution
+        :yuanxu/graph/payload-operations
+        :yuanxu/graph/operation
+        :yuanxu/graph/apply)
 
-(export (import: :core/graph/algorithms)
-        (import: :core/graph/rooted)
-        poo-flow-graph-operation-kind
-        poo-flow-graph-contribution-kind
-        poo-flow-graph-result-kind
-        poo-flow-graph-slot-override
-        poo-flow-graph-slot-append
-        poo-flow-graph-slot-prepend
-        poo-flow-graph-slot-remove
-        poo-flow-graph-node-extend
-        poo-flow-graph-node-remove
-        poo-flow-graph-contribution
-        poo-flow-graph-contribution?
-        poo-flow-graph-contribution-target
-        poo-flow-graph-contribution-operations
-        poo-flow-graph-apply-contribution
-        poo-flow-graph-apply-contributions
-        poo-flow-graph-resolve
-        poo-flow-graph-result
-        poo-flow-graph-result?
-        poo-flow-graph-result-root
-        poo-flow-graph-result-changed-passes
-        poo-flow-graph-result-applied?
+(export (import: :yuanxu/graph/algorithms)
+        (import: :yuanxu/graph/rooted)
+        yuanxu-graph-operation-kind
+        yuanxu-graph-contribution-kind
+        yuanxu-graph-result-kind
+        yuanxu-graph-slot-override
+        yuanxu-graph-slot-append
+        yuanxu-graph-slot-prepend
+        yuanxu-graph-slot-remove
+        yuanxu-graph-node-extend
+        yuanxu-graph-node-remove
+        yuanxu-graph-contribution
+        yuanxu-graph-contribution?
+        yuanxu-graph-contribution-target
+        yuanxu-graph-contribution-operations
+        yuanxu-graph-apply-contribution
+        yuanxu-graph-apply-contributions
+        yuanxu-graph-resolve
+        yuanxu-graph-result
+        yuanxu-graph-result?
+        yuanxu-graph-result-root
+        yuanxu-graph-result-changed-passes
+        yuanxu-graph-result-applied?
 )

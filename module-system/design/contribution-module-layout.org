@@ -54,11 +54,11 @@ rule from the testing side: it is imported and compiled by the focused testing
 lane, not by every production bootstrap.
 User-owned and contributor-owned selections stay in their independent loading
 and build lanes.
-The root-owned =build-contribute= adapter applies =poo-flow-load-modules=
+The root-owned =build-contribute= adapter applies =yuanxu-load-modules=
 discovery to each direct =modules/<module-name>/= tree and therefore applies
 the same reader-native owner-import admission to contributor roles. Aggregate
 framework imports return the structured
-=poo-flow.module-owner-import-observation.v1= diagnostic and fail with
+=yuanxu.module-owner-import-observation.v1= diagnostic and fail with
 =POO-FLOW-MODULE-E008= before a contribution reaches native compilation.
 The loader admits exactly the module's public =interface.ss=; native Gerbil
 imports close over its internal
@@ -71,7 +71,7 @@ independent.
 
 * Ordered POO module sources
 
-Module selection and module location are separate. =poo-flow-modules!= emits
+Module selection and module location are separate. =yuanxu-modules!= emits
 only POO selection objects: qualified module identity and flags. It does not
 embed the repository that provides the implementation.
 
@@ -85,7 +85,7 @@ first. Collection identity, owner, module key and selected entrypoint remain on
 the resulting source-ref for diagnosis.
 
 #+begin_src scheme
-(poo-flow-modules!
+(yuanxu-modules!
  :workflow (funflow +cicd)
  :custom (sdlc +nasa-7150-2d))
 #+end_src
@@ -94,7 +94,7 @@ Here =sdlc= is a registered module name. Selecting the registered contribution
 name loads every module in that contribution:
 
 #+begin_src scheme
-(poo-flow-modules! :custom (lambda-episteme))
+(yuanxu-modules! :custom (lambda-episteme))
 #+end_src
 
 When the pinned checkout is absent, resolution produces a =registry= source
@@ -105,12 +105,12 @@ the same source-collection discovery path.
 An explicit private directory is visible in syntax:
 
 #+begin_src scheme
-(poo-flow-modules!
+(yuanxu-modules!
  :custom (@ "./modules" +doctor))
 #+end_src
 
 This =@= form names a complete modules directory. The same structural discovery
-used by =poo-flow-load-modules= finds its direct child trees and admits only
+used by =yuanxu-load-modules= finds its direct child trees and admits only
 their public =interface.ss= entrypoints.  =config.ss= remains an internal role
 re-exported by that interface. The named single-module escape hatch remains
 =(my-module @ "./modules/my-module" +doctor)=.
@@ -186,7 +186,7 @@ examples directory. Its Scheme-bearing top level is closed:
 
 | Path | Owner |
 |------+-------|
-| =init.ss= | Module enablement only through =poo-flow!=. |
+| =init.ss= | Module enablement only through =yuanxu!=. |
 | =config.ss= | Final direct =use-composition= declarations. |
 | =modules/= | User-owned =modules/<module-name>/= trees that are private or not ready for contribution. |
 | =profiles/= | Reusable native POO Profile objects and their refinements. |

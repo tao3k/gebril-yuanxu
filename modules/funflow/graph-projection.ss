@@ -7,62 +7,62 @@
 ;;; Invariant: this file only declares maintained Funflow module rows.
 
 (import (only-in :clan/poo/object .ref object<-alist)
-        :core/utilities/final-projection-syntax
-        (only-in :core/modules/funflow/check-funs
-                 poo-flow-cicd-alist-ref
-                 poo-flow-cicd-symbol-member?)
-        (only-in :core/modules/funflow/check-objects
-                 poo-flow-cicd-check-map-name
-                 poo-flow-cicd-check-map?)
-        :core/modules/funflow/config-prototypes
-        :core/modules/funflow/dependency-graph)
+        :yuanxu/utilities/final-projection-syntax
+        (only-in :yuanxu/modules/funflow/check-funs
+                 yuanxu-cicd-alist-ref
+                 yuanxu-cicd-symbol-member?)
+        (only-in :yuanxu/modules/funflow/check-objects
+                 yuanxu-cicd-check-map-name
+                 yuanxu-cicd-check-map?)
+        :yuanxu/modules/funflow/config-prototypes
+        :yuanxu/modules/funflow/dependency-graph)
 
-(export poo-flow-funflow-cicd-default-payload
-        +poo-flow-funflow-workflow-agreement-contract+
+(export yuanxu-funflow-cicd-default-payload
+        +yuanxu-funflow-workflow-agreement-contract+
         funflow-check
         funflow-pipeline
-        poo-flow-funflow-poo-check?
-        poo-flow-funflow-poo-pipeline?
-        poo-flow-funflow-poo-check->cicd-check
-        poo-flow-funflow-poo-pipeline->check-map
+        yuanxu-funflow-poo-check?
+        yuanxu-funflow-poo-pipeline?
+        yuanxu-funflow-poo-check->cicd-check
+        yuanxu-funflow-poo-pipeline->check-map
         funflow-dag-edge
         funflow-composition-step
         funflow-functional-dag
         funflow-normalized-flow
         funflow-plan
-        poo-flow-funflow-dag-edge
-        poo-flow-funflow-dag-edge?
-        poo-flow-funflow-dag-edge->alist
-        poo-flow-funflow-composition-step
-        poo-flow-funflow-composition-step?
-        poo-flow-funflow-composition-step->alist
-        poo-flow-funflow-functional-dag?
-        poo-flow-funflow-functional-dag->alist
-        poo-flow-funflow-normalized-flow?
-        poo-flow-funflow-normalized-flow->alist
-        poo-flow-funflow-plan?
-        poo-flow-funflow-plan->alist
-        poo-flow-funflow-plan->runtime-projection
-        poo-flow-funflow-check-map->functional-dag
-        poo-flow-funflow-check-map->normalized-flow
-        poo-flow-funflow-normalized-flow->plan
-        poo-flow-funflow-check-map->plan
-        poo-flow-funflow-poo-pipeline->functional-dag
-        poo-flow-funflow-poo-pipeline->normalized-flow
-        poo-flow-funflow-poo-pipeline->plan
-        poo-flow-funflow-workflow-ref?
-        poo-flow-funflow-workflow-agreement
+        yuanxu-funflow-dag-edge
+        yuanxu-funflow-dag-edge?
+        yuanxu-funflow-dag-edge->alist
+        yuanxu-funflow-composition-step
+        yuanxu-funflow-composition-step?
+        yuanxu-funflow-composition-step->alist
+        yuanxu-funflow-functional-dag?
+        yuanxu-funflow-functional-dag->alist
+        yuanxu-funflow-normalized-flow?
+        yuanxu-funflow-normalized-flow->alist
+        yuanxu-funflow-plan?
+        yuanxu-funflow-plan->alist
+        yuanxu-funflow-plan->runtime-projection
+        yuanxu-funflow-check-map->functional-dag
+        yuanxu-funflow-check-map->normalized-flow
+        yuanxu-funflow-normalized-flow->plan
+        yuanxu-funflow-check-map->plan
+        yuanxu-funflow-poo-pipeline->functional-dag
+        yuanxu-funflow-poo-pipeline->normalized-flow
+        yuanxu-funflow-poo-pipeline->plan
+        yuanxu-funflow-workflow-ref?
+        yuanxu-funflow-workflow-agreement
 )
 
 ;;; The CI/CD payload is a Funflow feature, not a new top-level category. It is
 ;;; inspectable module data; adapters such as GitHub, Docker, or Nix stay out.
 ;; : UserModuleFlagEntry
 (import (only-in "config-adapter.ss"
-                 poo-flow-funflow-require
-                 poo-flow-funflow-poo-check->cicd-check
-                 poo-flow-funflow-poo-pipeline->check-map))
+                 yuanxu-funflow-require
+                 yuanxu-funflow-poo-check->cicd-check
+                 yuanxu-funflow-poo-pipeline->check-map))
 
-(def poo-flow-funflow-cicd-default-payload
+(def yuanxu-funflow-cicd-default-payload
   '(+cicd
     (checks +parallel +typed-receipts)
     (artifacts +export)
@@ -73,71 +73,71 @@
 ;;; Workflow agreement is Funflow-owned vocabulary. Loop engines can reference
 ;;; these refs, but the validity of a Funflow workflow stays with this module.
 ;; : Symbol
-(def +poo-flow-funflow-workflow-agreement-contract+
-  'poo-flow.funflow.workflow-agreement.v1)
+(def +yuanxu-funflow-workflow-agreement-contract+
+  'yuanxu.funflow.workflow-agreement.v1)
 
 ;; : (-> Symbol Boolean)
-(def (poo-flow-funflow-workflow-ref? workflow-ref)
+(def (yuanxu-funflow-workflow-ref? workflow-ref)
   (or (eq? workflow-ref 'funflow)
       (eq? workflow-ref 'funflow-cicd)))
 
 ;;; Boundary: funflow check map names is the policy-visible edge for policy
 ;;; behavior, keeping validation, lookup, or projection responsibilities
 ;;; centralized for callers.
-;; : (-> [PooFlowCicdCheckMap] [Symbol])
-(def (poo-flow-funflow-check-map-names check-maps)
+;; : (-> [YuanxuCicdCheckMap] [Symbol])
+(def (yuanxu-funflow-check-map-names check-maps)
   (cond
    ((null? check-maps) '())
    (else
-    (cons (poo-flow-cicd-check-map-name (car check-maps))
-          (poo-flow-funflow-check-map-names (cdr check-maps))))))
+    (cons (yuanxu-cicd-check-map-name (car check-maps))
+          (yuanxu-funflow-check-map-names (cdr check-maps))))))
 
 ;;; `funflow-cicd` requires at least one declared pipeline/check-map. Plain
 ;;; non-Funflow refs remain valid but explicitly outside Funflow ownership.
-;; : (-> Symbol [PooFlowCicdCheckMap] [Alist])
-(def (poo-flow-funflow-workflow-agreement-diagnostics workflow-ref check-maps)
+;; : (-> Symbol [YuanxuCicdCheckMap] [Alist])
+(def (yuanxu-funflow-workflow-agreement-diagnostics workflow-ref check-maps)
   (cond
    ((and (eq? workflow-ref 'funflow-cicd)
          (null? check-maps))
     (list
-     (poo-flow-product-field-rows
+     (yuanxu-product-field-rows
       (field 'workflow-ref)
       (code 'missing-funflow-workflow-pipeline)
       (workflow-ref workflow-ref))))
    (else '())))
 
-;; : (-> [PooFlowCicdCheckMap] Alist)
-(def (poo-flow-funflow-workflow-agreement-summary check-maps)
-  (poo-flow-product-field-rows
+;; : (-> [YuanxuCicdCheckMap] Alist)
+(def (yuanxu-funflow-workflow-agreement-summary check-maps)
+  (yuanxu-product-field-rows
    (pipeline-count (length check-maps))
-   (pipeline-names (map poo-flow-cicd-check-map-name check-maps))
+   (pipeline-names (map yuanxu-cicd-check-map-name check-maps))
    (functional-dag-rows
     (map (lambda (check-map)
-           (poo-flow-funflow-functional-dag->alist
-            (poo-flow-funflow-check-map->functional-dag check-map)))
+           (yuanxu-funflow-functional-dag->alist
+            (yuanxu-funflow-check-map->functional-dag check-map)))
          check-maps))))
 
 ;;; The agreement is report-only data that lets loop-engine handoff receipts
 ;;; prove whether a workflow ref is backed by a Funflow-owned pipeline.
-;; : (-> Symbol [PooFlowCicdCheckMap] Alist)
-(def (poo-flow-funflow-workflow-agreement workflow-ref check-maps)
+;; : (-> Symbol [YuanxuCicdCheckMap] Alist)
+(def (yuanxu-funflow-workflow-agreement workflow-ref check-maps)
   (let* ((diagnostics
-          (poo-flow-funflow-workflow-agreement-diagnostics
+          (yuanxu-funflow-workflow-agreement-diagnostics
            workflow-ref
            check-maps))
          (summary
-          (poo-flow-funflow-workflow-agreement-summary check-maps))
+          (yuanxu-funflow-workflow-agreement-summary check-maps))
          (functional-dag-rows
-          (poo-flow-cicd-alist-ref summary 'functional-dag-rows '())))
-    (poo-flow-product-field-rows
+          (yuanxu-cicd-alist-ref summary 'functional-dag-rows '())))
+    (yuanxu-product-field-rows
      (kind 'funflow-workflow-agreement)
-     (contract +poo-flow-funflow-workflow-agreement-contract+)
+     (contract +yuanxu-funflow-workflow-agreement-contract+)
      (workflow-ref workflow-ref)
-     (funflow-owned? (poo-flow-funflow-workflow-ref? workflow-ref))
+     (funflow-owned? (yuanxu-funflow-workflow-ref? workflow-ref))
      (pipeline-count
-      (poo-flow-cicd-alist-ref summary 'pipeline-count 0))
+      (yuanxu-cicd-alist-ref summary 'pipeline-count 0))
      (pipeline-names
-      (poo-flow-cicd-alist-ref summary 'pipeline-names '()))
+      (yuanxu-cicd-alist-ref summary 'pipeline-names '()))
      (functional-dag-count (length functional-dag-rows))
      (functional-dags functional-dag-rows)
      (diagnostic-count (length diagnostics))
@@ -161,17 +161,17 @@
 ;;; behavior, keeping validation, lookup, or projection responsibilities
 ;;; centralized for callers.
 ;; : (-> Symbol List [Pair] [Pair])
-;; : (-> Symbol Symbol [Alist] PooFlowFunflowDagEdge)
-(def (poo-flow-funflow-dag-edge from to . maybe-metadata)
-  (poo-flow-funflow-require "funflow DAG edge from must be a symbol"
+;; : (-> Symbol Symbol [Alist] YuanxuFunflowDagEdge)
+(def (yuanxu-funflow-dag-edge from to . maybe-metadata)
+  (yuanxu-funflow-require "funflow DAG edge from must be a symbol"
                             (symbol? from)
                             from)
-  (poo-flow-funflow-require "funflow DAG edge to must be a symbol"
+  (yuanxu-funflow-require "funflow DAG edge to must be a symbol"
                             (symbol? to)
                             to)
   (object<-alist
    (list
-    (cons 'kind +poo-flow-funflow-dag-edge-prototype-kind+)
+    (cons 'kind +yuanxu-funflow-dag-edge-prototype-kind+)
     (cons 'from from)
     (cons 'to to)
     (cons 'composition-style 'kleisli)
@@ -180,24 +180,24 @@
                       (car maybe-metadata)))
     (cons 'runtime-executed #f))))
 
-;; : (-> Symbol MaybeSymbol MaybeSymbol MaybeSymbol [Alist] PooFlowFunflowCompositionStep)
-(def (poo-flow-funflow-composition-step step-kind check-name from to . maybe-metadata)
-  (poo-flow-funflow-require "funflow composition step kind must be a symbol"
+;; : (-> Symbol MaybeSymbol MaybeSymbol MaybeSymbol [Alist] YuanxuFunflowCompositionStep)
+(def (yuanxu-funflow-composition-step step-kind check-name from to . maybe-metadata)
+  (yuanxu-funflow-require "funflow composition step kind must be a symbol"
                             (symbol? step-kind)
                             step-kind)
-  (poo-flow-funflow-require "funflow composition step check-name must be a symbol or #f"
+  (yuanxu-funflow-require "funflow composition step check-name must be a symbol or #f"
                             (or (not check-name) (symbol? check-name))
                             check-name)
-  (poo-flow-funflow-require "funflow composition step from must be a symbol or #f"
+  (yuanxu-funflow-require "funflow composition step from must be a symbol or #f"
                             (or (not from) (symbol? from))
                             from)
-  (poo-flow-funflow-require "funflow composition step to must be a symbol or #f"
+  (yuanxu-funflow-require "funflow composition step to must be a symbol or #f"
                             (or (not to) (symbol? to))
                             to)
   (object<-alist
    (list
-    (cons 'kind +poo-flow-funflow-composition-step-prototype-kind+)
-    (cons 'schema 'poo-flow.modules.funflow.composition-step.v1)
+    (cons 'kind +yuanxu-funflow-composition-step-prototype-kind+)
+    (cons 'schema 'yuanxu.modules.funflow.composition-step.v1)
     (cons 'step-kind step-kind)
     (cons 'check-name check-name)
     (cons 'from from)
@@ -209,13 +209,13 @@
                       (car maybe-metadata)))
     (cons 'runtime-executed #f))))
 
-;; : (-> PooFlowFunflowDagEdge Alist)
+;; : (-> YuanxuFunflowDagEdge Alist)
 (defpoo-final-projection
-  poo-flow-funflow-dag-edge->alist (edge)
+  yuanxu-funflow-dag-edge->alist (edge)
   (bindings ((_guard
-              (poo-flow-funflow-require
+              (yuanxu-funflow-require
                "funflow DAG edge projection requires an edge"
-               (poo-flow-funflow-dag-edge? edge)
+               (yuanxu-funflow-dag-edge? edge)
                edge))))
   (fields ((kind (.ref edge 'kind))
            (from (.ref edge 'from))
@@ -224,19 +224,19 @@
            (metadata (.ref edge 'metadata))
            (runtime-executed (.ref edge 'runtime-executed)))))
 
-;; : (-> [PooFlowFunflowDagEdge] [Alist])
+;; : (-> [YuanxuFunflowDagEdge] [Alist])
 (defpoo-final-projection-batch
-  poo-flow-funflow-dag-edges->alists (edges)
-  (projector poo-flow-funflow-dag-edge->alist)
+  yuanxu-funflow-dag-edges->alists (edges)
+  (projector yuanxu-funflow-dag-edge->alist)
   (error-message "funflow DAG edge projection requires a list"))
 
-;; : (-> PooFlowFunflowCompositionStep Alist)
+;; : (-> YuanxuFunflowCompositionStep Alist)
 (defpoo-final-projection
-  poo-flow-funflow-composition-step->alist (step)
+  yuanxu-funflow-composition-step->alist (step)
   (bindings ((_guard
-              (poo-flow-funflow-require
+              (yuanxu-funflow-require
                "funflow composition step projection requires a composition step"
-               (poo-flow-funflow-composition-step? step)
+               (yuanxu-funflow-composition-step? step)
                step))))
   (fields ((kind (.ref step 'kind))
            (schema (.ref step 'schema))
@@ -248,111 +248,111 @@
            (metadata (.ref step 'metadata))
            (runtime-executed (.ref step 'runtime-executed)))))
 
-;; : (-> [PooFlowFunflowCompositionStep] [Alist])
+;; : (-> [YuanxuFunflowCompositionStep] [Alist])
 (defpoo-final-projection-batch
-  poo-flow-funflow-composition-steps->alists (steps)
-  (projector poo-flow-funflow-composition-step->alist)
+  yuanxu-funflow-composition-steps->alists (steps)
+  (projector yuanxu-funflow-composition-step->alist)
   (error-message "funflow composition step projection requires a list"))
 
-;; : (-> [PooFlowFunflowDagEdge] [Symbol] [Symbol] Pair)
-(def (poo-flow-funflow-edge-endpoint-summary/rev edges sources-rev targets-rev)
+;; : (-> [YuanxuFunflowDagEdge] [Symbol] [Symbol] Pair)
+(def (yuanxu-funflow-edge-endpoint-summary/rev edges sources-rev targets-rev)
   (if (null? edges)
     (cons (reverse sources-rev) (reverse targets-rev))
-    (poo-flow-funflow-edge-endpoint-summary/rev
+    (yuanxu-funflow-edge-endpoint-summary/rev
      (cdr edges)
      (cons (.ref (car edges) 'from) sources-rev)
      (cons (.ref (car edges) 'to) targets-rev))))
 
-;; : (-> [PooFlowFunflowDagEdge] Alist)
-(def (poo-flow-funflow-edge-endpoint-summary edges)
+;; : (-> [YuanxuFunflowDagEdge] Alist)
+(def (yuanxu-funflow-edge-endpoint-summary edges)
   (let (summary
-        (poo-flow-funflow-edge-endpoint-summary/rev edges '() '()))
+        (yuanxu-funflow-edge-endpoint-summary/rev edges '() '()))
     (list
      (cons 'sources (car summary))
      (cons 'targets (cdr summary)))))
 
 ;; : (-> [Symbol] [Symbol] [Symbol])
-(def (poo-flow-funflow-nodes-not-in nodes blocked-nodes)
+(def (yuanxu-funflow-nodes-not-in nodes blocked-nodes)
   (cond
    ((null? nodes) '())
-   ((poo-flow-cicd-symbol-member? (car nodes) blocked-nodes)
-    (poo-flow-funflow-nodes-not-in (cdr nodes) blocked-nodes))
+   ((yuanxu-cicd-symbol-member? (car nodes) blocked-nodes)
+    (yuanxu-funflow-nodes-not-in (cdr nodes) blocked-nodes))
    (else
     (cons (car nodes)
-          (poo-flow-funflow-nodes-not-in (cdr nodes) blocked-nodes)))))
+          (yuanxu-funflow-nodes-not-in (cdr nodes) blocked-nodes)))))
 
-;; : (-> Alist PooFlowFunflowDagEdge)
-(def (poo-flow-funflow-dependency-edge->dag-edge edge)
-  (poo-flow-funflow-dag-edge
-   (poo-flow-cicd-alist-ref edge 'from #f)
-   (poo-flow-cicd-alist-ref edge 'to #f)
-   (poo-flow-product-field-rows
+;; : (-> Alist YuanxuFunflowDagEdge)
+(def (yuanxu-funflow-dependency-edge->dag-edge edge)
+  (yuanxu-funflow-dag-edge
+   (yuanxu-cicd-alist-ref edge 'from #f)
+   (yuanxu-cicd-alist-ref edge 'to #f)
+   (yuanxu-product-field-rows
     (source 'workflow-cicd-dependency-graph))))
 
-;; : (-> [Alist] [PooFlowFunflowDagEdge])
-(def (poo-flow-funflow-dependency-edges->dag-edges edges)
+;; : (-> [Alist] [YuanxuFunflowDagEdge])
+(def (yuanxu-funflow-dependency-edges->dag-edges edges)
   (cond
    ((null? edges) '())
    ((pair? edges)
-    (cons (poo-flow-funflow-dependency-edge->dag-edge (car edges))
-          (poo-flow-funflow-dependency-edges->dag-edges (cdr edges))))
+    (cons (yuanxu-funflow-dependency-edge->dag-edge (car edges))
+          (yuanxu-funflow-dependency-edges->dag-edges (cdr edges))))
    (else
     (error "funflow dependency edges must be a list" edges))))
 
-;; : (-> Symbol PooFlowFunflowCompositionStep)
-(def (poo-flow-funflow-node->composition-step node)
-  (poo-flow-funflow-composition-step
+;; : (-> Symbol YuanxuFunflowCompositionStep)
+(def (yuanxu-funflow-node->composition-step node)
+  (yuanxu-funflow-composition-step
    'arrow-node
    node
    #f
    #f
-   (poo-flow-product-field-rows
+   (yuanxu-product-field-rows
     (source 'funflow-functional-kernel))))
 
-;; : (-> PooFlowFunflowDagEdge PooFlowFunflowCompositionStep)
-(def (poo-flow-funflow-edge->composition-step edge)
-  (poo-flow-funflow-composition-step
+;; : (-> YuanxuFunflowDagEdge YuanxuFunflowCompositionStep)
+(def (yuanxu-funflow-edge->composition-step edge)
+  (yuanxu-funflow-composition-step
    'kleisli-bind
    #f
    (.ref edge 'from)
    (.ref edge 'to)
-   (poo-flow-product-field-rows
+   (yuanxu-product-field-rows
     (source 'funflow-functional-kernel)
     (edge-composition-style
      (.ref edge 'composition-style)))))
 
-;; : (-> [Symbol] [PooFlowFunflowCompositionStep] [PooFlowFunflowCompositionStep])
-(def (poo-flow-funflow-node-composition-steps/rev nodes steps-rev)
+;; : (-> [Symbol] [YuanxuFunflowCompositionStep] [YuanxuFunflowCompositionStep])
+(def (yuanxu-funflow-node-composition-steps/rev nodes steps-rev)
   (if (null? nodes)
     steps-rev
-    (poo-flow-funflow-node-composition-steps/rev
+    (yuanxu-funflow-node-composition-steps/rev
      (cdr nodes)
-     (cons (poo-flow-funflow-node->composition-step (car nodes))
+     (cons (yuanxu-funflow-node->composition-step (car nodes))
            steps-rev))))
 
-;; : (-> [PooFlowFunflowDagEdge] [PooFlowFunflowCompositionStep] [PooFlowFunflowCompositionStep])
-(def (poo-flow-funflow-edge-composition-steps/rev edges steps-rev)
+;; : (-> [YuanxuFunflowDagEdge] [YuanxuFunflowCompositionStep] [YuanxuFunflowCompositionStep])
+(def (yuanxu-funflow-edge-composition-steps/rev edges steps-rev)
   (if (null? edges)
     steps-rev
-    (poo-flow-funflow-edge-composition-steps/rev
+    (yuanxu-funflow-edge-composition-steps/rev
      (cdr edges)
-     (cons (poo-flow-funflow-edge->composition-step (car edges))
+     (cons (yuanxu-funflow-edge->composition-step (car edges))
            steps-rev))))
 
-;; : (-> [Symbol] [PooFlowFunflowDagEdge] [PooFlowFunflowCompositionStep])
-(def (poo-flow-funflow-dag-composition-steps nodes edges)
+;; : (-> [Symbol] [YuanxuFunflowDagEdge] [YuanxuFunflowCompositionStep])
+(def (yuanxu-funflow-dag-composition-steps nodes edges)
   (reverse
-   (poo-flow-funflow-edge-composition-steps/rev
+   (yuanxu-funflow-edge-composition-steps/rev
     edges
-    (poo-flow-funflow-node-composition-steps/rev nodes '()))))
+    (yuanxu-funflow-node-composition-steps/rev nodes '()))))
 
-;; : (-> PooFlowFunflowFunctionalDag Alist)
+;; : (-> YuanxuFunflowFunctionalDag Alist)
 (defpoo-final-projection
-  poo-flow-funflow-functional-dag->alist (dag)
+  yuanxu-funflow-functional-dag->alist (dag)
   (bindings ((_guard
-              (poo-flow-funflow-require
+              (yuanxu-funflow-require
                "funflow functional DAG projection requires a DAG"
-               (poo-flow-funflow-functional-dag? dag)
+               (yuanxu-funflow-functional-dag? dag)
                dag))))
   (fields ((kind (.ref dag 'kind))
            (schema (.ref dag 'schema))
@@ -360,13 +360,13 @@
            (check-map (.ref dag 'check-map))
            (composition-style (.ref dag 'composition-style))
            (composition-steps
-            (poo-flow-funflow-composition-steps->alists
+            (yuanxu-funflow-composition-steps->alists
              (.ref dag 'composition-steps)))
            (composition-step-count
             (.ref dag 'composition-step-count))
            (nodes (.ref dag 'nodes))
            (edges
-            (poo-flow-funflow-dag-edges->alists
+            (yuanxu-funflow-dag-edges->alists
              (.ref dag 'edges)))
            (edge-count (.ref dag 'edge-count))
            (entry-nodes (.ref dag 'entry-nodes))
@@ -380,13 +380,13 @@
            (runtime-owner (.ref dag 'runtime-owner))
            (runtime-executed (.ref dag 'runtime-executed)))))
 
-;; : (-> PooFlowFunflowNormalizedFlow Alist)
+;; : (-> YuanxuFunflowNormalizedFlow Alist)
 (defpoo-final-projection
-  poo-flow-funflow-normalized-flow->alist (flow)
+  yuanxu-funflow-normalized-flow->alist (flow)
   (bindings ((_guard
-              (poo-flow-funflow-require
+              (yuanxu-funflow-require
                "funflow normalized-flow projection requires a normalized-flow"
-               (poo-flow-funflow-normalized-flow? flow)
+               (yuanxu-funflow-normalized-flow? flow)
                flow))))
   (fields ((kind (.ref flow 'kind))
            (schema (.ref flow 'schema))
@@ -403,13 +403,13 @@
            (valid? (.ref flow 'valid?))
            (runtime-executed (.ref flow 'runtime-executed)))))
 
-;; : (-> PooFlowFunflowPlan Alist)
+;; : (-> YuanxuFunflowPlan Alist)
 (defpoo-final-projection
-  poo-flow-funflow-plan->alist (plan)
+  yuanxu-funflow-plan->alist (plan)
   (bindings ((_guard
-              (poo-flow-funflow-require
+              (yuanxu-funflow-require
                "funflow plan projection requires a plan"
-               (poo-flow-funflow-plan? plan)
+               (yuanxu-funflow-plan? plan)
                plan))))
   (fields ((kind (.ref plan 'kind))
            (schema (.ref plan 'schema))
@@ -428,51 +428,51 @@
            (runtime-owner (.ref plan 'runtime-owner))
            (runtime-executed (.ref plan 'runtime-executed)))))
 
-;; : (-> PooFlowFunflowPlan Alist)
-(def (poo-flow-funflow-plan->runtime-projection plan)
-  (poo-flow-funflow-require
+;; : (-> YuanxuFunflowPlan Alist)
+(def (yuanxu-funflow-plan->runtime-projection plan)
+  (yuanxu-funflow-require
    "funflow runtime projection requires a plan"
-   (poo-flow-funflow-plan? plan)
+   (yuanxu-funflow-plan? plan)
    plan)
-   (poo-flow-product-field-rows
-   (kind 'poo-flow.funflow.plan-projection)
-   (schema 'poo-flow.funflow-plan-projection.v1)
+   (yuanxu-product-field-rows
+   (kind 'yuanxu.funflow.plan-projection)
+   (schema 'yuanxu.funflow-plan-projection.v1)
    (origin (.ref plan 'origin))
    (runtime-contract (.ref plan 'runtime-contract))
    (source-map (.ref plan 'source-map))
-   (plan (poo-flow-funflow-plan->alist plan))
+   (plan (yuanxu-funflow-plan->alist plan))
    (runtime-executed #f)))
 
-;; : (-> PooFlowFunflowCheckPrototype Alist)
-;; : (-> PooFlowFunflowCheckPrototype PooFlowCicdCheck)
+;; : (-> YuanxuFunflowCheckPrototype Alist)
+;; : (-> YuanxuFunflowCheckPrototype YuanxuCicdCheck)
 ;;; Boundary: funflow poo checks to cicd checks is the policy-visible edge for
 ;;; policy behavior, keeping validation, lookup, or projection responsibilities
 ;;; centralized for callers.
-;; : (-> [PooFlowFunflowCheckPrototype] [PooFlowCicdCheck])
-;; : (-> PooFlowFunflowPipelinePrototype PooFlowCicdCheckMap)
+;; : (-> [YuanxuFunflowCheckPrototype] [YuanxuCicdCheck])
+;; : (-> YuanxuFunflowPipelinePrototype YuanxuCicdCheckMap)
 ;;; Functional DAGs are Funflow-owned POO objects derived from a pipeline. They
 ;;; keep the authoring model functional and inspectable while leaving runtime
 ;;; scheduling to Marlin.
-;; : (-> PooFlowCicdCheckMap PooFlowFunflowFunctionalDag)
-(def (poo-flow-funflow-check-map->functional-dag check-map)
-  (poo-flow-funflow-require
+;; : (-> YuanxuCicdCheckMap YuanxuFunflowFunctionalDag)
+(def (yuanxu-funflow-check-map->functional-dag check-map)
+  (yuanxu-funflow-require
    "funflow functional DAG requires a cicd check-map"
-   (poo-flow-cicd-check-map? check-map)
+   (yuanxu-cicd-check-map? check-map)
    check-map)
-  (let* ((graph (poo-flow-cicd-check-map->dependency-graph check-map))
-         (nodes (poo-flow-cicd-alist-ref graph 'nodes '()))
-         (edges (poo-flow-funflow-dependency-edges->dag-edges
-                 (poo-flow-cicd-alist-ref graph 'edges '())))
+  (let* ((graph (yuanxu-cicd-check-map->dependency-graph check-map))
+         (nodes (yuanxu-cicd-alist-ref graph 'nodes '()))
+         (edges (yuanxu-funflow-dependency-edges->dag-edges
+                 (yuanxu-cicd-alist-ref graph 'edges '())))
          (composition-steps
-          (poo-flow-funflow-dag-composition-steps nodes edges))
+          (yuanxu-funflow-dag-composition-steps nodes edges))
          (endpoint-summary
-          (poo-flow-funflow-edge-endpoint-summary edges)))
+          (yuanxu-funflow-edge-endpoint-summary edges)))
     (object<-alist
      (list
-      (cons 'kind +poo-flow-funflow-functional-dag-prototype-kind+)
-      (cons 'schema 'poo-flow.modules.funflow.functional-dag.v1)
-      (cons 'pipeline-name (poo-flow-cicd-check-map-name check-map))
-      (cons 'check-map (poo-flow-cicd-check-map-name check-map))
+      (cons 'kind +yuanxu-funflow-functional-dag-prototype-kind+)
+      (cons 'schema 'yuanxu.modules.funflow.functional-dag.v1)
+      (cons 'pipeline-name (yuanxu-cicd-check-map-name check-map))
+      (cons 'check-map (yuanxu-cicd-check-map-name check-map))
       (cons 'composition-style 'arrow-kleisli)
       (cons 'composition-steps composition-steps)
       (cons 'composition-step-count (length composition-steps))
@@ -480,62 +480,62 @@
       (cons 'edges edges)
       (cons 'edge-count (length edges))
       (cons 'entry-nodes
-            (poo-flow-funflow-nodes-not-in
+            (yuanxu-funflow-nodes-not-in
              nodes
-             (poo-flow-cicd-alist-ref endpoint-summary 'targets '())))
+             (yuanxu-cicd-alist-ref endpoint-summary 'targets '())))
       (cons 'terminal-nodes
-            (poo-flow-funflow-nodes-not-in
+            (yuanxu-funflow-nodes-not-in
              nodes
-             (poo-flow-cicd-alist-ref endpoint-summary 'sources '())))
+             (yuanxu-cicd-alist-ref endpoint-summary 'sources '())))
       (cons 'ready-order
-            (poo-flow-cicd-alist-ref graph 'ready-order '()))
+            (yuanxu-cicd-alist-ref graph 'ready-order '()))
       (cons 'unordered-nodes
-            (poo-flow-cicd-alist-ref graph 'unordered-nodes '()))
+            (yuanxu-cicd-alist-ref graph 'unordered-nodes '()))
       (cons 'blocked-order?
-            (poo-flow-cicd-alist-ref graph 'blocked-order? #f))
+            (yuanxu-cicd-alist-ref graph 'blocked-order? #f))
       (cons 'diagnostics
-            (poo-flow-cicd-alist-ref graph 'diagnostics '()))
+            (yuanxu-cicd-alist-ref graph 'diagnostics '()))
       (cons 'valid?
-            (poo-flow-cicd-alist-ref graph 'valid? #f))
+            (yuanxu-cicd-alist-ref graph 'valid? #f))
       (cons 'metadata
-            (poo-flow-product-field-rows
+            (yuanxu-product-field-rows
              (source 'funflow-functional-kernel)
              (dependency-graph-kind
-              (poo-flow-cicd-alist-ref graph 'kind #f))))
+              (yuanxu-cicd-alist-ref graph 'kind #f))))
       (cons 'runtime-owner "marlin-agent-core")
       (cons 'runtime-executed #f)))))
 
-;; : (-> PooFlowFunflowPipelinePrototype PooFlowFunflowFunctionalDag)
-(def (poo-flow-funflow-poo-pipeline->functional-dag pipeline)
-  (poo-flow-funflow-check-map->functional-dag
-   (poo-flow-funflow-poo-pipeline->check-map pipeline)))
+;; : (-> YuanxuFunflowPipelinePrototype YuanxuFunflowFunctionalDag)
+(def (yuanxu-funflow-poo-pipeline->functional-dag pipeline)
+  (yuanxu-funflow-check-map->functional-dag
+   (yuanxu-funflow-poo-pipeline->check-map pipeline)))
 
 ;; : (-> Symbol [Symbol] [Alist])
-(def (poo-flow-funflow-source-map-rows flow-name stages)
+(def (yuanxu-funflow-source-map-rows flow-name stages)
   (cond
    ((null? stages) '())
    ((pair? stages)
     (cons
-     (poo-flow-product-field-rows
+     (yuanxu-product-field-rows
       (stage (car stages))
       (source 'use-module-funflow)
       (path (list 'use-module 'funflow flow-name (car stages))))
-     (poo-flow-funflow-source-map-rows flow-name (cdr stages))))
+     (yuanxu-funflow-source-map-rows flow-name (cdr stages))))
    (else
     (error "funflow normalized-flow stages must be a list" stages))))
 
-;; : (-> PooFlowFunflowFunctionalDag Alist PooFlowFunflowNormalizedFlow)
-(def (poo-flow-funflow-functional-dag->normalized-flow dag metadata)
-  (poo-flow-funflow-require
+;; : (-> YuanxuFunflowFunctionalDag Alist YuanxuFunflowNormalizedFlow)
+(def (yuanxu-funflow-functional-dag->normalized-flow dag metadata)
+  (yuanxu-funflow-require
    "funflow normalized-flow requires a functional DAG"
-   (poo-flow-funflow-functional-dag? dag)
+   (yuanxu-funflow-functional-dag? dag)
    dag)
   (let* ((flow-name (.ref dag 'pipeline-name))
          (stages (.ref dag 'nodes)))
     (object<-alist
      (list
-      (cons 'kind +poo-flow-funflow-normalized-flow-prototype-kind+)
-      (cons 'schema 'poo-flow.modules.funflow.normalized-flow.v1)
+      (cons 'kind +yuanxu-funflow-normalized-flow-prototype-kind+)
+      (cons 'schema 'yuanxu.modules.funflow.normalized-flow.v1)
       (cons 'name flow-name)
       (cons 'pipeline-name flow-name)
       (cons 'source 'use-module-funflow)
@@ -543,75 +543,75 @@
       (cons 'policy-family 'funflow)
       (cons 'functional-dag dag)
       (cons 'stages stages)
-      (cons 'source-map (poo-flow-funflow-source-map-rows flow-name stages))
-      (cons 'runtime-contract 'poo-flow.anyio.v1)
+      (cons 'source-map (yuanxu-funflow-source-map-rows flow-name stages))
+      (cons 'runtime-contract 'yuanxu.anyio.v1)
       (cons 'metadata metadata)
       (cons 'diagnostics (.ref dag 'diagnostics))
       (cons 'valid? (.ref dag 'valid?))
       (cons 'runtime-executed #f)))))
 
-;; : (-> PooFlowCicdCheckMap PooFlowFunflowNormalizedFlow)
-(def (poo-flow-funflow-check-map->normalized-flow check-map)
-  (let* ((dag (poo-flow-funflow-check-map->functional-dag check-map))
+;; : (-> YuanxuCicdCheckMap YuanxuFunflowNormalizedFlow)
+(def (yuanxu-funflow-check-map->normalized-flow check-map)
+  (let* ((dag (yuanxu-funflow-check-map->functional-dag check-map))
          (metadata
-          (poo-flow-product-field-rows
+          (yuanxu-product-field-rows
            (source 'use-module-funflow)
-           (check-map (poo-flow-cicd-check-map-name check-map)))))
-    (poo-flow-funflow-functional-dag->normalized-flow dag metadata)))
+           (check-map (yuanxu-cicd-check-map-name check-map)))))
+    (yuanxu-funflow-functional-dag->normalized-flow dag metadata)))
 
-;; : (-> PooFlowFunflowPipelinePrototype PooFlowFunflowNormalizedFlow)
-(def (poo-flow-funflow-poo-pipeline->normalized-flow pipeline)
-  (poo-flow-funflow-check-map->normalized-flow
-   (poo-flow-funflow-poo-pipeline->check-map pipeline)))
+;; : (-> YuanxuFunflowPipelinePrototype YuanxuFunflowNormalizedFlow)
+(def (yuanxu-funflow-poo-pipeline->normalized-flow pipeline)
+  (yuanxu-funflow-check-map->normalized-flow
+   (yuanxu-funflow-poo-pipeline->check-map pipeline)))
 
 ;; : (-> [Symbol] [Alist])
-(def (poo-flow-funflow-node-table-rows nodes)
+(def (yuanxu-funflow-node-table-rows nodes)
   (cond
    ((null? nodes) '())
    ((pair? nodes)
     (cons
-     (poo-flow-product-field-rows
+     (yuanxu-product-field-rows
       (name (car nodes))
       (kind 'funflow-step)
       (runtime-executed #f))
-     (poo-flow-funflow-node-table-rows (cdr nodes))))
+     (yuanxu-funflow-node-table-rows (cdr nodes))))
    (else
     (error "funflow plan nodes must be a list" nodes))))
 
-;; : (-> [PooFlowFunflowDagEdge] [Alist])
-(def (poo-flow-funflow-edge-table-rows edges)
+;; : (-> [YuanxuFunflowDagEdge] [Alist])
+(def (yuanxu-funflow-edge-table-rows edges)
   (cond
    ((null? edges) '())
    ((pair? edges)
-    (cons (poo-flow-funflow-dag-edge->alist (car edges))
-          (poo-flow-funflow-edge-table-rows (cdr edges))))
+    (cons (yuanxu-funflow-dag-edge->alist (car edges))
+          (yuanxu-funflow-edge-table-rows (cdr edges))))
    (else
     (error "funflow plan edges must be a list" edges))))
 
-;; : (-> PooFlowFunflowNormalizedFlow PooFlowFunflowPlan)
-(def (poo-flow-funflow-normalized-flow->plan flow)
-  (poo-flow-funflow-require
+;; : (-> YuanxuFunflowNormalizedFlow YuanxuFunflowPlan)
+(def (yuanxu-funflow-normalized-flow->plan flow)
+  (yuanxu-funflow-require
    "funflow plan requires a normalized-flow"
-   (poo-flow-funflow-normalized-flow? flow)
+   (yuanxu-funflow-normalized-flow? flow)
    flow)
   (let* ((dag (.ref flow 'functional-dag))
          (nodes (.ref dag 'nodes))
          (edges (.ref dag 'edges)))
     (object<-alist
      (list
-      (cons 'kind +poo-flow-funflow-plan-prototype-kind+)
-      (cons 'schema 'poo-flow.modules.funflow.plan.v1)
+      (cons 'kind +yuanxu-funflow-plan-prototype-kind+)
+      (cons 'schema 'yuanxu.modules.funflow.plan.v1)
       (cons 'name (.ref flow 'name))
       (cons 'version 1)
       (cons 'origin 'use-module-funflow)
       (cons 'normalized-flow (.ref flow 'name))
       (cons 'node-table
-            (list->vector (poo-flow-funflow-node-table-rows nodes)))
+            (list->vector (yuanxu-funflow-node-table-rows nodes)))
       (cons 'edge-table
-            (list->vector (poo-flow-funflow-edge-table-rows edges)))
+            (list->vector (yuanxu-funflow-edge-table-rows edges)))
       (cons 'policy-table
             (vector
-             (poo-flow-product-field-rows
+             (yuanxu-product-field-rows
               (policy-family (.ref flow 'policy-family)))))
       (cons 'effect-table '#())
       (cons 'runtime-contract (.ref flow 'runtime-contract))
@@ -621,13 +621,13 @@
       (cons 'runtime-owner "python-anyio")
       (cons 'runtime-executed #f)))))
 
-;; : (-> PooFlowCicdCheckMap PooFlowFunflowPlan)
-(def (poo-flow-funflow-check-map->plan check-map)
-  (poo-flow-funflow-normalized-flow->plan
-   (poo-flow-funflow-check-map->normalized-flow check-map)))
+;; : (-> YuanxuCicdCheckMap YuanxuFunflowPlan)
+(def (yuanxu-funflow-check-map->plan check-map)
+  (yuanxu-funflow-normalized-flow->plan
+   (yuanxu-funflow-check-map->normalized-flow check-map)))
 
-;; : (-> PooFlowFunflowPipelinePrototype PooFlowFunflowPlan)
-(def (poo-flow-funflow-poo-pipeline->plan pipeline)
-  (poo-flow-funflow-check-map->plan
-   (poo-flow-funflow-poo-pipeline->check-map pipeline)))
+;; : (-> YuanxuFunflowPipelinePrototype YuanxuFunflowPlan)
+(def (yuanxu-funflow-poo-pipeline->plan pipeline)
+  (yuanxu-funflow-check-map->plan
+   (yuanxu-funflow-poo-pipeline->check-map pipeline)))
 

@@ -187,7 +187,7 @@ identity when the requirement names an upstream-maintained output. Direct
 assignment remains simpler when the complete desired list is known.
 
 Native use-module lowers to a lexical let binding ff to
-(poo-flow-module-scope CIHelpers). It evaluates the scope expression once;
+(yuanxu-module-scope CIHelpers). It evaluates the scope expression once;
 with-slots captures the data object once and selected names expand to native
 slot reads at their reference sites. Their getters are not forced merely because
 the names were declared. Macro-introduced helper identifiers retain definition-site

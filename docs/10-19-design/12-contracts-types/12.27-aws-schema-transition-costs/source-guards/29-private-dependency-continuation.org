@@ -135,7 +135,7 @@ Core qualification, not code required from module authors.
 
 * Cost model and measurement boundary
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the historical =6N^2 + 2N= recurrence and proves
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the historical =6N^2 + 2N= recurrence and proves
 the new paired-source recurrence independently:
 
 - Entry checks over preceding role prefixes plus declaration-return checks

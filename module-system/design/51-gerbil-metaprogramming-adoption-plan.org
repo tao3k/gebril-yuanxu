@@ -271,7 +271,7 @@ Phase 3: deepen session policy generation.
 - Completed core/session/workflow row-frame projection slice: session transform and session value metadata prefixes now use owner-local fixed-prefix tail helpers; core plan, runner, receipt, runtime, failure, strategy, task, flow registry, and validation fixed receipt or error detail rows route through =defpoo-core-receipt-projection=; CI/CD runtime metadata and runtime readiness rows now use declarative field/tail helpers instead of hand-written =cons= towers.
 - Completed agent-sandbox projection and merge slice: request, profile, descriptor, validation, bridge, Marlin, Cube, nono, and sandbox resource final rows now share =modules/agent-sandbox/projection-syntax.ss= instead of copying owner-local =list (cons ...)= frames, while sandbox resource merge now collects unseen right-hand bindings in reverse accumulators and appends them to the left side once instead of repeatedly growing lists with =append=.
 - Completed session-agent topology accumulator follow-up: =poo-flow-session-agent-node-topology-summary= now derives agent ids, lineage edge pairs, and durable policy refs with one tail-recursive reverse accumulator instead of recursively rebuilding the tail summary before each cons.
-- Completed workflow CI/CD runtime projection readability slice: runtime metadata, runtime policy, command envelopes, durable rows, and check receipt field projections now use an owner-local =poo-flow-cicd-field-rows= declarative macro over the bounded row-tail helper instead of hand-written nested =cons= towers, preserving durable-field tail composition without making public =user-interface/= declarations depend on benchmark or ABI plumbing.
+- Completed workflow CI/CD runtime projection readability slice: runtime metadata, runtime policy, command envelopes, durable rows, and check receipt field projections now use an owner-local =yuanxu-cicd-field-rows= declarative macro over the bounded row-tail helper instead of hand-written nested =cons= towers, preserving durable-field tail composition without making public =user-interface/= declarations depend on benchmark or ABI plumbing.
 - Completed sandbox-core profile-support projection helper slice:
   profile derivation, resolve, backend capability policy diagnostics,
   authoring diagnostics, and validation payload rows now share
@@ -428,7 +428,7 @@ Phase 4: broaden runtime projection generation carefully.
   =poo-core-role-object= while keeping user-facing module syntax in
   =descriptor-syntax.ss= and activation/import validation in the descriptor
   owner.
-- Completed module syntax hook-frame slice: =poo-flow-module-hook-block= now
+- Completed module syntax hook-frame slice: =yuanxu-module-hook-block= now
   expands through =poo-core-role-object=, so user-facing hook syntax still
   yields ordinary POO slot objects without owning a separate =.mix= frame.
 - Completed sandbox descriptor object-frame slice: agent-sandbox profile
@@ -526,7 +526,7 @@ Phase 4: broaden runtime projection generation carefully.
   the graph projection owner. Funflow functional-DAG edge and composition-step
   collection serialization now uses the same batch projection helper.
 - Completed Funflow DAG composition-step accumulator slice:
-  =poo-flow-funflow-dag-composition-steps= now preserves node-then-edge step
+  =yuanxu-funflow-dag-composition-steps= now preserves node-then-edge step
   order with one functional accumulator instead of allocating node and edge
   =map= lists and appending them.
 - Completed Funflow workflow agreement summary slice:
@@ -650,7 +650,7 @@ Phase 5: generate private =use-module= branches last.
   declarations with slot operators or method-like transforms still fall back to
   the original =.o= expansion.
 - Completed user module bundle flattening slice:
-  =poo-flow-user-module-bundles->modules= now preserves bundle declaration
+  =yuanxu-user-module-bundles->modules= now preserves bundle declaration
   order with a single functional accumulator rather than =apply append=.
 - Completed loop-engine config branch slice: =use-module loop-engine :config
   (.def ...)= now routes through the shared

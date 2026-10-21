@@ -36,7 +36,7 @@ not its Nickel wrapper API or an implicit runtime package registry.
   this is not resource-granular file loading.
 - =func.ss= owns pure structural conversion; =objects.ss= uses the existing
   JSON Schema compiler and keeps supplemental collection checks separate.
-- =config.ss= owns lazy package-path injection from =POO_FLOW_OPENTOFU_ARTIFACT=.
+- =config.ss= owns lazy package-path injection from =YUANXU_OPENTOFU_ARTIFACT=.
   This development adapter is internal to the module, not user resource config.
 - =interface.ss= exports the maintained =OpenTofu= module object and its native
   kernels, not a fixed AWS release.
@@ -198,7 +198,7 @@ not complete-suite or remote-CI qualification.
 * Development package integration
 
 The product =devenv.nix= now adds the schema output and its =engine= package to
-=packages=, and sets =POO_FLOW_OPENTOFU_ARTIFACT= to that exact schema output.
+=packages=, and sets =YUANXU_OPENTOFU_ARTIFACT= to that exact schema output.
 On aarch64-darwin the selected provider is the matched 5.100.0 test package;
 other hosts select their native nixpkgs AWS package. This is development-only
 selection, not a new production default or a change to Loader behavior.
@@ -243,7 +243,7 @@ current receiver. The existing hygienic expansion is:
 #+begin_src scheme
 (use-module OpenTofu as tf BODY)
 ;; Equivalent existing bounded expansion:
-(let ((tf (poo-flow-module-scope OpenTofu))) BODY)
+(let ((tf (yuanxu-module-scope OpenTofu))) BODY)
 #+end_src
 
 Binding the alias forces neither config, package IO nor Contract compilation.

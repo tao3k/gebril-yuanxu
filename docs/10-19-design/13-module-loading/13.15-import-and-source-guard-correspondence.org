@@ -35,7 +35,7 @@ result or a captured input-registration projection.
 
 Input registration can grow while declarations are imported. Every consumption
 therefore resolves =kernel-inputs= against the cached context list again. In
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.lean]], =current_registration_is_never_omitted= and
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.lean]], =current_registration_is_never_omitted= and
 =later_registration_is_visible= prove why filtering registrations only when the
 topology was first cached would be incorrect.
 
@@ -130,9 +130,9 @@ When Ops returns a failure, parent cleanup can release worker files even if the
 worker did not unwind its own fixture. Hard termination of the parent itself is
 not claimed to run Scheme cleanup.
 
-An intermediate diagnostic attempt accidentally used =poo-flow-test-fixture=
+An intermediate diagnostic attempt accidentally used =yuanxu-test-fixture=
 around the outer endpoint, introducing a parent case watchdog that included
-executor preparation time. It failed with =PooFlowDebugDurationAnomaly= while
+executor preparation time. It failed with =YuanxuDebugDurationAnomaly= while
 waiting for worker output. The endpoint is restored to its original =std/test=
 case with the ordinary fixture combinator; this removes the newly introduced
 watchdog rather than increasing an existing limit. Ops and outer Just deadlines
@@ -427,7 +427,7 @@ before the factory succeeded. Equality of the currently exported descriptor
 bindings did not detect the factory's already-retained obsolete prototype.
 
 Observability's Types, factories, debug and slot-debug consumers now consistently
-use their canonical =:core/...= module identities instead of mixing explicit
+use their canonical =:yuanxu/...= module identities instead of mixing explicit
 =types.ss= file imports with compiled-library imports. The public objects,
 strict ancestry check and factory implementation are unchanged. The same
 import-order test then passed with natural exit zero and all harness markers.
@@ -506,7 +506,7 @@ The direct complete Case ALSO failed its unchanged Case watchdog. It reached
 the second Graph at body time 43.743, second package linking at 53.817, fresh
 binding at 58.057, and old-evidence refusal at 58.776. The fresh publication call
 returned at 60.482 with a public metadata =source= failure whose cause was
-=PooFlowDebugDurationAnomaly=, not a successful new publication. The existing
+=YuanxuDebugDurationAnomaly=, not a successful new publication. The existing
 =fresh-failure = #f= assertion correctly rejected it. An emitted
 =child-published= phase label only identifies the return position; neither that
 label nor printed harness completion makes this a pass.
@@ -649,7 +649,7 @@ The source-only follow-up changes executable work at three existing owners:
    control replays such a collected hit after mutation and requires refusal.
 2. A source-policy invocation parses each role once. Nonempty-source, dependency
    direction, owner-import and authoring checks inspect that invocation's inert
-   datum snapshot. The new functional =poo-flow-module-authoring-admit-datums=
+   datum snapshot. The new functional =yuanxu-module-authoring-admit-datums=
    adapter still invokes the existing multi-dispatch producer for every datum;
    it retains diagnostic order and final admission validation. The public port
    API retains its streaming semantics. A later policy invocation re-reads,
@@ -839,13 +839,13 @@ a different loading mode and does not qualify this Core source-only workload.
 
 ** Observability belongs to the test macro
 
-=poo-flow-test-fixture= already lowers through =poo-flow-test-case=; the
+=yuanxu-test-fixture= already lowers through =yuanxu-test-case=; the
 Case Profile owns the existing memory/duration watchdog, and the fixture owns
 resource cleanup. A module author does not construct a memory sampler, runner
 or environment-variable protocol:
 
 #+begin_src scheme
-(poo-flow-test-fixture "selected AWS publication remains current"
+(yuanxu-test-fixture "selected AWS publication remains current"
   (workspace Workspace)
   ;; Ordinary native assertions and the existing Ops .run consumer.
   (check-equal? (file-exists? workspace) #t))

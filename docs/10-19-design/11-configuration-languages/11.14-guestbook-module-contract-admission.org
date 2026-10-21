@@ -25,7 +25,7 @@ but does not resolve an unbound module name from the filesystem.
 
 * What the existing module system actually does
 
-[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][poo-flow-load-modules]] accepts a source collection object and projects the
+[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][yuanxu-load-modules]] accepts a source collection object and projects the
 collection's conventional interface.ss SourceRefs. Collection discovery lists its
 module directories; a selected module can instead be located by key without
 projecting every interface. [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/source-registry.ss][User tree source policy]] independently names init.ss
@@ -33,19 +33,19 @@ and config.ss. These are source selection/discovery mechanisms, not evaluation
 of all implementation bodies or a raw path-to-lexical-binding macro.
 
 [[file:../../../profile-composition/selection-syntax.ss][Bounded use-module]] expands to a hygienic lexical binding of the existing
-scope via poo-flow-module-scope. [[file:../../../profile-composition/bindings.ss][That function]] checks object identity/shape and
+scope via yuanxu-module-scope. [[file:../../../profile-composition/bindings.ss][That function]] checks object identity/shape and
 returns the object; it does not import a file, resolve a catalog name, force source
 slots or create admission evidence. Keep these responsibilities separate.
 
 Existing public collection projection, shown only for framework maintainers:
 
 #+begin_src scheme
-(poo-flow-load-modules
+(yuanxu-load-modules
  (make-poo-flow-module-source-collection
   'team-modules 'team "." "modules"))
 #+end_src
 
-Do not document (poo-flow-load-modules "./dir") as currently accepted or claim
+Do not document (yuanxu-load-modules "./dir") as currently accepted or claim
 that it automatically installs lexical JsonSchema/Guestbook bindings. Connecting
 selected SourceRefs, admitted interfaces and exported native scopes is the
 remaining integration boundary; this task does not implement that Loader work.
@@ -70,23 +70,23 @@ module's functional owner, not in downstream config files.
 #+begin_src scheme
 (def (schema-obligations artifact candidate _context)
   (if (object? candidate)
-    (poo-flow-json-schema-object-contract-validation-diagnostics
-     (poo-flow-json-schema-contract-artifact-validate artifact candidate))
+    (yuanxu-json-schema-object-contract-validation-diagnostics
+     (yuanxu-json-schema-contract-artifact-validate artifact candidate))
     (list (.o kind: 'native-config-object-required))))
 
 (def (schema-artifact->contract artifact)
-  (.cc (poo-flow-json-schema-contract-artifact-object-contract artifact)
+  (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
        '.obligations (cut schema-obligations artifact <> <>)))
 
 (.def JsonSchema
-  compile: poo-flow-json-schema->contract-artifact
+  compile: yuanxu-json-schema->contract-artifact
   contract: schema-artifact->contract
-  admit: poo-flow-contract-admit
-  accepted?: poo-flow-validation-evidence-accepted?)
+  admit: yuanxu-contract-admit
+  accepted?: yuanxu-validation-evidence-accepted?)
 #+end_src
 
-The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][poo-flow-native-contract]] derives
-it from poo-flow-predicate-contract. It can participate in responsibilities and
+The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-native-contract]] derives
+it from yuanxu-predicate-contract. It can participate in responsibilities and
 public .admit. The .cc adapter above retains that descriptor and replaces its
 obligations with the existing full-root validator. This matters because the
 emitted slot-obligation walk alone does not enforce every root-level rule such as
@@ -192,7 +192,7 @@ must remain associated with the published artifact.
 #+end_src
 
 All three responsibility entries reference the same schema-backed native Contract.
-The existing Core poo-flow-object-admit walks them and invokes each Contract's
+The existing Core yuanxu-object-admit walks them and invokes each Contract's
 .admit on that final child. It records responsibility-evidence and only runs
 Scenario obligations after successful role classification and child admission.
 The Scenario inherits this public .admit; it does not need a separate handwritten
@@ -268,7 +268,7 @@ baseline and expose native admission without forcing its contracts at scope bind
   baseline: GuestbookBaselineV2
   contracts: (make-guestbook-contracts)
   admit:
-  (cut poo-flow-contract-admit (.get contracts ScenarioContract) <> <>))
+  (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>))
 #+end_src
 
 GuestbookBaselineV2 denotes the independently maintained Scenario value from the

@@ -15,7 +15,7 @@ checkout at =308e67f31273df6892ef55d3dfdc2b01ddb4c886=. The public contract
 implementation remains uncommitted there; the installed dependency is unchanged.
 
 Physical location in this Core repository does not imply an admission dependency.
-The value-contract closure imports no =PooFlowContract.=, Core admission,
+The value-contract closure imports no =YuanxuContract.=, Core admission,
 observability, receipt generation, type-fact emission or Loader policy. A test
 source path exposes only JsonSchema/OpenTofu and public gerbil-poo, with no
 other Core sources available. Public gerbil-poo does not depend on this repo.
@@ -23,7 +23,7 @@ other Core sources available. Public gerbil-poo does not depend on this repo.
 #+begin_src scheme
 (import :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/mop validate)
-        :core/modules/json-schema/contracts)
+        :yuanxu/modules/json-schema/contracts)
 (def PortContract
   (schema-value-contract 'service/port
     '((type . "integer") (minimum . 1) (maximum . 65535))))
@@ -71,7 +71,7 @@ The opt-in native suite reuses the previously acquired AWS 5.100.0 export:
 - Provider: =registry.terraform.io/hashicorp/aws=; format version =1.0=.
 - Full-export SHA-256:
   =cb0e8a42f6eaea3983698d70cba213a630c661420f974a7246685d026da32781=.
-- Existing =poo-flow-opentofu-block->schema= converts the complete =aws_vpc=
+- Existing =yuanxu-opentofu-block->schema= converts the complete =aws_vpc=
   and =aws_instance= blocks to input schemas, excluding computed-only fields.
 - =POO_JSON_SCHEMA_AWS_EXPORT= explicitly selects the local input. No network
   acquisition is performed. The digest was checked separately, not by the suite.

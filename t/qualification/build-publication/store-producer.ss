@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Owns the ONLY original Core issuance. Exits before any recovery worker.
 (import :clan/poo/object
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
-        (only-in :core/module-system/building/artifacts call-with-build-artifact-issuance
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
                  run-build-artifact-process)
         "./projection")
 (def producer-root (caddr (command-line)))
@@ -15,7 +15,7 @@
 (def compile-main (probe-build producer-root lib))
 (call-with-build-artifact-issuance projection lib (cut compile-main "compile"))
 (def record (path-expand
-  (find (cut string-prefix? ".poo-flow-build-issuance-" <>)
+  (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
         (directory-files (list path: lib ignore-hidden: #f))) lib))
 (display (run-build-artifact-process projection lib
   (list "just" "build-publication-worker" producer-root lib (symbol->string probe-identity) "persist" record)))

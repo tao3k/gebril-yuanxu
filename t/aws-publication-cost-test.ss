@@ -1,18 +1,18 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Opt-in measurement of the maintained path, not a runner or another publisher.
 (import :std/test :clan/poo/object
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/modules/nix/func current-nix-process-completion-observer)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/debug PooFlowDebugMemoryAnomaly? PooFlowDebugMemoryAnomaly-receipt
-                 poo-flow-debug-memory-snapshot)
-        (only-in :core/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/modules/nix/func current-nix-process-completion-observer)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/debug YuanxuDebugMemoryAnomaly? YuanxuDebugMemoryAnomaly-receipt
+                 yuanxu-debug-memory-snapshot)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
         (only-in "./Scenarios/aws/fixtures.ss"
                  Workspace prepare-aws-selection! realize-aws-selection))
 (export aws-publication-cost-test)
 (def aws-publication-cost-test
   (test-suite "Selected AWS publication cost"
-    (poo-flow-test-fixture "same Graph and cached provider; Nix versus Scheme cost"
+    (yuanxu-test-fixture "same Graph and cached provider; Nix versus Scheme cost"
       (root Workspace)
       (def calls (make-hash-table))
       (def nix-seconds 0.)
@@ -51,8 +51,8 @@
           (with-catch
             (lambda (failure)
               (source-report)
-              (when (PooFlowDebugMemoryAnomaly? failure)
-                (let (receipt (PooFlowDebugMemoryAnomaly-receipt failure))
+              (when (YuanxuDebugMemoryAnomaly? failure)
+                (let (receipt (YuanxuDebugMemoryAnomaly-receipt failure))
                   (displayln "AWS MEMORY reason=" (.get receipt reason)
                              " live-growth=" (.get receipt live-growth-bytes))))
               (raise failure))
@@ -60,7 +60,7 @@
               (parameterize ((current-module-source-observer
                               (lambda (key amount)
                                 (when (and (pair? key) (memq (car key) '(publication-start publication-end)))
-                                  (let (sample (poo-flow-debug-memory-snapshot (car key)))
+                                  (let (sample (yuanxu-debug-memory-snapshot (car key)))
                                     (displayln "AWS DECLARATION " key " reads=" reads
                                                " heap=" (.get sample heap-size-bytes)
                                                " live=" (.get sample live-bytes)))

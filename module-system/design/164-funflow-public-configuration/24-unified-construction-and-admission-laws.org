@@ -139,7 +139,7 @@ force counters omitted. value is a fixture field, not a Funflow public schema.
   smoke: (.o value: 'smoke)
   pipeline: =>.+ (.o selected-checks: '(build test package smoke)))
 
-(poo-flow-contract-admit
+(yuanxu-contract-admit
   ProfileShapeContract Child (.o target: Child))
 #+end_src
 
@@ -161,7 +161,7 @@ separate admission demands. For each demand:
    in the sealed publication view, forcing only the necessary native slots.
 2. Complete any constructor work triggered by that demand, then collect the
    resulting candidate's immutable construction history against the same index.
-3. Invoke public poo-flow-contract-admit for every retained requirement, with
+3. Invoke public yuanxu-contract-admit for every retained requirement, with
    THAT final candidate and its actual context. Validate evidence correlation,
    not just accepted?.
 4. Discover declared child demands, validate candidate/context/view identities,
@@ -177,7 +177,7 @@ inside arbitrary custom .admit methods remain outside the qualified protocol.
 
 * Five new checked reference laws
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Construction.lean][Construction.lean]] imports the existing receipt/provenance model. It
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Construction.lean][Construction.lean]] imports the existing receipt/provenance model. It
 encodes a constructor's n-ary source union as a requirement-algebra fold:
 
 #+begin_src lean
@@ -232,12 +232,12 @@ about mutable native heaps.
 * Qualification and implementation boundary
 
 The five new theorems use only ordinary Lean axioms; no sorry or custom axiom is
-introduced. They are included in the existing PooFlowCoreProof.ModuleSystem.Schema.Association
+introduced. They are included in the existing YuanxuProof.ModuleSystem.Schema.Association
 target. The original three ConstructionRequirements theorems and the historical
 native receipts remain unchanged.
 
 Validation on 2026-10-15: lake env lean on UnifiedConstruction.lean passed;
-lake build PooFlowCoreProof.ModuleSystem.Schema.Association passed with 47 jobs, including the
+lake build YuanxuProof.ModuleSystem.Schema.Association passed with 47 jobs, including the
 two controls. The axiom output contains only propext, Quot.sound and
 Classical.choice; the missing-dependency theorem needs no axioms. Scheme code
 was reviewed against the source audit but was not compiled or executed.

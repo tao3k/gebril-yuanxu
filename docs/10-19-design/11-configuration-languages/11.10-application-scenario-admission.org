@@ -34,9 +34,9 @@ not a public alist configuration language.
   connections: (.o))
 
 (def ObjectContract
-  (poo-flow-predicate-contract 'application/object object? no-obligations))
+  (yuanxu-predicate-contract 'application/object object? no-obligations))
 (def NamespaceContract
-  (poo-flow-predicate-contract 'application/namespace dns-name? no-obligations))
+  (yuanxu-predicate-contract 'application/namespace dns-name? no-obligations))
 
 (def (reference? value)
   (and (object? value) (.slot? value 'service) (.slot? value 'export)
@@ -44,7 +44,7 @@ not a public alist configuration language.
        (null? (closed-fields '(service export) value #f))))
 
 (def ReferenceContract
-  (poo-flow-predicate-contract 'application/reference reference? no-obligations))
+  (yuanxu-predicate-contract 'application/reference reference? no-obligations))
 
 ;; Shape admission is not complete service/relationship admission.
 (.def (ApplicationShapeContract @ PooFlowObjectContract.)
@@ -82,14 +82,14 @@ not choose the first matching parent or silently discard another requirement.
 (def (refusal identity candidate kind context)
   (let* ((diagnostics (list (.o kind)))
          (classification
-          (poo-flow-classification-evidence identity candidate #f diagnostics context)))
-    (poo-flow-validation-evidence identity candidate classification
+          (yuanxu-classification-evidence identity candidate #f diagnostics context)))
+    (yuanxu-validation-evidence identity candidate classification
       diagnostics #f diagnostics context)))
 
 (def (profile-proof service-key candidate context)
   (let* ((descriptor (associated-contract candidate context))
          (receipt
-          (if descriptor (poo-flow-contract-admit descriptor candidate context)
+          (if descriptor (yuanxu-contract-admit descriptor candidate context)
             (refusal 'application/profile candidate 'missing-or-ambiguous-contract context))))
     (.o service-key candidate descriptor receipt)))
 
@@ -100,7 +100,7 @@ not choose the first matching parent or silently discard another requirement.
          (.all-slots services))))
 
 (def (profile-ok? proof)
-  (poo-flow-validation-evidence-accepted? (.get proof receipt)))
+  (yuanxu-validation-evidence-accepted? (.get proof receipt)))
 #+end_src
 
 The descriptor list is a tiny bounded example input, not a thousand-module catalog
@@ -123,8 +123,8 @@ policies and are not proved by this type compatibility check.
   (.o accepted?: #f consumer role kind))
 
 (def (admit-edge scenario proofs consumer role expected reference context)
-  (let ((shape (poo-flow-contract-admit ReferenceContract reference context)))
-    (if (not (poo-flow-validation-evidence-accepted? shape))
+  (let ((shape (yuanxu-contract-admit ReferenceContract reference context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape))
       (edge-refusal consumer role 'invalid-reference)
       (let ((target-key (.get reference service))
             (export-key (.get reference export)))
@@ -193,8 +193,8 @@ resolution; a PostgreSQL endpoint cannot satisfy Web's HTTP requirement.
 
 #+begin_src scheme
 (def (admit-application descriptor scenario context)
-  (let ((shape (poo-flow-contract-admit ApplicationShapeContract scenario context)))
-    (if (not (poo-flow-validation-evidence-accepted? shape)) shape
+  (let ((shape (yuanxu-contract-admit ApplicationShapeContract scenario context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape)) shape
       (let* ((profiles (admit-services (.get scenario services) context))
              (edges (admit-connections scenario profiles context))
              (failed-profiles
@@ -203,9 +203,9 @@ resolution; a PostgreSQL endpoint cannot satisfy Web's HTTP requirement.
                            (.all-slots profiles))))
              (failed-edges (filter (lambda (edge) (not (.get edge accepted?))) edges))
              ;; Honor the descriptor's own extension obligations as well.
-             (extra (poo-flow-contract-obligations descriptor scenario context))
+             (extra (yuanxu-contract-obligations descriptor scenario context))
              (failures (append failed-profiles failed-edges extra)))
-        (.cc (poo-flow-validation-evidence
+        (.cc (yuanxu-validation-evidence
               (.get descriptor identity) scenario (.get shape classification)
               failures (null? failures) failures context)
              'responsibility-evidence (.get shape responsibility-evidence)
@@ -222,7 +222,7 @@ resolution; a PostgreSQL endpoint cannot satisfy Web's HTTP requirement.
 
 ;; Public Core entry: expanded native Shop/ReleaseShop inherit ApplicationScenario.
 (def release-receipt
-  (poo-flow-contract-admit ApplicationScenarioContract ReleaseShop AdmissionContext))
+  (yuanxu-contract-admit ApplicationScenarioContract ReleaseShop AdmissionContext))
 #+end_src
 
 Profile and edge evidence are part of the actual returned receipt, not a separate
@@ -255,11 +255,11 @@ These are not newly executed tests or claims that Contract-parent syntax works.
   (.o api: (.o service: 'database export: 'postgres)))
 
 (def port-receipt
-  (poo-flow-contract-admit ApplicationScenarioContract PortOverride AdmissionContext))
+  (yuanxu-contract-admit ApplicationScenarioContract PortOverride AdmissionContext))
 (def missing-receipt
-  (poo-flow-contract-admit ApplicationScenarioContract MissingDatabaseConnection AdmissionContext))
+  (yuanxu-contract-admit ApplicationScenarioContract MissingDatabaseConnection AdmissionContext))
 (def protocol-receipt
-  (poo-flow-contract-admit ApplicationScenarioContract WrongProtocol AdmissionContext))
+  (yuanxu-contract-admit ApplicationScenarioContract WrongProtocol AdmissionContext))
 
 (def (edge-for receipt consumer-name role-name)
   (car (filter (lambda (edge)

@@ -2,13 +2,13 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/composition/roles
-        :core/feature-system/interface
-        :core/feature-system/domain-case/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/interface
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-adapter-projection-binding-test)
 
@@ -29,31 +29,31 @@
 (def (adapter-projection-test-value? value) #t)
 
 (def adapter-projection-base-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'adapter-projection-base-type '() adapter-projection-test-value?))
 
 (def adapter-projection-agent-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'adapter-projection-agent-type
    '(adapter-projection-base-type)
    adapter-projection-test-value?))
 
 (def adapter-projection-runtime-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'adapter-projection-runtime-view
    'adapter-projection-base-component
    'runtime-envelope-v1
    adapter-projection-test-project))
 
 (def adapter-projection-evidence-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'adapter-projection-evidence-view
    'adapter-projection-agent-component
    'evidence-envelope-v1
    adapter-projection-test-project))
 
 (def adapter-projection-base-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'adapter-projection-base-component
    1
    (adapter-projection-test-role '((adapter-projection-base-role . #t)))
@@ -63,7 +63,7 @@
    (list adapter-projection-runtime-projection)))
 
 (def adapter-projection-agent-component
-  (poo-flow-case-component
+  (yuanxu-case-component
    'adapter-projection-agent-component
    1
    (adapter-projection-test-role '((adapter-projection-agent-role . #t)))
@@ -75,26 +75,26 @@
 
 (defpoo-feature-adapter-capability python-runtime-capability
   (capability-id 'python-runtime-v1)
-  (provider-module-id 'poo-flow/python-runtime)
-  (contract-id 'poo-flow.runtime-c)
+  (provider-module-id 'yuanxu/python-runtime)
+  (contract-id 'yuanxu.runtime-c)
   (contract-version 1))
 
 (defpoo-feature-adapter-capability cedar-policy-capability
   (capability-id 'cedar-policy-v1)
-  (provider-module-id 'poo-flow/cedar-adapter)
-  (contract-id 'poo-flow.cedar-policy)
+  (provider-module-id 'yuanxu/cedar-adapter)
+  (contract-id 'yuanxu.cedar-policy)
   (contract-version 1))
 
 (defpoo-feature-adapter-requirement python-runtime-requirement
   (requirement-id 'python-runtime-requirement)
   (capability-id 'python-runtime-v1)
-  (contract-id 'poo-flow.runtime-c)
+  (contract-id 'yuanxu.runtime-c)
   (contract-version 1))
 
 (defpoo-feature-adapter-requirement cedar-policy-requirement
   (requirement-id 'cedar-policy-requirement)
   (capability-id 'cedar-policy-v1)
-  (contract-id 'poo-flow.cedar-policy)
+  (contract-id 'yuanxu.cedar-policy)
   (contract-version 1))
 
 (defpoo-feature-projection-request runtime-projection-request
@@ -130,7 +130,7 @@
   (from-bundle adapter-projection-bundle))
 
 (defpoo-feature-domain-case-assembly adapter-projection-assembly
-  (using-cache (poo-flow-domain-case-cache))
+  (using-cache (yuanxu-domain-case-cache))
   (domain-case-id 'adapter-projection-case)
   (domain-case-version 1)
   (from-plan adapter-projection-plan))
@@ -201,21 +201,21 @@
   (feature-adapter-requirement
    'mismatched-adapter-requirement
    'python-runtime-v1
-   'poo-flow.runtime-c
+   'yuanxu.runtime-c
    2))
 
 (def duplicate-adapter-requirement-a
   (feature-adapter-requirement
    (string-append "duplicate-" "requirement")
    'python-runtime-v1
-   'poo-flow.runtime-c
+   'yuanxu.runtime-c
    1))
 
 (def duplicate-adapter-requirement-b
   (feature-adapter-requirement
    (string-append "duplicate" "-requirement")
    'cedar-policy-v1
-   'poo-flow.cedar-policy
+   'yuanxu.cedar-policy
    1))
 
 (def missing-projection-request
@@ -283,7 +283,7 @@
    (feature-policy-strategy-binding 'not-an-assembly)))
 
 (def (adapter-projection-diagnostic-codes binding)
-  (poo-flow-map
+  (yuanxu-map
    (lambda (diagnostic) (.ref diagnostic 'code))
    (.ref binding 'diagnostics)))
 
@@ -318,7 +318,7 @@
                 (adapter-projection-stress-id "projection-request-" index)
                 projection-id
                 schema-id)
-               (poo-flow-case-projection
+               (yuanxu-case-projection
                 projection-id
                 'adapter-projection-stress-component
                 schema-id
@@ -359,7 +359,7 @@
 
 (def feature-system-adapter-projection-binding-test
   (test-suite "Feature adapter capability and projection binding"
-    (poo-flow-test-case "accepted chain binds adapters and closed Case projections"
+    (yuanxu-test-case "accepted chain binds adapters and closed Case projections"
       (let* ((adapter-bindings
               (.ref adapter-projection-ready 'adapter-bindings))
              (projection-bindings
@@ -380,14 +380,14 @@
         (check (.ref adapter-projection-ready 'status) => 'ready)
         (check (.ref adapter-projection-ready 'accepted?) => #t)
         (check (length adapter-bindings) => 2)
-        (check (poo-flow-map
+        (check (yuanxu-map
                 (lambda (binding) (.ref binding 'requirement-id))
                 adapter-bindings)
                => '(python-runtime-requirement cedar-policy-requirement))
-        (check (poo-flow-map
+        (check (yuanxu-map
                 (lambda (binding) (.ref binding 'provider-module-id))
                 adapter-bindings)
-               => '(poo-flow/python-runtime poo-flow/cedar-adapter))
+               => '(yuanxu/python-runtime yuanxu/cedar-adapter))
         (check (length projection-bindings) => 2)
         (check (eq? (.ref (car projection-bindings) 'projection)
                     adapter-projection-runtime-projection)
@@ -397,7 +397,7 @@
                => #t)
         (check (vector-ref adapter-projection-projector-calls 0) => 0)))
 
-    (poo-flow-test-case "catalog rejects invalid and duplicate capabilities"
+    (yuanxu-test-case "catalog rejects invalid and duplicate capabilities"
       (check (.ref duplicate-capability-catalog 'accepted?) => #f)
       (check (.ref duplicate-capability-catalog 'capability-index) => #f)
       (check (memq 'duplicate-adapter-capability-id
@@ -405,7 +405,7 @@
                     duplicate-capability-catalog))
              ? values))
 
-    (poo-flow-test-case "adapter requirements reject raw, missing, mismatched and duplicate values"
+    (yuanxu-test-case "adapter requirements reject raw, missing, mismatched and duplicate values"
       (check (memq 'invalid-adapter-requirement
                    (adapter-projection-diagnostic-codes raw-adapter-rejected))
              ? values)
@@ -421,7 +421,7 @@
                     duplicate-adapter-rejected))
              ? values))
 
-    (poo-flow-test-case "projection requests bind only to the closed catalog"
+    (yuanxu-test-case "projection requests bind only to the closed catalog"
       (check (memq 'invalid-feature-projection-request
                    (adapter-projection-diagnostic-codes
                     raw-projection-rejected))
@@ -440,7 +440,7 @@
              ? values)
       (check (vector-ref adapter-projection-projector-calls 0) => 0))
 
-    (poo-flow-test-case "rejected upstream binding or catalog stops resolution"
+    (yuanxu-test-case "rejected upstream binding or catalog stops resolution"
       (check (.ref rejected-catalog-binding 'accepted?) => #f)
       (check (memq 'adapter-capability-catalog-rejected
                    (adapter-projection-diagnostic-codes
@@ -452,17 +452,17 @@
                     rejected-upstream-binding))
              ? values))
 
-    (poo-flow-test-case "256 requirements and projections resolve with indexed owners"
+    (yuanxu-test-case "256 requirements and projections resolve with indexed owners"
       (let* ((entries (adapter-projection-stress-entries 256))
-             (projections (poo-flow-map cadddr entries))
-             (capabilities (poo-flow-map car entries))
+             (projections (yuanxu-map cadddr entries))
+             (capabilities (yuanxu-map car entries))
              (component
-              (poo-flow-case-component
+              (yuanxu-case-component
                'adapter-projection-stress-component
                1
                (adapter-projection-test-role
                 '((adapter-projection-stress-role . #t)))
-               (poo-flow-case-type-contract
+               (yuanxu-case-type-contract
                 'adapter-projection-stress-type
                 '()
                 adapter-projection-test-value?)
@@ -477,7 +477,7 @@
              (plan (feature-composition-plan bundle))
              (assembly
               (feature-domain-case-assembly
-               (poo-flow-domain-case-cache)
+               (yuanxu-domain-case-cache)
                'feature-adapter-projection-binding-stress
                1
                plan))

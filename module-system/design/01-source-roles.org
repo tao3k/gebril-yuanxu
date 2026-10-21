@@ -68,7 +68,7 @@ The [[file:../../docs/10-19-design/11-configuration-languages/11.23-source-ref-t
 hygienic syntax lowering and dependency admission. Macro expansion consumes an
 already resolved syntax graph; it performs no filesystem discovery or activation.
 Generated compiler exports remain necessary even though authors do not write them.
-This is pending design, not current poo-flow-load-modules behavior.
+This is pending design, not current yuanxu-load-modules behavior.
 
 * Public config/types and function slots
 

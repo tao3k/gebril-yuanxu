@@ -22,7 +22,7 @@ provisioner invokes printf directly, without a shell program.
 The real [[file:../init.ss][init.ss]] selects the maintained examples:
 
 #+begin_src scheme
-(poo-flow! mode: explicit source: "." (null) (aws-validation))
+(yuanxu! mode: explicit source: "." (null) (aws-validation))
 #+end_src
 
 The existing platform binding, exercised by the integration test, is:

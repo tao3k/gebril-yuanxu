@@ -154,7 +154,7 @@ place to validate the resulting data; our native inheritance alone does not.
 ** POO: the actual native relationship
 
 #+begin_src scheme
-(import :core/object-syntax/path-slots
+(import :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get))
 (.def Base
   build: (.o command: '("gerbil" "build") artifacts: '(build-log))

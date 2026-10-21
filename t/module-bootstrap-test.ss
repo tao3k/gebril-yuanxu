@@ -4,21 +4,21 @@
 ;;; Source-only Graph admission is independent of compiler execution.
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :gerbil/expander core-import-module expander-context-id)
-        (only-in :core/module-system/building/source-closure for-each-build-module)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .call .o)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/interface poo-flow-load-modules))
+        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
 (def module-bootstrap-test
   (test-suite "Source tool consumes uncompiled JsonSchema publication"
-    (poo-flow-test-case "shared-root DFS preserves identity without retaining a cross-call cache"
+    (yuanxu-test-case "shared-root DFS preserves identity without retaining a cross-call cache"
       (def roots
         (map core-import-module
-          '(:core/module-system/building/build-projection
-            :core/module-system/building/configuration-source)))
+          '(:yuanxu/module-system/building/build-projection
+            :yuanxu/module-system/building/configuration-source)))
       (def expected (make-hash-table))
       (def repeated 0)
       (for-each (lambda (root)
@@ -41,10 +41,10 @@
         visits)
       (def visits (walk))
       (check-equal? visits (walk))
-      (poo-flow-test-observe 'bootstrap-root-visits repeated)
-      (poo-flow-test-observe 'bootstrap-union-visits visits))
+      (yuanxu-test-observe 'bootstrap-root-visits repeated)
+      (yuanxu-test-observe 'bootstrap-union-visits visits))
     (test-case "init selects a source Graph and exposes the declared Contract"
-      (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+      (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
              (graph (.get view build-graph))
              (scope (.get view modules Modules json-schema))
              (contract (.call scope contract 'bootstrap/value
@@ -53,7 +53,7 @@
         (check-equal? (.get view selected-graph module-order)
                       '(json-schema ops funflow nix opentofu null aws-validation aws))
         (check-equal? (> (length (.get graph entries)) 15) #t)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit contract (.o value: "pass") #f)) #t)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit contract (.o value: 7) #f)) #f)))))
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit contract (.o value: 7) #f)) #f)))))

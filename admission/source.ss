@@ -5,10 +5,10 @@
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
         (only-in :clan/poo/object-diagnostics diagnostic-then)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence
-                 poo-flow-validation-evidence call-with-contract-analysis-root)
-        (only-in :core/configuration/slot-origin admit-field-sources!)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence
+                 yuanxu-validation-evidence call-with-contract-analysis-root)
+        (only-in :yuanxu/configuration/slot-origin admit-field-sources!)
+        (only-in :yuanxu/module-system/source/admission
                  module-source-admit-current! call-with-module-source-read-cache
                  call-with-module-source-fresh-reads call-with-collected-module-sources
                  current-module-source-phase))
@@ -61,9 +61,9 @@
       (call-with-contract-analysis-root contract candidate context
         (cut next candidate context))
       (let (classification
-             (poo-flow-classification-evidence
+             (yuanxu-classification-evidence
                (.get contract identity) candidate #f failures context))
-        (poo-flow-validation-evidence
+        (yuanxu-validation-evidence
           contract candidate classification '() #f failures context))))
   ;; Decoration sees original slot specifications; the receipt still describes
   ;; the normalized candidate and retains exact contextual child receipts.
@@ -84,7 +84,7 @@
   (sources-current!)
   result)
 
-(define-type (SourceAdmissionContract. @ PooFlowContract.
+(define-type (SourceAdmissionContract. @ YuanxuContract.
                source-inputs .preflight .locate-diagnostic value-contract)
   source-inputs: '()
   .preflight: (lambda (_candidate _path) '())

@@ -73,13 +73,13 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
 
 #+begin_src scheme
 (def ServicePortNumberContract
-  (poo-flow-predicate-contract 'service/port-number
+  (yuanxu-predicate-contract 'service/port-number
     (lambda (v) (and (positive-integer? v) (<= v 65535))) no-obligations))
 (def HTTPContract
-  (poo-flow-predicate-contract 'service/http
+  (yuanxu-predicate-contract 'service/http
     (lambda (v) (equal? v "HTTP")) no-obligations))
 (def PostgreSQLContract
-  (poo-flow-predicate-contract 'service/postgresql
+  (yuanxu-predicate-contract 'service/postgresql
     (lambda (v) (equal? v "PostgreSQL")) no-obligations))
 
 (.def Endpoint.)
@@ -127,14 +127,14 @@ service interface, not an unannounced weakening of that module's 80/443 Port typ
        (null? (closed-fields '(secret key) value #f))
        (nonempty-string? (.get value secret)) (nonempty-string? (.get value key))))
 (def SecretReferenceContract
-  (poo-flow-predicate-contract 'service/secret-ref secret-reference? no-obligations))
+  (yuanxu-predicate-contract 'service/secret-ref secret-reference? no-obligations))
 
 (def (storage-shape? value)
   (and (object? value) (.slot? value 'size)
        (null? (closed-fields '(size) value #f))
        (nonempty-string? (.get value size))))
 (def StorageContract
-  (poo-flow-predicate-contract 'service/storage-shape storage-shape? no-obligations))
+  (yuanxu-predicate-contract 'service/storage-shape storage-shape? no-obligations))
 
 (.def (WebProfileContract @ PooFlowObjectContract.)
   identity: 'service/web

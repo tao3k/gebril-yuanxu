@@ -3,15 +3,15 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error?)
         (only-in :std/db/interface sql-error?)
-        (only-in :core/ops/objects ProcessScript.)
-        (only-in :core/ops/func run-script)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
         "./qualification/build-publication/persistent-head")
 (export persistent-head-store-test)
 (def persistent-head-store-test
   (test-suite "Persistent selected-head storage capability"
-    (poo-flow-test-fixture "independent client, stale requests, ABA and fence"
+    (yuanxu-test-fixture "independent client, stale requests, ABA and fence"
       (fixture DirectoryFixture)
       (with-slots (root) fixture
         (def path (path-expand "head.sqlite" root))

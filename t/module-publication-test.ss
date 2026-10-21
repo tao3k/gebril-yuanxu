@@ -16,26 +16,26 @@
                  core-import-module core-expand expander-context-id
                  current-expander-eval module-context? module-context-path module-context-code
                  core-context-prelude core-module->prelude-context expander-context-table)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/building/source-closure
-                 for-each-build-module poo-flow-core-bootstrap-contexts poo-flow-core-bootstrap-source-path)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
-        (rename-in (only-in :core/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :core/module-system/source/declaration current-module-build-phase?)
-        (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        :core/module-system/source/objects
-        (only-in :core/module-system/source/collection
-                 make-poo-flow-module-source-collection poo-flow-module-source-collection-locate)
-        :core/module-system/source/admission
-        (only-in :core/module-system/source/publication ModulePublicationContract
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/building/source-closure
+                 for-each-build-module yuanxu-bootstrap-contexts yuanxu-bootstrap-source-path)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
+        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        :yuanxu/module-system/source/objects
+        (only-in :yuanxu/module-system/source/collection
+                 make-yuanxu-module-source-collection yuanxu-module-source-collection-locate)
+        :yuanxu/module-system/source/admission
+        (only-in :yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current?)
-        :core/module-system/source/preparation
-        :core/module-system/interface)
+        :yuanxu/module-system/source/preparation
+        :yuanxu/module-system/interface)
 (export module-publication-test with-publication-source write-file)
 (def ScopeContract
-  (poo-flow-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
 (def factory-calls 0)
 (def dependencies 'author-value)
 (def core-source-root (path-expand ".." (path-directory (this-source-file))))
@@ -64,7 +64,7 @@
        (write-file (path-expand "gerbil.pkg" root)
                    (string-append "(package: " (symbol->string (gensym 'publication-fixture-)) ")"))
        (write-file (path-expand "types.ss" module-root)
-         "(import (only-in :core/types poo-flow-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (poo-flow-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
+         "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
        (write-file (path-expand "objects.ss" module-root)
          "(import (only-in :clan/poo/object .o)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope)")
        (write-file (path-expand "config.ss" module-root)
@@ -72,7 +72,7 @@
        (write-file (path-expand "interface.ss" module-root)
          "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting)) features: (.o))"))
      (lambda ()
-       (let* ((view (poo-flow-load-modules (path-expand "modules" root)))
+       (let* ((view (yuanxu-load-modules (path-expand "modules" root)))
               (source ((.get view context locate) 'custom/example)))
          (test root module-root source view)))
      (lambda () (remove-tree root)))))
@@ -123,11 +123,11 @@
     (check-equal? (file-exists? (.get resource root)) #f)))
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
-    (poo-flow-test-case "Graph consumes the exact normalized publication from its single producer"
+    (yuanxu-test-case "Graph consumes the exact normalized publication from its single producer"
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def original (.get ModulePublicationContract value-contract))
           (def checked #f)
           (def calls 0)
@@ -156,11 +156,11 @@
               (check-equal? (eq? record (.call view .selected-record 'custom/example)) #t)
               (check-equal? calls 1))
             (lambda () (.put! ModulePublicationContract 'value-contract original))))))
-    (poo-flow-test-case "normalized publication owner mismatch is refused before Graph insertion"
+    (yuanxu-test-case "normalized publication owner mismatch is refused before Graph insertion"
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def original (.get ModulePublicationContract value-contract))
           (def ValueContract
             (.o (:: @ Type.)
@@ -174,11 +174,11 @@
                       (exception-message (lambda () (.get view selected-graph)))
                       "publication source owner mismatch") #t #f) #t))
             (lambda () (.put! ModulePublicationContract 'value-contract original))))))
-    (poo-flow-test-case "publication normalization cannot carry a source mutation into the Graph"
+    (yuanxu-test-case "publication normalization cannot carry a source mutation into the Graph"
       (with-publication-source
         (lambda (root module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def original (.get ModulePublicationContract value-contract))
           (def calls 0)
           (def ValueContract
@@ -200,7 +200,7 @@
               (check-exception (.call view .selected-record 'custom/example) error?)
               (check-equal? calls 1))
             (lambda () (.put! ModulePublicationContract 'value-contract original))))))
-    (poo-flow-test-case "extended publication Contracts retain guards before declaration or Feature callbacks"
+    (yuanxu-test-case "extended publication Contracts retain guards before declaration or Feature callbacks"
       (for-each
         (lambda (boundary)
           (with-publication-source
@@ -208,8 +208,8 @@
               (def marker (path-expand "must-not-execute" root))
               (write-file (path-expand "init.ss" root)
                 (if (eq? boundary 'declaration)
-                  "(poo-flow! mode: explicit :custom (example) (other))"
-                  "(poo-flow! mode: explicit :custom (example +ci))"))
+                  "(yuanxu! mode: explicit :custom (example) (other))"
+                  "(yuanxu! mode: explicit :custom (example +ci))"))
               (if (eq? boundary 'declaration)
                 (let (other (path-expand "modules/custom/other" root))
                   (for-each
@@ -227,7 +227,7 @@
                     "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
                     (object->string marker)
                     " (lambda (port) (display \"unexpected\" port))) (error \"Feature executed before source refusal\"))))")))
-              (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (def original (.get ModulePublicationContract value-contract))
               (def calls 0)
               (def ValueContract
@@ -248,7 +248,7 @@
                   (check-equal? (file-exists? marker) #f))
                 (lambda () (.put! ModulePublicationContract 'value-contract original))))))
         '(declaration feature)))
-    (poo-flow-test-case "publication identity remains an open computation after reader return"
+    (yuanxu-test-case "publication identity remains an open computation after reader return"
       (with-publication-source
         (lambda (_root module-root source view)
           (def config (path-expand "config.ss" module-root))
@@ -273,11 +273,11 @@
           (def reader (module-publication-reader))
           (def publication (.call reader read source))
           (check-equal? (string-contains (module-source-read config) "changed during") #f)
-          (check-equal? (poo-flow-validation-evidence-accepted?
+          (check-equal? (yuanxu-validation-evidence-accepted?
                          (admit-module-publication! source 'custom/example publication (.get view context))) #t)
           (check-equal? (module-source-read config) replacement)
           (check-exception (.call reader admit-current) error?))))
-    (poo-flow-test-case "Context admission is an open boundary after structural metadata checks"
+    (yuanxu-test-case "Context admission is an open boundary after structural metadata checks"
       (with-publication-source
         (lambda (_root module-root source view)
           (def reader (module-publication-reader))
@@ -295,26 +295,26 @@
                     "(def Greeting \"changed during Context admission\") (export Greeting)"))
                 '())))
           (check-equal? (.slot? context '.contract-obligations) #t)
-          (check-equal? (poo-flow-validation-evidence-accepted?
+          (check-equal? (yuanxu-validation-evidence-accepted?
                          (admit-module-publication! source 'custom/example publication context)) #t)
           (check-equal? calls 1)
           (check-exception (.call reader admit-current) error?))))
-    (poo-flow-test-case "paired location admits authoring once before declaration evaluation"
+    (yuanxu-test-case "paired location admits authoring once before declaration evaluation"
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def original (.get poo-flow-default-module-style-policy validate))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def original (.get yuanxu-default-module-style-policy validate))
           (def calls 0)
           (dynamic-wind
             (lambda ()
-              (.put! poo-flow-default-module-style-policy 'validate
+              (.put! yuanxu-default-module-style-policy 'validate
                 (lambda arguments (set! calls (+ calls 1)) (apply original arguments))))
             (lambda ()
-              (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (check-equal? (.get view selected-graph module-order) '(custom/example))
               (check-equal? calls 1))
-            (lambda () (.put! poo-flow-default-module-style-policy 'validate original))))))
-    (poo-flow-test-case "location support includes nested parser objects and their ancestors"
+            (lambda () (.put! yuanxu-default-module-style-policy 'validate original))))))
+    (yuanxu-test-case "location support includes nested parser objects and their ancestors"
       (.def Parent location: 'original)
       (.def (Child @ Parent))
       (def current? (module-source-object-policy (list Child)))
@@ -325,26 +325,26 @@
       (check-equal? (current?) #f)
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def row (car (.get view context intent decisions)))
           (.put! (.get row selection) 'selection-flags '(+unexpected))
           (check-exception (.get view selected-graph) error?)))
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def source (.call (.get view context) locate 'custom/example))
           (def original (.get source value))
           (.put! source 'value "changed-source.ss")
           (check-exception (.call view sources-current) error?)
           (.put! source 'value original)
           (check-exception (.call view sources-current) error?))))
-    (poo-flow-test-case "an overridden locator cannot reuse the closed source prefix"
+    (yuanxu-test-case "an overridden locator cannot reuse the closed source prefix"
       (with-publication-source
         (lambda (root module-root _source _view)
           (write-file (path-expand "init.ss" root)
-            "(poo-flow! mode: explicit :custom (example) (other))")
+            "(yuanxu! mode: explicit :custom (example) (other))")
           (def other (path-expand "modules/custom/other" root))
           (for-each
             (lambda (role)
@@ -356,7 +356,7 @@
               " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
           (write-file (path-expand "interface.ss" other)
             "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def context (.get view context))
           (def locate (.get context locate))
           ;; Establish a real earlier reader dependency without resolving the
@@ -390,20 +390,20 @@
           (check-exception (.get view selected-graph) error?)
           (check-equal? calls 1)
           (check-equal? (file-exists? marker) #f))))
-    (poo-flow-test-case "the source constructor prototype is part of closed-prefix support"
-      (check-equal? (poo-flow-module-source-ref-construction-current?) #t)
+    (yuanxu-test-case "the source constructor prototype is part of closed-prefix support"
+      (check-equal? (yuanxu-module-source-ref-construction-current?) #t)
       (dynamic-wind
-        (lambda () (.put! poo-flow-module-source-ref-prototype 'prefix-test-marker #t))
-        (lambda () (check-equal? (poo-flow-module-source-ref-construction-current?) #f))
-        (lambda () (.put! poo-flow-module-source-ref-prototype 'prefix-test-marker #f)))
-      (check-equal? (poo-flow-module-source-ref-construction-current?) #f))
-    (poo-flow-test-case "interfaces share the SDK POO prelude without per-module alias copies"
+        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #t))
+        (lambda () (check-equal? (yuanxu-module-source-ref-construction-current?) #f))
+        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #f)))
+      (check-equal? (yuanxu-module-source-ref-construction-current?) #f))
+    (yuanxu-test-case "interfaces share the SDK POO prelude without per-module alias copies"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def reader (module-publication-reader))
           (def prelude
             (core-module->prelude-context
-              (core-import-module ':core/module-system/source/config-prelude)))
+              (core-import-module ':yuanxu/module-system/source/config-prelude)))
           (def native-eval (current-expander-eval))
           (def interfaces (make-hash-table-eq))
           (parameterize
@@ -428,7 +428,7 @@
               (check-equal? (hash-key? (expander-context-table context) '.o) #f)
               (check-equal? (hash-key? (expander-context-table context) '.def) #t))
             interfaces))))
-    (poo-flow-test-case "publication keeps unique original reads and refuses changed provenance"
+    (yuanxu-test-case "publication keeps unique original reads and refuses changed provenance"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def reader (module-publication-reader))
@@ -460,7 +460,7 @@
           (.put! source 'value "changed-after-publication")
           (check-exception
             (replay-slot-reads! roots (lambda (_receiver _key) (void))) error?))))
-    (poo-flow-test-case "reader warm inputs preserve the original graph without a weak projection claim"
+    (yuanxu-test-case "reader warm inputs preserve the original graph without a weak projection claim"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def reader (module-publication-reader))
@@ -480,7 +480,7 @@
             ;; zero-closure telemetry as a passing memory optimization.
             (check-equal? (any (lambda (read) (pair? (slot-read-dependencies read))) roots) #t)
             (replay-slot-reads! roots (lambda (_receiver _key) (void)))))))
-    (poo-flow-test-fixture "public source preparation is unique but admission remains fresh"
+    (yuanxu-test-fixture "public source preparation is unique but admission remains fresh"
       (library PublicLibraryFixture)
       (with-publication-source
         (lambda (_root module-root source _view)
@@ -522,7 +522,7 @@
               (and (Error? exception)
                    (string=? (Error-message exception)
                      "public dependency source or native identity changed")))))))
-    (poo-flow-test-fixture "warm public source refuses native name redirection"
+    (yuanxu-test-fixture "warm public source refuses native name redirection"
       (library PublicLibraryFixture)
       (with-publication-source
         (lambda (_root module-root source _view)
@@ -539,15 +539,15 @@
               (and (Error? exception)
                    (string=? (Error-message exception)
                      "public dependency source or native identity changed")))))))
-    (poo-flow-test-case "tool eligibility does not enlarge the declaration dependency closure"
+    (yuanxu-test-case "tool eligibility does not enlarge the declaration dependency closure"
       (with-publication-source
        (lambda (_root module-root source _view)
          (def projection
-           (path-normalize (poo-flow-core-bootstrap-source-path
-             (core-import-module ':core/module-system/building/build-projection) core-source-root)))
+           (path-normalize (yuanxu-bootstrap-source-path
+             (core-import-module ':yuanxu/module-system/building/build-projection) core-source-root)))
          (def dependency
-           (path-normalize (poo-flow-core-bootstrap-source-path
-             (core-import-module ':core/module-system/building/source-package) core-source-root)))
+           (path-normalize (yuanxu-bootstrap-source-path
+             (core-import-module ':yuanxu/module-system/building/source-package) core-source-root)))
          (def (observed-paths reader)
            (def paths (make-hash-table))
            (parameterize ((current-module-source-observer
@@ -564,7 +564,7 @@
          ;; Changing a role requires a fresh reader. Its actual import must
          ;; register the entire native transitive closure, not only the root.
          (write-file (path-expand "build.ss" module-root)
-           "(import (only-in :core/module-system/building/build-projection poo-flow-core-project-source-spec)) (.def Build function: poo-flow-core-project-source-spec)")
+           "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
          (def demanded (module-publication-reader))
@@ -587,7 +587,7 @@
              (and (Error? exception)
                   (string=? (Error-message exception)
                     "compiler tool source changed; use a fresh reader")))))))
-    (poo-flow-test-case "completed reader bodies release without discarding macro bindings"
+    (yuanxu-test-case "completed reader bodies release without discarding macro bindings"
       (with-publication-source
        (lambda (_root module-root source _view)
          (write-file (path-expand "objects.ss" module-root)
@@ -621,7 +621,7 @@
          ;; Independent full native DFS is the oracle for the cut traversal.
          ;; Register every evaluated private wrapper, a superset of role inputs;
          ;; both projections must preserve exact order and identities.
-         (def canonical (poo-flow-core-bootstrap-contexts))
+         (def canonical (yuanxu-bootstrap-contexts))
          (def private (make-hash-table-eq))
          (hash-for-each
            (lambda (context _code)
@@ -647,8 +647,8 @@
                (make-hash-table-eq) keep?)
              (check-equal? (equal? full pruned) #t)) private)
          (check-equal? (< cut-visits full-visits) #t)
-         (poo-flow-test-observe 'private-closure-oracle-visits full-visits)
-         (poo-flow-test-observe 'private-closure-cut-visits cut-visits)
+         (yuanxu-test-observe 'private-closure-oracle-visits full-visits)
+         (yuanxu-test-observe 'private-closure-cut-visits cut-visits)
          (check-equal? (eq? sdk-code (module-context-code sdk-context)) #t)
          (hash-for-each
            (lambda (context state)
@@ -670,12 +670,12 @@
          ;; reader body. Both original syntax and source currentness survive.
          (def prepared (.call reader preparation source))
          (check-equal? (pair? (.get prepared compiler-forms)) #t)
-         (check-equal? (pair? (.get (poo-flow-prepare-module-build-source
+         (check-equal? (pair? (.get (yuanxu-prepare-module-build-source
                                     (path-expand "objects.ss" module-root) void)
                                   compiler-forms)) #t)
          (.call reader read source)
          (.call reader admit-current))))
-    (poo-flow-test-case "failed post-evaluation source guard does not release reader bodies"
+    (yuanxu-test-case "failed post-evaluation source guard does not release reader bodies"
       (with-publication-source
        (lambda (_root module-root source _view)
          (def path (path-expand "config.ss" module-root))
@@ -703,7 +703,7 @@
          (hash-for-each
            (lambda (context code)
              (check-equal? (eq? code (module-context-code context)) #t)) evaluated))))
-    (poo-flow-test-case "symbolic owned imports keep one confined macro expansion"
+    (yuanxu-test-case "symbolic owned imports keep one confined macro expansion"
       (with-publication-source
        (lambda (root module-root _source _view)
          (def package (cadr (call-with-input-file (path-expand "gerbil.pkg" root) read)))
@@ -758,7 +758,7 @@
                            (set! kernel-requests (+ kernel-requests amount)))
                           ((eq? kind 'kernel-closure-walks)
                            (set! kernel-walks (+ kernel-walks amount)))))))
-               (let (view (poo-flow-load-modules (path-expand "modules" root)))
+               (let (view (yuanxu-load-modules (path-expand "modules" root)))
                  (check-equal? (.get view modules custom example greeting) "hello")
                  (check-equal? (call-with-input-file marker read-line) "once")
                  (check-equal? (> closure-walks 0) #t)
@@ -781,56 +781,56 @@
                  (check-exception (core-import-module library) error?)
                  (check-equal? (call-with-input-file marker read-line) "once"))))
            (lambda () (set-load-path! previous))))))
-    (poo-flow-test-case "default reader selects and builds source roles without compiled selected modules"
+    (yuanxu-test-case "default reader selects and builds source roles without compiled selected modules"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
-         (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                 (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
            (check-equal? (domain-entry-count graph module-root) 4)
            (check-equal? (.get view modules custom example greeting) "hello")
            (check-equal? (.get view modules custom example retained) 'upstream)))))
-    (poo-flow-test-case "metadata selection never invokes domain exports or unselected source"
+    (yuanxu-test-case "metadata selection never invokes domain exports or unselected source"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example) (bomb disable: #t))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example) (bomb disable: #t))")
          (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
-         (let ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+         (let ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (output (path-expand "generated" root)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
            (check-equal? (domain-entry-count (.get view build-graph) module-root) 4)))))
-    (poo-flow-test-case "new source sessions do not reuse stale native role namespaces"
+    (yuanxu-test-case "new source sessions do not reuse stale native role namespaces"
       (with-publication-source
        (lambda (root module-root _source view)
          (check-equal? (.get view modules custom example greeting) "hello")
          (write-file (path-expand "config.ss" module-root) "(def Greeting \"changed\") (export Greeting)")
          (check-exception ((.get view admit-current)) error?)
-         (let (next (poo-flow-load-modules (path-expand "modules" root)))
+         (let (next (yuanxu-load-modules (path-expand "modules" root)))
            (check-equal? (.get next modules custom example greeting) "changed")))))
-    (poo-flow-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
+    (yuanxu-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(poo-flow! mode: explicit :custom (example))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
          (let* ((path (path-expand "interface.ss" module-root))
                 (original (module-source-read path)))
            (write-file path (string-append "(import \"./interface.ss\") " original))
-           (let (view (poo-flow-load-modules (path-expand "init.ss" root)))
+           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-equal? (if (string-contains
                                  (exception-message (lambda () (.get view selected-graph)))
                                  "bootstrap cannot import its own interface") #t #f) #t))
            (write-file path
              "(.def Fixture identity: 'wrong/owner core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o)) features: (.o))")
-           (let (view (poo-flow-load-modules (path-expand "init.ss" root)))
+           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-exception (.get view build-graph) error?))))))
-    (poo-flow-test-case "publication is deferred; native helpers and dependency identifiers are hygienic"
+    (yuanxu-test-case "publication is deferred; native helpers and dependency identifiers are hygienic"
       (let* ((before factory-calls)
-             (source (make-poo-flow-module-generated-source 'custom/published))
+             (source (make-yuanxu-module-generated-source 'custom/published))
              (evidence (admit-module-publication! source 'custom/published Published (.o)))
              (provider (.o value: 'provider)))
-        (check-equal? (poo-flow-validation-evidence-accepted? evidence) #t)
+        (check-equal? (yuanxu-validation-evidence-accepted? evidence) #t)
         (check-equal? factory-calls before)
         (check-equal? (.slot? (.get Published core) 'exports) #f)
         (let (scope ((.get Published core link) (.o Provider: provider)))
@@ -838,39 +838,39 @@
           (check-equal? (.get scope author) 'author-value)
           (check-equal? (.get scope value) 'parent)
           (check-equal? (eq? (.get scope provider) provider) #t))))
-    (poo-flow-test-case "generated link wrappers consume only admitted dependency scopes"
+    (yuanxu-test-case "generated link wrappers consume only admitted dependency scopes"
       (let* ((before factory-calls)
-             (AnyScope (poo-flow-predicate-contract 'test/any (lambda (_v) #t) (lambda (_v _c) '())))
+             (AnyScope (yuanxu-predicate-contract 'test/any (lambda (_v) #t) (lambda (_v _c) '())))
              (provider (.o identity: 'core/provider features: (.o)
                            core: (.o requires: (.o) scope-contract: AnyScope link: (lambda (_deps) 42))))
-             (view (poo-flow-load-modules
+             (view (yuanxu-load-modules
                     (.o generation: "publication-dependency-test" module-ids: '(core/provider custom/published)
                         selected: '(custom/published) denied-modules: '()
-                        locate: make-poo-flow-module-generated-source
+                        locate: make-yuanxu-module-generated-source
                         current?: (lambda (_generation) #t)
                         read-publication: (lambda (source)
-                                            (if (eq? (poo-flow-module-source-ref-value source) 'core/provider)
+                                            (if (eq? (yuanxu-module-source-ref-value source) 'core/provider)
                                               provider Published))))))
         (check-exception (.get view selected-records) error?)
         (check-equal? factory-calls before)))
-    (poo-flow-test-case "cached parent link retains native effective outer-slot binding in child"
+    (yuanxu-test-case "cached parent link retains native effective outer-slot binding in child"
       (let (parent-link (.get Published core link))
         (.def (Child @ Published) core: =>.+ (.o label: 'child))
         (let (bindings (.o Provider: (.o)))
           (check-equal? (.get (parent-link bindings) value) 'parent)
           (check-equal? (.get ((.get Child core link) bindings) value) 'child)
           (check-equal? (.get (parent-link bindings) value) 'parent))))
-    (poo-flow-test-case "prepared wrapper imports roles and exports only the Module automatically"
+    (yuanxu-test-case "prepared wrapper imports roles and exports only the Module automatically"
       (with-publication-source
        (lambda (root module-root source view)
          (let* ((prepared ((.get view prepare-publication) 'custom/example))
                 (wrapper (path-expand "compiled/interface.ss" root)))
            (check-equal? (.get prepared binding) 'Fixture)
            (check-equal? (eq? prepared ((.get view prepare-publication) 'custom/example)) #t)
-           (poo-flow-write-module-publication prepared wrapper)
+           (yuanxu-write-module-publication prepared wrapper)
            (let (publication (native-import-value wrapper 'Fixture))
              (check-equal? (expander-context-id (core-import-module wrapper)) (.get prepared compiler-identity))
-             (check-equal? (poo-flow-validation-evidence-accepted?
+             (check-equal? (yuanxu-validation-evidence-accepted?
                            (admit-module-publication! source 'custom/example publication (.o))) #t)
              (let (scope ((.get publication core link) (.o)))
                (check-equal? (.get scope greeting) "hello")
@@ -878,28 +878,28 @@
            (check-exception (native-import-value wrapper 'Greeting) true)
            (let* ((original (path-expand "interface.ss" module-root))
                   (text (module-source-read original)))
-             (check-exception (poo-flow-write-module-publication prepared original) error?)
+             (check-exception (yuanxu-write-module-publication prepared original) error?)
              (check-equal? (module-source-read original) text))))))
-    (poo-flow-test-case "collection and directory sources derive the same compiler boundary"
+    (yuanxu-test-case "collection and directory sources derive the same compiler boundary"
       (with-publication-source
        (lambda (root module-root source view)
-         (let* ((collection (make-poo-flow-module-source-collection 'fixture 'test root "modules/custom"))
-                (other-source (car (poo-flow-module-source-collection-locate collection '(custom . example))))
+         (let* ((collection (make-yuanxu-module-source-collection 'fixture 'test root "modules/custom"))
+                (other-source (car (yuanxu-module-source-collection-locate collection '(custom . example))))
                 (directory ((.get view prepare-publication) 'custom/example))
-                (contribution (poo-flow-prepare-module-publication other-source)))
+                (contribution (yuanxu-prepare-module-publication other-source)))
            (check-equal? (.get directory compiler-forms) (.get contribution compiler-forms))
            (check-equal? (.get directory compiler-identity) (.get contribution compiler-identity))))))
-    (poo-flow-test-case "manual export inventories and computed top-level declarations are refused"
+    (yuanxu-test-case "manual export inventories and computed top-level declarations are refused"
       (for-each
        (lambda (extra)
          (with-publication-source
           (lambda (root module-root source view)
             (let (file (path-expand "interface.ss" module-root))
               (write-file file (string-append (module-source-read file) extra)))
-            (let (message (exception-message (lambda () (poo-flow-prepare-module-publication source))))
+            (let (message (exception-message (lambda () (yuanxu-prepare-module-publication source))))
               (check-equal? (if (string-contains message "interface.ss must contain one Module .def") #t #f) #t)))))
        '(" (export Fixture)" " (begin (error \"must not evaluate\"))")))
-    (poo-flow-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"
+    (yuanxu-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"
       (with-publication-source
        (lambda (_root module-root source _view)
          (def identity-reads 0)
@@ -907,7 +907,7 @@
                          (lambda (kind amount)
                            (when (eq? kind 'compiler-identity-reads)
                              (set! identity-reads (+ identity-reads amount))))))
-           (def prepared (poo-flow-prepare-module-publication source))
+           (def prepared (yuanxu-prepare-module-publication source))
            (check-equal? identity-reads 1)
            (for-each (lambda (_) ((.get prepared admit-current))) '(1 2 3 4 5))
            (check-equal? identity-reads 1)
@@ -916,28 +916,28 @@
            (check-exception ((.get prepared admit-current)) error?))))
       (with-publication-source
        (lambda (_root module-root source _view)
-         (def prepared (poo-flow-prepare-module-publication source))
+         (def prepared (yuanxu-prepare-module-publication source))
          (write-file (path-expand "gerbil.pkg" module-root) "(package: closer)")
          (check-exception ((.get prepared admit-current)) error?))))
-    (poo-flow-test-case "source preparation does not initialize role values and stale sources refuse output"
+    (yuanxu-test-case "source preparation does not initialize role values and stale sources refuse output"
       (with-publication-source
        (lambda (root module-root source view)
          (write-file (path-expand "config.ss" module-root) "(def Greeting (error \"must not initialize\")) (export Greeting)")
-         (let (prepared (poo-flow-prepare-module-publication source))
+         (let (prepared (yuanxu-prepare-module-publication source))
            ((.get prepared admit-current))
            (write-file (path-expand "config.ss" module-root) "(def Greeting \"changed\") (export Greeting)")
-           (check-exception (poo-flow-write-module-publication prepared (path-expand "stale/interface.ss" root)) error?)
+           (check-exception (yuanxu-write-module-publication prepared (path-expand "stale/interface.ss" root)) error?)
            (check-equal? (module-source-type (path-expand "stale/interface.ss" root)) #f)))))
-    (poo-flow-test-case "init changes invalidate a prepared compiler input held by the caller"
+    (yuanxu-test-case "init changes invalidate a prepared compiler input held by the caller"
       (with-publication-source
        (lambda (root module-root source view)
          (let ((prepared ((.get view prepare-publication) 'custom/example))
                (output (path-expand "stale-selection/interface.ss" root)))
            (write-file (path-expand "init.ss" root)
-                       "(poo-flow! mode: auto source: \"./modules\" :custom (example disable: #t))")
-           (check-exception (poo-flow-write-module-publication prepared output) error?)
+                       "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+           (check-exception (yuanxu-write-module-publication prepared output) error?)
            (check-equal? (module-source-type output) #f)))))
-    (poo-flow-test-case "package source edits and disabled Modules refuse compiler preparation"
+    (yuanxu-test-case "package source edits and disabled Modules refuse compiler preparation"
       (with-publication-source
        (lambda (root module-root source view)
          (let ((prepared ((.get view prepare-publication) 'custom/example))
@@ -945,20 +945,20 @@
            (write-file package (string-append (module-source-read package) "\n; changed generation\n"))
            (check-exception ((.get prepared admit-current)) error?))
          (write-file (path-expand "init.ss" root)
-                     "(poo-flow! mode: auto source: \"./modules\" :custom (example disable: #t))")
-         (let (disabled (poo-flow-load-modules (path-expand "modules" root)))
+                     "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+         (let (disabled (yuanxu-load-modules (path-expand "modules" root)))
            (check-exception ((.get disabled prepare-publication) 'custom/example) error?)))))
-    (poo-flow-test-case "macro errors retain the original included interface location"
+    (yuanxu-test-case "macro errors retain the original included interface location"
       (with-publication-source
        (lambda (root module-root source view)
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
-         (let* ((prepared (poo-flow-prepare-module-publication source))
+         (let* ((prepared (yuanxu-prepare-module-publication source))
                 (wrapper (path-expand "invalid/interface.ss" root)))
-           (poo-flow-write-module-publication prepared wrapper)
+           (yuanxu-write-module-publication prepared wrapper)
            (let (message (exception-message (lambda () (core-import-module wrapper))))
              (check-equal? (if (string-contains message (path-expand "interface.ss" module-root)) #t #f) #t))))))
-    (poo-flow-test-case "duplicate fields, inherited dependencies and hand-written link wrappers are rejected"
+    (yuanxu-test-case "duplicate fields, inherited dependencies and hand-written link wrappers are rejected"
       (for-each
        (lambda (example)
          (let (message

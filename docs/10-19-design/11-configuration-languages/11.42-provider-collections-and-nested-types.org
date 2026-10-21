@@ -259,13 +259,13 @@ must be explicitly normalized at the wire boundary before using this walker.
            (poo-flow-core-append-map
              (lambda (row)
                (if (and (.slot? value (car row))
-                        (not (poo-flow-json-schema-null? (.ref value (car row)))))
+                        (not (yuanxu-json-schema-null? (.ref value (car row)))))
                  (cty-obligations (cdr row) (.ref value (car row))
                                   (append path (list (car row))) context) '())) body)))
         (else (error "Unsupported semantic descriptor" type))))))
 
 (def (attribute-obligations attribute value path context)
-  (if (poo-flow-json-schema-null? value) '()
+  (if (yuanxu-json-schema-null? value) '()
     (if (assq 'nested_type attribute)
       (let (nested (jrequired attribute 'nested_type))
         (collection-obligations (jrequired nested 'nesting_mode)
@@ -389,11 +389,11 @@ must compose it with checks generated from the SAME retained source trees:
         (compile-schema Schema 'opentofu/configuration-shape
           (configuration-schema Requests Snapshots Demands)))
     (.cc
-      (poo-flow-predicate-contract
+      (yuanxu-predicate-contract
         'opentofu/collection-check (lambda (candidate) #t)
         (lambda (candidate context)
           (let (receipt ((.get shape .admit) candidate context))
-            (if (not (poo-flow-validation-evidence-accepted? receipt))
+            (if (not (yuanxu-validation-evidence-accepted? receipt))
               (list receipt)
               (wire-obligations Requests Snapshots candidate context)))))
       'proto (.o)

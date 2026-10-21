@@ -40,7 +40,7 @@ text retained later in this document as historical evidence.
 
 ** Current proof receipt
 
-- Lean owner: =PooFlowCoreProof.ModuleSystem.Source.Identity=.
+- Lean owner: =YuanxuProof.ModuleSystem.Source.Identity=.
 - Proved: zero candidates fail closed, multiple candidates fail closed, exactly
   one candidate resolves, incomplete canonical identities are rejected, and a
   logical package name does not determine source identity.

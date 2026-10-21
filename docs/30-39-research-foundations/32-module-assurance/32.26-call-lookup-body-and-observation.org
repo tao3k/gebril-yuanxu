@@ -158,7 +158,7 @@ not discover arbitrary raw I/O or prove all effects of an unknown lambda.
 
 * Lean correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/CallPhases.lean][Admission/CallPhases]] projects frames as receiver/slot identities. Native
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean][Admission/CallPhases]] projects frames as receiver/slot identities. Native
 =.get= entry/exit and complete identity-based projection remain correspondence
 premises; this is not a compiler/continuation semantics proof. The lookup
 projection describes successful non-cyclic acquisition: no same receiver/slot

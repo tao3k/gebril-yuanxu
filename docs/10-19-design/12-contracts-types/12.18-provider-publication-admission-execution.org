@@ -34,7 +34,7 @@ Contract carries source-inputs, provider/version identity and input digest.
 
 #+begin_src scheme
 ;; Maintainer/platform code; the linked test defines these platform inputs.
-(def AWS (poo-flow-opentofu-provider-from-directory selected-provider-directory))
+(def AWS (yuanxu-opentofu-provider-from-directory selected-provider-directory))
 (def Instance (.get AWS types resources aws_instance))
 (def ScenarioValue
   (.cc ObjectContract.

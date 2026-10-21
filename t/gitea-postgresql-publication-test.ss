@@ -2,10 +2,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                ServicesFixture RepositoryServicesFixture write-source refused)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export gitea-postgresql-publication-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
@@ -13,7 +13,7 @@
   (displayln "GITEA-POSTGRESQL-PUBLICATION: 11 cases completed"))
 (def gitea-postgresql-publication-test
   (test-suite "Maintained Gitea and PostgreSQL publications"
-    (poo-flow-test-fixture "repository module sources publish their actual defaults"
+    (yuanxu-test-fixture "repository module sources publish their actual defaults"
       (fixture RepositoryServicesFixture)
       (with-slots (publication) fixture
         (def parent (.get publication value))
@@ -24,7 +24,7 @@
         (check-equal? (.get next plan gitea database-port) 5432)
         (check-equal? (length (.get publication context contributions)) 2)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "cached parent retains its plan and child reads final port"
+    (yuanxu-test-fixture "cached parent retains its plan and child reads final port"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -75,7 +75,7 @@
         (check-equal? (.get rejected candidate plan postgresql port) 5433)
         (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "both independently published requirements survive and conflict"
+    (yuanxu-test-fixture "both independently published requirements survive and conflict"
       (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -93,7 +93,7 @@
                       '((allowed-ports) (allowed-ports)))
         (refused publication parent Release)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "client mismatch and invalid port refuse before plan publication"
+    (yuanxu-test-fixture "client mismatch and invalid port refuse before plan publication"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -108,7 +108,7 @@
         (check-equal? (.get (car (.get bad diagnostics)) path) '(config postgresql settings port))
         (refused publication parent Invalid)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "explicit client config is retained rather than silently rebound"
+    (yuanxu-test-fixture "explicit client config is retained rather than silently rebound"
       (fixture (.cc ServicesFixture client-port: 5440))
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -124,7 +124,7 @@
         (check-equal? (path-strip-directory (.get issue expected-origin source)) "postgresql.json")
         (refused publication parent parent)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "closed field contracts refuse typo without evaluating its value"
+    (yuanxu-test-fixture "closed field contracts refuse typo without evaluating its value"
       (fixture ServicesFixture)
       (with-slots (publication) fixture
         (def parent (.get publication value))
@@ -138,7 +138,7 @@
         (check-equal? (.get failure path) '(config postgresql settings prot))
         (refused publication parent Typo)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "database contextual obligation survives canonical value validation"
+    (yuanxu-test-fixture "database contextual obligation survives canonical value validation"
       (fixture ServicesFixture)
       (with-slots (publication) fixture
         (def parent (.get publication value))
@@ -164,7 +164,7 @@
         (check-equal? (if (memq Restricted (compute-precedence-list! (.get database admission-contract))) #t #f) #t)
         (check-equal? (.get cached postgresql port) 5432)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "deep source mutation refuses even when leaf identity is unchanged"
+    (yuanxu-test-fixture "deep source mutation refuses even when leaf identity is unchanged"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -173,7 +173,7 @@
         (.put! middle 'postgresql (.get row payload))
         (refused publication parent parent "contribution object changed")
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "child obligation cannot authorize a source changed within admission"
+    (yuanxu-test-fixture "child obligation cannot authorize a source changed within admission"
       (fixture ServicesFixture)
       (with-slots (root publication) fixture
         (def parent (.get publication value))
@@ -190,7 +190,7 @@
         (check-equal? (Error? failure) #t)
         (check-equal? (Error-message failure) "configuration source changed")
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "omitted and substituted real contribution rows refuse"
+    (yuanxu-test-fixture "omitted and substituted real contribution rows refuse"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -205,7 +205,7 @@
           (cons (.cc (car rows) origin: replacement) (cdr rows)))
         (refused publication parent parent "substituted contribution origin")
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "real service role source edit refuses an otherwise valid release"
+    (yuanxu-test-fixture "real service role source edit refuses an otherwise valid release"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))

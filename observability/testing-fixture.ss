@@ -2,13 +2,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .call)
-        (only-in :core/ops/progress call-with-execution-cancellation)
-        (only-in "./testing-case.ss" poo-flow-test-case poo-flow-test-case/with))
-(export call-with-poo-flow-fixture with-poo-flow-fixture poo-flow-test-fixture)
+        (only-in :yuanxu/ops/progress call-with-execution-cancellation)
+        (only-in "./testing-case.ss" yuanxu-test-case yuanxu-test-case/with))
+(export call-with-yuanxu-fixture with-yuanxu-fixture yuanxu-test-fixture)
 
 ;; Acquisition owns rollback if it fails before returning a resource. Cleanup
 ;; runs for a returned resource even when body raises; neither failure is hidden.
-(def (call-with-poo-flow-fixture fixture procedure)
+(def (call-with-yuanxu-fixture fixture procedure)
   (call-with-execution-cancellation
     (lambda ()
       (let ((resource (.call fixture .acquire)) (body-failure #f))
@@ -25,13 +25,13 @@
                   (raise cleanup-failure)))
               (lambda () (.call fixture .release resource)))))))))
 
-(defrules with-poo-flow-fixture ()
+(defrules with-yuanxu-fixture ()
   ((_ (binding fixture) body ...)
-   (call-with-poo-flow-fixture fixture (lambda (binding) body ...))))
-(defrules poo-flow-test-fixture ()
+   (call-with-yuanxu-fixture fixture (lambda (binding) body ...))))
+(defrules yuanxu-test-fixture ()
   ((_ description profile: profile (binding fixture) body ...)
-   (poo-flow-test-case/with profile description
-     (with-poo-flow-fixture (binding fixture) body ...)))
+   (yuanxu-test-case/with profile description
+     (with-yuanxu-fixture (binding fixture) body ...)))
   ((_ description (binding fixture) body ...)
-   (poo-flow-test-case description
-     (with-poo-flow-fixture (binding fixture) body ...))))
+   (yuanxu-test-case description
+     (with-yuanxu-fixture (binding fixture) body ...))))

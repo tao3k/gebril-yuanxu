@@ -3,7 +3,7 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/error Error?)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "../module-system/building/artifacts.ss" clean-build-artifacts!))
 (export module-build-artifact-clean-test)
 (def (write-fixture path)
@@ -11,7 +11,7 @@
   (call-with-output-file path (lambda (port) (display "keep" port))))
 (def module-build-artifact-clean-test
   (test-suite "Selected native artifact cleanup"
-    (poo-flow-test-case "partial native clean removes only the selected output family"
+    (yuanxu-test-case "partial native clean removes only the selected output family"
       (call-with-temporary-directory "selected-artifact-clean"
         (lambda (root)
           ;; .o1 is already gone: native clean left later generations behind.
@@ -27,7 +27,7 @@
           (for-each (lambda (name) (check-equal? (file-exists? (path-expand name root)) #t)) retained)
           (clean-build-artifacts! '(core/owned core/missing/subunit) root)
           (check-equal? (file-exists? (path-expand "core/owned.ss" root)) #t))))
-    (poo-flow-test-case "symlinked outputs are refused without touching their target"
+    (yuanxu-test-case "symlinked outputs are refused without touching their target"
       (call-with-temporary-directory "selected-artifact-symlink"
         (lambda (root)
           (def target (path-expand "target" root))

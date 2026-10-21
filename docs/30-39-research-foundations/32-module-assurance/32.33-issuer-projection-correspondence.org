@@ -82,7 +82,7 @@ both the registry key and the closure's captured record identity remain checked.
 
 * Constructive model and legacy projection
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuerProjection.lean][IssuerProjection.lean]] models separate stores:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean][IssuerProjection.lean]] models separate stores:
 
 - =registry=: record identity to original closure identity;
 - =environments=: closure identity to captured owner, payload and key shape;

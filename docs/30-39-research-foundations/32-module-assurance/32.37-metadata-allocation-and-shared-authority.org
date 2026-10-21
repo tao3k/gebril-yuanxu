@@ -141,7 +141,7 @@ registry or a demand for users to maintain one.
 
 * Lean, Quint and native correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataAllocation.lean][MetadataAllocation.lean]] models allocation as adding a cell/receiver association.
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean][MetadataAllocation.lean]] models allocation as adding a cell/receiver association.
 =allocation_registers_receiver= and =allocation_keeps_existing= prove that adding
 a shared user does not erase prior owners. This registration is a design law;
 the production issuer does not yet certify all specification aliases.

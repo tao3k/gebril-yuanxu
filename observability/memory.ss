@@ -3,52 +3,52 @@
 ;;; Existing Observability memory policies and Case watchdog, isolated from
 ;;; optional typed printers and slot tracing. No separate runner or sampler.
 (import (only-in :clan/poo/object .o .ref)
-        (only-in :core/ops/progress current-execution-progress execution-progress-status
+        (only-in :yuanxu/ops/progress current-execution-progress execution-progress-status
                  execution-progress-idle-milliseconds execution-progress-limit)
         (only-in :clan/poo/mop validate)
         :gerbil/runtime/gambit
         (only-in :std/error deferror-class)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/observability/types
-                 PooFlowDebugMemoryPolicyContract PooFlowDebugMemorySampleContract
-                 PooFlowDebugMemoryReceiptContract PooFlowDebugDurationReceiptContract)
-        (only-in :core/observability/funcs
-                 poo-flow-debug-memory-policy poo-flow-debug-memory-policy?
-                 poo-flow-debug-memory-sample poo-flow-debug-memory-receipt
-                 poo-flow-debug-memory-receipt-sexp poo-flow-debug-allocation-current?))
-(export PooFlowDebugMemoryAnomaly? PooFlowDebugMemoryAnomaly-receipt
-        PooFlowDebugDurationAnomaly? PooFlowDebugDurationAnomaly-receipt
-        PooFlowDebugMemoryPolicyContract PooFlowDebugMemorySampleContract
-        PooFlowDebugMemoryReceiptContract PooFlowDebugDurationReceiptContract
-        poo-flow-debug-memory-policy poo-flow-debug-memory-policy?
-        poo-flow-debug-memory-sample poo-flow-debug-memory-receipt
-        poo-flow-debug-memory-receipt-sexp poo-flow-debug-memory-snapshot
-        poo-flow-debug-allocation-current?
-        poo-flow-debug-cpu-microseconds
-        poo-flow-debug-memory-checkpoint call-with-poo-flow-debug-memory-span
-        call-with-poo-flow-debug-memory-monitor call-with-poo-flow-debug-memory-case-watchdog)
-(deferror-class PooFlowDebugMemoryAnomaly (receipt))
-(deferror-class PooFlowDebugDurationAnomaly (receipt))
-(def DebugDurationReceipt. (.ref PooFlowDebugDurationReceiptContract 'proto))
-(def (poo-flow-debug-cpu-microseconds)
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/observability/types
+                 YuanxuDebugMemoryPolicyContract YuanxuDebugMemorySampleContract
+                 YuanxuDebugMemoryReceiptContract YuanxuDebugDurationReceiptContract)
+        (only-in :yuanxu/observability/funcs
+                 yuanxu-debug-memory-policy yuanxu-debug-memory-policy?
+                 yuanxu-debug-memory-sample yuanxu-debug-memory-receipt
+                 yuanxu-debug-memory-receipt-sexp yuanxu-debug-allocation-current?))
+(export YuanxuDebugMemoryAnomaly? YuanxuDebugMemoryAnomaly-receipt
+        YuanxuDebugDurationAnomaly? YuanxuDebugDurationAnomaly-receipt
+        YuanxuDebugMemoryPolicyContract YuanxuDebugMemorySampleContract
+        YuanxuDebugMemoryReceiptContract YuanxuDebugDurationReceiptContract
+        yuanxu-debug-memory-policy yuanxu-debug-memory-policy?
+        yuanxu-debug-memory-sample yuanxu-debug-memory-receipt
+        yuanxu-debug-memory-receipt-sexp yuanxu-debug-memory-snapshot
+        yuanxu-debug-allocation-current?
+        yuanxu-debug-cpu-microseconds
+        yuanxu-debug-memory-checkpoint call-with-yuanxu-debug-memory-span
+        call-with-yuanxu-debug-memory-monitor call-with-yuanxu-debug-memory-case-watchdog)
+(deferror-class YuanxuDebugMemoryAnomaly (receipt))
+(deferror-class YuanxuDebugDurationAnomaly (receipt))
+(def DebugDurationReceipt. (.ref YuanxuDebugDurationReceiptContract 'proto))
+(def (yuanxu-debug-cpu-microseconds)
   ;; Process CPU is distinct from elapsed wall time and from last-GC memory.
   ;; Use the SDK clock directly; no sampler, environment probe or subprocess.
   (let (times (##process-times))
     (inexact->exact
       (round (* 1000000 (+ (f64vector-ref times 0) (f64vector-ref times 1)))))))
-(def (poo-flow-debug-elapsed-milliseconds started-jiffy)
+(def (yuanxu-debug-elapsed-milliseconds started-jiffy)
   (quotient (* (- (current-jiffy) started-jiffy) 1000)
             (jiffies-per-second)))
 (def (emit-memory-receipt receipt)
   (parameterize ((current-output-port (current-error-port)))
-    (poo-flow-write-observation-line! "debug-memory %s"
-      (poo-flow-debug-memory-receipt-sexp receipt))))
-(def (poo-flow-debug-raise-memory-anomaly receipt)
+    (yuanxu-write-observation-line! "debug-memory %s"
+      (yuanxu-debug-memory-receipt-sexp receipt))))
+(def (yuanxu-debug-raise-memory-anomaly receipt)
   (let (failure
-        (PooFlowDebugMemoryAnomaly
+        (YuanxuDebugMemoryAnomaly
          "POO Flow debug memory policy rejected the observed phase"
          irritants: '()))
-    (set! (PooFlowDebugMemoryAnomaly-receipt failure) receipt)
+    (set! (YuanxuDebugMemoryAnomaly-receipt failure) receipt)
     (raise failure)))
 
 
@@ -57,7 +57,7 @@
 ;; observed counter 7 move backwards: the Case flags that stream invalid rather
 ;; than silently clamping it into performance evidence. The other counters below
 ;; remain last-GC snapshots, not exclusive byte ownership by a test.
-(def (poo-flow-debug-memory-counters collect?)
+(def (yuanxu-debug-memory-counters collect?)
   (when collect? (##gc))
   (let* ((stats (##process-statistics))
          (allocated (inexact->exact (f64vector-ref stats 7))))
@@ -67,29 +67,29 @@
           (inexact->exact (f64vector-ref stats 18))
           (inexact->exact (f64vector-ref stats 19)))))
 
-(def (poo-flow-debug-memory-sample-from-counters phase counters)
+(def (yuanxu-debug-memory-sample-from-counters phase counters)
     (apply (lambda (heap-size allocation live movable still)
-             (poo-flow-debug-memory-sample
+             (yuanxu-debug-memory-sample
               phase heap-size allocation live movable still))
            counters))
 
-(def (poo-flow-debug-memory-snapshot phase collect?: (collect? #f))
+(def (yuanxu-debug-memory-snapshot phase collect?: (collect? #f))
   (unless (and (symbol? phase) (boolean? collect?))
     (error "invalid POO Flow debug memory snapshot request" phase collect?))
-  (poo-flow-debug-memory-sample-from-counters
-   phase (poo-flow-debug-memory-counters collect?)))
+  (yuanxu-debug-memory-sample-from-counters
+   phase (yuanxu-debug-memory-counters collect?)))
 
 ;;; Periodic monitor ticks stay scalar-only while the test worker is active.
 ;;; POO construction and Contract validation resume only after the worker has
 ;;; stopped, avoiding cross-thread validation races in instrumented tests.
-(def (poo-flow-debug-memory-counters-rejected?
+(def (yuanxu-debug-memory-counters-rejected?
       heap-limit live-growth-limit baseline-counters counters)
   (let ((heap-size (list-ref counters 0))
         (live (list-ref counters 2)))
     (or (> heap-size heap-limit)
         (> (- live (list-ref baseline-counters 2)) live-growth-limit))))
 
-(def (poo-flow-debug-raise-duration-anomaly phase policy-label limit elapsed
+(def (yuanxu-debug-raise-duration-anomaly phase policy-label limit elapsed
         reason: (reason 'duration-exceeded))
   (let* ((phase-value phase)
          (policy-label-value policy-label)
@@ -97,7 +97,7 @@
          (elapsed-value elapsed)
          (reason-value reason)
          (receipt
-          (validate PooFlowDebugDurationReceiptContract
+          (validate YuanxuDebugDurationReceiptContract
             (.o (:: @ DebugDurationReceipt.)
                 phase: phase-value
                 policy-label: policy-label-value
@@ -106,15 +106,15 @@
                 accepted?: #f
                 reason: reason-value)))
          (failure
-          (PooFlowDebugDurationAnomaly
+          (YuanxuDebugDurationAnomaly
            "POO Flow testing Case duration budget exceeded"
            irritants: (list reason-value limit-value elapsed-value))))
-    (set! (PooFlowDebugDurationAnomaly-receipt failure) receipt)
+    (set! (YuanxuDebugDurationAnomaly-receipt failure) receipt)
     (raise failure)))
 
-;; : (-> PooFlowDebugMemoryPolicy PooFlowDebugMemorySample Symbol port: OutputPort emit?: Boolean PooFlowDebugMemoryReceipt)
-;; poo-flow-debug-memory-checkpoint
-;;   : (-> PooFlowDebugMemoryPolicy PooFlowDebugMemorySample Symbol port: OutputPort emit?: Boolean PooFlowDebugMemoryReceipt)
+;; : (-> YuanxuDebugMemoryPolicy YuanxuDebugMemorySample Symbol port: OutputPort emit?: Boolean YuanxuDebugMemoryReceipt)
+;; yuanxu-debug-memory-checkpoint
+;;   : (-> YuanxuDebugMemoryPolicy YuanxuDebugMemorySample Symbol port: OutputPort emit?: Boolean YuanxuDebugMemoryReceipt)
 ;;   | doc m%
 ;;       Sample one policy checkpoint and return its typed POO receipt, raising
 ;;       the same receipt as an anomaly when fail-closed policy rejects it.
@@ -124,33 +124,33 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-debug-memory-checkpoint policy baseline 'compile)
-;;       ;; => PooFlowDebugMemoryReceipt
+;;       (yuanxu-debug-memory-checkpoint policy baseline 'compile)
+;;       ;; => YuanxuDebugMemoryReceipt
 ;;       ```
 ;;     %
-(def (poo-flow-debug-memory-checkpoint policy baseline phase
+(def (yuanxu-debug-memory-checkpoint policy baseline phase
                                        port: (port (current-error-port))
                                        emit?: (emit? #f))
   (unless (and (output-port? port) (boolean? emit?))
     (error "invalid POO Flow debug memory checkpoint output request"))
   (let* ((after
-          (poo-flow-debug-memory-snapshot
+          (yuanxu-debug-memory-snapshot
            phase collect?: (.ref policy 'collect-before-sample?)))
-         (receipt (poo-flow-debug-memory-receipt policy baseline after)))
+         (receipt (yuanxu-debug-memory-receipt policy baseline after)))
     (when emit?
       (parameterize ((current-error-port port))
         (emit-memory-receipt receipt)))
     (when (and (not (.ref receipt 'accepted?))
                (.ref policy 'fail-closed?))
-      (poo-flow-debug-raise-memory-anomaly receipt))
+      (yuanxu-debug-raise-memory-anomaly receipt))
     receipt))
 
 ;;; A span adds in-band phase evidence around one development operation. Long
 ;;; operations should expose intermediate checkpoints; the test entrypoint's
 ;;; declarative runtime profile remains the final pre-suite heap boundary.
-;; : (forall (a) (-> PooFlowDebugMemoryPolicy Symbol (-> a) port: OutputPort emit?: Boolean (values a PooFlowDebugMemoryReceipt)))
-;; call-with-poo-flow-debug-memory-span
-;;   : (-> PooFlowDebugMemoryPolicy Symbol (-> Object) port: OutputPort emit?: Boolean (values Object PooFlowDebugMemoryReceipt))
+;; : (forall (a) (-> YuanxuDebugMemoryPolicy Symbol (-> a) port: OutputPort emit?: Boolean (values a YuanxuDebugMemoryReceipt)))
+;; call-with-yuanxu-debug-memory-span
+;;   : (-> YuanxuDebugMemoryPolicy Symbol (-> Object) port: OutputPort emit?: Boolean (values Object YuanxuDebugMemoryReceipt))
 ;;   | doc m%
 ;;       Measure one returning development operation and preserve its value
 ;;       beside a typed POO receipt for the observed heap delta.
@@ -160,21 +160,21 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (call-with-poo-flow-debug-memory-span policy 'compile (lambda () 'ok))
-;;       ;; => (values 'ok PooFlowDebugMemoryReceipt)
+;;       (call-with-yuanxu-debug-memory-span policy 'compile (lambda () 'ok))
+;;       ;; => (values 'ok YuanxuDebugMemoryReceipt)
 ;;       ```
 ;;     %
-(def (call-with-poo-flow-debug-memory-span policy phase thunk
+(def (call-with-yuanxu-debug-memory-span policy phase thunk
                                            port: (port (current-error-port))
                                            emit?: (emit? #f))
   (unless (procedure? thunk)
     (error "POO Flow debug memory span requires a thunk"))
   (let (before
-        (poo-flow-debug-memory-snapshot
+        (yuanxu-debug-memory-snapshot
          phase collect?: (.ref policy 'collect-before-sample?)))
     (let (value (thunk))
       (values value
-              (poo-flow-debug-memory-checkpoint
+              (yuanxu-debug-memory-checkpoint
                policy before phase port: port emit?: emit?)))))
 
 ;;; The monitored form is the asynchronous debug boundary: the observed
@@ -183,9 +183,9 @@
 ;;; operations remain subject to the monitor's memory and duration limits.
 ;;; The test entrypoint applies Gambit's heap boundary declaratively before the
 ;;; suites load; this monitor adds phase-attributed growth evidence in-band.
-;; : (forall (a) (-> PooFlowDebugMemoryPolicy Symbol (-> a) port: OutputPort emit?: Boolean (values a PooFlowDebugMemoryReceipt)))
-;; call-with-poo-flow-debug-memory-monitor
-;;   : (-> PooFlowDebugMemoryPolicy Symbol (-> Object) port: OutputPort emit?: Boolean (values Object PooFlowDebugMemoryReceipt))
+;; : (forall (a) (-> YuanxuDebugMemoryPolicy Symbol (-> a) port: OutputPort emit?: Boolean (values a YuanxuDebugMemoryReceipt)))
+;; call-with-yuanxu-debug-memory-monitor
+;;   : (-> YuanxuDebugMemoryPolicy Symbol (-> Object) port: OutputPort emit?: Boolean (values Object YuanxuDebugMemoryReceipt))
 ;;   | doc m%
 ;;       Run one development operation in a native Scheme worker while the
 ;;       caller samples bounded heap counters and enforces its POO policy.
@@ -195,11 +195,11 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (call-with-poo-flow-debug-memory-monitor policy 'compile (lambda () 'ok))
-;;       ;; => (values 'ok PooFlowDebugMemoryReceipt)
+;;       (call-with-yuanxu-debug-memory-monitor policy 'compile (lambda () 'ok))
+;;       ;; => (values 'ok YuanxuDebugMemoryReceipt)
 ;;       ```
 ;;     %
-(def (call-with-poo-flow-debug-memory-monitor policy phase thunk
+(def (call-with-yuanxu-debug-memory-monitor policy phase thunk
                                               port: (port (current-error-port))
                                               emit?: (emit? #f)
                                               max-duration-milliseconds:
@@ -218,11 +218,11 @@
          (sample-interval-milliseconds
           (.ref policy 'sample-interval-milliseconds))
          (baseline-counters
-          (poo-flow-debug-memory-counters
+          (yuanxu-debug-memory-counters
            collect-before-sample?))
          (heap-limit (.ref policy 'heap-limit-bytes))
          (live-growth-limit (.ref policy 'live-growth-limit-bytes))
-         (timeout-token (cons 'poo-flow-debug-memory-timeout '()))
+         (timeout-token (cons 'yuanxu-debug-memory-timeout '()))
          (interval-seconds
           (/ (max 1 sample-interval-milliseconds) 1000.0))
          (worker
@@ -232,7 +232,7 @@
               (lambda (failure) (cons 'failure failure))
               (lambda ()
                 (let* ((worker-policy
-                        (poo-flow-debug-memory-policy
+                        (yuanxu-debug-memory-policy
                          policy-label
                          heap-limit-bytes: heap-limit
                          live-growth-limit-bytes: live-growth-limit
@@ -241,11 +241,11 @@
                          collect-before-sample?: collect-before-sample?
                          fail-closed?: fail-closed?))
                        (baseline
-                        (poo-flow-debug-memory-sample-from-counters
+                        (yuanxu-debug-memory-sample-from-counters
                          phase baseline-counters))
                        (value (thunk))
                        (receipt
-                        (poo-flow-debug-memory-checkpoint
+                        (yuanxu-debug-memory-checkpoint
                          worker-policy baseline phase
                          port: port emit?: emit?)))
                   (cons 'value (cons value receipt))))))))
@@ -258,33 +258,33 @@
           (let (outcome
                 (thread-join! worker interval-seconds timeout-token))
             (if (eq? outcome timeout-token)
-              (let (counters (poo-flow-debug-memory-counters #f))
-                (if (poo-flow-debug-memory-counters-rejected?
+              (let (counters (yuanxu-debug-memory-counters #f))
+                (if (yuanxu-debug-memory-counters-rejected?
                      heap-limit live-growth-limit baseline-counters counters)
                   (begin
                     (thread-terminate! worker)
                     (set! joined? #t)
                     (let* ((baseline
-                            (poo-flow-debug-memory-sample-from-counters
+                            (yuanxu-debug-memory-sample-from-counters
                              phase baseline-counters))
                            (after
-                            (poo-flow-debug-memory-sample-from-counters
+                            (yuanxu-debug-memory-sample-from-counters
                              phase counters))
                            (receipt
-                            (poo-flow-debug-memory-receipt
+                            (yuanxu-debug-memory-receipt
                              policy baseline after)))
                       (when emit?
                         (parameterize ((current-error-port port))
                           (emit-memory-receipt receipt)))
-                      (poo-flow-debug-raise-memory-anomaly receipt)))
+                      (yuanxu-debug-raise-memory-anomaly receipt)))
                   (let (elapsed
-                        (poo-flow-debug-elapsed-milliseconds started-jiffy))
+                        (yuanxu-debug-elapsed-milliseconds started-jiffy))
                     (if (and max-duration-milliseconds
                              (>= elapsed max-duration-milliseconds))
                       (begin
                         (thread-terminate! worker)
                         (set! joined? #t)
-                        (poo-flow-debug-raise-duration-anomaly
+                        (yuanxu-debug-raise-duration-anomaly
                          phase policy-label
                          max-duration-milliseconds elapsed))
                       (monitor)))))
@@ -301,7 +301,7 @@
 ;;; Case body must therefore remain on the harness thread.  Only the sampler
 ;;; runs on a separate Scheme thread and interrupts the owner on rejection.
 ;;; Heap counters remain process-wide; this is not a thread-local heap quota.
-(def (call-with-poo-flow-debug-memory-case-watchdog
+(def (call-with-yuanxu-debug-memory-case-watchdog
       policy phase thunk
       port: (port (current-error-port))
       emit?: (emit? #f)
@@ -321,7 +321,7 @@
          (interval-seconds
           (/ (max 1 (.ref policy 'sample-interval-milliseconds)) 1000.0))
          (baseline-counters
-          (poo-flow-debug-memory-counters
+          (yuanxu-debug-memory-counters
            (.ref policy 'collect-before-sample?)))
          (heap-limit (.ref policy 'heap-limit-bytes))
          (live-growth-limit (.ref policy 'live-growth-limit-bytes))
@@ -340,32 +340,32 @@
     (def (watch)
       (thread-sleep! interval-seconds)
       (unless done?
-        (let* ((counters (poo-flow-debug-memory-counters collect-before-sample?))
-               (elapsed (poo-flow-debug-elapsed-milliseconds started-jiffy))
+        (let* ((counters (yuanxu-debug-memory-counters collect-before-sample?))
+               (elapsed (yuanxu-debug-elapsed-milliseconds started-jiffy))
                (progress (and (pair? (current-execution-progress))
                               (car (current-execution-progress))))
                (progress-status (and progress (execution-progress-status progress))))
           (cond
            ((and fail-closed?
-                 (poo-flow-debug-memory-counters-rejected?
+                 (yuanxu-debug-memory-counters-rejected?
                   heap-limit live-growth-limit baseline-counters counters))
             (when (claim-stop!)
               (thread-interrupt!
                owner
                (lambda ()
                  (let* ((after
-                         (poo-flow-debug-memory-sample-from-counters
+                         (yuanxu-debug-memory-sample-from-counters
                           phase counters))
                         (receipt
-                         (poo-flow-debug-memory-receipt
+                         (yuanxu-debug-memory-receipt
                           policy
-                          (poo-flow-debug-memory-sample-from-counters
+                          (yuanxu-debug-memory-sample-from-counters
                            phase baseline-counters)
                           after)))
                    (when emit?
                      (parameterize ((current-error-port port))
                        (emit-memory-receipt receipt)))
-                   (poo-flow-debug-raise-memory-anomaly receipt))))))
+                   (yuanxu-debug-raise-memory-anomaly receipt))))))
            ((or (>= elapsed max-duration-milliseconds) progress-status)
             (when (claim-stop!)
               ;; The interrupted owner may currently be inside a different,
@@ -378,7 +378,7 @@
                                    elapsed)))
                 (thread-interrupt! owner
                   (lambda ()
-                    (poo-flow-debug-raise-duration-anomaly
+                    (yuanxu-debug-raise-duration-anomaly
                       phase (.ref policy 'label) limit observed
                       reason: (if idle? 'idle-exceeded 'duration-exceeded))))))))
           (unless done? (watch)))))
@@ -390,27 +390,27 @@
           (let (value (thunk))
             (finish!)
             (let (after-counters
-                  (poo-flow-debug-memory-counters
+                  (yuanxu-debug-memory-counters
                    (.ref policy 'collect-before-sample?)))
               (if (or emit?
-                      (poo-flow-debug-memory-counters-rejected?
+                      (yuanxu-debug-memory-counters-rejected?
                        heap-limit live-growth-limit
                        baseline-counters after-counters))
                 (let* ((before
-                        (poo-flow-debug-memory-sample-from-counters
+                        (yuanxu-debug-memory-sample-from-counters
                          phase baseline-counters))
                        (after
-                        (poo-flow-debug-memory-sample-from-counters
+                        (yuanxu-debug-memory-sample-from-counters
                          phase after-counters))
                        (receipt
-                        (poo-flow-debug-memory-receipt
+                        (yuanxu-debug-memory-receipt
                          policy before after)))
                   (when emit?
                     (parameterize ((current-error-port port))
                       (emit-memory-receipt receipt)))
                   (when (and fail-closed?
                              (not (.ref receipt 'accepted?)))
-                    (poo-flow-debug-raise-memory-anomaly receipt))
+                    (yuanxu-debug-raise-memory-anomaly receipt))
                   (values value receipt))
                 (values value #f)))))
         (lambda ()

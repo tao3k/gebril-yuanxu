@@ -2,21 +2,21 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :yuanxu/module-system/source/admission
                  call-with-module-source-read-cache module-source-read module-source-admit-current!)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture write-source)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export source-admission-test test-cleanup!)
 
 ;; Test-only instrumentation below the adapter in the native method chain.
 ;; Counting classification alone would not prove inherited .admit ran once.
 (def (counted-contract calls)
   (def base
-    (.o (:: @ PooFlowContract.)
+    (.o (:: @ YuanxuContract.)
       (.admit (inherited)
         (lambda (candidate context)
           (vector-set! calls 0 (+ 1 (vector-ref calls 0)))
@@ -25,7 +25,7 @@
     identity: 'test/source-admission
     .classify:
     (lambda (candidate context)
-      (poo-flow-classification-evidence identity candidate #t '() context))))
+      (yuanxu-classification-evidence identity candidate #t '() context))))
 
 (def completed 0)
 (def (test-cleanup!)
@@ -33,7 +33,7 @@
   (displayln "SOURCE-ADMISSION: 6 cases completed"))
 (def source-admission-test
   (test-suite "Source-bound native Contract admission"
-    (poo-flow-test-fixture "replaceable currentness callbacks cannot lend bytes across their effects"
+    (yuanxu-test-fixture "replaceable currentness callbacks cannot lend bytes across their effects"
       (fixture DirectoryFixture)
       (def path (path-expand "context.json" (.get fixture root)))
       (write-source path "{}")
@@ -51,7 +51,7 @@
       (check-equal? (Error-message failure) "test context source changed")
       (check-equal? (vector-ref calls 0) 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "inherited admission runs exactly once on each invocation"
+    (yuanxu-test-case "inherited admission runs exactly once on each invocation"
       (def calls (vector 0))
       (def contract (counted-contract calls))
       (def candidate (.o port: 5432))
@@ -64,7 +64,7 @@
       (check-equal? (.get second accepted?) #t)
       (check-equal? (eq? (.get second admission-contract) contract) #t)
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "preflight refusal never calls inherited admission"
+    (yuanxu-test-case "preflight refusal never calls inherited admission"
       (def calls (vector 0))
       (def issue (.o kind: 'invalid-field path: '(port)))
       (def contract
@@ -77,7 +77,7 @@
       (check-equal? (eq? (.get rejected candidate) candidate) #t)
       (check-equal? (eq? (car (.get rejected diagnostics)) issue) #t)
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "child obligation and receipt identity survive decoration"
+    (yuanxu-test-case "child obligation and receipt identity survive decoration"
       (def child-calls (vector 0))
       (def child (.o port: 5433))
       (def issue (.o kind: 'child-policy path: '(port)))
@@ -99,7 +99,7 @@
       (check-equal? (eq? (.get receipt admission-contract) child-contract) #t)
       (check-equal? (eq? (car (.get receipt diagnostics)) issue) #t)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "outer cached observations cannot hide a changed source at entry"
+    (yuanxu-test-fixture "outer cached observations cannot hide a changed source at entry"
       (fixture DirectoryFixture)
       (def path (path-expand "input.json" (.get fixture root)))
       (write-source path "{}")
@@ -115,7 +115,7 @@
           (check-equal? (Error-message failure) "configuration source changed")
           (check-equal? (vector-ref calls 0) 0)))
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "post-admission checks bypass an outer cache after obligation mutation"
+    (yuanxu-test-fixture "post-admission checks bypass an outer cache after obligation mutation"
       (fixture DirectoryFixture)
       (def path (path-expand "input.json" (.get fixture root)))
       (write-source path "{}")

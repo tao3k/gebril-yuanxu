@@ -35,7 +35,7 @@ inheritance, dynamic composition, computed methods, =self= or =next-method=.
 
 * Implemented bounded path-slot authoring
 
-=:core/object-syntax/path-slots= provides explicit .def/.o/brace authoring
+=:yuanxu/object-syntax/path-slots= provides explicit .def/.o/brace authoring
 bindings for dotted existing-object =>.+ refinements. Shared prefixes lower to
 one native ancestor method, retaining native outer-slot lexical references and
 receiver-local caches. Primitive gerbil-poo bindings retain literal dotted slots.

@@ -3,22 +3,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         "./fixtures/opentofu/aws-5.100.0/qualification.ss"
-        (only-in :core/observability/testing-case poo-flow-test-case)
-         :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+         :yuanxu/types :clan/poo/object)
 (export opentofu-aws-binary-test)
 
 (def opentofu-aws-binary-test
   (test-suite "opentofu-aws-binary-test"
-    (poo-flow-test-case "actual AWS 5.100.0 darwin_arm64 binary source"
-      (def path (getenv "POO_FLOW_AWS_BINARY" #f))
-      (unless path (error "POO_FLOW_AWS_BINARY must name the acquired AWS 5.100.0 binary"))
+    (yuanxu-test-case "actual AWS 5.100.0 darwin_arm64 binary source"
+      (def path (getenv "YUANXU_AWS_BINARY" #f))
+      (unless path (error "YUANXU_AWS_BINARY must name the acquired AWS 5.100.0 binary"))
       (def (assert label value)
         (unless value (error "assertion failed" label))
         (displayln "ASSERT-OK " label) (force-output))
       (def selection (.o provider: "registry.terraform.io/hashicorp/aws" version: "5.100.0"))
       (def request (.cc (.o) 'selection selection 'path path))
       (assert 'actual-binary
-        (poo-flow-validation-evidence-accepted?
+        (yuanxu-validation-evidence-accepted?
           (.call AwsProviderBinaryContract .admit request #f)))
       (def wrong-version
         (.call AwsProviderBinaryContract .admit

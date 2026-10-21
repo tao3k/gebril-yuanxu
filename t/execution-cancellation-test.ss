@@ -6,14 +6,14 @@
         (only-in :std/os/pid getpid)
         (only-in :std/os/signal kill SIGTERM)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :core/ops/process-script ProcessScript.)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture))
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture))
 (export execution-cancellation-test)
 
 (def execution-cancellation-test
   (test-suite "Outer termination unwinds the fixture and owned Ops effect"
-    (poo-flow-test-case "TERM reaches the owner once and releases nested fixtures"
+    (yuanxu-test-case "TERM reaches the owner once and releases nested fixtures"
       (def root (make-temporary-file-name "fixture-term-"))
       (def releases '())
       (.def Directory
@@ -28,8 +28,8 @@
       (def failure
         (with-catch values
           (lambda ()
-            (with-poo-flow-fixture (directory Directory)
-              (with-poo-flow-fixture (_inner Inner)
+            (with-yuanxu-fixture (directory Directory)
+              (with-yuanxu-fixture (_inner Inner)
                 ;; Real OS TERM, sent only after fixture acquisition and while
                 ;; the same owner is blocked in the existing Ops .run path.
                 (set! sender
@@ -45,6 +45,6 @@
       (check-equal? (file-exists? root) #f)
       ;; A subsequent fixture registers afresh: cancellation is no stored
       ;; approval, persistent resource registry or poisoned execution result.
-      (with-poo-flow-fixture (_directory Directory) (check-equal? (file-exists? root) #t))
+      (with-yuanxu-fixture (_directory Directory) (check-equal? (file-exists? root) #t))
       (check-equal? releases '(directory directory inner))
       (check-equal? (file-exists? root) #f))))

@@ -1,4 +1,4 @@
-(import :core/object-family/syntax)
+(import :yuanxu/object-family/syntax)
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;;
@@ -8,13 +8,13 @@
 ;;; Invariant: task execution is deferred to runner/runtime-adapter code.
 
 (import (only-in :clan/poo/object .@ object?)
-        :core/modules/funflow/control-plane/roles
-        :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/task
-        :core/modules/funflow/control-plane/flow-strand
-        :core/modules/funflow/control-plane/flow-declarations
-        :core/object-family/role-syntax
-        :core/utilities/algorithms)
+        :yuanxu/modules/funflow/control-plane/roles
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/task
+        :yuanxu/modules/funflow/control-plane/flow-strand
+        :yuanxu/modules/funflow/control-plane/flow-declarations
+        :yuanxu/object-family/role-syntax
+        :yuanxu/utilities/algorithms)
 
 (export make-flow
         flow?
@@ -256,7 +256,7 @@
 ;;; - Store and CAS extensions own persistent cache materialization.
 ;; : (-> Symbol KeyProcedure Procedure Contract Contract Flow)
 (def (cached-pure-flow name key-proc proc input-contract output-contract)
-  (pure-flow name (poo-flow-memoize key-proc proc)
+  (pure-flow name (yuanxu-memoize key-proc proc)
              input-contract output-contract))
 
 ;;; Invariant:
@@ -264,7 +264,7 @@
 ;;; - This preserves QuickReference's single visible =Increment!= observation.
 ;; : (-> Symbol KeyProcedure Procedure Contract Contract Flow)
 (def (cached-scheme-flow name key-proc proc input-contract output-contract)
-  (scheme-flow name (poo-flow-memoize key-proc proc)
+  (scheme-flow name (yuanxu-memoize key-proc proc)
                input-contract output-contract))
 
 ;;; Composition concatenates logical steps and keeps the left input/right output

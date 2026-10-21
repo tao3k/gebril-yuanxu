@@ -162,7 +162,7 @@ The snapshot includes status, ids, last event index, result summary, error summa
 The downstream-facing syntax should stay close to the current root interface:
 
 #+begin_src scheme
-(poo-flow!
+(yuanxu!
   (use-module workflow +funflow +runtime-manifest)
   (use-module loop-governor +strategy +policy)
   (use-module nono-sandbox +nono +doctor)

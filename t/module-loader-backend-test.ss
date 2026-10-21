@@ -5,39 +5,39 @@
 
 (import (only-in :std/test test-suite check-equal?)
         (only-in :clan/poo/object .o)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/module-system/source/objects
-        :core/module-system/loader/objects)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/loader/objects)
 
 (export module-loader-backend-test)
 
 (def module-loader-backend-test
   (test-suite "Core Module Loader Backend"
-    (poo-flow-test-case "lazy values do not invoke their backend before force"
+    (yuanxu-test-case "lazy values do not invoke their backend before force"
       (let* ((calls 0)
-             (source (make-poo-flow-module-local-source "feature/interface.ss"))
+             (source (make-yuanxu-module-local-source "feature/interface.ss"))
              (module (.o name: 'feature))
              (backend
-              (make-poo-flow-module-loader-backend
+              (make-yuanxu-module-loader-backend
                'static 'local
                (lambda (requested)
                  (set! calls (+ calls 1))
-                 (if (poo-flow-module-source-ref=? requested source)
+                 (if (yuanxu-module-source-ref=? requested source)
                    module
                    #f))
                '()))
-             (deferred (poo-flow-make-lazy-load-plan (list backend) source)))
+             (deferred (yuanxu-make-lazy-load-plan (list backend) source)))
         (check-equal? calls 0)
-        (check-equal? (poo-flow-lazy-load-plan-forced? deferred) #f)
-        (check-equal? (poo-flow-module-load-receipt-code
-                       (poo-flow-lazy-load-plan-receipt deferred))
+        (check-equal? (yuanxu-lazy-load-plan-forced? deferred) #f)
+        (check-equal? (yuanxu-module-load-receipt-code
+                       (yuanxu-lazy-load-plan-receipt deferred))
                       'deferred)
-        (let* ((forced (poo-flow-force-lazy-load-plan deferred))
-               (receipt (poo-flow-lazy-load-plan-receipt forced)))
+        (let* ((forced (yuanxu-force-lazy-load-plan deferred))
+               (receipt (yuanxu-lazy-load-plan-receipt forced)))
           (check-equal? calls 1)
-          (check-equal? (poo-flow-lazy-load-plan-forced? forced) #t)
-          (check-equal? (poo-flow-module-load-receipt-loaded? receipt) #t)
-          (check-equal? (poo-flow-module-load-receipt->alist receipt)
+          (check-equal? (yuanxu-lazy-load-plan-forced? forced) #t)
+          (check-equal? (yuanxu-module-load-receipt-loaded? receipt) #t)
+          (check-equal? (yuanxu-module-load-receipt->alist receipt)
                         '((source (kind . local)
                                   (value . "feature/interface.ss")
                                   (metadata))
@@ -47,11 +47,11 @@
                           (code . loaded)
                           (messages)
                           (metadata))))))
-    (poo-flow-test-case "unsupported sources remain missing receipts"
-      (let* ((source (make-poo-flow-module-package-source 'other))
-             (backend (poo-flow-module-static-loader 'local 'local '()))
-             (receipt (poo-flow-module-load-source-receipt
+    (yuanxu-test-case "unsupported sources remain missing receipts"
+      (let* ((source (make-yuanxu-module-package-source 'other))
+             (backend (yuanxu-module-static-loader 'local 'local '()))
+             (receipt (yuanxu-module-load-source-receipt
                        (list backend) source)))
-        (check-equal? (poo-flow-module-load-receipt-loaded? receipt) #f)
-        (check-equal? (poo-flow-module-load-receipt-code receipt)
+        (check-equal? (yuanxu-module-load-receipt-loaded? receipt) #f)
+        (check-equal? (yuanxu-module-load-receipt-code receipt)
                       'missing-loader)))))

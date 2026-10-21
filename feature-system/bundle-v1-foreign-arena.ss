@@ -5,8 +5,8 @@
 ;;; Boundary: materializes Bundle v1 lowering output in a foreign-memory arena.
 ;;; Invariant: arena offsets are validated before any foreign view is exposed.
 (import (only-in :clan/poo/object .ref .slot? object<-alist object?)
-        :core/utilities/functional
-        :core/feature-system/bundle-v1-lowering)
+        :yuanxu/utilities/functional
+        :yuanxu/feature-system/bundle-v1-lowering)
 
 (export +feature-bundle-v1-foreign-arena-image-kind+
         +feature-bundle-v1-foreign-arena-diagnostic-kind+
@@ -16,10 +16,10 @@
         require-feature-bundle-v1-foreign-arena-image)
 
 (def +feature-bundle-v1-foreign-arena-image-kind+
-  'poo-flow.feature-bundle-v1-foreign-arena-image.v1)
+  'yuanxu.feature-bundle-v1-foreign-arena-image.v1)
 
 (def +feature-bundle-v1-foreign-arena-diagnostic-kind+
-  'poo-flow.feature-bundle-v1-foreign-arena-diagnostic.v1)
+  'yuanxu.feature-bundle-v1-foreign-arena-diagnostic.v1)
 
 (def +bundle-v1-descriptor-size+ 256)
 (def +bundle-v1-arena-alignment+ 64)
@@ -102,7 +102,7 @@
     (error "Bundle v1 unsigned write is out of bounds"
            offset value (length byte-offsets)))
   (let ((remaining
-         (poo-flow-fold-left
+         (yuanxu-fold-left
           (lambda (byte-offset remaining)
             (u8vector-set! target (+ offset byte-offset)
                            (modulo remaining 256))
@@ -140,7 +140,7 @@
 
 ;; : (-> U8Vector Integer [PooFeatureBundleV1CompactId] Unit)
 (def (write-compact-ids! target offset compact-ids)
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (compact-id cursor)
      (write-compact-id! target cursor compact-id)
      (+ cursor 16))
@@ -151,7 +151,7 @@
 (def (write-bytevector! target offset source byte-offsets)
   (unless (u8vector? source)
     (error "Bundle v1 digest bytevector expected" source))
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (byte-offset target)
      (u8vector-set! target (+ offset byte-offset)
                     (u8vector-ref source byte-offset))
@@ -251,7 +251,7 @@
 (def (write-row-table! target region rows row-size row-alignment write-row!)
   (checked-region! region (u8vector-length target)
                    row-size row-alignment rows)
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (row index)
      (write-row! target
                  (+ (.ref region 'offset) (* index row-size))
@@ -286,7 +286,7 @@
   (unless (= (length values) 7)
     (error "Bundle v1 descriptor requires seven reserved uint64 values"
            values))
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (value cursor)
      (write-u64! target cursor value)
      (+ cursor 8))

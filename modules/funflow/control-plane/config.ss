@@ -6,13 +6,13 @@
 ;;; Boundary: configured entrypoints assemble strategies and runtime adapters.
 ;;; Invariant: config data selects components but never executes workflow tasks.
 
-(import :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/strategy
-        :core/modules/funflow/control-plane/runtime-adapter
-        :core/modules/funflow/control-plane/task
-        :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/runner
-        :core/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/runtime-adapter
+        :yuanxu/modules/funflow/control-plane/task
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/runner
+        :yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-config-requirement
         config-requirement?
@@ -156,11 +156,11 @@
     (cond
      ((eq? kind 'literal) value)
      ((eq? kind 'placeholder)
-      (poo-flow-product-field-rows
+      (yuanxu-product-field-rows
        (placeholder value)))
      ((or (eq? kind 'env) (eq? kind 'file))
       (if (config-argument-secret? argument)
-        (poo-flow-product-field-rows
+        (yuanxu-product-field-rows
          (source kind)
          (key value)
          (secret #t))
@@ -170,7 +170,7 @@
        'config
        'unsupported-config-argument
        "unsupported config argument kind"
-       (poo-flow-product-field-rows
+       (yuanxu-product-field-rows
         (kind kind)
         (value value)))))))
 
@@ -247,7 +247,7 @@
 ;;; creating runtime adapter requests.
 ;; : (-> RunConfig Alist)
 (def (run-config-registry-policy config)
-  (poo-flow-product-field-rows
+  (yuanxu-product-field-rows
    (task-registry
     (task-family-registry-name
      (run-config-task-registry config)))
@@ -323,7 +323,7 @@
     (make-run-config 'rust
                      (make-local-eager-strategy)
                      (make-rust-adapter command)
-                     (poo-flow-product-field-rows/tail
+                     (yuanxu-product-field-rows/tail
                       options
                       (runtime 'rust)))))
 
@@ -421,7 +421,7 @@
    'config
    'missing-config-keys
    "missing config key"
-   (poo-flow-product-field-rows
+   (yuanxu-product-field-rows
     (status 'missing)
     (missing
      (list (config-requirement->alist

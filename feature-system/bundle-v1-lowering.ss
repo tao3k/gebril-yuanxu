@@ -62,9 +62,9 @@
 (import (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
-        :core/utilities/functional)
+        :yuanxu/utilities/functional)
 
-(import :core/feature-system/bundle-v1-lowering-model)
+(import :yuanxu/feature-system/bundle-v1-lowering-model)
 
 ;; : (-> PooFeatureBundleV1CompactId PooFeatureBundleV1CompactId Integer)
 (def (compare-compact-ids left right)
@@ -95,7 +95,7 @@
 
 ;; : (-> [Integer] Integer)
 (def (first-nonzero-comparison comparisons)
-  (or (poo-flow-find (lambda (value) (not (= value 0))) comparisons)
+  (or (yuanxu-find (lambda (value) (not (= value 0))) comparisons)
       0))
 
 ;; : (-> PooFeatureBundleV1NativeEdge PooFeatureBundleV1NativeEdge Integer)
@@ -206,10 +206,10 @@
        (write
         (list +feature-bundle-v1-schema+
               (compact-id->canonical bundle-id)
-              (poo-flow-map symbol-row->canonical symbols)
-              (poo-flow-map component-row->canonical components)
-              (poo-flow-map edge-row->canonical edges)
-              (poo-flow-map evidence-row->canonical evidence))
+              (yuanxu-map symbol-row->canonical symbols)
+              (yuanxu-map component-row->canonical components)
+              (yuanxu-map edge-row->canonical edges)
+              (yuanxu-map evidence-row->canonical evidence))
         port))))))
 
 ;; : (-> [PooFeatureBundleV1NativeSymbol] U8Vector)
@@ -310,35 +310,35 @@
               (list? evidence)))
     (rejected-plan 'invalid-collection-shape bundle-id
                    'expected-proper-lists))
-   ((not (poo-flow-list-of? valid-symbol? symbols))
+   ((not (yuanxu-list-of? valid-symbol? symbols))
     (rejected-plan 'invalid-symbol bundle-id
                    'expected-poo-native-symbol))
-   ((not (poo-flow-list-of? valid-component? components))
+   ((not (yuanxu-list-of? valid-component? components))
     (rejected-plan 'invalid-component bundle-id
                    'expected-poo-native-component))
-   ((not (poo-flow-list-of? valid-edge? edges))
+   ((not (yuanxu-list-of? valid-edge? edges))
     (rejected-plan 'invalid-edge bundle-id 'expected-poo-native-edge))
-   ((not (poo-flow-list-of? valid-evidence? evidence))
+   ((not (yuanxu-list-of? valid-evidence? evidence))
     (rejected-plan 'invalid-evidence bundle-id
                    'expected-poo-native-evidence))
    (else
     (let* ((lowered-symbols
             (list-sort (lambda (left right)
                          (< (compare-symbol-rows left right) 0))
-                       (poo-flow-map lower-symbol symbols)))
+                       (yuanxu-map lower-symbol symbols)))
            (native-symbols (assign-symbol-offsets lowered-symbols))
            (native-components
             (list-sort (lambda (left right)
                          (< (compare-component-rows left right) 0))
-                       (poo-flow-map lower-component components)))
+                       (yuanxu-map lower-component components)))
            (native-edges
             (list-sort (lambda (left right)
                          (< (compare-edge-rows left right) 0))
-                       (poo-flow-map lower-edge edges)))
+                       (yuanxu-map lower-edge edges)))
            (native-evidence
             (list-sort (lambda (left right)
                          (< (compare-evidence-rows left right) 0))
-                       (poo-flow-map lower-evidence evidence))))
+                       (yuanxu-map lower-evidence evidence))))
       (cond
        ((not (strictly-ordered? native-symbols compare-symbol-rows))
         (rejected-plan 'duplicate-symbol-key bundle-id

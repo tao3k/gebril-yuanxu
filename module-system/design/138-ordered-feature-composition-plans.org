@@ -101,7 +101,7 @@ flowchart LR
 
 The implementation has two pure control-plane stages:
 
-1. =poo-flow-map= resolves ordered feature ids to manifest POO values through
+1. =yuanxu-map= resolves ordered feature ids to manifest POO values through
    the accepted bundle index;
 2. one tail-recursive fold accumulates all five contribution families in reverse
    order, followed by one final reverse per family.

@@ -2,10 +2,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/feature-system/interface)
+        :yuanxu/feature-system/interface)
 
 (export feature-system-syntax-test)
 
@@ -18,23 +18,23 @@
 
 (defpoo-feature syntax-memory-feature
   (feature-id 'syntax-memory)
-  (owner-module-id 'poo-flow-test/memory)
+  (owner-module-id 'yuanxu-test/memory)
   (category 'agent-runtime)
   (schema-version 1))
 
 (defpoo-feature syntax-telemetry-feature
   (feature-id 'syntax-telemetry)
-  (owner-module-id 'poo-flow-test/telemetry)
+  (owner-module-id 'yuanxu-test/telemetry)
   (category 'observability))
 
 (defpoo-feature syntax-legacy-session-feature
   (feature-id 'syntax-legacy-session)
-  (owner-module-id 'poo-flow-test/legacy-session)
+  (owner-module-id 'yuanxu-test/legacy-session)
   (category 'legacy))
 
 (defpoo-feature syntax-session-feature
   (feature-id 'syntax-session)
-  (owner-module-id 'poo-flow-test/session)
+  (owner-module-id 'yuanxu-test/session)
   (schema-version 2)
   (requires syntax-memory-feature)
   (optional-requires syntax-telemetry-feature)
@@ -58,14 +58,14 @@
 
 (def feature-system-syntax-test
   (test-suite "POO-native Feature declaration macros"
-    (poo-flow-test-case "defpoo-feature lowers to a module-owned descriptor"
+    (yuanxu-test-case "defpoo-feature lowers to a module-owned descriptor"
       (check-equal? (.ref syntax-session-feature 'kind)
                     'feature-descriptor)
       (check-equal? (.ref syntax-session-feature 'feature-id)
                     'syntax-session)
       (check-equal? (.ref syntax-session-feature 'schema-version) 2)
       (check-equal? (.ref syntax-session-feature 'owner-module-id)
-                    'poo-flow-test/session)
+                    'yuanxu-test/session)
       (check-equal? (.ref syntax-session-feature 'requires)
                     '(syntax-memory))
       (check-equal? (.ref syntax-session-feature 'optional-requires)
@@ -77,7 +77,7 @@
       (check-equal? (.ref syntax-session-mode-schema 'kind)
                     'feature-option-schema))
 
-    (poo-flow-test-case "Feature clauses preserve POO contribution values"
+    (yuanxu-test-case "Feature clauses preserve POO contribution values"
       (check-equal? (.ref syntax-session-feature 'policy-contributions)
                     '(session-policy))
       (check-equal? (.ref syntax-session-feature 'strategy-contributions)
@@ -87,7 +87,7 @@
       (check-equal? (.ref syntax-session-feature 'projections)
                     '(runtime-v1)))
 
-    (poo-flow-test-case "defpoo-feature-profile lowers selections to a pure plan"
+    (yuanxu-test-case "defpoo-feature-profile lowers selections to a pure plan"
       (check-equal? (.ref syntax-agent-profile 'kind) 'feature-profile)
       (check-equal? (.ref syntax-agent-profile 'contracts)
                     '(agent-profile-contract))

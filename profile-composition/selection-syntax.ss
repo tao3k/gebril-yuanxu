@@ -6,9 +6,9 @@
 ;;; Hygienic bounded native scopes and indexed Core Module Profile selection.
 
 (import (only-in :clan/poo/object .ref)
-        (only-in :core/profile-composition/profile-bundle
-                 poo-flow-select-module-profiles)
-        (only-in :core/profile-composition/bindings poo-flow-module-scope)
+        (only-in :yuanxu/profile-composition/profile-bundle
+                 yuanxu-select-module-profiles)
+        (only-in :yuanxu/profile-composition/bindings yuanxu-module-scope)
         (for-syntax "scope-declaration.ss"))
 
 (export use-module)
@@ -24,7 +24,7 @@
                   (alias (cadr bounded))
                   (body (caddr bounded)))
       (syntax/loc stx
-        (let ((alias (poo-flow-module-scope module-name))) body)))
+        (let ((alias (yuanxu-module-scope module-name))) body)))
     (syntax-case stx ()
       ((_ module-name marker instance-name profile-name ...)
        (and (identifier? #'module-name)
@@ -34,7 +34,7 @@
             (pair? (syntax->list #'(profile-name ...)))
             (andmap identifier? (syntax->list #'(profile-name ...))))
        (syntax/loc stx
-         (poo-flow-select-module-profiles
+         (yuanxu-select-module-profiles
            module-name 'instance-name '(profile-name ...))))
       ((_ module-name marker rest ...)
        (and (identifier? #'marker) (eq? (syntax->datum #'marker) 'as))
@@ -46,7 +46,7 @@
             (pair? (syntax->list #'(profile-name ...)))
             (andmap identifier? (syntax->list #'(profile-name ...))))
        (syntax/loc stx
-         (poo-flow-select-module-profiles
+         (yuanxu-select-module-profiles
            module-name (.ref module-name 'identity) '(profile-name ...))))
       (_
        (raise-syntax-error

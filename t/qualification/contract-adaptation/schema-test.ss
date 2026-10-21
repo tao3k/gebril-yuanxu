@@ -3,8 +3,8 @@
 ;;; Local closed schemas exercise existing compilation; not live AWS schemas.
 (import :std/test :clan/poo/object :clan/poo/mop
         :clan/poo/object-contract ./fixture-schema ./receipt-fixture ./fixture-core
-        :core/modules/json-schema/contracts
-        (only-in :core/types poo-flow-validation-evidence-accepted?))
+        :yuanxu/modules/json-schema/contracts
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?))
 (export schema-test)
 
 (def vpc-schema
@@ -118,7 +118,7 @@
             selected-graph: graph source-generation: 'source-1 schema-generation: 'schema-1))
       (def parent-evidence
         (admit-effective-configuration AWSContract parent-value parent-snapshot))
-      (check-equal? (poo-flow-validation-evidence-accepted? parent-evidence) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted? parent-evidence) #t)
       (check-equal? (configuration-evidence-current? parent-evidence parent-snapshot) #t)
       ;; Force the parent consumer before creating the derived configuration.
       (check-equal? (.get Parent resources web instance_type) "t3.small")
@@ -138,7 +138,7 @@
       (check-equal? (configuration-evidence-current? child-evidence schema-revision) #f)
       (.def (bad @ child-value) web: =>.+ (.o network-ref: 'missing))
       (def bad-snapshot (.cc child-snapshot 'effective-root bad))
-      (check-equal? (poo-flow-validation-evidence-accepted?
+      (check-equal? (yuanxu-validation-evidence-accepted?
                      (admit-effective-configuration AWSContract bad bad-snapshot)) #f)
       (check-exception
         (admit-effective-configuration AWSContract child-value parent-snapshot) error?))

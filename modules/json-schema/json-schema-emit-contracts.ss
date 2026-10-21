@@ -16,110 +16,110 @@
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match)
-        (only-in :core/module-system/schema/slot-contracts
-                 poo-flow-contract-slot
-                 poo-flow-contract-value-type
-                 poo-flow-native-contract)
-        (only-in :core/utilities/functional
-                 poo-flow-all?
-                 poo-flow-find
-                 poo-flow-predicate-and
-                 poo-flow-predicate-or
-                 poo-flow-predicate-exactly-one)
+        (only-in :yuanxu/module-system/schema/slot-contracts
+                 yuanxu-contract-slot
+                 yuanxu-contract-value-type
+                 yuanxu-native-contract)
+        (only-in :yuanxu/utilities/functional
+                 yuanxu-all?
+                 yuanxu-find
+                 yuanxu-predicate-and
+                 yuanxu-predicate-or
+                 yuanxu-predicate-exactly-one)
         (only-in "./json-schema-constraints.ss"
-                 poo-flow-json-schema-apply-node-constraints)
+                 yuanxu-json-schema-apply-node-constraints)
         (only-in "./functional.ss"
-                 poo-flow-contract-key->string
-                 poo-flow-contract-all?
-                 poo-flow-contract-json-object?
-                 poo-flow-contract-member?
-                 poo-flow-contract-project-list
-                 poo-flow-contract-filter-map)
+                 yuanxu-contract-key->string
+                 yuanxu-contract-all?
+                 yuanxu-contract-json-object?
+                 yuanxu-contract-member?
+                 yuanxu-contract-project-list
+                 yuanxu-contract-filter-map)
         (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-node?
-                 poo-flow-json-schema-node-kind
-                 poo-flow-json-schema-node-value
-                 poo-flow-json-schema-node-metadata
-                 poo-flow-json-schema-node->alist
-                 poo-flow-json-schema-property-name
-                 poo-flow-json-schema-property-schema
-                 poo-flow-json-schema-property-required?
-                 poo-flow-json-schema-property-doc
-                 poo-flow-json-schema-property-metadata
-                 poo-flow-json-schema-property->alist
-                 poo-flow-json-schema-object?
-                 poo-flow-json-schema-object-properties
-                 poo-flow-json-schema-object-additional-properties
-                 poo-flow-json-schema-object-pattern-properties
-                 poo-flow-json-schema-object-metadata
-                 poo-flow-json-schema-pattern-property?
-                 poo-flow-json-schema-pattern-property->alist))
+                 yuanxu-json-schema-node?
+                 yuanxu-json-schema-node-kind
+                 yuanxu-json-schema-node-value
+                 yuanxu-json-schema-node-metadata
+                 yuanxu-json-schema-node->alist
+                 yuanxu-json-schema-property-name
+                 yuanxu-json-schema-property-schema
+                 yuanxu-json-schema-property-required?
+                 yuanxu-json-schema-property-doc
+                 yuanxu-json-schema-property-metadata
+                 yuanxu-json-schema-property->alist
+                 yuanxu-json-schema-object?
+                 yuanxu-json-schema-object-properties
+                 yuanxu-json-schema-object-additional-properties
+                 yuanxu-json-schema-object-pattern-properties
+                 yuanxu-json-schema-object-metadata
+                 yuanxu-json-schema-pattern-property?
+                 yuanxu-json-schema-pattern-property->alist))
 
 
-(import :core/modules/json-schema/json-schema-emit-runtime)
+(import :yuanxu/modules/json-schema/json-schema-emit-runtime)
 
 (export #t)
 
-;; : (-> PooFlowJsonSchemaValue PooFlowJsonSchemaAlistValue)
-(def (poo-flow-json-schema-map-value-schema->alist value)
+;; : (-> YuanxuJsonSchemaValue YuanxuJsonSchemaAlistValue)
+(def (yuanxu-json-schema-map-value-schema->alist value)
   (case (cond
-         ((poo-flow-json-schema-node? value) 'node)
-         ((poo-flow-json-schema-pattern-property? value) 'pattern-property)
+         ((yuanxu-json-schema-node? value) 'node)
+         ((yuanxu-json-schema-pattern-property? value) 'pattern-property)
          ((pair? value) 'pair)
          (else 'literal))
    ((node)
-    (poo-flow-json-schema-node->alist value))
+    (yuanxu-json-schema-node->alist value))
    ((pattern-property)
-    (poo-flow-json-schema-pattern-property->alist value))
+    (yuanxu-json-schema-pattern-property->alist value))
    ((pair)
-    (cons (poo-flow-json-schema-map-value-schema->alist (car value))
-          (poo-flow-json-schema-map-value-schema->alist (cdr value))))
+    (cons (yuanxu-json-schema-map-value-schema->alist (car value))
+          (yuanxu-json-schema-map-value-schema->alist (cdr value))))
    (else value)))
 
-;; poo-flow-json-schema-property->slot-contract
-;;   : (-> PooFlowJsonSchemaProperty Symbol Symbol PooFlowSlotContract)
+;; yuanxu-json-schema-property->slot-contract
+;;   : (-> YuanxuJsonSchemaProperty Symbol Symbol YuanxuSlotContract)
 ;;   | doc m%
 ;;       Emit one property contract while preserving normalized schema and source
 ;;       property metadata for later facts and receipts.
 ;;     %
-(def (poo-flow-json-schema-property->slot-contract property object-key object-kind)
-  (let* ((slot (poo-flow-json-schema-property-name property))
-         (schema (poo-flow-json-schema-property-schema property))
+(def (yuanxu-json-schema-property->slot-contract property object-key object-kind)
+  (let* ((slot (yuanxu-json-schema-property-name property))
+         (schema (yuanxu-json-schema-property-schema property))
          (metadata
           (append
            (list
             (cons 'source 'json-schema)
-            (cons 'doc (poo-flow-json-schema-property-doc property))
-            (cons 'schema (poo-flow-json-schema-node->alist schema))
+            (cons 'doc (yuanxu-json-schema-property-doc property))
+            (cons 'schema (yuanxu-json-schema-node->alist schema))
             (cons 'property
-                  (poo-flow-json-schema-property->alist property)))
-           (poo-flow-json-schema-property-metadata property))))
-    (poo-flow-contract-slot
-     (poo-flow-json-schema-contract-key object-key slot)
+                  (yuanxu-json-schema-property->alist property)))
+           (yuanxu-json-schema-property-metadata property))))
+    (yuanxu-contract-slot
+     (yuanxu-json-schema-contract-key object-key slot)
      slot
-     (poo-flow-contract-value-type
-      (poo-flow-json-schema-node-value-kind schema)
-      (poo-flow-json-schema-node-predicate schema)
-      (poo-flow-json-schema-node-value-kind schema)
-      (poo-flow-json-schema-node-predicate-key schema))
-     (poo-flow-json-schema-property-required? property)
+     (yuanxu-contract-value-type
+      (yuanxu-json-schema-node-value-kind schema)
+      (yuanxu-json-schema-node-predicate schema)
+      (yuanxu-json-schema-node-value-kind schema)
+      (yuanxu-json-schema-node-predicate-key schema))
+     (yuanxu-json-schema-property-required? property)
      metadata)))
 
-;; poo-flow-json-schema-object-node->object-type-contract
-;;   : (-> PooFlowJsonSchemaNode Symbol Symbol Symbol PooFlowObjectTypeContract)
+;; yuanxu-json-schema-object-node->object-type-contract
+;;   : (-> YuanxuJsonSchemaNode Symbol Symbol Symbol YuanxuObjectTypeContract)
 ;;   | doc m%
 ;;       Emit a structural object contract from a normalized object node.
 ;;     %
-(def (poo-flow-json-schema-object-node->object-type-contract node owner object-kind
+(def (yuanxu-json-schema-object-node->object-type-contract node owner object-kind
                                                              object-key)
-  (let* ((object (poo-flow-json-schema-node-value node))
+  (let* ((object (yuanxu-json-schema-node-value node))
          (properties
-          (if (poo-flow-json-schema-object? object)
-            (poo-flow-json-schema-object-properties object)
+          (if (yuanxu-json-schema-object? object)
+            (yuanxu-json-schema-object-properties object)
             '()))
          (slots
           (map (lambda (property)
-                 (poo-flow-json-schema-property->slot-contract
+                 (yuanxu-json-schema-property->slot-contract
                   property object-key object-kind))
                properties))
          (metadata
@@ -128,63 +128,63 @@
             (cons 'source 'json-schema)
             (cons 'schema-kind 'object)
             (cons 'additional-properties
-                  (poo-flow-json-schema-map-value-schema->alist
-                   (poo-flow-json-schema-object-additional-properties object)))
+                  (yuanxu-json-schema-map-value-schema->alist
+                   (yuanxu-json-schema-object-additional-properties object)))
             (cons 'pattern-properties
-                  (poo-flow-json-schema-map-value-schema->alist
-                   (poo-flow-json-schema-object-pattern-properties object)))
+                  (yuanxu-json-schema-map-value-schema->alist
+                   (yuanxu-json-schema-object-pattern-properties object)))
             (cons 'normalized-schema
-                  (poo-flow-json-schema-node->alist node)))
-           (poo-flow-json-schema-object-metadata object)
-           (poo-flow-json-schema-node-metadata node))))
-    (poo-flow-native-contract
+                  (yuanxu-json-schema-node->alist node)))
+           (yuanxu-json-schema-object-metadata object)
+           (yuanxu-json-schema-node-metadata node))))
+    (yuanxu-native-contract
      object-key
      owner
      object-kind
-     poo-flow-json-schema-contract-candidate?
+     yuanxu-json-schema-contract-candidate?
      slots
-     poo-flow-json-schema-contract-slot-present?
-     poo-flow-json-schema-contract-slot-ref
+     yuanxu-json-schema-contract-slot-present?
+     yuanxu-json-schema-contract-slot-ref
      metadata)))
 
-;; poo-flow-json-schema-node->object-type-contract
-;;   : (-> PooFlowJsonSchemaNode Symbol Symbol Symbol PooFlowObjectTypeContract)
+;; yuanxu-json-schema-node->object-type-contract
+;;   : (-> YuanxuJsonSchemaNode Symbol Symbol Symbol YuanxuObjectTypeContract)
 ;;   | doc m%
 ;;       Emit an object contract for structural schemas and a single `value`
 ;;       slot contract for scalar or fallback schemas.
 ;;     %
-(def (poo-flow-json-schema-node->object-type-contract node owner object-kind
+(def (yuanxu-json-schema-node->object-type-contract node owner object-kind
                                                       object-key)
-  (case (and (poo-flow-json-schema-node? node)
-             (poo-flow-json-schema-node-kind node))
+  (case (and (yuanxu-json-schema-node? node)
+             (yuanxu-json-schema-node-kind node))
     ((object)
-     (poo-flow-json-schema-object-node->object-type-contract
+     (yuanxu-json-schema-object-node->object-type-contract
       node
       owner
       object-kind
       object-key))
     (else
-     (poo-flow-native-contract
+     (yuanxu-native-contract
       object-key
       owner
       object-kind
-      poo-flow-json-schema-contract-candidate?
+      yuanxu-json-schema-contract-candidate?
       (list
-       (poo-flow-contract-slot
-        (poo-flow-json-schema-contract-key object-key 'value)
+       (yuanxu-contract-slot
+        (yuanxu-json-schema-contract-key object-key 'value)
         'value
-        (poo-flow-contract-value-type
-         (poo-flow-json-schema-node-value-kind node)
-         (poo-flow-json-schema-node-predicate node)
-         (poo-flow-json-schema-node-value-kind node)
-         (poo-flow-json-schema-node-predicate-key node))
+        (yuanxu-contract-value-type
+         (yuanxu-json-schema-node-value-kind node)
+         (yuanxu-json-schema-node-predicate node)
+         (yuanxu-json-schema-node-value-kind node)
+         (yuanxu-json-schema-node-predicate-key node))
         #t
         (list
          (cons 'source 'json-schema)
-         (cons 'schema (poo-flow-json-schema-node->alist node)))))
-      poo-flow-json-schema-contract-slot-present?
-      poo-flow-json-schema-contract-slot-ref
+         (cons 'schema (yuanxu-json-schema-node->alist node)))))
+      yuanxu-json-schema-contract-slot-present?
+      yuanxu-json-schema-contract-slot-ref
       (list
        (cons 'source 'json-schema)
-       (cons 'schema-kind (poo-flow-json-schema-node-kind node))
-       (cons 'normalized-schema (poo-flow-json-schema-node->alist node)))))))
+       (cons 'schema-kind (yuanxu-json-schema-node-kind node))
+       (cons 'normalized-schema (yuanxu-json-schema-node->alist node)))))))

@@ -2,10 +2,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Existing declaration binding; bounded adjacent-role discovery uses SDK file metadata.
-(import (prefix-in (only-in :clan/poo/object
+(import (only-in "../bootstrap/body-inclusion.ss" include-module-body)
+        (prefix-in (only-in :clan/poo/object
                             .def/ctx .o/ctx .o .ref) native-)
         (for-syntax :gerbil/expander
-                    :core/module-system/source/role-forms))
+                    :yuanxu/module-system/source/role-forms))
 (export .def include-module-body export-role-config define-module-build-binding
         current-module-build-phase? current-module-build-resolver)
 (begin-syntax
@@ -86,7 +87,7 @@
             (role (and (string? file)
                        (string->symbol (path-strip-extension (path-strip-directory file))))))
        (and role (not (eq? role 'interface))
-            (memq role poo-flow-module-allowed-entrypoint-roles)))
+            (memq role yuanxu-module-allowed-entrypoint-roles)))
      (with-syntax ((context stx))
        #'(native-.def/ctx context binding body ...)))
     ((_ binding body ...)
@@ -141,21 +142,6 @@
              (native-.def/ctx context binding row ...)
              (export name))))))
     (_ (raise-syntax-error #f "expected one native Module declaration" stx))))
-
-;;; Internal compiler projection for a relocated role root. This is the native
-;;; include expansion, with headers consumed by the native Module reader. It
-;;; preserves source locations, relative imports and this-source-file semantics.
-(defsyntax (include-module-body stx)
-  (syntax-case stx ()
-    ((_ path)
-     (stx-string? #'path)
-     (let (path (stx-e #'path))
-       (when (member path (current-expander-path))
-         (raise-syntax-error #f "cyclic Module body inclusion" stx path))
-       (let-values (((_prelude _id _namespace body) (core-read-module/sexp path)))
-         (syntax-local-rewrap
-          (stx-wrap-source (core-cons 'begin body) (stx-source stx))))))
-    (_ (raise-syntax-error #f "expected a literal Module source path" stx))))
 
 ;; Internal phase capability, not a runtime Loader or a global binding registry.
 (def current-module-build-phase? (make-parameter #f))

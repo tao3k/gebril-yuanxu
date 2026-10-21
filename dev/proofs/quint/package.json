@@ -1,5 +1,5 @@
 {
-  "name": "poo-flow-core-quint-proofs",
+  "name": "yuanxu-quint-proofs",
   "private": true,
   "dependencies": {
     "@informalsystems/quint": "0.33.0"

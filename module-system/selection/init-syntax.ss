@@ -7,25 +7,25 @@
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
 (import (for-syntax (only-in :std/source this-source-file)
-                    (only-in "../building/source-package.ss" register-module-build-source!)
+                    (only-in "../building/source-package.ss" register-yuanxu-build-source!)
                     (only-in :clan/poo/object .ref .slot?)))
 (begin-syntax
-  (register-module-build-source!
-    (path-expand "../.." (path-directory (this-source-file))) 'core))
+  (register-yuanxu-build-source!
+    (path-expand "../.." (path-directory (this-source-file)))))
 
-(import (for-syntax (only-in :core/module-system/source/init module-init-intent)))
-(import (only-in :core/module-system/source/init module-init-intent)
+(import (for-syntax (only-in :yuanxu/module-system/source/init module-init-intent)))
+(import (only-in :yuanxu/module-system/source/init module-init-intent)
         (only-in :clan/poo/object .ref)
         (only-in :std/source this-source-file)
-        (only-in :core/module-system/building/interface poo-flow-core-init-build)
-        :core/module-system/selection/syntax
-        (only-in :core/profile-composition/user-profile
-                 pooFlowUserProfile
-                 pooFlowUserProfileSet
-                 pooFlowUserProfileExtend
-                 pooFlowDefaultUserSettings
-                 poo-flow-default-user-setting-keys))
-(export poo-flow!)
+        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
+        :yuanxu/module-system/selection/syntax
+        (only-in :yuanxu/profile-composition/user-profile
+                 yuanxuUserProfile
+                 yuanxuUserProfileSet
+                 yuanxuUserProfileExtend
+                 yuanxuDefaultUserSettings
+                 yuanxu-default-user-setting-keys))
+(export yuanxu!)
 
 ;; One hygienic projection rule for every mount; no generated getter catalogue.
 (defrules define-init-namespace ()
@@ -47,7 +47,7 @@
 ;;; The short form is the normal user entry. The two explicit binding forms
 ;;; remain available for profile registries without importing the full UI
 ;;; doctor, presentation, sandbox, and runtime configuration facade.
-(defsyntax (poo-flow! stx)
+(defsyntax (yuanxu! stx)
   (syntax-case stx (profile extends)
     ((ctx option value init-clause ...)
      (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
@@ -55,7 +55,7 @@
      ;; expansion does not demand a Module scope or a test executor.
      (let* ((intent
              (module-init-intent
-               (list (cons 'poo-flow! (cdr (syntax->datum stx)))) #f))
+               (list (cons 'yuanxu! (cdr (syntax->datum stx)))) #f))
             (mounts
              (if (.slot? intent 'windows)
                (map (cut .ref <> 'mount) (.ref intent 'windows))
@@ -76,7 +76,7 @@
              (syntax (define-init-namespace binding get key))
              (syntax (define-init-namespace binding get)))))
        (with-syntax
-         ((init-binding (datum->syntax (syntax ctx) 'poo-flow-module-init))
+         ((init-binding (datum->syntax (syntax ctx) 'yuanxu-module-init))
           (build-spec-binding (datum->syntax (syntax ctx) 'init.build-spec))
           (build-current-binding (datum->syntax (syntax ctx) 'init.build-current!))
           (build-run-binding (datum->syntax (syntax ctx) 'init.build-run))
@@ -89,14 +89,14 @@
            (begin
              (def init-binding
                (module-init-intent
-                 '((poo-flow! option value init-clause ...)) #f))
+                 '((yuanxu! option value init-clause ...)) #f))
              ;; All projections close over this one init-owned selection.
              (defvalues (build-spec-binding build-current-binding
                          test-spec-binding test-current-binding
                          test-source-binding module-source-getter build-run-binding)
-               (poo-flow-core-init-build
+               (yuanxu-init-build
                  (this-source-file ctx)
-                 '(poo-flow! option value init-clause ...)))
+                 '(yuanxu! option value init-clause ...)))
              namespace-definition ...
              (export init-binding build-spec-binding build-current-binding build-run-binding
                      test-spec-binding test-current-binding test-source-binding)
@@ -110,12 +110,12 @@
      (syntax
       (begin
         (def profile-binding
-          (pooFlowUserProfileExtend
+          (yuanxuUserProfileExtend
            'profile-name
            base-profile
-           (poo-flow-modules! init-clause ...)))
+           (yuanxu-modules! init-clause ...)))
         (def profile-set-binding
-          (pooFlowUserProfileSet
+          (yuanxuUserProfileSet
            'user
            'profile-name
            (list profile-binding))))))
@@ -126,22 +126,22 @@
      (syntax
       (begin
         (def profile-binding
-          (pooFlowUserProfile
+          (yuanxuUserProfile
            'profile-name
-           (poo-flow-modules! init-clause ...)
-           (pooFlowDefaultUserSettings 'profile-name)
-           poo-flow-default-user-setting-keys))
+           (yuanxu-modules! init-clause ...)
+           (yuanxuDefaultUserSettings 'profile-name)
+           yuanxu-default-user-setting-keys))
         (def profile-set-binding
-          (pooFlowUserProfileSet
+          (yuanxuUserProfileSet
            'user
            'profile-name
            (list profile-binding))))))
     ((ctx init-clause ...)
      (with-syntax ((module-bundles-binding
                     (datum->syntax (syntax ctx)
-                                   'poo-flow-user-module-bundles)))
+                                   'yuanxu-user-module-bundles)))
        (syntax
         (begin
           (def module-bundles-binding
-            (poo-flow-modules! init-clause ...))
+            (yuanxu-modules! init-clause ...))
           (export module-bundles-binding)))))))

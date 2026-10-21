@@ -6,7 +6,7 @@
         (only-in :gerbil/runtime/table &raw-table-hash &raw-table-hash-set!
                  &raw-table-test &raw-table-test-set! &raw-table-seed &raw-table-seed-set!)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-route-mutation-test test-cleanup!)
 (def completed 0)
 (def (port-read receiver)
@@ -28,7 +28,7 @@
     (lambda () (put saved))))
 (def mop-route-mutation-test
  (test-suite "Metadata write ownership and restoration boundary"
-  (poo-flow-test-case "active computation rejects supported receiver writes before mutation"
+  (yuanxu-test-case "active computation rejects supported receiver writes before mutation"
     (def read #f)
     (.def Root port: 5432
       audit: (begin (replay-slot-reads! (list read)
@@ -40,7 +40,7 @@
     (check-equal? (object-revision Root) revision)
     (check-equal? (object-read-current? read) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "sealed receiver and active frame do not track raw metadata restoration"
+  (yuanxu-test-case "sealed receiver and active frame do not track raw metadata restoration"
     (def read #f)
     (def changes 0)
     (def calls 0)
@@ -82,7 +82,7 @@
     (check-equal? (object-revision Root) revision)
     (check-equal? (object-read-current? read) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "unrestored route refuses before invoking the foreign method"
+  (yuanxu-test-case "unrestored route refuses before invoking the foreign method"
     (.def Root port: 5432)
     (def read (port-read Root))
     (def table (object-%reads Root))
@@ -96,7 +96,7 @@
       (lambda () (runtime.slot-set! table 'ref original)))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "parent cached reads remain separate from final child reads"
+  (yuanxu-test-case "parent cached reads remain separate from final child reads"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (def parent-read (port-read Parent))
     (.def (Child @ Parent) port: 5433)

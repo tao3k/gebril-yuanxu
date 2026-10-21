@@ -40,7 +40,7 @@ the actual root list, while observer multiplicity is checked independently.
 
 * Proof and executable correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RootCollection.lean][RootCollection.lean]] establishes:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean][RootCollection.lean]] establishes:
 
 - =callbacks_unchanged=: for an arbitrary world transition, every input delivery
   still updates the observer world, in input order, for every finite prefix.

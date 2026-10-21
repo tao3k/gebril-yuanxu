@@ -53,7 +53,7 @@ contribution paths described in 10.15. These declarations select the same build
 Graph that supplies the package inputs.
 
 #+begin_src scheme
-(def selection (poo-flow-load-modules root-init))
+(def selection (yuanxu-load-modules root-init))
 (def graph (.get selection build-graph))
 (.get graph assets) ; actual postgresql.json and gitea.json observations
 (.call graph .package output-directory)
@@ -62,7 +62,7 @@ Graph that supplies the package inputs.
 Packaging is an explicit filesystem effect. Merely loading the Module, creating
 the Graph or asking for its compiler specification does not write a package.
 The relocation control belongs in Core =t/= because it qualifies packaging and
-source/linker behavior. It uses the existing =poo-flow-test-case= declaration
+source/linker behavior. It uses the existing =yuanxu-test-case= declaration
 over the native harness. Module =tests/= discovery is reserved for the selected
 module's own public behavior, not these Core implementation controls.
 
@@ -81,7 +81,7 @@ order, signed feature decisions and disabled owners. It does not copy a disabled
 owner's directory. Relocated loading prepares fresh native role frames, so
 =this-source-file= resolves inside the relocated package.
 
-The existing =poo-flow-write-module-publication= remains a compiler-input
+The existing =yuanxu-write-module-publication= remains a compiler-input
 materializer that preserves original diagnostic source locations. It is not
 silently redefined as a standalone portable source package. Both consumers use
 the same selected/prepared source authority; JSON discovery is owned only once
@@ -124,7 +124,7 @@ ordinary migration policies permitting ports 5432 and 5433. It then:
 8. Edits the relocated postgresql.json and rejects the old publication.
 
 #+begin_src scheme
-(def fresh (poo-flow-load-modules (path-expand "init.ss" relocated)))
+(def fresh (yuanxu-load-modules (path-expand "init.ss" relocated)))
 (def publication
   (.call AdmissionPublication. .for-export
          fresh 'applications/gitea-postgresql 'Application))

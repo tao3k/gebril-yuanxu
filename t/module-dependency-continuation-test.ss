@@ -3,21 +3,21 @@
 (import :std/test
         (only-in :clan/poo/object .o .get .putslot! $thunk-slot-spec object?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/admission
                  module-source-read current-module-source-observer admit-module-value!)
-        (only-in :core/module-system/source/publication ModulePublicationContract
+        (only-in :yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current? module-publication-dependency-projection)
-        (only-in :core/module-system/interface poo-flow-load-modules)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in "./module-publication-test" with-publication-source write-file))
 (export module-dependency-continuation-test)
 (def module-dependency-continuation-test
   (test-suite "Native dependency continuation with the maintained publication producer"
-    (poo-flow-test-case "dependency projection requires actual tokens and never forces a cold leaf"
+    (yuanxu-test-case "dependency projection requires actual tokens and never forces a cold leaf"
       (def reads (make-hash-table-eq))
       (def calls 0)
-      (def Scope (poo-flow-predicate-contract 'test/scope object? (lambda (_v _c) '())))
+      (def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))
       (def Requirement (.o module-id: (begin (set! calls (+ calls 1)) 'custom/other) contract: Scope))
       (def Publication
         (.o identity: 'custom/example features: (.o)
@@ -37,7 +37,7 @@
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) #f)
       (check-equal? calls 1))
-    (poo-flow-test-case "pending source changes refuse before a declaration or Feature callback"
+    (yuanxu-test-case "pending source changes refuse before a declaration or Feature callback"
       (for-each
         (lambda (boundary)
           (with-publication-source
@@ -46,8 +46,8 @@
               (def marker (path-expand "must-not-execute" root))
               (write-file (path-expand "init.ss" root)
                 (if (eq? boundary 'declaration)
-                  "(poo-flow! mode: explicit :custom (example) (other))"
-                  "(poo-flow! mode: explicit :custom (example +ci))"))
+                  "(yuanxu! mode: explicit :custom (example) (other))"
+                  "(yuanxu! mode: explicit :custom (example +ci))"))
               (write-file (path-expand "interface.ss" module-root)
                 (call-with-output-string
                   (lambda (port)
@@ -77,7 +77,7 @@
                     " (lambda (out) (display \"unexpected\" out))) (def Greeting \"other\") (export Greeting)"))
                 (write-file (path-expand "interface.ss" other)
                   "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o))")))
-              (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (def counts (make-hash-table-eq))
               (def previous (current-module-source-observer))
               (parameterize
@@ -98,13 +98,13 @@
               (check-equal? (> (hash-ref counts 'candidate-admitted 0) 0) #t)
               (check-equal? (module-publication-contract-current?) #t))))
         '(declaration feature)))
-    (poo-flow-test-case "a new cold dependency after shape checking retains the full return guard"
+    (yuanxu-test-case "a new cold dependency after shape checking retains the full return guard"
       (with-publication-source
         (lambda (root module-root _source _view)
           (check-equal? (module-publication-contract-current?) #t)
           (def marker (path-expand "cold-dependency-must-not-run" root))
           (write-file (path-expand "init.ss" root)
-            "(poo-flow! mode: explicit :custom (example))")
+            "(yuanxu! mode: explicit :custom (example))")
           (write-file (path-expand "config.ss" module-root)
             "(import (only-in :clan/poo/object .o .putslot! $thunk-slot-spec) \"./types.ss\") (def PendingRequirement (.o module-id: 'custom/other contract: FixtureContract)) (export PendingRequirement)")
           ;; scope-contract is read AFTER the predicate checks requires. This
@@ -130,7 +130,7 @@
                          FixtureContract)
                        exports: FixtureScope)
                      features: (.o)) port))))
-          (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (check-exception (.get view selected-graph) error?)
           (check-equal? (file-exists? marker) #f)
           (check-equal? (module-publication-contract-current?) #t))))))

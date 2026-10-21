@@ -4,11 +4,11 @@
 ;;; Module Core remains mandatory. Internal Core nodes let the existing Feature
 ;;; resolver check one selected dependency Graph without another ordering policy.
 (import (only-in :clan/poo/object .o .+ .ref .slot? .all-slots object?)
-        (only-in :core/module-system/graph/funs module-closure)
-        (only-in :core/feature-system/model feature-descriptor feature-selection feature-profile)
-        (only-in :core/feature-system/resolver resolve-feature-profile)
-        (only-in :core/feature-system/feature-manifest feature-manifest-bundle)
-        (only-in :core/feature-system/composition feature-composition-plan))
+        (only-in :yuanxu/module-system/graph/funs module-closure)
+        (only-in :yuanxu/feature-system/model feature-descriptor feature-selection feature-profile)
+        (only-in :yuanxu/feature-system/resolver resolve-feature-profile)
+        (only-in :yuanxu/feature-system/feature-manifest feature-manifest-bundle)
+        (only-in :yuanxu/feature-system/composition feature-composition-plan))
 (export select-module-graph)
 (def (core-node-id id)
   ;; ':' cannot occur in an admitted module path or init feature name.

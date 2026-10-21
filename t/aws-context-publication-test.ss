@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Qualification of the existing init-owned AWS integration endpoint.
-(import :std/test :core/object-syntax/path-slots
+(import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
         (only-in "../init.ss" init.Scenarios init.test-spec))
 (export aws-context-publication-test)
 ;; The surviving parent owns the worker's temporary directory, so an Ops
@@ -19,7 +19,7 @@
 (def aws-context-publication-test
   (test-suite "AWS tests are owned by the selected module namespace"
     (test-case "one init projection runs the real Schema transition with observation off and on"
-      (with-poo-flow-fixture (workspace Workspace)
+      (with-yuanxu-fixture (workspace Workspace)
         (def module (.get init.Scenarios aws))
         (check-equal? (.ref/cached module 'scope) #f)
         (check-equal? (map path-strip-directory (init.test-spec '(aws))) '("atomic-test.ss"))

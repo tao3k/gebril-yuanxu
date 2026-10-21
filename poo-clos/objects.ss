@@ -10,7 +10,7 @@
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list iota)
         "types.ss" "funcs.ss"
-        (only-in :core/object-family/read-projection owned-read-value! owned-read-open!))
+        (only-in :yuanxu/object-family/read-projection owned-read-value! owned-read-open!))
 
 (export poo-clos-any-specializer poo-clos-class-specializer
         poo-clos-prototype-specializer

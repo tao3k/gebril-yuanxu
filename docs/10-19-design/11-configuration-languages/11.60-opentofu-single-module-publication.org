@@ -20,7 +20,7 @@ object owner; ordinary Module consumers use the admitted interface scope.
 (export Config OpenTofuProviderConfig)
 (.def Config
   source: #f
-  artifact: (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f))
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
 (.def OpenTofuProviderConfig provider-artifact: #f)
 #+end_src
 
@@ -97,7 +97,7 @@ before returning success. It does not link or mutate the ordinary runtime scope.
 
 #+begin_src scheme
 ;; root init.ss
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   (json-schema @ "./core/modules/json-schema")
   (nix @ "./core/modules/nix")
   (opentofu @ "./core/modules/opentofu")

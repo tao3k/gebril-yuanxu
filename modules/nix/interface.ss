@@ -13,6 +13,6 @@
                      FlakeSource: NixFlakeSourceContract)
           prototypes: (.o Source: (.cc NixSource. 'config config)
                           FlakeSource: (.cc NixFlakeSource. 'config config))
-          source-inputs: poo-flow-core-nix-source-inputs
-          admit-generation: poo-flow-core-nix-admit-generation))
+          source-inputs: yuanxu-nix-source-inputs
+          admit-generation: yuanxu-nix-admit-generation))
   features: (.o))

@@ -14,7 +14,7 @@ extracted binding module have now been removed. The original results below
 retain their original source and scope.
 
 This validates [[file:12.08-evidence-binding-and-publication-boundary.org][the invocation/publication binding design]] using actual
-gerbil-poo =declarative-metadata= and Core's public =poo-flow-contract-admit=.
+gerbil-poo =declarative-metadata= and Core's public =yuanxu-contract-admit=.
 The qualification source is
 [[file:../../../t/qualification/contract-adaptation/evidence-binding-test.ss][evidence-binding-test.ss]]. Native Scheme preparation extracts =bind-evidence=
 verbatim from the design document into a private temporary module and copies
@@ -38,7 +38,7 @@ API. Every tested domain uses this one producer:
 
 #+begin_src scheme
 (def (produce-evidence descriptor candidate context)
-  (.cc (poo-flow-contract-admit descriptor candidate context)
+  (.cc (yuanxu-contract-admit descriptor candidate context)
     admission-contract: descriptor))
 
 (def (publish-admission previous subject descriptor context)

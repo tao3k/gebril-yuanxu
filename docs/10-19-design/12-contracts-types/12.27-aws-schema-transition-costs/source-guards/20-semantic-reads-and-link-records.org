@@ -45,7 +45,7 @@ insertion keep their original order. Only pure local variable capture changes.
 #+end_src
 
 This contracts initializer environments, not the declared semantic payloads.
-The [[file:../../../../../dev/proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean][existing carrier theorem]] proves payload membership is unchanged. Full
+The [[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][existing carrier theorem]] proves payload membership is unchanged. Full
 publication and linked-record values still retain their required evidence.
 This does not remove the native trace's ownership of CLOS frames.
 
@@ -58,7 +58,7 @@ six independently failing mutation controls and an acceptance witness. Mutation
 controls for policy and Contract require no source-byte change. A certificate
 in this model is an explicit assumption, not something Core currently issues.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SemanticReads.lean][The Lean correspondence]] proves for arbitrary identities:
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SemanticReads.lean][The Lean correspondence]] proves for arbitrary identities:
 
 - A complete projection that is current implies every required identity is current.
 - A change to any required identity makes projected publication inadmissible.

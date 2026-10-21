@@ -57,7 +57,7 @@ These are deliberate negative injections, not author configuration APIs.
 
 ;; Reading the binding did not execute identity. The actual .admit does.
 (def publication (.call reader read source))
-(check-equal? (poo-flow-validation-evidence-accepted?
+(check-equal? (yuanxu-validation-evidence-accepted?
                (admit-module-publication!
                  source 'custom/example publication context)) #t)
 (check-exception (.call reader admit-current) error?)
@@ -83,7 +83,7 @@ even though metadata has been checked before publication. Two additional
 mutants isolate cold-getter-only and Context-only changes. All ten catalogued
 outcomes remain required, including acceptance and termination controls.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
 Its revision-preservation premise is deliberately NOT discharged by a shape
 receipt. The Quint source digest is updated. No duplicate theorem or second
 effect system is introduced: the missing native fact is unchanged actual

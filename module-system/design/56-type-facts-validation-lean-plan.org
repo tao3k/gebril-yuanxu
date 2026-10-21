@@ -81,8 +81,8 @@ The first implementation slice adds:
 - a focused scenario test for sandbox resource validation receipts.
 
 The new structures are:
-- =poo-flow-type-fact-contract=;
-- =poo-flow-lean-fact-contract=.
+- =yuanxu-type-fact-contract=;
+- =yuanxu-lean-fact-contract=.
 
 The original generic =poo-flow-type-validation-receipt= and ASP Harness
 adapter were superseded. =poo-flow-sandbox-resources-prototype-contract-validation=

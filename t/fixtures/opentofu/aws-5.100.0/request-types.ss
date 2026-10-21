@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :core/types poo-flow-predicate-contract))
+        (only-in :yuanxu/types yuanxu-predicate-contract))
 (export ProviderBinaryRequestContract ProviderSourceRequestContract)
 
 (def (slots-satisfy? value requirements)
@@ -12,13 +12,13 @@
               requirements)))
 
 (def ProviderBinaryRequestContract
-  (poo-flow-predicate-contract 'opentofu/provider-binary
+  (yuanxu-predicate-contract 'opentofu/provider-binary
     (lambda (value)
       (slots-satisfy? value (list (cons 'selection object?) (cons 'path string?))))
     (lambda (_candidate _context) '())))
 
 (def ProviderSourceRequestContract
-  (poo-flow-predicate-contract 'opentofu/provider-source
+  (yuanxu-predicate-contract 'opentofu/provider-source
     (lambda (value)
       (slots-satisfy? value
         (list (cons 'selection object?) (cons 'lock object?) (cons 'read procedure?))))

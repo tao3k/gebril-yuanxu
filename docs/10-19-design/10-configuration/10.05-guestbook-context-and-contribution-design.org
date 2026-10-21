@@ -71,7 +71,7 @@ a new syntax for selecting an installed package or an implemented multi-window A
 
 #+begin_src scheme
 ;; project/init.ss -- target syntax from the directory-window design
-(poo-flow!
+(yuanxu!
   :load-modules "./modules" mode: explicit rename: modules
   (kubernetes)
   (guestbook)

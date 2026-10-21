@@ -107,7 +107,7 @@ The rejected gateway writes do not establish interception of generated stores.
 
 * Lean and Quint correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataOwnership.lean][MetadataOwnership.lean]] derives target owners from an association relation.
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean][MetadataOwnership.lean]] derives target owners from an association relation.
 =unknown_refused= rejects missing association; =associated_selected_refused=
 checks ANY associated selected owner; =nested_keeps_outer= retains outer
 membership. =restored_raw_route_keeps_effect= proves equal endpoint observation

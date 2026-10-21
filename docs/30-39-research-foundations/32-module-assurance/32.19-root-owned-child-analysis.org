@@ -33,7 +33,7 @@ their own root and retain their own source certification.
 ;; Kernel-owned responsibility delegation; no user-side Requirements list.
 (parameterize ((current-contract-analysis
                 (and owned? (make-contract-analysis descriptor value context #t))))
-  (poo-flow-contract-admit descriptor value context))
+  (yuanxu-contract-admit descriptor value context))
 
 ;; The contribution Context's internal analysis entry.
 (lambda (actual candidate)
@@ -42,7 +42,7 @@ their own root and retain their own source certification.
   (observations-current! observations)
   (if (or (.slot? base '.contract-obligations) (eq? actual descriptor)
           (not (eq? (.get @ .contract-obligations) platform-obligations)))
-    (poo-flow-context-contract-obligations @ actual candidate)
+    (yuanxu-context-contract-obligations @ actual candidate)
     '()))
 #+end_src
 
@@ -90,7 +90,7 @@ scalar values happen to match but configuration identity does not.
 
 * Formal correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RootChild.lean][Admission.RootChild]] supplies conditional =child_sources=,
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootChild.lean][Admission.RootChild]] supplies conditional =child_sources=,
 =requirements_retained=, =coverage_bound=, =cached_parent_rejected=,
 =post_effect_change_rejected= and =batching_equivalent=. Its =Analysis= has no
 source certificate. The implementation keeps child evidence analytic and the

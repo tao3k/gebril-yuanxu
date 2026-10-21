@@ -66,7 +66,7 @@ are an explicit dependency override, not validation of the package lock pin.
 The real init remains:
 
 #+begin_src scheme
-(poo-flow! mode: explicit source: "./modules" (json-schema))
+(yuanxu! mode: explicit source: "./modules" (json-schema))
 #+end_src
 
 The real default reader, selected Graph and existing build-entry writer are
@@ -157,7 +157,7 @@ keeps the original artifact's guarded epoch through compile and clean. General
 reader reuse across a compiler-epoch switch remains an integration boundary.
 
 The existing init syntax publishes selection intent. This validation consumes
-it through poo-flow-load-modules; it does not implement direct lazy Graph/spec
+it through yuanxu-load-modules; it does not implement direct lazy Graph/spec
 exports from init, the proposed build-spec adapter, or migration of the live
 Core build.ss. The retained-entry merge is a test adapter, not a new public
 build protocol. Runtime scope linking and runtime Loader work remain excluded.

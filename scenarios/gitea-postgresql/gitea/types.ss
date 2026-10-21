@@ -6,33 +6,33 @@
         (only-in :clan/poo/type List)
         (only-in :clan/poo/object-diagnostics diagnostic-then)
         (only-in :std/list/list every)
-        (only-in :core/types PooFlowContract. poo-flow-predicate-contract)
-        (only-in :core/admission/source SourceAdmissionContract. source-diagnose-at)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator))
+        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator))
 (export ApplicationContract GiteaConfigContract GiteaScopeContract PostgreSQLScopeContract)
 (define-type (GiteaValueContract. @ ObjectContract. port-type)
   identity: 'gitea/config-value
   responsibilities:
   (.o database: (.cc ObjectContract. responsibilities: (.o port: port-type))
       allowed-ports: (List port-type)))
-(define-type (GiteaConfigContract @ PooFlowContract.)
+(define-type (GiteaConfigContract @ YuanxuContract.)
   identity: 'gitea/config
   value-contract: (.cc GiteaValueContract. port-type: (IntegerRange min: 1 max: 65535)))
 ;; Root value validation owns normalization. Contextual descendants retain the
 ;; service classifiers/obligations and must admit that exact checked child.
-(define-type (ConfigurationAdmission. @ PooFlowContract. database-contract)
+(define-type (ConfigurationAdmission. @ YuanxuContract. database-contract)
   identity: 'gitea/configuration-context
   responsibilities:
   (.o postgresql: (.o (:: @ database-contract) value-contract: #f)
       gitea: (.o (:: @ GiteaConfigContract) value-contract: #f)))
 ;; These scope probes inspect names only, rather than normalizing lazy exports.
 (def PostgreSQLScopeContract
-  (poo-flow-predicate-contract 'gitea/postgresql-dependency
+  (yuanxu-predicate-contract 'gitea/postgresql-dependency
     (lambda (value)
       (and ((o?/slots '(config types)) value)
            ((o?/slots '(port Config)) (.get value types))))))
 (def GiteaScopeContract
-  (poo-flow-predicate-contract 'gitea/scope
+  (yuanxu-predicate-contract 'gitea/scope
     (o?/slots '(config document application types policy))))
 (def (issue kind-value path-value actual-value)
   (.o kind: kind-value path: path-value actual: actual-value))

@@ -45,8 +45,8 @@
                  (string-suffix? ".scm" name) (string=? name "gerbil.pkg"))))))
   (def declaration
     (if (eq? owner 'json-schema)
-      '(poo-flow! mode: explicit source: "./modules" (json-schema))
-      '(poo-flow! mode: explicit source: "./modules" (funflow) (ops @ "./ops"))))
+      '(yuanxu! mode: explicit source: "./modules" (json-schema))
+      '(yuanxu! mode: explicit source: "./modules" (funflow) (ops @ "./ops"))))
   (write-forms (path-expand "init.ss" root)
     (list '(import "./module-system/selection/init-syntax.ss") declaration))
   ;; Probe the existing execution library, not a replacement executor. In the

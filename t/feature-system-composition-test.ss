@@ -2,12 +2,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :core/composition/roles
-        :core/feature-system/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/interface
+        :yuanxu/utilities/functional)
 
 (export feature-system-composition-test)
 
@@ -63,7 +63,7 @@
   (from-bundle composition-empty-bundle))
 
 (def (composition-manifest-feature-ids plan)
-  (poo-flow-map (lambda (manifest) (.ref manifest 'feature-id))
+  (yuanxu-map (lambda (manifest) (.ref manifest 'feature-id))
                 (.ref plan 'manifests)))
 
 (def (composition-stress-id prefix index)
@@ -120,7 +120,7 @@
 
 (def feature-system-composition-test
   (test-suite "POO-native Feature composition plan"
-    (poo-flow-test-case "composition follows resolver order, not declaration order"
+    (yuanxu-test-case "composition follows resolver order, not declaration order"
       (check (.ref composition-plan 'kind) => 'feature-composition-plan)
       (check (.ref composition-plan 'schema-version) => 1)
       (check (.ref composition-plan 'bundle-id) => 'composition-bundle)
@@ -132,7 +132,7 @@
       (check (composition-manifest-feature-ids composition-plan)
              => '(composition-base composition-agent)))
 
-    (poo-flow-test-case "composition preserves POO values and contribution order"
+    (yuanxu-test-case "composition preserves POO values and contribution order"
       (let ((components (.ref composition-plan 'components)))
         (check (length components) => 2)
         (check (eq? (car components) composition-base-component) => #t)
@@ -150,7 +150,7 @@
       (check (.ref composition-plan 'projections)
              => '(runtime-v1 evidence-v1)))
 
-    (poo-flow-test-case "empty bundle produces the identity composition"
+    (yuanxu-test-case "empty bundle produces the identity composition"
       (check (.ref composition-empty-plan 'feature-ids) => '())
       (check (.ref composition-empty-plan 'manifests) => '())
       (check (.ref composition-empty-plan 'components) => '())
@@ -159,7 +159,7 @@
       (check (.ref composition-empty-plan 'adapter-requirements) => '())
       (check (.ref composition-empty-plan 'projections) => '()))
 
-    (poo-flow-test-case "1024-Feature composition remains ordered and linear"
+    (yuanxu-test-case "1024-Feature composition remains ordered and linear"
       (let* ((descriptors (composition-stress-descriptors 1024))
              (bundle (feature-manifest-bundle
                       'composition-stress-bundle descriptors))

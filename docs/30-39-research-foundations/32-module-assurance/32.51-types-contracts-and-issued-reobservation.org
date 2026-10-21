@@ -37,7 +37,7 @@ longer repeats an always-successful =.classify= lambda:
     responsibilities:
     (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port))
         allowed-ports: (List Port))))
-(define-type (PostgreSQLConfigContract @ PooFlowContract.)
+(define-type (PostgreSQLConfigContract @ YuanxuContract.)
   identity: 'postgresql/config
   value-contract: PostgreSQLValueContract)
 #+end_src
@@ -65,7 +65,7 @@ Core projects an already validated native value into its existing receipt
 protocol with one default implementation:
 
 #+begin_src scheme
-.classify: (cut poo-flow-classification-evidence identity <> #t '() <>)
+.classify: (cut yuanxu-classification-evidence identity <> #t '() <>)
 #+end_src
 
 The inherited producer validates =value-contract= before this classification,
@@ -78,7 +78,7 @@ repeating =object?= / field loops or forcing payloads:
 
 #+begin_src scheme
 (def PostgreSQLScopeContract
-  (poo-flow-predicate-contract 'postgresql/scope
+  (yuanxu-predicate-contract 'postgresql/scope
     (o?/slots '(config document))))
 #+end_src
 

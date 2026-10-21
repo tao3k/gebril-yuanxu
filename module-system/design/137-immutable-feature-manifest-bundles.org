@@ -93,7 +93,7 @@ flowchart LR
     BG["require-valid-feature-manifest-bundle"]
 
     GM --> FD
-    FD -->|"poo-flow-map"| FM
+    FD -->|"yuanxu-map"| FM
     FD --> FB
     FM --> FB
     FB --> GR
@@ -156,7 +156,7 @@ pressure when bundles contain hundreds or thousands of agent capabilities.
 The optimized implementation uses one tail-recursive functional fold over the
 descriptor sequence.  Each step creates one immutable manifest and folds that
 manifest's option schemas directly into a reverse diagnostic accumulator.  One
-final reverse restores declaration order.  The existing =poo-flow-map= selection
+final reverse restores declaration order.  The existing =yuanxu-map= selection
 projection and =resolve-feature-profile= graph owner remain unchanged.
 
 #+begin_src mermaid
@@ -178,7 +178,7 @@ flowchart LR
     OI --> DA
     MA --> RV
     DA --> RV
-    DS -->|"poo-flow-map selections"| RR
+    DS -->|"yuanxu-map selections"| RR
     RV --> BR
     RR --> BR
 #+end_src

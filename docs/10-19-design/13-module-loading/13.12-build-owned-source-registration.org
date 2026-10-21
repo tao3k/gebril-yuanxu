@@ -16,7 +16,7 @@ before the declaration compiler imports Core:
 #+begin_src scheme
 ;; init.ss -- the Core source entry is relative.
 (import "./module-system/selection/init-syntax.ss")
-(poo-flow! mode: explicit source: "./modules" (json-schema))
+(yuanxu! mode: explicit source: "./modules" (json-schema))
 
 ;; selection/init-syntax.ss -- internal infrastructure.
 (import (for-syntax
@@ -25,7 +25,7 @@ before the declaration compiler imports Core:
 (begin-syntax
   (register-module-build-source!
     (path-expand "../.." (path-directory (this-source-file))) 'core))
-;; Existing Core imports and poo-flow! follow.
+;; Existing Core imports and yuanxu! follow.
 
 ;; build.ss -- unchanged, user-owned SDK dispatcher.
 (import (only-in :std/build-script defbuild-script)

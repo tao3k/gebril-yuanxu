@@ -162,7 +162,7 @@ consumers directly when implementation is authorized; do not add an alias layer.
 
 Keep Gerbil/Scheme syntax: boolean #t/#f and keyword disable: #t. Emacs Lisp t
 and Doom :disable are reference-language syntax, not substitutes for Scheme
-booleans/keywords. Existing poo-flow! is the bounded declaration surface; its
+booleans/keywords. Existing yuanxu! is the bounded declaration surface; its
 new mode/root/disable interpretation remains a proposed extension, not a reason
 to create a second package DSL.
 

@@ -3,10 +3,10 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!)
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/source/admission module-source-read current-module-source-observer)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture write-source))
+        (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source))
 (export mop-serial-use-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
@@ -22,7 +22,7 @@
   (reverse roots))
 (def mop-serial-use-test
  (test-suite "Serial computation boundaries are not external transactions"
-  (poo-flow-test-case "cold receiver is protected; warm access does not rerun the body; return releases protection"
+  (yuanxu-test-case "cold receiver is protected; warm access does not rerun the body; return releases protection"
     (def calls 0)
     (.def Root
       port: 5432
@@ -42,7 +42,7 @@
     (check-equal? (.get Root preview) 5433)
     (check-equal? calls 2)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an external demand can change inside the same cold receiver computation"
+  (yuanxu-test-case "an external demand can change inside the same cold receiver computation"
     (.def Database port: 5432)
     (def captured #f)
     (.def Application
@@ -58,7 +58,7 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "a warm replay observer can mutate; final replay rejects without undoing the callback"
+  (yuanxu-test-case "a warm replay observer can mutate; final replay rejects without undoing the callback"
     (.def Root port: 5432)
     (def roots (recorded (cut .get Root port)))
     (def calls 0)
@@ -71,7 +71,7 @@
     (check-equal? calls 1)
     (check-equal? (.get Root port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "a cold MOP frame and restored dynamic observer do not fence a source file"
+  (yuanxu-test-fixture "a cold MOP frame and restored dynamic observer do not fence a source file"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "before")

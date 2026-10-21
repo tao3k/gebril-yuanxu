@@ -200,7 +200,7 @@ not another user-facing component declaration list.
 
 | Prototype | Slot | Existing default |
 |-----------+------+------------------|
-| Check | kind | poo-flow.funflow.check.prototype |
+| Check | kind | yuanxu.funflow.check.prototype |
 | Check | check-name, profile-ref, durable-task-id | #f |
 | Check | command-vector, input-bindings, config-sources | '() |
 | Check | artifact-outputs, cache-intents, secret-requirements | '() |
@@ -211,7 +211,7 @@ not another user-facing component declaration list.
 | Check | observability, report | #f |
 | Check | observes, guards, metadata | '() |
 | Check | runtime-executed | #f |
-| Pipeline | kind | poo-flow.funflow.pipeline.prototype |
+| Pipeline | kind | yuanxu.funflow.pipeline.prototype |
 | Pipeline | pipeline-name | #f |
 | Pipeline | checks, metadata | '() |
 | Pipeline | runtime-executed | #f |
@@ -618,7 +618,7 @@ funflow itself; ProjectGerbilCI binds it once. ReleaseGerbilCI inherits that
 binding and refines all four existing objects. These are alternative effective
 Scenario configurations, not two pipeline execution steps.
 
-The following uses the implemented =:core/object-syntax/path-slots= authoring
+The following uses the implemented =:yuanxu/object-syntax/path-slots= authoring
 bindings =.def=, =.o= and braces. Raw gerbil-poo remains unchanged and does not
 interpret dotted keywords as paths. The bounded use-module body is implemented over an existing native scope;
 Scenario/Funflow publication still require Loader/domain adaptation. All ordinary downstream deep refinements use this
@@ -779,7 +779,7 @@ refinements visible.
        (.get ReleaseGerbilCI funflow profiles gerbil-scheme pipeline)))
   (.get effective-pipeline checks)
   ;; Ordered final build, test, package objects, including all overrides.
-  (poo-flow-funflow-poo-pipeline->check-map effective-pipeline))
+  (yuanxu-funflow-poo-pipeline->check-map effective-pipeline))
 #+end_src
 
 The last function already exists in [[file:../../../modules/funflow/config-adapter.ss][config-adapter.ss]] and consumes the native
@@ -1088,7 +1088,7 @@ is no conflicting slot binding.
 The implemented bounded expression expands to:
 
 #+begin_src scheme
-(let ((ff (poo-flow-module-scope Funflow)))
+(let ((ff (yuanxu-module-scope Funflow)))
   (.o (:: @ ff)))
 #+end_src
 
@@ -1327,7 +1327,7 @@ and list-Pipeline adapters, workflow projection functions.
 Implemented bounded scope declaration: one compound body binds an existing
 native object unchanged, without Loader/source resolution. Nine local cases
 verify identity, alias hygiene, lazy demand and upstream/downstream usage.
-Implemented path declaration adapter: =:core/object-syntax/path-slots=, registered
+Implemented path declaration adapter: =:yuanxu/object-syntax/path-slots=, registered
 in Core build.ss; eleven regression cases pass against the pinned POO source. This
 is separate from the implemented CLOS declaration/protocol/bundle surface.
 Verified native subset: the pinned-source parent-first receiver/cache probe

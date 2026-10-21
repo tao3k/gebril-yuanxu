@@ -82,7 +82,7 @@ let the module system remain mostly invisible.
 For CI/CD the first manual page should look closer to this:
 
 #+begin_src scheme
-(poo-flow! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
   (profile developer)
   :workflow
   (funflow
@@ -126,7 +126,7 @@ The =poo-flow= user manual should therefore have two matching tracks:
 
 The =init.ss= surface should now be documented as a category tree, not as a constructor API:
 #+begin_src scheme
-(poo-flow! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
   (profile developer)
   :workflow
   (funflow +functional +dag +typed-receipts)
@@ -157,7 +157,7 @@ The boundary is nested rather than category-sibling. =:workflow= selects the wor
 - runtime manifests.
 Those nouns should be visible inside the =+cicd= payload:
 #+begin_src scheme
-(poo-flow! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
   (profile developer)
   :workflow
   (funflow
@@ -214,7 +214,7 @@ Use a Funflow-owned feature surface rather than a core path:
 The first public shape should stay small:
 
 #+begin_src scheme
-(poo-flow! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
   (profile developer)
   :workflow
   (funflow

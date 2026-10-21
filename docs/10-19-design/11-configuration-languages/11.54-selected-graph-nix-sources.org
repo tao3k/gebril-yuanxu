@@ -66,7 +66,7 @@ user build.ss interface. See chapter 55's user-entrypoint boundary and remaining
 generic-driver gap:
 
 #+begin_src scheme
-(def view (poo-flow-load-modules init-path))
+(def view (yuanxu-load-modules init-path))
 (def built (poo-flow-core-write-build-entry view generation-output-directory))
 (def result (.get built packages opentofu admission))
 #+end_src
@@ -83,7 +83,7 @@ construction does not realize them or link Module runtime scopes.
 * Configuration evaluation and source closure
 
 =module-system/building/configuration-source.ss= reuses
-=poo-flow-prepare-module-build-source= and the existing source reader's private
+=yuanxu-prepare-module-build-source= and the existing source reader's private
 native-wrapper boundary. It does not import a previously cached config module by
 its old identity. Each evaluation has a fresh private wrapper identity; native
 POO and Gerbil own expansion/evaluation. Related admitted role files are wrapped
@@ -141,7 +141,7 @@ Generated build scripts carry:
 
 1. The existing =poo-flow-core-admit-build-inputs= check over selected sources,
    native compiler files and exact demand-file bytes.
-2. =poo-flow-core-nix-admit-generation= over the Nix expression, argv bindings and
+2. =yuanxu-nix-admit-generation= over the Nix expression, argv bindings and
    expected derivation. This catches transitive catalog changes even when the
    directly observed catalog entry file has not changed.
 

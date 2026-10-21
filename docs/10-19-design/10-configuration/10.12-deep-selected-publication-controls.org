@@ -26,7 +26,7 @@ an explicit init.ss, then uses the existing Core source reader and linker:
 
 #+begin_src scheme
 (def selection
-  (poo-flow-load-modules (path-expand "init.ss" root)))
+  (yuanxu-load-modules (path-expand "init.ss" root)))
 (def base-publication
   (.call AdmissionPublication. .for-export
          selection 'fixture/application 'Scenario))
@@ -37,7 +37,7 @@ an explicit init.ss, then uses the existing Core source reader and linker:
 #+end_src
 
 These are INTERNAL test/platform steps, not additional user configuration.
-poo-flow-load-modules here is Core's existing SOURCE linking entrypoint. The
+yuanxu-load-modules here is Core's existing SOURCE linking entrypoint. The
 product runtime Loader/backend is neither connected nor modified. Calling this
 existing Core entrypoint is not evidence that a new product Loader was installed.
 

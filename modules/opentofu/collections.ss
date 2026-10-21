@@ -8,36 +8,36 @@
 (import :clan/poo/object
         ;; Only declaration syntax is required. Reflection, class evolution and
         ;; load-form publication are not collection-evidence dependencies.
-        (only-in :core/poo-clos/generic-syntax .defgeneric .defmethod)
+        (only-in :yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
         (only-in :clan/poo/mop element?)
         "./types.ss" "./aws-hash.ss"
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :core/modules/json-schema/functional
-                 poo-flow-contract-json-object? poo-flow-contract-key->string
-                 poo-flow-contract-object-ref poo-flow-contract-key->symbol)
-        (only-in :core/modules/json-schema/json-schema-validation-core
-                 poo-flow-json-schema-candidate-rows))
-(export poo-flow-opentofu-string-set-authority
-        poo-flow-opentofu-value-digest
-        poo-flow-opentofu-hash-string-authority)
+        (only-in :yuanxu/modules/json-schema/functional
+                 yuanxu-contract-json-object? yuanxu-contract-key->string
+                 yuanxu-contract-object-ref yuanxu-contract-key->symbol)
+        (only-in :yuanxu/modules/json-schema/json-schema-validation-core
+                 yuanxu-json-schema-candidate-rows))
+(export yuanxu-opentofu-string-set-authority
+        yuanxu-opentofu-value-digest
+        yuanxu-opentofu-hash-string-authority)
 
 ;; Canonical, tagged wire snapshots; order-independent object keys, ordered
 ;; arrays, no live receiver/pointer retained. Schema and candidate are separate.
 (def (freeze value)
   (cond
    ((or (object? value) (hash-table? value)
-        (and (pair? value) (poo-flow-contract-json-object? value)))
+        (and (pair? value) (yuanxu-contract-json-object? value)))
     (cons 'object
       (list-sort (lambda (a b) (string<? (car a) (car b)))
         (map (lambda (row)
-                   (cons (poo-flow-contract-key->string (car row)) (freeze (cdr row))))
-                 (poo-flow-json-schema-candidate-rows value)))))
+                   (cons (yuanxu-contract-key->string (car row)) (freeze (cdr row))))
+                 (yuanxu-json-schema-candidate-rows value)))))
    ((vector? value) (cons 'array (map freeze (vector->list value))))
    ((list? value) (cons 'array (map freeze value)))
    (else value)))
 
-(def (poo-flow-opentofu-value-digest value)
+(def (yuanxu-opentofu-value-digest value)
   (hex-encode
     (sha256 (string->utf8
       (call-with-output-string (lambda (port) (write (freeze value) port)))))))
@@ -50,10 +50,10 @@
 (.def AwsHashStringPolicy.
   identity: 'sdk-hash-string-crc32-v2.36.1
   .field: (lambda (path) (filter (lambda (key) (not (integer? key))) path))
-  .normalize: poo-flow-opentofu-aws-string-set
+  .normalize: yuanxu-opentofu-aws-string-set
   .valid-input?:
   (lambda (values)
-    (not (poo-flow-opentofu-aws-string-collision? values))))
+    (not (yuanxu-opentofu-aws-string-collision? values))))
 (.def CollectionBinding.)
 (.def MissingCollectionBinding.)
 
@@ -91,7 +91,7 @@
 (local-policy-method LiteralStringSetPolicy.)
 (local-policy-method AwsHashStringPolicy.)
 
-(def (poo-flow-opentofu-string-set-authority provider version block paths
+(def (yuanxu-opentofu-string-set-authority provider version block paths
        (clock (lambda () (time->seconds (current-time)))))
   (set-authority provider version block paths clock
                  (.o (:: @ LiteralStringSetPolicy.))
@@ -99,7 +99,7 @@
 
 ;; The source owner supplies the verification closure; downstream never selects
 ;; this policy by writing a symbol in a configuration value.
-(def (poo-flow-opentofu-hash-string-authority provider version block paths source-check)
+(def (yuanxu-opentofu-hash-string-authority provider version block paths source-check)
   (set-authority provider version block paths
                  (lambda () (time->seconds (current-time)))
                  (.o (:: @ AwsHashStringPolicy.))
@@ -122,8 +122,8 @@
     (error "evidence authority requires an explicit provider/version and paths"))
   (let* ((provider (string-copy provider))
          (version (string-copy version))
-         (schema (poo-flow-opentofu-value-digest block))
-         (binding (poo-flow-opentofu-value-digest
+         (schema (yuanxu-opentofu-value-digest block))
+         (binding (yuanxu-opentofu-value-digest
                     (list provider version schema (.get policy identity) paths)))
          ;; Private identity ledger. Copying a prototype or its visible audit
          ;; fields cannot enroll a receipt here. Weak keys follow Core's native
@@ -133,11 +133,11 @@
          (missing (.o (:: @ MissingCollectionBinding.)))
          (allowed-paths (map (lambda (path)
                               (map (lambda (key)
-                                     (if (integer? key) key (poo-flow-contract-key->symbol key))) path)) paths)))
+                                     (if (integer? key) key (yuanxu-contract-key->symbol key))) path)) paths)))
     (def (request candidate path values)
       (.cc (.o) 'binding binding 'path (map (lambda (key) key) path)
-           'candidate (poo-flow-opentofu-value-digest candidate)
-           'values (poo-flow-opentofu-value-digest values)))
+           'candidate (yuanxu-opentofu-value-digest candidate)
+           'values (yuanxu-opentofu-value-digest values)))
     (def (issue candidate path values literal? lifetime (field path))
       (and (source-check) literal? (authorized-field? policy allowed-paths field)
            (.call policy .valid-input? values)
@@ -153,8 +153,8 @@
              (hash-put! ledger receipt (.cc req 'expires expires))
              receipt)))
     (def (verify candidate path values literal? context (field path))
-      (let* ((receipts (poo-flow-contract-object-ref
-                        (poo-flow-json-schema-candidate-rows context) 'receipts '()))
+      (let* ((receipts (yuanxu-contract-object-ref
+                        (yuanxu-json-schema-candidate-rows context) 'receipts '()))
              (req (request candidate path values)))
         (cond
          ((not (source-check)) 'provider-source-mismatch)
@@ -170,6 +170,6 @@
     (.cc (.o) 'provider (string-copy provider) 'version (string-copy version)
          'schema (string-copy schema)
          '.matches? (lambda (candidate-block)
-                      (equal? schema (poo-flow-opentofu-value-digest candidate-block)))
+                      (equal? schema (yuanxu-opentofu-value-digest candidate-block)))
          '.normalize-values (.get policy .normalize)
          '.issue issue '.verify verify)))

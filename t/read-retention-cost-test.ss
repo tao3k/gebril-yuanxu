@@ -4,12 +4,12 @@
         (only-in :std/error Error?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-dependencies slot-read-receiver slot-read-key)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/debug poo-flow-debug-memory-snapshot)
-        (only-in :core/observability/funcs poo-flow-debug-allocation-current?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture))
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/debug yuanxu-debug-memory-snapshot)
+        (only-in :yuanxu/observability/funcs yuanxu-debug-allocation-current?)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture))
 (export read-retention-cost-test test-cleanup!)
 (def completed 0)
 (def allocation-stream-current? #t)
@@ -57,10 +57,10 @@
 (def (measure round mode child contract context cached parent unique?)
   (def physical-reads 0)
   (def observer-keys '())
-  (def before (poo-flow-debug-memory-snapshot 'retention-before))
+  (def before (yuanxu-debug-memory-snapshot 'retention-before))
   (when allocation-previous
     (set! allocation-stream-current?
-      (poo-flow-debug-allocation-current? allocation-stream-current?
+      (yuanxu-debug-allocation-current? allocation-stream-current?
         allocation-previous (.ref before 'allocated-bytes))))
   (def started (real-time))
   (defvalues (evidence reads)
@@ -76,9 +76,9 @@
               (.call contract .admit child context)))
           unique-roots?: unique?))))
   (def seconds (- (real-time) started))
-  (def after (poo-flow-debug-memory-snapshot 'retention-after))
+  (def after (yuanxu-debug-memory-snapshot 'retention-after))
   (set! allocation-stream-current?
-    (poo-flow-debug-allocation-current? allocation-stream-current?
+    (yuanxu-debug-allocation-current? allocation-stream-current?
       (.ref before 'allocated-bytes) (.ref after 'allocated-bytes)))
   (set! allocation-previous (.ref after 'allocated-bytes))
   (check-final evidence cached parent)
@@ -101,7 +101,7 @@
 
 (def read-retention-cost-test
   (test-suite "Real Scenario demanded read-graph cost"
-    (poo-flow-test-case "distinct native misses remain outside the read cache"
+    (yuanxu-test-case "distinct native misses remain outside the read cache"
       (.def Policy port: 5432 unused: (error "unselected slot forced"))
       (defvalues (_answer reads)
         (%call-with-recorded-slot-reads
@@ -114,7 +114,7 @@
       (replay-slot-reads! reads (lambda (_receiver _key) (void)))
       (.put! Policy 'missing #t)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (poo-flow-test-fixture "three matched cold and warm admissions keep exact child semantics"
+    (yuanxu-test-fixture "three matched cold and warm admissions keep exact child semantics"
       (fixture ServicesFixture)
       (with-slots (publication selection) fixture
         (def parent (.get publication value))

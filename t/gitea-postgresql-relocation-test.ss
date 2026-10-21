@@ -1,12 +1,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/configuration/slot-origin field-slot-origins/value)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                ServicesFixture RelocatedServicesFixture relocate-services
                write-source read-overrides refused)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export relocation-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
@@ -14,7 +14,7 @@
   (displayln "GITEA-RELOCATED-PACKAGE: 4 cases completed"))
 (def relocation-test
   (test-suite "Selected Scenario package relocation"
-    (poo-flow-test-fixture "observed JSON follows the selected graph and relocated native sources"
+    (yuanxu-test-fixture "observed JSON follows the selected graph and relocated native sources"
       (fixture ServicesFixture)
       (with-slots (root selection) fixture
         (def graph (.get selection build-graph))
@@ -59,7 +59,7 @@
         (write-source json (string-append (module-source-read json) "\n"))
         (refused publication parent Release "selected configuration asset changed")
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "relocated Scheme overrides retain exact source, JSON baseline and derivation"
+    (yuanxu-test-fixture "relocated Scheme overrides retain exact source, JSON baseline and derivation"
       (fixture RelocatedServicesFixture)
       (with-slots (root selection publication) fixture
         (def moved (.get fixture source))
@@ -116,7 +116,7 @@
         (check-equal? (.get (.call (.get publication contract) .admit parent (.get publication context)) accepted?) #t)
         (check-equal? (.get cached postgresql port) 5432)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "native plus, cc and delayed refinement share source checks after parent and child caches"
+    (yuanxu-test-fixture "native plus, cc and delayed refinement share source checks after parent and child caches"
       (fixture RelocatedServicesFixture)
       (with-slots (root selection publication) fixture
         (def moved (.get fixture source))
@@ -170,7 +170,7 @@
         (check-equal? (.get (.call (.get publication contract) .admit parent (.get publication context)) accepted?) #t)
         (check-equal? (.get cached postgresql port) 5432)
         (set! completed (+ completed 1))))
-    (poo-flow-test-fixture "changed observed asset refuses before package output is created"
+    (yuanxu-test-fixture "changed observed asset refuses before package output is created"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def graph (.get selection build-graph))

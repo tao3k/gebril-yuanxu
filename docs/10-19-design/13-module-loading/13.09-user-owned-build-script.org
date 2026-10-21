@@ -38,7 +38,7 @@ compilable module as well as an admitted publication declaration:
 
 #+begin_src scheme
 (import (except-in :clan/poo/object .def)
-        (only-in :core/module-system/source/declaration .def)
+        (only-in :yuanxu/module-system/source/declaration .def)
         "types.ss" "config.ss" "func.ss" "objects.ss")
 (.def JsonSchema
   ;; Existing identity, core and features fields remain unchanged.

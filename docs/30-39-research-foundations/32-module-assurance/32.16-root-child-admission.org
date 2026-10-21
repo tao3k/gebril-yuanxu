@@ -11,7 +11,7 @@ refactor. No Loader or Scheme source changes belong to this qualification.
 LeanPoo is pinned at =6e6a706e14fa6f8199e4f36711440355b42ef335= in the existing
 Core Lean project; Quint is 0.33.0 with TLC via Apalache 0.62.1.
 
-The owners are [[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RootChild.lean][Admission.RootChild]] and
+The owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootChild.lean][Admission.RootChild]] and
 [[file:../../../dev/proofs/quint/RootChild.qnt][RootChild.qnt]]. They reuse the existing
 =Source.sourceObject= / =LeanPoo.Proof.Certificate=, =SourceWindows.check= backed
 by LeanPoo =ensureLookup=, and the real LeanPoo =DeclarativeMetadata.Contract=

@@ -95,7 +95,7 @@ has a counterexample. Acceptance has its own expected-counterexample control.
 It does not model the SDK interpreter or prove effect confinement.
 
 Lean's =checkCallbackReturn= in
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately states the arbitrary-value law: acceptance
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately states the arbitrary-value law: acceptance
 implies the returned value satisfies the supplied predicate. A concrete
 counterexample shows construction-time validity does not imply post-callback
 validity. This assumes the predicate represents the actual boundary check;
@@ -139,7 +139,7 @@ Run the native probe serially with the repository-locked source environment:
 just test-file t/module-authoring-dispatch-work-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix CarrierReturn --typecheck-scope selected --receipt ../.data/qualification/carrier-return.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 Only a completed native run with all harness markers and no error/overflow

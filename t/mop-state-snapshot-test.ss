@@ -3,10 +3,10 @@
         (only-in :clan/poo/mop call-with-slot-read-observer slot-read-key make-slot-read replay-slot-reads!)
         (only-in :clan/poo/meta-prototype bootstrap-protocol)
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/source/admission current-module-source-observer module-source-read)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
         "qualification/mop-state/snapshot.ss")
 (export mop-state-snapshot-test test-cleanup!)
 (def completed 0)
@@ -23,7 +23,7 @@
   (check-equal? (Error-message failure) message))
 (def mop-state-snapshot-test
  (test-suite "Actual MOP state extraction without producer changes"
-  (poo-flow-test-case "native field reflection, shared ancestor and unselected getter"
+  (yuanxu-test-case "native field reflection, shared ancestor and unselected getter"
     (def calls 0)
     (.def Shared port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))
@@ -44,7 +44,7 @@
     (.putslot! Shared 'port ($constant-slot-spec 5433))
     (fails-with "MOP snapshot changed" (cut state-current! snapshot))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "equal numeric values do not hide changed cached reference identity"
+  (yuanxu-test-case "equal numeric values do not hide changed cached reference identity"
     (def first (string->number "100000000000000000000000000000001"))
     (def second (string->number "100000000000000000000000000000001"))
     (check-equal? (= first second) #t)
@@ -56,7 +56,7 @@
     (hash-put! (object-%instance Root) 'payload second)
     (fails-with "MOP snapshot changed" (cut state-current! snapshot))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "bootstrap remains current after clear but cold hook is exposed"
+  (yuanxu-test-case "bootstrap remains current after clear but cold hook is exposed"
     (def hooks 0)
     (def source (.o
       (compute-precedence-list (lambda (_self next) (set! hooks (+ hooks 1)) (next)))
@@ -79,7 +79,7 @@
     (check-equal? (> hooks before) #t)
     (fails-with "MOP snapshot changed" (cut state-current! cold))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "stale token rejects without rebuilding cold default metadata"
+  (yuanxu-test-case "stale token rejects without rebuilding cold default metadata"
     (def calls 0)
     (.def Root port: (begin (set! calls (+ calls 1)) 5432))
     (check-equal? (.get Root port) 5432)
@@ -94,7 +94,7 @@
     (check-equal? (object-%precedence-list Root) #f)
     (check-equal? (state-current! snapshot) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "observer rebind is an exposure and invalidates the snapshot"
+  (yuanxu-test-case "observer rebind is an exposure and invalidates the snapshot"
     (.def Root port: 5432)
     (def roots (recorded (cut .get Root port)))
     (def snapshot (capture-state roots))
@@ -106,7 +106,7 @@
     (check-equal? calls 0)
     (check-equal? (state-current! snapshot) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "unknown checker identity is observed but never executed"
+  (yuanxu-test-case "unknown checker identity is observed but never executed"
     (.def Root port: 5432)
     (check-equal? (.get Root port) 5432)
     (def calls 0)
@@ -117,7 +117,7 @@
     (check-equal? (and (state-closed? snapshot) #t) #f)
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "final admission retains requirements, identity and independent source checks"
+  (yuanxu-test-fixture "final admission retains requirements, identity and independent source checks"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Parent (.get publication value))

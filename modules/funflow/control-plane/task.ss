@@ -1,4 +1,4 @@
-(import :core/object-family/syntax)
+(import :yuanxu/object-family/syntax)
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;;
@@ -8,10 +8,10 @@
 ;;; Invariant: only pure/scheme tasks carry an in-process executor.
 
 (import (only-in :clan/poo/object .@ object?)
-        :core/modules/funflow/control-plane/projection-syntax
-        :core/modules/funflow/control-plane/roles
-        :core/modules/funflow/control-plane/failure
-        :core/object-family/role-syntax)
+        :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/roles
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/object-family/role-syntax)
 
 (export make-task
         task?

@@ -25,14 +25,14 @@
             (lambda (foreign)
               (write-source (path-expand "gerbil.pkg" foreign) "(package: foreign)\n")
               (def before (load-path))
-              (check-exception (register! foreign 'core) error?)
+              (check-exception (register! foreign 'yuanxu) error?)
               (check-equal? (load-path) before)))))
       (test-case "init registers source before Core imports and guards tool drift"
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
           (eval-syntax `(import
                          (only-in ,(path-expand "init.ss" root) init.build-spec init.build-current!)))
-          (check-equal? (core-resolve-library-module-path ':core/object-family/syntax)
+          (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
                         (path-normalize (path-expand "object-family/syntax.ss" root)))
           ;; The Core package prefix must not capture public dependency imports.
           (check-equal? (string-prefix? (path-normalize root)

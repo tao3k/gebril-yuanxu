@@ -53,7 +53,7 @@ The proposed optimization is source-certification delegation, not removal of
 PostgreSQL/Gitea validation. For this maintained Scenario, the contextual service
 and Configuration descriptors use =value-contract: #f= after root normalization;
 their classifiers construct evidence and their local obligations inherit
-=poo-flow-contract-empty-obligations=. This avoids a second normalization and
+=yuanxu-contract-empty-obligations=. This avoids a second normalization and
 preserves exact child receivers. Their platform contribution callbacks currently
 perform a full source/provenance check even though they have no platform handler.
 

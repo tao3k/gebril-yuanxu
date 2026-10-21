@@ -3,17 +3,17 @@
 
 (import (only-in :gerbil/runtime/gambit with-exception-catcher
                  call-with-output-string display-exception)
-        :core/profile-composition/selection-syntax
-        :core/object-syntax/path-slots
-        (rename-in (only-in :core/profile-composition/selection-syntax use-module)
+        :yuanxu/profile-composition/selection-syntax
+        :yuanxu/object-syntax/path-slots
+        (rename-in (only-in :yuanxu/profile-composition/selection-syntax use-module)
                    (use-module with-module))
-        (only-in :core/profile-composition/bindings poo-flow-module-scope)
-        (only-in :core/profile-composition/profile-bundle
-                 poo-flow-profile-export poo-flow-module-profiles)
-        (only-in :core/module-system/objects
+        (only-in :yuanxu/profile-composition/bindings yuanxu-module-scope)
+        (only-in :yuanxu/profile-composition/profile-bundle
+                 yuanxu-profile-export yuanxu-module-profiles)
+        (only-in :yuanxu/module-system/objects
                  make-semantic-module ModuleAuthoringProfile. ModuleSourceRole.)
-        (only-in :core/module-system/schema/relations poo-flow-semantic-identity)
-        (only-in :core/module-system/source/objects make-poo-flow-module-package-source)
+        (only-in :yuanxu/module-system/schema/relations yuanxu-semantic-identity)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-package-source)
         (only-in :clan/poo/object .get .ref .+)
         (only-in :std/test test-suite test-case check-equal? check-exception)
         (only-in :gerbil/expander core-expand datum->syntax))
@@ -25,7 +25,7 @@
 (def module-scope-syntax-test
   (test-suite "Bounded native module scope"
     (test-case "the alias is the original scope and source identity is retained"
-      (def source-handle (make-poo-flow-module-package-source "example/funflow@revision"))
+      (def source-handle (make-yuanxu-module-package-source "example/funflow@revision"))
       (.def funflow source: source-handle prototypes: (.o) profiles: (.o))
       (check-equal? (use-module funflow as ff (eq? ff funflow)) #t)
       (check-equal? (use-module funflow as ff (eq? (.get ff source) source-handle)) #t)
@@ -57,7 +57,7 @@
 
     (test-case "closures retain the bounded scope and local names cannot capture helpers"
       (.def Scope label: 'retained)
-      (let ((poo-flow-module-scope 'shadowed) (ff 'outside))
+      (let ((yuanxu-module-scope 'shadowed) (ff 'outside))
         (def thunk (with-module Scope as ff (lambda () (.get ff label))))
         (check-equal? (thunk) 'retained)
         (check-equal? ff 'outside)))
@@ -78,7 +78,7 @@
       (check-equal? (list scope-demands body-demands publication-demands) '(1 1 0)))
 
     (test-case "upstream and downstream share prototypes and lazy Profile getters"
-      (def source-handle (make-poo-flow-module-package-source "example/funflow@revision"))
+      (def source-handle (make-yuanxu-module-package-source "example/funflow@revision"))
       (def prototype-demands 0)
       (def profile-demands 0)
       (def unrelated-demands 0)
@@ -171,8 +171,8 @@
         executor: (.o) types: Role objects: Role funs: Role config: Role interface: Role)
       (def Module
         (make-semantic-module
-          (poo-flow-semantic-identity 'test 'funflow) Authoring
-          profiles: (poo-flow-module-profiles
-                      (poo-flow-profile-export 'build (.o identity: 'build)))))
+          (yuanxu-semantic-identity 'test 'funflow) Authoring
+          profiles: (yuanxu-module-profiles
+                      (yuanxu-profile-export 'build (.o identity: 'build)))))
       (check-equal? (.get (use-module Module as named build) profile-identities) '(build))
       (check-equal? (.get (use-module Module build) profile-identities) '(build)))))

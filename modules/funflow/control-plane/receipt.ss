@@ -6,7 +6,7 @@
 ;;; Boundary: receipts record observed execution outcomes.
 ;;; Invariant: retry, scheduling, and adapter policy remain outside receipts.
 
-(import :core/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-receipt
         receipt?

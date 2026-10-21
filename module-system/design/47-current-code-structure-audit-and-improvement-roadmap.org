@@ -38,7 +38,7 @@ landed or released baseline.
    functional code. They do not create a parallel runtime or object model.
 5. =build.ss= is the unique package build entry. ASP PackageSpec owns native
    import closure projection and =std/make= owns compilation.
-6. =poo-flow-load-modules= owns runtime module-source discovery. It does not
+6. =yuanxu-load-modules= owns runtime module-source discovery. It does not
    execute inside =build.ss=.
 7. POO Flow owns domain-neutral infrastructure. Lambda Aitia owns
    Software/SDLC, NASA, GitOps, ADR and causal assurance. Lambda Episteme owns

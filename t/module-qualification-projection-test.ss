@@ -2,10 +2,10 @@
 ;;; Init-owned qualification discovery uses the existing selected test source.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/building/test-projection module-test-projection)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
 
 (def (write-source path text)
@@ -16,13 +16,13 @@
               (let (root (make-temporary-file-name "qualification-projection-"))
                 (create-directory root)
                 (write-source (path-expand "gerbil.pkg" root)
-                  "(package: qualification-projection prelude: :core/module-system/source/module-prelude)\n")
+                  "(package: qualification-projection prelude: :yuanxu/module-system/source/module-prelude)\n")
                 root))
   .release: (lambda (root)
               (clear-temporary-file! root)
               (check-equal? (file-exists? root) #f)))
 (def ScopeContract
-  (poo-flow-predicate-contract 'qualification/scope object? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'qualification/scope object? (lambda (_v _c) '())))
 (def (read-publication source)
   (def owner (cdr (assq 'module-id (.get source metadata))))
   (unless (memq owner '(json-schema funflow team/json-schema))
@@ -33,7 +33,7 @@
 
 (def module-qualification-projection-test
   (test-suite "Init-owned qualification source projection"
-    (poo-flow-test-fixture "multi-owner guards isolate changes and preserve requested order"
+    (yuanxu-test-fixture "multi-owner guards isolate changes and preserve requested order"
       (root Workspace)
       (for-each
         (lambda (owner)
@@ -46,14 +46,14 @@
         '(json-schema funflow))
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(poo-flow! :load-modules \"./modules\" mode: explicit rename: Libraries (json-schema) (funflow) (poison disable: #t))\n")
+        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Libraries (json-schema) (funflow) (poison disable: #t))\n")
       ;; The group follows rename:, not a hard-coded Modules folder.
       (def json (path-expand "t/Libraries/json-schema/value-test.ss" root))
       (def flow (path-expand "t/Libraries/funflow/job-test.ss" root))
       (def helper (path-expand "t/Libraries/json-schema/fixtures.ss" root))
       (for-each (lambda (file) (write-source file "(error \"discovery stays inert\")\n"))
         (list json flow helper))
-      (def view (poo-flow-load-modules init read-publication: read-publication))
+      (def view (yuanxu-load-modules init read-publication: read-publication))
       (def json-tests (module-test-projection view '(json-schema) 'qualification))
       (def flow-tests (module-test-projection view '(funflow) 'qualification))
       (def both (module-test-projection view '(json-schema funflow) 'qualification))
@@ -75,15 +75,15 @@
       ;; A changed mount invalidates the old epoch. Auto discovery uses the
       ;; new mount without a second test registry or legacy flat fallback.
       (write-source init
-        "(poo-flow! :load-modules \"./modules\" mode: auto rename: Tools)\n")
+        "(yuanxu! :load-modules \"./modules\" mode: auto rename: Tools)\n")
       (check-exception ((.get fresh admit-current)) error?)
       (def auto-file (path-expand "t/Tools/json-schema/auto-test.ss" root))
       (write-source auto-file "(error \"discovery stays inert\")\n")
-      (def auto-view (poo-flow-load-modules init read-publication: read-publication))
+      (def auto-view (yuanxu-load-modules init read-publication: read-publication))
       (check-equal?
         (.get (module-test-projection auto-view '(json-schema) 'qualification) spec)
         (list auto-file)))
-    (poo-flow-test-fixture "bounded discovery, helper guards, rename and selection rejection"
+    (yuanxu-test-fixture "bounded discovery, helper guards, rename and selection rejection"
       (root Workspace)
       ;; This single-root init has no rename mount, hence no group segment.
       (def module-root (path-expand "modules/json-schema" root))
@@ -96,7 +96,7 @@
         "(error \"discovery must not evaluate atomic test\")\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(poo-flow! mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
+        "(yuanxu! mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
       (def owner (path-expand "t/json-schema" root))
       (def file (path-expand "first-test.ss" owner))
       (def helper (path-expand "fixtures.ss" owner))
@@ -104,7 +104,7 @@
       (write-source helper "(error \"helper must not be imported\")\n")
       ;; A non-directory unselected owner would fail if discovery traversed it.
       (write-source (path-expand "t/poison" root) "poison")
-      (def view (poo-flow-load-modules init read-publication: read-publication))
+      (def view (yuanxu-load-modules init read-publication: read-publication))
       (def atomic (module-test-projection view))
       (def selected (module-test-projection view '(json-schema) 'qualification))
       (check-equal? (.get selected spec) (list file))
@@ -128,7 +128,7 @@
       (write-source next "(error \"edited selected test\")\n")
       (check-exception ((.get edited admit-current)) error?))
 
-    (poo-flow-test-fixture "absent qualification discovery is guarded without loading a suite"
+    (yuanxu-test-fixture "absent qualification discovery is guarded without loading a suite"
       (root Workspace)
       (def module-root (path-expand "modules/json-schema" root))
       (for-each
@@ -137,15 +137,15 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(poo-flow! mode: explicit source: \"./modules\" (json-schema))\n")
-      (def view (poo-flow-load-modules init read-publication: read-publication))
+      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
+      (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view #f 'qualification))
       (check-equal? (.get selected spec) '())
       (write-source (path-expand "t/json-schema/new-test.ss" root)
         "(error \"new qualification\")\n")
       (check-exception ((.get selected admit-current)) error?))
 
-    (poo-flow-test-fixture "qualified owner identity and namespace ancestor guards"
+    (yuanxu-test-fixture "qualified owner identity and namespace ancestor guards"
       (root Workspace)
       (def module-root (path-expand "modules/json-schema" root))
       (for-each
@@ -155,11 +155,11 @@
         "(.def Published identity: 'team/json-schema)\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(poo-flow! mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
+        "(yuanxu! mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
       (def namespace (path-expand "t/team" root))
       (def file (path-expand "json-schema/nested-test.ss" namespace))
       (write-source file "(error \"selected namespace body remains cold\")\n")
-      (def view (poo-flow-load-modules init read-publication: read-publication))
+      (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view '(team/json-schema) 'qualification))
       (check-equal? (.get selected spec) (list file))
       (rename-file namespace (path-expand "t/moved" root))
@@ -167,7 +167,7 @@
       (check-exception ((.get selected admit-current)) error?)
       (check-exception (module-test-projection view '(team/json-schema) 'qualification) error?))
 
-    (poo-flow-test-fixture "qualification ancestor symlinks are rejected"
+    (yuanxu-test-fixture "qualification ancestor symlinks are rejected"
       (root Workspace)
       (def module-root (path-expand "modules/json-schema" root))
       (for-each
@@ -176,8 +176,8 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(poo-flow! mode: explicit source: \"./modules\" (json-schema))\n")
+      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
       (create-directory (path-expand "outside" root))
       (create-symbolic-link (path-expand "outside" root) (path-expand "t" root))
-      (def view (poo-flow-load-modules init read-publication: read-publication))
+      (def view (yuanxu-load-modules init read-publication: read-publication))
       (check-exception (module-test-projection view #f 'qualification) error?))))

@@ -5,7 +5,7 @@
 
 ;;; Hygienic CLOS declaration lowering and lambda-list conformance.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .def .o .ref)
@@ -13,13 +13,13 @@
         (only-in :gerbil/runtime/gambit
                  call-with-output-string display-exception
                  with-exception-catcher)
-        (only-in :core/poo-clos/declaration-ir
+        (only-in :yuanxu/poo-clos/declaration-ir
                  parse-poo-clos-class-declaration-ir
                  parse-poo-clos-generic-declaration-ir
                  clos-lambda-declaration-ir-required
                  clos-parameter-declaration-ir-kind)
-        (only-in :core/poo-clos/declaration-ir-core parse-clos-lambda-list)
-        :core/poo-clos/interface)
+        (only-in :yuanxu/poo-clos/declaration-ir-core parse-clos-lambda-list)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-syntax-test)
 
@@ -176,13 +176,13 @@
 
 (def poo-clos-syntax-test
   (test-suite "hygienic POO-native CLOS declarations"
-    (poo-flow-test-case "generic protocol identity reaches inline method admission"
+    (yuanxu-test-case "generic protocol identity reaches inline method admission"
       (check (eq? (.ref (poo-clos-generic-binding-current
                          protocol-inline$poo-clos-generic) 'protocol)
                   syntax-protocol) => #t)
       (check-equal? (protocol-inline (.o (:: @ SyntaxChildPrototype.)))
                     'protocol-inline))
-    (poo-flow-test-case "protocol clauses reject duplicates and malformed arity"
+    (yuanxu-test-case "protocol clauses reject duplicates and malformed arity"
       (check
        (integer?
         (string-contains
@@ -197,7 +197,7 @@
                             "poo-clos-invalid-generic-option"))
           => #t))
        '((protocol) (protocol first second) (protocol . improper))))
-    (poo-flow-test-case "prototype declarations preserve native ancestry and next methods"
+    (yuanxu-test-case "prototype declarations preserve native ancestry and next methods"
       (check-equal? (describe-prototype (.o (:: @ SyntaxPrototype.))) 'base)
       (check-equal? (describe-prototype (.o (:: @ SyntaxChildPrototype.)))
                     '(child base #t))
@@ -210,14 +210,14 @@
                    describe-prototype$poo-clos-generic) 'methods))
        '(prototype prototype)))
 
-    (poo-flow-test-case "prototype declarations dispatch across independently inherited axes"
+    (yuanxu-test-case "prototype declarations dispatch across independently inherited axes"
       (let ((left (.o (:: @ SyntaxChildPrototype.)))
             (right (.o (:: @ SyntaxPeerPrototype.))))
         (check-equal? (prototype-crossing left right) 'crossed)
         (check-equal? (prototype-crossing right left) 'fallback)
         (check-equal? (prototype-crossing left (.o)) 'fallback)))
 
-    (poo-flow-test-case "private defrules frames preserve native prototype annotation hygiene"
+    (yuanxu-test-case "private defrules frames preserve native prototype annotation hygiene"
       (check-equal? (framed-prototype (.o (:: @ SyntaxChildPrototype.)))
                     'framed-prototype)
       (let* ((generic (poo-clos-generic-binding-current
@@ -226,7 +226,7 @@
              (specializer (car (.ref method 'specializers))))
         (check-equal? (.ref specializer 'kind) 'prototype)))
 
-    (poo-flow-test-case "class eql and prototype declarations retain distinct specializers"
+    (yuanxu-test-case "class eql and prototype declarations retain distinct specializers"
       (check-equal? (mixed-specializers (poo-clos-make-instance SyntaxEntity)) 'class)
       (check-equal? (mixed-specializers (.o (:: @ SyntaxChildPrototype.))) 'prototype)
       (check-equal? (mixed-specializers 'sentinel) 'eql)
@@ -240,7 +240,7 @@
                (datum->syntax #f '((value (prototype SyntaxPrototype.)))) #t))))
        'prototype))
 
-    (poo-flow-test-case "prototype targets are expressions evaluated at method admission"
+    (yuanxu-test-case "prototype targets are expressions evaluated at method admission"
       (check-equal? prototype-target-evaluations 1)
       (check-equal? (prototype-expression (.o (:: @ SyntaxChildPrototype.)))
                     'prototype-expression)
@@ -261,7 +261,7 @@
                 prototype-expression$poo-clos-generic) 'generation)
          generation)))
 
-    (poo-flow-test-case "malformed prototype and eql annotations fail during parsing"
+    (yuanxu-test-case "malformed prototype and eql annotations fail during parsing"
       (for-each
        (lambda (specializer)
          (check
@@ -272,7 +272,7 @@
        '((prototype) (prototype First Second) (prototype . Target)
          (eql) (eql First Second))))
 
-    (poo-flow-test-case "defclass lowers slots, defaults, and accessor methods"
+    (yuanxu-test-case "defclass lowers slots, defaults, and accessor methods"
       (let (person (poo-clos-make-instance SyntaxPerson role: 'admin))
         (check (poo-clos-instance? person) => #t)
         (check-equal? (entity-name person) 'default-person)
@@ -283,7 +283,7 @@
         (check-equal? (set-entity-name 'renamed person) 'renamed)
         (check-equal? (entity-name person) 'renamed)))
 
-    (poo-flow-test-case "defmethod binds optional, key, supplied-p, aux, and lexical next"
+    (yuanxu-test-case "defmethod binds optional, key, supplied-p, aux, and lexical next"
       (let (person (poo-clos-make-instance SyntaxPerson name: 'Ada))
         (check-equal?
          (describe-syntax person)
@@ -292,11 +292,11 @@
          (describe-syntax person "Dr" punctuation: "?")
          '(person ("Dr" Ada "?" #t #t) "Dr" "?" #t #t #t))))
 
-    (poo-flow-test-case "defgeneric installs inline methods"
+    (yuanxu-test-case "defgeneric installs inline methods"
       (let (entity (poo-clos-make-instance SyntaxEntity name: 'inline-name))
         (check-equal? (inline-described entity) '(inline inline-name))))
 
-    (poo-flow-test-case "one-name accessors install ANSI reader and SETF writer"
+    (yuanxu-test-case "one-name accessors install ANSI reader and SETF writer"
       (let (entity (poo-clos-make-instance StandardAccessorEntity))
         (check-equal? (standard-value entity) 1)
         (check-equal? (poo-clos-setf 'standard-value 2 entity) 2)
@@ -310,12 +310,12 @@
               (list 'setf 'standard-value) error?: #f) #t #f)
          => #t)))
 
-    (poo-flow-test-case "SETF function names are valid generic declarations"
+    (yuanxu-test-case "SETF function names are valid generic declarations"
       (let (entity (poo-clos-make-instance SyntaxEntity name: 'before))
         (check-equal? (poo-clos-setf 'explicit-name 'after entity) 'after)
         (check-equal? (entity-name entity) 'after)))
 
-    (poo-flow-test-case "generic binding preserves identity across generations"
+    (yuanxu-test-case "generic binding preserves identity across generations"
       (check-equal?
        (.ref (poo-clos-generic-binding-current
               describe-syntax$poo-clos-generic)
@@ -337,7 +337,7 @@
                      describe-syntax$poo-clos-generic)
                     'standard-method))
 
-    (poo-flow-test-case "with-slots and with-accessors are live mutable places"
+    (yuanxu-test-case "with-slots and with-accessors are live mutable places"
       (let ((person (poo-clos-make-instance SyntaxPerson name: 'first))
             (standard (poo-clos-make-instance StandardAccessorEntity)))
         (check-equal?
@@ -361,7 +361,7 @@
          '(1 9))
         (check-equal? (standard-value standard) 9)))
 
-    (poo-flow-test-case "runtime congruence rejects a method before binding mutation"
+    (yuanxu-test-case "runtime congruence rejects a method before binding mutation"
       (let* ((binding
               (poo-clos-generic-binding
                'strict
@@ -381,7 +381,7 @@
          (.ref (poo-clos-generic-binding-current binding) 'generation)
          generation)))
 
-    (poo-flow-test-case "unknown keyword calls fail before method execution"
+    (yuanxu-test-case "unknown keyword calls fail before method execution"
       (let (person (poo-clos-make-instance SyntaxPerson name: 'Ada))
         (check-exception
          (describe-syntax person "Dr" unknown: 1)
@@ -393,7 +393,7 @@
          (describe-syntax person "Dr" unknown: 1 allow-other-keys: #t)
          '(person ("Dr" Ada "." #t #f) "Dr" "!" #t #f #t))))
 
-    (poo-flow-test-case "declaration IR rejects duplicates, unknown clauses, and bad order"
+    (yuanxu-test-case "declaration IR rejects duplicates, unknown clauses, and bad order"
       (check
        (integer?
         (string-contains

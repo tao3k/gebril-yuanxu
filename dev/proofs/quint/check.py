@@ -523,14 +523,14 @@ def main():
              + sorted((core / "module-system/schema/support").glob("*.ss"))
              + [core / "t/graph-operations-test.ss", core / "module-system/source/projection.ss",
                 core / "module-system/source/collection.ss", core / "t/module-source-admission-test.ss",
-                core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Source/Collections.lean"])
+                core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean"])
     def digests():
         current = set(bound) | set(models.glob("*.qnt"))
         return {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in sorted(current)}
-    issued_roots_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean"
-    retention_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReadRetention.lean"
-    collection_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/RootCollection.lean"
+    issued_roots_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean"
+    retention_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean"
+    collection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean"
     collection_digest = "sha256:" + hashlib.sha256((models / "RootCollection.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{collection_digest}"' not in collection_lean.read_text():
         raise AssertionError("Lean retains a stale RootCollection Quint source binding")
@@ -552,54 +552,54 @@ def main():
                   core / "scenarios/gitea-postgresql/types.ss",
                   core / "scenarios/gitea-postgresql/gitea/types.ss",
                   core / "scenarios/gitea-postgresql/postgresql/types.ss"])
-    window_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/SourceWindows.lean"
+    window_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean"
     window_digest = "sha256:" + hashlib.sha256((models / "SourceWindows.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{window_digest}"' not in window_lean.read_text():
         raise AssertionError("Lean retains a stale SourceWindows Quint source binding")
     bound.extend([window_lean, core / "admission/source.ss",
                   core / "admission/contributions.ss", core / "module-system/source/admission.ss",
-                  core / "dev/proofs/lean/PooFlowCoreProof/Admission/Source.lean",
+                  core / "dev/proofs/lean/YuanxuProof/Admission/Source.lean",
                   core / "dev/proofs/lean/lakefile.lean", core / "dev/proofs/lean/lake-manifest.json",
                   core / "dev/proofs/lean/lean-toolchain", core / "gerbil.pkg",
                   core / "t/source-admission-test.ss", core / "t/source-observation-test.ss",
                   core / "t/slot-read-cost-test.ss"])
-    root_child_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/RootChild.lean"
+    root_child_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RootChild.lean"
     root_child_digest = "sha256:" + hashlib.sha256((models / "RootChild.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{root_child_digest}"' not in root_child_lean.read_text():
         raise AssertionError("Lean retains a stale RootChild Quint source binding")
     bound.extend([root_child_lean, core / "types.ss", core / "admission/publication.ss"])
-    return_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReturnWindows.lean"
+    return_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean"
     return_digest = "sha256:" + hashlib.sha256((models / "ReturnWindows.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{return_digest}"' not in return_lean.read_text():
         raise AssertionError("Lean retains a stale ReturnWindows Quint source binding")
     bound.extend([return_lean, core / "configuration/slot-origin.ss",
                   core / "t/root-child-admission-test.ss", core / "t/root-child-effect-test.ss"])
-    replay_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReplayBoundary.lean"
+    replay_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean"
     replay_digest = "sha256:" + hashlib.sha256((models / "ReplayBoundary.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{replay_digest}"' not in replay_lean.read_text():
         raise AssertionError("Lean retains a stale ReplayBoundary Quint source binding")
     bound.append(replay_lean)
-    identity_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/IdentityDFS.lean"
+    identity_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean"
     identity_digest = "sha256:" + hashlib.sha256((models / "IdentityDFS.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{identity_digest}"' not in identity_lean.read_text():
         raise AssertionError("Lean retains a stale IdentityDFS Quint source binding")
     bound.append(identity_lean)
-    frames_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/DFSFrames.lean"
+    frames_lean = core / "dev/proofs/lean/YuanxuProof/Admission/DFSFrames.lean"
     if 'def quintSourceDigest : String := IdentityDFS.quintSourceDigest' not in frames_lean.read_text():
         raise AssertionError("DFSFrames must retain the IdentityDFS projection binding")
     bound.append(frames_lean)
-    entry_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReadOnlyEntry.lean"
+    entry_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean"
     entry_digest = "sha256:" + hashlib.sha256((models / "ReadOnlyEntry.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{entry_digest}"' not in entry_lean.read_text():
         raise AssertionError("Lean retains a stale ReadOnlyEntry Quint source binding")
     bound.append(entry_lean)
-    snapshot_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/SnapshotEntry.lean"
+    snapshot_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SnapshotEntry.lean"
     snapshot_digest = "sha256:" + hashlib.sha256((models / "SnapshotEntry.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{snapshot_digest}"' not in snapshot_lean.read_text():
         raise AssertionError("Lean retains a stale SnapshotEntry Quint source binding")
     bound.extend([snapshot_lean, core / "t/mop-state-snapshot-test.ss",
                   core / "t/qualification/mop-state/snapshot.ss"])
-    closed_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ClosedTail.lean"
+    closed_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean"
     closed_digest = "sha256:" + hashlib.sha256((models / "ClosedTail.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{closed_digest}"' not in closed_lean.read_text():
         raise AssertionError("Lean retains a stale ClosedTail Quint source binding")
@@ -608,26 +608,26 @@ def main():
                   core / "t/qualification/mop-state/closed-tail.ss",
                   core / "t/qualification/mop-state/compile-tail-gateway.ss",
                   core / "t/qualification/mop-state/refine-tail-policy.ss"])
-    checker_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CheckerOrigin.lean"
+    checker_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean"
     checker_digest = "sha256:" + hashlib.sha256((models / "CheckerOrigin.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{checker_digest}"' not in checker_lean.read_text():
         raise AssertionError("Lean retains a stale CheckerOrigin Quint source binding")
     bound.extend([checker_lean, core / "t/mop-checker-origin-test.ss",
                   core / "t/qualification/mop-state/checker-origin.ss"])
-    route_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/MetadataRoute.lean"
+    route_lean = core / "dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean"
     route_digest = "sha256:" + hashlib.sha256((models / "MetadataRoute.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{route_digest}"' not in route_lean.read_text():
         raise AssertionError("Lean retains a stale MetadataRoute Quint source binding")
     bound.extend([route_lean, core / "t/mop-metadata-route-test.ss",
                   core / "t/qualification/mop-state/metadata-route.ss"])
-    projection_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/IssuerProjection.lean"
-    mutation_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/RouteMutation.lean"
-    ownership_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReplayOwnership.lean"
-    metadata_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/MetadataOwnership.lean"
-    allocation_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/MetadataAllocation.lean"
-    store_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean"
-    artifact_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ArtifactClosure.lean"
-    core_build_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CoreBuildPublication.lean"
+    projection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean"
+    mutation_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean"
+    ownership_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean"
+    metadata_lean = core / "dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean"
+    allocation_lean = core / "dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean"
+    store_lean = core / "dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean"
+    artifact_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean"
+    core_build_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean"
     core_build_digest = "sha256:" + hashlib.sha256((models / "CoreBuildPublication.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{core_build_digest}"' not in core_build_lean.read_text():
         raise AssertionError("Lean retains a stale CoreBuildPublication Quint source binding")
@@ -640,15 +640,15 @@ def main():
                   core / "module-system/selection/init-syntax.ss",
                   core / "t/module-build-process-test.ss", core / "core-spec.ss",
                   core / "t/qualification/module-bootstrap/objects.ss"])
-    handoff_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CoreBuildHandoff.lean"
+    handoff_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CoreBuildHandoff.lean"
     handoff_digest = "sha256:" + hashlib.sha256((models / "CoreBuildHandoff.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{handoff_digest}"' not in handoff_lean.read_text():
         raise AssertionError("Lean retains a stale CoreBuildHandoff Quint source binding")
     bound.extend([handoff_lean, core / "dev/proofs/lean/CoreBuildHandoffCheck.lean",
                   core / "t/qualification/build-publication/projection.ss",
                   core / "t/qualification/build-publication/worker.ss", core / "Justfile"])
-    recovery_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CoreStoreRecovery.lean"
-    approved_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CoreApprovedRecovery.lean"
+    recovery_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CoreStoreRecovery.lean"
+    approved_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CoreApprovedRecovery.lean"
     approved_digest = "sha256:" + hashlib.sha256((models / "CoreApprovedRecovery.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{approved_digest}"' not in approved_lean.read_text():
         raise AssertionError("Lean retains a stale CoreApprovedRecovery Quint source binding")
@@ -669,14 +669,14 @@ def main():
                   core / "module-system/source/declaration.ss",
                   core / "module-system/source/module-prelude.ss",
                   core / "module-system/source/config-prelude.ss"])
-    source_loader_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/SourceLoader.lean"
+    source_loader_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean"
     source_loader_digest = "sha256:" + hashlib.sha256((models / "SourceLoader.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{source_loader_digest}"' not in source_loader_lean.read_text():
         raise AssertionError("Lean retains a stale SourceLoader Quint source binding")
     bound.extend([source_loader_lean, core / "dev/proofs/lean/SourceLoaderCheck.lean",
                   core / "t/source-loader-authority-test.ss",
                   core / "t/qualification/mop-state/compile-store-boundary.ss"])
-    issued_loading_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/IssuedLoading.lean"
+    issued_loading_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean"
     issued_loading_digest = "sha256:" + hashlib.sha256((models / "IssuedLoading.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{issued_loading_digest}"' not in issued_loading_lean.read_text():
         raise AssertionError("Lean retains a stale IssuedLoading Quint source binding")
@@ -723,47 +723,47 @@ def main():
         raise AssertionError("Lean retains a stale IssuerProjection Quint source binding")
     bound.extend([projection_lean, core / "dev/proofs/lean/IssuerProjectionCheck.lean",
                   core / "t/issuer-projection-test.ss"])
-    issued_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRead.lean"
+    issued_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean"
     issued_digest = "sha256:" + hashlib.sha256((models / "IssuedRead.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{issued_digest}"' not in issued_lean.read_text():
         raise AssertionError("Lean retains a stale IssuedRead Quint source binding")
     bound.extend([issued_lean, core / "t/issued-read-admission-test.ss"])
-    tail_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/ReturnTail.lean"
+    tail_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean"
     tail_digest = "sha256:" + hashlib.sha256((models / "ReturnTail.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{tail_digest}"' not in tail_lean.read_text():
         raise AssertionError("Lean retains a stale ReturnTail Quint source binding")
     bound.extend([tail_lean, core / "t/source-admission-tail-test.ss"])
-    body_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/AdmissionBody.lean"
+    body_lean = core / "dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean"
     body_digest = "sha256:" + hashlib.sha256((models / "AdmissionBody.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{body_digest}"' not in body_lean.read_text():
         raise AssertionError("Lean retains a stale AdmissionBody Quint source binding")
     bound.extend([body_lean, core / "t/source-admission-body-test.ss"])
-    call_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/CallPhases.lean"
+    call_lean = core / "dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean"
     call_digest = "sha256:" + hashlib.sha256((models / "CallPhases.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{call_digest}"' not in call_lean.read_text():
         raise AssertionError("Lean retains a stale CallPhases Quint source binding")
     bound.extend([call_lean, core / "t/mop-call-phases-test.ss"])
-    serial_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/SerialUse.lean"
+    serial_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean"
     serial_digest = "sha256:" + hashlib.sha256((models / "SerialUse.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{serial_digest}"' not in serial_lean.read_text():
         raise AssertionError("Lean retains a stale SerialUse Quint source binding")
     bound.extend([serial_lean, core / "t/mop-serial-use-test.ss"])
-    lifetime_lean = core / "dev/proofs/lean/PooFlowCoreProof/Admission/SnapshotLifetime.lean"
+    lifetime_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SnapshotLifetime.lean"
     lifetime_digest = "sha256:" + hashlib.sha256((models / "SnapshotLifetime.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{lifetime_digest}"' not in lifetime_lean.read_text():
         raise AssertionError("Lean retains a stale SnapshotLifetime Quint source binding")
     bound.extend([lifetime_lean, core / "t/mop-snapshot-lifetime-test.ss"])
     sources = digests()
-    lean = core / "dev/proofs/lean/PooFlowCoreProof/Graph/Operations.lean"
+    lean = core / "dev/proofs/lean/YuanxuProof/Graph/Operations.lean"
     digest = "sha256:" + hashlib.sha256((models / "GraphOperations.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{digest}"' not in lean.read_text():
         raise AssertionError("Lean retains a stale GraphOperations Quint source binding")
     bound.append(lean)
-    admission_lean = core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean"
+    admission_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean"
     admission_digest = "sha256:" + hashlib.sha256((models / "TestSourceAdmission.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{admission_digest}"' not in " ".join(admission_lean.read_text().split()):
         raise AssertionError("Lean retains a stale TestSourceAdmission Quint source binding")
-    work_lean = core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean"
+    work_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean"
     work_digest = "sha256:" + hashlib.sha256((models / "SourceClosureWork.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{work_digest}"' not in " ".join(work_lean.read_text().split()):
         raise AssertionError("Lean retains a stale SourceClosureWork Quint source binding")
@@ -795,7 +795,7 @@ def main():
     if f'carrierAdmissionQuintDigest : String := "{carrier_admission_digest}"' not in " ".join(work_lean.read_text().split()):
         raise AssertionError("Lean retains a stale CarrierAdmission Quint source binding")
     bound.append(core / "t/module-authoring-dispatch-work-test.ss")
-    witness_lean = core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean"
+    witness_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean"
     witness_digest = "sha256:" + hashlib.sha256((models / "WitnessReplay.qnt").read_bytes()).hexdigest()
     if f'witnessReplayQuintDigest : String := "{witness_digest}"' not in " ".join(witness_lean.read_text().split()):
         raise AssertionError("Lean retains a stale WitnessReplay Quint source binding")
@@ -849,17 +849,17 @@ def main():
                   core / "poo-clos/dispatch.ss",
                   core / "object-family/read-projection.ss",
                   core / "t/poo-clos-dispatch-test.ss",
-                  core / "dev/proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean",
-                  core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SemanticReads.lean",
-                  core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean",
-                  core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/PublicationReads.lean",
+                  core / "dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean",
+                  core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SemanticReads.lean",
+                  core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean",
+                  core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/PublicationReads.lean",
                   core / "poo-clos/method-bundle-syntax.ss",
                   core / "poo-clos/syntax.ss",
                   core / "t/poo-clos-method-bundle-test.ss",
                   core / "t/module-scope-link-test.ss",
                   core / "modules/opentofu/build.ss",
                   core / "module-system/building/source-closure.ss",
-                  core / "dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean",
+                  core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean",
                   core / "ops/func.ss", core / "ops/process-script.ss",
                   core / "ops/tests/atomic-test.ss", core / "t/module-publication-test.ss"])
     bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve()])

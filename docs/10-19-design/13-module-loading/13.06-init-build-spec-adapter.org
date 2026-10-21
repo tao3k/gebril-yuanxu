@@ -13,7 +13,7 @@ They are not supported alternate build APIs. Recorded failures remain failures.
 
 poo-flow-core-build-spec in module-system/building/build-projection.ss now accepts a
 real init source and returns an ordinary native Scheme list. Selection and
-dependency resolution still belong to poo-flow-load-modules. The build adapter
+dependency resolution still belong to yuanxu-load-modules. The build adapter
 does not inherit or refine that Graph. Native std/build-script and std/make own
 dispatch, import dependencies, scheduling, compile and clean.
 
@@ -33,7 +33,7 @@ as described in [[file:13.07-core-build-entry.org][06]].
 #+begin_src scheme
 (import :std/build-script
         (only-in :std/source this-source-file)
-        (only-in :core/module-system/building/build-projection poo-flow-core-build-spec))
+        (only-in :yuanxu/module-system/building/build-projection poo-flow-core-build-spec))
 
 (def source-root (path-directory (this-source-file)))
 (def output (path-expand ".gerbil/module-build" source-root))

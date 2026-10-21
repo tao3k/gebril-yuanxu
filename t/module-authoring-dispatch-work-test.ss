@@ -5,18 +5,18 @@
         (only-in :clan/poo/object .o .get .ref .cc .put!)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-key slot-read-receiver)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/module-system/source/interface poo-flow-module-interface)
-        (only-in :core/module-system/authoring/admission
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :yuanxu/module-system/authoring/admission
                  ModuleAuthoringAdmissionGeneric ModuleAuthoringAdmissionProtocol
-                 poo-flow-module-authoring-role
-                 poo-flow-module-authoring-admit-datums
-                 poo-flow-module-authoring-admission-accepted?)
-        (only-in :core/poo-clos/types
+                 yuanxu-module-authoring-role
+                 yuanxu-module-authoring-admit-datums
+                 yuanxu-module-authoring-admission-accepted?)
+        (only-in :yuanxu/poo-clos/types
                  ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
-        (only-in :core/poo-clos/objects %prepare-effective-method)
-        (only-in :core/poo-clos/dispatch
+        (only-in :yuanxu/poo-clos/objects %prepare-effective-method)
+        (only-in :yuanxu/poo-clos/dispatch
                  poo-clos-call poo-clos-compute-effective-method))
 (export module-authoring-dispatch-work-test)
 
@@ -36,16 +36,16 @@
               (loop (cdr remaining) (+ index 1)))))))
     (lambda ()
       (check-equal?
-        (poo-flow-module-authoring-admission-accepted?
-          (poo-flow-module-authoring-admit-datums
+        (yuanxu-module-authoring-admission-accepted?
+          (yuanxu-module-authoring-admit-datums
             interface 'objects (make-list count '(def value 1))))
         #t)))
   counts)
 
 (def module-authoring-dispatch-work-test
   (test-suite "Actual authoring dispatch policy work"
-    (poo-flow-test-case "warm datum admission still reads nested carrier policies"
-      (def interface (poo-flow-module-interface "work-probe" (.o) '()))
+    (yuanxu-test-case "warm datum admission still reads nested carrier policies"
+      (def interface (yuanxu-module-interface "work-probe" (.o) '()))
       ;; Warm only through the actual operation; never clear or replace SDK state.
       (policy-deliveries interface 1)
       (def one (policy-deliveries interface 1))
@@ -57,13 +57,13 @@
           (check-equal? (vector-ref four index) (* 4 (vector-ref one index)))
           (check-equal? (vector-ref eight index) (* 8 (vector-ref one index))))
         (iota (length policies)))
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "authoring-policy-deliveries order=generic,effective,frame,method one=%s four=%s eight=%s"
         one four eight))
-    (poo-flow-test-case "closed default checks once and an open hook checks before and after"
-      (def interface (poo-flow-module-interface "boundary-probe" (.o) '()))
+    (yuanxu-test-case "closed default checks once and an open hook checks before and after"
+      (def interface (yuanxu-module-interface "boundary-probe" (.o) '()))
       (def executor (.get interface authoring executor))
-      (def role (poo-flow-module-authoring-role interface 'objects))
+      (def role (yuanxu-module-authoring-role interface 'objects))
       (def checks 0)
       (def calls 0)
       (def protocol
@@ -94,11 +94,11 @@
             executor role interface '(def value 1))))
       (check-equal? checks 2)
       (check-equal? calls 1))
-    (poo-flow-test-case "a prepared constructor produces a fresh checked carrier on each demand"
-      (def interface (poo-flow-module-interface "fresh-carrier" (.o) '()))
+    (yuanxu-test-case "a prepared constructor produces a fresh checked carrier on each demand"
+      (def interface (yuanxu-module-interface "fresh-carrier" (.o) '()))
       (def arguments
         (list (.get interface authoring executor)
-          (poo-flow-module-authoring-role interface 'objects)
+          (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1)))
       (def effective
         (apply poo-clos-compute-effective-method ModuleAuthoringAdmissionGeneric arguments))
@@ -111,8 +111,8 @@
       (def second (prepare))
       (check-equal? (eq? first second) #f)
       (check-equal? (eq? (.get second arguments) arguments) #t))
-    (poo-flow-test-case "public effective-method callback may invalidate the checked default"
-      (def interface (poo-flow-module-interface "callback-probe" (.o) '()))
+    (yuanxu-test-case "public effective-method callback may invalidate the checked default"
+      (def interface (yuanxu-module-interface "callback-probe" (.o) '()))
       (def calls 0)
       (def protocol
         (.cc ModuleAuthoringAdmissionProtocol
@@ -131,10 +131,10 @@
           methods: (.get ModuleAuthoringAdmissionGeneric methods)))
       (check-exception
         (poo-clos-call generic (.get interface authoring executor)
-          (poo-flow-module-authoring-role interface 'objects)
+          (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1))
         (lambda (failure)
           (def code (.ref failure 'code))
-          (poo-flow-write-observation-line! "authoring-return-probe code=%s calls=%s" code calls)
+          (yuanxu-write-observation-line! "authoring-return-probe code=%s calls=%s" code calls)
           (eq? code 'invalid-effective-method-result)))
       (check-equal? calls 1))))

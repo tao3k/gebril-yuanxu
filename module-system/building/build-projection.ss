@@ -5,16 +5,16 @@
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
         (only-in :std/source this-source-file)
-        (only-in "./source-package.ss" register-module-build-source!)
+        (only-in "./source-package.ss" register-yuanxu-build-source!)
         (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process)
-        (only-in :core/module-system/source/declaration current-module-build-phase?)
+        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :clan/poo/object .o .ref)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/source/build unique-build-inputs)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-retained-source poo-flow-prepare-module-build-source)
-        (only-in :core/module-system/source/admission module-source-type module-source-read
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/build unique-build-inputs)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
-(export poo-flow-core-project-source-spec)
+(export yuanxu-project-source-spec)
 (def (build-target-name identity package-prefix)
   (let ((name (symbol->string identity))
         (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))
@@ -49,7 +49,7 @@
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
          (def old (find (lambda (entry) (equal? (path-normalize (.ref entry 'path)) path-value)) selected))
          (def prepared-input (if old (.ref old 'input)
-                                 (poo-flow-prepare-module-retained-source path-value current!)))
+                                 (yuanxu-prepare-module-retained-source path-value current!)))
          (def identity (.ref prepared-input 'compiler-identity))
          (unless (equal? name (build-target-name identity package-prefix))
            (error "retained source path and compiler identity disagree" name identity))
@@ -76,19 +76,19 @@
      (append selected kept))
     (reverse result)))
 
-(def (poo-flow-core-project-source-spec source retained root entry-source)
-  (register-module-build-source!
-    (path-expand "../.." (path-directory (this-source-file))) 'core)
+(def (yuanxu-project-source-spec source retained root entry-source)
+  (register-yuanxu-build-source!
+    (path-expand "../.." (path-directory (this-source-file))))
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
   (unless (and (string? root) (path-absolute? root)
                (string? entry-source) (path-absolute? entry-source))
     (error "build projection requires absolute source and entry roots"))
-  (def entry-input (poo-flow-prepare-module-build-source entry-source void))
+  (def entry-input (yuanxu-prepare-module-build-source entry-source void))
   (def package-prefix
     (path-strip-trailing-directory-separator
       (path-directory (symbol->string (.ref entry-input 'compiler-identity)))))
-  (let* ((view (if (string? source) (poo-flow-load-modules source) source))
+  (let* ((view (if (string? source) (yuanxu-load-modules source) source))
          (graph (.ref view 'build-graph))
          (kept (retained-build-entries retained root package-prefix (.ref graph 'entries)
                    (lambda () ((.ref graph 'compiler-current)))))

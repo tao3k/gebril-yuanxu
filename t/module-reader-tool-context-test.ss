@@ -6,8 +6,8 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/object .get)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export module-reader-tool-context-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
 (def (write-source path text)
@@ -36,7 +36,7 @@
     (if root
     (test-suite "Compiler tool reuse preserves source confinement"
       (test-case "exact tool bytes remain guarded after Graph construction"
-        (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+        (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (graph (.get view build-graph)))
           (check-equal? (.get graph selected-graph module-order) '(json-schema))
           (with-change "module-system/source/declaration.ss"
@@ -50,7 +50,7 @@
             (let ((path (path-expand "declaration.ss" foreign))
                   (marker (path-expand "evaluated" foreign)))
               (write-source path
-                (string-append "package: core/module-system/source\n"
+                (string-append "package: yuanxu/module-system/source\n"
                   "(call-with-output-file "
                   (call-with-output-string (lambda (port) (write marker port)))
                   " (lambda (p) (display \"unexpected\" p)))\n"))
@@ -60,12 +60,12 @@
                     (call-with-output-string (lambda (port) (write path port))) ")\n" text))
                 (lambda ()
                   (check-equal? (rejects? "source import leaves its Module and package kernel"
-                                  (lambda () (.get (poo-flow-load-modules
+                                  (lambda () (.get (yuanxu-load-modules
                                                      (path-expand "init.ss" root)) build-graph))) #t)
                   (check-equal? (file-exists? marker) #f)))))))
       (test-case "private cycles and interface self-import reject in the complete source package"
         ;; Establish the positive source closure before introducing either cycle.
-        (check-equal? (> (length (.get (poo-flow-load-modules
+        (check-equal? (> (length (.get (yuanxu-load-modules
                                         (path-expand "init.ss" root)) build-graph entries)) 15) #t)
         (let* ((base (path-expand "modules/json-schema" root))
                (first (path-expand "cycle-a.ss" base))
@@ -78,11 +78,11 @@
               (with-change "modules/json-schema/types.ss"
                 (lambda (text) (string-append "(import \"cycle-a.ss\")\n" text))
                 (lambda ()
-                  (check-exception (.get (poo-flow-load-modules
+                  (check-exception (.get (yuanxu-load-modules
                                           (path-expand "init.ss" root)) build-graph)
                                    (lambda (_e) #t))
                   (write-source second "(import \"interface.ss\") (export #t)")
-                  (check-exception (.get (poo-flow-load-modules
+                  (check-exception (.get (yuanxu-load-modules
                                           (path-expand "init.ss" root)) build-graph)
                                    (lambda (_e) #t)))))
             (lambda () (delete-file first) (delete-file second)))))
@@ -91,7 +91,7 @@
           (lambda (text) (string-append "(import \"interface.ss\")\n" text))
           (lambda ()
             (check-equal? (rejects? "POO-FLOW-MODULE-E007 reversed module role dependency"
-                            (lambda () (.get (poo-flow-load-modules
+                            (lambda () (.get (yuanxu-load-modules
                                                (path-expand "init.ss" root)) build-graph))) #t)))))
     (begin
       (displayln "SKIP module-reader-tool-context: CORE_QUALIFICATION_ROOT is unset")

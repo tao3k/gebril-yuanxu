@@ -4,14 +4,14 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
-        (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
-        (only-in :core/configuration/slot-origin field-slot-origins/value)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
+        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
+        (only-in :yuanxu/module-system/source/admission
                  current-module-source-observer call-with-module-source-read-cache
                  module-source-admit-current!)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture write-source read-overrides))
 (export source-observation-test test-cleanup!)
 
@@ -25,7 +25,7 @@
   identity: 'test/source-observation
   .classify:
   (lambda (candidate context)
-    (poo-flow-classification-evidence identity candidate #t '() context)))
+    (yuanxu-classification-evidence identity candidate #t '() context)))
 (def Port (IntegerRange min: 1 max: 65535))
 (def PortFields (.cc ObjectContract. responsibilities: (.o port: Port)))
 (def completed 0)
@@ -34,7 +34,7 @@
   (displayln "SOURCE-OBSERVATION: 6 cases completed"))
 (def source-observation-test
   (test-suite "Collect actual source checks without a field list"
-    (poo-flow-test-fixture "replay shares one pure pass but never a preceding effect window"
+    (yuanxu-test-fixture "replay shares one pure pass but never a preceding effect window"
       (fixture DirectoryFixture)
       (def path (path-expand "window.ss" (.get fixture root)))
       (def text "(.def Observed port: 5432 client: 5432)\n")
@@ -67,7 +67,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "Scheme configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "a guarded cached slot is rechecked and exceptions do not leak observations"
+    (yuanxu-test-fixture "a guarded cached slot is rechecked and exceptions do not leak observations"
       (fixture DirectoryFixture)
       (def path (path-expand "selected.ss" (.get fixture root)))
       (def candidate (observed-config path "(.def Observed port: 5432)\n"))
@@ -90,7 +90,7 @@
       ;; A fresh invocation must not inherit the failed scope's observations.
       (check-equal? (.get (.call ObservationContract .admit (.o) #f) accepted?) #t)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "a nested JSON-only child reports its source to the outer admission"
+    (yuanxu-test-fixture "a nested JSON-only child reports its source to the outer admission"
       (fixture DirectoryFixture)
       (def path (path-expand "child.json" (.get fixture root)))
       (write-source path "{}")
@@ -113,7 +113,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "unselected branch sources and values are not collected"
+    (yuanxu-test-fixture "unselected branch sources and values are not collected"
       (fixture DirectoryFixture)
       (def selected-path (path-expand "selected.ss" (.get fixture root)))
       (def unused-path (path-expand "unused.ss" (.get fixture root)))
@@ -131,7 +131,7 @@
       (check-equal? (.get (.call Contract .admit candidate #f) accepted?) #t)
       (check-equal? (.get candidate selected port) 5432)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "diagnostic-only checks finish within collection before refusal returns"
+    (yuanxu-test-fixture "diagnostic-only checks finish within collection before refusal returns"
       (fixture DirectoryFixture)
       (def path (path-expand "diagnostic.ss" (.get fixture root)))
       (def candidate (observed-config path "(.def Observed port: 5432)\n"))
@@ -151,7 +151,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "Scheme configuration source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "a later revision of the same path cannot replace an earlier observation"
+    (yuanxu-test-fixture "a later revision of the same path cannot replace an earlier observation"
       (fixture DirectoryFixture)
       (def path (path-expand "revision.ss" (.get fixture root)))
       (def first (observed-config path "(.def Observed port: 5432)\n"))

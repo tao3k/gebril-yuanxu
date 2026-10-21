@@ -4,20 +4,20 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  call-with-module-source-read-cache)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :clan/poo/object .get)
-        (only-in :core/module-system/source/preparation
-                 poo-flow-prepare-module-retained-source))
+        (only-in :yuanxu/module-system/source/preparation
+                 yuanxu-prepare-module-retained-source))
 (export module-retained-source-test)
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
 (def module-retained-source-test
   (test-suite "Ordinary retained libraries keep native export semantics"
-    (poo-flow-test-case "different ancestor lists share package identity only within one pure window"
+    (yuanxu-test-case "different ancestor lists share package identity only within one pure window"
       (call-with-temporary-directory "retained-package"
         (lambda (root)
           (def package (path-expand "gerbil.pkg" root))
@@ -29,8 +29,8 @@
           (def second (path-expand "second.ss" nested))
           (write-source first "(def Value 1) (export Value)\n")
           (write-source second "(def Value 2) (export Value)\n")
-          (def left (poo-flow-prepare-module-retained-source first void))
-          (def right (poo-flow-prepare-module-retained-source second void))
+          (def left (yuanxu-prepare-module-retained-source first void))
+          (def right (yuanxu-prepare-module-retained-source second void))
           (def requests 0)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
@@ -58,7 +58,7 @@
           (write-source (path-expand "gerbil.pkg" root)
             (string-append "(package: " (symbol->string (gensym 'retained-)) ")"))
           (write-source source "(def Config 23) (def PublicValue 42) (export PublicValue)\n")
-          (def prepared (poo-flow-prepare-module-retained-source source void))
+          (def prepared (yuanxu-prepare-module-retained-source source void))
           (call-with-output-file wrapper
             (lambda (port)
               (for-each (lambda (form) (write form port) (newline port))

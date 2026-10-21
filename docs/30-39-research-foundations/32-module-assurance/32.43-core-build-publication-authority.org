@@ -36,7 +36,7 @@ The root =build.ss= keeps the installed native dispatcher:
 #+end_src
 
 [[file:../../../module-system/building/interface.ss][The init build owner]] emits =init.build-run= from the existing hygienic
-=poo-flow!= expansion. Only compile/default-build commands execute the projected
+=yuanxu!= expansion. Only compile/default-build commands execute the projected
 POO =.compile= method; spec/meta stay inert and clean invalidates prior issuance.
 The installed dispatcher still owns command parsing, scheduling and compilation.
 The output directory defaults to the same =gerbil-path/lib= as native make.
@@ -158,7 +158,7 @@ ownership from simply hashing whatever native make happened to leave on disk.
 source fixture isolates destructive outputs; it does not replace the native
 build dispatcher or invent a different root script.
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/CoreBuildPublication.lean][Lean]] proves joint replacement refusal, final-check necessity, both requirements,
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean][Lean]] proves joint replacement refusal, final-check necessity, both requirements,
 saved/direct gate equivalence and native-cache independence. The compiler,
 filesystem and Scheme extraction are premises, not proved by these theorems.
 [[file:../../../dev/proofs/lean/CoreBuildPublicationCheck.lean][The independent decoder]] checks six actual native decisions; changing a measured

@@ -118,7 +118,7 @@ The manifests are test artifact bindings, not a production code certificate.
 
 * Formal projection and negative controls
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] adds three precompiled route constructors to the existing
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean][StoreLowering.lean]] adds three precompiled route constructors to the existing
 model. The actual theorem proofs are:
 
 #+begin_src lean

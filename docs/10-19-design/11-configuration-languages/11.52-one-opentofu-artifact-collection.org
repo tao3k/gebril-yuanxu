@@ -13,7 +13,7 @@ qualification control, not the default production selection.
 * Correction: one variable denotes the collection
 
 Renaming per-Provider environment variables did not fix their granularity.
-=POO_FLOW_OPENTOFU_ARTIFACT= now names ONE package collection directory, not an
+=YUANXU_OPENTOFU_ARTIFACT= now names ONE package collection directory, not an
 individual Provider schema output. Its meaning does not change with Provider
 count. No AWS/awscc/Null-specific environment variables or registrations remain
 in the current module or multi-Provider test entrypoints.
@@ -74,7 +74,7 @@ opentofuArtifact = pkgs.callPackage ./core/modules/opentofu/nix/provider-artifac
   selection.providers = [ "aws" ];
 };
 # In the resulting devenv attribute set:
-env.POO_FLOW_OPENTOFU_ARTIFACT = "${opentofuArtifact}";
+env.YUANXU_OPENTOFU_ARTIFACT = "${opentofuArtifact}";
 #+end_src
 
 The repository's default development selection currently contains AWS only.
@@ -94,7 +94,7 @@ no Loader is connected.
 
 #+begin_src scheme
 (.def OpenTofuConfig
-  artifact: (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f))
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
 
 (.def OpenTofuProviderConfig
   provider-artifact: #f)

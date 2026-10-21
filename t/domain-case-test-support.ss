@@ -4,9 +4,9 @@
 
 (import :std/test
         :clan/poo/object
-        :core/object-family/role-syntax
-        :core/feature-system/domain-case/interface
-        :core/feature-system/domain-case/syntax)
+        :yuanxu/object-family/role-syntax
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/feature-system/domain-case/syntax)
 
 
 (export #t)
@@ -31,7 +31,7 @@
    (supers)))
 
 (def versioned-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'Versioned '()
    (lambda (value)
      (and (slot/default value 'qualification/versioned? #f)
@@ -40,7 +40,7 @@
             (and (exact-integer? version) (> version 0)))))))
 
 (def revision-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'RevisionBound '()
    (lambda (value)
      (and (slot/default value 'qualification/revision-bound? #f)
@@ -48,40 +48,40 @@
             (and (string? revision) (> (string-length revision) 0)))))))
 
 (def policy-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'Policy '()
    (lambda (value) (slot/default value 'qualification/policy? #f))))
 
 (def schema-id-slot
-  (poo-flow-case-slot-contract
+  (yuanxu-case-slot-contract
    'schema-id 'versioned 'symbol 'required 'replace '() #f symbol?))
 
 (def schema-version-slot
-  (poo-flow-case-slot-contract
+  (yuanxu-case-slot-contract
    'schema-version 'versioned 'positive-integer 'required 'replace '() #f
    (lambda (value) (and (exact-integer? value) (> value 0)))))
 
 (def revision-slot
-  (poo-flow-case-slot-contract
+  (yuanxu-case-slot-contract
    'source-revision 'revision-bound 'nonempty-string 'required 'replace '() #f
    (lambda (value) (and (string? value) (> (string-length value) 0)))))
 
 (def versioned-contract
-  (poo-flow-case-method-contract
+  (yuanxu-case-method-contract
    'versioned-state 'versioned 'versioned-state 'state 'Versioned
    'versioned-input 'versioned-output
    (lambda (value)
      (equal? (slot/default value 'schema-id #f) 'agent.case.v1))))
 
 (def revision-contract
-  (poo-flow-case-method-contract
+  (yuanxu-case-method-contract
    'revision-state 'revision-bound 'revision-state 'state 'RevisionBound
    'revision-input 'revision-output
    (lambda (value)
      (not (equal? (slot/default value 'source-revision #f) "blocked")))))
 
 (def runtime-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'runtime 'versioned 'agent.runtime-projection.v1
    (lambda (value)
      (list (cons 'agent-id (.ref value 'agent-id))
@@ -120,7 +120,7 @@
        (.ref receipt 'diagnostics)))
 
 (def (close-base cache)
-  (poo-flow-domain-case-close
+  (yuanxu-domain-case-close
    cache 'agent.case.v1 1
    (list versioned-component revision-component)
    '() '(runtime)))
@@ -128,12 +128,12 @@
 (def (role-variant-component index)
   (let (id
         (string->symbol (string-append "role-" (number->string index))))
-    (poo-flow-case-component
+    (yuanxu-case-component
      id 1 policy-role policy-type '() '() '()
      '(versioned revision-bound) 'deny-overrides 'route-first-match)))
 
 (def (exercise-sparse-fleet unique-count)
-  (let ((cache (poo-flow-domain-case-cache))
+  (let ((cache (yuanxu-domain-case-cache))
         (components (make-vector unique-count))
         (cases (make-vector unique-count))
         (all-closures-accepted? #t)
@@ -144,7 +144,7 @@
       (when (< index unique-count)
         (let* ((component (role-variant-component index))
                (receipt
-                (poo-flow-domain-case-close
+                (yuanxu-domain-case-close
                  cache 'agent.case.v1 1
                  (list versioned-component revision-component component)
                  '() '(runtime))))
@@ -156,7 +156,7 @@
     (let loop ((index 0))
       (when (< index unique-count)
         (let (receipt
-              (poo-flow-domain-case-close
+              (yuanxu-domain-case-close
                cache 'agent.case.v1 1
                (list versioned-component revision-component
                      (vector-ref components index))
@@ -173,7 +173,7 @@
                 (string->symbol
                  (string-append "sparse-agent-" (number->string index))))
                (receipt
-                (poo-flow-domain-case-instantiate
+                (yuanxu-domain-case-instantiate
                  case-value (agent-role id "revision-sparse")))
                (instance (.ref receipt 'instance)))
           (set! all-instances-accepted?
@@ -188,7 +188,7 @@
                   total
                   (loop (+ index 1)
                         (+ total
-                           (poo-flow-domain-case-instance-mix-count
+                           (yuanxu-domain-case-instance-mix-count
                             (vector-ref cases index)))))))
            (instance-overlay-count
             (let loop ((index 0) (total 0))
@@ -196,10 +196,10 @@
                   total
                   (loop (+ index 1)
                         (+ total
-                           (poo-flow-domain-case-instance-overlay-count
+                           (yuanxu-domain-case-instance-overlay-count
                             (vector-ref cases index))))))))
       (poo-core-role-object
-       (slots ((kind 'poo-flow.sparse-domain-case-scale-receipt.v1)
+       (slots ((kind 'yuanxu.sparse-domain-case-scale-receipt.v1)
                (agent-count 1000)
                (unique-case-count unique-count)
                (all-closures-accepted? all-closures-accepted?)
@@ -207,9 +207,9 @@
                (all-instances-accepted? all-instances-accepted?)
                (all-case-bindings-correct? all-case-bindings-correct?)
                (closure-count
-                (poo-flow-domain-case-cache-closure-count cache))
+                (yuanxu-domain-case-cache-closure-count cache))
                (cache-hit-count
-                (poo-flow-domain-case-cache-hit-count cache))
+                (yuanxu-domain-case-cache-hit-count cache))
                (instance-mix-count instance-mix-count)
                (instance-overlay-count instance-overlay-count)))
        (supers)))))

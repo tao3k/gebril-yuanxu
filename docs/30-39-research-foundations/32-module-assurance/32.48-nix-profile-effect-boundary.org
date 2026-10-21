@@ -149,7 +149,7 @@ fence preventing a stale authorized writer from acting later.
 
 * Lean and QNT
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/NixProfileEffect.lean][NixProfileEffect.lean]] projects the actual =--set= operation as a snapshot
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/NixProfileEffect.lean][NixProfileEffect.lean]] projects the actual =--set= operation as a snapshot
 replacement without an expected-revision operand. Its properties include:
 
 - =stale_request_is_not_refused=: an older target can overwrite a newer target.
@@ -230,7 +230,7 @@ From Core, use the existing owned-overlay compiler and test entrypoints:
 just compile-build-publication /private/tmp/core-nix-head-20261019
 just test-build-publication /private/tmp/core-nix-head-20261019 t/nix-profile-effect-boundary-test.ss
 cd dev/proofs/lean
-timeout 120s lake env lean PooFlowCoreProof/Admission/NixProfileEffect.lean
+timeout 120s lake env lean YuanxuProof/Admission/NixProfileEffect.lean
 #+end_src
 
 QNT rows use =quint run= with their named invariant and the bounded arguments

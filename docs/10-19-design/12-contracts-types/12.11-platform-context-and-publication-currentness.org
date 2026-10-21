@@ -79,7 +79,7 @@ artifact normalization. It then retains the captured text for subsequent file
 currentness checks. A different valid Schema is not accepted merely because its
 path or artifact format name matches.
 
-The decoder gained =poo-flow-json-schema-read-port=; the existing file reader
+The decoder gained =yuanxu-json-schema-read-port=; the existing file reader
 delegates to it. Thus parsing captured text and reading files use one decoder,
 not two JSON policies or a second Schema evaluator. The initial implementation
 incorrectly treated artifact.schema as content; focused controls exposed that

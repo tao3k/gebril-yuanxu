@@ -6,11 +6,11 @@
         (only-in :std/misc/process run-process)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :std/encoding/json read-json)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
-        (only-in :core/modules/nix/objects NixFlakeSource.
-                 poo-flow-core-nix-flake-admit-generation))
+        (only-in :yuanxu/modules/nix/objects NixFlakeSource.
+                 yuanxu-nix-flake-admit-generation))
 (export nix-evaluation-cache-test)
 
 (def (write-input path text)
@@ -18,7 +18,7 @@
 
 (def nix-evaluation-cache-test
   (test-suite "Nix-owned flake evaluation cache boundaries"
-    (poo-flow-test-case "exact nested attributes do not probe package-prefix alternatives"
+    (yuanxu-test-case "exact nested attributes do not probe package-prefix alternatives"
       (call-with-temporary-directory "nix-exact-attribute"
         (lambda (root)
           (write-input (path-expand "flake.nix" root)
@@ -70,7 +70,7 @@
                   (check-equal? (.call Source .instantiate) expected)))))
           (check-equal? (and (string-contains silent "@nix ") #t) #t)
           (check-equal? (length summaries) 2))))
-    (poo-flow-test-case "native fingerprints do not equate unchanged outputs with unchanged inputs"
+    (yuanxu-test-case "native fingerprints do not equate unchanged outputs with unchanged inputs"
       (call-with-temporary-directory "nix-input-identity"
         (lambda (root)
           ;; Explicit source metadata is a controlled native input here, not a
@@ -117,7 +117,7 @@
           (check-equal? (traced? changed-tree) #t)
           (check-equal? (derivation changed-tree) (derivation cold))
           (check-equal? (traced? (query "2" "stable")) #f))))
-    (poo-flow-test-case "explicit immutable path resolution retains native source hashing cache"
+    (yuanxu-test-case "explicit immutable path resolution retains native source hashing cache"
       (call-with-temporary-directory "nix-store-input"
         (lambda (root)
           (def input (path-expand "source" root))
@@ -172,7 +172,7 @@
           (check-equal? (and (string-contains resolved "performing daemon worker op: 11") #t) #t)
           (check-equal? (string-contains (query Resolved) "getting root value") #f)
           (check-equal? (call-with-input-file lock read-all-as-string) lock-before))))
-    (poo-flow-test-case "derived-path cache differs from eval and invalidates changed inputs"
+    (yuanxu-test-case "derived-path cache differs from eval and invalidates changed inputs"
       (call-with-temporary-directory "nix-evaluation-cache"
         (lambda (root)
           (def value (path-expand "value.nix" root))
@@ -229,7 +229,7 @@
           (check-equal? (and (string-contains changed "after") #t) #t)
           (check-equal? (traced? (derivation)) #t)
           (check-equal? (traced? (derivation)) #f))))
-    (poo-flow-test-case "explicit path input overrides retain native cache and transitive invalidation"
+    (yuanxu-test-case "explicit path input overrides retain native cache and transitive invalidation"
       (call-with-temporary-directory "nix-selected-input"
         (lambda (root)
           (def input (path-expand "input" (path-normalize root)))
@@ -271,7 +271,7 @@
           (write-input (path-expand "value.nix" input)
             "builtins.trace \"core-input-body\" \"after\"")
           (check-exception
-            (poo-flow-core-nix-flake-admit-generation
+            (yuanxu-nix-flake-admit-generation
               (.get Source reference) "package" expected "nix"
               '() (.get Source source-inputs) (list (cons 'selection input)))
             error?)

@@ -3,10 +3,10 @@
 (import :clan/poo/object
         (only-in :std/encoding/json write-json read-json)
         (only-in :std/string/misc string-subst)
-        (only-in :core/ops/func run-script)
-        (only-in :core/modules/funflow/objects Task. Job.)
-        (only-in :core/modules/funflow/func run-job job-graph)
-        (only-in :core/admission/publication AdmissionPublication.))
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/modules/funflow/objects Task. Job.)
+        (only-in :yuanxu/modules/funflow/func run-job job-graph)
+        (only-in :yuanxu/admission/publication AdmissionPublication.))
 (export OpenTofuExecution. opentofu-execution)
 
 ;; POO is the public model; hashes exist only at the JSON output boundary.

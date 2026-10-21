@@ -173,7 +173,7 @@ authority from names, execute a Query, parse GQL or prohibit pure functions in
 
 * Lean correspondence
 
-=PooFlowCoreProof.ModuleSystem.Schema.Query= uses one
+=YuanxuProof.ModuleSystem.Schema.Query= uses one
 =ObjectIdentity=.  =EntityRole= and =ElementSpace= reference that identity;
 they do not copy an Object.  Its theorems establish:
 

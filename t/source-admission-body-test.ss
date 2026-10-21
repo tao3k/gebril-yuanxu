@@ -2,11 +2,11 @@
 ;;; Real SourceAdmissionContract; no recorded/replay replacement around admission.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  ServicesFixture DirectoryFixture write-source))
 (export source-admission-body-test test-cleanup!)
 (def completed 0)
@@ -22,7 +22,7 @@
     identity: 'test/body-child
     marker: 0
     .classify: (lambda (candidate context)
-                 (poo-flow-classification-evidence identity candidate #t '() context))
+                 (yuanxu-classification-evidence identity candidate #t '() context))
     .obligations: (lambda (candidate context)
                     (vector-set! observed-calls 1 (+ 1 (vector-ref observed-calls 1)))
                     ((unbox obligation-effect) Child candidate context)))
@@ -30,7 +30,7 @@
     identity: 'test/body-root
     responsibilities: (.o child: Child)
     .classify: (lambda (candidate context)
-                 (poo-flow-classification-evidence identity candidate #t '() context))
+                 (yuanxu-classification-evidence identity candidate #t '() context))
     .obligations: (lambda (_candidate _context)
                     (vector-set! observed-calls 0 (+ 1 (vector-ref observed-calls 0))) '()))
   (.o contract: Root child-contract: Child calls: observed-calls effect: obligation-effect
@@ -49,8 +49,8 @@
   (check-equal? (.get (.call (.get probe contract) .admit (.get probe candidate) #f) accepted?) #t))
 (def source-admission-body-test
  (test-suite "Actual source admission observes nested function bodies"
-  (poo-flow-test-case "hot root and child admission run their bodies again without replacing child evidence"
-    (def probe (admission-probe PooFlowContract.))
+  (yuanxu-test-case "hot root and child admission run their bodies again without replacing child evidence"
+    (def probe (admission-probe YuanxuContract.))
     (def Contract (.get probe contract))
     (def Child (.get probe child-contract))
     (def candidate (.get probe candidate))
@@ -66,8 +66,8 @@
     (check-equal? (eq? (.get receipt candidate) (.get candidate child)) #t)
     (check-equal? (eq? (.get receipt admission-contract) Child) #t)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested ordinary child obligation edits its Contract receiver; root rejects before returning"
-    (def probe (admission-probe PooFlowContract.))
+  (yuanxu-test-case "nested ordinary child obligation edits its Contract receiver; root rejects before returning"
+    (def probe (admission-probe YuanxuContract.))
     (warm! probe)
     (def applied? #f)
     (def Child (.get probe child-contract))
@@ -83,8 +83,8 @@
     (check-equal? (object-revision Child) (+ before 1))
     (check-equal? (vector->list (.get probe calls)) '(2 2))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested obligation edits an observed candidate; root rejects stale values"
-    (def probe (admission-probe PooFlowContract.))
+  (yuanxu-test-case "nested obligation edits an observed candidate; root rejects stale values"
+    (def probe (admission-probe YuanxuContract.))
     (warm! probe)
     (set-box! (.get probe effect)
       (lambda (_actual candidate _context)
@@ -94,7 +94,7 @@
     (check-equal? (.get probe candidate child port) 5433)
     (check-equal? (vector->list (.get probe calls)) '(2 2))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "external reads inside ordinary and source-aware child obligations reach real replay"
+  (yuanxu-test-case "external reads inside ordinary and source-aware child obligations reach real replay"
     (for-each
       (lambda (prototype)
         (def probe (admission-probe prototype))
@@ -111,14 +111,14 @@
         ;; A source-aware child rejects in its own wrapper; the ordinary child
         ;; returns to Root and only Root's production replay can reject.
         (check-equal? (vector->list (.get probe calls))
-          (if (eq? prototype PooFlowContract.) '(2 2) '(1 2))))
-      (list PooFlowContract. SourceAdmissionContract.))
+          (if (eq? prototype YuanxuContract.) '(2 2) '(1 2))))
+      (list YuanxuContract. SourceAdmissionContract.))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "source error remains first when a nested obligation also invalidates an external read"
+  (yuanxu-test-fixture "source error remains first when a nested obligation also invalidates an external read"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
-    (def probe (admission-probe PooFlowContract.))
+    (def probe (admission-probe YuanxuContract.))
     (def Contract (.cc (.get probe contract) source-inputs: (list (cons path "{}"))))
     (.def External port: 5432)
     (check-equal? (.get (.call Contract .admit (.get probe candidate) #f) accepted?) #t)
@@ -131,7 +131,7 @@
     (check-equal? (.get External port) 5433)
     (check-equal? (vector->list (.get probe calls)) '(2 2))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real hot service admission preserves two requirements and parent cache while rejecting a nested external effect"
+  (yuanxu-test-fixture "real hot service admission preserves two requirements and parent cache while rejecting a nested external effect"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Contract (.get publication contract))

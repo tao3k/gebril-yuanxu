@@ -11,8 +11,8 @@ two JSON checks. The 356-read count is earlier native evidence, not a new
 measurement or a qualification of concurrently changed Scheme consumers.
 
 Owners:
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IdentityDFS.lean][Admission.IdentityDFS]],
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/DFSFrames.lean][Admission.DFSFrames]], and
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean][Admission.IdentityDFS]],
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/DFSFrames.lean][Admission.DFSFrames]], and
 [[file:../../../dev/proofs/quint/IdentityDFS.qnt][IdentityDFS.qnt]]. The dependency remains LeanPoo
 =6e6a706e14fa6f8199e4f36711440355b42ef335=. The graph termination argument
 specializes its =C4.ReachabilityInvariant= pending/unseen-weight method. That

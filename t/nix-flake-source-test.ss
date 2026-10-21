@@ -7,15 +7,15 @@
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :std/encoding/json write-json read-json)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/modules/nix/objects NixFlakeSource.)
-        (only-in :core/modules/nix/types NixFlakeSourceContract)
-        (only-in :core/modules/nix/func current-nix-process-observer)
-        (only-in :core/modules/opentofu/objects OpenTofuScope.)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-source->json-like)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
-        (only-in :core/module-system/source/admission module-source-read module-source-admit-current!))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/modules/nix/objects NixFlakeSource.)
+        (only-in :yuanxu/modules/nix/types NixFlakeSourceContract)
+        (only-in :yuanxu/modules/nix/func current-nix-process-observer)
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope.)
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-source->json-like)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
 (export nix-flake-source-test)
 (def (assert label value)
   (unless value (error "assertion failed" label))
@@ -35,14 +35,14 @@
                    (+ (cadr total) (.call provider .contract-compile-count))))) '(0 0) owners))
 (def nix-flake-source-test
   (test-suite "Locked native flake Source with real Provider schema artifacts"
-    (poo-flow-test-case "AWS-only to Null, fresh guards and receiver-local caches"
+    (yuanxu-test-case "AWS-only to Null, fresh guards and receiver-local caches"
       (call-with-temporary-directory "nix-flake-source"
         (lambda (root)
-          (def artifacts (getenv "POO_FLOW_OPENTOFU_FLAKE_ARTIFACT"))
-          (def tools-json (poo-flow-json-schema-source->json-like
-                            (call-with-input-string (getenv "POO_FLOW_NIX_TEST_TOOLS") read-json)))
-          (def shell (poo-flow-contract-object-ref tools-json 'shell #f))
-          (def tools (poo-flow-contract-object-ref tools-json 'tools #f))
+          (def artifacts (getenv "YUANXU_OPENTOFU_FLAKE_ARTIFACT"))
+          (def tools-json (yuanxu-json-schema-source->json-like
+                            (call-with-input-string (getenv "YUANXU_NIX_TEST_TOOLS") read-json)))
+          (def shell (yuanxu-contract-object-ref tools-json 'shell #f))
+          (def tools (yuanxu-contract-object-ref tools-json 'tools #f))
           (for-each (lambda (path)
                       (unless (and (string-prefix? "/nix/store/" path) (file-exists? path))
                         (error "real package fixture required" path)))
@@ -126,9 +126,9 @@
           (parameterize ((current-nix-process-observer
                           (lambda (argv) (hash-update! starts (path-strip-directory (car argv)) 1+ 0))))
             (assert 'flake-source-contract
-              (poo-flow-validation-evidence-accepted? (.call NixFlakeSourceContract .admit (source) #f)))
+              (yuanxu-validation-evidence-accepted? (.call NixFlakeSourceContract .admit (source) #f)))
             (assert 'flake-nonstring-argument-rejected
-              (not (poo-flow-validation-evidence-accepted?
+              (not (yuanxu-validation-evidence-accepted?
                      (.call NixFlakeSourceContract .admit (.cc (source) 'arguments (.o foo: 42)) #f))))
             (def parent (measure "aws-build" (lambda () (build #f)) 2 1
                           (lambda (result) (if result (counts (.get result scope) '(aws)) '(0 0)))))
@@ -136,7 +136,7 @@
             (def parent-contract (.get parent-scope types configuration))
             (assert 'parent-admitted
               (measure "aws-first-admission"
-                (lambda () (poo-flow-validation-evidence-accepted? (.get parent admission)))
+                (lambda () (yuanxu-validation-evidence-accepted? (.get parent admission)))
                 1 0 (lambda (_) (counts parent-scope '(aws)))))
             (measure "aws-hot-slots" (lambda ()
               (for-each (lambda (_) (.get parent admission) (.get parent-scope types configuration)) '(1 2 3 4 5)))
@@ -151,7 +151,7 @@
             (def child-scope (.get child scope))
             (assert 'child-admitted
               (measure "aws-null-first-admission"
-                (lambda () (poo-flow-validation-evidence-accepted? (.get child admission)))
+                (lambda () (yuanxu-validation-evidence-accepted? (.get child admission)))
                 1 0 (lambda (_) (counts child-scope '(aws null)))))
             (measure "aws-null-hot-slots" (lambda ()
               (for-each (lambda (_) (.get child admission) (.get child-scope types configuration)) '(1 2 3 4 5)))
@@ -172,7 +172,7 @@
               (rejects? "stale external package derivation"
                 (lambda ()
                   (parameterize ((current-expander-context (make-top-context)))
-                    (eval-syntax '(import :core/modules/nix/objects))
+                    (eval-syntax '(import :yuanxu/modules/nix/objects))
                     (for-each eval-syntax (.get child guard-forms))))))
             (write-source providers (string-append "{ artifacts }: " provider-text))
             (assert 'lock-unchanged (equal? lock-text (module-source-read lock)))
@@ -184,7 +184,7 @@
             (assert 'implicit-lock-update-rejected
               (rejects? "process exited|lock" (lambda () (.call (source) .instantiate))))
             (assert 'failed-eval-did-not-write-lock (equal? lock-text (module-source-read lock))))
-          (when (getenv "POO_FLOW_NIX_FLAKE_METRICS" #f)
-            (call-with-output-file (list path: (getenv "POO_FLOW_NIX_FLAKE_METRICS") truncate: #t)
+          (when (getenv "YUANXU_NIX_FLAKE_METRICS" #f)
+            (call-with-output-file (list path: (getenv "YUANXU_NIX_FLAKE_METRICS") truncate: #t)
               (lambda (port) (write-json port (list->hash-table
                 (list (cons 'phases (list->vector (reverse measurements))))))))))))))

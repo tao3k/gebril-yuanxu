@@ -269,7 +269,7 @@ The graph layer has one topology boundary and one control-analysis boundary:
 - `src/graph/control-core.ss` owns the receipt projection. It computes entry
   ids, finish ids, conditional edges, explicit loop edges, undeclared branch
   targets, unreachable nodes, dead ends, and finish-total facts once, then
-  projects them directly into a `PooFlowGraphAnalysis` receipt.
+  projects them directly into a `YuanxuGraphAnalysis` receipt.
 - `src/graph/control-utils.ss` owns pure helper functions for metadata lookup,
   edge filtering, and id-set operations.
 
@@ -338,10 +338,10 @@ public topological-order function and walking the graph again to rediscover
 the same cycle fact.
 
 #+begin_src scheme
-(poo-flow-graph-control-analysis-receipt langgraph-state-graph)
+(yuanxu-graph-control-analysis-receipt langgraph-state-graph)
 #+end_src
 
-The expression returns a `PooFlowGraphAnalysis` object whose metadata contains
+The expression returns a `YuanxuGraphAnalysis` object whose metadata contains
 proof-facing fields such as `conditional-edge-pairs`, `loop-edge-pairs`,
 `branch-targets-declared?`, and `finish-total?`.
 

@@ -3,17 +3,17 @@
 (import :clan/poo/object
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-dependencies)
-        (only-in :core/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander current-expander-compile current-expander-context
                  current-expander-phi module-context? module-context-path
                  module-context-code expander-context-table)
-        (only-in :core/observability/testing-case
-                 poo-flow-default-testing-case-profile
-                 poo-flow-test-checkpoint poo-flow-test-observe)
-        (only-in :core/observability/memory poo-flow-debug-cpu-microseconds)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/observability/testing-case
+                 yuanxu-default-testing-case-profile
+                 yuanxu-test-checkpoint yuanxu-test-observe)
+        (only-in :yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget))
 (export ModuleTestingProfile.)
 
@@ -30,7 +30,7 @@
 
 (def (module-test-observer previous trace?)
   (def started (current-jiffy))
-  (def started-cpu (poo-flow-debug-cpu-microseconds))
+  (def started-cpu (yuanxu-debug-cpu-microseconds))
   ;; Diagnostic counts only: bounded owner/phase rows, never source bytes,
   ;; SDK contexts or currentness results. This cannot authorize reuse.
   (def read-rows (and trace? (make-hash-table)))
@@ -52,7 +52,7 @@
     ;; Bounded checkpoints survive a later outer TERM without retaining a
     ;; token/context census or waiting for a successful Case's final receipt.
     (when (and trace? (or force? (zero? (modulo publications 64))))
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "reader-phase-wall publications=%s import-us=%s compile-us=%s eval-us=%s replay-us=%s replay-visits=%s guard-us=%s"
         publications (span-total 'import-microseconds)
         (span-total 'reader-compile-microseconds)
@@ -60,7 +60,7 @@
         (span-total 'metadata-replay-microseconds)
         replay-visits
         (span-total 'source-guard-microseconds))
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "reader-phase-cpu publications=%s import-us=%s compile-us=%s eval-us=%s replay-us=%s guard-us=%s"
         publications (span-total 'import-microseconds #t)
         (span-total 'reader-compile-microseconds #t)
@@ -69,7 +69,7 @@
         (span-total 'source-guard-microseconds #t))
       (for-each
         (lambda (keys)
-          (poo-flow-write-observation-line!
+          (yuanxu-write-observation-line!
             "reader-boundary publications=%s kind=%s wall-us=%s cpu-us=%s"
             publications (car keys) (span-total (cadr keys))
             (span-total (cadr keys) #t)))
@@ -101,23 +101,23 @@
   (def (flush-reads)
     (report-phase-work #t)
     (when trace?
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "public-source-preparation requests=%s preparations=%s"
         public-requests public-preparations)
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "kernel-source-closure requests=%s walks=%s visits=%s"
         kernel-requests kernel-walks kernel-visits))
     (when read-rows
       (for-each
         (lambda (row)
-          (poo-flow-write-observation-line!
+          (yuanxu-write-observation-line!
             "source-physical phase=%s boundary=%s owner=%s reads=%s"
             (caar row) (cadar row) (caddar row) (cdr row)))
         (hash->list read-rows)))
     (when effect-reads
       (for-each
         (lambda (row)
-          (poo-flow-write-observation-line! "source-effect kind=%s boundary=%s reads=%s"
+          (yuanxu-write-observation-line! "source-effect kind=%s boundary=%s reads=%s"
             (caar row) (cdar row) (cdr row)))
         (hash->list effect-reads))))
   ;; Closed categories, not a path/context registry. Nested imports/guards are
@@ -157,22 +157,22 @@
             ((eq? category (car keys))
              (when (zero? depth)
                (vector-set! span 2 (current-jiffy))
-               (vector-set! span 3 (poo-flow-debug-cpu-microseconds)))
+               (vector-set! span 3 (yuanxu-debug-cpu-microseconds)))
              (vector-set! span 1 (+ depth 1)))
             ((and (eq? category (cadr keys)) (> depth 0))
              (vector-set! span 1 (- depth 1))
              (when (= depth 1)
                (let ((wall (quotient (* (- (current-jiffy) (vector-ref span 2)) 1000000)
                                      (jiffies-per-second)))
-                     (cpu (- (poo-flow-debug-cpu-microseconds) (vector-ref span 3))))
+                     (cpu (- (yuanxu-debug-cpu-microseconds) (vector-ref span 3))))
                  (vector-set! span 4 (+ wall (vector-ref span 4)))
                  (vector-set! span 5 (+ cpu (vector-ref span 5)))
                  ;; Internal diagnostic spans must not consume the Case's
                  ;; unchanged 64 DOMAIN-category allowance.
                  (when (memq (car keys) '(native-source-import-start publication-start
                                          publication-guard-start nix-process-start))
-                   (poo-flow-test-observe (caddr keys) wall)
-                   (poo-flow-test-observe (cadddr keys) cpu))))))))
+                   (yuanxu-test-observe (caddr keys) wall)
+                   (yuanxu-test-observe (cadddr keys) cpu))))))))
       spans))
   ;; Automatic events can occur INSIDE domain admission. Do not construct or
   ;; inspect telemetry POO objects there: their reads would enter its MOP
@@ -180,10 +180,10 @@
   ;; explicit author checkpoints retain their full receipt API.
   (def (stage category name)
     (when trace?
-      (poo-flow-write-observation-line!
+      (yuanxu-write-observation-line!
         "test-stage %s/%s elapsed-ms=%s cpu-ms=%s source-reads=%s" category name
         (quotient (* (- (current-jiffy) started) 1000) (jiffies-per-second))
-        (quotient (- (poo-flow-debug-cpu-microseconds) started-cpu) 1000)
+        (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
         physical-reads)))
   (def (observe key amount)
     ;; Never retain SDK objects in compound discovery keys. Only their closed
@@ -217,9 +217,9 @@
           ((eq? category 'check-seconds)
             (unless (and (real? amount) (<= 0 amount) (< amount +inf.0))
               (error "source check duration must be finite and nonnegative"))
-            (poo-flow-test-observe 'check-microseconds
+            (yuanxu-test-observe 'check-microseconds
               (inexact->exact (round (* amount 1000000)))))
-          (else (poo-flow-test-observe category amount))))
+          (else (yuanxu-test-observe category amount))))
       (when (pair? key)
         ;; Innermost active effect brackets partition physical reads without
         ;; summing overlapping spans. Names are producer-owned scalar labels.
@@ -277,9 +277,9 @@
                                        (exact-integer? (cdr row)) (>= (cdr row) 0)))
                                 (cdr key)))
              (error "module test observation requires scalar fields" category))
-           (when trace? (poo-flow-write-observation-line! "%s %s" category (cdr key)))
+           (when trace? (yuanxu-write-observation-line! "%s %s" category (cdr key)))
            (when (eq? category 'nix-process-observation)
-             (for-each (lambda (row) (poo-flow-test-observe (car row) (cdr row))) (cdr key)))
+             (for-each (lambda (row) (yuanxu-test-observe (car row) (cdr row))) (cdr key)))
            (when (eq? category 'reader-declaration)
              (stage category 'body)))))
       (when previous (previous key amount))))
@@ -363,7 +363,7 @@
                     (vector-set! value 4 (+ 1 (vector-ref value 4)))) reader-programs)
     (hash-for-each
       (lambda (role value)
-        (poo-flow-write-observation-line!
+        (yuanxu-write-observation-line!
           "reader-sdk-roots role=%s contexts=%s bindings=%s code-bodies=%s expanded=%s programs=%s"
           role (vector-ref value 0) (vector-ref value 1) (vector-ref value 2)
           (vector-ref value 3) (vector-ref value 4))) rows))
@@ -386,10 +386,10 @@
     ;; never instantiate it, invoke a getter/MOP hook or grant admission.
     (def instance (and (object? receiver) (object-%instance receiver)))
     (def kind (and instance (hash-get instance 'kind)))
-    (if (memq kind '(poo-flow.type.classification-evidence
-                     poo-flow.contract.validation-evidence
-                     poo-flow.module-authoring.admission
-                     poo-flow.module-authoring.diagnostic
+    (if (memq kind '(yuanxu.type.classification-evidence
+                     yuanxu.contract.validation-evidence
+                     yuanxu.module-authoring.admission
+                     yuanxu.module-authoring.diagnostic
                      poo-clos/generic-function poo-clos/effective-method
                      poo-clos/invocation-frame)) kind
       (or (and (object? receiver) (cached-clos-kind receiver)) 'unclassified)))
@@ -424,7 +424,7 @@
                   (hash-put! authoring-datums (cadddr args) #t)))))
         (when (and instance (procedure? (hash-get instance 'next)))
           (set! continuations (+ continuations 1))))) clos-values)
-    (poo-flow-write-observation-line!
+    (yuanxu-write-observation-line!
       "reader-clos-roots publications=%s effective=%s frames=%s argument-refs=%s argument-lists=%s authoring-interfaces=%s authoring-datums=%s continuations=%s read-records=%s"
       publications effective frames arguments (hash-length argument-lists)
       (hash-length authoring-interfaces) (hash-length authoring-datums)
@@ -470,7 +470,7 @@
               (set! edges (+ edges width))
               (when (> width widest) (set! widest width) (set! widest-key label))
               (walk (append dependencies (cdr pending))))))))
-    (poo-flow-write-observation-line!
+    (yuanxu-write-observation-line!
       "slot-transitive-support tokens=%s receivers=%s edges=%s widest=%s widest-key=%s top-edge-owners=%s"
       (hash-length seen) (hash-length receivers) edges widest widest-key
       (take (list-sort (lambda (left right) (> (cdr left) (cdr right))) (hash->list rows))
@@ -504,7 +504,7 @@
               (unless previous-kind
                 (hash-put! receivers receiver kind)
                 (vector-set! kind-row 2 (+ (vector-ref kind-row 2) 1))
-                (when (eq? kind 'poo-flow.contract.validation-evidence)
+                (when (eq? kind 'yuanxu.contract.validation-evidence)
                   (let* ((instance (object-%instance receiver))
                          (label (cached-contract-label instance)))
                     (hash-update! contracts label (cut + <> 1) 0)
@@ -533,12 +533,12 @@
               (hash-put! kinds kind kind-row)
               (hash-put! keys key row))
             (slot-read-dependencies read))
-          (poo-flow-write-observation-line! "slot-dependency-width key=%s edges=%s distinct=%s"
+          (yuanxu-write-observation-line! "slot-dependency-width key=%s edges=%s distinct=%s"
             (let (key (slot-read-key read)) (if (symbol? key) key 'structural-query))
             width (hash-length unique))
           ;; Only the eight largest scalar key rows escape. The transient
           ;; receiver/token identity tables die before this observer returns.
-          (poo-flow-write-observation-line! "slot-dependency-owners key=%s receivers=%s top-keys=%s"
+          (yuanxu-write-observation-line! "slot-dependency-owners key=%s receivers=%s top-keys=%s"
             (let (key (slot-read-key read)) (if (symbol? key) key 'structural-query))
             (hash-length receivers)
             (map (lambda (entry)
@@ -546,11 +546,11 @@
               (take (list-sort (lambda (a b) (> (vector-ref (cdr a) 0) (vector-ref (cdr b) 0)))
                               (hash->list keys))
                     (min 8 (hash-length keys)))))
-          (poo-flow-write-observation-line! "slot-dependency-kinds key=%s rows=%s"
+          (yuanxu-write-observation-line! "slot-dependency-kinds key=%s rows=%s"
             (let (key (slot-read-key read)) (if (symbol? key) key 'structural-query))
             (map (lambda (entry)
                    (cons (car entry) (vector->list (cdr entry)))) (hash->list kinds)))
-          (poo-flow-write-observation-line! "slot-dependency-contracts key=%s context-free=%s context-unknown=%s rows=%s"
+          (yuanxu-write-observation-line! "slot-dependency-contracts key=%s context-free=%s context-unknown=%s rows=%s"
             (let (key (slot-read-key read)) (if (symbol? key) key 'structural-query))
             context-free context-unknown (hash->list contracts))))
       (set! largest width)))
@@ -563,11 +563,11 @@
       ;; A bounded three-scalar receipt, not three additional dynamic work
       ;; categories. Preserve the Case's existing 64-category bound and never
       ;; mask a domain failure while unwinding the observation scope.
-      (poo-flow-write-observation-line! "slot-read-summary deliveries=%s edges=%s max-edges=%s"
+      (yuanxu-write-observation-line! "slot-read-summary deliveries=%s edges=%s max-edges=%s"
         deliveries edges largest)
       (report-clos-roots)
       (report-reader-roots))))
 
-(.def (ModuleTestingProfile. @ poo-flow-default-testing-case-profile)
+(.def (ModuleTestingProfile. @ yuanxu-default-testing-case-profile)
   trace-enabled?: #f
   (.run => observe-module-test))

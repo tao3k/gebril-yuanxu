@@ -10,7 +10,7 @@ The implementation belongs to two owners, not two competing validators:
 
 - =modules/json-schema=: positional tuple predicates/validation, nested field
   diagnostics, JSON value equality for =uniqueItems=, and the reusable
-  =poo-flow-json-schema->contract= adapter to native =.classify= / =.admit=.
+  =yuanxu-json-schema->contract= adapter to native =.classify= / =.admit=.
 - =modules/opentofu=: cty/provider-format conversion and supplemental set
   semantics. It delegates shape checking to the JSON Schema owner.
 
@@ -49,19 +49,19 @@ After building Core, the maintained interface exposes these pure functions.
 The tests import the compiled public Core interfaces through the default native toolchain.
 
 #+begin_src scheme
-(import :core/modules/opentofu/interface
-        :core/modules/json-schema/interface
+(import :yuanxu/modules/opentofu/interface
+        :yuanxu/modules/json-schema/interface
         :clan/poo/object)
 
 ;; Synthetic cty tuple, not an AWS-exported tuple.
-(poo-flow-opentofu-cty->schema '("tuple" ("string" "number")))
+(yuanxu-opentofu-cty->schema '("tuple" ("string" "number")))
 ;; => ((type . "array")
 ;;     (items . (((type . "string")) ((type . "number"))))
 ;;     (minItems . 2) (maxItems . 2))
 
 ;; awscc-provider-block is the decoded, source-qualified fixture block.
 (def AwsccContract
-  (poo-flow-opentofu-block-contract 'awscc/provider awscc-provider-block))
+  (yuanxu-opentofu-block-contract 'awscc/provider awscc-provider-block))
 (.call AwsccContract .admit
        '((assume_role . ((duration . "900")))) #f)
 ;; accepted
@@ -90,7 +90,7 @@ reimplement tuple, object, scalar or JSON uniqueness validation.
 
 #+begin_src scheme
 (def StringsContract
-  (poo-flow-opentofu-block-contract 'example/string-set StringSetBlock))
+  (yuanxu-opentofu-block-contract 'example/string-set StringSetBlock))
 (def normalized
   (.call StringsContract .normalize '((accounts . ("b" "a" "b")))))
 (.get normalized value)       ;; => ((accounts . ("b" "a")))
@@ -98,7 +98,7 @@ reimplement tuple, object, scalar or JSON uniqueness validation.
 
 ;; Generic JSON shape admits the canonical literal representation.
 (def StringShapeContract
-  (poo-flow-json-schema->contract 'cty/string-set (.get StringsContract schema)))
+  (yuanxu-json-schema->contract 'cty/string-set (.get StringsContract schema)))
 (.call StringShapeContract .admit (.get normalized value) #f) ;; accepted
 
 ;; Provider identity has NOT thereby been established.
@@ -132,7 +132,7 @@ from raw object-list length when its provider equivalence is unknown.
 
 #+begin_src scheme
 (def ConfigurationContract
-  (poo-flow-opentofu-configuration-contract
+  (yuanxu-opentofu-configuration-contract
     (list (cons 'awscc awscc-provider-block))
     (list (cons 'aws_security_group aws-security-group-block))
     '()))
@@ -233,15 +233,15 @@ maintainer, not ordinary downstream configuration.
 
 #+begin_src scheme
 ;; Internal synthetic-policy control; not an AWS source-authentication API.
-(import (only-in :core/modules/opentofu/collections
-                 poo-flow-opentofu-string-set-authority))
+(import (only-in :yuanxu/modules/opentofu/collections
+                 yuanxu-opentofu-string-set-authority))
 (def StringBlock
   '((attributes . ((accounts . ((type . ("set" "string")) (required . #t)))))))
 (def Authority
-  (poo-flow-opentofu-string-set-authority
+  (yuanxu-opentofu-string-set-authority
     "test/provider" "1.0.0" StringBlock '((accounts))))
 (def Strings
-  (poo-flow-opentofu-block-contract 'test/accounts StringBlock Authority))
+  (yuanxu-opentofu-block-contract 'test/accounts StringBlock Authority))
 (def candidate
   (.get (.call Strings .normalize
           '((accounts . ("b" "a" "b"))))
@@ -287,7 +287,7 @@ configuration requirement.
 
 #+begin_src scheme
 (def ConfigurationContract
-  (poo-flow-opentofu-configuration-contract
+  (yuanxu-opentofu-configuration-contract
     '() (list (cons 'test_resource StringBlock)) '()
     (.o resource: (.o test_resource: Authority))))
 (def config

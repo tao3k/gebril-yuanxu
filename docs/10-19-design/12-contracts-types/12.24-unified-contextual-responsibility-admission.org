@@ -7,15 +7,15 @@
 
 This implements the producer convergence identified in
 [[file:12.23-contract-mainline-resumption.org][the resumed Contract audit]]. [[file:../../../types.ss][Core types.ss]] now owns one admission producer.
-The separate poo-flow-object-admit implementation and intermediate
-PooFlowResponsibilityContract. are removed, without forwarding definitions.
-The existing exported prototype-aware Contract directly inherits PooFlowContract.
+The separate yuanxu-object-admit implementation and intermediate
+YuanxuResponsibilityContract. are removed, without forwarding definitions.
+The existing exported prototype-aware Contract directly inherits YuanxuContract.
 Its domain consumers keep their actual prototype/Contract declarations; there
 is no new alias or wrapper for those consumers to adopt.
 
 Public ObjectContract. remains the field checker and normalizer. Core's
 responsibilities slot is a map of contextual child admission Contracts, not a
-second field Schema. An empty map is the default on PooFlowContract. Ordinary
+second field Schema. An empty map is the default on YuanxuContract. Ordinary
 field Types belong in its public value-contract. Only fields with additional
 contextual requirements need child Core Contracts and child evidence.
 
@@ -85,7 +85,7 @@ responsible for their semantics and are not authenticated by this mechanism.
 
 ;; Contextual policy is maintained independently of the public field Type.
 (def descriptor
-  (.cc PooFlowNativeObjectContract.
+  (.cc YuanxuObjectContract.
     identity: 'test/checked-root proto: proto value-contract: Normalize
     responsibilities: (.o name: leaf)))
 (def evidence (.call descriptor .admit raw context))

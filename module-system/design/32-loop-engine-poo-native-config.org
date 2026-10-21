@@ -64,7 +64,7 @@ pipeline. This is not a user DSL; it is a private bridge between the POO object
 surface and the existing loop intent projection.
 
 Old rows such as =(+use-case ...)= and =(+result ...)= are intentionally not
-accepted by =use-module loop-engine=. Root =poo-flow!= init rows may select
+accepted by =use-module loop-engine=. Root =yuanxu!= init rows may select
 =loop-engine= as a module, but detailed loop configuration belongs in a POO
 config object.
 

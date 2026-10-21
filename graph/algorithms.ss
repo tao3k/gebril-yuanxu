@@ -14,27 +14,27 @@
                  make-Queue
                  queue-empty?)
         (only-in :std/list/list filter)
-        :core/graph/types-core)
+        :yuanxu/graph/types-core)
 
-(export poo-flow-graph-node-ids
-        poo-flow-graph-edge-pairs
-        poo-flow-graph-outgoing-ids
-        poo-flow-graph-incoming-ids
-        poo-flow-graph-outgoing-map
-        poo-flow-graph-incoming-map
-        poo-flow-graph-root-ids
-        poo-flow-graph-terminal-ids
-        poo-flow-graph-reachable-ids
-        poo-flow-graph-dependency-cone
-        poo-flow-graph-cycle-path
-        poo-flow-graph-acyclic?
-        poo-flow-graph-topological-order
-        poo-flow-graph-topological-order/acyclic
-        poo-flow-graph-analysis-receipts
-        poo-flow-graph-analysis-receipt
-        poo-flow-graph-loop-analysis-receipt)
+(export yuanxu-graph-node-ids
+        yuanxu-graph-edge-pairs
+        yuanxu-graph-outgoing-ids
+        yuanxu-graph-incoming-ids
+        yuanxu-graph-outgoing-map
+        yuanxu-graph-incoming-map
+        yuanxu-graph-root-ids
+        yuanxu-graph-terminal-ids
+        yuanxu-graph-reachable-ids
+        yuanxu-graph-dependency-cone
+        yuanxu-graph-cycle-path
+        yuanxu-graph-acyclic?
+        yuanxu-graph-topological-order
+        yuanxu-graph-topological-order/acyclic
+        yuanxu-graph-analysis-receipts
+        yuanxu-graph-analysis-receipt
+        yuanxu-graph-loop-analysis-receipt)
 
-(import :core/graph/algorithms-list-support)
+(import :yuanxu/graph/algorithms-list-support)
 
 (def (graph-adjacency-ref index id)
   (or (hash-get index id) '()))
@@ -44,54 +44,54 @@
          (cons id (graph-adjacency-ref index id)))
        ids))
 
-(def (poo-flow-graph-outgoing-ids graph-value id)
-  (graph-adjacency-ref (poo-flow-graph-outgoing-index graph-value) id))
+(def (yuanxu-graph-outgoing-ids graph-value id)
+  (graph-adjacency-ref (yuanxu-graph-outgoing-index graph-value) id))
 
-;; : (-> PooFlowGraph Object [Object])
-(def (poo-flow-graph-incoming-ids graph-value id)
-  (graph-adjacency-ref (poo-flow-graph-incoming-index graph-value) id))
+;; : (-> YuanxuGraph Object [Object])
+(def (yuanxu-graph-incoming-ids graph-value id)
+  (graph-adjacency-ref (yuanxu-graph-incoming-index graph-value) id))
 
-;; : (-> PooFlowGraph Alist)
-(def (poo-flow-graph-outgoing-map graph-value)
+;; : (-> YuanxuGraph Alist)
+(def (yuanxu-graph-outgoing-map graph-value)
   (ids->adjacency-map
-   (poo-flow-graph-node-ids graph-value)
-   (poo-flow-graph-outgoing-index graph-value)))
+   (yuanxu-graph-node-ids graph-value)
+   (yuanxu-graph-outgoing-index graph-value)))
 
-;; : (-> PooFlowGraph Alist)
-(def (poo-flow-graph-incoming-map graph-value)
+;; : (-> YuanxuGraph Alist)
+(def (yuanxu-graph-incoming-map graph-value)
   (ids->adjacency-map
-   (poo-flow-graph-node-ids graph-value)
-   (poo-flow-graph-incoming-index graph-value)))
+   (yuanxu-graph-node-ids graph-value)
+   (yuanxu-graph-incoming-index graph-value)))
 
-;; : (-> PooFlowGraph [Object])
-(def (poo-flow-graph-root-ids graph-value)
-  (let (incoming-index (poo-flow-graph-incoming-index graph-value))
+;; : (-> YuanxuGraph [Object])
+(def (yuanxu-graph-root-ids graph-value)
+  (let (incoming-index (yuanxu-graph-incoming-index graph-value))
     (filter
      (lambda (id)
        (null? (graph-adjacency-ref incoming-index id)))
-     (poo-flow-graph-node-ids graph-value))))
+     (yuanxu-graph-node-ids graph-value))))
 
-;; : (-> PooFlowGraph [Object])
-(def (poo-flow-graph-terminal-ids graph-value)
-  (let (outgoing-index (poo-flow-graph-outgoing-index graph-value))
+;; : (-> YuanxuGraph [Object])
+(def (yuanxu-graph-terminal-ids graph-value)
+  (let (outgoing-index (yuanxu-graph-outgoing-index graph-value))
     (filter
      (lambda (id)
        (null? (graph-adjacency-ref outgoing-index id)))
-     (poo-flow-graph-node-ids graph-value))))
+     (yuanxu-graph-node-ids graph-value))))
 
-;; : (-> PooFlowGraph [Object] [Object])
-(def (poo-flow-graph-reachable-ids graph-value start-ids)
+;; : (-> YuanxuGraph [Object] [Object])
+(def (yuanxu-graph-reachable-ids graph-value start-ids)
   (walk-adjacency/indexed
-   (poo-flow-graph-outgoing-index graph-value)
+   (yuanxu-graph-outgoing-index graph-value)
    start-ids))
 
-;; : (-> PooFlowGraph [Object] [Object])
-(def (poo-flow-graph-dependency-cone graph-value target-ids)
+;; : (-> YuanxuGraph [Object] [Object])
+(def (yuanxu-graph-dependency-cone graph-value target-ids)
   (walk-adjacency/indexed
-   (poo-flow-graph-incoming-index graph-value)
+   (yuanxu-graph-incoming-index graph-value)
    target-ids))
 
-;; : (-> PooFlowGraph MaybeList)
+;; : (-> YuanxuGraph MaybeList)
 (def (cycle-dfs/indexed outgoing-index id stack states)
   (let ((state (hash-get states id)))
     (cond
@@ -147,9 +147,9 @@
                            (lambda (targets) (cons target targets)))
       (edge-pairs->outgoing-index (cdr edge-pairs) outgoing-index))))
 
-(def (poo-flow-graph-outgoing-index graph-value)
+(def (yuanxu-graph-outgoing-index graph-value)
   (edge-pairs->outgoing-index
-   (reverse (poo-flow-graph-edge-pairs graph-value))
+   (reverse (yuanxu-graph-edge-pairs graph-value))
    (make-hash-table)))
 
 (def (edge-pairs->incoming-index edge-pairs incoming-index)
@@ -164,9 +164,9 @@
                            (lambda (sources) (cons source sources)))
       (edge-pairs->incoming-index (cdr edge-pairs) incoming-index))))
 
-(def (poo-flow-graph-incoming-index graph-value)
+(def (yuanxu-graph-incoming-index graph-value)
   (edge-pairs->incoming-index
-   (reverse (poo-flow-graph-edge-pairs graph-value))
+   (reverse (yuanxu-graph-edge-pairs graph-value))
    (make-hash-table)))
 
 (def (graph-adjacency-indexes edge-pairs)
@@ -318,56 +318,56 @@
      components)
     (reverse (vector-ref components 0))))
 
-(def (poo-flow-graph-cycle-path graph-value)
+(def (yuanxu-graph-cycle-path graph-value)
   (find-cycle-from-nodes/indexed
-   (poo-flow-graph-outgoing-index graph-value)
-   (poo-flow-graph-node-ids graph-value)
+   (yuanxu-graph-outgoing-index graph-value)
+   (yuanxu-graph-node-ids graph-value)
    (make-hash-table)))
 
-;; : (-> PooFlowGraph Boolean)
-(def (poo-flow-graph-acyclic? graph-value)
-  (not (poo-flow-graph-cycle-path graph-value)))
+;; : (-> YuanxuGraph Boolean)
+(def (yuanxu-graph-acyclic? graph-value)
+  (not (yuanxu-graph-cycle-path graph-value)))
 
-;; : (-> PooFlowGraph MaybeList)
-(def (poo-flow-graph-topological-order graph-value)
-  (poo-flow-graph-topological-order/acyclic graph-value))
+;; : (-> YuanxuGraph MaybeList)
+(def (yuanxu-graph-topological-order graph-value)
+  (yuanxu-graph-topological-order/acyclic graph-value))
 
-;; : (-> PooFlowGraph MaybeList)
-(def (poo-flow-graph-topological-order/acyclic graph-value)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
-         (edge-pairs (poo-flow-graph-edge-pairs graph-value))
-         (outgoing-index (poo-flow-graph-outgoing-index graph-value)))
+;; : (-> YuanxuGraph MaybeList)
+(def (yuanxu-graph-topological-order/acyclic graph-value)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
+         (edge-pairs (yuanxu-graph-edge-pairs graph-value))
+         (outgoing-index (yuanxu-graph-outgoing-index graph-value)))
     (topological-order/indexed node-ids edge-pairs outgoing-index)))
 
 ;; : (-> [Object] [Object] [Object])
-(def (poo-flow-graph-analysis-start-ids roots maybe-start+target)
+(def (yuanxu-graph-analysis-start-ids roots maybe-start+target)
   (if (or (null? maybe-start+target)
           (not (car maybe-start+target)))
     roots
     (car maybe-start+target)))
 
 ;; : (-> [Object] [Object] [Object])
-(def (poo-flow-graph-analysis-target-ids terminals maybe-start+target)
+(def (yuanxu-graph-analysis-target-ids terminals maybe-start+target)
   (if (or (null? maybe-start+target)
           (null? (cdr maybe-start+target))
           (not (cadr maybe-start+target)))
     terminals
     (cadr maybe-start+target)))
 
-;; : (-> PooFlowGraph MaybeList MaybeList)
-(def (poo-flow-graph-analysis-topological-order*
+;; : (-> YuanxuGraph MaybeList MaybeList)
+(def (yuanxu-graph-analysis-topological-order*
       node-ids edge-pairs outgoing-index cycle-path)
   (if cycle-path
     #f
     (topological-order/indexed node-ids edge-pairs outgoing-index)))
 
 ;; : (-> MaybeList Alist)
-(def (poo-flow-graph-analysis-diagnostics cycle-path)
+(def (yuanxu-graph-analysis-diagnostics cycle-path)
   (if cycle-path
     (list (cons 'cycle-path cycle-path))
     '()))
 
-;; : (-> PooFlowGraph [Object] [[Object Object]] HashTable HashTable List PooFlowGraphAnalysis)
+;; : (-> YuanxuGraph [Object] [[Object Object]] HashTable HashTable List YuanxuGraphAnalysis)
 (def (graph-analysis-receipt/indexed graph-value node-ids edge-pairs
                                      outgoing-index incoming-index
                                      maybe-start+target)
@@ -382,19 +382,19 @@
                  (null? (graph-adjacency-ref outgoing-index id)))
                node-ids))
              (start-ids
-              (poo-flow-graph-analysis-start-ids roots maybe-start+target))
+              (yuanxu-graph-analysis-start-ids roots maybe-start+target))
              (target-ids
-              (poo-flow-graph-analysis-target-ids terminals maybe-start+target))
+              (yuanxu-graph-analysis-target-ids terminals maybe-start+target))
              (cycle-path
               (find-cycle-from-nodes/indexed
                outgoing-index node-ids (make-hash-table)))
              (topological-order
-              (poo-flow-graph-analysis-topological-order*
+              (yuanxu-graph-analysis-topological-order*
                node-ids edge-pairs outgoing-index cycle-path))
              (diagnostics
-              (poo-flow-graph-analysis-diagnostics cycle-path)))
-        (poo-flow-graph-analysis
-         (poo-flow-graph-id graph-value)
+              (yuanxu-graph-analysis-diagnostics cycle-path)))
+        (yuanxu-graph-analysis
+         (yuanxu-graph-id graph-value)
          (length node-ids)
          (length edge-pairs)
          roots
@@ -405,17 +405,17 @@
          cycle-path
          diagnostics)))
 
-;; : (-> PooFlowGraph PooFlowGraphAnalysis)
-(def (poo-flow-graph-analysis-receipt graph-value . maybe-start+target)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
-         (edge-pairs (poo-flow-graph-edge-pairs graph-value)))
+;; : (-> YuanxuGraph YuanxuGraphAnalysis)
+(def (yuanxu-graph-analysis-receipt graph-value . maybe-start+target)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
+         (edge-pairs (yuanxu-graph-edge-pairs graph-value)))
     (let-values (((outgoing-index incoming-index)
                   (graph-adjacency-indexes edge-pairs)))
       (graph-analysis-receipt/indexed
        graph-value node-ids edge-pairs outgoing-index incoming-index
        maybe-start+target))))
 
-;; : (-> PooFlowGraph [Object] [[Object Object]] HashTable PooFlowGraphLoopAnalysis)
+;; : (-> YuanxuGraph [Object] [[Object Object]] HashTable YuanxuGraphLoopAnalysis)
 (def (graph-loop-analysis-receipt/indexed graph-value node-ids edge-pairs
                                           outgoing-index)
   (let-values (((components component-index)
@@ -429,9 +429,9 @@
                edge-pairs
                component-index))
              (diagnostics
-              (poo-flow-graph-loop-analysis-diagnostics cyclic-components)))
-        (poo-flow-graph-loop-analysis
-         (poo-flow-graph-id graph-value)
+              (yuanxu-graph-loop-analysis-diagnostics cyclic-components)))
+        (yuanxu-graph-loop-analysis
+         (yuanxu-graph-id graph-value)
          components
          cyclic-components
          condensation-edges
@@ -439,10 +439,10 @@
 
 ;; Build the shared graph projection and adjacency indexes once when callers
 ;; require both the ordinary and loop-analysis receipts.
-;; : (-> PooFlowGraph (Values PooFlowGraphAnalysis PooFlowGraphLoopAnalysis))
-(def (poo-flow-graph-analysis-receipts graph-value . maybe-start+target)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
-         (edge-pairs (poo-flow-graph-edge-pairs graph-value)))
+;; : (-> YuanxuGraph (Values YuanxuGraphAnalysis YuanxuGraphLoopAnalysis))
+(def (yuanxu-graph-analysis-receipts graph-value . maybe-start+target)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
+         (edge-pairs (yuanxu-graph-edge-pairs graph-value)))
     (let-values (((outgoing-index incoming-index)
                   (graph-adjacency-indexes edge-pairs)))
       (values
@@ -452,17 +452,17 @@
        (graph-loop-analysis-receipt/indexed
         graph-value node-ids edge-pairs outgoing-index)))))
 
-;; : (-> PooFlowGraph PooFlowGraphLoopAnalysis)
-(def (poo-flow-graph-loop-analysis-receipt graph-value)
-  (let* ((node-ids (poo-flow-graph-node-ids graph-value))
-         (edge-pairs (poo-flow-graph-edge-pairs graph-value))
+;; : (-> YuanxuGraph YuanxuGraphLoopAnalysis)
+(def (yuanxu-graph-loop-analysis-receipt graph-value)
+  (let* ((node-ids (yuanxu-graph-node-ids graph-value))
+         (edge-pairs (yuanxu-graph-edge-pairs graph-value))
          (outgoing-index
           (edge-pairs->outgoing-index (reverse edge-pairs)
                                       (make-hash-table))))
     (graph-loop-analysis-receipt/indexed
      graph-value node-ids edge-pairs outgoing-index)))
 
-(def (poo-flow-graph-loop-analysis-diagnostics cyclic-components)
+(def (yuanxu-graph-loop-analysis-diagnostics cyclic-components)
   (if (null? cyclic-components)
     '()
     (list (cons 'cyclic-components cyclic-components))))

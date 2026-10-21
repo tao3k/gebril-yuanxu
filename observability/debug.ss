@@ -5,7 +5,7 @@
 
 ;;; Boundary: explicit effectful DEVELOPMENT output over aggregate projections.
 ;;; Upstream owns tracing and typed printing. No global hook or tracer is copied.
-(import :core/observability/memory
+(import :yuanxu/observability/memory
         (only-in :clan/poo/support/base λ)
         (only-in :clan/poo/object .o .call .ref)
         (only-in :clan/poo/mop validate)
@@ -13,69 +13,69 @@
         (only-in :clan/poo/debug DDT trace-poo)
         :gerbil/runtime/gambit
         (only-in :std/error deferror-class)
-        (only-in :core/observability/types
-                 PooFlowDebugMemoryPolicyContract
-                 PooFlowDebugMemorySampleContract
-                 PooFlowDebugMemoryReceiptContract
-                 PooFlowDebugDurationReceiptContract
-                 PooFlowDebugCallPolicyContract
-                 PooFlowDebugCallReceiptContract)
-        (only-in :core/observability/funcs poo-flow-observation-admission-summary
-                 poo-flow-observation-summary-sexp
-                 poo-flow-debug-call-policy
-                 poo-flow-debug-call-receipt
-                 poo-flow-debug-call-receipt-sexp
-                 poo-flow-debug-memory-policy
-                 poo-flow-debug-memory-policy?
-                 poo-flow-debug-memory-sample
-                 poo-flow-debug-memory-receipt
-                 poo-flow-debug-memory-receipt-sexp)
-        :core/observability/slot-debug)
-(export poo-flow-observation-debug PooFlowObservationProjectionError?
-        PooFlowDebugMemoryPolicyContract
-        PooFlowDebugMemorySampleContract
-        PooFlowDebugMemoryReceiptContract
-        PooFlowDebugDurationReceiptContract
-        PooFlowDebugCallPolicyContract
-        PooFlowDebugCallReceiptContract
-        poo-flow-debug-call-policy
-        poo-flow-debug-call-receipt
-        poo-flow-debug-call-receipt-sexp
-        call-with-poo-flow-debug-trace
-        PooFlowDebugCallAnomaly?
-        PooFlowDebugCallAnomaly-receipt
-        poo-flow-debug-memory-policy
-        poo-flow-debug-memory-policy?
-        poo-flow-debug-memory-sample
-        poo-flow-debug-memory-receipt
-        poo-flow-debug-memory-receipt-sexp
-        poo-flow-debug-memory-snapshot
-        poo-flow-debug-memory-checkpoint
-        call-with-poo-flow-debug-memory-span
-        call-with-poo-flow-debug-memory-monitor
-        call-with-poo-flow-debug-memory-case-watchdog
-        PooFlowDebugMemoryAnomaly?
-        PooFlowDebugMemoryAnomaly-receipt
-        PooFlowDebugDurationAnomaly?
-        PooFlowDebugDurationAnomaly-receipt
-        (import: :core/observability/slot-debug))
+        (only-in :yuanxu/observability/types
+                 YuanxuDebugMemoryPolicyContract
+                 YuanxuDebugMemorySampleContract
+                 YuanxuDebugMemoryReceiptContract
+                 YuanxuDebugDurationReceiptContract
+                 YuanxuDebugCallPolicyContract
+                 YuanxuDebugCallReceiptContract)
+        (only-in :yuanxu/observability/funcs yuanxu-observation-admission-summary
+                 yuanxu-observation-summary-sexp
+                 yuanxu-debug-call-policy
+                 yuanxu-debug-call-receipt
+                 yuanxu-debug-call-receipt-sexp
+                 yuanxu-debug-memory-policy
+                 yuanxu-debug-memory-policy?
+                 yuanxu-debug-memory-sample
+                 yuanxu-debug-memory-receipt
+                 yuanxu-debug-memory-receipt-sexp)
+        :yuanxu/observability/slot-debug)
+(export yuanxu-observation-debug YuanxuObservationProjectionError?
+        YuanxuDebugMemoryPolicyContract
+        YuanxuDebugMemorySampleContract
+        YuanxuDebugMemoryReceiptContract
+        YuanxuDebugDurationReceiptContract
+        YuanxuDebugCallPolicyContract
+        YuanxuDebugCallReceiptContract
+        yuanxu-debug-call-policy
+        yuanxu-debug-call-receipt
+        yuanxu-debug-call-receipt-sexp
+        call-with-yuanxu-debug-trace
+        YuanxuDebugCallAnomaly?
+        YuanxuDebugCallAnomaly-receipt
+        yuanxu-debug-memory-policy
+        yuanxu-debug-memory-policy?
+        yuanxu-debug-memory-sample
+        yuanxu-debug-memory-receipt
+        yuanxu-debug-memory-receipt-sexp
+        yuanxu-debug-memory-snapshot
+        yuanxu-debug-memory-checkpoint
+        call-with-yuanxu-debug-memory-span
+        call-with-yuanxu-debug-memory-monitor
+        call-with-yuanxu-debug-memory-case-watchdog
+        YuanxuDebugMemoryAnomaly?
+        YuanxuDebugMemoryAnomaly-receipt
+        YuanxuDebugDurationAnomaly?
+        YuanxuDebugDurationAnomaly-receipt
+        (import: :yuanxu/observability/slot-debug))
 
-(deferror-class PooFlowObservationProjectionError ())
-(deferror-class PooFlowDebugCallAnomaly (receipt))
+(deferror-class YuanxuObservationProjectionError ())
+(deferror-class YuanxuDebugCallAnomaly (receipt))
 
 
 ;;; Active call identities are dynamic and thread-local.  The trace retains
 ;;; symbols only, so cycle/depth checks never keep user arguments or receivers.
 ;; : (Parameter [Symbol])
-(def poo-flow-debug-active-call-path (make-parameter '()))
+(def yuanxu-debug-active-call-path (make-parameter '()))
 
 ;; : (-> Integer Natural)
-(def (poo-flow-debug-elapsed-nanoseconds started-jiffy)
+(def (yuanxu-debug-elapsed-nanoseconds started-jiffy)
   (quotient (* (- (current-jiffy) started-jiffy) 1000000000)
             (jiffies-per-second)))
 
 ;; : (-> Value Symbol)
-(def (poo-flow-debug-operator-kind operator)
+(def (yuanxu-debug-operator-kind operator)
   (cond ((procedure? operator) 'procedure)
         ((pair? operator) 'pair)
         ((null? operator) 'null)
@@ -85,27 +85,27 @@
         ((boolean? operator) 'boolean)
         (else 'other)))
 
-;; : (-> PooFlowDebugCallReceipt OutputPort Unit)
-(def (poo-flow-debug-emit-call-receipt receipt port)
+;; : (-> YuanxuDebugCallReceipt OutputPort Unit)
+(def (yuanxu-debug-emit-call-receipt receipt port)
   (parameterize ((current-error-port port))
-    (DDT 'debug-call poo-flow-debug-call-receipt-sexp receipt)))
+    (DDT 'debug-call yuanxu-debug-call-receipt-sexp receipt)))
 
-;; : (-> PooFlowDebugCallReceipt Never)
-(def (poo-flow-debug-raise-call-anomaly receipt)
+;; : (-> YuanxuDebugCallReceipt Never)
+(def (yuanxu-debug-raise-call-anomaly receipt)
   (let (failure
-        (PooFlowDebugCallAnomaly
+        (YuanxuDebugCallAnomaly
          "POO Flow debug call admission rejected the invocation"
          irritants: '()))
-    (set! (PooFlowDebugCallAnomaly-receipt failure) receipt)
+    (set! (YuanxuDebugCallAnomaly-receipt failure) receipt)
     (raise failure)))
 
 ;;; This is the bounded adapter over upstream `traced-function`.  Upstream sees
 ;;; a zero-argument thunk returning only the symbol `returned`; raw arguments,
 ;;; multiple results, and failures stay outside its printer.  Admission rejects
 ;;; a shadowed non-procedure and a recursive/deep call edge before invocation.
-;; : (forall (a) (-> PooFlowDebugCallPolicy Symbol Value [Value] port: OutputPort emit?: Boolean a))
-;; call-with-poo-flow-debug-trace
-;;   : (-> PooFlowDebugCallPolicy Symbol Value [Value] port: OutputPort emit?: Boolean Object)
+;; : (forall (a) (-> YuanxuDebugCallPolicy Symbol Value [Value] port: OutputPort emit?: Boolean a))
+;; call-with-yuanxu-debug-trace
+;;   : (-> YuanxuDebugCallPolicy Symbol Value [Value] port: OutputPort emit?: Boolean Object)
 ;;   | doc m%
 ;;       Admit and trace one bounded call edge while preserving the operator's
 ;;       returned values or original exception at the caller boundary.
@@ -115,23 +115,23 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (call-with-poo-flow-debug-trace
+;;       (call-with-yuanxu-debug-trace
 ;;        policy 'merge operator '(left right) emit?: #t)
 ;;       ;; => operator values, or raises a typed call anomaly
 ;;       ```
 ;;     %
-(def (call-with-poo-flow-debug-trace policy call-id operator arguments
+(def (call-with-yuanxu-debug-trace policy call-id operator arguments
                                      port: (port (current-error-port))
                                      emit?: (emit? #t))
   (unless (and (symbol? call-id) (list? arguments)
                (output-port? port) (boolean? emit?))
     (error "invalid POO Flow debug trace request" call-id))
-  (unless (eq? (validate PooFlowDebugCallPolicyContract policy) policy)
+  (unless (eq? (validate YuanxuDebugCallPolicyContract policy) policy)
     (error "invalid POO Flow debug call policy"))
-  (let* ((path (poo-flow-debug-active-call-path))
+  (let* ((path (yuanxu-debug-active-call-path))
          (started-jiffy (current-jiffy))
          (depth (length path))
-         (operator-kind (poo-flow-debug-operator-kind operator))
+         (operator-kind (yuanxu-debug-operator-kind operator))
          (rejected-outcome
           (cond ((not (procedure? operator)) 'rejected-non-procedure)
                 ((memq call-id path) 'rejected-cycle)
@@ -139,16 +139,16 @@
                 (else #f))))
     (when rejected-outcome
       (let (receipt
-            (poo-flow-debug-call-receipt
+            (yuanxu-debug-call-receipt
              policy call-id depth path operator-kind rejected-outcome))
-        (when emit? (poo-flow-debug-emit-call-receipt receipt port))
-        (poo-flow-debug-raise-call-anomaly receipt)))
+        (when emit? (yuanxu-debug-emit-call-receipt receipt port))
+        (yuanxu-debug-raise-call-anomaly receipt)))
     (let ((result-values '())
           (admitted
-           (poo-flow-debug-call-receipt
+           (yuanxu-debug-call-receipt
             policy call-id depth path operator-kind 'admitted)))
-      (when emit? (poo-flow-debug-emit-call-receipt admitted port))
-      (parameterize ((poo-flow-debug-active-call-path (cons call-id path)))
+      (when emit? (yuanxu-debug-emit-call-receipt admitted port))
+      (parameterize ((yuanxu-debug-active-call-path (cons call-id path)))
         (let ((invoke
                (lambda ()
                  (call-with-values
@@ -159,30 +159,30 @@
           (with-exception-catcher
            (lambda (failure)
              (when emit?
-               (poo-flow-debug-emit-call-receipt
-                (poo-flow-debug-call-receipt
+               (yuanxu-debug-emit-call-receipt
+                (yuanxu-debug-call-receipt
                  policy call-id depth path operator-kind 'raised
-                 (poo-flow-debug-elapsed-nanoseconds started-jiffy))
+                 (yuanxu-debug-elapsed-nanoseconds started-jiffy))
                 port))
              (raise failure))
            (lambda ()
              (if emit?
                ((traced-function
-                 (list 'poo-flow-debug-call call-id)
+                 (list 'yuanxu-debug-call call-id)
                  invoke
                  port))
                (invoke))))))
       (when emit?
-        (poo-flow-debug-emit-call-receipt
-         (poo-flow-debug-call-receipt
+        (yuanxu-debug-emit-call-receipt
+         (yuanxu-debug-call-receipt
           policy call-id depth path operator-kind 'returned
-          (poo-flow-debug-elapsed-nanoseconds started-jiffy))
+          (yuanxu-debug-elapsed-nanoseconds started-jiffy))
          port))
       (apply values result-values))))
 
-;; : (-> PooFlowDebugMemoryReceipt Never)
-;; poo-flow-debug-raise-memory-anomaly
-;;   : (-> PooFlowDebugMemoryReceipt Never)
+;; : (-> YuanxuDebugMemoryReceipt Never)
+;; yuanxu-debug-raise-memory-anomaly
+;;   : (-> YuanxuDebugMemoryReceipt Never)
 ;;   | doc m%
 ;;       Raise the typed fail-closed anomaly while retaining the exact rejected
 ;;       receipt for native Scheme handlers and audit projections.
@@ -192,24 +192,24 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-debug-raise-memory-anomaly rejected-receipt)
-;;       ;; => raises PooFlowDebugMemoryAnomaly with rejected-receipt
+;;       (yuanxu-debug-raise-memory-anomaly rejected-receipt)
+;;       ;; => raises YuanxuDebugMemoryAnomaly with rejected-receipt
 ;;       ```
 ;;     %
-;; : (-> PooFlowObservation PooFlowObservationSummary)
-(def (poo-flow-observation-debug-summary observation)
+;; : (-> YuanxuObservation YuanxuObservationSummary)
+(def (yuanxu-observation-debug-summary observation)
   (with-exception-catcher
    (λ (_failure)
      ;; Do not attach the original exception/irritants: they may hold a subject.
-     (raise (PooFlowObservationProjectionError "observation projection rejected")))
-   (λ () (poo-flow-observation-admission-summary observation))))
+     (raise (YuanxuObservationProjectionError "observation projection rejected")))
+   (λ () (yuanxu-observation-admission-summary observation))))
 
 ;;; This entry point intentionally does not dispatch an arbitrary user .summary
 ;;; renderer. A fresh closed-schema aggregate is built before any output occurs.
 ;;; trace? traces only the aggregate view, never the observed Module receiver.
-;; : (-> PooFlowObservation OutputPort trace?: Boolean PooFlowObservationSummary)
-;; poo-flow-observation-debug
-;;   : (-> PooFlowObservation OutputPort trace?: Boolean PooFlowObservationSummary)
+;; : (-> YuanxuObservation OutputPort trace?: Boolean YuanxuObservationSummary)
+;; yuanxu-observation-debug
+;;   : (-> YuanxuObservation OutputPort trace?: Boolean YuanxuObservationSummary)
 ;;   | doc m%
 ;;       Emit only the admitted closed-schema observation summary and return
 ;;       that identical native POO aggregate to the caller.
@@ -219,20 +219,20 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-observation-debug observation (current-error-port) trace?: #f)
-;;       ;; => PooFlowObservationSummary
+;;       (yuanxu-observation-debug observation (current-error-port) trace?: #f)
+;;       ;; => YuanxuObservationSummary
 ;;       ```
 ;;     %
-(def (poo-flow-observation-debug observation port trace?: (trace? #f))
+(def (yuanxu-observation-debug observation port trace?: (trace? #f))
   (unless (and (output-port? port) (boolean? trace?))
-    (raise (PooFlowObservationProjectionError "invalid observation debug output request")))
-  (let (summary (poo-flow-observation-debug-summary observation))
+    (raise (YuanxuObservationProjectionError "invalid observation debug output request")))
+  (let (summary (yuanxu-observation-debug-summary observation))
     (parameterize ((current-error-port port))
       (when trace?
-        (let* ((view (.o (render (cut poo-flow-observation-summary-sexp summary))))
+        (let* ((view (.o (render (cut yuanxu-observation-summary-sexp summary))))
                (traced (trace-poo view 'admission-observation-view)))
           (.call traced render)))
       ;; Admission already validated the closed summary contract. DDT receives
       ;; only the pure presentation projection, so no dependency Type adapter is needed.
-      (DDT 'observation poo-flow-observation-summary-sexp summary))
+      (DDT 'observation yuanxu-observation-summary-sexp summary))
     summary))

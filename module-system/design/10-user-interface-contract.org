@@ -87,8 +87,8 @@ Its normal form is a Doom-like =poo-flow-init-module-bundles= declaration using
 disabled, or customized. Presentations such as =pooFlowUserConfigPresentation=
 are projected by upstream helpers; declaration admission remains a Testing
 Policy concern and is not duplicated as a presentation object.
-Ordinary users should not have to call =pooFlowUserConfig=,
-=pooFlowUserProfile=, descriptor constructors, loader backend constructors,
+Ordinary users should not have to call =yuanxuUserConfig=,
+=yuanxuUserProfile=, descriptor constructors, loader backend constructors,
 merge internals, or runtime adapters.
 
 * 10.06.10.03 Presentation Contract

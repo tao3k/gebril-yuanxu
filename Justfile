@@ -23,8 +23,8 @@ test-file path observe="false":
     test -f "{{ path }}"
     options=()
     case "{{ observe }}" in
-      true) options=(-D poo-flow-module-test-observation) ;;
-      trace) options=(-D poo-flow-module-test-observation,poo-flow-module-test-trace) ;;
+      true) options=(-D yuanxu-module-test-observation) ;;
+      trace) options=(-D yuanxu-module-test-observation,yuanxu-module-test-trace) ;;
       false) ;;
       *) echo 'observe must be false, true, or trace' >&2; exit 1 ;;
     esac
@@ -58,7 +58,7 @@ test-source-tail-policy directory:
     export CORE_SOURCE_TAIL_POLICY="${CORE_SOURCE_TAIL_POLICY:-segment}"
     export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
     export CORE_SOURCE_TAIL_CORE="$(pwd)/"
-    test -f "$CORE_SOURCE_TAIL_ROOT/lib/core/module-system/source/admission.o1"
+    test -f "$CORE_SOURCE_TAIL_ROOT/lib/yuanxu/module-system/source/admission.o1"
     export GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib"
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/refine-tail-policy.ss
     if [[ "$CORE_SOURCE_TAIL_POLICY" == unrestricted ]]; then
@@ -210,48 +210,48 @@ test-modules:
 # Explicit real-provider artifact gate; the native test streams the binary.
 [group('test')]
 test-opentofu-aws-binary binary:
-    POO_FLOW_AWS_BINARY="{{ binary }}" just test-file t/opentofu-aws-binary-test.ss
+    YUANXU_AWS_BINARY="{{ binary }}" just test-file t/opentofu-aws-binary-test.ss
 
 # Explicit package-artifact control; no Loader or provider process in admission.
 [group('test')]
 test-opentofu-provider-artifact artifact:
-    POO_FLOW_OPENTOFU_TEST_ARTIFACT="{{ artifact }}" just test-file t/opentofu-provider-artifact-test.ss
+    YUANXU_OPENTOFU_TEST_ARTIFACT="{{ artifact }}" just test-file t/opentofu-provider-artifact-test.ss
 
 # The two arguments must be real Nix schema outputs, not edited manifests.
 [group('test')]
 test-opentofu-provider-versions parent child:
-    POO_FLOW_OPENTOFU_TEST_PARENT_ARTIFACT="{{ parent }}" POO_FLOW_OPENTOFU_TEST_CHILD_ARTIFACT="{{ child }}" just test-file t/opentofu-provider-versions-test.ss
+    YUANXU_OPENTOFU_TEST_PARENT_ARTIFACT="{{ parent }}" YUANXU_OPENTOFU_TEST_CHILD_ARTIFACT="{{ child }}" just test-file t/opentofu-provider-versions-test.ss
 
 # One real package collection; uses the default heap-fenced native harness.
 [group('test')]
 test-opentofu-provider-families artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-provider-families-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-provider-families-test.ss
 
 [group('test')]
 test-opentofu-configuration-families artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-configuration-families-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-configuration-families-test.ss
 
 [group('test')]
 test-opentofu-configuration-discovery artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-configuration-discovery-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-configuration-discovery-test.ss
 
 [group('test')]
 test-opentofu-indexed-inputs artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-indexed-inputs-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-indexed-inputs-test.ss
 
 [group('test')]
 test-opentofu-artifact-collection artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-artifact-collection-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-artifact-collection-test.ss
 
 # Project Provider package demand without reading any injected artifact.
 [group('test')]
 test-opentofu-build-demand output:
-    env -u POO_FLOW_OPENTOFU_ARTIFACT POO_FLOW_OPENTOFU_TEST_SELECTION="{{ output }}" just test-file t/opentofu-build-selection-test.ss
+    env -u YUANXU_OPENTOFU_ARTIFACT YUANXU_OPENTOFU_TEST_SELECTION="{{ output }}" just test-file t/opentofu-build-selection-test.ss
 
 # Admit against the real collection produced from the demand projection.
 [group('test')]
 test-opentofu-selected-artifact artifact:
-    POO_FLOW_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-build-selection-test.ss
+    YUANXU_OPENTOFU_ARTIFACT="{{ artifact }}" just test-file t/opentofu-build-selection-test.ss
 
 # Real Nix handoff from the Core selected graph; no product Loader.
 [group('test')]
@@ -266,7 +266,7 @@ test-opentofu-selected-graph-rounds output rounds="5":
 # Locked local flake; package fixtures remain an explicit test input.
 [group('test')]
 test-nix-flake artifact:
-    POO_FLOW_OPENTOFU_FLAKE_ARTIFACT="{{ artifact }}" POO_FLOW_NIX_TEST_TOOLS="$(nix-instantiate --eval --strict --json --expr 'with import <nixpkgs> {}; { shell = toString bash; tools = toString coreutils; }')" just test-file t/nix-flake-source-test.ss
+    YUANXU_OPENTOFU_FLAKE_ARTIFACT="{{ artifact }}" YUANXU_NIX_TEST_TOOLS="$(nix-instantiate --eval --strict --json --expr 'with import <nixpkgs> {}; { shell = toString bash; tools = toString coreutils; }')" just test-file t/nix-flake-source-test.ss
 
 # Same serial observations, plus locked flake Sources; no product Loader.
 [group('test')]
@@ -280,7 +280,7 @@ prepare-opentofu-flake output package_ref:
 
 [group('test')]
 test-opentofu-selected-flake source:
-    POO_FLOW_OPENTOFU_GRAPH_FLAKE="{{ source }}" just test-file t/opentofu-selected-graph-test.ss
+    YUANXU_OPENTOFU_GRAPH_FLAKE="{{ source }}" just test-file t/opentofu-selected-graph-test.ss
 
 # Demand comes from final Config; the prepared flake/lock is read-only at runtime.
 [group('test')]
@@ -340,7 +340,7 @@ build-mop-store-boundary-runtime directory:
     export CORE_STORE_ROOT="{{ directory }}"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
-    shasum -a 256 "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/core/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
+    shasum -a 256 "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
     sdk_home="$(cat "$CORE_STORE_ROOT/sdk-home")"
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$sdk_home,~~bin=$sdk_home/bin,~~lib=$sdk_home/lib"
     gsc_features=()

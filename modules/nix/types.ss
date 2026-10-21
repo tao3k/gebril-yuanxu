@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/types poo-flow-predicate-contract))
+        (only-in :yuanxu/types yuanxu-predicate-contract))
 (export NixSourceContract NixFlakeSourceContract NixScopeContract)
 (def (nix-arguments? value)
   (and (object? value)
@@ -15,7 +15,7 @@
        (every (lambda (row) (and (pair? row) (string? (car row))
                                  (or (not (cdr row)) (string? (cdr row))))) value)))
 (def NixSourceContract
-  (poo-flow-predicate-contract 'nix/source
+  (yuanxu-predicate-contract 'nix/source
     (lambda (value)
       (and (object? value) (.slot? value 'expression) (.slot? value 'arguments)
            (string? (.get value expression))
@@ -23,7 +23,7 @@
     (lambda (_v _c) '())))
 
 (def NixFlakeSourceContract
-  (poo-flow-predicate-contract 'nix/flake-source
+  (yuanxu-predicate-contract 'nix/flake-source
     (lambda (value)
       (and (object? value)
            (.slot? value 'reference) (string? (.get value reference))
@@ -41,7 +41,7 @@
     (lambda (_v _c) '())))
 
 (def NixScopeContract
-  (poo-flow-predicate-contract 'nix/scope
+  (yuanxu-predicate-contract 'nix/scope
     (lambda (scope)
       (and (object? scope) (.slot? scope 'config) (.slot? scope 'types)
            (.slot? (.get scope types) 'Source)

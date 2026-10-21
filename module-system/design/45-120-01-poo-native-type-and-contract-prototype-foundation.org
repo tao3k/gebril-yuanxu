@@ -280,10 +280,10 @@ flowchart TD
 The first implementation slice is deliberately narrow and has no legacy
 compatibility adapter:
 
-- =core/types.ss= owns =PooFlowType.=, =PooFlowContract.=,
+- =core/types.ss= owns =YuanxuType.=, =YuanxuContract.=,
   classification evidence, validation evidence, and the three open generic
-  operations =poo-flow-type-classify=, =poo-flow-contract-obligations=, and
-  =poo-flow-contract-admit=;
+  operations =yuanxu-type-classify=, =yuanxu-contract-obligations=, and
+  =yuanxu-contract-admit=;
 - =core/observability/types.ss= defines diagnostic and receipt Contract
   descriptors with upstream =define-type=;
 - =core/observability/objects.ss= constructs native POO objects and validates

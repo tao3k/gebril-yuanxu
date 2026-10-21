@@ -4,7 +4,7 @@
 ;;; Read-only lowering of the bounded init declaration, never eval/import.
 (import (only-in :clan/poo/object .o .+ .ref)
         (only-in :std/list/list any)
-        (only-in :core/module-system/selection/objects poo-flow-user-module-selection))
+        (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent)
 (def (init-name? name)
   (and (symbol? name)
@@ -13,13 +13,13 @@
               (andmap (lambda (c) (not (memv c '(#\/ #\\ #\:)))) (string->list text))))))
 (def (single-init-intent forms source-path (window? #f))
   (def mount-value #f)
-  (let ((declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'poo-flow!))) forms)))
+  (let ((declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms)))
     (unless (= (length declarations) 1)
-      (error "init.ss requires exactly one poo-flow! declaration" source-path))
+      (error "init.ss requires exactly one yuanxu! declaration" source-path))
     ;; Import/export are compiler scaffolding only. No other top-level form is
     ;; silently ignored or run; computed init declarations need a separate adapter.
     (unless (andmap (lambda (form) (and (list? form) (pair? form)
-                                       (memq (car form) '(import export poo-flow!)))) forms)
+                                       (memq (car form) '(import export yuanxu!)))) forms)
       (error "init.ss contains non-declarative forms" source-path))
     (let parse ((tail (cdar declarations)) (mode-value 'explicit) (root-value "modules")
                 (group #f) (rows '()) (options '()) (seen '()))
@@ -97,7 +97,7 @@
                    (cons (.o identity: id disabled?: disabled-value
                              disable-specified?: disable-specified-value
                              source-root: source-root-value
-                             selection: (.+ (poo-flow-user-module-selection group (car row) flags)
+                             selection: (.+ (yuanxu-user-module-selection group (car row) flags)
                                             (.o enabled?: (not disabled-value)))) rows)
                    options (cons id seen)))))))))
 
@@ -110,7 +110,7 @@
      (let split ((rest tail) (clauses '()))
        (if (or (null? rest) (eq? (car rest) ':load-modules))
          (let* ((intent (single-init-intent
-                         (list `(poo-flow! source: ,root ,@(reverse clauses))) source-path #t))
+                         (list `(yuanxu! source: ,root ,@(reverse clauses))) source-path #t))
                 (name (or (.ref intent 'mount)
                           (string->symbol (path-strip-directory
                             (path-strip-trailing-directory-separator (path-expand root)))))))
@@ -124,10 +124,10 @@
     (_ (error "directory window requires a literal source path" source-path))))
 
 (def (module-init-intent forms source-path)
-  (def declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'poo-flow!))) forms))
-  (unless (= (length declarations) 1) (error "init.ss requires exactly one poo-flow! declaration" source-path))
+  (def declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms))
+  (unless (= (length declarations) 1) (error "init.ss requires exactly one yuanxu! declaration" source-path))
   (unless (andmap (lambda (form) (and (list? form) (pair? form)
-                                    (memq (car form) '(import export poo-flow!)))) forms)
+                                    (memq (car form) '(import export yuanxu!)))) forms)
     (error "init.ss contains non-declarative forms" source-path))
   (def body (cdar declarations))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))

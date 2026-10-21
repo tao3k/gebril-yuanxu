@@ -1,8 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/module-system/graph/funs module-closure)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe))
+        (only-in :yuanxu/module-system/graph/funs module-closure)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
 (export module-closure-work-test)
 
 ;; Independent finite saturation oracle; no DFS stack or production index.
@@ -17,7 +17,7 @@
 
 (def module-closure-work-test
   (test-suite "Source closure algorithm work correspondence"
-    (poo-flow-test-case "Quint shared diamond and cycle match independent saturation"
+    (yuanxu-test-case "Quint shared diamond and cycle match independent saturation"
       (def nodes '(0 1 2 3 4 5))
       (def (dependencies node)
         (case node ((0) '(1 2)) ((1 2) '(3)) ((3) '(1)) ((4) '(2)) (else '())))
@@ -28,7 +28,7 @@
                         (closure-oracle roots nodes dependencies))
           (check-equal? (memv 5 result) #f))
         '((0) (4) (0 4))))
-    (poo-flow-test-case "thousand-scale work is roots plus traversed edges, not repeated expansion"
+    (yuanxu-test-case "thousand-scale work is roots plus traversed edges, not repeated expansion"
       (for-each
         (lambda (size)
           (def pops 0)
@@ -54,7 +54,7 @@
           (for-each (lambda (node) (check-equal? (hash-ref counts node) 1)) result)
           (check-equal? pops (+ (length roots) charged-edges))
           (check-equal? charged-edges (+ (* 3 (- size 1)) 1))
-          (poo-flow-test-observe 'closure-expansions expansions)
-          (poo-flow-test-observe 'closure-pops pops)
-          (poo-flow-test-observe 'closure-edges charged-edges))
+          (yuanxu-test-observe 'closure-expansions expansions)
+          (yuanxu-test-observe 'closure-pops pops)
+          (yuanxu-test-observe 'closure-edges charged-edges))
         '(1000 5000 10000)))))

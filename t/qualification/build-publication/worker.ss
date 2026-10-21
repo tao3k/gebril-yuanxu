@@ -6,13 +6,13 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/misc string-subst)
-        (only-in :core/module-system/source/link poo-flow-load-modules)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/building/artifacts
+        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/building/artifacts
           accept-build-artifact-handoff! call-with-build-artifact-issuance admit-build-artifacts!
           build-artifact-handoff)
-        (only-in :core/ops/progress call-with-execution-progress execution-progress!)
-        (only-in :core/modules/nix/func current-nix-process-completion-observer)
+        (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!)
+        (only-in :yuanxu/modules/nix/func current-nix-process-completion-observer)
         "./projection" "./store")
 (def (report-result prefix value)
   ;; Nix --raw has no trailing newline; keep protocol rows independent of stderr.
@@ -26,7 +26,7 @@
            (package-name (cadr (call-with-input-file (path-expand "gerbil.pkg" directory) read)))
            (unit-name (string-append (symbol->string package-name) "/probe"))
            (record (path-expand
-             (find (cut string-prefix? ".poo-flow-build-issuance-" <>)
+             (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
                (directory-files (list path: libdir ignore-hidden: #f))) libdir)))
       (list directory libdir unit-name (cadr raw) record))
     raw))
@@ -47,7 +47,7 @@
         (def requested-mode (list-ref args 3))
         (def approved? (string-prefix? "approved-" requested-mode))
         (def mode (if approved? (substring requested-mode 9 (string-length requested-mode)) requested-mode))
-        (def selection (poo-flow-load-modules (path-expand "init.ss" root)))
+        (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
         (def projection (probe-projection selection root probe-identity))
         (when (equal? mode "persist")
           (displayln "CORE-STORE-ROOT " (publish-store! projection lib))

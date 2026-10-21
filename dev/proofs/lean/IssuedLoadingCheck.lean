@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.IssuedLoading
-open Lean PooFlowCoreProof.Admission.IssuedLoading
+import YuanxuProof.Admission.IssuedLoading
+open Lean YuanxuProof.Admission.IssuedLoading
 
 def checkIssuedRow (j : Json) : Except String (String × Bool) := do
   let a ← j.getArr?

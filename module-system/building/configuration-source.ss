@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Explicit build-tool evaluation of an observed role, not a Module Loader.
 (import (only-in :clan/poo/object .o .get)
-        (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
-        (only-in :core/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
                  current-module-source-phase)
-        (only-in :core/module-system/source/reader module-prepared-source-binding))
-(export poo-flow-core-configuration-source)
-(def (poo-flow-core-configuration-source path binding context-current! role-sources: (roles '()))
+        (only-in :yuanxu/module-system/source/reader module-prepared-source-binding))
+(export yuanxu-configuration-source)
+(def (yuanxu-configuration-source path binding context-current! role-sources: (roles '()))
   (unless (and (symbol? binding) (eq? (module-source-type path) 'regular))
     (error "configuration source requires a regular role and native binding" path binding))
   ;; A single synchronous validation of this closure shares its context check.
@@ -27,8 +27,8 @@
                     (let-values (((prepared related)
                                   (parameterize ((phase (.o checked: (context-current!))))
                                     (values
-                                      (poo-flow-prepare-module-build-source path context!)
-                                      (map (lambda (file) (poo-flow-prepare-module-build-source file context!))
+                                      (yuanxu-prepare-module-build-source path context!)
+                                      (map (lambda (file) (yuanxu-prepare-module-build-source file context!))
                                         (filter (lambda (file) (and (not (equal? path file))
                                                     (not (member (path-strip-directory file) '("interface.ss" "build.ss"))))) roles))))))
                       (def (current! (site 'configuration-public))

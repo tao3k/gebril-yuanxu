@@ -1,10 +1,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :core/ops/func run-script)
-        (only-in :core/ops/config Config)
-        (only-in :core/ops/progress execution-progress! make-test-progress-reader)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/config Config)
+        (only-in :yuanxu/ops/progress execution-progress! make-test-progress-reader)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
         (only-in :std/encoding/json write-json)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
@@ -34,7 +34,7 @@
     action (lambda () (put binary original) (put record old-record))))
 (def approved-build-recovery-test
   (test-suite "Restart restores approval from selected Module Source"
-    (poo-flow-test-fixture "no caller-supplied release pin survives the issuer"
+    (yuanxu-test-fixture "no caller-supplied release pin survives the issuer"
       (fixture DirectoryFixture)
       (with-slots (root) fixture
         (def processes 0)
@@ -50,7 +50,7 @@
         ;; Capture the sole original record BEFORE warm workers create their
         ;; own records. This path is fault injection input, never approval.
         (def record (path-expand
-          (find (cut string-prefix? ".poo-flow-build-issuance-" <>)
+          (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
             (directory-files (list path: (path-expand "lib" root) ignore-hidden: #f)))
           (path-expand "lib" root)))
         (for-each

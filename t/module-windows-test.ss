@@ -4,11 +4,11 @@
         (only-in :std/list/list any)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/init module-init-intent)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/module-system/interface poo-flow-load-modules))
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/init module-init-intent)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export module-windows-test)
 (.def Workspace
   .acquire: (lambda () (let (root (make-temporary-file-name "module-windows-"))
@@ -21,7 +21,7 @@
 (def (message-is text)
   (lambda (failure) (and (Error? failure) (equal? (Error-message failure) text))))
 (def declaration
-  '(poo-flow!
+  '(yuanxu!
      :load-modules "./modules" mode: explicit rename: Modules (engine)
      :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release)))
 (def (fixture! root)
@@ -32,8 +32,8 @@
       (def directory (path-expand (car row) root))
       (def id (cdr row))
       (write-forms (path-expand "types.ss" directory)
-        '((import :clan/poo/object (only-in :core/types poo-flow-predicate-contract))
-          (def Scope (poo-flow-predicate-contract 'scope object? (lambda (_v _c) '())))
+        '((import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract))
+          (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '())))
           (export Scope)))
       (write-forms (path-expand "objects.ss" directory) '((def Defaults #t) (export Defaults)))
       (write-forms (path-expand "config.ss" directory) '((def Config (.o))))
@@ -51,15 +51,15 @@
   (write-forms (path-expand "modules/bomb/interface.ss" root) '((error "unselected Module loaded")))
   (write-forms (path-expand "scenarios/bomb/interface.ss" root) '((error "unselected Scenario loaded")))
   (write-forms (path-expand "init.ss" root)
-    `((import :core/module-system/selection/init-syntax) ,declaration))
+    `((import :yuanxu/module-system/selection/init-syntax) ,declaration))
   (write-forms (path-expand "build.ss" root)
     '((import (only-in :std/build-script defbuild-script) (only-in "./init.ss" init.build-spec))
       (defbuild-script (init.build-spec '())))))
 (def module-windows-test
   (test-suite "One init, mounted directories and one selected Graph"
-    (poo-flow-test-case "header and identity collisions reject without evaluation"
+    (yuanxu-test-case "header and identity collisions reject without evaluation"
       (for-each
-        (lambda (body) (check-exception (module-init-intent (list (cons 'poo-flow! body)) #f) error?))
+        (lambda (body) (check-exception (module-init-intent (list (cons 'yuanxu! body)) #f) error?))
         '((:load-modules "a" mode: explicit rename: X
            :load-modules "b" mode: explicit rename: x)
           (:load-modules "a" mode: explicit rename: A
@@ -72,7 +72,7 @@
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
-    (poo-flow-test-fixture "mounted scopes share identity and cross-window requirements; bombs remain cold"
+    (yuanxu-test-fixture "mounted scopes share identity and cross-window requirements; bombs remain cold"
       (root Workspace)
       (fixture! root)
       (def reads '())
@@ -80,7 +80,7 @@
                       (lambda (key _amount)
                         (when (and (pair? key) (eq? (car key) 'file-read))
                           (set! reads (cons (caddr key) reads))))))
-        (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+        (def view (yuanxu-load-modules (path-expand "init.ss" root)))
         (check-equal? (.all-slots/sort (.get view modules)) '(Modules Scenarios))
         (check-equal? (.slot? (.get view modules Modules) 'bomb) #f)
         (check-equal? (.get view selected-graph module-order) '(engine release))
@@ -90,7 +90,7 @@
         (check-equal? (any (cut string-contains <> "/bomb/") reads) #f)
         (write-forms (path-expand "scenarios/release/config.ss" root) '((def Config (.o changed: #t))))
         (check-exception (.call view admit-current) error?)))
-    (poo-flow-test-fixture "hygienic mount bindings share build/tests; execution leaves scopes cold"
+    (yuanxu-test-fixture "hygienic mount bindings share build/tests; execution leaves scopes cold"
       (root Workspace)
       (fixture! root)
       (parameterize ((current-expander-context (make-top-context)))
@@ -110,27 +110,27 @@
         (eval-syntax '(def CapturedTests (.get init.Scenarios release tests)))
         (check-equal? (eval-syntax '(.ref/cached (.get init.Scenarios release) 'scope)) #f)
         (write-forms (path-expand "init.ss" root)
-          '((poo-flow! :load-modules "./modules" mode: explicit rename: Changed (engine))))
+          '((yuanxu! :load-modules "./modules" mode: explicit rename: Changed (engine))))
         (check-exception (eval-syntax '(.all-slots init.Modules)) error?)
         (check-exception (eval-syntax '(.call CapturedTests .run)) error?)))
-    (poo-flow-test-fixture "auto mounts locate on demand and reject a shared publication identity"
+    (yuanxu-test-fixture "auto mounts locate on demand and reject a shared publication identity"
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "init.ss" root)
-        '((poo-flow! :load-modules "./modules" mode: auto rename: Modules
+        '((yuanxu! :load-modules "./modules" mode: auto rename: Modules
                     :load-modules "./scenarios" mode: explicit rename: Scenarios (release))))
-      (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+      (def view (yuanxu-load-modules (path-expand "init.ss" root)))
       (check-equal? (.get view modules Modules engine value) 42)
       ;; A different mount cannot disambiguate the same logical publication id.
       (create-directory* (path-expand "scenarios/engine" root))
       (write-forms (path-expand "scenarios/engine/interface.ss" root) '((error "must not evaluate")))
       (write-forms (path-expand "init.ss" root)
-        '((poo-flow! :load-modules "./modules" mode: explicit rename: Modules (engine)
+        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules (engine)
                     :load-modules "./scenarios" mode: auto rename: Scenarios)))
-      (check-exception (.get (poo-flow-load-modules (path-expand "init.ss" root)) modules Scenarios engine)
+      (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) modules Scenarios engine)
         (message-is "publication belongs to a different directory window"))
       (write-forms (path-expand "init.ss" root)
-        '((poo-flow! :load-modules "./modules" mode: auto rename: Modules
+        '((yuanxu! :load-modules "./modules" mode: auto rename: Modules
                     :load-modules "./scenarios" mode: auto rename: Scenarios)))
-      (check-exception (.get (poo-flow-load-modules (path-expand "init.ss" root)) modules Modules engine)
+      (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) modules Modules engine)
         (message-is "ambiguous publication identity across directory windows")))))

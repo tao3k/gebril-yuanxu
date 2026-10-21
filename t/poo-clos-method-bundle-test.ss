@@ -3,11 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         (only-in :clan/poo/object .def .o .ref)
         (only-in :clan/poo/mop element?)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-method-bundle-test)
 
@@ -96,12 +96,12 @@
 
 (def poo-clos-method-bundle-test
   (test-suite "POO CLOS generic protocol and method bundle composition"
-    (poo-flow-test-case "protocol expression preserves identity and evaluates once"
+    (yuanxu-test-case "protocol expression preserves identity and evaluates once"
       (check-equal? protocol-evaluations 1)
       (check (eq? (.ref (poo-clos-generic-binding-current
                          deferred-render$poo-clos-generic) 'protocol)
                   declared-protocol) => #t))
-    (poo-flow-test-case "direct and defrules methods remain inert until explicit composition"
+    (yuanxu-test-case "direct and defrules methods remain inert until explicit composition"
       (check-equal? target-evaluations 1)
       (check-equal? body-evaluations 0)
       (check-equal? (length (.ref declared-methods 'methods)) 2)
@@ -117,7 +117,7 @@
        (.ref (poo-clos-generic-binding-current deferred-render$poo-clos-generic)
              'generation)
        initial-generation))
-    (poo-flow-test-case "same-labelled different protocol rejects before registration"
+    (yuanxu-test-case "same-labelled different protocol rejects before registration"
       (check-exception
        (poo-clos-compose-method-bundle deferred-render$poo-clos-generic
                                       wrong-declared-methods)
@@ -128,7 +128,7 @@
        (.ref (poo-clos-generic-binding-current deferred-render$poo-clos-generic)
              'generation)
        initial-generation))
-    (poo-flow-test-case "failed bundle construction cannot leak a declared method"
+    (yuanxu-test-case "failed bundle construction cannot leak a declared method"
       (check-exception
        (let ()
          (.defmethod-bundle invalid-declared-methods declared-protocol
@@ -143,7 +143,7 @@
              'generation)
        initial-generation)
       (check-equal? (deferred-render (.o (:: @ BundleChildPrototype.))) 'fallback))
-    (poo-flow-test-case "explicit compose activates methods and lexical next-method"
+    (yuanxu-test-case "explicit compose activates methods and lexical next-method"
       (poo-clos-compose-method-bundle deferred-render$poo-clos-generic
                                     declared-methods)
       (check-equal?
@@ -155,13 +155,13 @@
       (check-equal? body-evaluations 1)
       (check-equal? target-evaluations 1)
       (check-equal? protocol-evaluations 1))
-    (poo-flow-test-case "deferred class eql and prototype declarations share existing dispatch"
+    (yuanxu-test-case "deferred class eql and prototype declarations share existing dispatch"
       (check-equal? (deferred-kinds 'sentinel) 'fallback)
       (poo-clos-compose-method-bundle deferred-kinds$poo-clos-generic kind-methods)
       (check-equal? (deferred-kinds 'sentinel) 'eql)
       (check-equal? (deferred-kinds (poo-clos-make-instance BundleClass)) 'class)
       (check-equal? (deferred-kinds (.o (:: @ BundleChildPrototype.))) 'prototype))
-    (poo-flow-test-case "deferred congruence admission occurs at explicit composition"
+    (yuanxu-test-case "deferred congruence admission occurs at explicit composition"
       (check-equal?
        (.ref (poo-clos-generic-binding-current deferred-strict$poo-clos-generic)
              'generation) 0)
@@ -174,28 +174,28 @@
       (check-equal?
        (.ref (poo-clos-generic-binding-current deferred-strict$poo-clos-generic)
              'generation) 0))
-    (poo-flow-test-case "method body restores ordinary immediate nested declarations"
+    (yuanxu-test-case "method body restores ordinary immediate nested declarations"
       (check-equal? (nested-registration 'value) 'before)
       (poo-clos-compose-method-bundle deferred-body$poo-clos-generic body-methods)
       (check-equal? (nested-registration 'value) 'before)
       (check-equal? (deferred-body (.o (:: @ BundlePrototype.))) 'outer)
       (check-equal? (nested-registration 'value) 'after))
-    (poo-flow-test-case "deferred declarations may precede their Generic binding"
+    (yuanxu-test-case "deferred declarations may precede their Generic binding"
       (check-equal?
        (.ref (poo-clos-generic-binding-current forward-render$poo-clos-generic)
              'generation) 0)
       (poo-clos-compose-method-bundle forward-render$poo-clos-generic forward-methods)
       (check-equal? (forward-render (.o (:: @ BundleChildPrototype.))) 'forward))
-    (poo-flow-test-case "thin defrule produces a native checked bundle"
+    (yuanxu-test-case "thin defrule produces a native checked bundle"
       (check (element? ClosMethodBundle render-methods) => #t)
       (check (.ref render-methods 'protocol) => bundle-protocol)
       (check (.ref render-methods 'methods) => (list base-method)))
-    (poo-flow-test-case "one protocol composes a bundle into generic dispatch"
+    (yuanxu-test-case "one protocol composes a bundle into generic dispatch"
       (let ((generic (poo-clos-generic-function 'render 1 protocol: bundle-protocol))
             (bundle (fresh-bundle 'base bundle-protocol 'base 'base)))
         (check (poo-clos-compose-method-bundle generic bundle) => generic)
         (check (poo-clos-call generic 'payload) => '(base payload))))
-    (poo-flow-test-case "several bundles preserve ordinary replacement admission"
+    (yuanxu-test-case "several bundles preserve ordinary replacement admission"
       (let* ((generic (poo-clos-generic-function 'render 1 protocol: bundle-protocol))
              (base-bundle (fresh-bundle 'base bundle-protocol 'base 'base))
              (replacement-bundle
@@ -205,7 +205,7 @@
                 generic (list base-bundle replacement-bundle))
                => generic)
         (check (poo-clos-call generic 'payload) => '(replacement payload))))
-    (poo-flow-test-case "protocol identity mismatch fails before method ownership changes"
+    (yuanxu-test-case "protocol identity mismatch fails before method ownership changes"
       (let* ((generic (poo-clos-generic-function 'render 1 protocol: bundle-protocol))
              (bundle (fresh-bundle 'wrong other-protocol 'wrong 'wrong)))
         (check-exception

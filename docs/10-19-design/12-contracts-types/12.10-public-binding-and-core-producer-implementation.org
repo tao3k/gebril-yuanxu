@@ -39,7 +39,7 @@ commits. This task's public binding/test/docs edits remain local and uncommitted
 (defvalues (evidence next refusal)
   (metadata.publish BoundAdmission Parent
     (lambda (candidate)
-      (values (poo-flow-contract-admit ActualAdmission candidate Context)
+      (values (yuanxu-contract-admit ActualAdmission candidate Context)
               candidate))
     Release))
 #+end_src
@@ -58,15 +58,15 @@ admission policy would be insufficient.
 
 * One existing producer, no domain attachment
 
-The existing =poo-flow-validation-evidence= constructor now takes a Contract
+The existing =yuanxu-validation-evidence= constructor now takes a Contract
 object as its first argument instead of a symbolic identity. It derives the
 diagnostic identity and records the reference in the same existing evidence:
 
 #+begin_src scheme
-(def (poo-flow-validation-evidence contract-value candidate-value
+(def (yuanxu-validation-evidence contract-value candidate-value
                                     classification-value obligation-evidence-value
                                     accepted-value diagnostics-value context-value)
-  (.o kind: 'poo-flow.contract.validation-evidence
+  (.o kind: 'yuanxu.contract.validation-evidence
       contract-identity: (.ref contract-value 'identity)
       admission-contract: contract-value
       candidate: candidate-value
@@ -85,7 +85,7 @@ descriptor, not just the root descriptor. A missing child row records the
 required Contract and remains rejected; it does not claim that a missing value
 was executed or accepted.
 
-=PooFlowValidationEvidence= now requires =admission-contract=, an object with
+=YuanxuValidationEvidence= now requires =admission-contract=, an object with
 an identity consistent with =contract-identity=. Malformed or absent references
 cannot pass the existing accepted-evidence predicate. Direct callers of the
 low-level constructor must pass the actual descriptor; there is no symbol-only
@@ -101,7 +101,7 @@ candidate/context consistency checks are not claimed to provide authentication.
 Removed: the isolated =produce-evidence= wrapper and the generated
 =fixture-binding.ss= implementation. Scheme preparation no longer extracts a
 binding function from a document. The scenario qualification directly imports
-=metadata.bind-evidence= and calls =poo-flow-contract-admit=. Negative tests alone
+=metadata.bind-evidence= and calls =yuanxu-contract-admit=. Negative tests alone
 deliberately corrupt a reference or relabel a receipt; domain code does neither.
 
 | Focused gate | Coverage |

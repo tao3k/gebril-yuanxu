@@ -3,27 +3,27 @@
 ;;; Platform-owned admission context over existing selected/build Graph guards.
 (import :clan/poo/object
         (only-in :clan/poo/mop define-type Type element?)
-        (only-in :core/module-system/source/build unique-build-inputs)
-        (only-in :core/module-system/building/artifacts admit-build-artifacts!
+        (only-in :yuanxu/module-system/source/build unique-build-inputs)
+        (only-in :yuanxu/module-system/building/artifacts admit-build-artifacts!
           admit-build-artifact-publication! build-artifact-publication-current)
-        (only-in :core/admission/contributions bind-publication-contributions)
+        (only-in :yuanxu/admission/contributions bind-publication-contributions)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/string/path path-absolute?)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?
+        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?
                  call-with-contract-analysis-root)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/module-system/source/admission
           module-source-read module-source-admit-current! call-with-module-source-read-cache
           current-module-source-observer)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-port)
-        (only-in :core/modules/json-schema/json-schema-normalize poo-flow-json-schema-normalize)
-        (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization->alist)
-        (only-in :core/modules/json-schema/json-schema-ir poo-flow-json-schema-normalization-schema)
-        (only-in :core/modules/json-schema/json-schema-receipt
-          poo-flow-json-schema-contract-artifact?
-          poo-flow-json-schema-contract-artifact-valid?
-          poo-flow-json-schema-contract-artifact-source-ref
-          poo-flow-json-schema-contract-artifact-diagnostics
-          poo-flow-json-schema-contract-artifact-normalization))
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-port)
+        (only-in :yuanxu/modules/json-schema/json-schema-normalize yuanxu-json-schema-normalize)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization->alist)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        (only-in :yuanxu/modules/json-schema/json-schema-receipt
+          yuanxu-json-schema-contract-artifact?
+          yuanxu-json-schema-contract-artifact-valid?
+          yuanxu-json-schema-contract-artifact-source-ref
+          yuanxu-json-schema-contract-artifact-diagnostics
+          yuanxu-json-schema-contract-artifact-normalization))
 (export AdmissionPublication. module-admission-publication)
 
 (def (copy-inputs inputs)
@@ -34,20 +34,20 @@
 ;; Bind the artifact's actual schema to exactly the text whose revision we keep.
 ;; This path supports local file-backed artifacts; labels are not file versions.
 (def (schema-input artifact)
-  (unless (and (poo-flow-json-schema-contract-artifact? artifact)
-               (poo-flow-json-schema-contract-artifact-valid? artifact)
-               (null? (poo-flow-json-schema-contract-artifact-diagnostics artifact)))
+  (unless (and (yuanxu-json-schema-contract-artifact? artifact)
+               (yuanxu-json-schema-contract-artifact-valid? artifact)
+               (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
     (error "admission requires a valid selected Schema artifact"))
-  (let (path (poo-flow-json-schema-contract-artifact-source-ref artifact))
+  (let (path (yuanxu-json-schema-contract-artifact-source-ref artifact))
     (unless (and (string? path) (path-absolute? path))
       (error "Schema artifact requires an absolute source reference" path))
     (let (text (module-source-read path))
       (unless (equal?
-                (poo-flow-json-schema-normalization->alist
-                  (poo-flow-json-schema-normalize
-                    (call-with-input-string text poo-flow-json-schema-read-port)))
-                (poo-flow-json-schema-normalization->alist
-                  (poo-flow-json-schema-contract-artifact-normalization artifact)))
+                (yuanxu-json-schema-normalization->alist
+                  (yuanxu-json-schema-normalize
+                    (call-with-input-string text yuanxu-json-schema-read-port)))
+                (yuanxu-json-schema-normalization->alist
+                  (yuanxu-json-schema-contract-artifact-normalization artifact)))
         (error "Schema artifact no longer matches its selected source" path))
       (cons (string-copy path) text))))
 
@@ -55,7 +55,7 @@
 ;; exact manifest/index/type bytes used by the digest-checked reader. Consume
 ;; that association instead of re-exporting Schema JSON into a temporary file.
 (def (schema-observations selected)
-  (if (poo-flow-json-schema-contract-artifact? selected)
+  (if (yuanxu-json-schema-contract-artifact? selected)
     (list (schema-input selected))
     (begin
       (unless (and (object? selected)
@@ -64,18 +64,18 @@
         (error "admission requires a Schema artifact or published Schema contract"))
       (let* ((artifact (.get selected schema-artifact))
              (inputs (.get selected source-inputs)))
-        (unless (and (poo-flow-json-schema-contract-artifact? artifact)
-                     (poo-flow-json-schema-contract-artifact-valid? artifact)
-                     (null? (poo-flow-json-schema-contract-artifact-diagnostics artifact))
+        (unless (and (yuanxu-json-schema-contract-artifact? artifact)
+                     (yuanxu-json-schema-contract-artifact-valid? artifact)
+                     (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact))
                      (eq? (.ref (if (.slot? selected 'value-type)
                                   (.get selected value-type) selected) 'node)
-                       (poo-flow-json-schema-normalization-schema
-                         (poo-flow-json-schema-contract-artifact-normalization artifact)))
+                       (yuanxu-json-schema-normalization-schema
+                         (yuanxu-json-schema-contract-artifact-normalization artifact)))
                      (equal?
-                       (poo-flow-json-schema-normalization->alist
-                         (poo-flow-json-schema-normalize (.get selected schema)))
-                       (poo-flow-json-schema-normalization->alist
-                         (poo-flow-json-schema-contract-artifact-normalization artifact)))
+                       (yuanxu-json-schema-normalization->alist
+                         (yuanxu-json-schema-normalize (.get selected schema)))
+                       (yuanxu-json-schema-normalization->alist
+                         (yuanxu-json-schema-contract-artifact-normalization artifact)))
                      (pair? inputs)
                      (every (lambda (input)
                               (and (pair? input) (string? (car input))
@@ -207,7 +207,7 @@
 (def AdmissionCall
   (metadata.contract
     (metadata.predicate "configuration object" object?)
-    (metadata.predicate "accepted Core evidence" poo-flow-validation-evidence-accepted?)
+    (metadata.predicate "accepted Core evidence" yuanxu-validation-evidence-accepted?)
     (lambda (_key _request _evidence) #t)
     (metadata.atom 'context-current)))
 
@@ -252,7 +252,7 @@
               ;; Root, independent and replaced/inherited Context callbacks keep
               ;; their full source guards. This is not a byte-cache window.
               (call-with-contract-analysis-root descriptor value context-value
-                (cut poo-flow-contract-admit descriptor value context-value)))))
+                (cut yuanxu-contract-admit descriptor value context-value)))))
         (def checked (.get evidence candidate))
         (def bound
           (publication-stage 'bind-evidence
@@ -262,7 +262,7 @@
             ;; Rejected evidence cannot publish. Let the public invocation
             ;; Contract report its output refusal without a second external
             ;; package query. Accepted evidence still crosses this effect boundary.
-            (when (and package-current (poo-flow-validation-evidence-accepted? evidence))
+            (when (and package-current (yuanxu-validation-evidence-accepted? evidence))
               (publication-stage 'package-after package-current))
             ;; The bound invocation checks currentness in its dependent meaning
             ;; after this source returns. Checking here would misclassify a

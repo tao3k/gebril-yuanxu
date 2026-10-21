@@ -9,34 +9,34 @@
                  .o
                  .ref
                  object?)
-        :core/graph/contribution)
+        :yuanxu/graph/contribution)
 
-(export poo-flow-graph-slots-merge
-        poo-flow-graph-node-merge
-        poo-flow-graph-children-merge-one
-        poo-flow-graph-children-merge
-        poo-flow-graph-children-remove
-        poo-flow-graph-apply-slot-list-op
-        poo-flow-graph-flush-node-extends
-        poo-flow-graph-flush-slot-overrides
-        poo-flow-graph-flush-pending)
+(export yuanxu-graph-slots-merge
+        yuanxu-graph-node-merge
+        yuanxu-graph-children-merge-one
+        yuanxu-graph-children-merge
+        yuanxu-graph-children-remove
+        yuanxu-graph-apply-slot-list-op
+        yuanxu-graph-flush-node-extends
+        yuanxu-graph-flush-slot-overrides
+        yuanxu-graph-flush-pending)
 
-;; poo-flow-graph-slots-merge
+;; yuanxu-graph-slots-merge
 ;;   : (-> PooModuleSlotMap PooModuleSlotMap PooModuleSlotMap)
 ;;   | doc m%
-;;       `poo-flow-graph-slots-merge` merges slot rows by key while
+;;       `yuanxu-graph-slots-merge` merges slot rows by key while
 ;;       preserving first declaration order and applying the last override.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-slots-merge
-;;        (list (poo-flow-graph-entry 'mode 'strict))
-;;        (list (poo-flow-graph-entry 'mode 'relaxed)
-;;              (poo-flow-graph-entry 'features '(extra))))
+;;       (yuanxu-graph-slots-merge
+;;        (list (yuanxu-graph-entry 'mode 'strict))
+;;        (list (yuanxu-graph-entry 'mode 'relaxed)
+;;              (yuanxu-graph-entry 'features '(extra))))
 ;;       ;; => ((mode . relaxed) (features extra))
 ;;       ```
 ;;     %
-(def (poo-flow-graph-slots-merge base extra)
+(def (yuanxu-graph-slots-merge base extra)
   (let ((base-seen (make-hash-table))
         (override-seen (make-hash-table))
         (overrides (make-hash-table))
@@ -44,7 +44,7 @@
         (replacement-used (make-hash-table)))
     ;; : (-> Any Any)
     (def (entry-slot entry)
-      (poo-flow-graph-entry-key entry))
+      (yuanxu-graph-entry-key entry))
     (for-each
      (lambda (entry)
        (hash-put! base-seen
@@ -58,7 +58,7 @@
                  (not (hash-get replacement-used slot)))
           (begin
             (hash-put! replacement-used slot #t)
-            (poo-flow-graph-entry
+            (yuanxu-graph-entry
              slot
              (hash-get overrides slot)))
           entry)))
@@ -74,7 +74,7 @@
         rows-rev
         (finish-new/rev
          (cdr slots)
-         (cons (poo-flow-graph-entry
+         (cons (yuanxu-graph-entry
                 (car slots)
                 (hash-get overrides (car slots)))
                rows-rev))))
@@ -99,74 +99,74 @@
           (hash-put! override-seen slot #t)
           (hash-put! overrides
                      slot
-                     (poo-flow-graph-entry-value entry))
+                     (yuanxu-graph-entry-value entry))
           (loop (cdr entries) next-new-order))))))
 
-;; poo-flow-graph-node-merge
-;;   : (-> PooFlowGraph PooFlowGraph PooFlowGraph)
+;; yuanxu-graph-node-merge
+;;   : (-> YuanxuGraph YuanxuGraph YuanxuGraph)
 ;;   | doc m%
-;;       `poo-flow-graph-node-merge` combines two nodes with the
+;;       `yuanxu-graph-node-merge` combines two nodes with the
 ;;       same identity by merging slots and children through the extension
 ;;       merge rules used by inheritance and contribution application.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-node-merge base-node extension-node)
+;;       (yuanxu-graph-node-merge base-node extension-node)
 ;;       ;; => merged extension node
 ;;       ```
 ;;     %
-(def (poo-flow-graph-node-merge base extra)
-  (poo-flow-graph-root-replace
+(def (yuanxu-graph-node-merge base extra)
+  (yuanxu-graph-root-replace
    base
-   (poo-flow-graph-slots-merge
-    (poo-flow-graph-root-payload base)
-    (poo-flow-graph-root-payload extra))
-   (poo-flow-graph-children-merge
-    (poo-flow-graph-root-children base)
-    (poo-flow-graph-root-children extra))))
+   (yuanxu-graph-slots-merge
+    (yuanxu-graph-root-payload base)
+    (yuanxu-graph-root-payload extra))
+   (yuanxu-graph-children-merge
+    (yuanxu-graph-root-children base)
+    (yuanxu-graph-root-children extra))))
 
-;; poo-flow-graph-children-merge-one
-;;   : (-> (List PooFlowGraph) PooFlowGraph (List PooFlowGraph))
+;; yuanxu-graph-children-merge-one
+;;   : (-> (List YuanxuGraph) YuanxuGraph (List YuanxuGraph))
 ;;   | doc m%
-;;       `poo-flow-graph-children-merge-one` merges one child into
+;;       `yuanxu-graph-children-merge-one` merges one child into
 ;;       an ordered child list by identity, replacing the first matching child
 ;;       and appending when the identity is new.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-children-merge-one children extra-child)
+;;       (yuanxu-graph-children-merge-one children extra-child)
 ;;       ;; => children with extra-child merged by identity
 ;;       ```
 ;;     %
-(def (poo-flow-graph-children-merge-one children extra-child)
+(def (yuanxu-graph-children-merge-one children extra-child)
   (cond ((null? children) (list extra-child))
-        ((equal? (poo-flow-graph-root-id (car children))
-                 (poo-flow-graph-root-id extra-child))
-         (cons (poo-flow-graph-node-merge (car children) extra-child)
+        ((equal? (yuanxu-graph-root-id (car children))
+                 (yuanxu-graph-root-id extra-child))
+         (cons (yuanxu-graph-node-merge (car children) extra-child)
                (cdr children)))
         (else
          (cons (car children)
-               (poo-flow-graph-children-merge-one (cdr children)
+               (yuanxu-graph-children-merge-one (cdr children)
                                                              extra-child)))))
 
-;; poo-flow-graph-children-merge
-;;   : (-> (List PooFlowGraph) (List PooFlowGraph) (List PooFlowGraph))
+;; yuanxu-graph-children-merge
+;;   : (-> (List YuanxuGraph) (List YuanxuGraph) (List YuanxuGraph))
 ;;   | doc m%
-;;       `poo-flow-graph-children-merge children extra-children`
+;;       `yuanxu-graph-children-merge children extra-children`
 ;;       merges children by node identity, preserving existing child order and
 ;;       appending identities that appear only in `extra-children`.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (map poo-flow-graph-root-id
-;;            (poo-flow-graph-children-merge
-;;             (list (poo-flow-graph-rooted 'root [] []))
-;;             (list (poo-flow-graph-rooted 'root '((role . main)) [])
-;;                   (poo-flow-graph-rooted 'leaf [] []))))
+;;       (map yuanxu-graph-root-id
+;;            (yuanxu-graph-children-merge
+;;             (list (yuanxu-graph-rooted 'root [] []))
+;;             (list (yuanxu-graph-rooted 'root '((role . main)) [])
+;;                   (yuanxu-graph-rooted 'leaf [] []))))
 ;;       ;; => (root leaf)
 ;;       ```
 ;;     %
-(def (poo-flow-graph-children-merge children extra-children)
+(def (yuanxu-graph-children-merge children extra-children)
   (if (null? extra-children)
     children
     (let ((base-seen (make-hash-table))
@@ -177,7 +177,7 @@
           (replacement-used (make-hash-table)))
       (for-each
        (lambda (child)
-         (let (key (poo-flow-graph-root-id child))
+         (let (key (yuanxu-graph-root-id child))
            (if (not (hash-get base-seen key))
              (begin
                (hash-put! base-seen key #t)
@@ -186,7 +186,7 @@
        children)
       ;; : (-> Any Any)
       (def (finish-child child)
-        (let (identity (poo-flow-graph-root-id child))
+        (let (identity (yuanxu-graph-root-id child))
           (if (and (hash-get override-seen identity)
                    (not (hash-get replacement-used identity)))
             (begin
@@ -218,7 +218,7 @@
         (if (null? remaining)
           (finish new-order)
           (let* ((child (car remaining))
-                 (identity (poo-flow-graph-root-id child))
+                 (identity (yuanxu-graph-root-id child))
                  (current (hash-get overrides identity))
                  (base-child (hash-get base-first identity))
                  (seed (if current current base-child))
@@ -232,115 +232,115 @@
             (hash-put! override-seen identity #t)
             (hash-put! overrides identity
                        (if seed
-                         (poo-flow-graph-node-merge seed child)
+                         (yuanxu-graph-node-merge seed child)
                          child))
             (loop-extra (cdr remaining) next-new-order)))))))
 
-;; poo-flow-graph-children-remove
-;;   : (-> (List PooFlowGraph) Symbol (List PooFlowGraph))
+;; yuanxu-graph-children-remove
+;;   : (-> (List YuanxuGraph) Symbol (List YuanxuGraph))
 ;;   | doc m%
-;;       `poo-flow-graph-children-remove` removes children matching
+;;       `yuanxu-graph-children-remove` removes children matching
 ;;       one identity while preserving the order of every remaining child.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-children-remove children 'obsolete)
+;;       (yuanxu-graph-children-remove children 'obsolete)
 ;;       ;; => children without the obsolete identity
 ;;       ```
 ;;     %
-(def (poo-flow-graph-children-remove children identity)
+(def (yuanxu-graph-children-remove children identity)
   (filter (lambda (child)
-            (not (equal? (poo-flow-graph-root-id child)
+            (not (equal? (yuanxu-graph-root-id child)
                          identity)))
           children))
 
-;; poo-flow-graph-apply-slot-list-op
-;;   : (-> PooFlowGraph PooGraphOperation Boolean PooFlowGraph)
+;; yuanxu-graph-apply-slot-list-op
+;;   : (-> YuanxuGraph PooGraphOperation Boolean YuanxuGraph)
 ;;   | doc m%
-;;       `poo-flow-graph-apply-slot-list-op` normalizes scalar and
+;;       `yuanxu-graph-apply-slot-list-op` normalizes scalar and
 ;;       list operation values before appending or prepending distinct slot
 ;;       members, keeping feature rows deterministic.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-apply-slot-list-op node operation #t)
+;;       (yuanxu-graph-apply-slot-list-op node operation #t)
 ;;       ;; => node with normalized distinct list-slot values
 ;;       ```
 ;;     %
-(def (poo-flow-graph-apply-slot-list-op node operation append?)
-  (let* ((slot (poo-flow-graph-operation-slot operation))
-         (current (poo-flow-graph-list-value
-                   (poo-flow-graph-alist-ref/default
-                    (poo-flow-graph-root-payload node) slot '())))
-         (extra (poo-flow-graph-list-value
-                 (poo-flow-graph-operation-value operation)))
+(def (yuanxu-graph-apply-slot-list-op node operation append?)
+  (let* ((slot (yuanxu-graph-operation-slot operation))
+         (current (yuanxu-graph-list-value
+                   (yuanxu-graph-alist-ref/default
+                    (yuanxu-graph-root-payload node) slot '())))
+         (extra (yuanxu-graph-list-value
+                 (yuanxu-graph-operation-value operation)))
          (next (if append?
-                 (poo-flow-graph-append-distinct current extra)
-                 (poo-flow-graph-append-distinct extra current))))
-    (poo-flow-graph-root-replace
+                 (yuanxu-graph-append-distinct current extra)
+                 (yuanxu-graph-append-distinct extra current))))
+    (yuanxu-graph-root-replace
      node
-     (poo-flow-graph-alist-set
-      (poo-flow-graph-root-payload node) slot next)
-     (poo-flow-graph-root-children node))))
+     (yuanxu-graph-alist-set
+      (yuanxu-graph-root-payload node) slot next)
+     (yuanxu-graph-root-children node))))
 
-;; poo-flow-graph-flush-node-extends
-;;   : (-> PooFlowGraph (List PooFlowGraph) PooFlowGraph)
+;; yuanxu-graph-flush-node-extends
+;;   : (-> YuanxuGraph (List YuanxuGraph) YuanxuGraph)
 ;;   | doc m%
-;;       `poo-flow-graph-flush-node-extends` materializes reversed
+;;       `yuanxu-graph-flush-node-extends` materializes reversed
 ;;       pending node extensions into a node through child merge semantics.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-flush-node-extends node reversed-children)
+;;       (yuanxu-graph-flush-node-extends node reversed-children)
 ;;       ;; => node with pending child extensions merged
 ;;       ```
 ;;     %
-(def (poo-flow-graph-flush-node-extends node reversed-children)
+(def (yuanxu-graph-flush-node-extends node reversed-children)
   (if (null? reversed-children)
     node
-    (poo-flow-graph-root-replace
+    (yuanxu-graph-root-replace
      node
-     (poo-flow-graph-root-payload node)
-     (poo-flow-graph-children-merge
-      (poo-flow-graph-root-children node)
+     (yuanxu-graph-root-payload node)
+     (yuanxu-graph-children-merge
+      (yuanxu-graph-root-children node)
       (reverse reversed-children)))))
 
-;; poo-flow-graph-flush-slot-overrides
-;;   : (-> PooFlowGraph PooModuleSlotMap PooFlowGraph)
+;; yuanxu-graph-flush-slot-overrides
+;;   : (-> YuanxuGraph PooModuleSlotMap YuanxuGraph)
 ;;   | doc m%
-;;       `poo-flow-graph-flush-slot-overrides` materializes reversed
+;;       `yuanxu-graph-flush-slot-overrides` materializes reversed
 ;;       pending slot override rows through deterministic slot merge semantics.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-flush-slot-overrides node reversed-overrides)
+;;       (yuanxu-graph-flush-slot-overrides node reversed-overrides)
 ;;       ;; => node with pending slot overrides merged
 ;;       ```
 ;;     %
-(def (poo-flow-graph-flush-slot-overrides node reversed-overrides)
+(def (yuanxu-graph-flush-slot-overrides node reversed-overrides)
   (if (null? reversed-overrides)
     node
-    (poo-flow-graph-root-replace
+    (yuanxu-graph-root-replace
      node
-     (poo-flow-graph-slots-merge
-      (poo-flow-graph-root-payload node)
+     (yuanxu-graph-slots-merge
+      (yuanxu-graph-root-payload node)
       (reverse reversed-overrides))
-     (poo-flow-graph-root-children node))))
+     (yuanxu-graph-root-children node))))
 
-;; poo-flow-graph-flush-pending
-;;   : (-> PooFlowGraph (List PooFlowGraph) PooModuleSlotMap PooFlowGraph)
+;; yuanxu-graph-flush-pending
+;;   : (-> YuanxuGraph (List YuanxuGraph) PooModuleSlotMap YuanxuGraph)
 ;;   | doc m%
-;;       `poo-flow-graph-flush-pending` commits delayed node
+;;       `yuanxu-graph-flush-pending` commits delayed node
 ;;       extensions and slot overrides into the current node before an
 ;;       operation that cannot be coalesced is applied.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (poo-flow-graph-flush-pending node children overrides)
+;;       (yuanxu-graph-flush-pending node children overrides)
 ;;       ;; => node with pending child and slot batches materialized
 ;;       ```
 ;;     %
-(def (poo-flow-graph-flush-pending node reversed-children reversed-overrides)
-  (poo-flow-graph-flush-node-extends
-   (poo-flow-graph-flush-slot-overrides node reversed-overrides)
+(def (yuanxu-graph-flush-pending node reversed-children reversed-overrides)
+  (yuanxu-graph-flush-node-extends
+   (yuanxu-graph-flush-slot-overrides node reversed-overrides)
    reversed-children))

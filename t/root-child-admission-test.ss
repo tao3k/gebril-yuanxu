@@ -1,11 +1,11 @@
 ;;; Real reader/link consumer: root-owned analysis versus guarded independent admission.
 (import :std/test :std/iter :clan/poo/object
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/types PooFlowContract.)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/types YuanxuContract.)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source))
 (export root-child-admission-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
@@ -23,8 +23,8 @@
          0 (hash-keys phases)))
 (def root-child-admission-test
  (test-suite "Real admission call attribution"
-  (poo-flow-test-case "three internal analyses retain observations without whole-closure certification"
-   (with-poo-flow-fixture (fixture ServicesFixture)
+  (yuanxu-test-case "three internal analyses retain observations without whole-closure certification"
+   (with-yuanxu-fixture (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Contract (.get publication contract))
     (def Context (.get publication context))

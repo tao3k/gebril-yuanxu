@@ -5,16 +5,16 @@
 (import (only-in :std/list/list delete-duplicates/hash)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :clan/poo/object .o .+ .cc .ref .slot? .all-slots object? object<-alist object<-fun)
-        :core/module-system/source/objects
-        :core/module-system/source/publication
-        :core/module-system/source/admission
-        (only-in :core/module-system/source/build module-build-graph)
-        :core/module-system/source/selection
-        :core/module-system/source/preparation
-        :core/module-system/source/directory
-        :core/module-system/source/reader
-        (only-in :core/module-system/source/declaration current-module-build-phase?))
-(export poo-flow-load-modules)
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/publication
+        :yuanxu/module-system/source/admission
+        (only-in :yuanxu/module-system/source/build module-build-graph)
+        :yuanxu/module-system/source/selection
+        :yuanxu/module-system/source/preparation
+        :yuanxu/module-system/source/directory
+        :yuanxu/module-system/source/reader
+        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
+(export yuanxu-load-modules)
 ;; Private admission carrier, not another namespace or semantic Graph. The
 ;; dependency list is the final receiver's already demanded symbol projection.
 (defstruct linked-publication (source value evidence dependencies metadata-current) final: #t)
@@ -46,7 +46,7 @@
           (else (scope-tree (map (lambda (row) (cons (cdar row) (cdr row))) children)
                             resolve)))))
      keys: names)))
-(def (poo-flow-load-modules source read-publication: (publication-reader #f)
+(def (yuanxu-load-modules source read-publication: (publication-reader #f)
                            module-view: (module-view #f))
   (when (current-module-build-phase?)
     (error "Module build phase cannot reload the root module selection"))
@@ -201,7 +201,7 @@
       ;; Context/reader keeps its full independent effect-boundary guards.
       (if (and candidate-read paired-context-current? location-current?
                (paired-context-current?) (module-publication-contract-current?)
-               (poo-flow-module-source-ref-construction-current?)
+               (yuanxu-module-source-ref-construction-current?)
                (not (hash-key? publications id)))
         (let* ((result
                 (candidate-read
@@ -222,7 +222,7 @@
           (hash-put! publications id record)
           record)
       (if (and paired-context-current? location-current? (paired-context-current?)
-               (poo-flow-module-source-ref-construction-current?)
+               (yuanxu-module-source-ref-construction-current?)
                (not (hash-key? publications id)))
         (publication/eligible id
           (lambda ()
@@ -242,7 +242,7 @@
                 (lambda ()
                   (when prefix (prefix))
                   (let (source ((.ref context-value 'locate) id))
-                    (unless (poo-flow-module-source-ref? source)
+                    (unless (yuanxu-module-source-ref? source)
                       (error "module scope requires an admitted SourceRef" id source))
                     source)))
                (pair (call-with-values
@@ -400,7 +400,7 @@
                         (source-value (linked-publication-source published))
                         (base (if (.slot? context-value 'publication-preparation)
                                 ((.ref context-value 'publication-preparation) source-value)
-                                (poo-flow-prepare-module-publication source-value)))
+                                (yuanxu-prepare-module-publication source-value)))
                         (related (if (.slot? context-value 'publication-preparation)
                                    (.ref base 'source-dependencies)
                                    (if (.slot? context-value 'publication-inputs)

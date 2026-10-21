@@ -59,7 +59,7 @@ resolution algebra.
   (handoff-id 'python-bundle-handoff)
   (adapter-requirement-id 'python-runtime-requirement)
   (projection-request-id 'runtime-bundle-request)
-  (bundle-contract-id 'poo-flow.runtime-c.bundle)
+  (bundle-contract-id 'yuanxu.runtime-c.bundle)
   (bundle-version +feature-runtime-c-bundle-version+)
   (schema-id 'runtime-bundle-schema-v1))
 
@@ -67,7 +67,7 @@ resolution algebra.
   (handoff-id 'cedar-input-handoff)
   (adapter-requirement-id 'cedar-input-requirement)
   (projection-request-id 'cedar-input-request)
-  (input-contract-id 'poo-flow.cedar-input)
+  (input-contract-id 'yuanxu.cedar-input)
   (input-contract-version 1)
   (schema-id 'cedar-input-schema-v1))
 
@@ -75,7 +75,7 @@ resolution algebra.
   (handoff-id 'lean-obligation)
   (adapter-requirement-id 'lean-evidence-requirement)
   (projection-request-id 'evidence-request)
-  (evidence-contract-id 'poo-flow.lean-evidence)
+  (evidence-contract-id 'yuanxu.lean-evidence)
   (evidence-contract-version 1)
   (schema-id 'lean-evidence-schema-v1))
 #+end_src

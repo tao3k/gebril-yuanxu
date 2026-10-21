@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-script TestingScript. admit-testing-result))
+        (only-in :yuanxu/observability/testing-script TestingScript. admit-testing-result))
 (export testing-script-test)
 ;; Synthetic wire receipts exercise policy, not native-harness qualification.
 (def files '("fixture-test.ss"))

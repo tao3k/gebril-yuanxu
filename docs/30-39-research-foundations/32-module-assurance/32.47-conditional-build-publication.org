@@ -154,7 +154,7 @@ no cross-callback success cache is introduced.
 
 * Lean correspondence and finite-model controls
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ConditionalBuildPublication.lean][ConditionalBuildPublication.lean]] composes the existing =CoreApprovedRecovery.finish=
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ConditionalBuildPublication.lean][ConditionalBuildPublication.lean]] composes the existing =CoreApprovedRecovery.finish=
 with =SerialUse.conditionalCommit=. Its checked properties are:
 
 - =commit_keeps_requirements_and_revision=: approval, source, files, both domain
@@ -194,7 +194,7 @@ Reproduce from Core, using the existing heap-fenced entrypoint and the captured
 #+begin_src sh
 just test-build-publication /private/tmp/core-approved-release-20261019/candidate-13 t/conditional-build-publication-test.ss
 cd dev/proofs/lean
-timeout 120s lake env lean PooFlowCoreProof/Admission/ConditionalBuildPublication.lean
+timeout 120s lake env lean YuanxuProof/Admission/ConditionalBuildPublication.lean
 #+end_src
 
 From the repository root, run each QNT row with =quint run=, the corresponding

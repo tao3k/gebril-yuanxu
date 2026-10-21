@@ -6,40 +6,40 @@
 ;;; Boundary: public API re-exports the control-plane modules.
 ;;; Invariant: implementation logic stays in the leaf owners below.
 
-(import :core/modules/funflow/control-plane/roles
-        :core/modules/funflow/control-plane/failure
-        :core/modules/funflow/control-plane/receipt
-        :core/modules/funflow/control-plane/task
-        :core/modules/funflow/control-plane/flow-strand
-        :core/modules/funflow/control-plane/flow
-        :core/modules/funflow/control-plane/flow-syntax
-        :core/modules/funflow/control-plane/graph
-        :core/modules/funflow/control-plane/strategy
-        :core/modules/funflow/control-plane/policy
-        :core/modules/funflow/control-plane/runtime-protocol
-        :core/modules/funflow/control-plane/runtime-command-invocation
-        :core/modules/funflow/control-plane/runtime-command-descriptor
-        :core/modules/funflow/control-plane/runtime-adapter
-        :core/modules/funflow/control-plane/agent-harness
-        :core/modules/funflow/control-plane/replay
-        :core/modules/funflow/control-plane/runner
-        :core/modules/funflow/control-plane/config)
+(import :yuanxu/modules/funflow/control-plane/roles
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/receipt
+        :yuanxu/modules/funflow/control-plane/task
+        :yuanxu/modules/funflow/control-plane/flow-strand
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/flow-syntax
+        :yuanxu/modules/funflow/control-plane/graph
+        :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/policy
+        :yuanxu/modules/funflow/control-plane/runtime-protocol
+        :yuanxu/modules/funflow/control-plane/runtime-command-invocation
+        :yuanxu/modules/funflow/control-plane/runtime-command-descriptor
+        :yuanxu/modules/funflow/control-plane/runtime-adapter
+        :yuanxu/modules/funflow/control-plane/agent-harness
+        :yuanxu/modules/funflow/control-plane/replay
+        :yuanxu/modules/funflow/control-plane/runner
+        :yuanxu/modules/funflow/control-plane/config)
 
-(export (import: :core/modules/funflow/control-plane/roles)
-        (import: :core/modules/funflow/control-plane/failure)
-        (import: :core/modules/funflow/control-plane/receipt)
-        (import: :core/modules/funflow/control-plane/task)
-        (import: :core/modules/funflow/control-plane/flow-strand)
-        (import: :core/modules/funflow/control-plane/flow)
-        (import: :core/modules/funflow/control-plane/flow-syntax)
-        (import: :core/modules/funflow/control-plane/graph)
-        (import: :core/modules/funflow/control-plane/strategy)
-        (import: :core/modules/funflow/control-plane/policy)
-        (import: :core/modules/funflow/control-plane/runtime-protocol)
-        (import: :core/modules/funflow/control-plane/runtime-command-invocation)
-        (import: :core/modules/funflow/control-plane/runtime-command-descriptor)
-        (import: :core/modules/funflow/control-plane/runtime-adapter)
-        (import: :core/modules/funflow/control-plane/agent-harness)
-        (import: :core/modules/funflow/control-plane/replay)
-        (import: :core/modules/funflow/control-plane/runner)
-        (import: :core/modules/funflow/control-plane/config))
+(export (import: :yuanxu/modules/funflow/control-plane/roles)
+        (import: :yuanxu/modules/funflow/control-plane/failure)
+        (import: :yuanxu/modules/funflow/control-plane/receipt)
+        (import: :yuanxu/modules/funflow/control-plane/task)
+        (import: :yuanxu/modules/funflow/control-plane/flow-strand)
+        (import: :yuanxu/modules/funflow/control-plane/flow)
+        (import: :yuanxu/modules/funflow/control-plane/flow-syntax)
+        (import: :yuanxu/modules/funflow/control-plane/graph)
+        (import: :yuanxu/modules/funflow/control-plane/strategy)
+        (import: :yuanxu/modules/funflow/control-plane/policy)
+        (import: :yuanxu/modules/funflow/control-plane/runtime-protocol)
+        (import: :yuanxu/modules/funflow/control-plane/runtime-command-invocation)
+        (import: :yuanxu/modules/funflow/control-plane/runtime-command-descriptor)
+        (import: :yuanxu/modules/funflow/control-plane/runtime-adapter)
+        (import: :yuanxu/modules/funflow/control-plane/agent-harness)
+        (import: :yuanxu/modules/funflow/control-plane/replay)
+        (import: :yuanxu/modules/funflow/control-plane/runner)
+        (import: :yuanxu/modules/funflow/control-plane/config))

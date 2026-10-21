@@ -8,9 +8,9 @@
                  .ref
                  object<-alist
                  object?)
-        :core/composition/roles
-        :core/feature-system/adapter-projection-binding
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/adapter-projection-binding
+        :yuanxu/utilities/functional)
 
 (export +feature-runtime-c-bundle-version+
         +feature-runtime-bundle-handoff-kind+
@@ -39,16 +39,16 @@
 (def +feature-runtime-c-bundle-version+ 1)
 
 (def +feature-runtime-bundle-handoff-kind+
-  'poo-flow.feature-runtime-bundle-handoff.v1)
+  'yuanxu.feature-runtime-bundle-handoff.v1)
 
 (def +feature-cedar-input-handoff-kind+
-  'poo-flow.feature-cedar-input-handoff.v1)
+  'yuanxu.feature-cedar-input-handoff.v1)
 
 (def +feature-evidence-obligation-kind+
-  'poo-flow.feature-evidence-obligation.v1)
+  'yuanxu.feature-evidence-obligation.v1)
 
 (def +feature-runtime-handoff-manifest-kind+
-  'poo-flow.feature-runtime-handoff-manifest.v1)
+  'yuanxu.feature-runtime-handoff-manifest.v1)
 
 ;; : (-> Alist POOObject)
 ;; : (-> Symbol Symbol Symbol Symbol Symbol Integer Symbol PooFeatureRuntimeHandoff)
@@ -134,7 +134,7 @@
 (def (feature-runtime-handoff-diagnostic
       code channel subject expected observed)
   (object<-alist
-   `((kind . poo-flow.feature-runtime-handoff-diagnostic.v1)
+   `((kind . yuanxu.feature-runtime-handoff-diagnostic.v1)
      (code . ,code)
      (channel . ,channel)
      (subject . ,subject)
@@ -143,7 +143,7 @@
 
 ;; : (-> [Object] [Alist])
 (def (feature-runtime-handoff-invalid-diagnostics handoffs)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (handoff)
      (and (not (feature-runtime-handoff? handoff))
           (feature-runtime-handoff-diagnostic
@@ -156,7 +156,7 @@
 
 ;; : (-> [Object] [PooFeatureRuntimeHandoff])
 (def (feature-runtime-handoff-valid-values handoffs)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (handoff) (and (feature-runtime-handoff? handoff) handoff))
    handoffs))
 
@@ -165,7 +165,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (poo-flow-fold-left
+     (yuanxu-fold-left
       (lambda (handoff diagnostics)
         (let (handoff-id (.ref handoff 'handoff-id))
           (cond
@@ -325,7 +325,7 @@
 ;; : (-> PooFeatureRuntimeHandoff MaybeFeatureAdapterBinding MaybeFeatureProjectionBinding [Alist])
 (def (feature-one-runtime-handoff-diagnostics
       handoff adapter-binding projection-binding)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    identity
    (list
     (missing-handoff-adapter-diagnostic handoff adapter-binding)
@@ -337,7 +337,7 @@
 (def (feature-resolved-runtime-handoff
       handoff adapter-binding projection-binding)
   (object<-alist
-   `((kind . poo-flow.feature-resolved-runtime-handoff.v1)
+   `((kind . yuanxu.feature-resolved-runtime-handoff.v1)
      (handoff-kind . ,(.ref handoff 'kind))
      (handoff-id . ,(.ref handoff 'handoff-id))
      (handoff . ,handoff)
@@ -357,7 +357,7 @@
          (feature-runtime-handoff-index
           (.ref binding 'projection-bindings) 'request-id)))
     (let (state
-          (poo-flow-fold-left
+          (yuanxu-fold-left
            (lambda (handoff state)
              (let* ((resolved (car state))
                     (diagnostics (cadr state))

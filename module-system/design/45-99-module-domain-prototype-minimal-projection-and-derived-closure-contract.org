@@ -52,7 +52,7 @@ precedence.
 
 Parser-owned evidence currently identifies:
 
-- =poo-flow-module-interface-prototype= as a project-owned domain prototype
+- =yuanxu-module-interface-prototype= as a project-owned domain prototype
   candidate;
 - =poo-flow-module-kind=?= as a plain kind-label equality comparison;
 - interface identity, schemas, metadata, import kind, and option-policy
@@ -60,7 +60,7 @@ Parser-owned evidence currently identifies:
 - generic object slot checks and default projections;
 - native upstream object, projection, ancestry, and composition operations.
 
-The exact body query for =poo-flow-module-interface-prototype= is blocked with:
+The exact body query for =yuanxu-module-interface-prototype= is blocked with:
 
 #+begin_example
 direct exact-selector provider failed: status=Some(2) stderr=

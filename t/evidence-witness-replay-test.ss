@@ -3,11 +3,11 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-receiver slot-read-dependencies make-slot-read %deliver-slot-read)
-        (only-in :core/object-family/read-projection call-with-owned-read-projection owned-read-leaf!)
-        (only-in :core/types poo-flow-classification-evidence poo-flow-validation-evidence)
-        (only-in :core/observability/memory poo-flow-debug-memory-snapshot)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-leaf!)
+        (only-in :yuanxu/types yuanxu-classification-evidence yuanxu-validation-evidence)
+        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export evidence-witness-replay-test)
 ;; Synthetic cost/GC tokens must have the same prepared receiver invariant as
 ;; a real native slot delivery. A cold synthetic receiver correctly opens the
@@ -42,7 +42,7 @@
   (ormap (cut visit <> '()) reads))
 (def evidence-witness-replay-test
   (test-suite "Native live-witness replay boundaries"
-    (poo-flow-test-case "shared witness suffix is replayed once per closed native batch"
+    (yuanxu-test-case "shared witness suffix is replayed once per closed native batch"
       ;; A read-only counter is a cost probe, not a production validator.
       ;; The owned receivers stay strongly reachable in the returned value;
       ;; collecting them must not be what makes the probe cheaper.
@@ -78,7 +78,7 @@
       (check-equal? (> one 0) #t)
       (check-equal? (work 4) one)
       (check-equal? (work 8) one))
-    (poo-flow-test-case "original witness tokens pin receivers during replay-time GC"
+    (yuanxu-test-case "original witness tokens pin receivers during replay-time GC"
       (def weak (make-hash-table-eq weak-values: #t))
       (def until-replay (box '()))
       (def armed? #f)
@@ -91,7 +91,7 @@
               ;; Release the fixture's strong references only AFTER the native
               ;; batch has resolved its roots, then collect inside that replay.
               (set-box! until-replay '())
-              (poo-flow-debug-memory-snapshot 'native-witness-roots-held collect?: #t)
+              (yuanxu-debug-memory-snapshot 'native-witness-roots-held collect?: #t)
               (check-equal? (object? (hash-get weak 'first)) #t)
               (check-equal? (object? (hash-get weak 'second)) #t))
             #t)))
@@ -104,8 +104,8 @@
                 (for-each
                   (lambda (name)
                     (def value
-                      (poo-flow-validation-evidence contract #t
-                        (poo-flow-classification-evidence 'fixture #t #t '() #f)
+                      (yuanxu-validation-evidence contract #t
+                        (yuanxu-classification-evidence 'fixture #t #t '() #f)
                         '() #t '() #f))
                     (hash-put! weak name value)
                     (set-box! until-replay (cons value (unbox until-replay)))
@@ -116,9 +116,9 @@
       (set! armed? #t)
       (replay-slot-reads! reads (lambda (_receiver _key) (void)))
       (check-equal? collected? #t)
-      (poo-flow-write-observation-line! "witness-strong-path first=%s second=%s"
+      (yuanxu-write-observation-line! "witness-strong-path first=%s second=%s"
         (retained-receiver-path reads weak 'first)
         (retained-receiver-path reads weak 'second))
-      (poo-flow-debug-memory-snapshot 'witness-roots-released collect?: #t)
+      (yuanxu-debug-memory-snapshot 'witness-roots-released collect?: #t)
       (check-equal? (hash-get weak 'first) #f)
       (check-equal? (hash-get weak 'second) #f))))

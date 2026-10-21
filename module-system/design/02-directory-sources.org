@@ -47,14 +47,14 @@ not require authors to keep a second manual export-name registry.
                   (loop (cdr tail) (cons (car tail) seen)))))))
 
 (def DirectoryTextContract
-  (poo-flow-predicate-contract 'directory/text
+  (yuanxu-predicate-contract 'directory/text
     (lambda (v) (and (string? v) (> (string-length v) 0)))
     no-directory-obligations))
 (def DirectoryNamesContract
-  (poo-flow-predicate-contract 'directory/names directory-names?
+  (yuanxu-predicate-contract 'directory/names directory-names?
                               no-directory-obligations))
 (def DirectoryBooleanContract
-  (poo-flow-predicate-contract 'directory/boolean boolean?
+  (yuanxu-predicate-contract 'directory/boolean boolean?
                               no-directory-obligations))
 
 (def (directory-snapshot-errors snapshot _context)
@@ -103,8 +103,8 @@ view; a new dotted-path evaluator or raw self/super hook is unnecessary.
 #+begin_src scheme
 (def (directory-view snapshot read-child realize-interface context)
   (let (evidence
-         (poo-flow-contract-admit DirectorySnapshotContract snapshot context))
-    (unless (poo-flow-validation-evidence-accepted? evidence)
+         (yuanxu-contract-admit DirectorySnapshotContract snapshot context))
+    (unless (yuanxu-validation-evidence-accepted? evidence)
       (error "directory snapshot refused" evidence)))
   (let* ((children (.get snapshot children))
          (exports (.get snapshot exports))

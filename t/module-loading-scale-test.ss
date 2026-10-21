@@ -5,13 +5,13 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/building/test-projection module-test-projection)
-        (only-in :core/module-system/source/selection select-module-graph)
-        (only-in :core/module-system/graph/funs module-closure)
-        (only-in :core/module-system/source/admission current-module-source-observer)
-        (only-in :core/observability/testing-case poo-flow-test-case poo-flow-test-observe)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :yuanxu/module-system/source/selection select-module-graph)
+        (only-in :yuanxu/module-system/graph/funs module-closure)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-loading-scale-test)
 (.def Workspace
   .acquire: (lambda ()
@@ -23,15 +23,15 @@
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def module-loading-scale-test
   (test-suite "One Graph at thousand and ten-thousand module scale"
-    (poo-flow-test-fixture "catalog growth does not evaluate or read unselected module bodies"
+    (yuanxu-test-fixture "catalog growth does not evaluate or read unselected module bodies"
       (root Workspace)
       (write-source (path-expand "gerbil.pkg" root)
         (string-append "(package: " (symbol->string (gensym 'scale-)) ")"))
       (write-source (path-expand "init.ss" root)
-        "(poo-flow! source: \"./modules\" mode: auto)")
+        "(yuanxu! source: \"./modules\" mode: auto)")
       (def chosen (path-expand "modules/chosen/" root))
       (write-source (path-expand "types.ss" chosen)
-        "(import (only-in :core/types poo-flow-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (poo-flow-predicate-contract 'scale object? (lambda (_v _c) '()))) (export ScopeContract)")
+        "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'scale object? (lambda (_v _c) '()))) (export ScopeContract)")
       (write-source (path-expand "objects.ss" chosen)
         "(import :clan/poo/object) (def Scope (.o unused: (error \"scope forced\"))) (export Scope)")
       (write-source (path-expand "config.ss" chosen) "(def Enabled #t) (export Enabled)")
@@ -71,7 +71,7 @@
                                (set! body-reads (+ body-reads 1))
                                (unless (string-prefix? chosen (caddr key))
                                  (set! unused-reads (+ unused-reads 1)))))))
-             (def view (poo-flow-load-modules (path-expand "init.ss" root)))
+             (def view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-equal? (length (.all-slots (.get view modules))) size)
              (def tests (module-test-projection view '(chosen)))
              (check-equal? (.get tests spec) (list (path-expand "tests/atomic-test.ss" chosen)))
@@ -85,10 +85,10 @@
          ;; view. Do not force it merely to inspect a nonexistent scope slot.
          ;; The declaration-scale fixture tests init's actual cold scope.
          (if baseline (check-equal? body-reads baseline) (set! baseline body-reads))
-         (poo-flow-test-observe 'catalog-modules size)
-         (poo-flow-test-observe 'selected-body-reads body-reads))
+         (yuanxu-test-observe 'catalog-modules size)
+         (yuanxu-test-observe 'selected-body-reads body-reads))
        '(1000 10000)))
-    (poo-flow-test-case "complete selected stars visit each declaration once and preserve shared dependencies"
+    (yuanxu-test-case "complete selected stars visit each declaration once and preserve shared dependencies"
       (for-each
        (lambda (size)
          (def ids (map (lambda (index) (string->symbol (string-append "module-" (number->string index)))) (iota size)))
@@ -117,6 +117,6 @@
                        (set! edges (+ edges 1))
                        (if (< node (- size 1)) (list (+ node 1) 0) '())))) size)
          (check-equal? edges size)
-         (poo-flow-test-observe 'selected-declarations (hash-length calls))
-         (poo-flow-test-observe 'deep-closure-visits edges))
+         (yuanxu-test-observe 'selected-declarations (hash-length calls))
+         (yuanxu-test-observe 'deep-closure-visits edges))
        '(1000 10000)))))

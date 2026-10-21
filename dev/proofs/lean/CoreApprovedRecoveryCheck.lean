@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import Lean
-import PooFlowCoreProof.Admission.CoreApprovedRecovery
-open Lean PooFlowCoreProof.Admission.CoreApprovedRecovery
+import YuanxuProof.Admission.CoreApprovedRecovery
+open Lean YuanxuProof.Admission.CoreApprovedRecovery
 def checkApproved (value : Json) : Except String Unit := do
   let rows ← value.getArr?
   let labels := #["warm", "joint", "policy-change", "warm-policy-change", "core-source", "cold-source", "cold-joint", "cold-omitted"]

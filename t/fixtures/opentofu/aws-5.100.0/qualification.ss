@@ -3,22 +3,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import :clan/poo/object
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/feature-system/source-lock-feature
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/feature-system/source-lock-feature
                  sources-lock-value sources-lock? sources-lock-ref
                  source-lock-verify-payload)
         (only-in :std/crypto/digest Digest::sha256 digest-from-reader!)
         (only-in :std/io/file call-with-file-reader)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/encoding/json read-json JSONReadOptions current-json-read-options)
-        (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-source->json-like)
-        (only-in :core/modules/json-schema/functional poo-flow-contract-object-ref)
-        :core/modules/opentofu/types "./release.ss"
-        :core/modules/opentofu/collections :core/modules/opentofu/objects
+        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-source->json-like)
+        (only-in :yuanxu/modules/json-schema/functional yuanxu-contract-object-ref)
+        :yuanxu/modules/opentofu/types "./release.ss"
+        :yuanxu/modules/opentofu/collections :yuanxu/modules/opentofu/objects
         "./request-types.ss")
-(export AwsProviderBinaryContract AwsProviderSourceContract poo-flow-opentofu-aws-sources-lock poo-flow-opentofu-aws-provider)
+(export AwsProviderBinaryContract AwsProviderSourceContract yuanxu-opentofu-aws-sources-lock yuanxu-opentofu-aws-provider)
 
-(def (poo-flow-opentofu-aws-sources-lock)
+(def (yuanxu-opentofu-aws-sources-lock)
   (sources-lock-value "opentofu/aws" "5.100.0" #f (.get Aws5100Release sources)))
 
 (def (failure reason path)
@@ -39,7 +39,7 @@
 (def (selection-failures selection)
   (let (admission (.call ProviderSelectionContract .admit selection #f))
     (cond
-     ((not (poo-flow-validation-evidence-accepted? admission)) (.get admission diagnostics))
+     ((not (yuanxu-validation-evidence-accepted? admission)) (.get admission diagnostics))
      ((not (equal? (.get selection provider) (.get Aws5100Release provider)))
       (list (failure 'provider-identity-mismatch '(selection provider))))
      ((not (equal? (.get selection version) (.get Aws5100Release version)))
@@ -48,7 +48,7 @@
 
 (def (source-obligations request _context)
   (let* ((lock (.get request lock)) (read-source (.get request read))
-         (trusted-lock (poo-flow-opentofu-aws-sources-lock))
+         (trusted-lock (yuanxu-opentofu-aws-sources-lock))
          (selection-errors (selection-failures (.get request selection))))
     (cond
      ((pair? selection-errors) selection-errors)
@@ -79,27 +79,27 @@
 
 (def (decode-schema bytes)
   (parameterize ((current-json-read-options (JSONReadOptions key-as-symbol: #t)))
-    (poo-flow-json-schema-source->json-like
+    (yuanxu-json-schema-source->json-like
       (call-with-input-string (if (u8vector? bytes) (utf8->string bytes) bytes) read-json))))
 
 (def (verified-schema lock read-source)
   (let* ((bytes (read-source "schema.json"))
          (receipt (source-lock-verify-payload
-                    (poo-flow-opentofu-aws-sources-lock) "schema.json" bytes)))
+                    (yuanxu-opentofu-aws-sources-lock) "schema.json" bytes)))
     (unless (.get receipt valid?) (error "provider-schema-mismatch"))
     (decode-schema bytes)))
 
 (def (resource-block schema resource)
-  (foldl (lambda (key value) (poo-flow-contract-object-ref value key #f)) schema
+  (foldl (lambda (key value) (yuanxu-contract-object-ref value key #f)) schema
          (list 'provider_schemas 'registry.terraform.io/hashicorp/aws
                'resource_schemas resource 'block)))
 
 ;; Lock + byte reader is the existing publication boundary. The retained
 ;; closure rechecks pinned source bytes, never trusts user-provided flags.
-(def (poo-flow-opentofu-aws-provider selection lock read-source)
+(def (yuanxu-opentofu-aws-provider selection lock read-source)
   (let* ((request (.cc (.o) 'selection selection 'lock lock 'read read-source))
          (admission (.call AwsProviderSourceContract .admit request #f)))
-    (unless (poo-flow-validation-evidence-accepted? admission)
+    (unless (yuanxu-validation-evidence-accepted? admission)
       (error "AWS source admission rejected" (.get admission diagnostics)))
     (let (source-check (lambda () (null? (source-obligations request #f))))
       (def (fresh-block resource)
@@ -107,14 +107,14 @@
       (def (authority resource)
         (let ((block (fresh-block resource))
               (paths (.ref (.get Aws5100Release collections) resource)))
-          (poo-flow-opentofu-hash-string-authority
+          (yuanxu-opentofu-hash-string-authority
             (.get selection provider) (.get selection version) block paths source-check)))
       (.cc (.o) 'selection selection 'release Aws5100Release 'source-admission admission
            '.block fresh-block
            '.authority authority
            '.contract
            (lambda (resource)
-             (let (contract (poo-flow-opentofu-block-contract resource
+             (let (contract (yuanxu-opentofu-block-contract resource
                               (fresh-block resource) (authority resource)))
                ;; Source integrity is independent of collection identity. A
                ;; configuration caller does not mint or retain collection proofs.

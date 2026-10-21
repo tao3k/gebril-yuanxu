@@ -6,13 +6,13 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in "../init.ss" init.Modules init.Scenarios init.tests init.test-spec init.test-current! init.build-spec init.build-current!)
         (rename-in (only-in "../init.ss" init.Modules) (init.Modules ModuleNamespace))
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/building/test-projection module-test-projection module-test-file-source)
-        (only-in :core/types poo-flow-predicate-contract)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/observability/testing-fixture
-                 with-poo-flow-fixture poo-flow-test-fixture)
-        (only-in :core/ops/objects ProcessScript.))
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
+        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/observability/testing-fixture
+                 with-yuanxu-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/ops/objects ProcessScript.))
 (export module-testing-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
 (.def Workspace
@@ -23,7 +23,7 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (for-each (cut pretty-print <> port) forms))))
 (def FixtureContract
-  (poo-flow-predicate-contract 'test/fixture-scope object? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'test/fixture-scope object? (lambda (_v _c) '())))
 ;; This fixture supplies an inert publication, not a qualified domain scope.
 ;; Real JsonSchema and Funflow are selected and executed by Core init above.
 (def (fixture-reader source)
@@ -32,7 +32,7 @@
   (.o identity: 'json-schema features: (.o)
       core: (.o requires: (.o) scope-contract: FixtureContract link: (lambda (_deps) (.o)))))
 (def (test-session source)
-  (module-test-projection (poo-flow-load-modules source read-publication: fixture-reader)))
+  (module-test-projection (yuanxu-load-modules source read-publication: fixture-reader)))
 (def module-testing-test
   (test-suite "Selected module atomic testing"
     (test-case "importing the init source does not acquire a Graph or enumerate tests"
@@ -101,7 +101,7 @@
       (def fixture 'caller-fixture)
       (do ((index 0 (+ index 1))) ((= index 2))
         (check-exception
-          (with-poo-flow-fixture (workspace Workspace)
+          (with-yuanxu-fixture (workspace Workspace)
             (set! paths (cons workspace paths))
             (.call (.cc ProcessScript. command: '("touch" "marker") directory: workspace) .run)
             (check-equal? (file-exists? (path-expand "marker" workspace)) #t)
@@ -109,7 +109,7 @@
       (check-equal? (equal? (car paths) (cadr paths)) #f)
       (check-equal? (ormap file-exists? paths) #f)
       (check-equal? (list procedure resource fixture) '(caller-procedure caller-resource caller-fixture)))
-    (poo-flow-test-fixture "explicit qualification files bind their own currentness" (workspace Workspace)
+    (yuanxu-test-fixture "explicit qualification files bind their own currentness" (workspace Workspace)
       (def file (path-expand "source-test.ss" workspace))
       (write-forms file '((import :std/test)))
       (def source (module-test-file-source (list file)))
@@ -117,7 +117,7 @@
       ((.get source admit-current))
       (write-forms file '((import :std/test) (export changed)))
       (check-exception ((.get source admit-current)) error?))
-    (poo-flow-test-fixture "package admission effects never share the following source window"
+    (yuanxu-test-fixture "package admission effects never share the following source window"
       (workspace Workspace)
       (def module-root (path-expand "modules/json-schema" workspace))
       (create-directory* (path-expand "tests" module-root))
@@ -128,8 +128,8 @@
       (def file (path-expand "tests/atomic-test.ss" module-root))
       (write-forms file '((import :std/test)))
       (def init (path-expand "init.ss" workspace))
-      (write-forms init '((poo-flow! mode: explicit source: "./modules" (json-schema))))
-      (def view (poo-flow-load-modules init read-publication: fixture-reader))
+      (write-forms init '((yuanxu! mode: explicit source: "./modules" (json-schema))))
+      (def view (yuanxu-load-modules init read-publication: fixture-reader))
       ;; A bounded package-effect probe over the actual selection/Graph. Reading
       ;; before the write would hide this change under an incorrectly wide cache.
       (.def (Effectful @ view)
@@ -138,7 +138,7 @@
                          (module-source-read file)
                          (write-forms file '((import :std/test) (export changed)))))
       (check-exception (module-test-projection Effectful) error?))
-    (poo-flow-test-fixture "unselected broken publication and test remain unloaded; edits invalidate selected tests"
+    (yuanxu-test-fixture "unselected broken publication and test remain unloaded; edits invalidate selected tests"
       (workspace Workspace)
       (def modules (path-expand "modules" workspace))
       (create-directory modules)
@@ -150,25 +150,25 @@
       (write-forms (path-expand "tests/atomic-test.ss" poison) '((error "unselected test loaded")))
       ;; The real JsonSchema module is selected by its admitted source mapping.
       (def declaration
-        `(poo-flow! mode: explicit source: "./modules"
+        `(yuanxu! mode: explicit source: "./modules"
                     (json-schema @ ,(path-expand "modules/json-schema" root)) (poison disable: #t)))
       (def init (path-expand "init.ss" workspace))
       (write-forms init (list declaration))
-      (def view (poo-flow-load-modules init read-publication: fixture-reader))
+      (def view (yuanxu-load-modules init read-publication: fixture-reader))
       (def session (module-test-projection view))
       (check-equal? (.get session spec) (init.test-spec '(json-schema)))
       (check-exception (module-test-projection view '(poison)) error?)
       ((.get session admit-current))
       ;; A disabled owner is not silently accepted when explicitly selected.
-      (def changed `(poo-flow! mode: explicit source: "./modules" (poison)))
+      (def changed `(yuanxu! mode: explicit source: "./modules" (poison)))
       (write-forms init (list changed))
       (check-exception ((.get session admit-current)) error?)
       (check-exception (test-session init) error?))
     (test-case "Ops executes selected native std/test modules without another runner"
       (.call init.tests .run))
-    (poo-flow-test-fixture "selected test edits and additions invalidate a real source session" (workspace Workspace)
+    (yuanxu-test-fixture "selected test edits and additions invalidate a real source session" (workspace Workspace)
       (write-forms (path-expand "gerbil.pkg" workspace)
-                   '((package: module-test-fixture prelude: :core/module-system/source/module-prelude)))
+                   '((package: module-test-fixture prelude: :yuanxu/module-system/source/module-prelude)))
       (def module-root (path-expand "modules/json-schema" workspace))
       (create-directory* module-root)
       (def original (path-expand "modules/json-schema" root))
@@ -183,9 +183,9 @@
       (create-directory (path-directory integration))
       (write-forms integration '((error "unselected integration must not evaluate")))
       (def init (path-expand "init.ss" workspace))
-      (def declaration '(poo-flow! mode: explicit source: "./modules" (json-schema)))
+      (def declaration '(yuanxu! mode: explicit source: "./modules" (json-schema)))
       (write-forms init (list declaration))
-      (def view (poo-flow-load-modules init read-publication: fixture-reader))
+      (def view (yuanxu-load-modules init read-publication: fixture-reader))
       (def session (module-test-projection view))
       (check-equal? (.get session spec) (list (path-normalize suite)))
       (def external (module-test-projection view #f 'integration))

@@ -16,7 +16,7 @@ sequence: multiple inheritance -> .+ -> .cc -> deferred nested =>.+. The final
 probe exits 0 with 30 assertions. Parent Pipeline warm-up happens BEFORE this
 sequence. The final native run is not inferred from separate operation tests.
 
-The public Core poo-flow-contract-admit protocol admits the final shape/value
+The public Core yuanxu-contract-admit protocol admits the final shape/value
 fixture and rejects stale final Check identities. A separate TEST-LOCAL Contract
 demonstrates selected-child closure and actual child admission. It is not the
 proposed Module resolver, automatic provenance collector or Loader.
@@ -41,7 +41,7 @@ package declaration. No POO source was modified or substituted from .data.
 
 Core types.ss is copied byte-for-byte from the current Core checkout, with SHA
 cff7774aa8e6a6daaeae866984fb8a5ec291fe2045a326f846b6e1f4f22a325f,
-matching module 21. A test-only (package: core) file names this isolated scope;
+matching module 21. A test-only (package: yuanxu) file names this isolated scope;
 it neither installs dependencies nor changes the real Core package declaration.
 
 The runtime is /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc. A fresh
@@ -71,7 +71,7 @@ binding. The key executed continuation is:
 
 (def context (.o target: Final))
 (def evidence
-  (poo-flow-contract-admit ProfileShapeContract Final context))
+  (yuanxu-contract-admit ProfileShapeContract Final context))
 #+end_src
 
 Native assertions establish both Root and Policy are direct parents of Joined;
@@ -95,7 +95,7 @@ parent's Pipeline and Check list remain the same cached objects.
 (same-count-stale-admitted #f)
 #+end_example
 
-ProfileShapeContract derives from the PUBLIC PooFlowNativeObjectContract. Its
+ProfileShapeContract derives from the PUBLIC YuanxuObjectContract. Its
 responsibilities check build and pipeline as native objects. Its own obligation
 compares the ordered Pipeline checks with eq? on the final candidate's selected
 Check slots and verifies the context target. It is a fixture Contract, not the
@@ -113,7 +113,7 @@ The probe's TEST-LOCAL SelectionClosureContract derives required child names
 from the final candidate's pipeline.selected-checks. It compares that set with
 context.completed-checks. If complete, it obtains EACH child from the final
 candidate and invokes the public CheckPolicyContract through
-poo-flow-contract-admit, checking the returned evidence correlation.
+yuanxu-contract-admit, checking the returned evidence correlation.
 
 completed-checks is a deliberately supplied test input, not a claimed production
 resolver result and not a recommended user-facing strategy field. A complete

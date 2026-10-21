@@ -8,11 +8,11 @@
                  .ref
                  object<-alist
                  object?)
-        :core/composition/roles
-        :core/feature-system/capability-model
-        :core/feature-system/policy-strategy-binding
-        :core/feature-system/domain-case/interface
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/capability-model
+        :yuanxu/feature-system/policy-strategy-binding
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/utilities/functional)
 
 (export +feature-adapter-capability-catalog-kind+
         feature-adapter-capability-catalog
@@ -26,14 +26,14 @@
         defpoo-feature-adapter-projection-binding)
 
 (def +feature-adapter-capability-catalog-kind+
-  'poo-flow.feature-adapter-capability-catalog.v1)
+  'yuanxu.feature-adapter-capability-catalog.v1)
 
 ;; : (-> Alist POOObject)
 ;; : (-> Symbol Symbol Object Object Object Alist)
 (def (feature-capability-binding-diagnostic
       code channel subject expected observed)
   (object<-alist
-   `((kind . poo-flow.feature-adapter-projection-binding-diagnostic.v1)
+   `((kind . yuanxu.feature-adapter-projection-binding-diagnostic.v1)
      (code . ,code)
      (channel . ,channel)
      (subject . ,subject)
@@ -52,7 +52,7 @@
 ;; : (-> [Object] Procedure Symbol Symbol Symbol [Alist])
 (def (feature-invalid-value-diagnostics
       values predicate code channel expected-kind)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (value)
      (and (not (predicate value))
           (feature-capability-binding-diagnostic
@@ -62,7 +62,7 @@
 ;; : (forall (a) (-> (List a) (-> a Boolean) (List a)))
 ;; : (-> [Object] Procedure [Object])
 (def (feature-valid-values values predicate)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (value) (and (predicate value) value))
    values))
 
@@ -72,7 +72,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (poo-flow-fold-left
+     (yuanxu-fold-left
       (lambda (value diagnostics)
         (let (semantic-id (.ref value id-slot))
           (cond
@@ -184,7 +184,7 @@
 ;; : (-> PooFeatureAdapterRequirement PooFeatureAdapterCapability PooFeatureAdapterCapabilityBinding)
 (def (feature-adapter-capability-binding requirement capability)
   (object<-alist
-   `((kind . poo-flow.feature-adapter-capability-binding.v1)
+   `((kind . yuanxu.feature-adapter-capability-binding.v1)
      (requirement . ,requirement)
      (capability . ,capability)
      (requirement-id . ,(.ref requirement 'requirement-id))
@@ -214,7 +214,7 @@
     (if (pair? input-diagnostics)
       (list '() input-diagnostics)
       (let (state
-            (poo-flow-fold-left
+            (yuanxu-fold-left
              (lambda (requirement state)
                (let ((bindings (car state))
                      (diagnostics (cadr state))
@@ -259,7 +259,7 @@
 ;; : (-> PooFeatureProjectionRequest PooCaseProjection PooFeatureProjectionBinding)
 (def (feature-projection-binding request projection)
   (object<-alist
-   `((kind . poo-flow.feature-projection-binding.v1)
+   `((kind . yuanxu.feature-projection-binding.v1)
      (request . ,request)
      (projection . ,projection)
      (request-id . ,(.ref request 'request-id))
@@ -291,7 +291,7 @@
                (.ref domain-case 'projection-catalog)
                'projection-id))
              (state
-              (poo-flow-fold-left
+              (yuanxu-fold-left
                (lambda (request state)
                  (let ((bindings (car state))
                        (diagnostics (cadr state))

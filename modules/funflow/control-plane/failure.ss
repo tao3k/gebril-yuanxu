@@ -6,7 +6,7 @@
 ;;; Boundary: failures are typed control-plane data, not runtime strings.
 ;;; Invariant: heavy runtime errors are wrapped here before receipts persist them.
 
-(import :core/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-execution-failure
         execution-failure?

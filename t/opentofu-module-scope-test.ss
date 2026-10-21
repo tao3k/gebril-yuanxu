@@ -2,21 +2,21 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope. OpenTofuModule.)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope. OpenTofuModule.)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-module-scope-test)
 
 (def opentofu-module-scope-test
   (test-suite "opentofu-module-scope-test"
-    (poo-flow-test-case "module-owned package injection and bounded native admission"
+    (yuanxu-test-case "module-owned package injection and bounded native admission"
       (def (assert label value)
         (unless value (error "assertion failed" label))
         (displayln "ASSERT-OK " label) (force-output))
-      (def (accepted? evidence) (poo-flow-validation-evidence-accepted? evidence))
+      (def (accepted? evidence) (yuanxu-validation-evidence-accepted? evidence))
       ;; Build/test composition supplies this input; resource authors never do it.
-      (def artifact-path (if (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f)
+      (def artifact-path (if (getenv "YUANXU_OPENTOFU_ARTIFACT" #f)
                             (.get OpenTofuScope. modules aws config provider-artifact)
                             "t/fixtures/opentofu/aws-5.100.0"))
       (.def (Selected @ OpenTofuModule.)
@@ -78,7 +78,7 @@
           (lambda ()
             (use-module Unconfigured as tf (.get tf types resources aws_security_group)) #f)))
       ;; Devenv supplies the exported default object, without user composition.
-      (when (getenv "POO_FLOW_OPENTOFU_ARTIFACT" #f)
+      (when (getenv "YUANXU_OPENTOFU_ARTIFACT" #f)
         (assert 'devenv-default-module-admit
           (use-module OpenTofuScope. as tf
             (accepted? (.call (.get tf types configuration) .admit

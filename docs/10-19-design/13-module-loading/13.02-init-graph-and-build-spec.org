@@ -61,8 +61,8 @@ does not change the type expected by defbuild-script.
 
 #+begin_src scheme
 ;; init.ss
-(import :core/module-system/selection/init-syntax)
-(poo-flow! mode: explicit source: "./modules" (json-schema))
+(import :yuanxu/module-system/selection/init-syntax)
+(yuanxu! mode: explicit source: "./modules" (json-schema))
 
 ;; Bounded actual non-module roots from Core build.ss.
 (def retained '("utilities/algorithms" "types"))
@@ -123,7 +123,7 @@ code for a SHARED-ROOT spec. It is not a solution for mixed-root entries:
 
 #+begin_src scheme
 (def SelectedModules
-  (poo-flow-load-modules
+  (yuanxu-load-modules
     (path-expand "init.ss" (path-directory (this-source-file)))))
 
 ;; SelectedSpec must be the validated, shared-root native LIST discussed above.

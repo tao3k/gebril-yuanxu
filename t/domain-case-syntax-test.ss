@@ -5,15 +5,15 @@
 
 ;;; Boundary: expansion and runtime checks for DomainCase authoring macros.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
                  check-eq?
                  test-suite)
         :clan/poo/object
-        :core/object-family/role-syntax
-        :core/feature-system/domain-case/interface
-        :core/feature-system/domain-case/syntax)
+        :yuanxu/object-family/role-syntax
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/feature-system/domain-case/syntax)
 
 (export domain-case-syntax-test)
 
@@ -28,15 +28,15 @@
    (supers)))
 
 (def syntax-parent-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'SyntaxParent '() (lambda (_value) #t)))
 
 (def syntax-child-type
-  (poo-flow-case-type-contract
+  (yuanxu-case-type-contract
    'SyntaxChild '(SyntaxParent) (lambda (_value) #t)))
 
 (def syntax-runtime-projection
-  (poo-flow-case-projection
+  (yuanxu-case-projection
    'runtime 'syntax-parent 'syntax.runtime.v1
    (lambda (value)
      (list (cons 'mode (.ref value 'syntax/mode))))))
@@ -62,7 +62,7 @@
   (strategy-algebra 'route-first-match))
 
 (def syntax-domain-case-cache
-  (poo-flow-domain-case-cache))
+  (yuanxu-domain-case-cache))
 
 (defpoo-domain-case syntax-domain-case syntax-domain-case-closure
   (cache syntax-domain-case-cache)
@@ -78,7 +78,7 @@
 
 (def domain-case-syntax-test
   (test-suite "DomainCase hygienic authoring macros"
-    (poo-flow-test-case "binds POO-native component descriptors"
+    (yuanxu-test-case "binds POO-native component descriptors"
       (check-equal?
        (.ref syntax-parent-component 'component-id)
        'syntax-parent)
@@ -94,16 +94,16 @@
       (check-equal?
        (.ref syntax-parent-component 'projections)
        (list syntax-runtime-projection)))
-    (poo-flow-test-case "closes a DomainCase and preserves child precedence"
+    (yuanxu-test-case "closes a DomainCase and preserves child precedence"
       (let* ((instance-receipt
-              (poo-flow-domain-case-instantiate
+              (yuanxu-domain-case-instantiate
                syntax-domain-case syntax-instance-role))
              (instance (.ref instance-receipt 'instance))
              (projection
-              (poo-flow-domain-case-project
+              (yuanxu-domain-case-project
                syntax-domain-case 'runtime instance)))
         (check-equal? (.ref syntax-domain-case-closure 'accepted?) #t)
-        (check-equal? (poo-flow-domain-case? syntax-domain-case) #t)
+        (check-equal? (yuanxu-domain-case? syntax-domain-case) #t)
         (check-equal? (.ref syntax-domain-case 'schema-id) 'syntax.case.v1)
         (check-equal?
          (.ref syntax-domain-case 'selected-projection-ids)

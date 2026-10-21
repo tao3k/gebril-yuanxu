@@ -5,7 +5,7 @@
 * Scope: a real authoring call, not every CLOS object
 
 The production boundary is
-=poo-flow-module-authoring-admit-datum -> poo-clos-call -> checked carrier
+=yuanxu-module-authoring-admit-datum -> poo-clos-call -> checked carrier
 constructors -> invoke -> the two maintained authoring method bodies=.
 Executor/SourceRole multi-dispatch, method combination and every value check
 still run. A contributor's body or protocol hook retains the full trace.
@@ -94,7 +94,7 @@ The finite owned region includes sharing and a cycle; the Contract is reachable
 only below an owned node. "Escaped" includes retention by an external native
 token's unmodified dependency graph, not only a returned method frame.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
 each required identity is covered by a retained external token, or a live
 carrier's original replay. It also proves that collection cannot waive external
 requirements and that a missing live token refuses admission. Quint explores
@@ -129,7 +129,7 @@ just test-file t/module-declaration-calibration-test.ss true
 just test-file t/module-testing-isolation-test.ss
 python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/owned-reads.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 
 The matched retention control treats the maintained body list as unknown in an

@@ -204,7 +204,7 @@ payloads disappear merely because the call returned. It is a retention topology
 model, not a native GC or allocation model. Constructor validation is a native
 gate; the modeled lifecycle starts at the completed-call boundary.
 
-[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
+[[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
 when a shared initializer environment over supplied field values is replaced
 by individual constant captures. The result deliberately preserves payload
 membership, rather than claiming it is freed. It says nothing about field-read

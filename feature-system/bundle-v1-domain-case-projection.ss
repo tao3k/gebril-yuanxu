@@ -19,18 +19,18 @@
 
 (import (only-in :std/list/list iota)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
-        :core/utilities/functional
-        :core/feature-system/domain-case/interface
-        :core/feature-system/bundle-v1-lowering
-        :core/feature-system/runtime-handoff-plan)
+        :yuanxu/utilities/functional
+        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/feature-system/bundle-v1-lowering
+        :yuanxu/feature-system/runtime-handoff-plan)
 
 (def +feature-bundle-v1-domain-case-projection-kind+
-  'poo-flow.feature-bundle-v1-domain-case-projection.v1)
+  'yuanxu.feature-bundle-v1-domain-case-projection.v1)
 (def +feature-bundle-v1-domain-case-diagnostic-kind+
-  'poo-flow.feature-bundle-v1-domain-case-diagnostic.v1)
+  'yuanxu.feature-bundle-v1-domain-case-diagnostic.v1)
 
 (def +feature-bundle-v1-parent-relation-id+
-  'poo-flow.bundle-v1.component-parent)
+  'yuanxu.bundle-v1.component-parent)
 
 ;; define-poo-value
 ;;   : (-> Syntax Syntax)
@@ -222,9 +222,9 @@
 
 ;; : (-> Symbol [PooCaseComponent] [PooFeatureBundleV1Edge])
 (def (project-component-edges case-id components)
-  (poo-flow-append-map
+  (yuanxu-append-map
    (lambda (component)
-     (poo-flow-map
+     (yuanxu-map
       (lambda (indexed-parent)
         (feature-bundle-v1-edge
          case-id
@@ -237,7 +237,7 @@
 
 ;; : (-> Symbol [PooFeatureResolvedRuntimeHandoff] [PooFeatureBundleV1Evidence])
 (def (project-evidence-obligations case-id resolved-handoffs)
-  (poo-flow-map
+  (yuanxu-map
    (lambda (indexed-handoff)
      (let ((index (car indexed-handoff))
            (handoff (cadr indexed-handoff)))
@@ -249,7 +249,7 @@
         (.ref handoff 'provider-module-id)
         index)))
    (indexed-values
-    (poo-flow-filter-map
+    (yuanxu-filter-map
      (lambda (handoff)
        (and (resolved-handoff-kind?
              handoff +feature-evidence-obligation-kind+)
@@ -292,7 +292,7 @@
          (resolved-handoffs
           (.ref runtime-handoff-plan 'resolved-handoffs))
          (bundle-handoffs
-          (poo-flow-filter-map
+          (yuanxu-filter-map
            (lambda (handoff)
              (and (resolved-handoff-kind?
                    handoff +feature-runtime-bundle-handoff-kind+)
@@ -300,10 +300,10 @@
            resolved-handoffs))
          (component-entries
           (sorted-entries
-           (poo-flow-map component-entry (indexed-values components))))
+           (yuanxu-map component-entry (indexed-values components))))
          (handoff-entries
           (sorted-entries
-           (poo-flow-map bundle-handoff-entry bundle-handoffs)))
+           (yuanxu-map bundle-handoff-entry bundle-handoffs)))
          (policy-id
           (effective-algebra-id
            policy-strategy-binding 'policy-binding
@@ -313,7 +313,7 @@
            policy-strategy-binding 'strategy-binding
            +feature-bundle-v1-no-strategy-id+)))
     (cond
-     ((not (poo-flow-list-of? poo-flow-case-component-valid? components))
+     ((not (yuanxu-list-of? yuanxu-case-component-valid? components))
       (rejected-projection/context
        'invalid-domain-case-components case-id
        'expected-accepted-poo-case-components

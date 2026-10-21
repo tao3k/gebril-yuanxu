@@ -47,7 +47,7 @@ not measured byte residency or an end-to-end speedup claim.
 
 * LeanPoo reuse and correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReadRetention.lean][ReadRetention.lean]] reuses the existing =IdentityDFS=/=DFSFrames= proof of
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean][ReadRetention.lean]] reuses the existing =IdentityDFS=/=DFSFrames= proof of
 LeanPoo's pending/unseen-weight termination argument. =shared_record_once=
 proves the replay order is duplicate-free; =finite_cycle_drains= proves a closed
 finite graph drains. =closure_coverage= and =omitted_dependency_refused= preserve

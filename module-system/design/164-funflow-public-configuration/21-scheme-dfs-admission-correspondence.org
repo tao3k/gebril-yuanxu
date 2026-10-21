@@ -28,10 +28,10 @@ aliases). The native interner also checks all observed value pairs in its
 
 | Source or artifact | Role |
 |--------------------+------|
-| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Traversal.lean][Traversal.lean]] | Successful recursive DFS invariants, closure and complete root membership |
-| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Projection.lean][Projection.lean]] | Injective identity/edge projection, path equivalence, ordered list equality and correlated Core receipts |
-| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Correspondence.lean][Correspondence.lean]] | Join inherited-root discovery and mandatory RHS requirements to current candidate/context receipt checks |
-| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean][NativeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual native run |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Traversal.lean][Traversal.lean]] | Successful recursive DFS invariants, closure and complete root membership |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Projection.lean][Projection.lean]] | Injective identity/edge projection, path equivalence, ordered list equality and correlated Core receipts |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Correspondence.lean][Correspondence.lean]] | Join inherited-root discovery and mandatory RHS requirements to current candidate/context receipt checks |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean][NativeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual native run |
 | [[file:21-scheme-dfs-admission-correspondence/probe.ss][Native probe]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/native.log][transcript]] | Actual object/Contract execution, assertions and emitted input/output |
 | [[file:21-scheme-dfs-admission-correspondence/generate-native-fixtures.py][Numeric transcript generator]] | Strict S-expression parsing and deterministic Lean fixture generation, without eval or handwritten observations |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/receipt.json][Receipt]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/build.log][build]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axioms.log][axiom audit]] | Exact sources, dependency pin, output hashes and all-theorem audit |
@@ -45,7 +45,7 @@ model; the original Model.lean and Checks.lean are retained.
 
 LeanPoo remains v0.1.1 / d8adf138948c854e7564234bc046387b4a5ee63b on
 Lean v4.34.0. No dependency refresh/upgrade was performed. Core types.ss is copied
-byte-for-byte into an isolated :core/types source scope; its hash matches the
+byte-for-byte into an isolated :yuanxu/types source scope; its hash matches the
 working checkout before/after the probe. Canonical :clan/poo imports resolve the
 isolated dependency-pin sources at 099b381588360a8a49fd772f666a1a00351366f5.
 Object, MOP, brace and support source hashes are recorded in the receipt.
@@ -113,8 +113,8 @@ the projection premise. The original negative control remains applicable.
 
 * Real .admit, not a substitute predicate result
 
-The probe invokes poo-flow-contract-admit on actual poo-flow-predicate-contract
-values and on an actual PooFlowNativeObjectContract. with proto Root,
+The probe invokes yuanxu-contract-admit on actual yuanxu-predicate-contract
+values and on an actual YuanxuObjectContract. with proto Root,
 responsibilities for build/pipeline and final-value obligations. Cases cover:
 accepted final child; cached-parent-list refusal; same-count stale Check refusal;
 primitive classifier refusal; failed child responsibility; prototype mismatch;
@@ -171,10 +171,10 @@ in the product runtime by this proof task.
 
 * Newly discovered public API gap
 
-PooFlowResponsibilityContract. is defined inside Core types.ss but is NOT in its
+YuanxuResponsibilityContract. is defined inside Core types.ss but is NOT in its
 public export list. The first external probe using it failed with an unbound
 variable; the failure is retained in the receipt directory. The passing probe
-uses the already public PooFlowNativeObjectContract. and a declared proto.
+uses the already public YuanxuObjectContract. and a declared proto.
 
 Module 15's design constructor referencing the private base must therefore not
 be advertised as executable external package code. A future owner must select
@@ -215,9 +215,9 @@ clan/poo source at the verified dependency pin and a fresh home. Then run:
 #+begin_src sh
 GERBIL_PATH=/tmp/pooflow-dfs-admit-20261015/home GERBIL_LOADPATH=/tmp/pooflow-dfs-admit-20261015 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/probe.ss > /tmp/profile-native.log
 python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/generate-native-fixtures.py /tmp/profile-native.log /tmp/NativeFixtures.lean
-cmp /tmp/NativeFixtures.lean core/dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean
+cmp /tmp/NativeFixtures.lean core/dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean
 cd packages/proofs/lean-poo
-lake build PooFlowCoreProof.ModuleSystem.Schema.Association
+lake build YuanxuProof.ModuleSystem.Schema.Association
 lake env lean ../../../docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axiom-audit.lean
 #+end_src
 

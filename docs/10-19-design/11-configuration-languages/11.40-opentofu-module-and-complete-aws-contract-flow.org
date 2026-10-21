@@ -147,7 +147,7 @@ are user configuration paths relative to the selected instance/network occurrenc
              (value (apply (.get field compute)
                       (map (cut read-path object <>) (.get field inputs))))
              (receipt ((.get field contract .admit) value context)))
-        (if (poo-flow-validation-evidence-accepted? receipt) '()
+        (if (yuanxu-validation-evidence-accepted? receipt) '()
           (list (.o kind: 'provider-field-rejected
                     provider-path: (list name)
                     input-paths: (.get field inputs)
@@ -187,23 +187,23 @@ responsibilities and silently assume the current Contract protocol accepts them.
 (def AWSRegionContract (.get Provider fields configuration region))
 (def AWSLabelContract AWSString)
 (def NetworkReferenceContract
-  (poo-flow-predicate-contract 'aws/network-reference aws-name? aws-no-obligations))
+  (yuanxu-predicate-contract 'aws/network-reference aws-name? aws-no-obligations))
 (def KeyReferenceContract
-  (poo-flow-predicate-contract 'aws/key-reference aws-name? aws-no-obligations))
+  (yuanxu-predicate-contract 'aws/key-reference aws-name? aws-no-obligations))
 (def IPv4Contract (.get Net types IPv4Text))
 (def PrefixLengthContract (.get Net types IPv4PrefixLength))
 (def NetworkBaseContract (.get Net types IPv4NetworkBlock))
 (def CIDRTextContract (.get Net types AddressPrefixText))
 
 (def (list-contract identity member-contract)
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     identity list?
     (lambda (values context)
       (let loop ((values values) (index 0))
         (if (null? values) '()
           (let (receipt ((.get member-contract .admit) (car values) context))
             (append
-              (if (poo-flow-validation-evidence-accepted? receipt) '()
+              (if (yuanxu-validation-evidence-accepted? receipt) '()
                 (list (.o kind: 'invalid-element index: index evidence: receipt)))
               (loop (cdr values) (+ index 1)))))))))
 (def SSHCidrsContract (list-contract 'aws/ssh-cidrs CIDRTextContract))
@@ -217,7 +217,7 @@ responsibilities and silently assume the current Contract protocol accepts them.
     (append
       (aws-closed-fields @ candidate context)
       (let (receipt ((.get NetworkBaseContract .admit) candidate context))
-        (if (poo-flow-validation-evidence-accepted? receipt) '()
+        (if (yuanxu-validation-evidence-accepted? receipt) '()
           (list (.o kind: 'noncanonical-network-base evidence: receipt)))))))
 
 (define-type (NetworkContract @ PooFlowObjectContract.)
@@ -390,7 +390,7 @@ The private Project boundary is designed as:
 #+begin_src scheme
 (def (admit-or-reject contract candidate context)
   (let (receipt ((.get contract .admit) candidate context))
-    (unless (poo-flow-validation-evidence-accepted? receipt)
+    (unless (yuanxu-validation-evidence-accepted? receipt)
       (error "Configuration rejected" (.get receipt diagnostics)))
     candidate))
 

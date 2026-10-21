@@ -46,7 +46,7 @@ percentage is assumed.
 The retained semantic responsibility is contextual module admission: effective
 candidate, publication association, selected dependency graph and source/Schema
 revisions. It is not ownership of a second String, List, function or object type
-universe. Existing PooFlowContract mixes generic checking and evidence adaptation;
+universe. Existing YuanxuContract mixes generic checking and evidence adaptation;
 its present existence does not establish that the whole hierarchy should remain.
 
 Generic structural contracts and Type adaptation should be proposed upstream.

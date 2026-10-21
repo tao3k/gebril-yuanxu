@@ -2,28 +2,28 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope. OpenTofuConfiguration.)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata poo-flow-json-schema-validation-diagnostic-reason)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope. OpenTofuConfiguration.)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata yuanxu-json-schema-validation-diagnostic-reason)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-configuration-discovery-test)
 
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 (def (diagnostic-at result path)
   (find (lambda (diagnostic)
           (equal? (cdr (assoc 'path
-                         (poo-flow-json-schema-validation-diagnostic-metadata diagnostic))) path))
+                         (yuanxu-json-schema-validation-diagnostic-metadata diagnostic))) path))
         (.get result diagnostics)))
 (def (cached? module name kind)
   (.call (.get module provider) .contract-cached? name kind))
 
 (def opentofu-configuration-discovery-test
   (test-suite "opentofu-configuration-discovery-test"
-    (poo-flow-test-case "final candidate discovers native Contracts without SelectedTypes"
+    (yuanxu-test-case "final candidate discovers native Contracts without SelectedTypes"
       (def AWS (.get OpenTofuScope. modules aws))
       (def AWSCC (.get OpenTofuScope. modules awscc))
       (def Null (.get OpenTofuScope. modules null))
@@ -115,7 +115,7 @@
           (.o web: =>.+ (.o ingress: (list (.o from_port: "wrong"))))))
       (def failure (reject-at WrongAWS '(resource aws_security_group web ingress 0 from_port)))
       (assert 'field-error-retains-provider-source
-        (eq? (cdr (assoc 'source (poo-flow-json-schema-validation-diagnostic-metadata
+        (eq? (cdr (assoc 'source (yuanxu-json-schema-validation-diagnostic-metadata
                        (diagnostic-at failure '(resource aws_security_group web ingress 0 from_port)))))
              (.get AWS source)))
       (.def (WrongAWSCC @ Configuration)
@@ -140,7 +140,7 @@
         (reject-at (.o resource: (.o aws_not_a_real_type: (.o x: (.o))))
                    '(resource aws_not_a_real_type)))
       (assert 'unknown-type-reason
-        (eq? (poo-flow-json-schema-validation-diagnostic-reason
+        (eq? (yuanxu-json-schema-validation-diagnostic-reason
                (diagnostic-at missing '(resource aws_not_a_real_type))) 'provider-type-not-found))
       (reject-at (.o resource: (.o absent_resource: (.o x: (.o)))) '(resource absent_resource))
       (assert 'unselected-binding-never-demanded

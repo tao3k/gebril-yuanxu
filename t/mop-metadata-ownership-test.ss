@@ -3,7 +3,7 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         "qualification/mop-state/metadata-ownership")
 (export mop-metadata-ownership-test test-cleanup!)
 (def completed 0)
@@ -17,7 +17,7 @@
   (check-equal? (Error-message failure) message))
 (def mop-metadata-ownership-test
  (test-suite "Owned metadata gateway and retained raw bypasses"
-  (poo-flow-test-case "genuine read associations reject replacement before restoration or effects"
+  (yuanxu-test-case "genuine read associations reject replacement before restoration or effects"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (def roots (record (cut .get Root port)))
     (def reads (object-%reads Root))
@@ -50,14 +50,14 @@
           (metadata-set! (runtime.slot-ref reads 'object) 'hash values))))
     (check-equal? (.get Root port) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "unknown metadata cannot self-assign ownership"
+  (yuanxu-test-case "unknown metadata cannot self-assign ownership"
     (.def Root port: 5432)
     (def unknown (make-hash-table))
     (refuses "unowned metadata write"
       (cut call-with-owned-metadata (record (cut .get Root port))
         (lambda (_owner _key) (metadata-set! unknown 'ref values))))
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "nested ownership retains outer receiver and exceptions unwind"
+  (yuanxu-test-case "nested ownership retains outer receiver and exceptions unwind"
     (.def Outer port: 5432)
     (.def Inner port: 5433)
     (def roots (record (cut .get Outer port)))
@@ -77,7 +77,7 @@
     (.put! Outer 'port 5440)
     (check-equal? (.get Outer port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "transient miss is owned without inserting a cached read"
+  (yuanxu-test-case "transient miss is owned without inserting a cached read"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (.get Root port)
     (def roots (record (cut .ref/cached Root 'missing (lambda () #f))))
@@ -86,7 +86,7 @@
         (lambda (_owner _key) (metadata-set! (car roots) 'current? values))))
     (check-equal? (hash-key? (object-%reads Root) '(cache-miss missing)) #f)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "exported generated setter still bypasses a library gateway"
+  (yuanxu-test-case "exported generated setter still bypasses a library gateway"
     (.def Root port: 5432)
     (def roots (record (cut .get Root port)))
     (def original (object-%reads Root))
@@ -99,7 +99,7 @@
     (check-equal? (> calls 0) #t)
     (check-equal? (.get Root port) 5432)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "SDK reflective setter still invokes a replacement before restoring it"
+  (yuanxu-test-case "SDK reflective setter still invokes a replacement before restoring it"
     (.def Root port: 5432)
     (def roots (record (cut .get Root port)))
     (def table (object-%reads Root))

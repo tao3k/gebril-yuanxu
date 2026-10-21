@@ -38,7 +38,7 @@ below show the changed boundaries, not a universal three-file shell.
 
 #+begin_src scheme
 ;; project/init.ss -- unchanged for both config revisions
-(poo-flow! mode: explicit source: "./modules"
+(yuanxu! mode: explicit source: "./modules"
   :app
   (infrastructure))
 #+end_src
@@ -109,7 +109,7 @@ These two protections are separate: runtime metadata can exist without granting
 permission to force Build, and evaluating config does not execute build code.
 
 The build graph and explicit build handoff enter the internal build phase.
-=poo-flow-load-modules= rejects reentry there, including calls through aliases;
+=yuanxu-load-modules= rejects reentry there, including calls through aliases;
 the build-entry writer also rejects recursive root build invocation. Owner-
 confined imports reject a build source's attempt to import the root init file.
 This enforces the declared dependency direction in the native protocol; it is

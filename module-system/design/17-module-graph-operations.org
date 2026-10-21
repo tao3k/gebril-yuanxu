@@ -8,7 +8,7 @@
 Module schemas and source selection project into ordinary =graph-node= and
 =graph-edge= values. There is no separate extension-node type or resolver tree.
 
-=poo-flow-graph-rooted= assembles a containment graph with path IDs and
+=yuanxu-graph-rooted= assembles a containment graph with path IDs and
 =contains= edges. Payloads remain caller-owned. A rooted child is a view of the
 same standard graph facts, not a second node representation. Shared graph
 reachability selects contained facts; replacement removes the entire old subtree.
@@ -29,7 +29,7 @@ contribution boundaries so a later contribution can target a newly inserted node
 Batching child extensions must preserve inherited payload and descendants.
 
 ** 10.06.17.30 Receipt boundary
-=poo-flow-graph-resolve= returns =root=, =changed-passes= (0 or 1), and =applied?=.
+=yuanxu-graph-resolve= returns =root=, =changed-passes= (0 or 1), and =applied?=.
 Completion of one pass does not establish convergence. For example, a contribution
 targeting an absent child followed by insertion leaves that child unchanged in the
 first pass; replay can change it. No fixed-point loop or general idempotence law
@@ -61,7 +61,7 @@ for a DSL without native Scheme objects, contracts, and POO inheritance.
   kind, merge strategy, default value, and metadata;
 - explicit graph contributions are small POO objects that target a module
   object and carry a field contract plus a value;
-- =poo-flow-module-field-contributions-resolve= projects those explicit
+- =yuanxu-module-field-contributions-resolve= projects those explicit
   contributions to extension operations. Ordinary inherited configuration
   follows native POO prototypes instead of this graph resolver.
 
@@ -72,28 +72,28 @@ remain an explicit mechanism for changes that inheritance cannot express.
 Explicit object-graph contribution example:
 #+begin_src scheme
 (def shared-sandbox
-  (poo-flow-module-object
+  (yuanxu-module-object
    'sandbox/shared
    '()
    (list
-    (poo-flow-module-field-contract
+    (yuanxu-module-field-contract
      'backend 'Symbol 'override 'sandbox '())
-    (poo-flow-module-field-contract
+    (yuanxu-module-field-contract
      'runtime-args 'List 'append '() '()))
    '((domain . sandbox))))
 
 (def nono-sandbox
-  (poo-flow-module-object
+  (yuanxu-module-object
    'sandbox/nono
    (list shared-sandbox)
    (list
-    (poo-flow-module-field-contract
+    (yuanxu-module-field-contract
      'backend 'Symbol 'override 'nono '()))
    '((backend . nono))))
 
-(poo-flow-module-field-contributions-resolve
+(yuanxu-module-field-contributions-resolve
  root-node
- (poo-flow-module-object-contributions
+ (yuanxu-module-object-contributions
   nono-sandbox
   '((runtime-args . ("--trace-nono")))))
 #+end_src
@@ -168,10 +168,10 @@ Directory entrypoints can be projected into an =auto-imports= POO graph:
 
 Disabling an automatically discovered entrypoint is also POO-native:
 #+begin_src scheme
-(poo-flow-graph-contribution
+(yuanxu-graph-contribution
  'auto-imports
  (list
-  (poo-flow-graph-node-remove
+  (yuanxu-graph-node-remove
    "user-interface/custom/my-module/config.ss")))
 #+end_src
 

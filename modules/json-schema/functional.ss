@@ -11,80 +11,80 @@
         (only-in :std/string/misc
                  string-drop))
 
-(export poo-flow-contract-key->string
-        poo-flow-contract-key->symbol
-        poo-flow-contract-key=?
-        poo-flow-contract-json-object?
-        poo-flow-contract-json-array->list
-        poo-flow-contract-object-ref
-        poo-flow-contract-option
-        poo-flow-contract-string-prefix?
-        poo-flow-contract-string-drop-prefix
-        poo-flow-contract-member?
-        poo-flow-contract-any?
-        poo-flow-contract-all?
-        poo-flow-contract-project-list
-        poo-flow-contract-filter-map
-        poo-flow-contract-append-map
-        poo-flow-contract-remove
-        poo-flow-contract-map-pair-with-diagnostics)
+(export yuanxu-contract-key->string
+        yuanxu-contract-key->symbol
+        yuanxu-contract-key=?
+        yuanxu-contract-json-object?
+        yuanxu-contract-json-array->list
+        yuanxu-contract-object-ref
+        yuanxu-contract-option
+        yuanxu-contract-string-prefix?
+        yuanxu-contract-string-drop-prefix
+        yuanxu-contract-member?
+        yuanxu-contract-any?
+        yuanxu-contract-all?
+        yuanxu-contract-project-list
+        yuanxu-contract-filter-map
+        yuanxu-contract-append-map
+        yuanxu-contract-remove
+        yuanxu-contract-map-pair-with-diagnostics)
 
-;; poo-flow-contract-key->string
+;; yuanxu-contract-key->string
 ;;   : (-> ContractKey MaybeString)
 ;;   | doc m%
 ;;       Convert symbol/string keys at JSON-like contract boundaries to strings.
 ;;       Other values return #f so callers can produce domain diagnostics.
 ;;     %
-(def (poo-flow-contract-key->string key)
+(def (yuanxu-contract-key->string key)
   (cond
    ((string? key) key)
    ((symbol? key) (symbol->string key))
    (else #f)))
 
-;; poo-flow-contract-key->symbol
+;; yuanxu-contract-key->symbol
 ;;   : (-> ContractKey Symbol)
 ;;   | doc m%
 ;;       Convert symbol/string keys to stable Scheme slot symbols.
 ;;     %
-(def (poo-flow-contract-key->symbol key)
+(def (yuanxu-contract-key->symbol key)
   (cond
    ((symbol? key) key)
    ((string? key) (string->symbol key))
    (else 'unknown-contract-key)))
 
-;; poo-flow-contract-key=?
+;; yuanxu-contract-key=?
 ;;   : (-> ContractKey ContractKey Boolean)
 ;;   | doc m%
 ;;       Compare symbol/string keys by their string spelling.
 ;;     %
-(def (poo-flow-contract-key=? candidate key)
-  (let ((candidate-name (poo-flow-contract-key->string candidate))
-        (key-name (poo-flow-contract-key->string key)))
+(def (yuanxu-contract-key=? candidate key)
+  (let ((candidate-name (yuanxu-contract-key->string candidate))
+        (key-name (yuanxu-contract-key->string key)))
     (and candidate-name key-name (string=? candidate-name key-name))))
 
-;; poo-flow-contract-json-object?
+;; yuanxu-contract-json-object?
 ;;   : (-> Object Boolean)
 ;;   | doc m%
 ;;       Recognize JSON-like objects represented as alists at contract import
 ;;       boundaries.
 ;;     %
-(def (poo-flow-contract-json-object? value)
+(def (yuanxu-contract-json-object? value)
   (and (list? value)
        (if (every pair? value) #t #f)))
 
-;; poo-flow-contract-json-array->list
+;; yuanxu-contract-json-array->list
 ;;   : (-> Object [Object])
 ;;   | doc m%
 ;;       Normalize vector/list JSON-like arrays into lists. Non-array values are
 ;;       treated as empty because callers decide whether that is diagnostic.
 ;;     %
-(def (poo-flow-contract-json-array->list value)
+(def (yuanxu-contract-json-array->list value)
   (cond
    ((vector? value) (vector->list value))
    ((list? value) value)
    (else '())))
 
-;; poo-flow-contract-any?
+;; yuanxu-contract-any?
 ;;   : (-> Procedure [Object] Boolean)
 ;;   | doc m%
 ;;       Run a SRFI-1 `any` scan at the contract boundary and return a strict
@@ -93,14 +93,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-any? string? '(1 "x"))
+;;       (yuanxu-contract-any? string? '(1 "x"))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-contract-any? predicate values)
+(def (yuanxu-contract-any? predicate values)
   (if (any predicate values) #t #f))
 
-;; poo-flow-contract-all?
+;; yuanxu-contract-all?
 ;;   : (-> Procedure [Object] Boolean)
 ;;   | doc m%
 ;;       Run a SRFI-1 `every` scan at the contract boundary and return a strict
@@ -109,14 +109,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-all? symbol? '(a b))
+;;       (yuanxu-contract-all? symbol? '(a b))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-contract-all? predicate values)
+(def (yuanxu-contract-all? predicate values)
   (if (every predicate values) #t #f))
 
-;; poo-flow-contract-object-ref
+;; yuanxu-contract-object-ref
 ;;   : (forall (k v) (-> [(Pair k v)] k v v))
 ;;   : (-> Alist ContractKey Object Object)
 ;;   | result: matched row value or DEFAULT-VALUE
@@ -126,19 +126,19 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-object-ref '((type . "object")) 'type #f)
+;;       (yuanxu-contract-object-ref '((type . "object")) 'type #f)
 ;;       ;; => "object"
 ;;       ```
 ;;     %
-(def (poo-flow-contract-object-ref object key default-value)
+(def (yuanxu-contract-object-ref object key default-value)
   (let (row (find
              (lambda (candidate)
                (and (pair? candidate)
-                    (poo-flow-contract-key=? (car candidate) key)))
+                    (yuanxu-contract-key=? (car candidate) key)))
              object))
     (if row (cdr row) default-value)))
 
-;; poo-flow-contract-option
+;; yuanxu-contract-option
 ;;   : (-> Alist ContractKey Object Object)
 ;;   | doc m%
 ;;       Read an optional contract option from a JSON-like alist while keeping
@@ -147,14 +147,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-option '((owner . workflow)) 'owner #f)
+;;       (yuanxu-contract-option '((owner . workflow)) 'owner #f)
 ;;       ;; => workflow
 ;;       ```
 ;;     %
-(def (poo-flow-contract-option options key default-value)
-  (poo-flow-contract-object-ref options key default-value))
+(def (yuanxu-contract-option options key default-value)
+  (yuanxu-contract-object-ref options key default-value))
 
-;; poo-flow-contract-string-prefix?
+;; yuanxu-contract-string-prefix?
 ;;   : (-> String String Boolean)
 ;;   | doc m%
 ;;       Check string prefixes through SRFI-13 without allocating temporary
@@ -163,16 +163,16 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-string-prefix? "#/" "#/definitions/User")
+;;       (yuanxu-contract-string-prefix? "#/" "#/definitions/User")
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-contract-string-prefix? prefix value)
+(def (yuanxu-contract-string-prefix? prefix value)
   (and (string? prefix)
        (string? value)
        (string-prefix? prefix value)))
 
-;; poo-flow-contract-string-drop-prefix
+;; yuanxu-contract-string-drop-prefix
 ;;   : (-> String String MaybeString)
 ;;   | doc m%
 ;;       Return the suffix after PREFIX when VALUE has that prefix. This keeps
@@ -182,15 +182,15 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-string-drop-prefix "#/definitions/" "#/definitions/User")
+;;       (yuanxu-contract-string-drop-prefix "#/definitions/" "#/definitions/User")
 ;;       ;; => "User"
 ;;       ```
 ;;     %
-(def (poo-flow-contract-string-drop-prefix prefix value)
-  (and (poo-flow-contract-string-prefix? prefix value)
+(def (yuanxu-contract-string-drop-prefix prefix value)
+  (and (yuanxu-contract-string-prefix? prefix value)
        (string-drop value (string-length prefix))))
 
-;; poo-flow-contract-member?
+;; yuanxu-contract-member?
 ;;   : (-> Object [Object] Boolean)
 ;;   | doc m%
 ;;       Wrap SRFI-1 `member` as a strict boolean for enum, seen-set, and
@@ -199,14 +199,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-member? 'type '(type properties))
+;;       (yuanxu-contract-member? 'type '(type properties))
 ;;       ;; => #t
 ;;       ```
 ;;     %
-(def (poo-flow-contract-member? value values)
+(def (yuanxu-contract-member? value values)
   (if (member value values) #t #f))
 
-;; poo-flow-contract-project-list
+;; yuanxu-contract-project-list
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
 ;;       Project a list through SRFI-1 `map` at the contract boundary so schema
@@ -215,14 +215,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-project-list symbol->string '(a b))
+;;       (yuanxu-contract-project-list symbol->string '(a b))
 ;;       ;; => ("a" "b")
 ;;       ```
 ;;     %
-(def (poo-flow-contract-project-list projector values)
+(def (yuanxu-contract-project-list projector values)
   (map projector values))
 
-;; poo-flow-contract-filter-map
+;; yuanxu-contract-filter-map
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
 ;;       Project and drop rejected rows through SRFI-1 `filter-map`, preserving
@@ -231,14 +231,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-filter-map (lambda (x) (and x x)) '(#f a))
+;;       (yuanxu-contract-filter-map (lambda (x) (and x x)) '(#f a))
 ;;       ;; => (a)
 ;;       ```
 ;;     %
-(def (poo-flow-contract-filter-map projector values)
+(def (yuanxu-contract-filter-map projector values)
   (filter-map projector values))
 
-;; poo-flow-contract-append-map
+;; yuanxu-contract-append-map
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
 ;;       Flatten one projected list layer through SRFI-1 `append-map` for
@@ -247,14 +247,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-append-map (lambda (x) (list x x)) '(a b))
+;;       (yuanxu-contract-append-map (lambda (x) (list x x)) '(a b))
 ;;       ;; => (a a b b)
 ;;       ```
 ;;     %
-(def (poo-flow-contract-append-map projector values)
+(def (yuanxu-contract-append-map projector values)
   (append-map projector values))
 
-;; poo-flow-contract-remove
+;; yuanxu-contract-remove
 ;;   : (-> Procedure [Object] [Object])
 ;;   | doc m%
 ;;       Remove rows matching a predicate through SRFI-1 `remove`, usually for
@@ -263,14 +263,14 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-remove string? '(a "b" c))
+;;       (yuanxu-contract-remove string? '(a "b" c))
 ;;       ;; => (a c)
 ;;       ```
 ;;     %
-(def (poo-flow-contract-remove predicate values)
+(def (yuanxu-contract-remove predicate values)
   (remove predicate values))
 
-;; poo-flow-contract-map-pair-with-diagnostics
+;; yuanxu-contract-map-pair-with-diagnostics
 ;;   : (-> Procedure [Object] [Diagnostic] Pair)
 ;;   | doc m%
 ;;       Map values whose projector returns `(value . diagnostics)`, preserving
@@ -279,11 +279,11 @@
 ;;       # Examples
 ;;
 ;;       ```scheme
-;;       (poo-flow-contract-map-pair-with-diagnostics parse rows '())
+;;       (yuanxu-contract-map-pair-with-diagnostics parse rows '())
 ;;       ;; => (values . diagnostics)
 ;;       ```
 ;;     %
-(def (poo-flow-contract-map-pair-with-diagnostics project values diagnostics)
+(def (yuanxu-contract-map-pair-with-diagnostics project values diagnostics)
   (fold-right
    (lambda (value accumulated)
      (let (parsed (project value))

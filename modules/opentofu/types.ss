@@ -5,10 +5,10 @@
 (import :clan/poo/object
         (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/mop define-type Type.)
-        (only-in :core/types poo-flow-predicate-contract poo-flow-validation-evidence-accepted?)
-        (only-in :core/modules/nix/types NixSourceContract NixFlakeSourceContract NixScopeContract)
-        (only-in :core/modules/json-schema/types JsonSchemaScopeContract)
-        (only-in :core/modules/json-schema/json-schema-contract poo-flow-json-schema->contract))
+        (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/modules/nix/types NixSourceContract NixFlakeSourceContract NixScopeContract)
+        (only-in :yuanxu/modules/json-schema/types JsonSchemaScopeContract)
+        (only-in :yuanxu/modules/json-schema/json-schema-contract yuanxu-json-schema->contract))
 (export ProviderArtifactContract ProviderTypeIndexContract ProviderSelectionContract ConfigurationEnvelopeContract
         CollectionAuthorityType CollectionReceiptType OpenTofuConfigContract OpenTofuScopeContract NixScopeContract JsonSchemaScopeContract)
 
@@ -17,7 +17,7 @@
 (def ConfigurationEnvelopeContract
   (let ((object-input '((type . "object")))
         (instances '((type . "object") (additionalProperties . ((type . "object"))))))
-    (poo-flow-json-schema->contract 'opentofu/configuration-envelope
+    (yuanxu-json-schema->contract 'opentofu/configuration-envelope
       `((type . "object") (additionalProperties . #f)
         (properties .
           ((provider . ((type . "object")
@@ -26,7 +26,7 @@
            (data . ((type . "object") (additionalProperties . ,instances)))))))))
 
 (def ProviderSelectionContract
-  (poo-flow-json-schema->contract 'opentofu/provider-selection
+  (yuanxu-json-schema->contract 'opentofu/provider-selection
     '((type . "object") (additionalProperties . #f)
       (required . ("provider" "version"))
       (properties .
@@ -37,11 +37,11 @@
 ;; Shape of a package-produced manifest, not an independent package lock.
 (def digest-schema '((type . "string") (pattern . "^[0-9a-f]{64}$")))
 (def ProviderArtifactContract
-  (poo-flow-json-schema->contract 'opentofu/provider-artifact
+  (yuanxu-json-schema->contract 'opentofu/provider-artifact
     `((type . "object") (additionalProperties . #f)
       (required . ("format" "provider" "version" "schema-sha256" "indexes"))
       (properties .
-        ((format . ((type . "string") (pattern . "^poo-flow/provider-schema-v2$")))
+        ((format . ((type . "string") (pattern . "^yuanxu/provider-schema-v2$")))
          (provider . ((type . "string") (minLength . 1)))
          (version . ((type . "string") (minLength . 1)))
          (schema-sha256 . ,digest-schema)
@@ -52,7 +52,7 @@
                                     (data . ,digest-schema))))))))))
 
 (def ProviderTypeIndexContract
-  (poo-flow-json-schema->contract 'opentofu/provider-type-index
+  (yuanxu-json-schema->contract 'opentofu/provider-type-index
     `((type . "object") (additionalProperties . #f)
       (required . ("provider" "version" "schema-sha256" "kind" "entries"))
       (properties .
@@ -85,7 +85,7 @@
 
 ;; Scope publication checks shape without demanding artifacts or activating Build.
 (def OpenTofuScopeContract
-  (poo-flow-predicate-contract 'opentofu/scope
+  (yuanxu-predicate-contract 'opentofu/scope
     (lambda (value)
       (and (object? value)
            (every (cut .slot? value <>) '(config modules types prototypes schema .build-inputs))
@@ -93,7 +93,7 @@
            (.slot? (.get value types) 'configuration)))
     (lambda (_value _context) '())))
 (def OpenTofuConfigContract
-  (poo-flow-predicate-contract 'opentofu/config
+  (yuanxu-predicate-contract 'opentofu/config
     (lambda (value)
       (and (object? value) (.slot? value 'artifact) (.slot? value 'source)
            (or (not (.get value artifact)) (string? (.get value artifact)))
@@ -106,6 +106,6 @@
                  (and (object? source) (.slot? source '.prepare)
                       (procedure? (.get source .prepare))
                       (.slot? source 'source-inputs)
-                      (or (poo-flow-validation-evidence-accepted? (.call NixFlakeSourceContract .admit source #f))
-                          (poo-flow-validation-evidence-accepted? (.call NixSourceContract .admit source #f))))))))
+                      (or (yuanxu-validation-evidence-accepted? (.call NixFlakeSourceContract .admit source #f))
+                          (yuanxu-validation-evidence-accepted? (.call NixSourceContract .admit source #f))))))))
     (lambda (_value _context) '())))

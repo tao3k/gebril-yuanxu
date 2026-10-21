@@ -7,14 +7,14 @@
         (only-in :std/func compose)
         (only-in :std/encoding/json write-json)
         (only-in :std/error Error? Error-message Error-irritants)
-        (only-in :core/observability/testing-fixture with-poo-flow-fixture)
+        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
         (only-in :std/test check-equal?)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context
                  read-syntax-from-file syntax->list)
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/module-system/source/link poo-flow-load-modules)
-        (only-in :core/module-system/source/admission module-source-read))
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/admission module-source-read))
 (export DirectoryFixture DirectoryFailureFixture ServicesFixture RepositoryServicesFixture RelocatedServicesFixture
         relocate-services write-source read-overrides refused)
 
@@ -58,7 +58,7 @@
 
 (def (verify-directory-failure workspace phase checkpoint)
   (def root (.get workspace root))
-  (with-poo-flow-fixture
+  (with-yuanxu-fixture
     (sibling (.cc DirectoryFixture prefix: (path-expand "sibling-" root)))
     (def primary (with-catch values (lambda () (error "injected primary failure" phase))))
     (def secondary (with-catch values (lambda () (error "injected cleanup failure" phase))))
@@ -87,7 +87,7 @@
     (def caught
       (with-catch values
         (lambda ()
-          (with-poo-flow-fixture (_resource Broken)
+          (with-yuanxu-fixture (_resource Broken)
             (unless (eq? phase 'body)
               (error "failed preparation unexpectedly returned"))
             (raise primary)))))
@@ -131,7 +131,7 @@
       .verify: (lambda () (verify-directory-failure workspace failure-phase .after-failure)))))
 
 (def (select-services workspace source)
-  (def selection (poo-flow-load-modules (path-expand "init.ss" source)))
+  (def selection (yuanxu-load-modules (path-expand "init.ss" source)))
   (.cc workspace source: source selection: selection
     publication: (.call AdmissionPublication. .for-export selection
                    'applications/gitea-postgresql 'Application)))
@@ -140,7 +140,7 @@
   (def root (.get workspace root))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'service-test-))
-      " prelude: :core/module-system/source/module-prelude)"))
+      " prelude: :yuanxu/module-system/source/module-prelude)"))
   ;; Real maintained roles, isolated only for destructive source controls.
   (for-each
     (lambda (name ports)
@@ -177,7 +177,7 @@
           (path-expand (string-append role ".ss") source-root))))
     '("types" "objects" "config" "interface"))
   (write-source (path-expand "init.ss" root)
-    "(poo-flow! mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
+    "(yuanxu! mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
   (write-source (path-expand "modules/services/unused/interface.ss" root) "(((cold")
   (select-services workspace root))
 
@@ -197,7 +197,7 @@
   (write-source (path-expand "init.ss" root)
     (call-with-output-string
       (lambda (out)
-        (display "(poo-flow! mode: explicit :services (postgresql @ " out)
+        (display "(yuanxu! mode: explicit :services (postgresql @ " out)
         (write (path-expand "postgresql" source-root) out)
         (display ") (gitea @ " out)
         (write (path-expand "gitea" source-root) out)
@@ -226,7 +226,7 @@
 (def (read-overrides path (names '(release explicit)))
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
-    (eval-syntax '(import :core/object-syntax/path-slots))
+    (eval-syntax '(import :yuanxu/object-syntax/path-slots))
     (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
     (apply values (map eval-syntax names))))
 (def (cause failure)

@@ -9,33 +9,33 @@
 
 (import (only-in :clan/poo/object object? .all-slots .ref)
         (only-in "./functional.ss"
-                 poo-flow-contract-all?
-                 poo-flow-contract-key->string
-                 poo-flow-contract-json-object?
-                 poo-flow-contract-object-ref
-                 poo-flow-contract-project-list
-                 poo-flow-contract-map-pair-with-diagnostics)
+                 yuanxu-contract-all?
+                 yuanxu-contract-key->string
+                 yuanxu-contract-json-object?
+                 yuanxu-contract-object-ref
+                 yuanxu-contract-project-list
+                 yuanxu-contract-map-pair-with-diagnostics)
         (only-in "./json-schema-ir.ss"
-                 poo-flow-json-schema-node-kind
-                 poo-flow-json-schema-node-value
-                 poo-flow-json-schema-node-metadata
-                 poo-flow-json-schema-node-record
-                 poo-flow-json-schema-diagnostic-record)
+                 yuanxu-json-schema-node-kind
+                 yuanxu-json-schema-node-value
+                 yuanxu-json-schema-node-metadata
+                 yuanxu-json-schema-node-record
+                 yuanxu-json-schema-diagnostic-record)
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match))
 
-(export +poo-flow-json-schema-constraint-keywords+
-        poo-flow-json-schema-parse-result-with-constraints
-        poo-flow-json-schema-apply-node-constraints
-        poo-flow-json-schema-unique-items?)
+(export +yuanxu-json-schema-constraint-keywords+
+        yuanxu-json-schema-parse-result-with-constraints
+        yuanxu-json-schema-apply-node-constraints
+        yuanxu-json-schema-unique-items?)
 
-;; +poo-flow-json-schema-constraint-keywords+
+;; +yuanxu-json-schema-constraint-keywords+
 ;;   : [Symbol]
 ;;   | doc m%
 ;;       Supported validation keywords carried as normalized node metadata.
 ;;     %
-(def +poo-flow-json-schema-constraint-keywords+
+(def +yuanxu-json-schema-constraint-keywords+
   '(minLength
     maxLength
     minimum
@@ -49,21 +49,21 @@
     maxProperties
     pattern))
 
-;; poo-flow-json-schema-non-negative-integer?
+;; yuanxu-json-schema-non-negative-integer?
 ;;   : (-> JsonSchemaDatum Boolean)
 ;;   | doc m%
 ;;       Recognize JSON Schema length/count bounds.
 ;;     %
-(def (poo-flow-json-schema-non-negative-integer? value)
+(def (yuanxu-json-schema-non-negative-integer? value)
   (and (integer? value)
        (>= value 0)))
 
-;; poo-flow-json-schema-valid-constraint-value?
+;; yuanxu-json-schema-valid-constraint-value?
 ;;   : (-> Symbol JsonSchemaDatum Boolean)
 ;;   | doc m%
 ;;       Validate the small P0 constraint value shapes before adding them to IR.
 ;;     %
-(def (poo-flow-json-schema-valid-constraint-value? key value)
+(def (yuanxu-json-schema-valid-constraint-value? key value)
   (cond
    ((or (eq? key 'minLength)
         (eq? key 'maxLength)
@@ -71,7 +71,7 @@
         (eq? key 'maxItems)
         (eq? key 'minProperties)
         (eq? key 'maxProperties))
-    (poo-flow-json-schema-non-negative-integer? value))
+    (yuanxu-json-schema-non-negative-integer? value))
    ((or (eq? key 'minimum)
         (eq? key 'maximum)
         (eq? key 'exclusiveMinimum)
@@ -87,14 +87,14 @@
             #t))))
    (else #f)))
 
-;; poo-flow-json-schema-constraint-diagnostic
-;;   : (-> Symbol JsonSchemaDatum Symbol PooFlowJsonSchemaDiagnostic)
+;; yuanxu-json-schema-constraint-diagnostic
+;;   : (-> Symbol JsonSchemaDatum Symbol YuanxuJsonSchemaDiagnostic)
 ;;   | doc m%
 ;;       Emit a warning when a supported constraint key has an invalid value
 ;;       shape. The bridge keeps generation alive with a safe fallback.
 ;;     %
-(def (poo-flow-json-schema-constraint-diagnostic key value context)
-  (poo-flow-json-schema-diagnostic-record
+(def (yuanxu-json-schema-constraint-diagnostic key value context)
+  (yuanxu-json-schema-diagnostic-record
    'warning
    'invalid-constraint-value
    "JSON Schema constraint has an invalid value shape"
@@ -103,45 +103,45 @@
      (keyword . ,key)
      (owner . json-schema-constraints))))
 
-;; poo-flow-json-schema-parse-constraint
+;; yuanxu-json-schema-parse-constraint
 ;;   : (-> JsonSchemaObjectRows Symbol Symbol JsonSchemaMissingSentinel Pair)
 ;;   | result: maybe constraint row paired with diagnostics
 ;;   | doc m%
 ;;       Parse one optional constraint keyword from a schema object.
 ;;     %
-(def (poo-flow-json-schema-parse-constraint schema key context missing)
+(def (yuanxu-json-schema-parse-constraint schema key context missing)
   (let (value
-        (poo-flow-contract-object-ref schema key missing))
+        (yuanxu-contract-object-ref schema key missing))
     (cond
      ((eq? value missing)
       (cons #f '()))
-     ((poo-flow-json-schema-valid-constraint-value? key value)
+     ((yuanxu-json-schema-valid-constraint-value? key value)
       (cons (cons key value) '()))
      (else
       (cons
        #f
        (list
-        (poo-flow-json-schema-constraint-diagnostic
+        (yuanxu-json-schema-constraint-diagnostic
          key
          value
          context)))))))
 
-;; poo-flow-json-schema-parse-constraints
+;; yuanxu-json-schema-parse-constraints
 ;;   : (-> JsonSchemaObjectRows Symbol JsonSchemaMissingSentinel Pair)
 ;;   | result: constraint alist paired with diagnostics
 ;;   | doc m%
 ;;       Collect supported validation keywords into bounded metadata rows.
 ;;     %
-(def (poo-flow-json-schema-parse-constraints schema context missing)
+(def (yuanxu-json-schema-parse-constraints schema context missing)
   (let* ((parsed
-          (poo-flow-contract-map-pair-with-diagnostics
+          (yuanxu-contract-map-pair-with-diagnostics
            (lambda (key)
-             (poo-flow-json-schema-parse-constraint
+             (yuanxu-json-schema-parse-constraint
               schema
               key
               context
               missing))
-           +poo-flow-json-schema-constraint-keywords+
+           +yuanxu-json-schema-constraint-keywords+
            '()))
          (constraints
           (filter-map
@@ -150,92 +150,92 @@
            (car parsed))))
     (cons constraints (cdr parsed))))
 
-;; poo-flow-json-schema-node-with-constraints
-;;   : (-> PooFlowJsonSchemaNode Alist PooFlowJsonSchemaNode)
+;; yuanxu-json-schema-node-with-constraints
+;;   : (-> YuanxuJsonSchemaNode Alist YuanxuJsonSchemaNode)
 ;;   | doc m%
 ;;       Attach parsed constraints to node metadata without changing the node
 ;;       family. The emitter owns executable predicate composition.
 ;;     %
-(def (poo-flow-json-schema-node-with-constraints node constraints)
+(def (yuanxu-json-schema-node-with-constraints node constraints)
   (if (null? constraints)
     node
-    (poo-flow-json-schema-node-record
-     (poo-flow-json-schema-node-kind node)
-     (poo-flow-json-schema-node-value node)
+    (yuanxu-json-schema-node-record
+     (yuanxu-json-schema-node-kind node)
+     (yuanxu-json-schema-node-value node)
      (append
-      (poo-flow-json-schema-node-metadata node)
+      (yuanxu-json-schema-node-metadata node)
       (list (cons 'constraints constraints))))))
 
-;; poo-flow-json-schema-parse-result-with-constraints
+;; yuanxu-json-schema-parse-result-with-constraints
 ;;   : (-> JsonSchemaObjectRows Symbol JsonSchemaMissingSentinel JsonSchemaParseResult JsonSchemaParseResult)
 ;;   | doc m%
 ;;       Merge validation-keyword metadata into an already parsed schema node.
 ;;     %
-(def (poo-flow-json-schema-parse-result-with-constraints schema context missing
+(def (yuanxu-json-schema-parse-result-with-constraints schema context missing
                                                          parsed)
   (let (constraints
-        (poo-flow-json-schema-parse-constraints schema context missing))
+        (yuanxu-json-schema-parse-constraints schema context missing))
     (cons
-     (poo-flow-json-schema-node-with-constraints
+     (yuanxu-json-schema-node-with-constraints
       (car parsed)
       (car constraints))
      (append (cdr parsed) (cdr constraints)))))
 
-;; poo-flow-json-schema-node-constraints
-;;   : (-> PooFlowJsonSchemaNode Alist)
+;; yuanxu-json-schema-node-constraints
+;;   : (-> YuanxuJsonSchemaNode Alist)
 ;;   | doc m%
 ;;       Read normalized constraint metadata from one schema node.
 ;;     %
-(def (poo-flow-json-schema-node-constraints node)
-  (poo-flow-contract-object-ref
-   (poo-flow-json-schema-node-metadata node)
+(def (yuanxu-json-schema-node-constraints node)
+  (yuanxu-contract-object-ref
+   (yuanxu-json-schema-node-metadata node)
    'constraints
    '()))
 
 ;; JSON equality is recursive, numeric, and insensitive to object key order.
 ;; Empty objects should use a POO object/hash and empty arrays a vector at
 ;; ambiguous wire boundaries. Never use Scheme equal? as provider set identity.
-(def (poo-flow-json-schema-equality-rows value)
+(def (yuanxu-json-schema-equality-rows value)
   (cond ((hash-table? value) (hash->list value))
         ((object? value) (map (lambda (key) (cons key (.ref value key)))
                                (.all-slots value)))
-        ((and (pair? value) (poo-flow-contract-json-object? value)) value)
+        ((and (pair? value) (yuanxu-contract-json-object? value)) value)
         (else #f)))
 
-(def (poo-flow-json-schema-value=? left right)
-  (let ((a (poo-flow-json-schema-equality-rows left))
-        (b (poo-flow-json-schema-equality-rows right)))
+(def (yuanxu-json-schema-value=? left right)
+  (let ((a (yuanxu-json-schema-equality-rows left))
+        (b (yuanxu-json-schema-equality-rows right)))
     (cond
      ((and a b)
       (and (= (length a) (length b))
            (every (lambda (entry)
                     (let (other (find (lambda (row)
-                                        (equal? (poo-flow-contract-key->string (car row))
-                                                (poo-flow-contract-key->string (car entry)))) b))
-                      (and other (poo-flow-json-schema-value=? (cdr entry) (cdr other))))) a)))
+                                        (equal? (yuanxu-contract-key->string (car row))
+                                                (yuanxu-contract-key->string (car entry)))) b))
+                      (and other (yuanxu-json-schema-value=? (cdr entry) (cdr other))))) a)))
      ((or a b) #f)
      ((and (number? left) (number? right)) (= left right))
      ((and (or (list? left) (vector? left)) (or (list? right) (vector? right)))
       (let ((xs (if (vector? left) (vector->list left) left))
             (ys (if (vector? right) (vector->list right) right)))
         (and (= (length xs) (length ys))
-             (every identity (map poo-flow-json-schema-value=? xs ys)))))
+             (every identity (map yuanxu-json-schema-value=? xs ys)))))
      (else (equal? left right)))))
 
-(def (poo-flow-json-schema-unique-items? values)
+(def (yuanxu-json-schema-unique-items? values)
   (let loop ((rest (if (vector? values) (vector->list values) values)))
     (or (null? rest)
         (and (not (find (lambda (other)
-                         (poo-flow-json-schema-value=? (car rest) other)) (cdr rest)))
+                         (yuanxu-json-schema-value=? (car rest) other)) (cdr rest)))
              (loop (cdr rest))))))
 
-;; poo-flow-json-schema-constraint-predicate
+;; yuanxu-json-schema-constraint-predicate
 ;;   : (-> Procedure Pair JsonSchemaPredicate)
 ;;   | doc m%
 ;;       Compile one normalized validation keyword into a predicate. JSON Schema
 ;;       type-specific constraints pass non-applicable values.
 ;;     %
-(def (poo-flow-json-schema-constraint-predicate array-value? constraint)
+(def (yuanxu-json-schema-constraint-predicate array-value? constraint)
   (let ((key (car constraint))
         (bound (cdr constraint)))
     (cond
@@ -266,7 +266,7 @@
      ((eq? key 'uniqueItems)
       (lambda (value)
         (or (not bound) (not (array-value? value))
-            (poo-flow-json-schema-unique-items? value))))
+            (yuanxu-json-schema-unique-items? value))))
      ((eq? key 'minItems)
       (lambda (value)
         (or (not (array-value? value))
@@ -277,11 +277,11 @@
             (<= (length (if (vector? value) (vector->list value) value)) bound))))
      ((eq? key 'minProperties)
       (lambda (value)
-        (or (not (poo-flow-contract-json-object? value))
+        (or (not (yuanxu-contract-json-object? value))
             (>= (length value) bound))))
      ((eq? key 'maxProperties)
       (lambda (value)
-        (or (not (poo-flow-contract-json-object? value))
+        (or (not (yuanxu-contract-json-object? value))
             (<= (length value) bound))))
      ((eq? key 'pattern)
       (let (compiled-pattern (pregexp bound))
@@ -291,31 +291,31 @@
      (else
       (lambda (_value) #t)))))
 
-;; poo-flow-json-schema-constraints-predicate
+;; yuanxu-json-schema-constraints-predicate
 ;;   : (-> Procedure Alist JsonSchemaPredicate)
 ;;   | doc m%
 ;;       Combine normalized constraints into one predicate closure.
 ;;     %
-(def (poo-flow-json-schema-constraints-predicate array-value? constraints)
+(def (yuanxu-json-schema-constraints-predicate array-value? constraints)
   (let (predicates
-         (poo-flow-contract-project-list
+         (yuanxu-contract-project-list
           (lambda (constraint)
-            (poo-flow-json-schema-constraint-predicate array-value? constraint))
+            (yuanxu-json-schema-constraint-predicate array-value? constraint))
           constraints))
     (lambda (value)
-      (poo-flow-contract-all? (lambda (predicate) (predicate value)) predicates))))
+      (yuanxu-contract-all? (lambda (predicate) (predicate value)) predicates))))
 
-;; poo-flow-json-schema-apply-node-constraints
-;;   : (-> PooFlowJsonSchemaNode JsonSchemaPredicate Procedure JsonSchemaPredicate)
+;; yuanxu-json-schema-apply-node-constraints
+;;   : (-> YuanxuJsonSchemaNode JsonSchemaPredicate Procedure JsonSchemaPredicate)
 ;;   | doc m%
 ;;       Add metadata-owned constraints to a node's base predicate once during
 ;;       contract emission.
 ;;     %
-(def (poo-flow-json-schema-apply-node-constraints node base-predicate
+(def (yuanxu-json-schema-apply-node-constraints node base-predicate
                                                   array-value?)
   (let (constraints
-        (poo-flow-json-schema-node-constraints node))
+        (yuanxu-json-schema-node-constraints node))
     (if (null? constraints)
       base-predicate
-      (let (additional (poo-flow-json-schema-constraints-predicate array-value? constraints))
+      (let (additional (yuanxu-json-schema-constraints-predicate array-value? constraints))
         (lambda (value) (and (base-predicate value) (additional value)))))))

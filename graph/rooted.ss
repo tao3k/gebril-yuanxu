@@ -7,117 +7,117 @@
 ;;; Payloads belong to callers. All reachability uses the shared graph walker.
 (import (only-in :std/list/list find last)
         (only-in :clan/poo/object .cc)
-        :core/graph/types
-        :core/graph/algorithms)
-(export (import: :core/graph/types)
-        poo-flow-graph-rooted
-        poo-flow-graph-root-id
-        poo-flow-graph-root-payload
-        poo-flow-graph-root-children
-        poo-flow-graph-root-ref
-        poo-flow-graph-root-replace
-        poo-flow-graph-root-transform
-        poo-flow-graph-root-snapshot)
+        :yuanxu/graph/types
+        :yuanxu/graph/algorithms)
+(export (import: :yuanxu/graph/types)
+        yuanxu-graph-rooted
+        yuanxu-graph-root-id
+        yuanxu-graph-root-payload
+        yuanxu-graph-root-children
+        yuanxu-graph-root-ref
+        yuanxu-graph-root-replace
+        yuanxu-graph-root-transform
+        yuanxu-graph-root-snapshot)
 
-(def (poo-flow-graph-root-id value)
-  (last (poo-flow-graph-id value)))
+(def (yuanxu-graph-root-id value)
+  (last (yuanxu-graph-id value)))
 
 (def (graph-root-node value)
   (find (lambda (node)
-          (equal? (poo-flow-graph-node-id node) (poo-flow-graph-id value)))
-        (poo-flow-graph-nodes value)))
+          (equal? (yuanxu-graph-node-id node) (yuanxu-graph-id value)))
+        (yuanxu-graph-nodes value)))
 
-(def (poo-flow-graph-root-payload value)
-  (poo-flow-graph-node-payload (graph-root-node value)))
+(def (yuanxu-graph-root-payload value)
+  (yuanxu-graph-node-payload (graph-root-node value)))
 
 (def (graph-path-rebase path old-root new-root)
   (append new-root (list-tail path (length old-root))))
 
 (def (graph-root-rebase value new-root)
-  (let* ((old-root (poo-flow-graph-id value))
+  (let* ((old-root (yuanxu-graph-id value))
          (rebase (lambda (path) (graph-path-rebase path old-root new-root))))
-    (poo-flow-graph
+    (yuanxu-graph
      new-root
      (map (lambda (node)
-            (.cc node id: (rebase (poo-flow-graph-node-id node))))
-          (poo-flow-graph-nodes value))
+            (.cc node id: (rebase (yuanxu-graph-node-id node))))
+          (yuanxu-graph-nodes value))
      (map (lambda (edge)
-            (.cc edge from: (rebase (poo-flow-graph-edge-from edge))
-                      to: (rebase (poo-flow-graph-edge-to edge))))
-          (poo-flow-graph-edges value))
-     (poo-flow-graph-metadata value))))
+            (.cc edge from: (rebase (yuanxu-graph-edge-from edge))
+                      to: (rebase (yuanxu-graph-edge-to edge))))
+          (yuanxu-graph-edges value))
+     (yuanxu-graph-metadata value))))
 
-(def (poo-flow-graph-rooted identity payload children)
+(def (yuanxu-graph-rooted identity payload children)
   (let* ((root (list identity))
          (branches
           (map (lambda (child)
                  (graph-root-rebase
-                  child (append root (list (poo-flow-graph-root-id child)))))
+                  child (append root (list (yuanxu-graph-root-id child)))))
                children)))
-    (poo-flow-graph
+    (yuanxu-graph
      root
-     (cons (poo-flow-graph-node root payload)
-           (apply append (map poo-flow-graph-nodes branches)))
+     (cons (yuanxu-graph-node root payload)
+           (apply append (map yuanxu-graph-nodes branches)))
      (apply append
        (map (lambda (branch)
-              (cons (poo-flow-graph-edge root (poo-flow-graph-id branch) 'contains)
-                    (poo-flow-graph-edges branch)))
+              (cons (yuanxu-graph-edge root (yuanxu-graph-id branch) 'contains)
+                    (yuanxu-graph-edges branch)))
             branches)))))
 
 (def (graph-root-view value root)
-  (let* ((reachable (poo-flow-graph-reachable-ids value (list root)))
+  (let* ((reachable (yuanxu-graph-reachable-ids value (list root)))
          (selected (make-hash-table)))
     (for-each (lambda (id) (hash-put! selected id #t)) reachable)
-    (poo-flow-graph
+    (yuanxu-graph
      root
-     (filter (lambda (node) (hash-get selected (poo-flow-graph-node-id node)))
-             (poo-flow-graph-nodes value))
+     (filter (lambda (node) (hash-get selected (yuanxu-graph-node-id node)))
+             (yuanxu-graph-nodes value))
      (filter (lambda (edge)
-               (and (hash-get selected (poo-flow-graph-edge-from edge))
-                    (hash-get selected (poo-flow-graph-edge-to edge))))
-             (poo-flow-graph-edges value))
-     (poo-flow-graph-metadata value))))
+               (and (hash-get selected (yuanxu-graph-edge-from edge))
+                    (hash-get selected (yuanxu-graph-edge-to edge))))
+             (yuanxu-graph-edges value))
+     (yuanxu-graph-metadata value))))
 
-(def (poo-flow-graph-root-children value)
+(def (yuanxu-graph-root-children value)
   (map (lambda (id) (graph-root-view value id))
-       (poo-flow-graph-outgoing-ids value (poo-flow-graph-id value))))
+       (yuanxu-graph-outgoing-ids value (yuanxu-graph-id value))))
 
-(def (poo-flow-graph-root-ref values identity)
-  (find (lambda (value) (equal? (poo-flow-graph-root-id value) identity)) values))
+(def (yuanxu-graph-root-ref values identity)
+  (find (lambda (value) (equal? (yuanxu-graph-root-id value) identity)) values))
 
-(def (poo-flow-graph-root-replace value payload children)
-  (let (next (poo-flow-graph-rooted (poo-flow-graph-root-id value) payload children))
-    (let* ((rebased (graph-root-rebase next (poo-flow-graph-id value)))
-           (root-id (poo-flow-graph-id value))
+(def (yuanxu-graph-root-replace value payload children)
+  (let (next (yuanxu-graph-rooted (yuanxu-graph-root-id value) payload children))
+    (let* ((rebased (graph-root-rebase next (yuanxu-graph-id value)))
+           (root-id (yuanxu-graph-id value))
            (root-node (graph-root-node value)))
       (.cc rebased
-           metadata: (poo-flow-graph-metadata value)
+           metadata: (yuanxu-graph-metadata value)
            nodes: (map (lambda (node)
-                         (if (equal? (poo-flow-graph-node-id node) root-id)
+                         (if (equal? (yuanxu-graph-node-id node) root-id)
                            (.cc root-node payload: payload)
                            node))
-                       (poo-flow-graph-nodes rebased))))))
+                       (yuanxu-graph-nodes rebased))))))
 
 ;;; A matched ancestor owns its entire subtree; do not apply again below it.
 ;;; This traversal is shared by graph transformations, not extension dispatch.
-(def (poo-flow-graph-root-transform value identity transform)
+(def (yuanxu-graph-root-transform value identity transform)
   (if (equal? (if (list? identity)
-                  (poo-flow-graph-id value)
-                  (poo-flow-graph-root-id value))
+                  (yuanxu-graph-id value)
+                  (yuanxu-graph-root-id value))
               identity)
     (transform value)
-    (poo-flow-graph-root-replace
+    (yuanxu-graph-root-replace
      value
-     (poo-flow-graph-root-payload value)
+     (yuanxu-graph-root-payload value)
      (map (lambda (child)
-            (poo-flow-graph-root-transform child identity transform))
-          (poo-flow-graph-root-children value)))))
+            (yuanxu-graph-root-transform child identity transform))
+          (yuanxu-graph-root-children value)))))
 
 ;;; Compare semantic facts, excluding POO identity and lazy slot caches.
-(def (poo-flow-graph-root-snapshot value)
+(def (yuanxu-graph-root-snapshot value)
   (list
-   (poo-flow-graph-id value)
+   (yuanxu-graph-id value)
    (map (lambda (node)
-          (list (poo-flow-graph-node-id node) (poo-flow-graph-node-payload node)))
-        (poo-flow-graph-nodes value))
-   (poo-flow-graph-edge-pairs value)))
+          (list (yuanxu-graph-node-id node) (yuanxu-graph-node-payload node)))
+        (yuanxu-graph-nodes value))
+   (yuanxu-graph-edge-pairs value)))

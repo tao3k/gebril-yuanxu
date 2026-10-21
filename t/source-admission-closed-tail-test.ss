@@ -2,14 +2,14 @@
 ;;; Isolation experiment, NOT the production SourceAdmissionContract protocol.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/types poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/configuration/diagnostics config-diagnostic-locator)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :yuanxu/module-system/source/admission
                  current-module-source-observer current-module-source-phase module-source-read)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/mop-state/closed-tail probe on-file refuses)
-        (only-in :core/t/qualification/service-publication/fixtures
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture ServicesFixture write-source))
 (export source-admission-closed-tail-test test-cleanup!)
 (def completed 0)
@@ -37,7 +37,7 @@
   (.o outcome: result-value events: (unbox counts)))
 (def source-admission-closed-tail-test
  (test-suite "Closed instrumentation tail, with unchanged native admission"
-  (poo-flow-test-fixture "fixed counter accepts cold and warm native admission without retaining a write lock"
+  (yuanxu-test-fixture "fixed counter accepts cold and warm native admission without retaining a write lock"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -55,7 +55,7 @@
     (.putslot! subject 'port ($constant-slot-spec 5433))
     (check-equal? (.get subject port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "opaque observer cannot late-write receiver candidate or external dependency"
+  (yuanxu-test-fixture "opaque observer cannot late-write receiver candidate or external dependency"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -81,7 +81,7 @@
         (check-equal? (.ref receiver key) (if (eq? target 'receiver) 0 5432)))
       '(receiver candidate external))
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "second file callback cannot rewrite the first file in the closed tail"
+  (yuanxu-test-fixture "second file callback cannot rewrite the first file in the closed tail"
     (fixture DirectoryFixture)
     (def first (path-expand "first.json" (.get fixture root)))
     (def second (path-expand "second.json" (.get fixture root)))
@@ -98,7 +98,7 @@
     (check-equal? (module-source-read first) "{}")
     (check-equal? (module-source-read second) "{}")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "even an apparently benign foreign observer is refused, not asserted pure"
+  (yuanxu-test-fixture "even an apparently benign foreign observer is refused, not asserted pure"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -118,7 +118,7 @@
     (check-equal? (> early 0) #t)
     (check-equal? late 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "existing pre-tail source diagnostic keeps precedence over object staleness"
+  (yuanxu-test-fixture "existing pre-tail source diagnostic keeps precedence over object staleness"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -131,7 +131,7 @@
     (def result (closed-admit (.get sample contract) (.get sample candidate) context))
     (refuses (.get result outcome) "configuration source changed")
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "post-MOP cache-exit observer writes and removes itself before return checks: retained limitation"
+  (yuanxu-test-fixture "post-MOP cache-exit observer writes and removes itself before return checks: retained limitation"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -150,7 +150,7 @@
     (check-equal? fired 1)
     (check-equal? (.get dependency port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "caller wrapper can be replaced by an earlier context callback: retained limitation"
+  (yuanxu-test-fixture "caller wrapper can be replaced by an earlier context callback: retained limitation"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")
@@ -167,7 +167,7 @@
     (check-equal? fired 1)
     (check-equal? (.get dependency port) 5433)
     (set! completed (+ completed 1)))
-  (poo-flow-test-fixture "real service obligations and parent cache survive; late normalized candidate write never runs"
+  (yuanxu-test-fixture "real service obligations and parent cache survive; late normalized candidate write never runs"
     (fixture ServicesFixture)
     (def publication (.get fixture publication))
     (def Contract (.get publication contract))

@@ -7,12 +7,12 @@
 ;;; Invariant: generated functions are final boundary projections only; public
 ;;; object construction remains ordinary core code.
 
-(import :core/utilities/product-syntax)
+(import :yuanxu/utilities/product-syntax)
 
-(export poo-flow-product-rows/tail
-        poo-flow-product-rows-into/rev
-        poo-flow-product-field-rows
-        poo-flow-product-field-rows/tail
+(export yuanxu-product-rows/tail
+        yuanxu-product-rows-into/rev
+        yuanxu-product-field-rows
+        yuanxu-product-field-rows/tail
         defpoo-core-receipt-projection)
 
 ;; defpoo-core-receipt-projection

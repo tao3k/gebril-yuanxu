@@ -3,9 +3,9 @@
 (import :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/mop define-type)
         (only-in :clan/poo/type True)
-        (only-in :core/modules/json-schema/contracts ProjectionContract.)
-        (only-in :core/modules/opentofu/types OpenTofuScopeContract)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence))
+        (only-in :yuanxu/modules/json-schema/contracts ProjectionContract.)
+        (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract)
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence))
 (export AWSProfileContract. AWSScenarioContract. AWSAdmissionContract.
         AWSProfileAdmissionContract. AWSInterfaceContract aws-scenario-contract
         OpenTofuScopeContract)
@@ -32,10 +32,10 @@
 ;; The public value Contract is run once by Core's existing .admit producer.
 ;; There is no extra AWS authorization policy here. Graph/source/Schema
 ;; currentness is enforced by AdmissionPublication., not by this classifier.
-(define-type (AWSAdmissionContract. @ PooFlowContract. identity)
+(define-type (AWSAdmissionContract. @ YuanxuContract. identity)
   .classify:
   (lambda (candidate context)
-    (poo-flow-classification-evidence identity candidate #t '() context)))
+    (yuanxu-classification-evidence identity candidate #t '() context)))
 
 ;; The public root Contract already checks all Profile fields. This descriptor
 ;; requests contextual admission of that final Profile, retaining child evidence

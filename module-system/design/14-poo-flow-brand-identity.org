@@ -20,10 +20,10 @@ Use =poo-flow= in user-visible data:
 Canonical public API names use =poo-flow= or =pooFlow=:
 - =poo-flow-module=;
 - =pooFlowModules=;
-- =pooFlowModuleCatalog=;
+- =yuanxuModuleCatalog=;
 - =poo-flow-module-active?=;
 - =pooFlowEvalModules=;
 - =pooFlowModuleSystemPresentation=;
-- =poo-flow-user-profile?=;
-- =poo-flow-user-config?=.
+- =yuanxu-user-profile?=;
+- =yuanxu-user-config?=.
 Old =poo*= spellings are not compatibility aliases for the module system. Public and internal module-system code uses the branded names to avoid split ownership.

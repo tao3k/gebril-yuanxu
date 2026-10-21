@@ -85,7 +85,7 @@ patch language.
 Every native identity uses the following canonical input:
 
 #+begin_example
-poo-flow.bundle-v1.id/<domain>/<typed-semantic-id>
+yuanxu.bundle-v1.id/<domain>/<typed-semantic-id>
 #+end_example
 
 The typed semantic ID explicitly distinguishes symbols, strings, and exact
@@ -106,8 +106,8 @@ Future Rust, Python, and TypeScript adapters must reuse this vector.
 
 * Functional lowering
 
-The implementation reuses =poo-flow-map=, =poo-flow-fold-left=,
-=poo-flow-all?=, and =poo-flow-list-of?= from
+The implementation reuses =yuanxu-map=, =yuanxu-fold-left=,
+=yuanxu-all?=, and =yuanxu-list-of?= from
 =src/utilities/functional.ss=. Gerbil =stable-sort= produces a new list and
 does not mutate the input composition.
 
@@ -273,7 +273,7 @@ runtime handoff.
 * fold-left semantic regression
 
 The first 1,000-agent benchmark correctly rejected a duplicate evidence key.
-The audit found that the shared =poo-flow-fold-left= callback order is
+The audit found that the shared =yuanxu-fold-left= callback order is
 =(element accumulator)=, while the first compact-ID implementation used
 =(accumulator element)=. That error collapsed SHA-256 segments into small
 integers.

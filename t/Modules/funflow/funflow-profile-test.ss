@@ -2,22 +2,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite test-case check-equal? check-exception)
-        :core/object-syntax/path-slots
-        :core/profile-composition/selection-syntax
-        (only-in :core/module-system/source/objects make-poo-flow-module-local-source)
+        :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-local-source)
         (only-in :clan/poo/object .get .ref .ref/cached .slot?)
-        (only-in :core/modules/funflow/config-adapter
-                 poo-flow-funflow-poo-pipeline->check-map)
-        (only-in :core/modules/funflow/graph-projection
-                 poo-flow-funflow-poo-pipeline->functional-dag)
-        (only-in :core/modules/funflow/check-objects
-                 poo-flow-cicd-check-map-name poo-flow-cicd-check-map-checks
-                 poo-flow-cicd-check-compensation-refs)
-        (only-in :core/scenarios/funflow/scope
+        (only-in :yuanxu/modules/funflow/config-adapter
+                 yuanxu-funflow-poo-pipeline->check-map)
+        (only-in :yuanxu/modules/funflow/graph-projection
+                 yuanxu-funflow-poo-pipeline->functional-dag)
+        (only-in :yuanxu/modules/funflow/check-objects
+                 yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
+                 yuanxu-cicd-check-compensation-refs)
+        (only-in :yuanxu/scenarios/funflow/scope
                  FunflowProfiles. Funflow make-funflow-scope)
-        (only-in :core/modules/funflow/config-prototypes
+        (only-in :yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline
-                 poo-flow-funflow-poo-check? poo-flow-funflow-poo-pipeline?))
+                 yuanxu-funflow-poo-check? yuanxu-funflow-poo-pipeline?))
 (export funflow-profile-test)
 
 (def (profile scope) (.get scope profiles gerbil-scheme))
@@ -28,7 +28,7 @@
   (test-suite "Funflow local native publication"
     (test-case "independent Profile uses the migrated Core functional DAG"
       (def selected (profile Funflow))
-      (def graph (poo-flow-funflow-poo-pipeline->functional-dag (.get selected pipeline)))
+      (def graph (yuanxu-funflow-poo-pipeline->functional-dag (.get selected pipeline)))
       (check-equal? (.get graph valid?) #t)
       (check-equal? (.get graph nodes) '(build test package))
       (check-equal? (.get graph ready-order) '(build test package))
@@ -36,7 +36,7 @@
     (test-case "prototypes are available without constructing a Profile"
       (def profile-demands 0)
       (.def (Scope @ FunflowProfiles.)
-        source: (make-poo-flow-module-local-source "test/funflow")
+        source: (make-yuanxu-module-local-source "test/funflow")
         profiles: (begin (set! profile-demands (+ profile-demands 1))
                          (error "unexpected Profile demand")))
       (check-equal? (use-module Scope as ff (eq? (.get ff prototypes check) funflow-check)) #t)
@@ -47,7 +47,7 @@
       (def check-demands 0)
       (def pipeline-demands 0)
       (.def (Scope @ FunflowProfiles.)
-        source: (make-poo-flow-module-local-source "test/funflow")
+        source: (make-yuanxu-module-local-source "test/funflow")
         prototypes:
         (.o check: (begin (set! check-demands (+ check-demands 1)) funflow-check)
             pipeline: (begin (set! pipeline-demands (+ pipeline-demands 1)) funflow-pipeline)))
@@ -65,7 +65,7 @@
       (check-equal? (.ref/cached (.get selected pipeline) 'checks) #f))
 
     (test-case "source and prototype identities survive the bounded upstream view"
-      (def handle (make-poo-flow-module-local-source "test/custom-funflow"))
+      (def handle (make-yuanxu-module-local-source "test/custom-funflow"))
       (def Scope (make-funflow-scope handle))
       (def view (.get Scope prototype-scope))
       (check-equal? (eq? (.get Scope source) handle) #t)
@@ -77,7 +77,7 @@
       (check-exception (make-funflow-scope 'not-a-source-ref) true))
 
     (test-case "prototype-only view fails self-Profile access without recursive loading"
-      (def Scope (make-funflow-scope (make-poo-flow-module-local-source "test/self")))
+      (def Scope (make-funflow-scope (make-yuanxu-module-local-source "test/self")))
       (def view (.get Scope prototype-scope))
       (check-equal? (.slot? view 'profiles) #f)
       (check-exception
@@ -88,7 +88,7 @@
 
     (test-case "all original Check and Pipeline defaults are published"
       (def selected (profile (make-funflow-scope
-                              (make-poo-flow-module-local-source "test/defaults"))))
+                              (make-yuanxu-module-local-source "test/defaults"))))
       (check-equal?
         (check-values (.get selected build)
           '(check-name profile-ref command-vector artifact-outputs cache-intents
@@ -112,13 +112,13 @@
       (check-equal? (.get selected pipeline pipeline-name) 'default)
       (check-equal? (.get selected pipeline metadata)
                     '((scenario . funflow-cicd) (authoring-style . gerbil-poo-native)))
-      (check-equal? (map poo-flow-funflow-poo-check? (.get selected pipeline checks)) '(#t #t #t))
-      (check-equal? (poo-flow-funflow-poo-pipeline? (.get selected pipeline)) #t)
+      (check-equal? (map yuanxu-funflow-poo-check? (.get selected pipeline checks)) '(#t #t #t))
+      (check-equal? (yuanxu-funflow-poo-pipeline? (.get selected pipeline)) #t)
       (check-equal? (.get selected test cache-intents) '())
       (check-equal? (.get selected pipeline runtime-executed) #f))
 
     (test-case "four path refinements read effective Checks after the parent is cached"
-      (def handle (make-poo-flow-module-local-source "test/release"))
+      (def handle (make-yuanxu-module-local-source "test/release"))
       (def Scope (make-funflow-scope handle))
       (.def Project funflow: (use-module Scope as ff (.o (:: @ ff))))
       (def parent-pipeline (.get Project funflow profiles gerbil-scheme pipeline))
@@ -167,13 +167,13 @@
         funflow.profiles.gerbil-scheme.package: =>.+ {artifact-outputs: '(release-bundle)}
         funflow.profiles.gerbil-scheme.pipeline: =>.+ {pipeline-name: 'release-ci})
       (def projected
-        (poo-flow-funflow-poo-pipeline->check-map
+        (yuanxu-funflow-poo-pipeline->check-map
           (.get Release funflow profiles gerbil-scheme pipeline)))
-      (check-equal? (poo-flow-cicd-check-map-name projected) 'release-ci)
-      (def projected-checks (poo-flow-cicd-check-map-checks projected))
+      (check-equal? (yuanxu-cicd-check-map-name projected) 'release-ci)
+      (def projected-checks (yuanxu-cicd-check-map-checks projected))
       (check-equal? (artifacts projected-checks)
                     '((release-build-log) (release-test-receipt) (release-bundle)))
-      (check-equal? (poo-flow-cicd-check-compensation-refs (caddr projected-checks))
+      (check-equal? (yuanxu-cicd-check-compensation-refs (caddr projected-checks))
                     '(cleanup/package-artifacts))
       (check-equal? (artifacts parent-checks)
                     '((build-log) (test-receipt) (dependency-graph-receipt))))

@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object (only-in :core/types poo-flow-predicate-contract))
+(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract))
 (export ProcessScriptContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
 (def (environment? value)
   (and (object? value)
@@ -11,7 +11,7 @@
                      (string? (.ref value key))))
               (.all-slots value))))
 (def OpsEnvironmentContract
-  (poo-flow-predicate-contract 'ops/environment environment? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'ops/environment environment? (lambda (_v _c) '())))
 (def (execution-options? value)
   (and (object? value)
        (every (cut .slot? value <>) '(directory environment timeout log check-status))
@@ -32,7 +32,7 @@
        (pair? (.get value command)) (every string? (.get value command))
        (not (string-empty? (car (.get value command))))))
 (def OpsConfigContract
-  (poo-flow-predicate-contract 'ops/config execution-options? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'ops/config execution-options? (lambda (_v _c) '())))
 (def (ops-scope? scope)
   (and (object? scope)
        (every (cut .slot? scope <>) '(config types prototypes validate prepare-command merge-environment preview run))
@@ -52,6 +52,6 @@
                             (procedure? (.get prototype .run))))))
               '(Script SelectedPackages))))
 (def OpsScopeContract
-  (poo-flow-predicate-contract 'ops/scope ops-scope? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'ops/scope ops-scope? (lambda (_v _c) '())))
 (def ProcessScriptContract
-  (poo-flow-predicate-contract 'ops/process-script process-script? (lambda (_v _c) '())))
+  (yuanxu-predicate-contract 'ops/process-script process-script? (lambda (_v _c) '())))

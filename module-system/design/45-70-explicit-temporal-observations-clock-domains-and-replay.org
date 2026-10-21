@@ -117,7 +117,7 @@ flowchart LR
 - [ ] Project temporal policy and observations through native =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
-The Lean anchor is =PooFlowCoreProof.Modules.Funflow.Observation=.  It
+The Lean anchor is =YuanxuProof.Modules.Funflow.Observation=.  It
 imports RFC 45-69, preserving the distinction between pure temporal policy and
 the runtime authority that admits, fences, suspends, or releases resources.
 

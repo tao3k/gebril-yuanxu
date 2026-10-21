@@ -4,9 +4,9 @@
 ;;; Filesystem source preparation. No eval, compiler, dynamic import or runtime Loader.
 (import (only-in :clan/poo/object .o .ref .slot? object<-fun)
         (only-in :std/list/list delete-duplicates/hash any)
-        :core/module-system/source/objects
-        :core/module-system/source/admission
-        :core/module-system/source/init)
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/admission
+        :yuanxu/module-system/source/init)
 (export module-directory-context)
 (defstruct directory-source (value current?) final: #t)
 (defstruct directory-decision (value current?) final: #t)
@@ -204,12 +204,12 @@
                  ;; an owner is only inert directory/init interpretation.
                  ;; Custom readers retain the original source admission here.
                  (unless publication-prepares-source?
-                   ((.ref poo-flow-default-module-style-policy 'validate)
-                    poo-flow-default-module-style-policy id child
+                   ((.ref yuanxu-default-module-style-policy 'validate)
+                    yuanxu-default-module-style-policy id child
                     (lambda (file) (observe! module-source-read file))))
                  (hash-put! source-owners (path-strip-trailing-directory-separator child)
                             (.o identity: id root: child))
-                 (let (value (make-poo-flow-module-source-ref
+                 (let (value (make-yuanxu-module-source-ref
                               'local (path-expand "interface.ss" child)
                               (list (cons 'module-id id) (cons 'module-root child)
                                     (cons 'collection-root collection-root)

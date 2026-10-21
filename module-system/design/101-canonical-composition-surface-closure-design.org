@@ -94,7 +94,7 @@ Identity, imports, capabilities, and profiles therefore remain slots of the
 same resulting =ModuleType= object.  Imports and capabilities come from the
 selected prototype and its profile refinements rather than being redeclared by
 =use-module=.  The resulting object is validated through the existing
-=poo-flow-modules-system-use-module/contract= and enters composition as a pure
+=yuanxu-modules-system-use-module/contract= and enters composition as a pure
 value.
 
 The syntax layer must not introduce a raw record DSL, an alist patch language,
@@ -121,7 +121,7 @@ The POO Flow evaluator resolves that demand inside the lazy global fixed point.
 An unforced demand performs no module work.  A forced demand resolves the
 stable module identity, obtains its =ModuleType= prototype, and only then
 applies the already-pure profile prototype refinements.  The existing
-=poo-flow-modules-system-use-module/contract= validates the resulting refined
+=yuanxu-modules-system-use-module/contract= validates the resulting refined
 =ModuleType= value.
 
 Recursive imports and submodule recursion therefore remain fixed-point
@@ -235,7 +235,7 @@ running consumers so stale compiled macros cannot mask source behavior.
 - [ ] Return the refined =ModuleType= directly, without a =ModuleUse= wrapper.
 - [ ] Preserve identity, imports, capabilities, and selected profiles in that
       resulting module object.
-- [ ] Reuse =poo-flow-modules-system-use-module/contract= for validation.
+- [ ] Reuse =yuanxu-modules-system-use-module/contract= for validation.
 - [ ] Reject out-of-context use at expansion time with an actionable canonical
       diagnostic.
 - [ ] Add expansion tests for multiple module clauses and profile refinements.

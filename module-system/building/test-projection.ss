@@ -5,8 +5,8 @@
 (import (only-in :clan/poo/object .o .ref .slot?)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :core/module-system/source/objects poo-flow-module-source-ref-metadata)
-        (only-in :core/module-system/source/admission
+        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
 (export module-test-projection module-test-file-source module-test-execution)
@@ -16,7 +16,7 @@
 (def testing-executor
   (delay
     (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :core/observability/testing-script))
+      (eval-syntax '(import :yuanxu/observability/testing-script))
       (eval-syntax 'testing-script-for-source))))
 (def (module-test-execution source)
   ((force testing-executor) source))
@@ -86,7 +86,7 @@
   (for-each
    (lambda (owner)
      (let* ((source ((.ref context 'locate) owner))
-            (metadata (poo-flow-module-source-ref-metadata source))
+            (metadata (yuanxu-module-source-ref-metadata source))
             (mount (assq 'namespace-mount metadata))
             (qualification-name
               (string-append

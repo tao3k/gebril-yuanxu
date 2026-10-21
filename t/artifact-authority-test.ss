@@ -6,20 +6,20 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
         "qualification/mop-state/artifact-authority"
         "qualification/mop-state/artifact-closure")
 (export artifact-authority-test test-cleanup!)
-(extern namespace: core/t/qualification/mop-state/precompiled-stores precompiled-store precompiled-subjects)
+(extern namespace: yuanxu/t/qualification/mop-state/precompiled-stores precompiled-store precompiled-subjects)
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
 (def original-path (load-path))
 (def captured-sdk-entry load-module)
 (def observations '())
 (def legacy-observation #f)
-(def entry "core/t/qualification/mop-state/precompiled-stores")
+(def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
 (def runtime-entry (string-append entry "~0"))
-(def prefix "core/t/qualification/mop-state/")
+(def prefix "yuanxu/t/qualification/mop-state/")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
 (def (write-bytes path data)
   (call-with-output-file (list path: path truncate: #t)
@@ -67,7 +67,7 @@
   (reset-native-errors! state))
 (def artifact-authority-test
  (test-suite "Native issuance and load consumption"
-  (poo-flow-test-case "sidecar forgery and actual native transfer seams"
+  (yuanxu-test-case "sidecar forgery and actual native transfer seams"
     (install-authority! state)
     ;; Mutate both record and artifact, retaining neither as an authority.
     (def record (path-expand "compiler-closure.ss" artifacts))

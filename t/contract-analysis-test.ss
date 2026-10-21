@@ -2,12 +2,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :core/module-system/source/admission module-source-admit-current!)
-        (only-in :core/t/qualification/service-publication/fixtures DirectoryFixture write-source)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence)
-        (only-in :core/admission/source SourceAdmissionContract.)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/module-system/source/admission module-source-admit-current!)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence)
+        (only-in :yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-analysis-test test-cleanup!)
 
 ;; Counters stand for platform dispatch, not source certification. Real source
@@ -16,14 +16,14 @@
 (def (test-cleanup!)
   (unless (= completed 5) (error "incomplete analysis ownership controls" completed)))
 (def (accept candidate context)
-  (poo-flow-classification-evidence 'analysis-control candidate #t '() context))
+  (yuanxu-classification-evidence 'analysis-control candidate #t '() context))
 (def contract-analysis-test
   (test-suite "Root-owned responsibility analysis"
-    (poo-flow-test-case "an overridden admit cannot reuse a consumed responsibility edge"
+    (yuanxu-test-case "an overridden admit cannot reuse a consumed responsibility edge"
       (def guarded 0)
       (def analyzed 0)
       (def Child
-        (.o (:: @ PooFlowContract.) identity: 'analysis-control .classify: accept
+        (.o (:: @ YuanxuContract.) identity: 'analysis-control .classify: accept
           (.admit (inherited)
             (lambda (candidate context)
               ((inherited) candidate context)
@@ -41,12 +41,12 @@
       (check-equal? guarded 1)
       (check-equal? analyzed 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-fixture "child observations are rechecked after its effect before root return"
+    (yuanxu-test-fixture "child observations are rechecked after its effect before root return"
       (fixture DirectoryFixture)
       (def path (path-expand "child.json" (.get fixture root)))
       (write-source path "{}")
       (def Child
-        (.o (:: @ PooFlowContract.) identity: 'analysis-control .classify: accept
+        (.o (:: @ YuanxuContract.) identity: 'analysis-control .classify: accept
           .obligations:
           (lambda (_candidate _context)
             (module-source-admit-current! (list (cons path "{}")) "child source changed")
@@ -63,7 +63,7 @@
       (check-equal? (Error? failure) #t)
       (check-equal? (Error-message failure) "child source changed")
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "responsibilities retain all receipts and local obligations"
+    (yuanxu-test-case "responsibilities retain all receipts and local obligations"
       (def checked '())
       (def analyzed '())
       (def obligations 0)
@@ -73,7 +73,7 @@
           .responsibility-obligations:
           (lambda (contract _candidate) (set! analyzed (cons contract analyzed)) '())))
       (def Leaf
-        (.o (:: @ PooFlowContract.) identity: 'analysis-control .classify: accept
+        (.o (:: @ YuanxuContract.) identity: 'analysis-control .classify: accept
           .obligations: (lambda (_candidate _context)
                           (set! obligations (+ obligations 1)) '())))
       (def Branch
@@ -95,10 +95,10 @@
       (check-equal? (length checked) 4)
       (check-equal? (length analyzed) 3)
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "an independent admission inside an obligation is not analysis"
+    (yuanxu-test-case "an independent admission inside an obligation is not analysis"
       (def independent 0)
       (def analysis 0)
-      (def Other (.o (:: @ PooFlowContract.) identity: 'analysis-control .classify: accept))
+      (def Other (.o (:: @ YuanxuContract.) identity: 'analysis-control .classify: accept))
       (def Context
         (.o .contract-obligations:
           (lambda (contract _candidate)
@@ -116,13 +116,13 @@
       (check-equal? independent 1)
       (check-equal? analysis 1)
       (set! completed (+ completed 1)))
-    (poo-flow-test-case "a rejecting child still runs its obligation and keeps its identity"
+    (yuanxu-test-case "a rejecting child still runs its obligation and keeps its identity"
       (def issue (.o kind: 'child-policy))
       (def Context
         (.o .contract-obligations: (lambda (_contract _candidate) '())
           .responsibility-obligations: (lambda (_contract _candidate) '())))
       (def Child
-        (.o (:: @ PooFlowContract.) identity: 'analysis-control .classify: accept
+        (.o (:: @ YuanxuContract.) identity: 'analysis-control .classify: accept
           .obligations: (lambda (_candidate _context) (list issue))))
       (def Root
         (.o (:: @ SourceAdmissionContract.) identity: 'analysis-root .classify: accept

@@ -13,35 +13,35 @@
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)
-        :core/object-family/role-syntax
-        :core/composition/roles
-        (only-in :core/utilities/functional
-                 poo-flow-fold-left
-                 poo-flow-fold-right
-                 poo-flow-map
-                 poo-flow-filter-map
-                 poo-flow-append-map
-                 poo-flow-all?
-                 poo-flow-stable-duplicates
-                 poo-flow-member?
-                 poo-flow-list-of?))
+        :yuanxu/object-family/role-syntax
+        :yuanxu/composition/roles
+        (only-in :yuanxu/utilities/functional
+                 yuanxu-fold-left
+                 yuanxu-fold-right
+                 yuanxu-map
+                 yuanxu-filter-map
+                 yuanxu-append-map
+                 yuanxu-all?
+                 yuanxu-stable-duplicates
+                 yuanxu-member?
+                 yuanxu-list-of?))
 
-(def +poo-flow-case-slot-contract-kind+ 'poo-flow.case-slot-contract.v1)
-(def +poo-flow-case-type-contract-kind+ 'poo-flow.case-type-contract.v1)
-(def +poo-flow-case-method-contract-kind+ 'poo-flow.case-method-contract.v1)
-(def +poo-flow-case-projection-kind+ 'poo-flow.case-projection.v1)
-(def +poo-flow-case-component-kind+ 'poo-flow.case-component.v1)
-(def +poo-flow-domain-case-kind+ 'poo-flow.domain-case.v1)
-(def +poo-flow-domain-case-cache-kind+ 'poo-flow.domain-case-cache.v1)
-(def +poo-flow-domain-case-closure-receipt-kind+
-  'poo-flow.domain-case-closure-receipt.v1)
-(def +poo-flow-domain-case-instance-receipt-kind+
-  'poo-flow.domain-case-instance-receipt.v1)
-(def +poo-flow-domain-case-method-receipt-kind+
-  'poo-flow.domain-case-method-receipt.v1)
-(def +poo-flow-domain-case-projection-receipt-kind+
-  'poo-flow.domain-case-projection-receipt.v1)
-(def +poo-flow-domain-case-key-domain+ 'poo-flow.domain-case-key.v1)
+(def +yuanxu-case-slot-contract-kind+ 'yuanxu.case-slot-contract.v1)
+(def +yuanxu-case-type-contract-kind+ 'yuanxu.case-type-contract.v1)
+(def +yuanxu-case-method-contract-kind+ 'yuanxu.case-method-contract.v1)
+(def +yuanxu-case-projection-kind+ 'yuanxu.case-projection.v1)
+(def +yuanxu-case-component-kind+ 'yuanxu.case-component.v1)
+(def +yuanxu-domain-case-kind+ 'yuanxu.domain-case.v1)
+(def +yuanxu-domain-case-cache-kind+ 'yuanxu.domain-case-cache.v1)
+(def +yuanxu-domain-case-closure-receipt-kind+
+  'yuanxu.domain-case-closure-receipt.v1)
+(def +yuanxu-domain-case-instance-receipt-kind+
+  'yuanxu.domain-case-instance-receipt.v1)
+(def +yuanxu-domain-case-method-receipt-kind+
+  'yuanxu.domain-case-method-receipt.v1)
+(def +yuanxu-domain-case-projection-receipt-kind+
+  'yuanxu.domain-case-projection-receipt.v1)
+(def +yuanxu-domain-case-key-domain+ 'yuanxu.domain-case-key.v1)
 
 (def (domain-case-id? value)
   (or (symbol? value)
@@ -81,19 +81,19 @@
   (delete-duplicates/hash values from-end?: #t))
 
 (def (domain-case-duplicates values)
-  (poo-flow-stable-duplicates values))
+  (yuanxu-stable-duplicates values))
 
 (def (domain-case-every-eq? left right)
   (and (= (length left) (length right))
        (if (every eq? left right) #t #f)))
 
-(def (poo-flow-case-slot-contract slot-id-value owner-id-value type-id-value
+(def (yuanxu-case-slot-contract slot-id-value owner-id-value type-id-value
                                   default-id-value merge-algebra-value
                                   (override-owner-ids-value '())
                                   (compatibility-witness-id-value #f)
                                   (validator-value #f))
   (poo-core-role-object
-   (slots ((kind +poo-flow-case-slot-contract-kind+)
+   (slots ((kind +yuanxu-case-slot-contract-kind+)
            (slot-id slot-id-value)
            (owner-id owner-id-value)
            (type-id type-id-value)
@@ -104,22 +104,22 @@
            (validator validator-value)))
    (supers)))
 
-(def (poo-flow-case-slot-contract? value)
-  (domain-case-object-kind? value +poo-flow-case-slot-contract-kind+))
+(def (yuanxu-case-slot-contract? value)
+  (domain-case-object-kind? value +yuanxu-case-slot-contract-kind+))
 
-(def (poo-flow-case-type-contract type-id-value parent-type-ids-value
+(def (yuanxu-case-type-contract type-id-value parent-type-ids-value
                                   predicate-value)
   (poo-core-role-object
-   (slots ((kind +poo-flow-case-type-contract-kind+)
+   (slots ((kind +yuanxu-case-type-contract-kind+)
            (type-id type-id-value)
            (parent-type-ids parent-type-ids-value)
            (predicate predicate-value)))
    (supers)))
 
-(def (poo-flow-case-type-contract? value)
-  (domain-case-object-kind? value +poo-flow-case-type-contract-kind+))
+(def (yuanxu-case-type-contract? value)
+  (domain-case-object-kind? value +yuanxu-case-type-contract-kind+))
 
-(def (poo-flow-case-method-contract contract-id-value owner-id-value
+(def (yuanxu-case-method-contract contract-id-value owner-id-value
                                     subject-id-value contract-kind-value
                                     domain-id-value precondition-id-value
                                     postcondition-id-value validator-value
@@ -127,7 +127,7 @@
                                     (compatibility-witness-id-value #f)
                                     (compatibility-witness-value #f))
   (poo-core-role-object
-   (slots ((kind +poo-flow-case-method-contract-kind+)
+   (slots ((kind +yuanxu-case-method-contract-kind+)
            (contract-id contract-id-value)
            (owner-id owner-id-value)
            (subject-id subject-id-value)
@@ -141,23 +141,23 @@
            (compatibility-witness compatibility-witness-value)))
    (supers)))
 
-(def (poo-flow-case-method-contract? value)
-  (domain-case-object-kind? value +poo-flow-case-method-contract-kind+))
+(def (yuanxu-case-method-contract? value)
+  (domain-case-object-kind? value +yuanxu-case-method-contract-kind+))
 
-(def (poo-flow-case-projection projection-id-value owner-id-value
+(def (yuanxu-case-projection projection-id-value owner-id-value
                                schema-id-value projector-value)
   (poo-core-role-object
-   (slots ((kind +poo-flow-case-projection-kind+)
+   (slots ((kind +yuanxu-case-projection-kind+)
            (projection-id projection-id-value)
            (owner-id owner-id-value)
            (schema-id schema-id-value)
            (projector projector-value)))
    (supers)))
 
-(def (poo-flow-case-projection? value)
-  (domain-case-object-kind? value +poo-flow-case-projection-kind+))
+(def (yuanxu-case-projection? value)
+  (domain-case-object-kind? value +yuanxu-case-projection-kind+))
 
-(def (poo-flow-case-component component-id-value component-version-value
+(def (yuanxu-case-component component-id-value component-version-value
                               role-prototype-value type-contract-value
                               slot-contracts-value method-contracts-value
                               projections-value
@@ -165,7 +165,7 @@
                               (policy-algebra-value #f)
                               (strategy-algebra-value #f))
   (poo-core-role-object
-   (slots ((kind +poo-flow-case-component-kind+)
+   (slots ((kind +yuanxu-case-component-kind+)
            (component-id component-id-value)
            (component-version component-version-value)
            (role-prototype role-prototype-value)
@@ -178,30 +178,30 @@
            (strategy-algebra strategy-algebra-value)))
    (supers)))
 
-(def (poo-flow-case-component? value)
-  (domain-case-object-kind? value +poo-flow-case-component-kind+))
+(def (yuanxu-case-component? value)
+  (domain-case-object-kind? value +yuanxu-case-component-kind+))
 
 (def (case-slot-contract-valid? value)
-  (and (poo-flow-case-slot-contract? value)
+  (and (yuanxu-case-slot-contract? value)
        (domain-case-id? (.ref value 'slot-id))
        (domain-case-id? (.ref value 'owner-id))
        (domain-case-id? (.ref value 'type-id))
        (domain-case-id? (.ref value 'default-id))
        (domain-case-id? (.ref value 'merge-algebra))
-       (poo-flow-list-of? domain-case-id?
+       (yuanxu-list-of? domain-case-id?
                           (.ref value 'override-owner-ids))
        (or (not (.ref value 'compatibility-witness-id))
            (domain-case-id? (.ref value 'compatibility-witness-id)))
        (procedure? (.ref value 'validator))))
 
 (def (case-type-contract-valid? value)
-  (and (poo-flow-case-type-contract? value)
+  (and (yuanxu-case-type-contract? value)
        (domain-case-id? (.ref value 'type-id))
-       (poo-flow-list-of? domain-case-id? (.ref value 'parent-type-ids))
+       (yuanxu-list-of? domain-case-id? (.ref value 'parent-type-ids))
        (procedure? (.ref value 'predicate))))
 
 (def (case-method-contract-valid? value)
-  (and (poo-flow-case-method-contract? value)
+  (and (yuanxu-case-method-contract? value)
        (domain-case-id? (.ref value 'contract-id))
        (domain-case-id? (.ref value 'owner-id))
        (domain-case-id? (.ref value 'subject-id))
@@ -210,7 +210,7 @@
        (domain-case-id? (.ref value 'precondition-id))
        (domain-case-id? (.ref value 'postcondition-id))
        (procedure? (.ref value 'validator))
-       (poo-flow-list-of? domain-case-id?
+       (yuanxu-list-of? domain-case-id?
                           (.ref value 'refines-contract-ids))
        (or (and (null? (.ref value 'refines-contract-ids))
                 (not (.ref value 'compatibility-witness-id))
@@ -221,26 +221,26 @@
                 (procedure? (.ref value 'compatibility-witness))))))
 
 (def (case-projection-valid? value)
-  (and (poo-flow-case-projection? value)
+  (and (yuanxu-case-projection? value)
        (domain-case-id? (.ref value 'projection-id))
        (domain-case-id? (.ref value 'owner-id))
        (domain-case-id? (.ref value 'schema-id))
        (procedure? (.ref value 'projector))))
 
-(def (poo-flow-case-component-valid? value)
-  (and (poo-flow-case-component? value)
+(def (yuanxu-case-component-valid? value)
+  (and (yuanxu-case-component? value)
        (domain-case-id? (.ref value 'component-id))
        (exact-integer? (.ref value 'component-version))
        (> (.ref value 'component-version) 0)
        (.ref value 'role-prototype)
        (case-type-contract-valid? (.ref value 'type-contract))
-       (poo-flow-list-of? case-slot-contract-valid?
+       (yuanxu-list-of? case-slot-contract-valid?
                           (.ref value 'slot-contracts))
-       (poo-flow-list-of? case-method-contract-valid?
+       (yuanxu-list-of? case-method-contract-valid?
                           (.ref value 'method-contracts))
-       (poo-flow-list-of? case-projection-valid?
+       (yuanxu-list-of? case-projection-valid?
                           (.ref value 'projections))
-       (poo-flow-list-of? domain-case-id?
+       (yuanxu-list-of? domain-case-id?
                           (.ref value 'parent-component-ids))
        (or (not (.ref value 'policy-algebra))
            (domain-case-id? (.ref value 'policy-algebra)))
@@ -295,18 +295,18 @@
         (cons 'parents (.ref value 'parent-component-ids))
         (case-type-contract-normalize (.ref value 'type-contract))
         (cons 'slots
-              (poo-flow-map
+              (yuanxu-map
                case-slot-contract-normalize
                (domain-case-sort (.ref value 'slot-contracts)
                                  (lambda (slot) (.ref slot 'slot-id)))))
         (cons 'contracts
-              (poo-flow-map
+              (yuanxu-map
                case-method-contract-normalize
                (domain-case-sort
                 (.ref value 'method-contracts)
                 (lambda (contract) (.ref contract 'contract-id)))))
         (cons 'projections
-              (poo-flow-map
+              (yuanxu-map
                case-projection-normalize
                (domain-case-sort
                 (.ref value 'projections)
@@ -314,24 +314,24 @@
         (list 'policy-algebra (.ref value 'policy-algebra))
         (list 'strategy-algebra (.ref value 'strategy-algebra))))
 
-(def (poo-flow-domain-case-canonical-descriptor schema-id-value
+(def (yuanxu-domain-case-canonical-descriptor schema-id-value
                                                 schema-version-value
                                                 components
                                                 local-overrides
                                                 selected-projection-ids)
-  (list +poo-flow-domain-case-key-domain+
+  (list +yuanxu-domain-case-key-domain+
         (list 'schema-id schema-id-value)
         (list 'schema-version schema-version-value)
-        (cons 'components (poo-flow-map case-component-normalize components))
+        (cons 'components (yuanxu-map case-component-normalize components))
         (cons 'local-overrides
-              (poo-flow-map
+              (yuanxu-map
                case-slot-contract-normalize
                (domain-case-sort local-overrides
                                  (lambda (slot) (.ref slot 'slot-id)))))
         (cons 'selected-projections
               (domain-case-sort-ids selected-projection-ids))))
 
-(def (poo-flow-domain-case-canonical-key descriptor)
+(def (yuanxu-domain-case-canonical-key descriptor)
   (hex-encode
    (sha256
     (string->utf8
@@ -339,7 +339,7 @@
 
 (def (domain-case-diagnostic code path observed)
   (poo-core-role-object
-   (slots ((kind 'poo-flow.domain-case-diagnostic.v1)
+   (slots ((kind 'yuanxu.domain-case-diagnostic.v1)
            (code code)
            (path path)
            (observed observed)))
@@ -350,7 +350,7 @@
           (case-slot-contract-normalize right)))
 
 (def (domain-case-explicit-override? candidate inherited)
-  (and (poo-flow-member? (.ref inherited 'owner-id)
+  (and (yuanxu-member? (.ref inherited 'owner-id)
                          (.ref candidate 'override-owner-ids))
        (.ref candidate 'compatibility-witness-id)))
 
@@ -369,7 +369,7 @@
   (vector-set! entry 1 #f))
 
 (def (domain-case-resolution-values entries-rev)
-  (poo-flow-filter-map
+  (yuanxu-filter-map
    (lambda (entry)
      (and (domain-case-resolution-entry-active? entry)
           (domain-case-resolution-entry-value entry)))
@@ -424,7 +424,7 @@
           (case-method-contract-normalize right)))
 
 (def (domain-case-contract-refines? candidate inherited)
-  (and (poo-flow-member? (.ref inherited 'contract-id)
+  (and (yuanxu-member? (.ref inherited 'contract-id)
                          (.ref candidate 'refines-contract-ids))
        (equal? (.ref candidate 'domain-id) (.ref inherited 'domain-id))
        (domain-case-safe-binary-call
@@ -501,7 +501,7 @@
 (def (domain-case-single-algebra components slot code)
   (let (algebras
         (domain-case-unique
-         (poo-flow-filter-map
+         (yuanxu-filter-map
           (lambda (component) (.ref component slot))
           components)))
     (if (> (length algebras) 1)
@@ -573,7 +573,7 @@
            (hash-put! projection-index id (vector 1 projection)))))
      projections)
     (let (catalog+diagnostics
-        (poo-flow-fold-right
+        (yuanxu-fold-right
          (lambda (id state)
            (let* ((catalog (car state))
                   (diagnostics (cdr state))

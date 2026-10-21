@@ -370,10 +370,10 @@ flowchart LR
 The implementation imports the project-owned combinators from
 =src/utilities/functional.ss=.  Normalization, lookup, flattening, validation,
 duplicate detection, ordered parent/type diagnostics, projection selection,
-closure diagnostics, and instance diagnostics use =poo-flow-fold-left=,
-=poo-flow-fold-right=, =poo-flow-map=, =poo-flow-find=,
-=poo-flow-filter-map=, =poo-flow-append-map=, =poo-flow-remove=,
-=poo-flow-all?=, =poo-flow-member?=, and =poo-flow-list-of?= instead of local
+closure diagnostics, and instance diagnostics use =yuanxu-fold-left=,
+=yuanxu-fold-right=, =yuanxu-map=, =yuanxu-find=,
+=yuanxu-filter-map=, =yuanxu-append-map=, =yuanxu-remove=,
+=yuanxu-all?=, =yuanxu-member?=, and =yuanxu-list-of?= instead of local
 list algorithms.  The only remaining hand-written recursion owns the two pure
 ordered state machines for slot precedence and method-contract refinement.
 Their encounter order is semantic and is therefore not hidden behind an
@@ -427,8 +427,8 @@ distributions and the zero-C4 hot-path gate remain future qualification work.
 
 =src/feature-system/domain-case/syntax.ss= owns two internal hygienic forms:
 =defpoo-case-component= and =defpoo-domain-case=.  They follow the existing
-Gerbil =defrules= style and expand to ordinary =poo-flow-case-component=,
-=poo-flow-domain-case-close=, =def=, =list=, and POO slot access.  They do not
+Gerbil =defrules= style and expand to ordinary =yuanxu-case-component=,
+=yuanxu-domain-case-close=, =def=, =list=, and POO slot access.  They do not
 introduce an alist descriptor language, execute runtime work during expansion,
 or merge object/type/contract semantics into one macro layer.
 

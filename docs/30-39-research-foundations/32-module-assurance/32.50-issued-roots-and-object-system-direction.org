@@ -135,7 +135,7 @@ failure reason and concrete file identity are still checked.
 
 * Lean and QNT correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean][IssuedRootForwarding.lean]] models tokens as original native registry identities:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean][IssuedRootForwarding.lean]] models tokens as original native registry identities:
 
 - =exact_membership=: identity deduplication neither adds nor drops a root.
 - =preserves_issuance=: genuinely issued roots stay genuine after forwarding.
@@ -280,7 +280,7 @@ or dependency source is replaced. Logs remain local artifacts, not Git content.
 | =persistent-selected-head-test=, final | PASS, 2 fixture cases | Real domain admission, independent-process commit/recovery, stale token and source refusal |
 | =lake env lean=, run 03 | PASS | New forwarding theorems, including exact transitive dependency membership |
 | =lake build ...IssuedRootForwarding= | PASS, 97 jobs | Leaf model and its existing proof dependencies |
-| =lake build PooFlowCoreProof= | PASS, 193 jobs | Integrated imports, required-theorem checks, 6,624-declaration standard-axiom and model-shape audit |
+| =lake build YuanxuProof= | PASS, 193 jobs | Integrated imports, required-theorem checks, 6,624-declaration standard-axiom and model-shape audit |
 | Existing Quint/TLC runner, run 02 | PASS, 7 controls | Safety plus omission, fabrication, stale source, missing requirement, eager branch and acceptance witness |
 
 Each passing Scheme receipt contains =MODULE-OK=, =HARNESS-OK= and final =OK=,

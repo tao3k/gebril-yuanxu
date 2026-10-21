@@ -3,18 +3,18 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope.) :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope.) :yuanxu/types :clan/poo/object)
 (export opentofu-artifact-collection-test)
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 
 (def opentofu-artifact-collection-test
   (test-suite "opentofu-artifact-collection-test"
-    (poo-flow-test-case "one actual Nix collection, bounded scope and final candidate"
+    (yuanxu-test-case "one actual Nix collection, bounded scope and final candidate"
       (assert 'default-root-inert (not (.ref/cached OpenTofuScope. 'modules)))
       (let (tf 'outside)
         (assert 'one-bounded-binding (use-module OpenTofuScope. as tf (eq? tf OpenTofuScope.)))

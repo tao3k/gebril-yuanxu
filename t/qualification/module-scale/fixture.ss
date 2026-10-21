@@ -2,13 +2,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real role sources and init; execution remains the existing init tests .run.
-(import (except-in :clan/poo/object .def .o) :core/object-syntax/path-slots :std/test
+(import (except-in :clan/poo/object .def .o) :yuanxu/object-syntax/path-slots :std/test
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :core/observability/output poo-flow-write-observation-line!)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/observability/testing-case poo-flow-test-checkpoint))
+        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint))
 (export declaration-scale-case)
 (def worker (path-expand "worker-test.ss" (path-directory (this-source-file))))
 (def (write-forms path forms)
@@ -31,16 +31,16 @@
         (write-forms (path-expand "gerbil.pkg" fixture-root)
           (list (list 'package: (symbol->string (gensym 'declaration-scale-)))))
         (write-forms (path-expand "init.ss" fixture-root)
-          `((import :core/module-system/selection/init-syntax)
-            (poo-flow! source: "./modules" mode: explicit ,@(map list ids))))
+          `((import :yuanxu/module-system/selection/init-syntax)
+            (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))
         (for-each
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
             (write-forms (path-expand "types.ss" directory)
-              '((import (only-in :core/types poo-flow-predicate-contract)
+              '((import (only-in :yuanxu/types yuanxu-predicate-contract)
                         (only-in :clan/poo/object object?))
                 (def ScopeContract
-                  (poo-flow-predicate-contract 'scale/scope object? (lambda (_v _c) '())))
+                  (yuanxu-predicate-contract 'scale/scope object? (lambda (_v _c) '())))
                 (export ScopeContract)))
             (write-forms (path-expand "objects.ss" directory)
               '((import (only-in :clan/poo/object .o))
@@ -57,7 +57,7 @@
         (def test (path-expand "modules/module-0/tests/worker-test.ss" fixture-root))
         (create-directory* (path-directory test))
         (copy-file worker test)
-        (poo-flow-write-observation-line! "declaration-scale-artifact modules=%s observation-log=%s" size observation-log)
+        (yuanxu-write-observation-line! "declaration-scale-artifact modules=%s observation-log=%s" size observation-log)
         (.o root: fixture-root log: observation-log
             modules:
             (parameterize ((current-expander-context (make-top-context)))
@@ -71,8 +71,8 @@
 ;; Internal test declaration: no runner, worker policy or module list is copied.
 (defrules declaration-scale-case ()
   ((_ description count)
-   (poo-flow-test-fixture description (fixture (.cc DeclarationFixture size: count))
-     (poo-flow-test-checkpoint 'fixture-ready)
+   (yuanxu-test-fixture description (fixture (.cc DeclarationFixture size: count))
+     (yuanxu-test-checkpoint 'fixture-ready)
      (def module (.get fixture modules module-0))
      (check-equal? (.ref/cached module 'scope) #f)
      (def tests (.get module tests))

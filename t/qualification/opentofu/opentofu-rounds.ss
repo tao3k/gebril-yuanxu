@@ -4,7 +4,7 @@
 ;;; Native operational coordination; std/test remains the assertion authority.
 (import :clan/poo/object "./objects.ss"
         :std/cli/getopt
-        (only-in :core/profile-composition/selection-syntax use-module)
+        (only-in :yuanxu/profile-composition/selection-syntax use-module)
         (only-in :std/error Error? Error-message)
         (only-in :std/source this-source-file)
         (only-in :std/misc/ports read-all-as-string read-all-as-lines read-all-as-u8vector)
@@ -155,9 +155,9 @@
                (log (path-expand (string-append prefix ".log") output))
                (host (path-expand (string-append prefix "-host.json") output))
                (env (.o NIX_PATH: (string-append "nixpkgs=" (hash-ref report 'nixpkgs))))
-               (env (if flake-test? (.cc env 'POO_FLOW_NIX_FLAKE_METRICS metrics)
-                      (.cc env 'POO_FLOW_OPENTOFU_GRAPH_METRICS metrics
-                        'POO_FLOW_OPENTOFU_GRAPH_TRACE (path-expand (string-append prefix ".jsonl") output))))
+               (env (if flake-test? (.cc env 'YUANXU_NIX_FLAKE_METRICS metrics)
+                      (.cc env 'YUANXU_OPENTOFU_GRAPH_METRICS metrics
+                        'YUANXU_OPENTOFU_GRAPH_TRACE (path-expand (string-append prefix ".jsonl") output))))
                (base (cond (flake-test? (.get Ops tests FlakeSource))
                            (flake (.get Ops tests SelectedFlake)) (else (.get Ops tests SelectedGraph))))
                (script (.cc base 'directory root 'environment env 'log log))

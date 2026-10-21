@@ -26,10 +26,10 @@ control-plane qualification step.
 Gerbil compiled-module metadata proves that the existing Domain Case owner
 exports:
 
-- =poo-flow-case-projection= and its predicate;
+- =yuanxu-case-projection= and its predicate;
 - =domain-case-select-projections=;
-- =poo-flow-domain-case-close=;
-- =poo-flow-domain-case-project=;
+- =yuanxu-domain-case-close=;
+- =yuanxu-domain-case-project=;
 - the closed =projection-catalog= and =selected-projection-ids= slots.
 
 A runtime object probe established an important boundary fact: closing a Domain
@@ -37,7 +37,7 @@ Case with the default empty selected-id list produces an empty projection
 catalog, even when components declare projections.  Phase 3D previously kept
 Feature projection values beside the assembly but did not pass selection ids to
 the Domain Case owner.  A later binder could therefore discover a declaration
-but could not use =poo-flow-domain-case-project= on the closed Case.
+but could not use =yuanxu-domain-case-project= on the closed Case.
 
 Phase 3F repairs that gap at the correct boundary.  The assembly now accepts
 only POO =FeatureProjectionRequest= values, extracts their projection ids, and
@@ -74,14 +74,14 @@ The ordinary declaration surface is fully POO-native:
 #+begin_src scheme
 (defpoo-feature-adapter-capability python-runtime-capability
   (capability-id 'python-runtime-v1)
-  (provider-module-id 'poo-flow/python-runtime)
-  (contract-id 'poo-flow.runtime-c)
+  (provider-module-id 'yuanxu/python-runtime)
+  (contract-id 'yuanxu.runtime-c)
   (contract-version 1))
 
 (defpoo-feature-adapter-requirement python-runtime-requirement
   (requirement-id 'python-runtime-requirement)
   (capability-id 'python-runtime-v1)
-  (contract-id 'poo-flow.runtime-c)
+  (contract-id 'yuanxu.runtime-c)
   (contract-version 1))
 
 (defpoo-feature-projection-request runtime-envelope-request
@@ -166,11 +166,11 @@ flowchart LR
 
 * Projection non-execution invariant
 
-Binding stores the original =poo-flow-case-projection= object next to its POO
+Binding stores the original =yuanxu-case-projection= object next to its POO
 request.  It never reads or invokes the projection's projector procedure.
 
 Only a later, explicit runtime handoff may call
-=poo-flow-domain-case-project=.  This ensures projection execution remains under
+=yuanxu-domain-case-project=.  This ensures projection execution remains under
 the existing Domain Case diagnostic and receipt boundary rather than becoming a
 hidden Feature-system side effect.
 

@@ -300,7 +300,7 @@ choose the first parent or pretend to solve arbitrary Contract implication.
                   module-policies: (.get association-value module-policies))))
         (unless (eq? candidate (.ref scenario-value name))
           (error "changed-selected-profile" name))
-        (let ((evidence (poo-flow-contract-admit descriptor candidate context)))
+        (let ((evidence (yuanxu-contract-admit descriptor candidate context)))
           (cicd-checked-evidence descriptor candidate context evidence)
           (.o binding: name
               profile: candidate

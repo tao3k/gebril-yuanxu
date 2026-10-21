@@ -8,16 +8,16 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/misc/ports read-all-as-u8vector)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/modules/opentofu/objects OpenTofuScope. poo-flow-opentofu-provider-from-directory poo-flow-opentofu-block-contract) (only-in :core/modules/json-schema/json-schema-source poo-flow-json-schema-read-file)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope. yuanxu-opentofu-provider-from-directory yuanxu-opentofu-block-contract) (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-indexed-inputs-test)
 
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 (def (rejects? message thunk)
   (with-catch
     (lambda (exception)
@@ -33,11 +33,11 @@
 (def (ref rows key) (cdr (assoc key rows)))
 (def (diagnostic-paths result)
   (map (lambda (diagnostic)
-         (ref (poo-flow-json-schema-validation-diagnostic-metadata diagnostic) 'path))
+         (ref (yuanxu-json-schema-validation-diagnostic-metadata diagnostic) 'path))
        (.get result diagnostics)))
 
 (def (verify-input directory name candidate unselected data-name data-candidate version)
-  (def Scope (poo-flow-opentofu-provider-from-directory directory))
+  (def Scope (yuanxu-opentofu-provider-from-directory directory))
   (def Artifact (.get Scope artifact))
   (assert 'manifest-only-ready (eq? (.get Scope status) 'ready))
   (assert 'no-kind-index-loaded-on-open
@@ -65,10 +65,10 @@
   (assert 'provider-index-still-unread (not (.call Artifact .index-loaded? 'provider)))
   ;; Matched baseline only: deliberately parse the old WHOLE export here.
   ;; This test-side A/B control is not an input path of the runtime module.
-  (def whole (poo-flow-json-schema-read-file (string-append directory "/schema.json")))
+  (def whole (yuanxu-json-schema-read-file (string-append directory "/schema.json")))
   (def original (ref (ref (ref whole 'provider_schemas)
                         (string->symbol (.get Scope provider))) 'resource_schemas))
-  (def Baseline (poo-flow-opentofu-block-contract 'whole-export-control
+  (def Baseline (yuanxu-opentofu-block-contract 'whole-export-control
                    (ref (ref original name) 'block)))
   (assert 'whole-vs-indexed-contract-shape-equal (equal? (.get Baseline schema) (.get Contract schema)))
   (assert 'whole-vs-indexed-valid-admission-equal
@@ -93,7 +93,7 @@
       (copy-file (string-append directory "/indexes/resource.json") (path "indexes/resource.json"))
       (copy-file (string-append directory "/" relative) (path relative))
       (def (selected)
-        (.call (poo-flow-opentofu-provider-from-directory tmp) .contract name))
+        (.call (yuanxu-opentofu-provider-from-directory tmp) .contract name))
       (assert 'real-admission-without-whole-export
         (and (not (file-exists? (path "schema.json")))
              (accepted? (.call (selected) .admit candidate #f))))
@@ -116,8 +116,8 @@
         (rejects? "provider-artifact-input-digest-mismatch" selected))
       ;; Matching a modified index digest is insufficient: source bindings
       ;; must also match the manifest. This deliberately modifies real bytes.
-      (def manifest (poo-flow-json-schema-read-file (path "manifest.json")))
-      (def index (poo-flow-json-schema-read-file (string-append directory "/indexes/resource.json")))
+      (def manifest (yuanxu-json-schema-read-file (path "manifest.json")))
+      (def index (yuanxu-json-schema-read-file (string-append directory "/indexes/resource.json")))
       (for-each
         (lambda (key value)
           (delete-file (path "indexes/resource.json"))
@@ -142,15 +142,15 @@
 
 (def opentofu-indexed-inputs-test
   (test-suite "opentofu-indexed-inputs-test"
-    (poo-flow-test-case "real AWS indexed input and integrity"
+    (yuanxu-test-case "real AWS indexed input and integrity"
       (verify-input (.get OpenTofuScope. modules aws config provider-artifact)
         'aws_security_group (.o name: "web") 'aws_iam_group
         'aws_region (.o name: "us-east-1") "5.100.0"))
-    (poo-flow-test-case "real awscc indexed input and same-name data"
+    (yuanxu-test-case "real awscc indexed input and same-name data"
       (verify-input (.get OpenTofuScope. modules awscc config provider-artifact)
         'awscc_ec2_security_group (.o group_description: "web") 'awscc_s3_bucket
         'awscc_ec2_security_group (.o id: "sg-1234") "1.77.0"))
-    (poo-flow-test-case "real Null indexed input"
+    (yuanxu-test-case "real Null indexed input"
       ;; Null's single resource is selected. The absent name is an IO-negative
       ;; fixture, not a claim of a second real exported resource.
       (verify-input (.get OpenTofuScope. modules null config provider-artifact)

@@ -10,7 +10,7 @@
 | Layer | Current verified state | Target ownership rule |
 |-------+------------------------+-----------------------|
 | Core repository | tao3k/poo-flow-core, checked out as core/ | Shared mechanisms maintained independently of product |
-| Core Gerbil package | gerbil.pkg declares core; imports use :core/... | Package poo-flow-core; imports :poo-flow-core/... |
+| Core Gerbil package | gerbil.pkg declares core; imports use :yuanxu/... | Package poo-flow-core; imports :poo-flow-core/... |
 | Product Gerbil package | poo-flow | Product imports remain :poo-flow/... |
 | Core procedure names | Many migrated procedures retain poo-flow- | Core-owned public procedures use poo-flow-core-; migrate by owner |
 | Module identities | Qualified logical keys such as core/json-schema | Source-policy identities; not mechanically rewritten with compiler package names |
@@ -34,21 +34,21 @@ only the target names; module 21 preserves the current implementation audit.
 
 | Existing Core binding | Target Core binding (not yet exported) |
 |-----------------------+----------------------------------------|
-| =poo-flow-contract-admit= | =poo-flow-core-contract-admit= |
-| =poo-flow-force-lazy-load-plan= | =poo-flow-core-force-lazy-load-plan= |
-| =poo-flow-json-schema->contract-artifact= | =poo-flow-core-json-schema->contract-artifact= |
-| =poo-flow-json-schema-contract-artifact-diagnostics= | =poo-flow-core-json-schema-contract-artifact-diagnostics= |
-| =poo-flow-json-schema-contract-artifact-object-contract= | =poo-flow-core-json-schema-contract-artifact-object-contract= |
-| =poo-flow-json-schema-contract-artifact-valid?= | =poo-flow-core-json-schema-contract-artifact-valid?= |
-| =poo-flow-json-schema-contract-artifact-validate= | =poo-flow-core-json-schema-contract-artifact-validate= |
-| =poo-flow-json-schema-object-contract-validation-diagnostics= | =poo-flow-core-json-schema-object-contract-validation-diagnostics= |
-| =poo-flow-lazy-load-plan-receipt= | =poo-flow-core-lazy-load-plan-receipt= |
-| =poo-flow-make-lazy-load-plan= | =poo-flow-core-make-lazy-load-plan= |
-| =poo-flow-predicate-contract= | =poo-flow-core-predicate-contract= |
-| =poo-flow-validation-evidence-accepted?= | =poo-flow-core-validation-evidence-accepted?= |
+| =yuanxu-contract-admit= | =poo-flow-core-contract-admit= |
+| =yuanxu-force-lazy-load-plan= | =poo-flow-core-force-lazy-load-plan= |
+| =yuanxu-json-schema->contract-artifact= | =poo-flow-core-json-schema->contract-artifact= |
+| =yuanxu-json-schema-contract-artifact-diagnostics= | =poo-flow-core-json-schema-contract-artifact-diagnostics= |
+| =yuanxu-json-schema-contract-artifact-object-contract= | =poo-flow-core-json-schema-contract-artifact-object-contract= |
+| =yuanxu-json-schema-contract-artifact-valid?= | =poo-flow-core-json-schema-contract-artifact-valid?= |
+| =yuanxu-json-schema-contract-artifact-validate= | =poo-flow-core-json-schema-contract-artifact-validate= |
+| =yuanxu-json-schema-object-contract-validation-diagnostics= | =poo-flow-core-json-schema-object-contract-validation-diagnostics= |
+| =yuanxu-lazy-load-plan-receipt= | =poo-flow-core-lazy-load-plan-receipt= |
+| =yuanxu-make-lazy-load-plan= | =poo-flow-core-make-lazy-load-plan= |
+| =yuanxu-predicate-contract= | =poo-flow-core-predicate-contract= |
+| =yuanxu-validation-evidence-accepted?= | =poo-flow-core-validation-evidence-accepted?= |
 
 The new build adapter has no old implementation to rename: its target is
-poo-flow-core-build-spec. The product poo-flow-load-modules name remains a facade;
+poo-flow-core-build-spec. The product yuanxu-load-modules name remains a facade;
 Core never calls it. Neutral native bindings such as .def, .admit and with-slots
 remain native library operations, not product APIs to prefix mechanically.
 
@@ -63,7 +63,7 @@ adapter is a precise compilation-unit import, not a second Module definition.
 Core owns selection/source-generation association, generic build contribution
 Contracts, phase/dependency graph validation and projection boundaries. A Core
 adapter consumes admitted init publication through a shared provider protocol;
-it must not import the product's poo-flow-load-modules facade to implement itself.
+it must not import the product's yuanxu-load-modules facade to implement itself.
 The product facade delegates to these Core owners. Build projection and scope
 projection therefore share one selected graph without reversing dependencies.
 Gerbil-specific spec lowering may live here; ASP PackageSpec policy, product roots,

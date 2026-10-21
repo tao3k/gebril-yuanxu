@@ -5,16 +5,16 @@
         (only-in :gerbil/expander core-resolve-library-module-path)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :clan/poo/object .get)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  module-source-read module-source-admit-current!)
-        (only-in :core/module-system/building/configuration-source poo-flow-core-configuration-source))
+        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
 (export module-configuration-source-test)
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def module-configuration-source-test
   (test-suite "Observed native configuration roles"
-    (poo-flow-test-case "reader return owns the final check, not a duplicate after private cleanup"
+    (yuanxu-test-case "reader return owns the final check, not a duplicate after private cleanup"
       (call-with-temporary-directory "configuration-return-guard"
         (lambda (root)
           (def config (path-expand "config.ss" root))
@@ -31,14 +31,14 @@
                               (when (and (pair? key) (eq? (car key) 'file-read)
                                          (equal? (caddr key) dependency))
                                 (set! reads (+ reads amount))))))
-              (poo-flow-core-configuration-source config 'Config context! role-sources: (list config))))
+              (yuanxu-configuration-source config 'Config context! role-sources: (list config))))
           ;; One preparation/pre-bootstrap window, reader pre-import and post-import.
           ;; Count actual opens, not requests served by a pure-window byte hit.
           (check-equal? reads 3)
           (check-equal? (.get result value) 'ready)
           (write-source dependency "context-version-two")
           (check-exception ((.get result admit-current)) error?))))
-    (poo-flow-test-case "pure import checks do not reuse observations across initialization effects"
+    (yuanxu-test-case "pure import checks do not reuse observations across initialization effects"
       (call-with-temporary-directory "configuration-initialization-effect"
         (lambda (root)
           (def config (path-expand "config.ss" root))
@@ -60,11 +60,11 @@
                             (when (equal? kind (list 'file-read 'configuration-current config))
                               (set! entry-reads (+ entry-reads amount))))))
             (check-exception
-              (poo-flow-core-configuration-source config 'Config void role-sources: (list config objects)) error?))
+              (yuanxu-configuration-source config 'Config void role-sources: (list config objects)) error?))
           ;; Exactly the pre/post complete guards read the private entry; SDK
           ;; imports check their own dependency subgraphs, not this role again.
           (check-equal? entry-reads 2))))
-    (poo-flow-test-case "canonical public source imports work; foreign same-identity source never runs"
+    (yuanxu-test-case "canonical public source imports work; foreign same-identity source never runs"
       (call-with-temporary-directory "configuration-public-dependency"
         (lambda (root)
           (def config (path-expand "config.ss" root))
@@ -76,7 +76,7 @@
                 (write `(import (only-in ,dependency atom formula?)) port)
                 (write '(def Config (formula? (atom 'ready))) port))))
           (check-equal?
-            (.get (poo-flow-core-configuration-source config 'Config void role-sources: (list config)) value) #t)
+            (.get (yuanxu-configuration-source config 'Config void role-sources: (list config)) value) #t)
           (def foreign (path-expand "declarative-metadata.ss" root))
           (def marker (path-expand "executed" root))
           (write-source foreign
@@ -87,9 +87,9 @@
             (call-with-output-string
               (lambda (port) (write `(import ,foreign) port) (write '(def Config #t) port))))
           (check-exception
-            (poo-flow-core-configuration-source config 'Config void role-sources: (list config)) error?)
+            (yuanxu-configuration-source config 'Config void role-sources: (list config)) error?)
           (check-equal? (file-exists? marker) #f))))
-    (poo-flow-test-case "fresh private role imports, source currentness and cache isolation"
+    (yuanxu-test-case "fresh private role imports, source currentness and cache isolation"
       (call-with-temporary-directory "configuration-role-control"
         (lambda (root)
           (let ((config (path-expand "config.ss" root))
@@ -99,7 +99,7 @@
             (write-source config "(import \"objects.ss\") (def Config Profile) (export Config)")
             (def context-checks 0)
             (def (context!) (set! context-checks (1+ context-checks)))
-            (let (parent (poo-flow-core-configuration-source config 'Config context! role-sources: (list config objects)))
+            (let (parent (yuanxu-configuration-source config 'Config context! role-sources: (list config objects)))
               (check-equal? (.get parent value answer) 1)
               (set! context-checks 0)
               ((.get parent admit-current))
@@ -108,7 +108,7 @@
               (check-equal? context-checks 2)
               (write-source objects "(import :clan/poo/object) (def Profile (.o answer: 2)) (export Profile)")
               (check-exception ((.get parent admit-current)) error?)
-              (let (child (poo-flow-core-configuration-source config 'Config void role-sources: (list config objects)))
+              (let (child (yuanxu-configuration-source config 'Config void role-sources: (list config objects)))
                 (check-equal? (.get child value answer) 2)
                 (check-equal? (.get parent value answer) 1)
                 ((.get child admit-current)))
@@ -116,4 +116,4 @@
               ;; native global import cache or bypass the source observations.
               (write-source config "(import \"unobserved.ss\") (def Config Hidden) (export Config)")
               (write-source (path-expand "unobserved.ss" root) "(def Hidden #t) (export Hidden)")
-              (check-exception (poo-flow-core-configuration-source config 'Config void role-sources: (list config objects)) error?))))))))
+              (check-exception (yuanxu-configuration-source config 'Config void role-sources: (list config objects)) error?))))))))

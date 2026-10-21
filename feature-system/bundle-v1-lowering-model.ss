@@ -7,11 +7,11 @@
 (import (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
-        :core/utilities/functional)
+        :yuanxu/utilities/functional)
 
 (export (except-out #t define-poo-value))
 
-(def +feature-bundle-v1-schema+ 'poo-flow.bundle.1)
+(def +feature-bundle-v1-schema+ 'yuanxu.bundle.1)
 (def +feature-bundle-v1-schema-major+ 1)
 (def +feature-bundle-v1-schema-minor+ 0)
 (def +feature-bundle-v1-descriptor-size+ 256)
@@ -28,42 +28,42 @@
 (def +feature-bundle-v1-uint64-modulus+ 18446744073709551616)
 
 (def +feature-bundle-v1-no-capability-id+
-  'poo-flow.bundle-v1.no-capability)
+  'yuanxu.bundle-v1.no-capability)
 (def +feature-bundle-v1-no-policy-id+
-  'poo-flow.bundle-v1.no-policy)
+  'yuanxu.bundle-v1.no-policy)
 (def +feature-bundle-v1-no-strategy-id+
-  'poo-flow.bundle-v1.no-strategy)
+  'yuanxu.bundle-v1.no-strategy)
 (def +feature-bundle-v1-no-adapter-id+
-  'poo-flow.bundle-v1.no-adapter)
+  'yuanxu.bundle-v1.no-adapter)
 (def +feature-bundle-v1-no-projection-id+
-  'poo-flow.bundle-v1.no-projection)
+  'yuanxu.bundle-v1.no-projection)
 
 (def +feature-bundle-v1-compact-id-kind+
-  'poo-flow.feature-bundle-v1-compact-id.v1)
+  'yuanxu.feature-bundle-v1-compact-id.v1)
 (def +feature-bundle-v1-symbol-kind+
-  'poo-flow.feature-bundle-v1-symbol.v1)
+  'yuanxu.feature-bundle-v1-symbol.v1)
 (def +feature-bundle-v1-component-kind+
-  'poo-flow.feature-bundle-v1-component.v1)
+  'yuanxu.feature-bundle-v1-component.v1)
 (def +feature-bundle-v1-edge-kind+
-  'poo-flow.feature-bundle-v1-edge.v1)
+  'yuanxu.feature-bundle-v1-edge.v1)
 (def +feature-bundle-v1-evidence-kind+
-  'poo-flow.feature-bundle-v1-evidence.v1)
+  'yuanxu.feature-bundle-v1-evidence.v1)
 (def +feature-bundle-v1-native-component-kind+
-  'poo-flow.feature-bundle-v1-native-component.v1)
+  'yuanxu.feature-bundle-v1-native-component.v1)
 (def +feature-bundle-v1-native-symbol-kind+
-  'poo-flow.feature-bundle-v1-native-symbol.v1)
+  'yuanxu.feature-bundle-v1-native-symbol.v1)
 (def +feature-bundle-v1-native-edge-kind+
-  'poo-flow.feature-bundle-v1-native-edge.v1)
+  'yuanxu.feature-bundle-v1-native-edge.v1)
 (def +feature-bundle-v1-native-evidence-kind+
-  'poo-flow.feature-bundle-v1-native-evidence.v1)
+  'yuanxu.feature-bundle-v1-native-evidence.v1)
 (def +feature-bundle-v1-region-kind+
-  'poo-flow.feature-bundle-v1-region.v1)
+  'yuanxu.feature-bundle-v1-region.v1)
 (def +feature-bundle-v1-descriptor-kind+
-  'poo-flow.feature-bundle-v1-descriptor.v1)
+  'yuanxu.feature-bundle-v1-descriptor.v1)
 (def +feature-bundle-v1-diagnostic-kind+
-  'poo-flow.feature-bundle-v1-diagnostic.v1)
+  'yuanxu.feature-bundle-v1-diagnostic.v1)
 (def +feature-bundle-v1-lowering-plan-kind+
-  'poo-flow.feature-bundle-v1-lowering-plan.v1)
+  'yuanxu.feature-bundle-v1-lowering-plan.v1)
 
 ;; define-poo-value
 ;;   : (-> Syntax Syntax)
@@ -240,7 +240,7 @@
 
 ;; : (-> U8Vector Integer Integer)
 (def (digest-segment->uint64 digest start)
-  (poo-flow-fold-left
+  (yuanxu-fold-left
    (lambda (byte accumulator)
      (modulo (+ (* accumulator 256) byte)
              +feature-bundle-v1-uint64-modulus+))
@@ -253,7 +253,7 @@
     (error "Bundle v1 compact identity requires a domain and semantic id"
            domain source))
   (let* ((canonical
-          (string-append "poo-flow.bundle-v1.id/"
+          (string-append "yuanxu.bundle-v1.id/"
                          (symbol->string domain)
                          "/"
                          (semantic-id->string source)))
@@ -287,7 +287,7 @@
 
 ;; : (-> POOObject [Symbol] Boolean)
 (def (object-has-valid-ids? value slots)
-  (poo-flow-all?
+  (yuanxu-all?
    (lambda (slot)
      (and (.slot? value slot)
           (valid-semantic-id? (.ref value slot))))
@@ -381,7 +381,7 @@
 ;; : (-> [PooFeatureBundleV1NativeSymbol] [PooFeatureBundleV1NativeSymbol])
 (def (assign-symbol-offsets values)
   (let (state
-        (poo-flow-fold-left
+        (yuanxu-fold-left
          (lambda (value state)
            (let ((byte-offset (car state))
                  (out (cdr state)))

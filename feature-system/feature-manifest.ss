@@ -10,10 +10,10 @@
                  hash-ref
                  make-hash-table-eq)
         (only-in :clan/poo/object .ref object<-alist)
-        :core/composition/roles
-        :core/feature-system/model
-        :core/feature-system/resolver
-        :core/utilities/functional)
+        :yuanxu/composition/roles
+        :yuanxu/feature-system/model
+        :yuanxu/feature-system/resolver
+        :yuanxu/utilities/functional)
 
 (export feature-manifest
         feature-manifest-bundle
@@ -100,7 +100,7 @@
 (def (feature-manifests+diagnostics descriptors)
   (let* ((storage (make-hash-table-eq))
          (state
-          (poo-flow-fold-left
+          (yuanxu-fold-left
            (lambda (descriptor state)
              (feature-manifest-fold-step storage descriptor state))
            (list '() '() 0)
@@ -113,7 +113,7 @@
 (def (feature-manifest-bundle bundle-id descriptors)
   (let-values (((manifests structural-diagnostics manifest-index)
                 (feature-manifests+diagnostics descriptors)))
-    (let* ((selections (poo-flow-map feature-selection descriptors))
+    (let* ((selections (yuanxu-map feature-selection descriptors))
            (profile (feature-profile bundle-id selections))
            (activation-plan (resolve-feature-profile profile))
            (diagnostics

@@ -115,7 +115,7 @@ production Scenario's contract policy.
 
 * Formal correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRead.lean][IssuedRead.lean]] proves mint authenticity, rejection of public construction,
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean][IssuedRead.lean]] proves mint authenticity, rejection of public construction,
 borrowed identity and changed payload, whole-selected-closure authenticity,
 transient issuance independent of cache registration, association identity before
 payload verification, and preservation of route, both requirements and child

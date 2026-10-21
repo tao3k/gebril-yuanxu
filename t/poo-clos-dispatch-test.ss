@@ -5,7 +5,7 @@
 
 ;;; CLOS specializer, multi-dispatch, and standard-combination conformance.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .o .ref .put! .all-slots object-slots $constant-slot-spec?
@@ -13,11 +13,11 @@
         (only-in :clan/poo/mop Type. element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-dependencies)
-        (only-in :core/poo-clos/objects make-effective-method make-invocation-frame
+        (only-in :yuanxu/poo-clos/objects make-effective-method make-invocation-frame
                  clos-call-carrier-policy-guard)
-        (only-in :core/object-family/read-projection call-with-owned-read-projection owned-read-value!)
-        (only-in :core/observability/memory poo-flow-debug-memory-snapshot)
-        :core/poo-clos/interface)
+        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-value!)
+        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-dispatch-test)
 
@@ -39,7 +39,7 @@
 
 (def poo-clos-dispatch-test
   (test-suite "POO-native CLOS multi-dispatch conformance"
-    (poo-flow-test-case "projection preserves multiple values and unwinds a failed region"
+    (yuanxu-test-case "projection preserves multiple values and unwinds a failed region"
       (check-exception
         (call-with-owned-read-projection '() (lambda () #t)
           (lambda () (error "negative region failure"))) error?)
@@ -49,7 +49,7 @@
             (call-with-owned-read-projection '() (lambda () #t)
               (lambda () (values 'first 'second)))) list)
         '(first second)))
-    (poo-flow-test-case "effective-method and native MOP hooks retain the complete call trace"
+    (yuanxu-test-case "effective-method and native MOP hooks retain the complete call trace"
      (for-each
       (lambda (axis)
       (def exposed #f)
@@ -84,7 +84,7 @@
       (.put! exposed 'negative-edit #t)
       (check-exception (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
       '(effective native-mop)))
-    (poo-flow-test-case "owned getter dependencies promote their external policy"
+    (yuanxu-test-case "owned getter dependencies promote their external policy"
       ;; This isolated ownership fixture puts the only external read UNDER the
       ;; owned token, rather than relying on an independently observed root.
       (def policy (.o allowed: #t))
@@ -98,10 +98,10 @@
       (call-with-slot-read-observer
         (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! root read)))
         (lambda () (.ref result 'answer)))
-      (poo-flow-debug-memory-snapshot 'owned-fixture-returned collect?: #t)
+      (yuanxu-debug-memory-snapshot 'owned-fixture-returned collect?: #t)
       (.put! policy 'allowed #f)
       (check-exception (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
-    (poo-flow-test-case "owned-read projection promotes external dependencies and preserves open frames"
+    (yuanxu-test-case "owned-read projection promotes external dependencies and preserves open frames"
       (check-equal? ((clos-call-carrier-policy-guard)) #t)
       (for-each
         (lambda (axis)
@@ -138,11 +138,11 @@
           ;; Deliberately enroll an escaping fixture body as known: even this
           ;; producer-error probe may not turn a lost weak token into approval.
           (when (eq? axis 'known-frame)
-            (poo-flow-debug-memory-snapshot 'invalidated-owned-frame collect?: #t))
+            (yuanxu-debug-memory-snapshot 'invalidated-owned-frame collect?: #t))
           (check-exception
             (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
         '(policy contract generic open-frame known-frame)))
-    (poo-flow-test-case "prototype policy changes invalidate collected-carrier evidence"
+    (yuanxu-test-case "prototype policy changes invalidate collected-carrier evidence"
       ;; Mutate the shared declaration LAST: restoring a value intentionally
       ;; does not restore its native revision or re-certify the old policy.
       (def body (lambda (_frame _value) 'done))
@@ -159,7 +159,7 @@
       (call-with-slot-read-observer
         (lambda (read) (when (eq? (slot-read-key read) 'answer) (set! projected-root read)))
         (lambda () (.ref projected 'answer)))
-      (poo-flow-debug-memory-snapshot 'projected-call-returned collect?: #t)
+      (yuanxu-debug-memory-snapshot 'projected-call-returned collect?: #t)
       (dynamic-wind
         (lambda () (.put! prototype 'kind 'negative-policy-injection))
         (lambda ()
@@ -167,7 +167,7 @@
             (replay-slot-reads! (list projected-root) (lambda (_receiver _key) (void))) error?))
         (lambda () (.put! prototype 'kind original-kind)))
       (check-equal? ((clos-call-carrier-policy-guard)) #f))
-    (poo-flow-test-case "completed CLOS reads retain policy Type Generic and escaped-frame dependencies"
+    (yuanxu-test-case "completed CLOS reads retain policy Type Generic and escaped-frame dependencies"
       (for-each
         (lambda (axis)
           (def policy (.o allowed: #t))
@@ -200,7 +200,7 @@
             (replay-slot-reads! (hash-keys reads) (lambda (_receiver _key) (void)))
             error?))
         '(policy contract generic frame)))
-    (poo-flow-test-case "CLOS carriers capture values without constructor-wide lazy closures"
+    (yuanxu-test-case "CLOS carriers capture values without constructor-wide lazy closures"
       (def generic (poo-clos-generic-function 'carrier-values 1))
       (def method (primary-method 'carrier-method (list any-specializer) 'done))
       (def args (list dog))
@@ -230,7 +230,7 @@
                        (failure-code? 'invalid-effective-method))
       (check-exception (make-invocation-frame effective args 42 'primary method)
                        (failure-code? 'invalid-invocation-frame)))
-    (poo-flow-test-case "native prototype and any specializers participate in multi-argument dispatch"
+    (yuanxu-test-case "native prototype and any specializers participate in multi-argument dispatch"
       (let* ((generic (poo-clos-generic-function 'meet 2))
              (generic
               (poo-clos-add-method
@@ -273,12 +273,12 @@
                         qualifier: (.ref method 'qualifier)
                         lambda-list: (.ref method 'lambda-list))))))))))
 
-    (poo-flow-test-case "native prototypes cannot masquerade as CLOS classes"
+    (yuanxu-test-case "native prototypes cannot masquerade as CLOS classes"
       (check-exception
        (poo-clos-class-specializer animal-class)
        (failure-code? 'invalid-specializer)))
 
-    (poo-flow-test-case "eql specializers are more specific than class specializers"
+    (yuanxu-test-case "eql specializers are more specific than class specializers"
       (let* ((generic (poo-clos-generic-function 'feed 1))
              (generic
               (poo-clos-add-method
@@ -297,7 +297,7 @@
         (check-equal? (poo-clos-call generic dog) 'this-dog)
         (check-equal? (poo-clos-call generic (.o (:: @ dog-class))) 'dog)))
 
-    (poo-flow-test-case "standard qualifier order and lexical next are preserved"
+    (yuanxu-test-case "standard qualifier order and lexical next are preserved"
       (let ((trace '())
             (base-generic (poo-clos-generic-function 'render 1)))
         (def (record value)
@@ -342,7 +342,7 @@
              primary-dog primary-animal after-animal after-dog
              around-dog-exit)))))
 
-    (poo-flow-test-case "replacement arguments retain the exact applicable method set"
+    (yuanxu-test-case "replacement arguments retain the exact applicable method set"
       (def (delegate frame _value)
         (poo-clos-call-next-method frame cat))
       (def (terminal _frame _value) 'terminal)
@@ -362,7 +362,7 @@
         (check-exception (poo-clos-call generic dog)
                          (failure-code? 'changed-applicable-methods))))
 
-    (poo-flow-test-case "rest arguments and multiple values survive effective invocation"
+    (yuanxu-test-case "rest arguments and multiple values survive effective invocation"
       (def (many _frame _required . rest)
         (apply values rest))
       (let* ((generic (poo-clos-generic-function 'many 1 rest?: #t))
@@ -374,7 +374,7 @@
          (call-with-values (lambda () (poo-clos-call generic 'x 1 2 3)) list)
          '(1 2 3))))
 
-    (poo-flow-test-case "same qualifier and specializers replace the prior method"
+    (yuanxu-test-case "same qualifier and specializers replace the prior method"
       (let* ((generic (poo-clos-generic-function 'replace 1))
              (specializers (list any-specializer))
              (old (primary-method 'old specializers 'old))
@@ -392,7 +392,7 @@
           (check-exception (poo-clos-call without-new 1)
                            (failure-code? 'no-applicable-method)))))
 
-    (poo-flow-test-case "a method has one generic owner and find-method uses ANSI qualifiers"
+    (yuanxu-test-case "a method has one generic owner and find-method uses ANSI qualifiers"
       (let* ((specializers (list any-specializer))
              (method (primary-method 'owned specializers 'owned))
              (first (poo-clos-generic-function 'first-owner 1))
@@ -410,7 +410,7 @@
         (check-equal? (poo-clos-method-generic-function method) #f)
         (check (eq? (poo-clos-add-method second method) second) => #t)))
 
-    (poo-flow-test-case "applicable methods extend keyword admission"
+    (yuanxu-test-case "applicable methods extend keyword admission"
       (let* ((method-list
               (poo-clos-lambda-list 1 0 #f #t (list extra:) #f))
              (method
@@ -427,7 +427,7 @@
         (check-exception (poo-clos-call generic 'value unknown: 9)
                          (failure-code? 'invalid-keyword-argument))))
 
-    (poo-flow-test-case "no-applicable-method precedes keyword validation"
+    (yuanxu-test-case "no-applicable-method precedes keyword validation"
       (let* ((protocol
               (poo-clos-generic-protocol
                'no-app-first
@@ -440,7 +440,7 @@
         (check-equal? (poo-clos-call generic 'value unknown: 1)
                       'no-applicable)))
 
-    (poo-flow-test-case "terminal protocol functions are ordinary mutable generics"
+    (yuanxu-test-case "terminal protocol functions are ordinary mutable generics"
       (let* ((target (poo-clos-generic-function 'terminal-target 1))
              (no-applicable
               (poo-clos-method
@@ -476,7 +476,7 @@
                                 no-applicable)
         (poo-clos-remove-method poo-clos-no-next-method-generic no-next)))
 
-    (poo-flow-test-case "typed failures close invalid and inapplicable calls"
+    (yuanxu-test-case "typed failures close invalid and inapplicable calls"
       (check-exception
        (poo-clos-generic-function
         'bad-order 2 argument-precedence-order: '(0 0))

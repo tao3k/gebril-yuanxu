@@ -13,13 +13,13 @@ connects =FeatureCompositionPlan= to the existing Domain Case algebra.
 It does not define a second Domain Case representation.  Component validation,
 parent ordering, type inheritance, slot/method contract closure, role overlay,
 projection catalog construction, canonical identity, and caching remain owned by
-=src/feature-system/domain-case/interface.ss= and =poo-flow-domain-case-close=.
+=src/feature-system/domain-case/interface.ss= and =yuanxu-domain-case-close=.
 
 * Existing owner contract
 
 The Gerbil module owner already exports POO-native values and operations for:
 
-- =poo-flow-case-component=;
+- =yuanxu-case-component=;
 - case type, slot, and method contracts;
 - case projections;
 - component composition;
@@ -44,14 +44,14 @@ not an inheritance method and is not replaced by policy or strategy metadata.
 
 =feature-domain-case-assembly= receives four explicit POO/control-plane values:
 
-1. a module-owned =poo-flow-domain-case-cache=;
+1. a module-owned =yuanxu-domain-case-cache=;
 2. the semantic Domain Case id;
 3. the Domain Case schema version;
 4. an accepted =FeatureCompositionPlan=.
 
 It sends the plan's resolver-ordered components and the projection ids carried
 by POO =FeatureProjectionRequest= values directly to
-=poo-flow-domain-case-close=.  Projection selection therefore happens during
+=yuanxu-domain-case-close=.  Projection selection therefore happens during
 the one authoritative Domain Case closure.  The resulting constant-slot
 assembly receipt contains:
 
@@ -89,7 +89,7 @@ flowchart LR
     FB["qualified FeatureManifestBundle"]
     CP["ordered FeatureCompositionPlan"]
     CC["POO CaseComponent values"]
-    DC["existing poo-flow-domain-case-close"]
+    DC["existing yuanxu-domain-case-close"]
     CR["Domain Case closure receipt"]
     CA["FeatureDomainCaseAssembly receipt"]
     PO["policy contributions"]

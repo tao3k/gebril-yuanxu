@@ -3,27 +3,27 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/profile-composition/selection-syntax
-        (only-in :core/modules/opentofu/objects OpenTofuScope. poo-flow-opentofu-configuration-from-types)
-        (only-in :core/modules/json-schema/json-schema-diagnostics poo-flow-json-schema-validation-diagnostic-metadata)
-        :core/types :clan/poo/object)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :yuanxu/modules/opentofu/objects OpenTofuScope. yuanxu-opentofu-configuration-from-types)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics yuanxu-json-schema-validation-diagnostic-metadata)
+        :yuanxu/types :clan/poo/object)
 (export opentofu-configuration-families-test)
 
 (def (assert label value)
   (unless value (error "assertion failed" label))
   (displayln "ASSERT-OK " label) (force-output))
-(def (accepted? result) (poo-flow-validation-evidence-accepted? result))
+(def (accepted? result) (yuanxu-validation-evidence-accepted? result))
 (def (path? result expected)
   (find (lambda (diagnostic)
           (equal? (cdr (assoc 'path
-                         (poo-flow-json-schema-validation-diagnostic-metadata diagnostic)))
+                         (yuanxu-json-schema-validation-diagnostic-metadata diagnostic)))
                   expected))
         (.get result diagnostics)))
 
 (def opentofu-configuration-families-test
   (test-suite "opentofu-configuration-families-test"
-    (poo-flow-test-case "one configuration, three actual Provider packages"
+    (yuanxu-test-case "one configuration, three actual Provider packages"
       ;; Only package/test integration supplies these paths.
       (def AWS (.get OpenTofuScope. modules aws))
       (def AWSCC (.get OpenTofuScope. modules awscc))
@@ -48,7 +48,7 @@
         (and (not (.ref/cached AWS 'provider)) (not (.ref/cached AWSCC 'provider))
              (not (.ref/cached Null 'provider))))
       (def ConfigurationContract
-        (poo-flow-opentofu-configuration-from-types SelectedTypes))
+        (yuanxu-opentofu-configuration-from-types SelectedTypes))
       (def Configuration
         (.o
           provider: (.o aws: (list (.o region: "us-east-1"))
@@ -141,41 +141,41 @@
       (assert 'wrong-kind-selection-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types
+            (yuanxu-opentofu-configuration-from-types
               (.cc SelectedTypes 'resource (.o awscc_ec2_security_group:
                                               (.get SelectedTypes data awscc_ec2_security_group))))
             #f)))
       (assert 'different-package-schema-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types
+            (yuanxu-opentofu-configuration-from-types
               (.cc SelectedTypes 'provider (.o aws: (.cc AwsProvider 'version "stale")
                                                awscc: AwsccProvider null: NullProvider)))
             #f)))
       (assert 'different-schema-digest-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types
+            (yuanxu-opentofu-configuration-from-types
               (.cc SelectedTypes 'provider (.o aws: (.cc AwsProvider 'schema-digest "stale")
                                                awscc: AwsccProvider null: NullProvider)))
             #f)))
       (assert 'different-provider-address-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types
+            (yuanxu-opentofu-configuration-from-types
               (.cc SelectedTypes 'provider (.o aws: (.cc AwsProvider 'provider "wrong/address")
                                                awscc: AwsccProvider null: NullProvider)))
             #f)))
       (assert 'wrong-resource-name-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types
+            (yuanxu-opentofu-configuration-from-types
               (.cc SelectedTypes 'resource
                 (.o wrong_name: (.get SelectedTypes resource null_resource))))
             #f)))
       (assert 'malformed-selection-rejected
         (with-catch (lambda (_) #t)
           (lambda ()
-            (poo-flow-opentofu-configuration-from-types (.cc SelectedTypes 'data "wrong"))
+            (yuanxu-opentofu-configuration-from-types (.cc SelectedTypes 'data "wrong"))
             #f)))
       (displayln "OPENTOFU-CONFIGURATION-FAMILIES-OK"))))

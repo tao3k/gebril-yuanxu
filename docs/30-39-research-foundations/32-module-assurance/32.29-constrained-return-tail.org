@@ -222,7 +222,7 @@ introduced by the candidate.
 
 * Lean and Quint correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ClosedTail.lean][Admission/ClosedTail]] reuses the earlier LeanPoo-backed admission closure.
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean][Admission/ClosedTail]] reuses the earlier LeanPoo-backed admission closure.
 =Observer= is an absent observer or an opaque identity. In the latter case,
 =run= refuses without invocation; the former uses the structurally closed
 =InspectEvent= algebra. There is no Boolean claim of arbitrary closure purity.

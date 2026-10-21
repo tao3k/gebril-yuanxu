@@ -123,7 +123,7 @@ The main lesson is not to copy Flue's TypeScript API. The lesson is to keep the 
 
 Recommended =poo-flow= direction:
 
-- Keep =poo-flow!= and =(use-module ...)= as the project interface.
+- Keep =yuanxu!= and =(use-module ...)= as the project interface.
 - Let profiles and cases declare compact POO objects.
 - Compile user declarations into internal module descriptors, run configs, sandbox descriptors, loop-engine descriptors, and runtime receipts.
 - Treat workflow runs, agent sessions, dispatch receipts, and event streams as separate object families.

@@ -5,9 +5,9 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)
-        (only-in :core/types poo-flow-contract-admit poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-json-schema-publication-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
 ;; Private-source drift/cycles require the complete source-only package, not a
@@ -15,8 +15,8 @@
 ;; module-reader-tool-context-test for those controls.
 (def module-json-schema-publication-test
   (test-suite "Real JsonSchema publication and native private-source closure"
-    (poo-flow-test-case "real Core init publishes contracts and derives all imported sources once"
-      (let* ((view (poo-flow-load-modules (path-expand "init.ss" root)))
+    (yuanxu-test-case "real Core init publishes contracts and derives all imported sources once"
+      (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
              (graph (.get view build-graph))
              (scope (.get view modules Modules json-schema))
              (contract (.call scope contract 'test/port
@@ -25,16 +25,16 @@
         (check-equal? (.get view selected-graph module-order)
                       '(json-schema ops funflow nix opentofu null aws-validation aws))
         (check-equal? (> (length (.get graph entries)) 15) #t)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit contract (.o port: 80) #f)) #t)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit contract (.o port: "bad") #f)) #f)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit contract (.o port: 80) #f)) #t)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit contract (.o port: "bad") #f)) #f)
         (check-exception (.call scope compile 4) ContractViolation?)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit (.get scope types scope)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit (.get scope types scope)
                          (.+ scope (.o defaults: (.o scheam: '()))) #f)) #f)
-        (check-equal? (poo-flow-validation-evidence-accepted?
-                       (poo-flow-contract-admit (.get scope types scope)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit (.get scope types scope)
                          (.+ scope (.o compile: 7)) #f)) #f)
         (check-equal? (.get scope defaults schema) '((type . "object")))))
 ))

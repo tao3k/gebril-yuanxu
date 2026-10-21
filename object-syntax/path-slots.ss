@@ -4,10 +4,10 @@
 ;;; Bounded authoring syntax. The native object kernel keeps literal slot names.
 (import (prefix-in (only-in :clan/poo/object .o .def .o/ctx) native-)
         (prefix-in (only-in :clan/poo/brace @method) native-)
-        (only-in :core/profile-composition/selection-syntax use-module)
-        (only-in :core/configuration/slot-origin source-object-slots)
+        (only-in :yuanxu/profile-composition/selection-syntax use-module)
+        (only-in :yuanxu/configuration/slot-origin source-object-slots)
         (for-syntax :gerbil/expander
-                    :core/profile-composition/scope-declaration))
+                    :yuanxu/profile-composition/scope-declaration))
 (export .def .o @method)
 
 (begin-syntax

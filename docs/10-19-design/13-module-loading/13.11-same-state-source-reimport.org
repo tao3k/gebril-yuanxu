@@ -12,10 +12,10 @@ considering a .scm in an earlier directory.
 
 Standard std/make gxc-outputs inventories the interface .ssi and static output.
 After make-clean removed those outputs, runtime loader .scm files remained in
-lib/core. With lib first, importing :core/object-family/syntax resolved to
+lib/core. With lib first, importing :yuanxu/object-family/syntax resolved to
 lib/core/object-family/syntax.scm rather than object-family/syntax.ss in the
 source package. That generated loader has no macro exports. The missing
-poo-flow-module-source-ref-kind binding in source/objects.ss was a downstream
+yuanxu-module-source-ref-kind binding in source/objects.ss was a downstream
 symptom: its object-family declaration no longer expanded as a macro.
 
 The diagnostic control expanded the apparent declaration as a plain call to

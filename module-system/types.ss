@@ -10,11 +10,11 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/object-contract-validation validation-fields)
         (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :core/object-family/read-projection owned-read-derived!)
-        (only-in :core/types
-                 PooFlowContract. PooFlowNativeObjectContract.
-                 poo-flow-classification-evidence)
-        (only-in :core/module-system/schema/relations
+        (only-in :yuanxu/object-family/read-projection owned-read-derived!)
+        (only-in :yuanxu/types
+                 YuanxuContract. YuanxuObjectContract.
+                 yuanxu-classification-evidence)
+        (only-in :yuanxu/module-system/schema/relations
                  SemanticImports.
                  ModuleIdentityContract ModuleImportsContract
                  ModuleProfilesContract ModuleCapabilitiesContract))
@@ -24,15 +24,15 @@
 ;; : (-> Unit POOObject)
 (def (semantic-empty-prototype) (.o))
 
-;; : (-> Object Object PooFlowClassificationEvidence)
+;; : (-> Object Object YuanxuClassificationEvidence)
 (def (semantic-object-classify candidate context)
-  (poo-flow-classification-evidence
+  (yuanxu-classification-evidence
    'semantic-object candidate (object? candidate)
    (if (object? candidate) '() '(expected-poo-object)) context))
 
 ;;; Boundary: executor strategy is any native POO value. Concrete method
 ;;; bundles still specialize its prototype identity through CLOS.
-(define-type (SemanticObject @ PooFlowContract.)
+(define-type (SemanticObject @ YuanxuContract.)
   identity: 'semantic-object
   .classify: semantic-object-classify)
 
@@ -74,7 +74,7 @@
 ;;; The lists describe recommended syntax and repair vocabulary; they are not
 ;;; a closed grammar.  Execution remains owned by the authoring Contract
 ;;; executor, and refined roles may add contextual prohibitions.
-(define-type (ModuleSourceRoleContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleSourceRoleContract @ YuanxuObjectContract.)
   identity: 'module-source-role
   proto: (semantic-empty-prototype)
   value-contract:
@@ -83,7 +83,7 @@
 ;;; Every semantic Module carries one role-indexed authoring Profile.  A
 ;;; vertical module may refine individual role objects without replacing the
 ;;; admission protocol or disabling unrelated rules.
-(define-type (ModuleAuthoringProfileContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleAuthoringProfileContract @ YuanxuObjectContract.)
   identity: 'module-authoring-profile
   proto: (semantic-empty-prototype)
   responsibilities:
@@ -96,7 +96,7 @@
 
 ;;; Invariant: a semantic module is admitted only through every native
 ;;; responsibility, including its role-indexed authoring Profile.
-(define-type (SemanticModuleContract @ PooFlowNativeObjectContract.)
+(define-type (SemanticModuleContract @ YuanxuObjectContract.)
   identity: 'semantic-module
   proto: (.o imports: SemanticImports.)
   responsibilities:

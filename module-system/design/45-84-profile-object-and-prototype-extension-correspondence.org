@@ -115,14 +115,14 @@ and slot-local contribution priority cannot rewrite C4 precedence.
 - [X] Composition is not universally reduced to =.mix=.
 
 These obligations are checked by
-=PooFlowCoreProof.ProfileComposition.Prototype=.  RFC 45-85 remains the
+=YuanxuProof.ProfileComposition.Prototype=.  RFC 45-85 remains the
 owner of upstream POOF proof adoption; this proof module deliberately does not
 claim to replace it.
 
 ** Verification receipts
 
 | Verification surface | State | Receipt |
-| Local Lean module | =accepted= | =lake build PooFlowCoreProof.ProfileComposition.Prototype=: 26/26 jobs |
+| Local Lean module | =accepted= | =lake build YuanxuProof.ProfileComposition.Prototype=: 26/26 jobs |
 | Local Lean closure | =accepted= | =lake build=: 99/99 jobs |
 | AXLE independent declaration check | =accepted= | Request =04cc0a34-76a5-472e-8878-47ecb2601cae=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
 | AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =6d13abb4-0a36-4b2d-bd41-763204559767= cannot resolve local module prefix =PooFlowProof= |

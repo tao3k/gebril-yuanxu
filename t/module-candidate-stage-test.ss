@@ -3,13 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in "./module-publication-test" with-publication-source write-file)
-        (only-in :core/module-system/interface poo-flow-load-modules)
-        (only-in :core/module-system/source/reader module-publication-reader)
-        (only-in :core/module-system/source/directory module-directory-context)
-        (only-in :core/module-system/source/admission
-                 module-source-read poo-flow-default-module-style-policy
+        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/directory module-directory-context)
+        (only-in :yuanxu/module-system/source/admission
+                 module-source-read yuanxu-default-module-style-policy
                  current-module-source-observer call-with-module-source-read-cache)
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-candidate-stage-test with-other-source)
 
 ;; Core qualification scaffolding only; authors retain the ordinary fixture.
@@ -25,14 +25,14 @@
         "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
       (setup root first other)
       (def init (path-expand "init.ss" root))
-      (def view (poo-flow-load-modules
+      (def view (yuanxu-load-modules
                   (if (file-exists? init) init (path-expand "modules" root))))
       (def locate (.get view context locate))
       (body root (locate 'custom/example) (locate 'custom/other) view))))
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
-    (poo-flow-test-case "SDK enrollment follows first closure discovery, not repeated imports"
+    (yuanxu-test-case "SDK enrollment follows first closure discovery, not repeated imports"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root first other view)
@@ -61,7 +61,7 @@
             (write-file (path-expand "modules/custom/example/config.ss" root)
               "(def Greeting 42) (export Greeting)")
             (check-exception (.call reader admit-current) error?)))))
-    (poo-flow-test-case "unrelated SourceRefs do not enlarge actual candidate filesystem work"
+    (yuanxu-test-case "unrelated SourceRefs do not enlarge actual candidate filesystem work"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root _first _other _view)
@@ -95,7 +95,7 @@
           (check-equal? (> local-before 0) #t)
           (check-equal? local-after local-before)
           (check-equal? (> full-after full-before) #t))))
-    (poo-flow-test-case "candidate location checks actual support; full commit rejects a changed prior SourceRef"
+    (yuanxu-test-case "candidate location checks actual support; full commit rejects a changed prior SourceRef"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (_root first _other view)
@@ -109,7 +109,7 @@
           (check-equal? (.call context candidate-current? generation 'custom/other) #t)
           (check-equal? (.call context candidate-current? generation 'custom/example) #f)
           (check-equal? (.call context current? generation) #f))))
-    (poo-flow-test-case "cached snapshots still validate actual path kinds before full namespace commit"
+    (yuanxu-test-case "cached snapshots still validate actual path kinds before full namespace commit"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root _first _other view)
@@ -123,7 +123,7 @@
           (delete-file (path-expand "modules/custom/other/interface.ss" root))
           (check-equal? (.call context candidate-current? generation 'custom/other) #f)
           (check-equal? (.call context current? generation) #f))))
-    (poo-flow-test-case "source discovery is inert and actual role execution remains on demand"
+    (yuanxu-test-case "source discovery is inert and actual role execution remains on demand"
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "config.ss" first)
@@ -140,7 +140,7 @@
           (check-equal? (eq? (cadr result) (.get (caddr result) candidate)) #t)
           (check-equal? (.get (cadr result) identity) 'custom/example)
           (.call reader admit-current))))
-    (poo-flow-test-case "foreign source effects remain tentative and fail the complete final boundary"
+    (yuanxu-test-case "foreign source effects remain tentative and fail the complete final boundary"
       (with-other-source
         (lambda (_root first other)
           (write-file (path-expand "config.ss" other)
@@ -157,7 +157,7 @@
           ;; A local receipt is not authority to publish the selected Graph.
           (check-exception (.call reader admit-current) error?)
           (check-equal? (.get (cadr initial) identity) 'custom/example))))
-    (poo-flow-test-case "open Context calls have complete before and sticky after guards"
+    (yuanxu-test-case "open Context calls have complete before and sticky after guards"
       (for-each
         (lambda (when-change)
           (with-other-source
@@ -181,13 +181,13 @@
                 (.call reader read-candidate (lambda () other) 'custom/other Open) error?)
               (check-equal? calls (if (eq? when-change 'before) 0 1)))))
         '(before after)))
-    (poo-flow-test-case "a replaced source policy does not inherit candidate operation support"
+    (yuanxu-test-case "a replaced source policy does not inherit candidate operation support"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root first other view)
           (def reader (module-publication-reader))
           (.call reader read-candidate (lambda () first) 'custom/example (.get view context))
-          (def policy poo-flow-default-module-style-policy)
+          (def policy yuanxu-default-module-style-policy)
           (def validate (.get policy validate))
           (def calls 0)
           (dynamic-wind

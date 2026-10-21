@@ -72,7 +72,7 @@ No directory Loader adapter is connected by this migration.
 Core, POO Flow and each contributing repository own their module directory and
 init declaration. The shared Module System specifies one publication and
 selection protocol: a repository exports its collection through its own
-interface; =poo-flow-load-modules= consumes that declared collection. No parent
+interface; =yuanxu-load-modules= consumes that declared collection. No parent
 repository copies another repository's module implementation or maintains a
 second per-file catalog. JSON Schema is a Core-provided module under
 =modules/json-schema/=; generic schema/contract machinery remains under the

@@ -179,7 +179,7 @@ required counterexamples; the acceptance controls prevent vacuous rejection.
 Earlier backend readiness timeouts are retained as failed infrastructure
 attempts, not model counterexamples. The backend limits were not changed.
 
-Lean's [[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately proves arbitrary-value functional laws:
+Lean's [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately proves arbitrary-value functional laws:
 
 - =closed_carrier_admission_is_one_check=;
 - =refused_carrier_cannot_reach_hook=;
@@ -269,7 +269,7 @@ just test-file t/module-testing-isolation-test.ss true
 just test-file t/execution-cancellation-test.ss true
 python3 dev/proofs/quint/check.py --case-prefix CarrierAdmission --typecheck-scope selected --receipt ../.data/qualification/carrier-admission.scm
 cd dev/proofs/lean
-lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
 Run Scheme cases serially in the locked source environment. Preserve raw

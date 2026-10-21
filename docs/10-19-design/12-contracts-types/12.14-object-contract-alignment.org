@@ -84,20 +84,20 @@ still requires immutable references and consumer-owned revision policy.
 
 This is maintainers' design code using existing API names, not installed domain
 definitions. AWS schemas come from the acquired Terraform AWS provider export,
-through the existing poo-flow-opentofu-block->schema conversion. They are not
+through the existing yuanxu-opentofu-block->schema conversion. They are not
 handwritten replacements for the full provider schema. The current executable
 source example is [[file:../../../t/json-schema-aws-value-contract-test.ss][the opt-in AWS value-contract test]].
 
 #+begin_src scheme
 ;; Domain-library factory; provider-export is an already acquired export value.
 (def (aws-resource-contract provider-export resource-name)
-  (def (ref value key) (poo-flow-contract-object-ref value key #f))
+  (def (ref value key) (yuanxu-contract-object-ref value key #f))
   (def provider
     (ref (ref provider-export 'provider_schemas)
          'registry.terraform.io/hashicorp/aws))
   (def resource (ref (ref provider 'resource_schemas) resource-name))
   (schema-value-contract resource-name
-    (poo-flow-opentofu-block->schema (ref resource 'block))))
+    (yuanxu-opentofu-block->schema (ref resource 'block))))
 
 (def VpcInput (aws-resource-contract provider-export 'aws_vpc))
 (def InstanceInput (aws-resource-contract provider-export 'aws_instance))
@@ -229,7 +229,7 @@ admission -> publication recheck. The source-level shape is:
 ;; association; current automatic resolution is not implemented.
 (def (admit-aws admission-descriptor platform-context candidate)
   (def checked (validate AwsProfileContract candidate))
-  (poo-flow-contract-admit admission-descriptor checked platform-context))
+  (yuanxu-contract-admit admission-descriptor checked platform-context))
 #+end_src
 
 This three-line composition alone does not prove complete evidence binding.

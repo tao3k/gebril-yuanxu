@@ -149,7 +149,7 @@ is invented by the test or requested from the user.
 
 * Formal correspondence
 
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataRoute.lean][MetadataRoute.lean]] binds the QNT source digest and reuses the existing
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean][MetadataRoute.lean]] binds the QNT source digest and reuses the existing
 LeanPoo-backed admission models. Its laws cover the full route comparison,
 the nested-hash and instance-cache gaps, the conditional closed direct call,
 entry-only staleness, equal endpoints with changed history, transient-projection

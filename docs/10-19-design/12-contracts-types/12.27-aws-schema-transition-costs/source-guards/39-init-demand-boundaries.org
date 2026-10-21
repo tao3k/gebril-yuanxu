@@ -32,7 +32,7 @@ invoke their existing implementations. The public init surface is unchanged.
 
 The hygienic init expansion ends in =(void)=. Its internal =defvalues= must not
 become the seven-valued result of the native source module's runtime promise.
-This matters for an interpreted module containing only import and =poo-flow!=.
+This matters for an interpreted module containing only import and =yuanxu!=.
 No user binding, runner or public syntax is added.
 
 ** Enumerating a namespace

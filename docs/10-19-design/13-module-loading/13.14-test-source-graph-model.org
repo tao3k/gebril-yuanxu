@@ -13,7 +13,7 @@ The implementation boundary is in
 [[file:../../../module-system/building/test-projection.ss][test-projection.ss]] and
 [[file:../../../module-system/building/interface.ss][building/interface.ss]].
 The algorithm model belongs to
-[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission.lean]];
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission.lean]];
 the finite transition model is
 [[file:../../../dev/proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission.qnt]].
 This extends the existing proof projects and their check catalog. It introduces
@@ -133,7 +133,7 @@ markers. The final narrow gate also checks the exact missing-requirement diagnos
 Typecheck the Quint source with =quint typecheck dev/proofs/quint/TestSourceAdmission.qnt=.
 The existing proof checker includes its positive case and four named mutants;
 the Lean aggregate imports the new module. Focused Lean verification is
-=lake env lean PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean= from
+=lake env lean YuanxuProof/ModuleSystem/Graph/TestAdmission.lean= from
 =dev/proofs/lean/=. This turn does not claim a complete aggregate proof/CI run.
 
 The final focused Quint/TLC run completed the entire finite state space:

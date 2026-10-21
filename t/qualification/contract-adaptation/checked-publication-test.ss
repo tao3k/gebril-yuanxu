@@ -7,9 +7,9 @@
         (only-in :clan/poo/type String Symbol)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :core/modules/json-schema/contracts
-        (only-in :core/admission/publication AdmissionPublication.)
-        (only-in :core/types PooFlowContract. poo-flow-classification-evidence))
+        :yuanxu/modules/json-schema/contracts
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence))
 (export checked-publication-test test-cleanup!
         make-scenario make-admission allow
         WebContract ConfigContract ScenarioContract)
@@ -88,14 +88,14 @@
         (lambda (candidate)
           (vector-set! count 0 (+ 1 (vector-ref count 0)))
           (previous candidate)))))
-  (.def (descriptor @ PooFlowContract.)
+  (.def (descriptor @ YuanxuContract.)
     identity: 'aws/scenario-admission
     value-contract: watched
     .classify:
     (lambda (candidate context)
       (vector-set! observed 0 candidate)
       (def accepted (policy candidate context))
-      (poo-flow-classification-evidence 'aws/context candidate accepted
+      (yuanxu-classification-evidence 'aws/context candidate accepted
         (if accepted '() (list (.o kind: 'policy-refused))) context)))
   (values descriptor watched count observed))
 

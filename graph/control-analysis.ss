@@ -6,17 +6,17 @@
 ;;; Boundary: public graph control analysis facade.
 ;;; Invariant: keep the stable import path light; implementation lives in control-core.
 
-(import :core/graph/control-core)
+(import :yuanxu/graph/control-core)
 
-(export poo-flow-graph-entry-ids
-        poo-flow-graph-finish-ids
-        poo-flow-graph-conditional-edge-pairs
-        poo-flow-graph-loop-edge-pairs
-        poo-flow-graph-undeclared-edge-pairs
-        poo-flow-graph-unreachable-ids
-        poo-flow-graph-dead-end-ids
-        poo-flow-graph-finish-reachable-ids
-        poo-flow-graph-branch-targets-declared?
-        poo-flow-graph-finish-total?
-        poo-flow-graph-control-diagnostics
-        poo-flow-graph-control-analysis-receipt)
+(export yuanxu-graph-entry-ids
+        yuanxu-graph-finish-ids
+        yuanxu-graph-conditional-edge-pairs
+        yuanxu-graph-loop-edge-pairs
+        yuanxu-graph-undeclared-edge-pairs
+        yuanxu-graph-unreachable-ids
+        yuanxu-graph-dead-end-ids
+        yuanxu-graph-finish-reachable-ids
+        yuanxu-graph-branch-targets-declared?
+        yuanxu-graph-finish-total?
+        yuanxu-graph-control-diagnostics
+        yuanxu-graph-control-analysis-receipt)

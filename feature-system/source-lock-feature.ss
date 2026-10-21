@@ -10,7 +10,7 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/hash/misc hash-key? hash-put! hash-ref)
         (only-in :std/encoding/hex hex-encode)
-        :core/feature-system/model)
+        :yuanxu/feature-system/model)
 
 (export +sources-lock-feature-id+
         sources-lock-feature
@@ -39,17 +39,17 @@
 ;;; Public declaration and generated lock prototypes intentionally read like
 ;;; data.  Their methods are inherited from SourcesLock. below.
 (.def SourceReference.
-  (kind 'poo-flow.source-reference.v1)
+  (kind 'yuanxu.source-reference.v1)
   (identity #f) (path #f) (canonical-uri #f) (exact-version #f)
   (representation #f) (metadata '()))
 
 (.def SourceLockEntry.
-  (kind 'poo-flow.source-lock-entry.v1)
+  (kind 'yuanxu.source-lock-entry.v1)
   (identity #f) (path #f) (canonical-uri #f) (exact-version #f)
   (representation #f) (digest #f) (size-bytes #f) (metadata '()))
 
 (.def SourcesLock.
-  (kind 'poo-flow.sources-lock.v1)
+  (kind 'yuanxu.sources-lock.v1)
   (schema-version 1)
   (feature-id +sources-lock-feature-id+)
   (lock-id #f) (revision #f) (digest #f) (entries '()) (metadata '())
@@ -76,7 +76,7 @@
   (source-lock-payload-digest
    (call-with-output-string
     (lambda (port)
-      (write (list 'poo-flow.sources-lock.v1 lock-id-value revision-value
+      (write (list 'yuanxu.sources-lock.v1 lock-id-value revision-value
                    (map source-lock-entry-row entry-values))
              port)))))
 
@@ -116,7 +116,7 @@
              (verified-value
               (and (string=? actual-digest-value expected-digest-value)
                    (= actual-size-value expected-size-value))))
-        (.o kind: 'poo-flow.source-lock-verification-receipt.v1
+        (.o kind: 'yuanxu.source-lock-verification-receipt.v1
             lock-id: lock-id-value lock-digest: lock-digest-value
             source-identity: source-identity-value
             source-path: source-path-value
@@ -190,7 +190,7 @@
        (with-catch
         (lambda (_failure) #f)
         (lambda ()
-          (and (eq? (.ref value 'kind) 'poo-flow.sources-lock.v1)
+          (and (eq? (.ref value 'kind) 'yuanxu.sources-lock.v1)
                (.ref value '.valid?))))))
 
 (def (sources-lock-ref lock identity)

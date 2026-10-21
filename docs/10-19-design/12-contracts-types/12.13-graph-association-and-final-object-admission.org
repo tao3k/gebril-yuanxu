@@ -248,9 +248,9 @@ No parent acceptance receipt authorizes a child.
     (lambda (row)
       (def subject (.get row subject))
       (def descriptor (.get row contract))
-      (def evidence (poo-flow-contract-admit descriptor subject context))
+      (def evidence (yuanxu-contract-admit descriptor subject context))
       (unless
-        (and (poo-flow-validation-evidence-accepted? evidence)
+        (and (yuanxu-validation-evidence-accepted? evidence)
              (eq? subject (.get evidence candidate))
              (eq? descriptor (.get evidence admission-contract))
              (eq? context (.get evidence context)))
@@ -259,14 +259,14 @@ No parent acceptance receipt authorizes a child.
     rows))
 
 (def (resolved-composition-contract final rows)
-  (.cc PooFlowContract.
+  (.cc YuanxuContract.
     identity: 'module/selected-composition
     .classify:
     (lambda (candidate context)
       (unless (eq? candidate final)
         (error "Admission resolution belongs to another object"))
       (let (evidence (admit-resolved-rows rows context))
-        (.cc (poo-flow-classification-evidence
+        (.cc (yuanxu-classification-evidence
                'module/selected-composition candidate #t '() context)
           children: evidence)))))
 #+end_src

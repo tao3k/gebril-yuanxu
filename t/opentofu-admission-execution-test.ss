@@ -4,15 +4,15 @@
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
-        (only-in :core/modules/opentofu/execution opentofu-execution)
+        (only-in :yuanxu/modules/opentofu/execution opentofu-execution)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/encoding/json read-json)
         (only-in :std/list/walist waref)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :core/types poo-flow-validation-evidence-accepted?)
-        (only-in :core/module-system/source/link poo-flow-load-modules)
-        (only-in :core/module-system/source/admission module-source-read)
-        (only-in :core/ops/objects ProcessScript.))
+        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/ops/objects ProcessScript.))
 (export opentofu-admission-execution-test test-cleanup!)
 
 (def completed #f)
@@ -90,12 +90,12 @@
       (copy-module (path-expand "scenarios/null" core-root) null-directory)
       (copy-module (path-expand "scenarios/aws-validation" core-root) validation-directory)
       (write-text (path-expand "gerbil.pkg" project)
-        "(package: qualification prelude: :core/module-system/source/module-prelude)\n")
+        "(package: qualification prelude: :yuanxu/module-system/source/module-prelude)\n")
       (def init (path-expand "init.ss" project))
-      (write-text init "(poo-flow! mode: explicit source: \"./modules\" (null) (aws-validation))\n")
+      (write-text init "(yuanxu! mode: explicit source: \"./modules\" (null) (aws-validation))\n")
       (select-provider! (path-expand "config.ss" null-directory) (path-expand "null" package-root))
       (select-provider! (path-expand "config.ss" validation-directory) (path-expand "child" package-root))
-      (def execution-view (poo-flow-load-modules init))
+      (def execution-view (yuanxu-load-modules init))
 
       ;; Actual Scenario sources own defaults; the framework owns rendering and Ops.
       (def null-work (path-expand "null-work" root))
@@ -110,7 +110,7 @@
       (.def (Hello @ Null) message: "hello from the user ${literal} %{literal}")
       (def executed (.call Hello .run null-work))
       (assert 'null-input-admitted
-        (poo-flow-validation-evidence-accepted? (.get executed evidence)))
+        (yuanxu-validation-evidence-accepted? (.get executed evidence)))
       (assert 'null-exact-effective-input
         (eq? (.get executed value resource) (.get Hello resource)))
       (assert 'local-exec-actually-ran
@@ -135,7 +135,7 @@
 
       ;; Fault injection only: change a real selected source after apply returns.
       ;; The maintained task still performs the actual apply through Ops.
-      (def changing-view (poo-flow-load-modules init))
+      (def changing-view (yuanxu-load-modules init))
       (def Changing (opentofu-execution changing-view 'null 'Scenario
                        (list (path-expand "engine/bin/tofu" package-root))))
       (def changed-work (path-expand "null-source-change" root))

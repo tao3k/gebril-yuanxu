@@ -4,21 +4,21 @@
 
 (import :std/test
         :clan/poo/object
-        :core/composition/roles
-        (only-in :core/observability/testing-case poo-flow-test-case))
+        :yuanxu/composition/roles
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 
 (export composition-roles-test)
 
 (def composition-roles-test
   (test-suite "Shared native role composition"
-    (poo-flow-test-case "constant overlays retain native leftmost precedence"
+    (yuanxu-test-case "constant overlays retain native leftmost precedence"
       (let* ((left (object<-alist '((value . left))))
              (right (object<-alist '((value . right) (other . retained))))
              (overlay (role-instance-overlay left right))
              (mixed (role-compose left right)))
         (check (.get overlay value) => (.get mixed value))
         (check (.get overlay other) => 'retained)))
-    (poo-flow-test-case "computed slots are refused by the constant fast lane"
+    (yuanxu-test-case "computed slots are refused by the constant fast lane"
       (let (computed (.o value: 1 result: (+ value 1)))
         (check (role-instance-overlay-compatible? computed) => #f)
         (check-exception (role-instance-overlay computed) exception?)

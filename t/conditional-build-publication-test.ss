@@ -2,14 +2,14 @@
 (import :std/test :clan/poo/object
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source)
-        (only-in :core/module-system/source/admission module-source-read)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
         "./qualification/build-publication/conditional-commit")
 (export conditional-build-publication-test)
 (def conditional-build-publication-test
   (test-suite "Conditional selected publication: serial owner boundary"
-    (poo-flow-test-fixture "admitted child commits exact plan once, parent and unused branch stay isolated"
+    (yuanxu-test-fixture "admitted child commits exact plan once, parent and unused branch stay isolated"
       (fixture ServicesFixture)
       (with-slots (selection publication) fixture
         (def parent (.get publication value))
@@ -26,7 +26,7 @@
         (check-equal? (length (.get publication context contributions)) 2)
         (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
         (check-exception (.call owner commit token) Error?)))
-    (poo-flow-test-fixture "changed head and ABA refuse without extra currentness callbacks"
+    (yuanxu-test-fixture "changed head and ABA refuse without extra currentness callbacks"
       (fixture ServicesFixture)
       (with-slots (selection publication) fixture
         (def parent (.get publication value))
@@ -48,7 +48,7 @@
         (check-exception (.call owner commit fresh) Error?)
         (check-exception (.call owner prepare Release) Error?)
         (check-exception (.call owner commit (.o)) Error?)))
-    (poo-flow-test-fixture "external file writes are not fenced by a serial head comparison"
+    (yuanxu-test-fixture "external file writes are not fenced by a serial head comparison"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -65,7 +65,7 @@
         (def rejected (with-catch values (cut .call owner prepare Release)))
         (check-equal? (metadata.failure? rejected) #t)
         (check-equal? (metadata.failure-phase rejected) 'source)))
-    (poo-flow-test-fixture "both conflicting requirements still block preparation"
+    (yuanxu-test-fixture "both conflicting requirements still block preparation"
       (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
       (with-slots (selection publication) fixture
         (def parent (.get publication value))

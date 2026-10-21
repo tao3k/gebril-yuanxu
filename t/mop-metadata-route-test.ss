@@ -4,7 +4,7 @@
         (only-in :gerbil/runtime/table &raw-table-hash-set! &raw-table-test-set!)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/mop make-slot-read slot-read-key)
-        (only-in :core/observability/testing-case poo-flow-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/mop-state/checker-origin" recorded)
         "qualification/mop-state/metadata-route.ss")
 (export mop-metadata-route-test test-cleanup!)
@@ -21,7 +21,7 @@
     (recorded (cut .get Root port)))))
 (def mop-metadata-route-test
  (test-suite "Selected metadata lookup route, not a production read-only seal"
-  (poo-flow-test-case "cold and warm native reads pass without forcing an unselected getter"
+  (yuanxu-test-case "cold and warm native reads pass without forcing an unselected getter"
     (def calls 0)
     (.def Root port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))
@@ -30,7 +30,7 @@
     (check-equal? (guarded-current? (port-read Root)) #t)
     (check-equal? calls 1)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "modified wrapper ref is refused without invoking it"
+  (yuanxu-test-case "modified wrapper ref is refused without invoking it"
     (.def Root port: 5432)
     (def read (port-read Root))
     (def calls 0)
@@ -39,7 +39,7 @@
     (refuses "changed metadata ref" (cut guarded-current? read))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "fixed ref does not hide a custom backend hash or equality function"
+  (yuanxu-test-case "fixed ref does not hide a custom backend hash or equality function"
     (.def Root port: 5432)
     (def read (port-read Root))
     (def backend (runtime.slot-ref (object-%reads Root) 'object))
@@ -56,7 +56,7 @@
     (refuses "foreign metadata backend" (cut guarded-current? read))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "instance table lookup is protected independently of the reads table"
+  (yuanxu-test-case "instance table lookup is protected independently of the reads table"
     (.def Root port: 5432)
     (def read (port-read Root))
     (def calls 0)
@@ -65,7 +65,7 @@
     (refuses "changed metadata ref" (cut guarded-current? read))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "an entry-only check does not protect a later call, but a fresh direct guard refuses"
+  (yuanxu-test-case "an entry-only check does not protect a later call, but a fresh direct guard refuses"
     (.def Root port: 5432)
     (def read (port-read Root))
     (def calls 0)
@@ -77,7 +77,7 @@
     (refuses "changed metadata ref" (cut guarded-current? read))
     (check-equal? calls 1)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "restoring a method does not erase the side effect between endpoint checks"
+  (yuanxu-test-case "restoring a method does not erase the side effect between endpoint checks"
     (.def Root port: 5432)
     (.def Victim port: 5432)
     (def read (port-read Root))
@@ -93,7 +93,7 @@
     (check-equal? (require-read-route! read) #t)
     (check-equal? (.get Victim port) 5440)
     (set! completed (+ completed 1)))
-  (poo-flow-test-case "route checks preserve real transient misses but do not authenticate forged misses"
+  (yuanxu-test-case "route checks preserve real transient misses but do not authenticate forged misses"
     (.def Root port: 5432)
     (.get Root port)
     (def roots (recorded (cut .ref/cached Root 'missing (lambda () #f))))

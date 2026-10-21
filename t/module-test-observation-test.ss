@@ -5,16 +5,16 @@
         (only-in :std/source this-source-file)
         (only-in :clan/poo/mop call-with-slot-read-observer)
         (only-in :clan/poo/slot-observation slot-read-key)
-        (only-in :core/module-system/building/test-observation ModuleTestingProfile.)
-        (only-in :core/poo-clos/objects poo-clos-generic-function poo-clos-method
+        (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
+        (only-in :yuanxu/poo-clos/objects poo-clos-generic-function poo-clos-method
                  poo-clos-any-specializer make-effective-method make-invocation-frame)
-        (only-in :core/module-system/source/admission current-module-source-observer
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
-        (only-in :core/observability/testing-case
-                 poo-flow-default-testing-case-profile poo-flow-test-observe
-                 poo-flow-test-checkpoint)
-        (only-in :core/observability/testing-fixture
-                 poo-flow-test-fixture with-poo-flow-fixture))
+        (only-in :yuanxu/observability/testing-case
+                 yuanxu-default-testing-case-profile yuanxu-test-observe
+                 yuanxu-test-checkpoint)
+        (only-in :yuanxu/observability/testing-fixture
+                 yuanxu-test-fixture with-yuanxu-fixture))
 (export module-test-observation-test)
 
 (def released 0)
@@ -26,7 +26,7 @@
 
 (def module-test-observation-test
   (test-suite "Case-owned module observation"
-    (poo-flow-test-fixture "the hygienic policy expression is evaluated once"
+    (yuanxu-test-fixture "the hygienic policy expression is evaluated once"
       profile: (begin (set! policy-evaluations (+ policy-evaluations 1)) Observed)
       (resource Resource)
       (def active-profile 'author-value)
@@ -35,21 +35,21 @@
       (set-box! (current-module-process-trace-budget) 0)
       (check-equal? active-profile 'author-value)
       (check-equal? policy-evaluations 1))
-    (poo-flow-test-fixture "source events contribute only scalar categories"
+    (yuanxu-test-fixture "source events contribute only scalar categories"
       profile: Observed (resource Resource)
       (check-equal? (unbox (current-module-process-trace-budget)) 4)
       (check-equal? (.get Observed heap-limit-bytes) 2147483648)
       (check-equal? (.get Observed live-growth-limit-bytes) 1073741824)
-      (check-equal? (poo-flow-test-observe 'compiler-demand 0) 0)
+      (check-equal? (yuanxu-test-observe 'compiler-demand 0) 0)
       ;; This test-only payload must neither become a key nor reach output.
       ((current-module-source-observer) (list 'compiler-demand (.o secret: 'probe)) 1)
-      (check-equal? (poo-flow-test-observe 'compiler-demand 0) 1)
+      (check-equal? (yuanxu-test-observe 'compiler-demand 0) 1)
       ((current-module-source-observer) 'file-reads 3)
-      (check-equal? (poo-flow-test-observe 'file-reads 0) 3)
+      (check-equal? (yuanxu-test-observe 'file-reads 0) 3)
       ((current-module-source-observer)
         '(nix-process-observation (nix-gc-root-requests . 4) (nix-store-info-requests . 2)) 1)
-      (check-equal? (poo-flow-test-observe 'nix-gc-root-requests 0) 4)
-      (check-equal? (poo-flow-test-observe 'nix-store-info-requests 0) 2)
+      (check-equal? (yuanxu-test-observe 'nix-gc-root-requests 0) 4)
+      (check-equal? (yuanxu-test-observe 'nix-store-info-requests 0) 2)
         ;; Distinct modules must not collapse to the same role basename.
         (def root (path-expand ".." (path-directory (this-source-file))))
         (def labels
@@ -66,7 +66,7 @@
         (check-equal? (and (string-contains labels "modules/funflow/func.ss") #t) #t)
         (check-equal? (string-contains labels (path-normalize root)) #f)
       ((current-module-source-observer) 'check-seconds 0.000002)
-      (check-equal? (poo-flow-test-observe 'check-microseconds 0) 2)
+      (check-equal? (yuanxu-test-observe 'check-microseconds 0) 2)
       ;; Closed timing categories use existing scalar Case counters, and do
       ;; not retain the reader's syntax, token graph or compiled program.
       (for-each
@@ -74,7 +74,7 @@
           ((current-module-source-observer) (list (car keys) 'body) 1)
           ((current-module-source-observer) (list (cadr keys) 'body) 1)
           ;; Private span totals do not occupy the Case's domain categories.
-          (check-equal? (poo-flow-test-observe (caddr keys) 0) 0))
+          (check-equal? (yuanxu-test-observe (caddr keys) 0) 0))
         '((reader-compile-start reader-compile-end reader-compile-microseconds)
           (reader-eval-start reader-eval-end reader-eval-microseconds)
           (metadata-replay-start metadata-replay-end metadata-replay-microseconds)
@@ -83,14 +83,14 @@
           (reader-interface-start reader-interface-end reader-interface-microseconds)
           (reader-admission-start reader-admission-end reader-admission-microseconds)
           (reader-projection-start reader-projection-end reader-projection-microseconds)))
-      (check-equal? (.get (poo-flow-test-checkpoint 'selected) after phase) 'selected)
+      (check-equal? (.get (yuanxu-test-checkpoint 'selected) after phase) 'selected)
       (check-exception
         ((current-module-source-observer) (list 'reader-retention (cons 'bad (.o))) 1)
         error?))
-    (poo-flow-test-fixture "a new macro invocation has independent totals"
+    (yuanxu-test-fixture "a new macro invocation has independent totals"
       profile: Observed (resource Resource)
-      (check-equal? (poo-flow-test-observe 'compiler-demand 0) 0))
-    (poo-flow-test-fixture "read-width tracing preserves every native observer delivery"
+      (check-equal? (yuanxu-test-observe 'compiler-demand 0) 0))
+    (yuanxu-test-fixture "read-width tracing preserves every native observer delivery"
       profile: Observed (resource Resource)
       (def target (.o answer: 42))
       (check-equal? (.get target answer) 42)
@@ -108,7 +108,7 @@
       ;; inspect cached kind data but must not validate or activate these values.
       (def descriptors
         (map (lambda (n)
-               (.o kind: 'poo-flow.contract.validation-evidence
+               (.o kind: 'yuanxu.contract.validation-evidence
                    admission-contract: (error "observer forced Contract")
                    context: (error "observer forced Context")
                    ordinal: n)) (iota 128)))
@@ -166,7 +166,7 @@
                       (private-code-bodies . 0)) 1)
                   (let loop ((index 0))
                     (when (< index 64)
-                      (poo-flow-test-observe
+                      (yuanxu-test-observe
                         (string->symbol (string-append "work-" (number->string index))) 1)
                       (loop (+ index 1))))))))))
       (check-equal? (and (string-contains output "slot-read-summary deliveries=") #t) #t)
@@ -182,7 +182,7 @@
             (lambda ()
               (check-equal? (eq? previous (current-module-source-observer)) #t)
               (check-equal? (current-module-process-trace-budget) #f)
-              (check-equal? (poo-flow-test-observe 'file-reads 0) 0))))
+              (check-equal? (yuanxu-test-observe 'file-reads 0) 0))))
         (check-equal? (eq? previous (current-module-source-observer)) #t)))
     (test-case "physical reads retain owner, phase and effect-boundary attribution"
       (def output
@@ -215,13 +215,13 @@
       (check-exception
         (.call Observed .run Observed "deliberate failure"
           (lambda ()
-            (with-poo-flow-fixture (resource Resource)
+            (with-yuanxu-fixture (resource Resource)
               (error "deliberate body failure")))) error?)
       (check-equal? released (+ before 1))
       (check-equal? (eq? previous (current-module-source-observer)) #t)
       (check-equal? (current-module-process-trace-budget) #f)
-      (check-equal? (poo-flow-test-observe 'file-reads 0) 0))
-    (poo-flow-test-fixture "automatic observation contributes no domain slot reads"
+      (check-equal? (yuanxu-test-observe 'file-reads 0) 0))
+    (yuanxu-test-fixture "automatic observation contributes no domain slot reads"
       profile: Observed (resource Resource)
       (def reads '())
       (call-with-slot-read-observer
@@ -234,12 +234,12 @@
           ((current-module-source-observer) '(native-source-import-start "inner.ss") 1)
           ((current-module-source-observer) '(native-source-import-end "inner.ss") 1)
           ;; Only the completed outer span contributes time, not both edges.
-          (check-equal? (poo-flow-test-observe 'import-microseconds 0) 0)
+          (check-equal? (yuanxu-test-observe 'import-microseconds 0) 0)
           ((current-module-source-observer) '(native-source-import-end "outer.ss") 1)
           ((current-module-source-observer) '(reader-declaration (bindings . 1) (imports . 0)) 1)))
       (check-equal? reads '())
-      (check-equal? (>= (poo-flow-test-observe 'import-microseconds 0) 0) #t)
-      (check-equal? (>= (poo-flow-test-observe 'import-cpu-microseconds 0) 0) #t))
+      (check-equal? (>= (yuanxu-test-observe 'import-microseconds 0) 0) #t)
+      (check-equal? (>= (yuanxu-test-observe 'import-cpu-microseconds 0) 0) #t))
     (test-case "native Ops flags follow the shared default heap"
-      (check-equal? (.get poo-flow-default-testing-case-profile heap-limit-bytes)
+      (check-equal? (.get yuanxu-default-testing-case-profile heap-limit-bytes)
                     2147483648))))

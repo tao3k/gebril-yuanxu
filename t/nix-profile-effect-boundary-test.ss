@@ -5,12 +5,12 @@
         (only-in :std/encoding/json write-json read-json)
         (only-in :std/list/walist waref)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :core/ops/objects ProcessScript.)
-        (only-in :core/ops/func run-script)
-        (only-in :core/modules/nix/objects NixSource.)
-        (only-in :core/module-system/source/admission module-source-admit-current! module-source-read)
-        (only-in :core/observability/testing-fixture poo-flow-test-fixture)
-        (only-in :core/t/qualification/service-publication/fixtures ServicesFixture write-source))
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/modules/nix/objects NixSource.)
+        (only-in :yuanxu/module-system/source/admission module-source-admit-current! module-source-read)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source))
 (export nix-profile-effect-boundary-test)
 
 ;; Only the admitted, selected domain plan is packaged. Not all module fields.
@@ -38,7 +38,7 @@
 
 (def nix-profile-effect-boundary-test
   (test-suite "Real Nix profile persistence is not conditional deployment"
-    (poo-flow-test-fixture "fresh process recovery and stale saved effects use immutable releases"
+    (yuanxu-test-fixture "fresh process recovery and stale saved effects use immutable releases"
       (fixture ServicesFixture)
       (with-slots (root selection publication) fixture
         (def parent (.get publication value))
@@ -81,7 +81,7 @@
         (check-equal? (waref (profile-plan profile) "gitea" #f) 5433)
         (check-equal? (.get cached postgresql port) 5432)
         (check-equal? (.get next plan postgresql port) 5433)))
-    (poo-flow-test-fixture "real conflicting domain requirements still prevent admission"
+    (yuanxu-test-fixture "real conflicting domain requirements still prevent admission"
       (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
       (with-slots (publication) fixture
         (def parent (.get publication value))

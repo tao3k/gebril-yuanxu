@@ -3,11 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :clan/poo/object .o .ref)
         (only-in :std/error Error?)
         (only-in :std/test check-equal? check-exception test-suite)
-        :core/feature-system/interface)
+        :yuanxu/feature-system/interface)
 
 (export feature-system-sources-lock-test)
 
@@ -29,7 +29,7 @@
 (def feature-system-sources-lock-test
   (test-suite
    "POO-native Sources Lock Feature"
-   (poo-flow-test-case
+   (yuanxu-test-case
     "publishes one reusable Feature and an indexed immutable lock"
     (check-equal? (.ref sources-lock-feature 'feature-id) 'sources-lock)
     (check-equal? (sources-lock? example-sources-lock) #t)
@@ -40,7 +40,7 @@
                          example-sources-lock "example/source")
                         'path)
                   "sources/example.txt"))
-   (poo-flow-test-case
+   (yuanxu-test-case
     "verifies bytes against both digest and byte count"
     (let (receipt
           (source-lock-verify-payload
@@ -57,7 +57,7 @@
      (require-source-lock-payload
       example-sources-lock "example/source" "changed")
      Error?))
-   (poo-flow-test-case
+   (yuanxu-test-case
     "rejects duplicate identities while constructing its private index"
     (check-exception
      (let (_duplicate-lock
@@ -67,7 +67,7 @@
            (lambda (_path) locked-payload)))
        #f)
      Error?))
-   (poo-flow-test-case
+   (yuanxu-test-case
     "canonicalizes discovery order into one digest and generated module"
     (let* ((second
             (.o (:: @ SourceReference.)
@@ -98,7 +98,7 @@
        (map (lambda (entry) (.ref entry 'identity)) (.ref left 'entries))
        '("another/source" "example/source"))
       (check-equal? left-source right-source)))
-   (poo-flow-test-case
+   (yuanxu-test-case
     "locks native bytevector sources without a text conversion boundary"
     (let* ((payload #u8(0 1 2 127 128 255))
            (source

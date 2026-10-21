@@ -16,13 +16,13 @@ or leak fails locally.  Build memory and test-runtime memory are different
 concerns: parallel compilation may use available machine resources, while each
 test execution must retain its declared safety envelope.
 
-New Core unit cases use =poo-flow-test-case= from
-=:core/observability/testing-case=; product tests may use their own public
+New Core unit cases use =yuanxu-test-case= from
+=:yuanxu/observability/testing-case=; product tests may use their own public
 testing facade without making Core depend on it.
 This hygienic declaration expands to native =std/test=; it adds the inherited
 POO Case Profile without changing =gxtest= assertions or reporting.  A Case
-that needs a different budget uses =poo-flow-test-case/with= and a native POO
-object extending =poo-flow-testing-case-profile-prototype=.  Do not encode a
+that needs a different budget uses =yuanxu-test-case/with= and a native POO
+object extending =yuanxu-testing-case-profile-prototype=.  Do not encode a
 second test runner or duplicate the Testing Interface's managed-heap default.
 The Case monitor may interrupt a non-returning native harness thread and report its span;
 its heap counters are process-wide, not a thread-local heap quota.  Native
@@ -46,11 +46,11 @@ ownership of that Core mechanism test into the Module's =tests/= directory.
 
 =modules/<name>/tests/= and =scenarios/<name>/tests/= exercise that owner's
 public configuration, Contracts and behavior. Use the existing declarative
-=poo-flow-test-case= or resource-owning =poo-flow-test-fixture= macros, which
+=yuanxu-test-case= or resource-owning =yuanxu-test-fixture= macros, which
 lower to the native std/test lifecycle. Testing macros are the declaration
 surface; a module's tests are not restricted to macro-expansion assertions.
-Core imports these macros from =:core/observability/testing-case= and
-=:core/observability/testing-fixture=, without depending on a product facade.
+Core imports these macros from =:yuanxu/observability/testing-case= and
+=:yuanxu/observability/testing-fixture=, without depending on a product facade.
 There is no parallel module test runner or repeated implementation test list.
 
 * Observability

@@ -3,10 +3,10 @@
 ;;; trusted release selection owns authorization. Not a new production API.
 (import :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :core/ops/func run-script)
-        (only-in :core/ops/config Config)
-        (only-in :core/module-system/source/admission module-source-type)
-        (only-in :core/module-system/building/artifacts
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/config Config)
+        (only-in :yuanxu/module-system/source/admission module-source-type)
+        (only-in :yuanxu/module-system/building/artifacts
           accept-build-artifact-handoff! admit-build-artifacts! invalidate-build-artifacts!))
 (export publish-store! restore-selected-store! store-add store-verify)
 (def (store-command arguments)
