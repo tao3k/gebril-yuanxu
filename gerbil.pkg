@@ -7,4 +7,4 @@
 (package:
  core
  depend:
- ("github.com/tao3k/gerbil-poo@0df023fd9e15192156935c971f0f1940028c5277"))
+ ("github.com/tao3k/gerbil-poo@8f605b91dbcac0df917ccbfc537d3a22f83b756e"))
