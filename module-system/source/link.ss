@@ -427,7 +427,7 @@
     ;; Slot caching belongs to this immutable generation. Consumers must call
     ;; admit-current before publishing/using a Graph; cached slots are not live IO.
     (def selection-value
-      (.o (:: result) generation: generation-value
+      (.o self: result generation: generation-value
         context: context-value
         sources-current: current!
         package-current: (and realization (.ref realization 'admit-current))
