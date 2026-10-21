@@ -101,7 +101,7 @@ admission. No AWS/Null-specific branch belongs in root discovery or orchestratio
 The Module interface declares its contribution once; users do not assemble the
 stages in either init or config.
 
-The previous proposed =project/build.ss= / =poo-flow-core-build(init,args)=
+The previous proposed =project/build.ss= / =yuanxu-build(init,args)=
 user entry has been removed from this design: it incorrectly made a root build
 wrapper a peer of Module-local configuration and build roles. Merely moving
 that wrapper into a Module would retain the wrong dependency direction.
@@ -143,13 +143,13 @@ adds =resource.null_resource.smoke=; init and build declarations stay unchanged.
 #+begin_src scheme
 ;; modules/app/infrastructure/build.ss -- TARGET automatic role wrapper
 ;; The maintained build-tool binding environment supplies these existing owners:
-;; NixFlakeSource. and poo-flow-core-opentofu-package-contribution.
+;; NixFlakeSource. and yuanxu-opentofu-package-contribution.
 (.def (ProviderArtifacts @ NixFlakeSource.)
   reference: "path:/srv/company/provider-packages"
   attribute: "lib.providerArtifacts")
 
 (def Build
-  (poo-flow-core-opentofu-package-contribution ProviderArtifacts))
+  (yuanxu-opentofu-package-contribution ProviderArtifacts))
 #+end_src
 
 The path names the maintainer's locked flake capability. It is not a Provider
@@ -256,7 +256,7 @@ uses the existing external-package contribution protocol:
   attribute: "lib.providerArtifacts")
 
 ;; Inside the existing interface declaration:
-(poo-flow-core-opentofu-package-contribution ProviderArtifacts)
+(yuanxu-opentofu-package-contribution ProviderArtifacts)
 #+end_src
 
 Ordinary config remains ordinary native objects:

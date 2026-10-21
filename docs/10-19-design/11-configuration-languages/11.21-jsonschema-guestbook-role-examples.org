@@ -22,7 +22,7 @@ PooFlowObjectContract. export rename remains pending independently. See the
 [[file:11.22-migrated-core-guestbook-chain.org][current chain audit]] for the exact distinction between existing calls and design.
 
 All Core-owned procedure bindings in the proposed code below use the target
-poo-flow-core- prefix. Their mechanisms may already exist under legacy names;
+yuanxu- prefix. Their mechanisms may already exist under legacy names;
 the renamed exports do not yet exist. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][current/target naming ledger]].
 Product yuanxu-load-modules is not a dependency of these role implementations.
 
@@ -42,7 +42,7 @@ a concrete proposed publication policy, not an existing compiler keyword.
        (equal? (.all-slots value) '(reject-diagnostics?))))
 
 (def SchemaConfigContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'json-schema/config schema-config? schema-no-obligations))
 #+end_src
 
@@ -61,25 +61,25 @@ Contract adaptation. No wrapper is added around validation or native admission.
 
 (def (compile-schema config-contract effective-config schema options)
   (let (config-evidence
-         (poo-flow-core-contract-admit config-contract effective-config #f))
-    (unless (poo-flow-core-validation-evidence-accepted? config-evidence)
+         (yuanxu-contract-admit config-contract effective-config #f))
+    (unless (yuanxu-validation-evidence-accepted? config-evidence)
       (error "invalid JsonSchema configuration" config-evidence)))
-  (let (artifact (poo-flow-core-json-schema->contract-artifact schema options))
-    (unless (poo-flow-core-json-schema-contract-artifact-valid? artifact)
+  (let (artifact (yuanxu-json-schema->contract-artifact schema options))
+    (unless (yuanxu-json-schema-contract-artifact-valid? artifact)
       (error "schema generation failed" artifact))
     (when (and (.get effective-config reject-diagnostics?)
-               (pair? (poo-flow-core-json-schema-contract-artifact-diagnostics artifact)))
+               (pair? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
       (error "schema publication requires diagnostic review" artifact))
     artifact))
 
 (def (schema-errors artifact candidate _context)
   (if (object? candidate)
-    (poo-flow-core-json-schema-object-contract-validation-diagnostics
-     (poo-flow-core-json-schema-contract-artifact-validate artifact candidate))
+    (yuanxu-json-schema-object-contract-validation-diagnostics
+     (yuanxu-json-schema-contract-artifact-validate artifact candidate))
     (list (.o kind: 'object-required))))
 
 (def (schema-contract artifact)
-  (.cc (poo-flow-core-json-schema-contract-artifact-object-contract artifact)
+  (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
        '.obligations (cut schema-errors artifact <> <>)))
 #+end_src
 
@@ -98,8 +98,8 @@ shape and schema coverage remain unexecuted adapter controls.
   config: #f
   compile: (cut compile-schema (.get types Config) config <> <>)
   contract: schema-contract
-  validate: poo-flow-core-json-schema-contract-artifact-validate
-  admit: poo-flow-core-contract-admit)
+  validate: yuanxu-json-schema-contract-artifact-validate
+  admit: yuanxu-contract-admit)
 #+end_src
 
 types and config are intentionally supplied once by the public assembly. compile
@@ -132,7 +132,7 @@ fallbacks are not copied into this config merely to populate the file.
         types: (.o Config: SchemaConfigContract)
         config: JsonSchemaDefaultConfig
         from-file:
-        (cut poo-flow-core-json-schema-from-file (.get types Config) config <>)))
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
   features: (.o))
 #+end_src
 
@@ -318,14 +318,14 @@ composes their results; it neither deploys resources nor calls a smoke check:
 #+begin_src scheme
 (def (guestbook-preview contracts candidate Kubernetes context)
   (let ((input-evidence
-          (poo-flow-core-contract-admit
+          (yuanxu-contract-admit
            (.get contracts ScenarioContract) candidate context)))
-    (unless (poo-flow-core-validation-evidence-accepted? input-evidence)
+    (unless (yuanxu-validation-evidence-accepted? input-evidence)
       (error "Guestbook input refused" input-evidence))
     (with-slots (project admit) Kubernetes
       (let* ((resources (project candidate context))
              (resource-evidence (admit resources context)))
-        (unless (poo-flow-core-validation-evidence-accepted? resource-evidence)
+        (unless (yuanxu-validation-evidence-accepted? resource-evidence)
           (error "Guestbook resources refused" resource-evidence))
         (.o status: 'admitted-preview
             candidate resources input-evidence resource-evidence)))))

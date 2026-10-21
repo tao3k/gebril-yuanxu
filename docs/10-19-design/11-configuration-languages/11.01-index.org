@@ -45,7 +45,7 @@ modules record actual issues, reflection, proposed responses and gates before
 multi-window/args implementation resumes. A more expressive language is not,
 by itself, evidence of a better infrastructure platform.
 
-This chapter is owned by poo-flow-core. It contains configuration expression,
+This chapter is owned by yuanxu. It contains configuration expression,
 contract/default views, native inheritance/refinement, module source organization,
 publication/selection, and design reasoning from ecosystem comparisons. The
 [[file:../../../module-system/design/README.org][Module System protocol documents]] and

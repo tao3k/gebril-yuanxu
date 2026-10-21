@@ -1,92 +1,49 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Yuanxu Namespace and Build Projection Ownership
+#+property: STATUS implemented-namespace-with-separate-validation-gates
 
-#+title: Core Namespace and Build Projection Ownership
-#+date: [2026-10-16]
-#+property: STATUS design-only-package-and-api-migration-pending
+* One package and one language entry
 
-* Distinguish repository, compiler namespace and semantic identity
+| Owner | Identity |
+|-------+----------|
+| Repository | tao3k/gebril-yuanxu |
+| Root Gerbil package | yuanxu |
+| Ordinary library import | :yuanxu/<owner>/<module> |
+| Language entry | :tao3k/yuanxu/prelude |
+| Language implementation | root prelude.ss |
+| Public function prefix | yuanxu- |
+| Object/Contract prefix where qualification is needed | Yuanxu |
+| Type fact projections | :yuanxu/object-types/facts |
 
-| Layer | Current verified state | Target ownership rule |
-|-------+------------------------+-----------------------|
-| Core repository | tao3k/poo-flow-core, checked out as core/ | Shared mechanisms maintained independently of product |
-| Core Gerbil package | gerbil.pkg declares core; imports use :yuanxu/... | Package poo-flow-core; imports :poo-flow-core/... |
-| Product Gerbil package | poo-flow | Product imports remain :poo-flow/... |
-| Core procedure names | Many migrated procedures retain poo-flow- | Core-owned public procedures use poo-flow-core-; migrate by owner |
-| Module identities | Qualified logical keys such as core/json-schema | Source-policy identities; not mechanically rewritten with compiler package names |
-| Native object bindings | JsonSchema, Guestbook, Contracts | Semantic names; no compulsory Core/Module/Native suffix |
+The physical core/ submodule checkout does not define a compiler package.
+The product POO Flow retains its own product namespace. Yuanxu imports no
+product implementation. Semantic module keys such as core/json-schema are
+publication identities, independent of Gerbil library paths.
 
-A core/ filesystem path is a checkout location, not a compiler namespace. The
-logical core/json-schema id and Gerbil :poo-flow-core/modules/json-schema/interface
-path have different consumers. Their association belongs to admitted source
-publication, not string-prefix guessing. A shared procedure's old poo-flow- name
-is historical naming, not proof that the product owns it.
+No parallel package root, forwarding namespace or legacy API alias is kept.
+Normal library consumers need no custom prelude. The root prelude bootstraps
+on :gerbil/core; explicit build entrypoints bind its actual native module
+context before importing source-only Yuanxu libraries.
 
-Current source/API audits must keep actual :core imports and existing procedure
-names until migration. Target examples must label :poo-flow-core and renamed
-procedures as pending. Do not present a package-name change as already installed.
+* Publication and build have the same selected graph
 
-* Guestbook chain naming ledger
+=module-system/building/interface.ss= owns =yuanxu-init-build=;
+=module-system/building/build-projection.ss= owns
+=yuanxu-project-source-spec=. The init declaration publishes the ordinary
+build-spec/build-run accessors, dependency scopes and test projections.
+Projection checks retained source paths, native compiler identities, options
+and selected generations. Duplicate retained identities remain an error.
 
-The following existing Core-owned procedure names map to target exports. This is
-one coordinated rename plan, not compatibility aliases. Modules 20 and 22 use
-only the target names; module 21 preserves the current implementation audit.
+Source-first registration belongs only to the compiler/build entry.
+Importing init or projecting build data must not reprioritize runtime
+libraries or reinstall held Contract identities. The installed Gerbil
+compiler and std/make own compilation and scheduling without source patches.
 
-| Existing Core binding | Target Core binding (not yet exported) |
-|-----------------------+----------------------------------------|
-| =yuanxu-contract-admit= | =poo-flow-core-contract-admit= |
-| =yuanxu-force-lazy-load-plan= | =poo-flow-core-force-lazy-load-plan= |
-| =yuanxu-json-schema->contract-artifact= | =poo-flow-core-json-schema->contract-artifact= |
-| =yuanxu-json-schema-contract-artifact-diagnostics= | =poo-flow-core-json-schema-contract-artifact-diagnostics= |
-| =yuanxu-json-schema-contract-artifact-object-contract= | =poo-flow-core-json-schema-contract-artifact-object-contract= |
-| =yuanxu-json-schema-contract-artifact-valid?= | =poo-flow-core-json-schema-contract-artifact-valid?= |
-| =yuanxu-json-schema-contract-artifact-validate= | =poo-flow-core-json-schema-contract-artifact-validate= |
-| =yuanxu-json-schema-object-contract-validation-diagnostics= | =poo-flow-core-json-schema-object-contract-validation-diagnostics= |
-| =yuanxu-lazy-load-plan-receipt= | =poo-flow-core-lazy-load-plan-receipt= |
-| =yuanxu-make-lazy-load-plan= | =poo-flow-core-make-lazy-load-plan= |
-| =yuanxu-predicate-contract= | =poo-flow-core-predicate-contract= |
-| =yuanxu-validation-evidence-accepted?= | =poo-flow-core-validation-evidence-accepted?= |
+* Evidence after migration
 
-The new build adapter has no old implementation to rename: its target is
-poo-flow-core-build-spec. The product yuanxu-load-modules name remains a facade;
-Core never calls it. Neutral native bindings such as .def, .admit and with-slots
-remain native library operations, not product APIs to prefix mechanically.
-
-* Build graph projection belongs to Core
-
-The target generic build owner is Core modules/building/build-projection.ss,
-imported as :poo-flow-core/modules/building/build-projection. It publishes the
-proposed poo-flow-core-build-spec adapter. Module declaration publication belongs
-to that module's interface.ss under the standard role shell; the build-script
-adapter is a precise compilation-unit import, not a second Module definition.
-
-Core owns selection/source-generation association, generic build contribution
-Contracts, phase/dependency graph validation and projection boundaries. A Core
-adapter consumes admitted init publication through a shared provider protocol;
-it must not import the product's yuanxu-load-modules facade to implement itself.
-The product facade delegates to these Core owners. Build projection and scope
-projection therefore share one selected graph without reversing dependencies.
-Gerbil-specific spec lowering may live here; ASP PackageSpec policy, product roots,
-runtime execution and product-specific observation remain downstream adapters.
-
-The current product modules/building/build-projection.ss is an observation and
-PackageSpec boundary module. It does not export the proposed build-spec function.
-It must not be mistaken for an implemented generic graph projector or moved
-wholesale without separating generic mechanisms from product policy. Reusable
-observation primitives may move to their corresponding Core owner separately.
-
-* Coordinated direct migration, not aliases
-
-A future implementation must update Core gerbil.pkg, source imports, generated
-wrapper imports, build/test roots, source publication associations, package pins
-and consumer dependencies as one qualified migration. Rename public procedure
-bindings and their real consumers by responsibility; do not globally replace
-poo-flow in receipts, product identities, URLs or historical evidence. No parallel
-:core or :poo-flow compatibility re-export namespace is added for Core APIs.
-
-Acceptance requires Core compiling without importing product implementations,
-consumer imports resolving under the new package, a bootstrap build from an
-independently available tool closure, and selected/unselected controls. Existing
-historical validation remains tied to its recorded namespace and source revision.
-This document and corrected target snippets do not rename a package, move runtime
-source, implement graph projection or connect a Loader.
+Maintained examples and historical Scheme probes use the current namespace.
+Renaming an example does not requalify its previous result. Historical
+commit identities and failure outcomes remain evidence of their original
+source cut. Current native, Lean and Quint results are recorded separately
+in [[file:../../docs/10-19-design/13-module-loading/13.16-yuanxu-package-and-prelude.org][the package and prelude qualification]].

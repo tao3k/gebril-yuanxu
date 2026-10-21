@@ -78,8 +78,8 @@ different but compatible orders:
 
 #+begin_src mermaid
 flowchart TB
-  U["upstream gerbil-poo"] -->|"provides native POO mechanics"| CO["poo-flow-core objects foundation"]
-  CO -->|"constructs Type and Contract as POO prototypes"| CT["poo-flow-core types foundation"]
+  U["upstream gerbil-poo"] -->|"provides native POO mechanics"| CO["yuanxu objects foundation"]
+  CO -->|"constructs Type and Contract as POO prototypes"| CT["yuanxu types foundation"]
   CT -->|"specializes contracts for one Module"| MT["Module-local types.ss"]
   MT -->|"constrains named pure transformations"| MF["Module-local func.ss"]
   MF -->|"is bound into responsibility implementations"| MO["Module-local objects.ss"]

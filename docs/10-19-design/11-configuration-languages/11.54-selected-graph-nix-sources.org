@@ -54,7 +54,7 @@ The selected consumer Module's maintainer declares its external input once:
 
 #+begin_src scheme
 ;; Inside its existing core.projections list; not another user config language.
-(poo-flow-core-opentofu-package-contribution catalog-path)
+(yuanxu-opentofu-package-contribution catalog-path)
 #+end_src
 
 The default source/binding are =config.ss= and =Config=. Advanced source binding
@@ -67,7 +67,7 @@ generic-driver gap:
 
 #+begin_src scheme
 (def view (yuanxu-load-modules init-path))
-(def built (poo-flow-core-write-build-entry view generation-output-directory))
+(def built (yuanxu-write-build-entry view generation-output-directory))
 (def result (.get built packages opentofu admission))
 #+end_src
 
@@ -139,7 +139,7 @@ source-checker file itself is part of the observed inputs.
 
 Generated build scripts carry:
 
-1. The existing =poo-flow-core-admit-build-inputs= check over selected sources,
+1. The existing =yuanxu-admit-build-inputs= check over selected sources,
    native compiler files and exact demand-file bytes.
 2. =yuanxu-nix-admit-generation= over the Nix expression, argv bindings and
    expected derivation. This catches transitive catalog changes even when the

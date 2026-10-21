@@ -573,7 +573,7 @@ implementation completion, not owner selection.
 
 - [X] Runtime/deployment adapters own operator query, diff, simulation,
   proposal admission, authorization, and conditional publication commit.
-- [X] =poo-flow-core= owns the pure semantic values consumed and returned by
+- [X] =yuanxu= owns the pure semantic values consumed and returned by
   those adapters.
 - [X] The final application supplies the application-owned candidates and
   authorization policy.

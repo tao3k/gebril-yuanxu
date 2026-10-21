@@ -783,13 +783,13 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] =poo-flow-core= owns immutable debug query and counterfactual proposal
+- [X] =yuanxu= owns immutable debug query and counterfactual proposal
   objects, pure query composition, traversal policy, completeness, budgets,
   redaction, and simulation preconditions.
 - [X] Runtime/deployment adapters may satisfy admitted capabilities, but they
   do not define the query algebra or introduce hidden authority.
 - [ ] The concrete POO-native query and proposal objects remain implementation
-  work owned by =poo-flow-core=.
+  work owned by =yuanxu=.
 
 * References
 

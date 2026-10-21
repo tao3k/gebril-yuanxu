@@ -27,7 +27,7 @@ JSON-like schema value
 - Internal conversion is pure Scheme data. Runtime execution, external schema
   fetching, and large generator pipelines stay outside this owner.
 - Generated contract surfaces reuse =src/utilities/contracts.ss= and
-  =src/type-facts/objects.ss=.
+  =src/object-types/facts.ss=.
 - Raw external schemas that affect shipped contracts are pinned under
   =schemas/json/=. =.data= remains only a research/cache area.
 - Unsupported keywords and unsupported references are visible diagnostics.

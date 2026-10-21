@@ -20,7 +20,7 @@ Reuse the existing [[file:../../../module-system/design/45-40-10-poo-constrained
 second macro evaluator, duplicate macro registry or another field schema.
 
 The source audit uses actual files and existing names. All proposed Scheme code
-below uses target poo-flow-core- names, as established in module 22; those renamed
+below uses target yuanxu- names, as established in module 22; those renamed
 exports are not yet available. Internal normalized IR records are reused as data;
 public discovery and diagnostic projections remain native POO objects.
 
@@ -95,24 +95,24 @@ view adapter, not an inferred flattening that changes validation semantics.
 
 #+begin_src scheme
 (def (schema-root artifact)
-  (poo-flow-core-json-schema-normalization-schema
-   (poo-flow-core-json-schema-contract-artifact-normalization artifact)))
+  (yuanxu-json-schema-normalization-schema
+   (yuanxu-json-schema-contract-artifact-normalization artifact)))
 
 (def (schema-child node segment)
-  (let ((kind (poo-flow-core-json-schema-node-kind node))
-        (value (poo-flow-core-json-schema-node-value node)))
+  (let ((kind (yuanxu-json-schema-node-kind node))
+        (value (yuanxu-json-schema-node-value node)))
     (cond
      ((and (eq? kind 'object) (symbol? segment))
       (let ((property
              (find (lambda (property)
-                     (eq? segment (poo-flow-core-json-schema-property-name property)))
-                   (poo-flow-core-json-schema-object-properties value))))
+                     (eq? segment (yuanxu-json-schema-property-name property)))
+                   (yuanxu-json-schema-object-properties value))))
         (if property
-          (poo-flow-core-json-schema-property-schema property)
-          (let (additional (poo-flow-core-json-schema-object-additional-properties value))
-            (and (poo-flow-core-json-schema-node? additional) additional)))))
+          (yuanxu-json-schema-property-schema property)
+          (let (additional (yuanxu-json-schema-object-additional-properties value))
+            (and (yuanxu-json-schema-node? additional) additional)))))
      ((and (eq? kind 'array) (exact-integer? segment) (>= segment 0)
-           (poo-flow-core-json-schema-node? value))
+           (yuanxu-json-schema-node? value))
       value)
      (else #f))))
 
@@ -123,25 +123,25 @@ view adapter, not an inferred flattening that changes validation semantics.
 
 (def (schema-fields artifact object-path)
   (let (node (schema-node-at (schema-root artifact) object-path))
-    (unless (and node (eq? (poo-flow-core-json-schema-node-kind node) 'object))
+    (unless (and node (eq? (yuanxu-json-schema-node-kind node) 'object))
       (error "unsupported or unknown discovery object path" object-path))
-    (let* ((object (poo-flow-core-json-schema-node-value node))
+    (let* ((object (yuanxu-json-schema-node-value node))
            (additional
-            (poo-flow-core-json-schema-object-additional-properties object)))
+            (yuanxu-json-schema-object-additional-properties object)))
       (.o path: object-path
-          schema-source: (poo-flow-core-json-schema-contract-artifact-source-ref artifact)
-          schema-metadata: (poo-flow-core-json-schema-node-metadata node)
+          schema-source: (yuanxu-json-schema-contract-artifact-source-ref artifact)
+          schema-metadata: (yuanxu-json-schema-node-metadata node)
           additional-properties: additional
           fields:
           (map (lambda (property)
-                 (let ((name (poo-flow-core-json-schema-property-name property))
-                       (child (poo-flow-core-json-schema-property-schema property)))
+                 (let ((name (yuanxu-json-schema-property-name property))
+                       (child (yuanxu-json-schema-property-schema property)))
                    (.o path: (append object-path (list name))
-                       kind: (poo-flow-core-json-schema-node-kind child)
-                       required?: (poo-flow-core-json-schema-property-required? property)
-                       documentation: (poo-flow-core-json-schema-property-doc property)
-                       constraints: (poo-flow-core-json-schema-node-metadata child))))
-               (poo-flow-core-json-schema-object-properties object))))))
+                       kind: (yuanxu-json-schema-node-kind child)
+                       required?: (yuanxu-json-schema-property-required? property)
+                       documentation: (yuanxu-json-schema-property-doc property)
+                       constraints: (yuanxu-json-schema-node-metadata child))))
+               (yuanxu-json-schema-object-properties object))))))
 #+end_src
 
 For the selected published artifact (no second field inventory):
@@ -256,16 +256,16 @@ It returns ambiguity explicitly rather than selecting an arbitrary same-path row
 
 (def (schema-diagnostic-view artifact diagnostic role-path effective-writes)
   (let* ((metadata
-          (poo-flow-core-json-schema-validation-diagnostic-metadata diagnostic))
+          (yuanxu-json-schema-validation-diagnostic-metadata diagnostic))
          (entry (assq 'path metadata)))
     (if (not entry)
-      (.o reason: (poo-flow-core-json-schema-validation-diagnostic-reason diagnostic)
+      (.o reason: (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
           source-status: 'path-unavailable)
       (let (path (append role-path (cdr entry)))
         (.o path
-            reason: (poo-flow-core-json-schema-validation-diagnostic-reason diagnostic)
-            actual: (poo-flow-core-json-schema-validation-diagnostic-value diagnostic)
-            schema-source: (poo-flow-core-json-schema-contract-artifact-source-ref artifact)
+            reason: (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
+            actual: (yuanxu-json-schema-validation-diagnostic-value diagnostic)
+            schema-source: (yuanxu-json-schema-contract-artifact-source-ref artifact)
             origin: (diagnostic-origin path effective-writes))))))
 #+end_src
 

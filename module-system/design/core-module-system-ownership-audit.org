@@ -66,7 +66,7 @@ vocabulary and contract lowering remain POO Flow-owned. Shared final projection 
 receipt syntax now live in =src/utilities/=, while POO Flow identity and default
 Interface policy live in =src/authoring/module-interface.ss=.
 
-The first Core owner cut is tracked in =poo-flow-core#16= at =ceb5fe5=:
+The first Core owner cut is tracked in =yuanxu#16= at =ceb5fe5=:
 host-trusted verification and semantic Module Contracts/construction moved
 to =core/contribution/verification.ss= and =core/module-system/=.
 The same Core branch now also owns generic =core/module-system/config.ss= schema indexing,

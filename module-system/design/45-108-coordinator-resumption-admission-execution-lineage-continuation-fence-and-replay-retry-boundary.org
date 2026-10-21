@@ -481,7 +481,7 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] =poo-flow-core= owns resumption admission, execution lineage,
+- [X] =yuanxu= owns resumption admission, execution lineage,
   continuation-fence semantics, and the distinction among resume, replay,
   retry, duplicate delivery, and finalization recovery.
 - [X] Runtime/deployment adapters own durable fence claims and admitted

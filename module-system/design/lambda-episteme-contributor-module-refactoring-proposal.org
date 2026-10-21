@@ -8,7 +8,7 @@
 
 * Controlling decisions, 2026-09-12
 
-POO Flow is the core. Do not create another =poo-flow-core= package.
+POO Flow is the core. Do not create another =yuanxu= package.
 =packages/lambda-episteme/= is the independently maintained contributor
 repository. Its modules contribute POO-native domain declarations, profiles,
 source assets and scenarios. They do not own a graph execution engine.
@@ -24,7 +24,7 @@ An application may execute it through interfaces from gql-rust. That choice
 belongs to the application integration, not this child repository's imports,
 build, or unit tests.
 
-These decisions supersede the physical =poo-flow-core= package requirement in
+These decisions supersede the physical =yuanxu= package requirement in
 older child RFCs and the SQL-centered migration in the earlier proposal.
 
 * Source checkout

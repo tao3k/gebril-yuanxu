@@ -55,14 +55,14 @@
   (lambda (candidate context)
     (let* ((clean (.cc SelectedChecksContract
                     'responsibilities (.get @ responsibilities)))
-           (native (poo-flow-contract-admit clean candidate context)))
+           (native (yuanxu-contract-admit clean candidate context)))
       (.cc native 'responsibility-evidence
         (filter (lambda (entry) (not (eq? (.get entry responsibility) 'smoke)))
                 (.get native responsibility-evidence))))))
 (.def (FaultyPolicy @ FixturePolicy) selected: OmittingTemplate)
 (def faulty-descriptor
   (project-selected-contract FaultyPolicy (.get Release pipeline selected-checks)))
-(def incomplete-native (poo-flow-contract-admit faulty-descriptor Release context))
+(def incomplete-native (yuanxu-contract-admit faulty-descriptor Release context))
 (check 'fault-has-stale-accepted-header (.get incomplete-native accepted?))
 (check 'fault-only-three-child-receipts
   (= (length (.get incomplete-native responsibility-evidence)) 3))

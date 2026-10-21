@@ -622,7 +622,7 @@ implementation completion, not owner selection.
   semantic inputs.
 - [X] Runtime/deployment adapters own environment, filesystem, time, entropy,
   secret resolution, redaction, and capability-scoped observation.
-- [X] =poo-flow-core= owns the contract that prevents those runtime
+- [X] =yuanxu= owns the contract that prevents those runtime
   observations from entering pure Profile evaluation.
 - [ ] Deployment-input and secret-provider adapters remain runtime/deployment
   implementation work.

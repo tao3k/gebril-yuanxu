@@ -455,12 +455,52 @@ test-yuanxu-prelude:
 # Match gxtest's non-recursive `test t` discovery exactly: direct children
 # ending in -test.ss, in native lexical order. Each existing test-file gate
 # gets the original CI heap limit; no suite or assertion is excluded.
-test-native-directory:
+native-test-files group="all":
     #!/usr/bin/env bash
     set -euo pipefail
     export LC_ALL=C
+    case "{{ group }}" in
+      all|bootstrap|modules|contracts|objects|scenarios|runtime) ;;
+      *) echo 'unknown native test group' >&2; exit 64 ;;
+    esac
     shopt -s nullglob
-    files=(t/*-test.ss)
+    for file in t/*-test.ss; do
+      case "$file" in
+        t/package-*|t/prelude-*|t/core-build-*|t/module-build-*|t/module-bootstrap-*|t/runtime-publication-identity-*) owner=bootstrap ;;
+        t/module-*|t/feature-system-*) owner=modules ;;
+        t/json-schema-*|t/source-*|t/contract-*|t/admission-*|t/contribution-*|t/configuration-*) owner=contracts ;;
+        t/poo-*|t/object-*|t/issued-*|t/path-*|t/evidence-*|t/issuer-*) owner=objects ;;
+        t/aws-*|t/gitea-*|t/opentofu-*|t/nix-*|t/ops-*) owner=scenarios ;;
+        *) owner=runtime ;;
+      esac
+      if [[ "{{ group }}" == all || "{{ group }}" == "$owner" ]]; then printf '%s\n' "$file"; fi
+    done
+
+check-native-test-groups:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export LC_ALL=C
+    scratch=$(mktemp -d)
+    trap 'rm -rf "$scratch"' EXIT
+    just native-test-files all > "$scratch/all"
+    test -s "$scratch/all"
+    for group in bootstrap modules contracts objects scenarios runtime; do
+      just native-test-files "$group" > "$scratch/$group"
+      test -s "$scratch/$group"
+      cat "$scratch/$group" >> "$scratch/groups"
+      printf 'NATIVE-GROUP %s files=%s\n' "$group" "$(wc -l < "$scratch/$group")"
+    done
+    sort "$scratch/groups" > "$scratch/sorted"
+    cmp "$scratch/all" "$scratch/sorted"
+    printf 'NATIVE-GROUPS-OK\n'
+
+test-native-directory group="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export LC_ALL=C
+    manifest=$(just native-test-files "{{ group }}")
+    files=()
+    while IFS= read -r file; do [[ -z "$file" ]] || files+=("$file"); done <<< "$manifest"
     test "${#files[@]}" -gt 0
     printf '[core-testing] phase=native-directory-manifest fileCount=%s\n' "${#files[@]}"
     printf '%s\n' "${files[@]}"

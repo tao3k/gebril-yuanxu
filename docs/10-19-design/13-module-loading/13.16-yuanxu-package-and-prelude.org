@@ -12,7 +12,7 @@ prefixes migrate to Yuanxu as well; product-owned POO Flow APIs remain product
 APIs. Consumers are updated directly rather than given compatibility aliases.
 
 The former nested =yuanxu/= package directory is removed. There are no
-=:core/...= forwarding modules. Maintained consumers, role package metadata,
+parallel forwarding modules. Maintained consumers, role package metadata,
 compiler identities, compiled library paths and source projections migrate
 together. Frozen historical snapshots retain their recorded identities and
 are not runtime entrypoints.
@@ -26,7 +26,7 @@ The single =prelude.ss= lives directly in the repository root, beside
 ;; gerbil.pkg: the implementation's default language
 (package: yuanxu
  prelude: :tao3k/yuanxu/prelude
- depend: ("github.com/tao3k/gerbil-poo@0df023fd9e15192156935c971f0f1940028c5277"))
+ depend: ("github.com/tao3k/gerbil-poo@f956f4c68d7d996ef860a2633f4fb9b4e745bd0b"))
 
 ;; prelude.ss: the unique public language entry
 prelude: :gerbil/core
@@ -182,7 +182,7 @@ These finite-model controls and the Lean source model are separate from native
 execution evidence.
 
 The product's pinned =gerbil-parser@78507e68b1275be1be748be465d6354f596d9063=
-still imports =:core/...=. Its independently modified checkout and the installed
+has not been independently qualified against the new namespace. Its independently modified checkout and the installed
 package cache are not rewritten by this migration. That consumer requires a
 coordinated namespace/dependency update before a full product native build can
 be claimed. Gerbil compiler and runtime sources are unchanged. Focused Core
@@ -204,3 +204,48 @@ complete control is therefore still unqualified locally; no complete native
 suite or end-to-end build pass is claimed. The public CI remains responsible
 for a clean installation/build and all directory tests under its existing
 one-GiB worker policy.
+
+
+* Follow-up: build roots, test partition and type ownership
+
+The complete Linux CI build rejected a duplicate retained
+=module-system/source/module-prelude= identity. The duplicate inventory row
+is removed; duplicate-target rejection itself is unchanged.
+
+Native CI builds once per platform and transfers that exact-head package tree
+to six independent domain groups. The all-files manifest must equal the sorted
+union of group manifests, including multiplicity. The current partition has
+204 top-level test files; each group still runs serial one-GiB workers through
+the same heap-fenced Just recipe and requires all native harness markers.
+The platform workflows can advance independently. No test or timeout is removed.
+
+The 434 Quint cases and every all-scope typecheck entry are partitioned by a
+fixed index/count. The union is the original catalog; per-command deadlines,
+matched faults, source-cut hashes and end-of-run drift refusal are unchanged.
+Each receipt records its shard index/count. A passing shard is not a complete
+catalog qualification. Lean remains a separate aggregate gate.
+
+Type fact projection now belongs to =object-types/facts.ss= and is imported as
+=:yuanxu/object-types/facts=. JSON Schema consumers and the build inventory
+reference this owner directly; there is no forwarding type-facts module.
+Gerbil installation and the Nix store probe are inline steps in the shared
+GitHub composite action. The downloaded immutable gerbil-bazel release supplies
+its own activation script; archive checksum and release metadata validation
+remain mandatory. No compiler sources are modified.
+
+The follow-up local normal-build control still hit its 60-second compilation
+deadline (63.89 seconds including termination); specification took 23.69 seconds.
+A two-second sample within the compile window observed native Scheme compiler
+expansion/optimization work. This is a sampled phase observation, not a proof
+of a single bottleneck. The failure receipt is retained outside Git. Neither
+parallel CI grouping nor removing a duplicate root establishes a local native
+compile speedup; the complete build/clean/rebuild gate must be rerun.
+
+
+The gerbil-poo alignment advances to
+=f956f4c68d7d996ef860a2633f4fb9b4e745bd0b=, retaining the compact-issued-read
+commit as an ancestor. The four subsequent commits protect staged type
+bindings, capture complete public requests, propagate catalog sources and
+keep finite source admission coherent. They do not replace producer-owned
+read issuance with a consumer-authored bundle. Validation of the new pin is
+separate from the previous revision's receipts.

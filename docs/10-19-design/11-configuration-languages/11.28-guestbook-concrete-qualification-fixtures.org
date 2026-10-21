@@ -33,7 +33,7 @@ native value fixtures follow the inspected Guestbook names/images/ports in
 [[file:11.24-guestbook-effective-services.org][the KCL baseline study]], omitting scheduling/resource fields that are irrelevant
 to these four controls. This is not full KCL output or resource-consumer parity.
 
-Target Core procedure names below use poo-flow-core-. Existing implementations
+Target Core procedure names below use yuanxu-. Existing implementations
 still use the old names in the actual [[file:../../../modules/json-schema/interface.ss][Core Schema interface]]. Imports and renaming
 must be qualified before running the future fixture. Native POO and syntax support
 come from the reviewed test compilation environment; users do not maintain them.
@@ -303,8 +303,8 @@ names in the source audit have the corresponding poo-flow- prefix.
 
 #+begin_src scheme
 (.def FixtureSchemaScope
-  compile: poo-flow-core-json-schema->contract-artifact
-  validate: poo-flow-core-json-schema-contract-artifact-validate)
+  compile: yuanxu-json-schema->contract-artifact
+  validate: yuanxu-json-schema-contract-artifact-validate)
 
 (def ArtifactV1
   ((.get FixtureSchemaScope compile)
@@ -314,7 +314,7 @@ names in the source audit have the corresponding poo-flow- prefix.
    SchemaV2 '((owner . guestbook-fixture) (source-ref . fixture/schema-v2))))
 
 (def (fixture-valid? artifact scenario)
-  (poo-flow-core-json-schema-object-contract-validation-valid?
+  (yuanxu-json-schema-object-contract-validation-valid?
    ((.get FixtureSchemaScope validate) artifact (.get scenario frontend))))
 
 (fixture-valid? ArtifactV1 RangeProbe)       ; expected #t for field validation

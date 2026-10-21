@@ -136,7 +136,7 @@ These are local receipts, not remote CI results.
 | Core Lean, Lean 4.34.0 / LeanPoo =6e6a706e14fa6f8199e4f36711440355b42ef335= | 149 jobs; 4185 declarations; standard axioms only; no arbitrary Prop fields |
 | Product Lean | =lake build PooFlowProof=; 455 jobs |
 | Shape negative control | Arbitrary Prop shell rejected with the expected diagnostic |
-| Core package | Native =gxpkg build github.com/tao3k/poo-flow-core=; natural exit 0 |
+| Core package | Native =gxpkg build github.com/tao3k/gebril-yuanxu=; natural exit 0 |
 | Root package | Native =gerbil build=; 269 targets; natural exit 0 |
 | Related Scheme | 25 Core files plus root =control-plane-test.ss=; all 26 have natural exit 0, MODULE-OK, HARNESS-OK and final OK |
 | Quint | 30 cases including expected counterexample controls; natural exit 0 |

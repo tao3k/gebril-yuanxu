@@ -108,7 +108,7 @@ recursive lookup.  Constructors use hygienically distinct names such as
 | =loops= | Native governor and human-audit Contracts | Keep POO role composition and bounded control-plane projection. |
 | =session= | Native policy and tool-grant Contracts | Keep authorization projection bounded and qualify evidence reuse. |
 | =module-system/object-core= | Native Type descriptors; symbolic kinds are projection-only | Keep field and transformer admission native and fail closed. |
-| =type-facts= | Direct native descriptor projection | Keep proof rows one-way and prohibit semantic reconstruction. |
+| =object-types= | Direct native descriptor projection | Keep proof rows one-way and prohibit semantic reconstruction. |
 
 * Module-object vertical slice
 

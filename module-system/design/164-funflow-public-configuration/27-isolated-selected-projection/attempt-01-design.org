@@ -265,7 +265,7 @@ plain .admit on an unprojected static descriptor does not gain this behavior.
 
 * Corresponding checked Lean properties
 
-[[file:../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
+[[file:../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
 Contracts and candidates are resolved PER SLOT, so two Checks sharing one
 Contract still require two differently correlated receipts. A demand ID is
 scoped to its receiver/view, not a globally ambiguous Check name.
@@ -302,6 +302,6 @@ publication integration remain unimplemented. No Loader or production module
 code is changed.
 
 Validation on 2026-10-15: the new Lean file checks directly, and the existing
-PooFlowCoreProof.ModuleSystem.Schema.Association target builds successfully (48 jobs). Five new
+YuanxuProof.ModuleSystem.Schema.Association target builds successfully (48 jobs). Five new
 theorems and two controls use no sorry or custom axioms. See
 [[file:26-selected-responsibility-discovery/lean-build.log][build/axiom output]] and [[file:26-selected-responsibility-discovery/receipt.json][source-bound receipt]].

@@ -642,12 +642,12 @@ implementation completion, not owner selection.
 
 - [X] Upstream =gerbil-poo= owns the native object, prototype, slot, and
   extension operators.
-- [X] =poo-flow-core= owns the generic Module-domain conformance contract,
+- [X] =yuanxu= owns the generic Module-domain conformance contract,
   minimal projection, and derived closure semantics.
 - [X] =wendao-episteme= may own domain Module instances, but it does not own or
   redefine the generic Module prototype.
 - [ ] The current prototype body and conformance admission remain
-  implementation work owned by =poo-flow-core=.
+  implementation work owned by =yuanxu=.
 
 * References
 

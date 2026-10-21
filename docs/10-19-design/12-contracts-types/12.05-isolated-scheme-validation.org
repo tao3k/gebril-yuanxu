@@ -14,7 +14,7 @@ and the qualification's switch from copied generic definitions to its public API
 
 gerbil-poo is a public library. Its Type, object contracts, diagnostics, checked
 invocation and reuse mechanisms must work without POO Flow. In these documents
-"Core consumer" means the poo-flow-core repository, not Gerbil's compiler,
+"Core consumer" means the yuanxu repository, not Gerbil's compiler,
 runtime or standard library. Gerbil's own core/contract APIs are language tools,
 not the owner of POO Flow module/source admission policy.
 

@@ -110,7 +110,7 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:53-loopx-pressure-test-control-plane-closure.org][53 LoopX Pressure Test And Control-Plane Closure]]
 - [[file:54-runtime-abi-pressure-relief-interface.org][54 Runtime ABI Pressure Relief Interface]]
 - [[file:55-baml-agent-language-audit.org][55 BAML Agent Language Audit]]
-- [[file:56-type-facts-validation-lean-plan.org][56 Type Facts Validation And Lean Plan]]
+- [[file:56-object-types-validation-lean-plan.org][56 Type Facts Validation And Lean Plan]]
 - [[file:57-user-graph-p0-thesis.org][57 User Graph P0 Thesis]]
 - [[file:148-algorithmic-hot-path-audit.org][148 Algorithmic Hot-Path Audit And Shared Funcs Ownership]]
 - [[file:149-persistent-native-public-closure-projection.org][149 Rejected Persistent Native Public-Closure Projection]]

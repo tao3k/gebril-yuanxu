@@ -466,7 +466,7 @@ Dispatch is not written inside =use-composition=.
 
 - Upstream =gerbil-poo= owns object, slot, prototype, generic, inherited
   computation, and precedence mechanics.
-- =poo-flow-core= owns Module responsibility identity, dispatch evaluation
+- =yuanxu= owns Module responsibility identity, dispatch evaluation
   context, capability boundary, structured condition projection, cache
   identity, and semantic explanation.
 - =wendao-episteme= owns its domain Module, Profile, and dispatched domain
@@ -486,7 +486,7 @@ Dispatch is not written inside =use-composition=.
 - [X] Prove upstream =.defgeneric= and instance/type source behavior.
 - [X] Prove upstream =NoApplicableMethod= identity.
 - [X] Prove upstream C4 precedence entrypoints.
-- [X] Keep upstream dispatch mechanics outside =poo-flow-core= ownership.
+- [X] Keep upstream dispatch mechanics outside =yuanxu= ownership.
 - [X] Move the exact direct native dispatch paths needed by the first focused
   Module kernel to =ADMITTED= in RFC 45-120.
 

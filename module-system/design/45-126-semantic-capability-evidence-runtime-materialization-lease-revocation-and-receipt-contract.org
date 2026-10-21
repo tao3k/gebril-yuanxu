@@ -466,7 +466,7 @@ Runtime materialization is initiated only by admitted effect boundaries.
 
 * Ownership
 
-- =poo-flow-core= owns semantic capability evidence and EffectIntent
+- =yuanxu= owns semantic capability evidence and EffectIntent
   projection.
 - Runtime/deployment adapters own authorization, handle acquisition, handle
   cache, leases, revocation, cleanup, reconciliation, and runtime receipts.

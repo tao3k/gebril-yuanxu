@@ -91,8 +91,8 @@ source preparation, anchored to the owning package, not process working director
              (compile (read-file resolved-file)
                       '((owner . github-workflow)
                         (source-ref . schemas/json/github-workflow.json))))
-        (unless (and (poo-flow-core-json-schema-contract-artifact-valid? artifact)
-                     (null? (poo-flow-core-json-schema-contract-artifact-diagnostics artifact)))
+        (unless (and (yuanxu-json-schema-contract-artifact-valid? artifact)
+                     (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
           (error "imported Schema requires coverage review" artifact))
         artifact))))
 
@@ -142,7 +142,7 @@ before merging prefixes, including ordinary non-dotted parent declarations.
                   (source-name (genident 'source-data))
                   (payload
                    (datum->syntax ctx
-                     (vector 'poo-flow-core-source/v1 origin-data)
+                     (vector 'yuanxu-source/v1 origin-data)
                      (stx-source ctx))))
       #'(begin
           (def name value)
@@ -194,7 +194,7 @@ bindings.
               (error "expansion binding association mismatch"))))
          (let (data (syntax->datum #'payload))
            (unless (and (vector? data) (= (vector-length data) 2)
-                        (eq? (vector-ref data 0) 'poo-flow-core-source/v1)
+                        (eq? (vector-ref data 0) 'yuanxu-source/v1)
                         (list? (vector-ref data 1)))
              (error "invalid emitted source bundle"))
            (map (lambda (row)

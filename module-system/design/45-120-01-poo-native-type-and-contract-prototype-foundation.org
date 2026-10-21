@@ -9,7 +9,7 @@
 
 This RFC freezes an accepted semantic foundation.  It defines Type and Contract
 as native =gerbil-poo= prototypes or prototype-derived values owned by
-=poo-flow-core=.  It does not admit an implementation, a compatibility layer, a
+=yuanxu=.  It does not admit an implementation, a compatibility layer, a
 public type-declaration macro, or a registry.
 
 * Scope
@@ -40,8 +40,8 @@ The project foundation is ordered as follows:
 
 #+begin_src mermaid
 flowchart LR
-  U["upstream gerbil-poo"] -->|"provides object, prototype, slot, dispatch, and C4 mechanics"| O["poo-flow-core objects.ss"]
-  O -->|"provides native project object construction"| T["poo-flow-core types.ss"]
+  U["upstream gerbil-poo"] -->|"provides object, prototype, slot, dispatch, and C4 mechanics"| O["yuanxu objects.ss"]
+  O -->|"provides native project object construction"| T["yuanxu types.ss"]
   T -->|"specializes Type with responsibility contracts"| OT["ObjectType"]
   OT -->|"requires identity, imports, capabilities, and profiles"| M["Module"]
   M -->|"supplies an admitted semantic receiver"| D["DispatchEvaluation"]
@@ -178,7 +178,7 @@ commitment to those representations.
 * Ownership
 
 - Upstream =gerbil-poo= owns object, prototype, slot, dispatch, and C4 mechanics.
-- =poo-flow-core= owns Type, Contract, ObjectType, and ModuleType semantic
+- =yuanxu= owns Type, Contract, ObjectType, and ModuleType semantic
   contracts.
 - =wendao-episteme= owns downstream domain Type, Contract, and Module
   specializations.

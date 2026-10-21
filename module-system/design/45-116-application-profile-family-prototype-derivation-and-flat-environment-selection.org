@@ -426,7 +426,7 @@ depend on it.
 
 * Ownership
 
-=poo-flow-core= owns the generic profile, prototype, contribution, and conflict
+=yuanxu= owns the generic profile, prototype, contribution, and conflict
 contracts.
 
 =wendao-episteme= owns its domain profiles.
@@ -518,7 +518,7 @@ implementation completion, not owner selection.
 
 - [X] The final application owns its base-profile prototype, derived Profile
   family, typed contributions and withdrawals, and deployment-mode selection.
-- [X] =poo-flow-core= owns only the generic Profile and composition contracts
+- [X] =yuanxu= owns only the generic Profile and composition contracts
   used by that family.
 - [X] Upstream =gerbil-poo= owns the native prototype and extension operators.
 - [ ] The concrete application Profile family remains final-application

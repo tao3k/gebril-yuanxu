@@ -17,7 +17,7 @@ It refines the implementation gate in
 
 - GSLPH remains a development-only policy, build, and test harness.
 - GSLPH does not own POO Flow runtime semantics.
-- POO Flow's parent project continues to own only =poo-flow-core=.
+- POO Flow's parent project continues to own only =yuanxu=.
 - ASP owns source snapshots, content identity, canonical digests, Merkle
   validation, persistence, and warm-hit verification.
 

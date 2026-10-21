@@ -17,7 +17,7 @@ This RFC records the accepted ownership and import boundaries among Git
 submodules, Gerbil packages, Gerbil modules, and POO profile values.
 
 It applies the boundary concretely to the current =wendao-episteme= source
-submodule and the thin projection owned by =poo-flow-core=.
+submodule and the thin projection owned by =yuanxu=.
 
 * Typst formalization: four orthogonal ownership layers
 
@@ -231,7 +231,7 @@ Profile composition receives values directly. It does not perform name lookup.
 
 #+begin_src mermaid
 flowchart LR
-    S["Git Submodule Pin"] -->|"proves an exact external source revision"| P["poo-flow-core Projection Contract"]
+    S["Git Submodule Pin"] -->|"proves an exact external source revision"| P["yuanxu Projection Contract"]
     G["gerbil.pkg"] -->|"manages Gerbil package dependencies only"| M["Gerbil Module System"]
     P -->|"is represented by an explicitly owned module export"| M
     M -->|"binds a normal first-class Scheme value"| V["POO Profile Value"]
@@ -245,7 +245,7 @@ The current ownership boundary is:
 
 - the =wendao-episteme= repository owner owns its source content;
 - the parent repository owns only the Git submodule pin;
-- =poo-flow-core= owns only the POO projection contract it consumes;
+- =yuanxu= owns only the POO projection contract it consumes;
 - the parent does not own child build, test, distribution, or publication;
 - the projection does not claim that the child supplies a Gerbil package;
 - the semantic subject and public profile name remain
@@ -256,7 +256,7 @@ The profile must not be renamed to a broader or ambiguous Wendao identity.
 * Thin projection module
 
 When the current architecture needs an importable Scheme profile,
-=poo-flow-core= owns a thin projection module.
+=yuanxu= owns a thin projection module.
 
 The projection may represent:
 
@@ -277,7 +277,7 @@ The projection must not:
 - present the child tree as a Gerbil module tree;
 - own child integration or distribution tests.
 
-The projection is a =poo-flow-core= contract about how core composes the pinned
+The projection is a =yuanxu= contract about how core composes the pinned
 semantic subject. It is not a transfer of child repository ownership.
 
 * Possible future child-owned module
@@ -435,7 +435,7 @@ The implementation must distinguish at least:
 4. Profiles are explicit first-class module exports.
 5. Profile composition performs no hidden discovery or registry lookup.
 6. The parent owns no child build, test, distribution, or publication.
-7. =poo-flow-core= owns only its thin POO projection contract.
+7. =yuanxu= owns only its thin POO projection contract.
 8. The current child is not presented as a Gerbil package.
 9. Future child-owned module contracts are not assumed current.
 10. Import performs no live effect.
@@ -455,7 +455,7 @@ The implementation must distinguish at least:
     the parent gitlink pin and remain owned by =wendao-episteme=.
 - [ ] Avoid declaring the child root as a Gerbil package.
 - [ ] Keep =gerbil.pkg= limited to Gerbil package dependencies.
-- [ ] Define the owner and module path of the =poo-flow-core= thin projection.
+- [ ] Define the owner and module path of the =yuanxu= thin projection.
 - [ ] Define first-class profile export contracts.
 - [ ] Define complete profile revision identities.
 - [ ] Represent source provenance as one profile evidence projection.

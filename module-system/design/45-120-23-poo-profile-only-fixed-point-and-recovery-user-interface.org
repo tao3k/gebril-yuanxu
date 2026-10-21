@@ -47,7 +47,7 @@ telemetry.
 
 #+begin_src mermaid
 flowchart LR
-  Core["poo-flow-core semantic prototypes"]
+  Core["yuanxu semantic prototypes"]
   Wendao["wendao-episteme Module binding"]
   Production["wendao-episteme production profile"]
   Resilient["Application-owned resilient-production POO profile"]
@@ -135,9 +135,9 @@ extension foundation.
 
 * Ownership
 
-** poo-flow-core
+** yuanxu
 
-=poo-flow-core= owns generic:
+=yuanxu= owns generic:
 
 - Module and profile composition semantics;
 - policy and Contract prototypes;
@@ -229,7 +229,7 @@ prototype refinement.
 - Designing another configuration language.
 - Adding infrastructure or package-management clauses to composition.
 - Making diagnostics or telemetry compositional inputs.
-- Moving package ownership into =poo-flow-core=.
+- Moving package ownership into =yuanxu=.
 - Defining an implementation schedule.
 
 * References

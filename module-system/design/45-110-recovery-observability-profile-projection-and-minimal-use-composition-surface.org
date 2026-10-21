@@ -483,12 +483,12 @@ implementation completion, not owner selection.
 
 - [X] Upstream =gerbil-poo= owns the native object and prototype operators used
   to author the profiles.
-- [X] =poo-flow-core= owns generic recovery and observability Profile
+- [X] =yuanxu= owns generic recovery and observability Profile
   semantics and the thin =use-composition= projection.
 - [X] The final application owns profile selection; runtime/deployment
   adapters own only the capabilities admitted by the selected profiles.
 - [ ] Exact upstream operator correspondence and the thin public projection
-  remain implementation work owned by =poo-flow-core=.
+  remain implementation work owned by =yuanxu=.
 
 * References
 

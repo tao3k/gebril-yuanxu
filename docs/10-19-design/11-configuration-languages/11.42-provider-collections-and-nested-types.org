@@ -216,7 +216,7 @@ must be explicitly normalized at the wire boundary before using this walker.
       (else '()))))
 
 (def (array-obligations child values path context)
-  (poo-flow-core-append-map
+  (yuanxu-append-map
     (lambda (entry) (child (car entry) (append path (list (cdr entry))) context))
     (map cons values (iota (length values)))))
 
@@ -224,7 +224,7 @@ must be explicitly normalized at the wire boundary before using this walker.
   (cond
     ((equal? mode "single") (child value path context))
     ((equal? mode "map")
-     (poo-flow-core-append-map
+     (yuanxu-append-map
        (lambda (name) (child (.ref value name) (append path (list name)) context))
        (.all-slots value)))
     ((member mode '("list" "set"))
@@ -246,7 +246,7 @@ must be explicitly normalized at the wire boundary before using this walker.
            (lambda (item at ctx) (cty-obligations body item at ctx))
            '() value path context))
         ((equal? kind "tuple")
-         (poo-flow-core-append-map
+         (yuanxu-append-map
            (lambda (entry)
              (let (index (cdr entry))
                (cty-obligations (car entry) (list-ref value index)
@@ -256,7 +256,7 @@ must be explicitly normalized at the wire boundary before using this walker.
          (append
            (if (every (lambda (row) (.slot? value (car row))) body) '()
              (normalization-obligations 'object value path context 0 #f))
-           (poo-flow-core-append-map
+           (yuanxu-append-map
              (lambda (row)
                (if (and (.slot? value (car row))
                         (not (yuanxu-json-schema-null? (.ref value (car row)))))
@@ -275,7 +275,7 @@ must be explicitly normalized at the wire boundary before using this walker.
       (cty-obligations (jrequired attribute 'type) value path context))))
 
 (def (attributes-obligations attributes value path context)
-  (poo-flow-core-append-map
+  (yuanxu-append-map
     (lambda (row)
       (let (name (car row))
         (if (and (input-attribute? (cdr row)) (.slot? value name))
@@ -286,7 +286,7 @@ must be explicitly normalized at the wire boundary before using this walker.
 (def (block-obligations block value path context)
   (append
     (attributes-obligations (jref block 'attributes '()) value path context)
-    (poo-flow-core-append-map
+    (yuanxu-append-map
       (lambda (row)
         (let ((name (car row)) (declaration (cdr row)))
           (if (.slot? value name)
@@ -356,18 +356,18 @@ must compose it with checks generated from the SAME retained source trees:
 #+begin_src scheme
 (def (wire-obligations Requests Snapshots wire context)
   (append
-    (poo-flow-core-append-map
+    (yuanxu-append-map
       (lambda (category)
         (if (not (.slot? wire category)) '()
           (let* ((instances-by-type (.ref wire category))
                  (raw-category (if (eq? category 'resource)
                                  'resource_schemas 'data_source_schemas)))
-            (poo-flow-core-append-map
+            (yuanxu-append-map
               (lambda (name)
                 (let* ((owner (member-owner Requests Snapshots raw-category name))
                        (member (jrequired (jref (.ref Snapshots owner) raw-category '()) name))
                        (instances (.ref instances-by-type name)))
-                  (poo-flow-core-append-map
+                  (yuanxu-append-map
                     (lambda (label)
                       (block-obligations (jrequired member 'block) (.ref instances label)
                         (list category name label) context))
@@ -375,7 +375,7 @@ must compose it with checks generated from the SAME retained source trees:
               (.all-slots instances-by-type)))))
       '(resource data))
     (if (not (.slot? wire 'provider)) '()
-      (poo-flow-core-append-map
+      (yuanxu-append-map
         (lambda (alias)
           (let ((values (.ref (.get wire provider) alias))
                 (block (jrequired (jrequired (.ref Snapshots alias) 'provider) 'block)))

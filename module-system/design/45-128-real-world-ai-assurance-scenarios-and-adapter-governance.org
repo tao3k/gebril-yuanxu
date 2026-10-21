@@ -54,9 +54,9 @@ different semantic ownership.
 
 - =wendao-episteme= owns knowledge-source, claim, evidence, citation,
   provenance, and epistemic-governance semantics.
-- =wendao-episteme= consumes the =poo-flow-core= parent contract and owns only
+- =wendao-episteme= consumes the =yuanxu= parent contract and owns only
   its domain-specific governance projection and downstream embedding
-  qualification; it does not become a parent owner of =poo-flow-core=.
+  qualification; it does not become a parent owner of =yuanxu=.
 - POO Flow owns POO-native module/profile composition, capability flow,
   agent/tool execution, runtime handoff, recovery, and operational receipts.
 - =CedarAdapter= owns the canonical authorization projection and the
@@ -93,19 +93,19 @@ multi-facet semantic space; they do not belong to one closed asset-kind
 enumeration.  A single enterprise object may simultaneously be a Profile,
 Policy projection, security control, Workflow, Knowledge projection, and audit
 evidence carrier.  Domain owners may introduce new facet identities without
-modifying the =poo-flow-core= engine.
+modifying the =yuanxu= engine.
 
 Downstream users are free to select qualified contributor assets and rapidly
 compose industry- or person-specific systems.  They obtain composition,
 fixed-point evaluation, capability control, observability, recovery, and
-receipt capabilities from the =poo-flow-core= engine rather than rebuilding
+receipt capabilities from the =yuanxu= engine rather than rebuilding
 those facilities per industry.
 
 This produces a deliberate two-level responsibility split:
 
 1. the contributor ecosystem supplies and qualifies vertical-domain semantic
    objects;
-2. =poo-flow-core= safely composes and executes those objects under explicit
+2. =yuanxu= safely composes and executes those objects under explicit
    capability and policy evidence.
 
 #+begin_src text
@@ -157,7 +157,7 @@ flowchart LR
     QA{"Owner and qualification evidence complete?"}
     AS["Qualified open facets:<br/>Module, Profile, Workflow, Knowledge,<br/>Policy, Auth, Security, Evidence, Responsibility"]
     UC["Downstream use-composition"]
-    PF["poo-flow-core engine"]
+    PF["yuanxu engine"]
     CA["CedarAdapter<br/>dual-engine authorization"]
     RT["Composed AI runtime<br/>evidence and receipts"]
 

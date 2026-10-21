@@ -206,7 +206,7 @@ stay in local artifacts; they are not committed.
   source fixture compiled, cleaned, rebuilt in a new process and cleaned again;
   the separate source-package currentness test also passed. The root script is
   copied unchanged; only selection and retained roots are narrowed. No timeout
-  was increased. The current count includes =type-facts/objects= required by
+  was increased. The current count includes =object-types/facts= required by
   JsonSchema receipts, not an extra build-tool Module target.
 - =/private/tmp/core-build-publication-services-01.log=: all eleven maintained
   Gitea/PostgreSQL publication controls passed on the final Core overlay,

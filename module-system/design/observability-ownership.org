@@ -128,7 +128,7 @@ mutated by any framework operation.
 * Development output boundary
 
 #+begin_src scheme
-(import :poo-flow-core/observability/debug)
+(import :yuanxu/observability/debug)
 (yuanxu-observation-debug observation (current-error-port) trace?: #t)
 #+end_src
 

@@ -442,7 +442,7 @@ responsibility algebras.
 
 - Upstream =gerbil-poo= owns prototype composition and recursive instantiation
   primitives.
-- =poo-flow-core= owns Module reachability identity, responsibility algebra,
+- =yuanxu= owns Module reachability identity, responsibility algebra,
   evaluation context, capability attenuation boundary, cycle classification,
   budgets, cache identity, outcomes, provenance, and explanation.
 - =wendao-episteme= owns its domain Module imports and exported Profiles.

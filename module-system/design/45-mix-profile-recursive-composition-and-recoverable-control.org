@@ -90,7 +90,7 @@ observability contract is owned by [[file:45-04-observability-and-debugging.org]
   =compose=, and canonical =use-module MODULE as ALIAS=.
 - POO Flow reuses pinned =gerbil-poo= fixed-point and prototype composition.
 - POO Flow does not implement another fixed point or replace arbitrary =.ref=.
-- The parent owns =poo-flow-core=; a child package does not repeat parent G0.
+- The parent owns =yuanxu=; a child package does not repeat parent G0.
 - =gerbil.pkg=/=gxpkg= own package management only.
 - Gerbil-Bazel owns build execution only.
 - GSLPH is a development policy/build/test harness only.

@@ -23,7 +23,7 @@ The implemented build entry (retired control) is ordinary Scheme. With its optio
 omitted below, its central operation is:
 
 #+begin_src scheme
-(def (poo-flow-core-build-entry spec source current!)
+(def (yuanxu-build-entry spec source current!)
   (let ((this-source-file (lambda () source)))
     (defbuild-script spec)
     (lambda args

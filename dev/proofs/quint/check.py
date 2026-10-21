@@ -505,10 +505,17 @@ def main():
     parser.add_argument("--server-endpoint", default=os.environ.get("QUINT_SERVER_ENDPOINT"))
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--case-prefix", help="Qualify an explicitly scoped subset; default is the complete catalog")
+    parser.add_argument("--shard-count", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--typecheck-scope", choices=("all", "selected"), default="all",
                         help="Keep all-source checking by default; selected checks each named case and its native imports")
     args = parser.parse_args()
+    if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+        parser.error("shard index must be within the positive shard count")
+    if args.case_prefix and args.shard_count != 1:
+        parser.error("case-prefix and catalog sharding are separate qualification modes")
     selected_cases = [case for case in CASES if not args.case_prefix or case[0].startswith(args.case_prefix)]
+    selected_cases = selected_cases[args.shard_index::args.shard_count]
     if not selected_cases:
         parser.error("case prefix selects no catalogued models")
     if args.typecheck_scope == "selected" and not args.case_prefix:
@@ -871,6 +878,8 @@ def main():
         "status": "unqualified-input-cut", "sources-sha256": sources}, indent=2) + "\n")
     typecheck_sources = (sorted(models.glob("*.qnt")) if args.typecheck_scope == "all" else
                          [models / (model + ".qnt") for model, _, _ in selected_cases])
+    if args.typecheck_scope == "all":
+        typecheck_sources = typecheck_sources[args.shard_index::args.shard_count]
     # Quint itself resolves and typechecks transitive imports for each entry;
     # do not implement another parser or substitute a prior successful decision.
     for source in typecheck_sources:
@@ -917,9 +926,10 @@ def main():
             json.dumps({"status": "rejected-source-cut", "changed": changed}, indent=2) + "\n")
         raise AssertionError("bound sources changed during qualification: " + ", ".join(changed))
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
-    args.receipt.write_text(scheme({"schema": "poo-flow.quint-proof.v1", "quint-version": version,
+    args.receipt.write_text(scheme({"schema": "yuanxu.quint-proof.v1", "quint-version": version,
         "backend": "tlc", "apalache-version": "0.62.1", "sources-sha256": sources,
         "case-prefix": args.case_prefix or "all", "catalogue-size": len(CASES),
+        "shard-index": args.shard_index, "shard-count": args.shard_count,
         "typecheck-scope": args.typecheck_scope,
         "typecheck-entries": [source.stem for source in typecheck_sources],
         "cases": results}) + "\n")

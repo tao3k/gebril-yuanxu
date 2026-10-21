@@ -44,7 +44,7 @@ adapter prepares compiler inputs and returns a plain module list:
 #+begin_src scheme
 (def retained '("utilities/algorithms" "types"))
 (def module-spec
-  (poo-flow-core-build-spec (path-expand "init.ss" source-root)
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
     output-directory: output
     retained: retained))
 

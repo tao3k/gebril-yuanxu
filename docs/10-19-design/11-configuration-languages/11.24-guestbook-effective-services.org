@@ -163,7 +163,7 @@ fact that the data is a POO object. No extra replicas helper or DSL is necessary
 Use module 13's bounded GuestbookServerSchema through the Core JsonSchema scope;
 keep full-root validation so image misspellings and additionalProperties=false
 remain enforceable. Do not hand-copy Server fields into another schema validator.
-All proposed Core calls use the target poo-flow-core- naming from module 22.
+All proposed Core calls use the target yuanxu- naming from module 22.
 
 The Schema establishes field types, list cardinality, TCP and numeric port ranges.
 The Scenario Contract associates its three final children through native
@@ -380,9 +380,9 @@ This local record preserves associations; it is not a new user configuration lay
 (def (guestbook-project context)
   (let* ((scenario (.get context input))
          (evidence
-          (poo-flow-core-contract-admit
+          (yuanxu-contract-admit
            (.get context ScenarioContract) scenario context)))
-    (unless (poo-flow-core-validation-evidence-accepted? evidence)
+    (unless (yuanxu-validation-evidence-accepted? evidence)
       (error "Guestbook configuration refused" evidence))
     (.o input: scenario
         basis: (.get context basis)
@@ -405,7 +405,7 @@ This local record preserves associations; it is not a new user configuration lay
                 expected-input: expected actual-input: (.get plan input))))
      ((not (eq? (.get plan basis) (.get context basis)))
       (list (.o kind: 'guestbook-stale-basis)))
-     ((not (and (poo-flow-core-validation-evidence-accepted? evidence)
+     ((not (and (yuanxu-validation-evidence-accepted? evidence)
                 (eq? (guestbook-ref evidence 'candidate) expected)
                 (eq? (guestbook-ref evidence 'context) context)
                 (equal? (guestbook-ref evidence 'contract-identity)
@@ -427,7 +427,7 @@ This local record preserves associations; it is not a new user configuration lay
             rows))))))
 
 (def GuestbookCandidatePlanContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'guestbook/candidate-plan
    (lambda (value)
      (and (object? value)
@@ -438,7 +438,7 @@ This local record preserves associations; it is not a new user configuration lay
 The public native admission call is simply:
 
 #+begin_src scheme
-(poo-flow-core-contract-admit GuestbookCandidatePlanContract candidate-plan context)
+(yuanxu-contract-admit GuestbookCandidatePlanContract candidate-plan context)
 #+end_src
 
 This Contract admits a bounded candidate plan, not a complete rendered Kubernetes

@@ -72,8 +72,8 @@
           (length (delete-duplicates/hash candidate table: (make-hash-table-eq))))))
 (def (commands? candidate)
   (and (list? candidate) (pair? candidate) (every string? candidate)))
-(def SymbolsContract (poo-flow-predicate-contract 'multi/symbols symbols? empty-obligations))
-(def CommandsContract (poo-flow-predicate-contract 'multi/commands commands? empty-obligations))
+(def SymbolsContract (yuanxu-predicate-contract 'multi/symbols symbols? empty-obligations))
+(def CommandsContract (yuanxu-predicate-contract 'multi/commands commands? empty-obligations))
 (def (same-target candidate context)
   (if (eq? candidate (.get context target)) '() (list (.o kind: 'wrong-target))))
 (def (pipeline-obligations candidate context)
@@ -88,7 +88,7 @@
            (not (member "forbidden" (.get candidate commands))))
     '() (list (.o kind: 'check-policy-refused))))
 (def (native-contract contract-id family fields obligations-proc)
-  (.cc PooFlowNativeObjectContract.
+  (.cc YuanxuObjectContract.
     'identity contract-id 'proto family 'responsibilities fields '.obligations obligations-proc))
 (def ScenarioShape
   (native-contract 'multi/scenario-shape Scenario.

@@ -52,7 +52,7 @@
       ;; build-only tooling must not become an ordinary Module target.
       (check-equal? (length (filter (cut equal? <> "prelude") names)) 1)
       (check-equal? (length (filter (cut equal? <> "object-family/read-projection") names)) 1)
-      (check-equal? (length (filter (cut equal? <> "type-facts/objects") names)) 1)
+      (check-equal? (length (filter (cut equal? <> "object-types/facts") names)) 1)
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (build-command Build "compile")
       (def first-identities (output-identities root lib names))

@@ -544,7 +544,7 @@ runtime adapter boundaries.
 
 * Ownership
 
-- =poo-flow-core= owns semantic capability evidence and EffectIntent
+- =yuanxu= owns semantic capability evidence and EffectIntent
   projection.
 - The coordinator owns immutable lifecycle generations, event lineage, claims,
   conditional-head commit, recovery admission, and reconciliation.

@@ -19,12 +19,17 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
-      - name: Build Core proof package
+      - name: Build Yuanxu proof package
         working-directory: dev/proofs/lean
         run: lake build
 
   quint:
-    name: Core Quint finite models
+    name: Yuanxu Quint finite models (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -41,8 +46,8 @@ jobs:
       - name: Prepare pinned backend
         run: python3 dev/proofs/quint/prepare.py
       - name: Check finite models and matched faults
-        run: python3 dev/proofs/quint/check.py --receipt "$RUNNER_TEMP/core-quint-proof.ss"
+        run: python3 dev/proofs/quint/check.py --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: core-quint-proof
-          path: ${{ runner.temp }}/core-quint-proof.ss
+          name: yuanxu-quint-proof-${{ matrix.shard }}
+          path: ${{ runner.temp }}/yuanxu-quint-proof.ss

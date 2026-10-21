@@ -11,7 +11,7 @@ They are not supported alternate build APIs. Recorded failures remain failures.
 
 * Implemented boundary
 
-poo-flow-core-build-spec in module-system/building/build-projection.ss now accepts a
+yuanxu-build-spec in module-system/building/build-projection.ss now accepts a
 real init source and returns an ordinary native Scheme list. Selection and
 dependency resolution still belong to yuanxu-load-modules. The build adapter
 does not inherit or refine that Graph. Native std/build-script and std/make own
@@ -33,13 +33,13 @@ as described in [[file:13.07-core-build-entry.org][06]].
 #+begin_src scheme
 (import :std/build-script
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/build-projection poo-flow-core-build-spec))
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-build-spec))
 
 (def source-root (path-directory (this-source-file)))
 (def output (path-expand ".gerbil/module-build" source-root))
 (def retained '("utilities/algorithms" "types"))
 (def module-spec
-  (poo-flow-core-build-spec (path-expand "init.ss" source-root)
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
     output-directory: output
     retained: retained))
 
@@ -99,7 +99,7 @@ normalization; the function must not silently miscompile them.
 The writer's existing currentness boundary now includes retained source and
 package observations, generated package metadata, all prepared inputs and the
 generated native entry. A prepared artifact can be passed to
-poo-flow-core-build-spec to obtain the same module list while rechecking that
+yuanxu-build-spec to obtain the same module list while rechecking that
 boundary. It cannot be reconfigured with another output or retained list.
 
 The focused test calls native defbuild-script directly:
@@ -107,7 +107,7 @@ The focused test calls native defbuild-script directly:
 #+begin_src scheme
 (let ((this-source-file (lambda () (.get artifact build-entry))))
   (defbuild-script
-    (append (poo-flow-core-build-spec artifact) retained)
+    (append (yuanxu-build-spec artifact) retained)
     libdir: lib bindir: bin parallelize: 1 optimize: #f)
   main)
 #+end_src

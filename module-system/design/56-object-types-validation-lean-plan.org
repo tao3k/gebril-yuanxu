@@ -75,8 +75,8 @@ flowchart LR
 The critical boundary is between =Receipt= and =Projection=. Before that boundary, data should be structured Scheme values. After that boundary, alists are allowed because the payload is a final report or runtime handoff encoding.
 ** 10.06.56.30 First Code Slice
 The first implementation slice adds:
-- =src/type-facts/objects.ss=;
-- =src/type-facts.ss= facade;
+- =src/object-types/facts.ss=;
+- =object-types/facts.ss= facade;
 - sandbox resource contract integration;
 - a focused scenario test for sandbox resource validation receipts.
 
@@ -142,7 +142,7 @@ Phase 1: sandbox resource closure.
 - Ensure every validation receipt has =runtime-executed = #f=.
 
 Phase 2: session policy migration.
-- Move existing session Lean fact key contracts toward shared =src/type-facts= structures.
+- Move existing session Lean fact key contracts toward shared =object-types/facts= structures.
 - Preserve session-specific projections as final ABI/report surfaces.
 - Avoid duplicating generic Lean contract structs in session handoff code.
 

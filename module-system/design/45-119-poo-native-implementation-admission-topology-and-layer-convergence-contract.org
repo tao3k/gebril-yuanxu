@@ -21,7 +21,7 @@ This RFC owns:
 - the evidence boundary between upstream =gerbil-poo= operations and
   project-owned adapters;
 - the admission dependency from upstream correspondence to pure
-  =poo-flow-core= semantics;
+  =yuanxu= semantics;
 - the two post-core branches for runtime/deployment adapters and
   application-owned Profile families;
 - the convergence gate for operator and deployment integration;
@@ -45,7 +45,7 @@ Implementation admission is a dependency graph, not a sequence of calendar
 phases.
 
 The upstream correspondence gate must close before a project adapter or core
-semantic object is admitted.  Pure =poo-flow-core= semantics must close before
+semantic object is admitted.  Pure =yuanxu= semantics must close before
 either runtime execution or application composition can claim integration
 readiness.
 
@@ -62,7 +62,7 @@ After the pure core gate:
 flowchart LR
   U["upstream gerbil-poo revision and native operation families"]
   X["exact correspondence evidence"]
-  C["pure poo-flow-core semantic objects and contracts"]
+  C["pure yuanxu semantic objects and contracts"]
   R["runtime/deployment adapters"]
   A["application-owned Profile families"]
   O["operator and deployment convergence"]
@@ -109,7 +109,7 @@ github.com/metareflection/poof@a07a6841d3fde46159f990065cde55b811f1f680
 
 * Gate C: pure core semantics
 
-=poo-flow-core= may implement only project-owned semantic contracts on top of
+=yuanxu= may implement only project-owned semantic contracts on top of
 the admitted upstream operations.
 
 This gate includes:
@@ -235,7 +235,7 @@ materialization concerns.  Neither belongs to the POO semantic layer.
 * Rejected alternatives
 
 - Treating the admission topology as a linear project schedule.
-- Reimplementing upstream POO operations in =poo-flow-core=.
+- Reimplementing upstream POO operations in =yuanxu=.
 - Naming concrete upstream operators before correspondence evidence exists.
 - Letting runtime adapters define Profile or composition semantics.
 - Letting application Profiles observe ambient environment state.

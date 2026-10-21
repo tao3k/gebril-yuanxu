@@ -16,7 +16,7 @@ engine. Its contract is: load an admitted resolved JSON file, construct a candid
 native Contract using the existing bridge, refuse generation diagnostics under
 this strict policy, and retain full-root validation in native .admit.
 
-All new poo-flow-core- names and scope publications below are target APIs. Existing
+All new yuanxu- names and scope publications below are target APIs. Existing
 read/compile/validate implementations have legacy names in
 [[file:../../../modules/json-schema/interface.ss][the actual Core interface]]. Nothing here has been installed or executed.
 
@@ -29,19 +29,19 @@ expansion. No public user is asked to pass generation/evidence records.
 
 #+begin_src scheme
 (def (schema-file-obligations artifact candidate _context)
-  (poo-flow-core-json-schema-object-contract-validation-diagnostics
-   (poo-flow-core-json-schema-contract-artifact-validate artifact candidate)))
+  (yuanxu-json-schema-object-contract-validation-diagnostics
+   (yuanxu-json-schema-contract-artifact-validate artifact candidate)))
 
-(def (poo-flow-core-json-schema-from-file config-contract effective-config resolved-file)
+(def (yuanxu-json-schema-from-file config-contract effective-config resolved-file)
   (let (artifact
          (compile-schema config-contract effective-config
-           (poo-flow-core-json-schema-read-file resolved-file)
+           (yuanxu-json-schema-read-file resolved-file)
            (list (cons 'source-ref resolved-file))))
     ;; Raw-file publication keeps a coverage-review floor, even when inspection
     ;; of in-memory artifacts allows diagnostics through configured policy.
-    (unless (null? (poo-flow-core-json-schema-contract-artifact-diagnostics artifact))
+    (unless (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact))
       (error "Schema conversion needs coverage review" artifact))
-    (.cc (poo-flow-core-json-schema-contract-artifact-object-contract artifact)
+    (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
          '.obligations (cut schema-file-obligations artifact <> <>))))
 #+end_src
 
@@ -63,7 +63,7 @@ reusable behavior; interface.ss declares module-specific public bindings once:
         types: (.o Config: SchemaConfigContract)
         config: JsonSchemaDefaultConfig
         from-file:
-        (cut poo-flow-core-json-schema-from-file (.get types Config) config <>)))
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
   features: (.o))
 #+end_src
 
@@ -108,7 +108,7 @@ asset closure. The wrapper generates role imports/compiler export as in module 2
                (path-expand "../../../schemas/json/github-workflow.json"
                             (path-directory (this-source-file)))))
           admit:
-          (cut poo-flow-core-contract-admit (.get types Config) <> <>)))
+          (cut yuanxu-contract-admit (.get types Config) <> <>)))
   features: (.o))
 #+end_src
 
@@ -127,7 +127,7 @@ The corresponding type-owner shape Contract is concrete, deliberately bounded:
 (def (workflow-scope-shape-obligations _value _context) '())
 
 (def GitHubActionsScopeContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'github-actions/scope workflow-scope-shape? workflow-scope-shape-obligations))
 #+end_src
 

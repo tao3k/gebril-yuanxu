@@ -10,18 +10,18 @@
     (list (.o kind: 'invalid-selected-checks))))
 
 (def PipelineSelectionContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'funflow/pipeline-selection object? selection-obligations))
 
 ;; Only fixed roles here; do not enumerate optional Check values.
-(.def (ProfileShapeContract @ PooFlowNativeObjectContract.)
+(.def (ProfileShapeContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-shape
   proto: Root
   responsibilities: (.o pipeline: PipelineSelectionContract)
   .obligations: empty-obligations)
 
 ;; This descriptor retains native proto checking and final identity obligations.
-(.def (SelectedChecksContract @ PooFlowNativeObjectContract.)
+(.def (SelectedChecksContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-selected
   proto: Root
   responsibilities: (.o)
@@ -83,15 +83,15 @@
           entries)))))
 
 (def (selection-refusal descriptor candidate context failures)
-  (poo-flow-validation-evidence
+  (yuanxu-validation-evidence
     (.get descriptor identity) candidate
-    (poo-flow-type-classify descriptor candidate context)
+    (yuanxu-type-classify descriptor candidate context)
     failures #f failures context))
 
 (def (admit-selected-profile policy candidate context)
   (let* ((_stage (report 'stage 'shape-start))
          (shape (.get policy shape))
-         (shape-evidence (poo-flow-contract-admit shape candidate context)))
+         (shape-evidence (yuanxu-contract-admit shape candidate context)))
     (report 'stage 'shape-returned)
     (if (not (covers-responsibilities? shape candidate context shape-evidence))
       (selection-refusal shape candidate context
@@ -105,7 +105,7 @@
           (let* ((descriptor (project-selected-contract policy names))
                  (_stage (report 'stage 'projection-made))
                  (evidence
-                  (poo-flow-contract-admit descriptor candidate context)))
+                  (yuanxu-contract-admit descriptor candidate context)))
             (report 'stage 'children-returned)
             (if (covers-responsibilities? descriptor candidate context evidence)
               (.cc evidence

@@ -21,7 +21,7 @@ parent/child, and development-harness boundaries for the 45 RFC family.
 | dependency installation | =gerbil.pkg=/=gxpkg= | semantic qualification |
 | build graph and build execution | Gerbil-Bazel | Mix/Profile semantics |
 | policy harness and building/testing framework | GSLPH | runtime authority |
-| parent core initialization | =poo-flow-core= | child packages |
+| parent core initialization | =yuanxu= | child packages |
 | child governance semantics | =wendao-episteme= | parent reimplementation |
 
 * Parent and child
@@ -33,7 +33,7 @@ and it does not repeat parent G0.
 
 #+begin_mermaid
 flowchart LR
-    Parent["poo-flow-core"] -->|"initializes once"| Capability["Qualified core capability"]
+    Parent["yuanxu"] -->|"initializes once"| Capability["Qualified core capability"]
     Capability --> Child["wendao-episteme"]
     Child --> Descendant["B → C → arbitrary descendants"]
     Child -. "does not rerun" .-> G0["Parent G0"]
@@ -41,13 +41,13 @@ flowchart LR
 
 * Qualification responsibility split
 
-The parent qualification surface ends at the published =poo-flow-core=
+The parent qualification surface ends at the published =yuanxu=
 capability contract.
 
 | Qualification concern | Owner |
 |-
-| pinned =gerbil-poo= import/binding qualification | parent =poo-flow-core= |
-| parent capability publication and parent-local tests | parent =poo-flow-core= |
+| pinned =gerbil-poo= import/binding qualification | parent =yuanxu= |
+| parent capability publication and parent-local tests | parent =yuanxu= |
 | child consumption against an identified parent artifact | =wendao-episteme= |
 | governance Profile/case behavior | =wendao-episteme= |
 | downstream B-to-C embedding | the downstream consumer that owns that edge |

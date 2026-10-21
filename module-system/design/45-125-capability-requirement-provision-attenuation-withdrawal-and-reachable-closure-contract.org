@@ -460,7 +460,7 @@ generic operations.
 
 - Upstream =gerbil-poo= owns object, prototype, dispatch, inherited
   computation, and C4 mechanics.
-- =poo-flow-core= owns capability semantic identity, requirements, provisions,
+- =yuanxu= owns capability semantic identity, requirements, provisions,
   closure, attenuation, stratification, conditions, cache identity, provenance,
   and explanation.
 - =wendao-episteme= owns domain capability contracts supplied by its Modules and

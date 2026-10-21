@@ -46,8 +46,8 @@
   (if (and (eq? candidate (.get context target)) (final-identities? candidate))
     '() (list (.o kind: 'stale-final-checks))))
 (def (receipt-ok? contract candidate context evidence)
-  (and (poo-flow-validation-evidence? evidence)
-       (poo-flow-validation-evidence-accepted? evidence)
+  (and (yuanxu-validation-evidence? evidence)
+       (yuanxu-validation-evidence-accepted? evidence)
        (eq? (.get evidence contract-identity) (.get contract identity))
        (eq? (.get evidence candidate) candidate)
        (eq? (.get evidence context) context)
@@ -64,11 +64,11 @@
   (if (member "forbidden" (.get candidate commands))
     (list (.o kind: 'forbidden-command)) '()))
 (def CheckPolicyContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'projection/check-commands check-commands? check-command-obligations))
 (def (build-obligations candidate context)
   (if (equal? (car (.get candidate commands)) "gerbil")
     (check-command-obligations candidate context)
     (list (.o kind: 'build-command-policy))))
 (def BuildCheckContract
-  (poo-flow-predicate-contract 'projection/build check-commands? build-obligations))
+  (yuanxu-predicate-contract 'projection/build check-commands? build-obligations))

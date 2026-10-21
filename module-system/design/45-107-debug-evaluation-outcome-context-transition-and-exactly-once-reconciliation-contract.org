@@ -623,13 +623,13 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] =poo-flow-core= owns =EvaluationOutcome=, immutable successor-context
+- [X] =yuanxu= owns =EvaluationOutcome=, immutable successor-context
   transitions, terminal versus continuable semantics, and logical
   exactly-once reconciliation.
 - [X] Runtime/deployment adapters own effect execution and durable receipt
   projection; they do not redefine outcome semantics.
 - [ ] The outcome and reconciliation semantics remain implementation work
-  owned by =poo-flow-core=.
+  owned by =yuanxu=.
 
 * References
 

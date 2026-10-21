@@ -51,6 +51,8 @@
     "module-system/source/config-prelude.ss"
     "module-system/authoring/import-policy.ss"
     "poo-clos/types.ss"
+    "object-types/facts.ss"
+    "modules/json-schema/json-schema-receipt.ss"
     "object-family/read-projection.ss"
     "types.ss"
     "admission/source.ss"

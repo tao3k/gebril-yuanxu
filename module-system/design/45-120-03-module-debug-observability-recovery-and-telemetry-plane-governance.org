@@ -393,7 +393,7 @@ already admitted POO responsibility.  It cannot receive:
 
 - Upstream =gerbil-poo= owns prototype, dispatch, C4, and inherited continuation
   mechanics.
-- =poo-flow-core= owns ObservationEvent, condition, RecoveryDecision, semantic
+- =yuanxu= owns ObservationEvent, condition, RecoveryDecision, semantic
   budgets, and coordinator contracts.
 - Each domain Module owns only its domain-specific observation and debug
   specializations.

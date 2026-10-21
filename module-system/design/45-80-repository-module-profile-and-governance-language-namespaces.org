@@ -14,7 +14,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 * Status
 
 This RFC records the accepted namespace separation among the
-=wendao-episteme= source repository, the =poo-flow-core= profile projection,
+=wendao-episteme= source repository, the =yuanxu= profile projection,
 the exported profile binding, and a possible future Wendao governance language.
 
 It fixes naming and ownership. It does not claim that conceptual future Gerbil
@@ -48,7 +48,7 @@ $ repository-source("wendao-episteme", commit)
   and not provides-runtime-capability(commit) $
 #+end_src
 
-The projection module namespace states that =poo-flow-core= owns the thin
+The projection module namespace states that =yuanxu= owns the thin
 projection implementation.  It remains a proposed contract until a real Gerbil
 module is implemented and verified.  Its exported binding names a first-class
 semantic profile value; =compose= performs no repository, module-path,
@@ -82,7 +82,7 @@ projection.  This RFC reserves that role but does not claim an implementation.
 #+begin_src mermaid
 flowchart LR
   A["wendao-episteme repository"] -->|"source identity + exact commit"| B["Provenance evidence"]
-  C["poo-flow-core projection namespace"] -->|"implementation owner"| D["Proposed or verified Gerbil module"]
+  C["yuanxu projection namespace"] -->|"implementation owner"| D["Proposed or verified Gerbil module"]
   D -->|"explicit export"| E["Semantic profile lexical binding"]
   E -->|"first-class value"| F["(compose profiles ...)"]
   G["Future governance-language namespace"] -->|"reserved #lang role"| H["Governance language implementation"]
@@ -158,7 +158,7 @@ They do not provide:
 
 * Projection module namespace
 
-The current thin projection is owned by =poo-flow-core=.
+The current thin projection is owned by =yuanxu=.
 
 Therefore its proposed owner-first Gerbil module path is:
 
@@ -168,7 +168,7 @@ Therefore its proposed owner-first Gerbil module path is:
 
 The path communicates:
 
-- module code owner: =poo-flow-core=;
+- module code owner: =yuanxu=;
 - surface role: profile projection;
 - semantic subject: =wendao-episteme=.
 

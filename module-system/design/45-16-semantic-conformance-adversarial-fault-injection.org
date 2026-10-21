@@ -12,7 +12,7 @@ This module owns the evidence contract for moving POO Flow semantics from
 It defines:
 
 - POO-native conformance scenarios;
-- semantic oracles owned by =poo-flow-core=;
+- semantic oracles owned by =yuanxu=;
 - adversarial fault windows;
 - causal and schedule-independent assertions;
 - qualification receipts;
@@ -51,7 +51,7 @@ projection or provider-resolution service.
 
 * Project and downstream boundary
 
-The parent project owns conformance of =poo-flow-core=.
+The parent project owns conformance of =yuanxu=.
 
 It does not own =wendao-episteme= distribution or integration testing merely
 because that package is composed through POO Flow.  Downstream packages own
@@ -81,7 +81,7 @@ Exact scenario prototypes, helpers, and macros remain API-evidence-gated.
 #+begin_src mermaid
 flowchart LR
   S["State: normative Org scenario"] -->|"lower to POO-native fixture"| F["State: Gerbil conformance fixture"]
-  F -->|"exercise poo-flow-core semantics"| R["State: runtime receipts and conditions"]
+  F -->|"exercise yuanxu semantics"| R["State: runtime receipts and conditions"]
   R -->|"POO Flow-owned semantic oracle"| O["State: conformance result"]
   G["State: GSLPH dev harness"] -.->|"orchestrates build, fault injection, and reporting"| F
   B["State: Gerbil-Bazel build system"] -.->|"builds stable declared targets"| F
@@ -307,7 +307,7 @@ stateDiagram-v2
   [*] --> SemanticRequired: normative semantic obligation exists
   SemanticRequired --> SymbolLocated: exact gerbil-poo or POO Flow identifier located
   SymbolLocated --> BehaviorProven: focused conformance scenarios pass with semantic receipts
-  BehaviorProven --> FlowQualified: integration inside poo-flow-core passes owned boundary scenarios
+  BehaviorProven --> FlowQualified: integration inside yuanxu passes owned boundary scenarios
   FlowQualified --> BehaviorProven: later contradiction or regression invalidates flow qualification
   BehaviorProven --> SymbolLocated: later evidence invalidates behavior proof
 #+end_src
@@ -360,7 +360,7 @@ result.
 - [ ] GSLPH proven to remain a dev-harness consumer only.
 - [ ] Gerbil-Bazel targets proven to remain build-system targets only.
 - [ ] =gerbil.pkg= proven to remain package management only.
-- [ ] Parent suite proven scoped to =poo-flow-core=.
+- [ ] Parent suite proven scoped to =yuanxu=.
 - [ ] Downstream distribution/integration ownership remains downstream.
 
 * Receipt and observability contract

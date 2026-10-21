@@ -197,7 +197,7 @@ source-mapped expansion diagnostic defined by the macro evidence RFC.
 exports, source integration instructions, tests, and publication
 choices.
 
-=poo-flow-core= owns generic POO Flow Module, composition, authority,
+=yuanxu= owns generic POO Flow Module, composition, authority,
 observability, and runtime boundary contracts.
 
 The POO Flow parent may pin source and consume the generic core
@@ -241,7 +241,7 @@ No layer silently retries by crossing into another plane.
 - [ ] Keep the Module =imports= slot semantic only.
 - [ ] Preserve =wendao-episteme= ownership of its domain source, tests,
   build, distribution, and release decisions.
-- [ ] Preserve =poo-flow-core= ownership of generic semantic contracts.
+- [ ] Preserve =yuanxu= ownership of generic semantic contracts.
 - [ ] Preserve final application ownership of profile selection.
 - [ ] Produce source-mapped diagnostics for missing bindings.
 - [ ] Add no global Module registry or active-evidence projection into

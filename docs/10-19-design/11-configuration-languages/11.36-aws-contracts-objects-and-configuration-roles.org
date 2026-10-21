@@ -124,7 +124,7 @@ Only after child fields accept are their network/key/output links dereferenced.
                  (.all-slots candidate)))))
 (def (aws-require contract value)
   (let (receipt ((.get contract .admit) value #f))
-    (unless (poo-flow-core-validation-evidence-accepted? receipt)
+    (unless (yuanxu-validation-evidence-accepted? receipt)
       (error "AWS configuration rejected" (.get receipt diagnostics)))))
 (def (aws-image-for-region profile region)
   (aws-require ImageContract profile)
@@ -148,10 +148,10 @@ Only after child fields accept are their network/key/output links dereferenced.
            (aws-receipts AWSName (.get candidate outputs) 'outputs context)))
          (failures
           (filter (lambda (receipt)
-                    (not (poo-flow-core-validation-evidence-accepted? receipt))) receipts)))
+                    (not (yuanxu-validation-evidence-accepted? receipt))) receipts)))
     (if (pair? failures) failures
       (append
-       (poo-flow-core-append-map
+       (yuanxu-append-map
         (lambda (name)
           (let (instance (.ref (.get candidate instances) name))
             (append
@@ -164,7 +164,7 @@ Only after child fields accept are their network/key/output links dereferenced.
                          path: (list 'instances name 'key-ref)
                          reference: (.get instance key-ref)))))))
         (.all-slots (.get candidate instances)))
-       (poo-flow-core-append-map
+       (yuanxu-append-map
         (lambda (name)
           (if (.slot? (.get candidate instances) (.ref (.get candidate outputs) name)) '()
             (list (.o kind: 'missing-output-instance path: (list 'outputs name)))))

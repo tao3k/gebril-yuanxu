@@ -67,7 +67,7 @@ does not change the type expected by defbuild-script.
 ;; Bounded actual non-module roots from Core build.ss.
 (def retained '("utilities/algorithms" "types"))
 (def module-spec
-  (poo-flow-core-build-spec (path-expand "init.ss" source-root)
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
     output-directory: output retained: retained))
 
 ;; Under the shared source-root anchor; 05 shows the complete native frame.
@@ -86,7 +86,7 @@ and the complete native entry are specified in 05.
 The [[file:13.03-core-jsonschema-init-build-case.org][real JsonSchema case]] expands source-root compatibility and shared-unit
 deduplication. The bounded projection is qualified there; migration of the entire
 live Core build.ss remains separate.
-poo-flow-core-build-spec returns an ordinary
+yuanxu-build-spec returns an ordinary
 native LIST with the SAME source-root and output-identity interpretation as the
 other entries. It must refuse an incompatible projection rather than silently
 returning relocated entries or inventing a procedure-valued spec.

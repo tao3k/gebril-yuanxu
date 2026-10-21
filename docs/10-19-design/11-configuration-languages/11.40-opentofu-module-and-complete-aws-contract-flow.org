@@ -141,7 +141,7 @@ are user configuration paths relative to the selected instance/network occurrenc
       (.all-slots fields))))
 
 (def (mapped-field-obligations fields object context)
-  (poo-flow-core-append-map
+  (yuanxu-append-map
     (lambda (name)
       (let* ((field (.ref fields name))
              (value (apply (.get field compute)

@@ -200,7 +200,7 @@ identity.
 | Owner | Owns | Does not own |
 |-------+------+--------------|
 | upstream =gerbil-poo= | POO primitives, prototype and object operations | POO Flow domain profiles or application policy |
-| =poo-flow-core= | generic composition protocols, typed facet prototypes, admission/debug contracts, runtime adapter contracts, canonical neutral values | Wendao domain profiles, application deployment choices, child package release paths |
+| =yuanxu= | generic composition protocols, typed facet prototypes, admission/debug contracts, runtime adapter contracts, canonical neutral values | Wendao domain profiles, application deployment choices, child package release paths |
 | =wendao-episteme= | Wendao domain POO modules, domain responsibilities, domain profile exports, its package build/test/publication | POO Flow core protocols, final application's environment policy |
 | final application composition repository | deployment-specific profile values, concrete budgets and restrictions, final =use-composition= binding | upstream package or module identity |
 | parent Git repository | child source pin and parent integration boundary | child package ownership, child semantic exports, child release process |
@@ -213,7 +213,7 @@ merely because they consume or verify a package.
 
 * POO Flow core ownership
 
-=poo-flow-core= owns the general semantic vocabulary:
+=yuanxu= owns the general semantic vocabulary:
 
 - POO module and profile protocols;
 - =ProfileBundle= and composition strategy contracts;
@@ -423,7 +423,7 @@ contracts.
 
 #+begin_src mermaid
 flowchart TD
-  GP["upstream gerbil-poo"] -->|"provides native POO primitives and prototype operations"| PC["poo-flow-core"]
+  GP["upstream gerbil-poo"] -->|"provides native POO primitives and prototype operations"| PC["yuanxu"]
   PC -->|"owns generic module, profile, admission, and runtime contracts"| APP["Application composition"]
   WE["wendao-episteme"] -->|"exports Wendao-owned POO modules and profile revisions"| APP
   AR["Application repository"] -->|"owns deployment profiles and final use-composition binding"| APP
@@ -493,7 +493,7 @@ keyword layer is introduced.
 - [X] Local profile names are module-scoped.
 - [X] There is no global profile namespace.
 - [X] Stable export identity and immutable revision identity remain distinct.
-- [X] =poo-flow-core= owns generic contracts, not Wendao domain profiles.
+- [X] =yuanxu= owns generic contracts, not Wendao domain profiles.
 - [X] =wendao-episteme= owns its domain profiles and package lifecycle.
 - [X] The application repository owns deployment-specific composition.
 - [X] A derived profile receives a new owner identity.
@@ -531,7 +531,7 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] =poo-flow-core= owns generic module-scoped profile identity, export
+- [X] =yuanxu= owns generic module-scoped profile identity, export
   relations, conflict provenance, and composition identity contracts.
 - [X] =wendao-episteme= owns its domain Module and Profile identities and their
   exports.
@@ -540,7 +540,7 @@ implementation completion, not owner selection.
 
 #+begin_src mermaid
 flowchart LR
-  P["upstream gerbil-poo"] -->|"owns native POO operators"| C["poo-flow-core"]
+  P["upstream gerbil-poo"] -->|"owns native POO operators"| C["yuanxu"]
   C -->|"defines generic Module, Profile, identity, and composition contracts"| W["wendao-episteme"]
   W -->|"exports domain Modules and Profiles"| A["final application"]
   C -->|"projects admitted runtime intents and semantic receipts"| R["runtime/deployment adapters"]
@@ -549,7 +549,7 @@ flowchart LR
 #+end_src
 
 - [ ] Concrete generic identity and export-relation support remain
-  implementation work owned by =poo-flow-core=.
+  implementation work owned by =yuanxu=.
 
 * References
 

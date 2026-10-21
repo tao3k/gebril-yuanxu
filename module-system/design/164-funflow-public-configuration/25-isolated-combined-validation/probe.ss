@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;; Test fixture only: actual public Core admission, no Module/Loader adaptation.
-(import :clan/poo/object :core/types
+(import :clan/poo/object :yuanxu/types
         (only-in :std/list/list every))
 
 (def assertions 0)
@@ -55,13 +55,13 @@
     (and (= (length actual) (length expected)) (every eq? actual expected))))
 (def (empty-obligations candidate context) '())
 (def CheckObjectContract
-  (poo-flow-predicate-contract 'combined/check-object object? empty-obligations))
+  (yuanxu-predicate-contract 'combined/check-object object? empty-obligations))
 (def PipelineObjectContract
-  (poo-flow-predicate-contract 'combined/pipeline-object object? empty-obligations))
+  (yuanxu-predicate-contract 'combined/pipeline-object object? empty-obligations))
 (def (final-obligations candidate context)
   (if (and (eq? candidate (.get context target)) (final-identities? candidate))
     '() (list (.o kind: 'stale-final-checks))))
-(.def (ProfileShapeContract @ PooFlowNativeObjectContract.)
+(.def (ProfileShapeContract @ YuanxuObjectContract.)
   identity: 'combined/profile-shape
   proto: Root
   responsibilities:
@@ -70,8 +70,8 @@
 
 ;; Correlate real public Core evidence, not an invented boolean admit method.
 (def (receipt-ok? contract candidate context evidence)
-  (and (poo-flow-validation-evidence? evidence)
-       (poo-flow-validation-evidence-accepted? evidence)
+  (and (yuanxu-validation-evidence? evidence)
+       (yuanxu-validation-evidence-accepted? evidence)
        (eq? (.get evidence contract-identity) (.get contract identity))
        (eq? (.get evidence candidate) candidate)
        (eq? (.get evidence context) context)
@@ -79,7 +79,7 @@
        (eq? (.get evidence classification candidate) candidate)
        (eq? (.get evidence classification context) context)))
 (def context (.o target: Final))
-(def evidence (poo-flow-contract-admit ProfileShapeContract Final context))
+(def evidence (yuanxu-contract-admit ProfileShapeContract Final context))
 (check 'final-public-admission (receipt-ok? ProfileShapeContract Final context evidence))
 (def actual (.get Final pipeline checks))
 (def values (map (lambda (check-object) (.get check-object value)) actual))
@@ -100,7 +100,7 @@
   pipeline: =>.+ (.o checks: parent-checks))
 (def frozen-context (.o target: Frozen))
 (def frozen-evidence
-  (poo-flow-contract-admit ProfileShapeContract Frozen frozen-context))
+  (yuanxu-contract-admit ProfileShapeContract Frozen frozen-context))
 (check 'stale-parent-list-refused (not (.get frozen-evidence accepted?)))
 (check 'stale-parent-reason
   (eq? (.get (car (.get frozen-evidence obligation-evidence)) kind) 'stale-final-checks))
@@ -112,7 +112,7 @@
   pipeline: =>.+ (.o checks: parent-checks))
 (def same-context (.o target: SameCountFrozen))
 (def same-evidence
-  (poo-flow-contract-admit ProfileShapeContract SameCountFrozen same-context))
+  (yuanxu-contract-admit ProfileShapeContract SameCountFrozen same-context))
 (check 'same-count (equal? (.get SameCountFrozen pipeline selected-checks) '(build test package)))
 (check 'same-count-stale-refused (not (.get same-evidence accepted?)))
 (report 'same-count-stale-admitted (.get same-evidence accepted?))
@@ -122,7 +122,7 @@
   (if (eq? (.get candidate value) 'forbidden)
     (list (.o kind: 'forbidden-check)) '()))
 (def CheckPolicyContract
-  (poo-flow-predicate-contract 'combined/check-policy object? check-policy-obligations))
+  (yuanxu-predicate-contract 'combined/check-policy object? check-policy-obligations))
 (def (closed-selection? candidate context)
   (let ((required (.get candidate pipeline selected-checks))
         (completed (.get context completed-checks)))
@@ -140,16 +140,16 @@
        (if (every
              (lambda (child)
                (receipt-ok? CheckPolicyContract child context
-                 (poo-flow-contract-admit CheckPolicyContract child context)))
+                 (yuanxu-contract-admit CheckPolicyContract child context)))
              checks)
          '() (list (.o kind: 'selected-child-refused)))))))
 (def SelectionClosureContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'combined/selection-closure object? selected-closure-obligations))
 
 (def missing-context (.o target: Final completed-checks: '(build test package)))
-(def outer-only (poo-flow-contract-admit ProfileShapeContract Final missing-context))
-(def missing-evidence (poo-flow-contract-admit SelectionClosureContract Final missing-context))
+(def outer-only (yuanxu-contract-admit ProfileShapeContract Final missing-context))
+(def missing-evidence (yuanxu-contract-admit SelectionClosureContract Final missing-context))
 (check 'outer-only-can-pass (receipt-ok? ProfileShapeContract Final missing-context outer-only))
 (check 'missing-smoke-refused (not (.get missing-evidence accepted?)))
 (check 'missing-smoke-reason
@@ -160,7 +160,7 @@
 (def complete-context
   (.o target: Final completed-checks: '(build test package smoke)))
 (def complete-evidence
-  (poo-flow-contract-admit SelectionClosureContract Final complete-context))
+  (yuanxu-contract-admit SelectionClosureContract Final complete-context))
 (check 'complete-child-admissions
   (receipt-ok? SelectionClosureContract Final complete-context complete-evidence))
 (report 'complete-closure-admitted (.get complete-evidence accepted?))
@@ -169,8 +169,8 @@
 (.def (BadSmoke @ Final) smoke: =>.+ (.o value: 'forbidden))
 (def bad-context
   (.o target: BadSmoke completed-checks: '(build test package smoke)))
-(def bad-outer (poo-flow-contract-admit ProfileShapeContract BadSmoke bad-context))
-(def bad-child (poo-flow-contract-admit SelectionClosureContract BadSmoke bad-context))
+(def bad-outer (yuanxu-contract-admit ProfileShapeContract BadSmoke bad-context))
+(def bad-child (yuanxu-contract-admit SelectionClosureContract BadSmoke bad-context))
 (check 'bad-smoke-outer-can-pass (.get bad-outer accepted?))
 (check 'bad-smoke-child-refused (not (.get bad-child accepted?)))
 (check 'bad-smoke-reason

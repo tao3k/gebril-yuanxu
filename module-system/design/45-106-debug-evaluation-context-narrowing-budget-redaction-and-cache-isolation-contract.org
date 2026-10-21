@@ -805,13 +805,13 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] =poo-flow-core= owns =DebugEvaluationContext=, pure narrowing,
+- [X] =yuanxu= owns =DebugEvaluationContext=, pure narrowing,
   capability attenuation, redaction intersection, budget accounting, and cache
   isolation semantics.
 - [X] Runtime/deployment adapters own admitted observation and storage effects;
   they cannot mutate or ambiently extend the semantic context.
 - [ ] The semantic context implementation remains work owned by
-  =poo-flow-core=; adapter implementations are separate runtime work.
+  =yuanxu=; adapter implementations are separate runtime work.
 
 * References
 

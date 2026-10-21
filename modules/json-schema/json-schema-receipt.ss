@@ -7,7 +7,7 @@
 
 (import (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-native-contract->alist)
-        (only-in :yuanxu/type-facts/objects
+        (only-in :yuanxu/object-types/facts
                  yuanxu-type-fact-contract->alist
                  yuanxu-lean-fact-contract->alist
                  yuanxu-native-contract->type-facts

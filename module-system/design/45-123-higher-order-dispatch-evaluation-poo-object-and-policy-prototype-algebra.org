@@ -387,7 +387,7 @@ generic operations.
 
 - Upstream =gerbil-poo= owns object, slot, generic, inherited-computation, and
   C4 dispatch mechanics.
-- =poo-flow-core= owns the =DispatchEvaluation= semantic contract, context,
+- =yuanxu= owns the =DispatchEvaluation= semantic contract, context,
   policies, conditions, cache identity, outcomes, and explanations.
 - =wendao-episteme= owns domain behavior supplied through admitted prototypes.
 - The final application owns contribution admission and selected Profiles.

@@ -24,8 +24,8 @@ policy, PackageSpec or Kubernetes implementation to realize this protocol.
 
 * Naming rule for this target chain
 
-Every Core-owned public procedure in proposed code below uses poo-flow-core-;
-Core compiler paths use :poo-flow-core/.... The product facade alone retains
+Every Core-owned public procedure in proposed code below uses yuanxu-;
+Core compiler paths use :yuanxu/.... The product facade alone retains
 yuanxu-load-modules. Existing implementations with :core paths and poo-flow-
 procedure names are recorded in [[file:11.22-migrated-core-guestbook-chain.org][the current-state audit]], not mixed into target
 code. The [[file:../../../module-system/design/05-namespace-and-build-ownership.org][migration ledger]] maps old bindings to proposed names. Renaming is pending;
@@ -89,7 +89,7 @@ not behavior provided by the current load-modules macro.
         types: (.o Config: SchemaConfigContract)
         config: JsonSchemaDefaultConfig
         from-file:
-        (cut poo-flow-core-json-schema-from-file (.get types Config) config <>)))
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
   features: (.o))
 #+end_src
 
@@ -125,7 +125,7 @@ are fresh syntax identifiers, represented readably here with a percent prefix.
         types: (.o Config: SchemaConfigContract)
         config: JsonSchemaDefaultConfig
         from-file:
-        (cut poo-flow-core-json-schema-from-file (.get types Config) config <>)))
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
 
 (.def JsonSchema
   identity: 'core/json-schema
@@ -171,7 +171,7 @@ For a concrete bounded scope Contract, types.ss can add:
               names)))
 
 (def JsonSchemaScopeContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'json-schema/scope-v1
    (lambda (value)
      (and (procedure-scope? value '(compile contract validate admit from-file))
@@ -195,13 +195,13 @@ bounded shape definitions are:
 
 #+begin_src scheme
 (def KubernetesScopeContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'kubernetes/scope-v1
    (cut procedure-scope? <> '(project admit))
    no-scope-obligations))
 
 (def GuestbookScopeContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'guestbook/scope-v1
    (lambda (value)
      (and (procedure-scope? value '(admit preview))
@@ -231,7 +231,7 @@ claimed to prove its resource invariant or a function's effect discipline.
       (.o baseline: GuestbookDefaults
           contracts: (make-guestbook-types JsonSchema)
           admit:
-          (cut poo-flow-core-contract-admit (.get contracts ScenarioContract) <> <>)
+          (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>)
           preview: (cut guestbook-preview contracts <> Kubernetes <>))
       capabilities: (list GuestbookPreviewCapability))
   features: (.o smoke: GuestbookSmoke))
@@ -257,7 +257,7 @@ these role imports show the module-specific edges, not a standalone runnable fil
     (.o baseline: GuestbookDefaults
         contracts: (make-guestbook-types JsonSchema)
         admit:
-        (cut poo-flow-core-contract-admit (.get contracts ScenarioContract) <> <>)
+        (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>)
         preview: (cut guestbook-preview contracts <> Kubernetes <>))))
 
 (.def Guestbook
@@ -299,9 +299,9 @@ exports are not available until the coordinated migration:
 
 #+begin_src scheme
 (def (realize-interface-receipt backends source)
-  (poo-flow-core-lazy-load-plan-receipt
-   (poo-flow-core-force-lazy-load-plan
-    (poo-flow-core-make-lazy-load-plan backends source))))
+  (yuanxu-lazy-load-plan-receipt
+   (yuanxu-force-lazy-load-plan
+    (yuanxu-make-lazy-load-plan backends source))))
 #+end_src
 
 Existing [[file:../../../module-system/loader/objects.ss][Loader backends]] bind SourceRefs to already available descriptor values;
@@ -350,7 +350,7 @@ identity to distinguish descriptors from arbitrary objects with a named slot:
               (procedure? (.get core link))))))
 
 (def ModulePublicationContract
-  (poo-flow-core-predicate-contract
+  (yuanxu-predicate-contract
    'module/publication-v1 module-publication? no-scope-obligations))
 #+end_src
 
@@ -378,8 +378,8 @@ a content/currentness proof and cannot alone justify cross-session reuse.
 
 #+begin_src scheme
 (def (admit-link-value! contract candidate context)
-  (let (evidence (poo-flow-core-contract-admit contract candidate context))
-    (unless (poo-flow-core-validation-evidence-accepted? evidence)
+  (let (evidence (yuanxu-contract-admit contract candidate context))
+    (unless (yuanxu-validation-evidence-accepted? evidence)
       (error "module link admission refused" evidence))
     evidence))
 
@@ -483,13 +483,13 @@ there are no user-written imports, exports or calls to link factories here.
 
 #+begin_src scheme
 (import (only-in :std/build-script defbuild-script)
-        (only-in :poo-flow-core/module-system/building/build-projection
-                 poo-flow-core-build-spec))
+        (only-in :yuanxu/module-system/building/build-projection
+                 yuanxu-build-spec))
 
-(defbuild-script (poo-flow-core-build-spec "./init.ss"))
+(defbuild-script (yuanxu-build-spec "./init.ss"))
 #+end_src
 
-The :poo-flow-core namespace and poo-flow-core-build-spec binding are target names;
+The :yuanxu namespace and yuanxu-build-spec binding are target names;
 Core currently uses package core. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][Core/product namespace boundary]].
 The reusable adapter belongs to Core and does not import the product Loader facade.
 

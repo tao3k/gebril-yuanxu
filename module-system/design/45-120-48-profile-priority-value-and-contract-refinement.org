@@ -22,7 +22,7 @@ This refinement specializes the Type and Contract foundation in
 [[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][POO-native
 Type and Contract Prototype Foundation]].
 
-=poo-flow-core= owns the =ProfilePriority= semantic Type, its Contract,
+=yuanxu= owns the =ProfilePriority= semantic Type, its Contract,
 canonical identity, comparison, and evidence projection.  It does not export a
 new priority macro or clause language.
 
@@ -115,7 +115,7 @@ the original Scheme literal and not a printed inexact approximation.
 * Condition refinement and recovery vocabulary
 
 =ProfilePriorityCondition= is one Contract refinement of the shared
-=poo-flow-core= structured-condition ObjectType.  It is not a result wrapper,
+=yuanxu= structured-condition ObjectType.  It is not a result wrapper,
 not three condition subclasses, and not a local object that forces
 =func.ss -> objects.ss= dependency.
 
@@ -522,7 +522,7 @@ not the package identity.
   replacement for the shared Type and Contract foundation.  RFC 45-120-01
   still records =src/module-system/types.ss= as missing and its implementation
   as unadmitted, so =profile-priority/types.ss= remains blocked until that
-  shared =poo-flow-core= owner is implemented and qualified.
+  shared =yuanxu= owner is implemented and qualified.
 - Admission state :: the pinned parser receipt satisfies the Slice 1
   source-owner gate.  A matching installed top-level =asp= activation remains
   required for the final qualification receipt, but not for creating the
@@ -538,7 +538,7 @@ flowchart LR
   Pinned["Pinned current-source Gerbil parser"] -->|"proved: type.ss, object.ss, and mop.ss selectors"| Owners["Exact source-owner evidence"]
   Owners -->|"satisfied: native Type, validation, prototype, slot, and MOP owners"| Foundation["Shared src/module-system/types.ss"]
   Foundation -->|"blocked: RFC 45-120-01 records owner missing and implementation unadmitted"| Slice1["Slice 1 source admission"]
-  Contract["Project-owned Type refinement"] -->|"must first be realized by shared poo-flow-core foundation"| Foundation
+  Contract["Project-owned Type refinement"] -->|"must first be realized by shared yuanxu foundation"| Foundation
   Slice1 -->|"only after shared foundation qualification"| Types["profile-priority/types.ss"]
   Types -->|"pending: focused receipt"| Qualification
 #+end_src
@@ -606,7 +606,7 @@ flowchart LR
       cache RFC.
 - [ ] Prove alias, rational canonicalization, prototype generation, epoch, and
       failed-outcome boundaries.
-- [ ] Produce the focused =poo-flow-core= qualification receipt.
+- [ ] Produce the focused =yuanxu= qualification receipt.
 
 ** No migration branch
 
@@ -617,11 +617,11 @@ owner until its own gate passes.
 
 Downstream integration and distribution suites do not participate in this
 construction order.  Parent-owned admission ends with the focused
-=poo-flow-core= receipt.
+=yuanxu= receipt.
 
 * Implementation admission test matrix
 
-The admission suite is owned by =poo-flow-core=.  It qualifies only the new
+The admission suite is owned by =yuanxu=.  It qualifies only the new
 ProfilePriority Type/Contract, functional kernel, POO dispatch, contextual
 syntax, recovery boundary, and cache identity introduced by this refinement.
 
@@ -716,7 +716,7 @@ flowchart LR
 
 ** Qualification boundary
 
-- [ ] Run focused =poo-flow-core= ProfilePriority tests in the current checkout.
+- [ ] Run focused =yuanxu= ProfilePriority tests in the current checkout.
 - [ ] Record the exact command, owner checkout, artifact, test count, and
       unresolved blocker in the qualification receipt.
 - [ ] Keep =wendao-episteme= and all other downstream

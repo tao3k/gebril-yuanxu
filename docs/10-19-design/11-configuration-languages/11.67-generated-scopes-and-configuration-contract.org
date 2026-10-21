@@ -185,7 +185,7 @@ chapter 02 and intentionally do not claim full OpenTofu language coverage.
     '("source" "version")))
 
 (def (selected-member-rows category raw-category Requests Snapshots Demands)
-  (poo-flow-core-append-map
+  (yuanxu-append-map
     (lambda (alias)
       (let* ((by-provider (.ref Demands category))
              (names (if (.slot? by-provider alias) (.ref by-provider alias) '()))

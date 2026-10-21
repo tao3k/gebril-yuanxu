@@ -1,0 +1,67 @@
+name: Yuanxu native platform
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build and bootstrap
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 120
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/setup-native
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            .gerbil/pkg
+            .gerbil/lib
+            .gerbil/bin
+          key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-2591dcd-${{ hashFiles('gerbil.pkg') }}
+      - name: Install pinned dependencies
+        run: GERBIL_BUILD_VERBOSE=1 gerbil deps --install
+      - name: Build Yuanxu
+        run: GERBIL_BUILD_VERBOSE=1 gerbil build
+      - name: Test public Yuanxu prelude
+        run: just test-yuanxu-prelude
+      - name: Qualify source-only selected build bootstrap
+        run: just test-bootstrap
+      - name: Check complete disjoint test partition
+        run: just check-native-test-groups
+      - name: Preserve native dependency and library tree
+        run: tar -czf "$RUNNER_TEMP/yuanxu-native.tar.gz" .gerbil
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: yuanxu-native-${{ inputs.os }}-${{ github.sha }}
+          path: ${{ runner.temp }}/yuanxu-native.tar.gz
+          retention-days: 2
+          if-no-files-found: error
+  tests:
+    name: Test ${{ matrix.group }}
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        group: [bootstrap, modules, contracts, objects, scenarios, runtime]
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/setup-native
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: yuanxu-native-${{ inputs.os }}-${{ github.sha }}
+          path: ${{ runner.temp }}
+      - name: Restore same-head native artifacts
+        run: tar -xzf "$RUNNER_TEMP/yuanxu-native.tar.gz"
+      - name: Run complete group with serial 1 GiB workers
+        run: just test-native-directory '${{ matrix.group }}'

@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: structured type facts for POO Flow validation layers.
+;;; Boundary: structured type facts for Yuanxu validation layers.
 ;;; Invariant: facts are Scheme control-plane data; Lean and runtime payloads
 ;;; are final projections, not semantic owners.
 

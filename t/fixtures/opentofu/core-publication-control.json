@@ -17,8 +17,8 @@
   "source_injection": "Config.source supplied upstream as a native Nix Source; shipped default #f; no fixed temporary path",
   "infrastructure_build_ss": false,
   "removed_entries": [
-    "flat :core/modules/opentofu/interface reexport facade",
-    "poo-flow-core-opentofu-package-contribution factory",
+    "flat module-interface reexport facade",
+    "OpenTofu package-contribution factory",
     "test-generated tools/opentofu publisher"
   ],
   "focused_gates": [

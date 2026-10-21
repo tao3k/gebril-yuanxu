@@ -10,18 +10,18 @@
     (list (.o kind: 'invalid-selected-checks))))
 
 (def PipelineSelectionContract
-  (poo-flow-predicate-contract
+  (yuanxu-predicate-contract
     'funflow/pipeline-selection object? selection-obligations))
 
 ;; Only fixed roles here; do not enumerate optional Check values.
-(.def (ProfileShapeContract @ PooFlowNativeObjectContract.)
+(.def (ProfileShapeContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-shape
   proto: Root
   responsibilities: (.o pipeline: PipelineSelectionContract)
   .obligations: empty-obligations)
 
 ;; This descriptor retains native proto checking and final identity obligations.
-(.def (SelectedChecksContract @ PooFlowNativeObjectContract.)
+(.def (SelectedChecksContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-selected
   proto: Root
   responsibilities: (.o)
@@ -83,14 +83,14 @@
           entries)))))
 
 (def (selection-refusal descriptor candidate context failures)
-  (poo-flow-validation-evidence
+  (yuanxu-validation-evidence
     (.get descriptor identity) candidate
-    (poo-flow-type-classify descriptor candidate context)
+    (yuanxu-type-classify descriptor candidate context)
     failures #f failures context))
 
 (def (admit-selected-profile policy candidate context)
   (let* ((shape (.get policy shape))
-         (shape-evidence (poo-flow-contract-admit shape candidate context)))
+         (shape-evidence (yuanxu-contract-admit shape candidate context)))
     (if (not (covers-responsibilities? shape candidate context shape-evidence))
       (selection-refusal shape candidate context
         (list (.o kind: 'profile-prerequisite-refused evidence: shape-evidence)))
@@ -100,7 +100,7 @@
           (selection-refusal (.get policy selected) candidate context errors)
           (let* ((descriptor (project-selected-contract policy names))
                  (evidence
-                  (poo-flow-contract-admit descriptor candidate context)))
+                  (yuanxu-contract-admit descriptor candidate context)))
             (if (covers-responsibilities? descriptor candidate context evidence)
               (.cc evidence
                 'prerequisite-evidence (list shape-evidence)
