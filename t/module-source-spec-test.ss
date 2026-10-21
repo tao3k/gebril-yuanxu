@@ -16,7 +16,7 @@
   (let-values (((_prelude identity _namespace _body)
                 (core-read-module/sexp (path-expand (string-append name ".ss") root))))
     (path-expand (string-append (symbol->string identity) ".ssi") lib)))
-(def retained '("utilities/algorithms" "types" "core-spec"))
+(def retained '("prelude" "utilities/algorithms" "types" "core-spec"))
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (out) (display text out))))
@@ -54,7 +54,7 @@
                       (module-source-read (path-expand "modules/json-schema/interface.ss" owner)))
         ;; Narrow only this isolated snapshot's retained manifest, not its build.ss.
         (write-source (path-expand "core-spec.ss" root)
-          "(export core-spec) (def core-spec '(\"utilities/algorithms\" \"types\" \"core-spec\"))\n")
+          "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"types\" \"core-spec\"))\n")
         (let-values (((run spec current!) (script-at (path-expand "build.ss" root))))
           (displayln "SOURCE-SPEC-ROOT-IMPORTED") (force-output)
           (def printed (spec-of run))

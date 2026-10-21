@@ -4,11 +4,13 @@
 prelude: :gerbil/core
 package: tao3k/yuanxu
 
+;; POO owns the ordinary language surface. Compile-time POO construction uses
+;; an explicit for-syntax import rather than duplicating its entire closure.
 ;; Bootstrap independently of Core's Module System and its declaration macros.
 (import (except-in :gerbil/core object? make-object)
         :clan/poo/object
-        (phi: +1 (except-in :gerbil/core object? make-object) :clan/poo/object)
-        (phi: +2 (except-in :gerbil/core object? make-object) :clan/poo/object))
+        (phi: +1 :gerbil/core)
+        (phi: +2 :gerbil/core))
 (export (import: :gerbil/core :clan/poo/object)
-        (phi: +1 (import: :gerbil/core :clan/poo/object))
-        (phi: +2 (import: :gerbil/core :clan/poo/object)))
+        (phi: +1 (import: :gerbil/core))
+        (phi: +2 (import: :gerbil/core)))

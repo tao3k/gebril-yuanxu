@@ -35,8 +35,11 @@ package: tao3k/yuanxu
 
 Its sole published identity is =:tao3k/yuanxu/prelude=. No =lang/= directory,
 second package root, forwarding module or =:yuanxu/prelude= alias is needed.
-The file reexports Gerbil and gerbil-poo at the required expansion phases; it
-neither imports the Module System nor loads user modules or executes Scripts.
+The ordinary surface reexports Gerbil and gerbil-poo. Expansion phases one and
+two expose the Gerbil helpers required by native macro definitions; a macro
+that constructs POO values at compile time explicitly imports that phase's POO
+dependency. The prelude does not broadcast the whole object library at every
+phase. It neither imports the Module System nor loads user modules or executes Scripts.
 
 During a source-only build, registering the =yuanxu= library directory alone
 cannot resolve the distinct =tao3k/yuanxu= prefix. The existing build bootstrap
@@ -106,11 +109,79 @@ focused migration receipts, not a claim that every product consumer has rebuilt.
 
 ** Root-file bootstrap verification boundary
 
-The root-file change removes the temporary =lang/= source scope. The changed
-qualification units compile with the installed Gerbil compiler. The first cold
-run exposed an opaque bound-prelude context being serialized into a generated
-header; source preparation now extracts its native source path. A subsequent
-run exposed bootstrap binding at runtime instead of expansion time; the build
-entry now prepares that binding in =begin-syntax=. The rerun was interrupted
-before a final harness result, so source-only cold bootstrap is not yet a
-verified pass. Earlier namespace receipts above do not establish this new gate.
+The root-file change removes the temporary =lang/= source scope. The owned
+49-unit qualification manifest recompiles changed inputs and reuses only
+source-identical baseline artifacts; this is not a claim of a fresh 49-unit
+build within the monolithic gate. The first cold run exposed an opaque bound
+prelude being serialized into generated Scheme. Source preparation now extracts
+its native source path. The next run exposed runtime rather than expansion-time
+bootstrap; the build entry now binds the module in =begin-syntax=.
+
+A subsequent source-only =build.ss spec= returned successfully, but the reduced
+fixture omitted the prelude from its retained roots. Its assertion correctly
+refused the incomplete specification. The fixture now retains the same unique
+language root as the real =core-spec.ss=. Build projection permits that exact
+foreign compiler identity only for the root =prelude.ss= and still checks the
+prepared identity and actual source path. All other targets retain package
+prefix confinement. Artifact assertions derive identities from the native
+reader instead of assuming every output belongs below =lib/yuanxu/=.
+
+The following cold run hit the unchanged 60-second Script deadline and remains
+a failed receipt. A one-second sample of the actual child observed every sample
+in =dyld/dlopen/fcntl= during dynamic-library validation. The fixture had been
+copying dependency binaries into fresh paths. It now snapshots Core sources as
+regular files while retaining regular compiled-dependency artifacts through
+private links. Source symlinks remain rejected; dependency directory symlinks
+are not traversed. Both old =core= and new Yuanxu installed artifacts are
+excluded from the child. This changes test preparation, not production loading
+or Contract/read-observation checks.
+
+With this fixture and the bounded phase surface, source-only bootstrap passes
+in 21.45 seconds under the same 60-second deadline. No Yuanxu compiled library
+or public prelude is present before or after =spec=, and the root prelude occurs
+exactly once. This is one elapsed-time receipt, not an attribution of the whole
+improvement to either change. Eight focused consumer files pass separately:
+package identity, prelude, source admission, issued-root forwarding, diagnostics,
+path slots, module scopes, and the eleven-case Gitea/PostgreSQL publication
+control. The fresh 49-unit compile attempt hit its original 120-second deadline;
+the source-identical-baseline delta gate passed. Neither receipt is erased or
+relabelled as a complete native suite.
+
+** Integration and external consumer ownership
+
+The existing public PR branch incorporates the concurrent public-prelude and
+one-GiB-per-test CI fixes. Its prelude test now targets =t/prelude-test.ss=;
+there is no second nested package build. Historical failure logs remain
+unchanged. Runtime and proof artifacts are rebuilt under their new identities.
+The Core Lean aggregate passes 196 jobs and its 6,667-declaration axiom audit;
+the product proof aggregate passes 455 jobs. The source-bound RootCollection
+qualification rejected one run after concurrent integration changed its source
+cut; another hit the existing five-second Quint typecheck deadline. Both failure
+receipts are retained outside Git. The final stable run passes all eight model
+and matched counterexample controls without changing either deadline or model.
+These finite-model controls and the Lean source model are separate from native
+execution evidence.
+
+The product's pinned =gerbil-parser@78507e68b1275be1be748be465d6354f596d9063=
+still imports =:core/...=. Its independently modified checkout and the installed
+package cache are not rewritten by this migration. That consumer requires a
+coordinated namespace/dependency update before a full product native build can
+be claimed. Gerbil compiler and runtime sources are unchanged. Focused Core
+consumer verification and product-wide dependency closure are separate gates.
+
+The default local package cache exposed an older compiled POO API that rejects
+=unique-roots?:=. Qualification therefore uses the installed, unchanged Gerbil
+with the exact declared gerbil-poo build and the current owned Yuanxu artifacts
+in a private package state. This is dependency isolation, not a replacement SDK
+or compatibility runtime. It does not overwrite another session's package cache.
+The cold child still excludes both Yuanxu namespaces, and each normal-build
+child clears =GERBIL_LOADPATH= so that an overlay cannot mask missing inputs.
+
+The pinned-dependency normal-build control generates its specification in
+14.65 seconds and passes the separate package/source-currentness controls. Its
+fresh native compilation reaches the original 60-second Script deadline
+(status 124; 62.23 seconds including termination). Compile/clean/rebuild as one
+complete control is therefore still unqualified locally; no complete native
+suite or end-to-end build pass is claimed. The public CI remains responsible
+for a clean installation/build and all directory tests under its existing
+one-GiB worker policy.

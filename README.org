@@ -48,7 +48,8 @@ its own prelude; the prelude and its small build bootstrap explicitly use
 =:gerbil/core=. The build binds the actual root prelude's native module context
 before reading implementation sources, so source-only bootstrap does not need
 a previously installed Yuanxu language. Role-specific module/config preludes
-retain their phase duties. [[file:t/prelude-test.ss][The focused prelude test]] checks phase bindings;
+retain their phase duties. Compile-time POO construction declares its native
+=for-syntax= dependency explicitly. [[file:t/prelude-test.ss][The focused prelude test]] checks phase bindings;
 [[file:t/package-bootstrap-test.ss][the cold bootstrap test]] checks the source-only build entry.
 
 * What Yuanxu owns

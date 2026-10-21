@@ -18,4 +18,3 @@
          (syntax-local-rewrap
           (stx-wrap-source (core-cons 'begin body) (stx-source stx))))))
     (_ (raise-syntax-error #f "expected a literal Module source path" stx))))
-

@@ -16,14 +16,18 @@
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
 (export yuanxu-project-source-spec)
 (def (build-target-name identity package-prefix)
-  (let ((name (symbol->string identity))
-        (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))
+  ;; One root-owned language file has an explicit native package identity.
+  ;; Both call sites still verify its actual source path and prepared identity.
+  (if (and (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude))
+    "prelude"
+    (let ((name (symbol->string identity))
+          (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))
     (unless (string-prefix? prefix name)
       (error "compiler identity is outside the build package prefix" identity package-prefix))
     (let (relative (substring name (string-length prefix) (string-length name)))
       (unless (andmap module-source-name? (string-split relative #\/))
         (error "compiler identity is not a relative build target" identity))
-      relative)))
+      relative))))
 (def (retained-build-entries specs root package-prefix selected current!)
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
