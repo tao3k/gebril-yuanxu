@@ -62,6 +62,24 @@ controls lexical/syntax bindings rather than dependency ownership or execution
 authority. Role-specific module/config preludes retain their existing phase
 semantics.
 
+
+** One public integration branch
+
+PR #19 is the sole integration target. The source-registration and runtime
+publication fixes are merged with their original commit ancestry, including
+the concurrent pinned-Nix CI setup. PR #20 is superseded by this integration;
+its branch is removed only after the integrated head is pushed. No product PR
+is updated by this Core publication.
+
+Source-first registration occurs only in the explicit build/compiler entry.
+Importing init or asking for a build specification must leave the runtime
+library lookup order unchanged. The focused runtime-publication-identity test
+passes with the installed, unchanged Gerbil and the declared dependency build:
+the load path, held Contract, its prototype and validation result retain their
+identities across the source init import and build-data projection. The test
+requires MODULE-OK, HARNESS-OK and final OK. This does not turn the previously
+recorded full-build deadline failures into passes.
+
 * Source identity is checked, not aliased
 
 Build-owned source registration now requires =yuanxu=. The bootstrap source
