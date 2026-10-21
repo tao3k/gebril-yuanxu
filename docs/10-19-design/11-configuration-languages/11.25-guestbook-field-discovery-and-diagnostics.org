@@ -17,8 +17,8 @@ ordinary authoring, field discovery or default diagnostics.
 
 The inspected KCL baseline is konfig commit
 12025e8e250ca409006879126761c40e0eb0c0e0. Its actual
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/examples/appops/guestbook/dev/main.k][development file]] changes only image, through a short frontend.Server instance.
-Its [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/examples/appops/guestbook/dev/kcl.mod][entries]] combine base, environment input and renderer. The port/label example
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/dev/main.k][development file]] changes only image, through a short frontend.Server instance.
+Its [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/dev/kcl.mod][entries]] combine base, environment input and renderer. The port/label example
 below is our proposed matched experiment using the inspected public fields, not
 a quotation of the upstream development file or an executed KCL result.
 
@@ -54,8 +54,8 @@ replaces the one-Service list, rather than adding another Service.
 Important semantic distinction: KCL ServerBackend obtains resource metadata from
 MetadataBuilder(config), whose labels are config.labels. Pod labels also use the
 application defaults and config.podMetadata. See the actual
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/backend/server_backend.k][backend]], [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/utils/metadata_builder.k][MetadataBuilder]],
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/frontend/server.k][Server fields]] and [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/mixins/service_mixin.k][Service mixin]]. Thus labels.env alone is not an equivalent
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/backend/server_backend.k][backend]], [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/utils/metadata_builder.k][MetadataBuilder]],
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/frontend/server.k][Server fields]] and [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/mixins/service_mixin.k][Service mixin]]. Thus labels.env alone is not an equivalent
 Pod-label edit. Scheme's bounded mapper currently uses Profile labels for Pod
 labels; it does not promise propagation to Deployment/Service metadata. Discovery
 must state this scope explicitly. A future general Kubernetes Module must decide

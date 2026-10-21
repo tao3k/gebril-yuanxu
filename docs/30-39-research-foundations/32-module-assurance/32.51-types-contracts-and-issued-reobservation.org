@@ -2,6 +2,9 @@
 #+language: en
 #+startup: overview
 
+Retention follow-up: [[file:32.52-demanded-read-graph-retention.org][32.52]] separates record-identity sharing from receiver
+identity, with LeanPoo/QNT bounds and real Scenario cold/warm measurements.
+
 * Refactor the boundary, not just the dependency revision
 
 [[file:32.50-issued-roots-and-object-system-direction.org][32.50]] restored original issued-read graphs. This step integrates that protection

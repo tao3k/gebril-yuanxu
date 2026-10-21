@@ -16,6 +16,13 @@ import tempfile
 import time
 
 CASES = [
+    ("ReadRetention", "safety", False),
+    ("ReadRetention_receiver", "Coverage", True),
+    ("ReadRetention_miss", "Coverage", True),
+    ("ReadRetention_approval", "Fresh", True),
+    ("ReadRetention_dropB", "Both", True),
+    ("ReadRetention_eager", "Lazy", True),
+    ("ReadRetention", "RejectAll", True),
     ("ReplayOwnership_dropDelivery", "PreWriteRefusal", True),
     ("IssuedRootForwarding", "safety", False),
     ("IssuedRootForwarding_omit", "Coverage", True),
@@ -514,6 +521,13 @@ def main():
         return {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in sorted(current)}
     issued_roots_lean = core / "proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean"
+    retention_lean = core / "proofs/lean/PooFlowCoreProof/Admission/ReadRetention.lean"
+    retention_digest = "sha256:" + hashlib.sha256((models / "ReadRetention.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String :=\n  "{retention_digest}"' not in retention_lean.read_text():
+        raise AssertionError("Lean retains a stale ReadRetention Quint source binding")
+    bound.extend([retention_lean, core / "t/read-retention-cost-test.ss",
+                  core / "t/gitea-postgresql-publication-test.ss",
+                  core / "object-family/read-projection.ss"])
     issued_roots_digest = "sha256:" + hashlib.sha256((models / "IssuedRootForwarding.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{issued_roots_digest}"' not in issued_roots_lean.read_text():
         raise AssertionError("Lean retains a stale IssuedRootForwarding Quint source binding")

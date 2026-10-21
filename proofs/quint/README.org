@@ -2,6 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: Core Quint Models
 
+* Demanded read graph retention
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.52-demanded-read-graph-retention.org][32.52]] adds seven =ReadRetention= controls for shared/cyclic records,
+receiver collisions, transient misses, callback currentness, both requirements
+and laziness. The acceptance control rules out universal refusal. The paired
+Scheme measurement reports structural counts; VM allocation rollback invalidates
+memory claims without weakening semantic controls.
+
+Run =python3 proofs/quint/check.py --case-prefix ReadRetention
+--typecheck-scope selected --receipt /tmp/read-retention.scm=.
+
 * Original issued-root forwarding
 
 [[file:../../docs/30-39-research-foundations/32-module-assurance/32.51-types-contracts-and-issued-reobservation.org][32.51]] integrates native Type-catalog reobservation with the same issuer/frame.

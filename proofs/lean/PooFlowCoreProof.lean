@@ -33,6 +33,7 @@ import PooFlowCoreProof.Admission.SnapshotEntry
 import PooFlowCoreProof.Admission.SnapshotLifetime
 import PooFlowCoreProof.Admission.SerialUse
 import PooFlowCoreProof.Admission.IssuedRootForwarding
+import PooFlowCoreProof.Admission.ReadRetention
 import PooFlowCoreProof.Admission.CallPhases
 import PooFlowCoreProof.Admission.AdmissionBody
 import PooFlowCoreProof.Admission.ReturnTail
@@ -102,6 +103,10 @@ run_cmd do
   let owners := #[`PooFlowCoreProof]
   for required in #[
       `PooFlowCoreProof.Admission.IssuedRootForwarding.preserves_issuance,
+      `PooFlowCoreProof.Admission.ReadRetention.closure_coverage,
+      `PooFlowCoreProof.Admission.ReadRetention.omitted_dependency_refused,
+      `PooFlowCoreProof.Admission.ReadRetention.child_context_keeps_joint_claim,
+      `PooFlowCoreProof.Admission.ReadRetention.changed_child_context_misses,
       `PooFlowCoreProof.Admission.IssuedRootForwarding.cannot_hide_unissued,
       `PooFlowCoreProof.Admission.IssuedRootForwarding.forward_keeps_dependency_closure,
       `PooFlowCoreProof.FeatureSystem.DomainCase.Resolution.constructed_winners_unique,

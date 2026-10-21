@@ -11,9 +11,9 @@
 
 This chapter continues the [[file:11.23-source-ref-to-admitted-scope.org][four-file module chain]], not a second Loader design.
 The baseline is konfig commit 12025e8e250ca409006879126761c40e0eb0c0e0:
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/examples/appops/guestbook/base/base.k][three-workload base]], [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/examples/appops/guestbook/dev/main.k][development image override]],
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/backend/server_backend.k][Server backend]] and [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/kcl/konfig/models/kube/mixins/service_mixin.k][Service mixin]]. These are inspected source, not a local
-KCL execution or deployment result. Upstream licenses remain in the source corpus.
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/base/base.k][three-workload base]], [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/dev/main.k][development image override]],
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/backend/server_backend.k][Server backend]] and [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/mixins/service_mixin.k][Service mixin]]. These are inspected source, not a local
+KCL execution or deployment result. Upstream licenses remain at the cited revisions.
 
 The upstream frontend container listens on 80; both Redis containers and Services
 use 6379. Frontend specifies GET_HOSTS_FROM=dns. It does not declare a typed
