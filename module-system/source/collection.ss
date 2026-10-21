@@ -207,7 +207,7 @@
             (excluded-directories '())
             (locate yuanxu-module-source-collection-default-locate)))
     (unless (yuanxu-directory-module-source-collection? collection)
-      (error "invalid POO Flow module source collection" collection))
+      (error "invalid Yuanxu module source collection" collection))
     collection))
 
 ;;; Repository paths are explicit inputs; no contributor registry is consulted.

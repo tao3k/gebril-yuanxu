@@ -8,7 +8,10 @@
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
         (only-in :yuanxu/modules/nix/func current-nix-process-observer call-with-nix-derivation-query))
-(export nix-derivation-query-test)
+(export nix-derivation-query-test test-cleanup!)
+;; Store registration can stream a final path without a newline. Keep native
+;; harness markers on their own line without changing the captured process data.
+(def (test-cleanup!) (newline))
 (def (write-input path value)
   (call-with-output-file (list path: path truncate: #t) (cut display value <>)))
 (def nix-derivation-query-test

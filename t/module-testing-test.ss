@@ -69,7 +69,7 @@
       ;; Empty selection must never become gxtest's implicit directory scan.
       (check-exception (.call (.call init.tests .select '()) .run) error?)
       (check-exception (init.test-spec '(unselected)) error?)
-      (check-equal? (init.test-spec) (append json flow (init.test-spec '(aws))))
+      (check-equal? (init.test-spec) (append json flow (init.test-spec '(nix opentofu ops null aws-validation aws))))
       (check-equal? (eq? json (init.test-spec '(json-schema))) #t)
       (check-equal? (eq? json (.get (.call init.tests .select '(json-schema)) spec)) #t)
       (def selected (.call init.tests .select '(json-schema)))

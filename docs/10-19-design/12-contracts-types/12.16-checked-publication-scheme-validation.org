@@ -31,7 +31,7 @@ Sources for this run:
 - Original installed Gerbil SDK =1cfb032= and its std/test/gxtest implementation.
 
 The fixture source namespace contains clan/poo from that exact archive and core
-with package: core, types.ss and modules/json-schema. The isolated GERBIL_PATH
+with package: yuanxu, types.ss and modules/json-schema. The isolated GERBIL_PATH
 has no installed Core/POO package artifacts. GERBIL_LOADPATH points to this
 source namespace. These test-only environment settings do not change the
 production build entry or require downstream users to configure load paths.

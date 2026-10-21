@@ -132,7 +132,7 @@
           (def metadata
             (call-with-input-string
               (native (list "nix" "--extra-experimental-features" "nix-command flakes"
-                            "path-info" "--json" "--json-format" "1" stored))
+                            "path-info" "--json" stored))
               (lambda (port) (read-json port key-as-symbol: #f object-as-hash: #t))))
           (def hash (hash-ref (hash-ref metadata stored) "narHash"))
           (write-input (path-expand "flake.nix" root)

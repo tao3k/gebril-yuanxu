@@ -81,7 +81,7 @@
     (call-with-input-string
       (.get (run-script (.cc NixSetup 'command
                (list "nix" "--extra-experimental-features" "nix-command flakes"
-                     "path-info" "--offline" "--json" "--json-format" "1" package-set))
+                     "path-info" "--offline" "--json" package-set))
                stderr-redirection: #f) output)
       (lambda (port) (read-json port key-as-symbol: #f object-as-hash: #t))))
   (unless (and (hash-table? metadata) (= (hash-length metadata) 1)

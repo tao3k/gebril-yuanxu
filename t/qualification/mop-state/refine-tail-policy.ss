@@ -4,7 +4,7 @@
 (def root (path-expand (getenv "CORE_SOURCE_TAIL_ROOT")))
 (def core (path-expand (getenv "CORE_SOURCE_TAIL_CORE")))
 (def relative "module-system/source/admission.ss")
-(def path (path-expand (string-append "source/core/" relative) root))
+(def path (path-expand (string-append "source/yuanxu/" relative) root))
 (def text (call-with-input-file path read-all-as-string))
 (def unrestricted
   "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    ((current-module-source-observer) kind amount)))")
@@ -30,12 +30,12 @@
 (def target
   (if (string=? policy "unrestricted") "t/source-admission-closed-tail-test.ss"
     "t/source-admission-gateway-test.ss"))
-(call-with-output-file (list path: (path-expand (string-append "source/core/" target) root) truncate: #t)
+(call-with-output-file (list path: (path-expand (string-append "source/yuanxu/" target) root) truncate: #t)
   (lambda (port)
     (display (call-with-input-file (path-expand target core) read-all-as-string) port)))
 (for-each
   (lambda (name)
-    (compile-module (path-expand (string-append "source/core/" name) root)
+    (compile-module (path-expand (string-append "source/yuanxu/" name) root)
       [output-dir: (path-expand "lib" root) invoke-gsc: #t keep-scm: #t])
     (execute-pending-compile-jobs!))
   (list relative target))

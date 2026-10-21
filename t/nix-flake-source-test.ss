@@ -43,6 +43,7 @@
                             (call-with-input-string (getenv "YUANXU_NIX_TEST_TOOLS") read-json)))
           (def shell (yuanxu-contract-object-ref tools-json 'shell #f))
           (def tools (yuanxu-contract-object-ref tools-json 'tools #f))
+          (def system (yuanxu-contract-object-ref tools-json 'system #f))
           (for-each (lambda (path)
                       (unless (and (string-prefix? "/nix/store/" path) (file-exists? path))
                         (error "real package fixture required" path)))
@@ -66,8 +67,8 @@
               "providers = import ./providers.nix { inherit artifacts; }; "
               "names = builtins.fromJSON (builtins.readFile ./selection.json); "
               "links = builtins.concatStringsSep \"\\n\" (map (name: \"${tools}/bin/ln -s ${providers.${name}} $out/${name}\") names); "
-              "in { packages.aarch64-darwin.default = builtins.derivation { "
-              "name = policy.label; system = \"aarch64-darwin\"; "
+              "in { packages." system ".default = builtins.derivation { "
+              "name = policy.label; system = \"" system "\"; "
               "builder = \"${shell}/bin/bash\"; args = [ \"-euc\" (\"${tools}/bin/mkdir -p $out\\n\" + links) ]; }; }; }"))
           (def flake-text (module-source-read flake))
           (write-source selection "[\"aws\"]")
@@ -107,7 +108,7 @@
                   (.o aws_security_group: (.o web: (.o name: "web"))))))
           (def (source)
             (.cc NixFlakeSource. 'reference (string-append "path:" (path-normalize root))
-              'attribute "packages.aarch64-darwin.default"))
+              'attribute (string-append "packages." system ".default")))
           (def (build null?)
             (let* ((observed (map (lambda (path) (cons path (module-source-read path)))
                                   (list flake lock selection)))

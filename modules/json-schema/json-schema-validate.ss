@@ -4,7 +4,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Contract: validate values through generated JSON Schema object contracts.
-;;; Invariant: this owner checks emitted POO Flow contracts only. It is not a
+;;; Invariant: this owner checks emitted Yuanxu contracts only. It is not a
 ;;; full JSON Schema evaluator and does not fetch schemas or run workflows.
 
 (import (only-in :clan/poo/object object?)

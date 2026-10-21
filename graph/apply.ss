@@ -486,7 +486,7 @@
 ;;   : (-> YuanxuGraph [PooGraphContribution] PooGraphResult)
 ;;   | doc m%
 ;;       Apply the ordered operation algebra exactly once. Native
-;;       operation prototypes own behavior; POO Flow does not run a shadow
+;;       operation prototypes own behavior; Yuanxu does not run a shadow
 ;;       evaluator or local fixed-point engine.
 ;;
 ;;       # Examples

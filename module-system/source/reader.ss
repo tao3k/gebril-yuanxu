@@ -11,7 +11,7 @@
                  current-expander-module-import eval-syntax expander-context-id module-context-path
                  core-resolve-library-module-path core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval current-expander-phi
-                 expander-context-table module-context-import)
+                 expander-context-table module-context-import syntax-e)
         (only-in :clan/poo/object .o .cc .ref .slot? object? object-protocol compute-precedence-list! replay-slot-reads!)
         (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
@@ -321,6 +321,9 @@
             ;; dependency index, rather than importing them again as unknown
             ;; public initializers for every Module. Compiled SDK contexts keep
             ;; their existing package/runtime trust boundary.
+            (when (and (symbol? id) (string? native-path)
+                       (string=? (path-extension native-path) ".ssi"))
+              (hash-put! tool-paths (path-normalize native-path) context))
             (when (and (symbol? id)
                        (string? path) (string=? (path-extension path) ".ss"))
               (let (input (compiler-tool-input context path))
@@ -796,11 +799,14 @@
                           ;; import closure. Redirect only the caller's source
                           ;; binding, never imports inside a compiled library.
                           (when (candidate)
-                            (let* ((text (and (symbol? path) (symbol->string path)))
+                            (let* ((requested (syntax-e path))
+                                   (text (and (symbol? requested) (symbol->string requested)))
                                    (id (and text (> (string-length text) 1)
                                             (char=? (string-ref text 0) #\:)
                                             (string->symbol (substring text 1 (string-length text))))))
-                              (unless (and id (hash-get tool-contexts id))
+                              (unless (or (and id (hash-get tool-contexts id))
+                                          (and (string? requested)
+                                               (hash-get tool-paths (path-normalize requested))))
                                 (open-boundary! (list 'uncatalogued-import path id)))))
                           (let* ((context (parameterize ((current-expander-module-import native-import))
                                             (native-import path reload?)))

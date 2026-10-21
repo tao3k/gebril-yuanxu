@@ -320,3 +320,80 @@ runner, and timeouts/assertions are unchanged. Historical executable projection
 probes also declare the yuanxu package rather than creating a legacy core
 namespace. Their recorded source hashes remain authentic historical guards;
 renaming a probe does not qualify it against a different source cut.
+
+* Qualification prerequisites and current evidence
+
+The complete 204-file partition now has seven disjoint owners: bootstrap (17),
+modules (70), contracts (16), objects (18), scenarios (15), providers (19) and
+runtime (49). The Provider owner realizes the real, checksum-pinned qualification
+package closure in =t/fixtures/opentofu/ci.nix=. Its collection, two AWS versions,
+historical binary authentication input and test tools are named Nix outputs;
+no other test group builds them as a prerequisite. This is a test matrix, not
+production's demand-selected provider policy.
+
+AOT callback controls use the existing compiler qualification and std/test
+facade. Interpreting that implementation file without its issued compilation
+would test a different calling boundary. The discovered-file dispatcher supplies
+an owned temporary fixture, runs the existing assertion suite, and rechecks the
+compiled callback/source/runtime hashes. All native harness marker checks remain.
+Artifact-authority controls retain their own producer/consumer fixture lifecycle.
+Dependency sources resolve from the selected GERBIL_PATH, not a parent product
+checkout. No installed Gerbil compiler or loader source is modified.
+
+The Nix 2.28.5 path-info source does not provide --json-format; the same v1
+JSON mapping is available via --json. Qualification uses this common command
+instead of passing the newer-version-only option. The real package-set NAR
+identity checks remain unchanged.
+
+At bdd4c13, Linux's full library build takes 150 seconds, public Prelude takes
+2 seconds and source-only bootstrap qualification takes 105 seconds. The complete
+build job succeeds. This is not a controlled worker-count speedup experiment:
+dependency caches and runner conditions also differ from edfeb1c. Full test groups
+and macOS remain unqualified until their exact-head CI results complete.
+Local real Nix profile persistence and approved-publication recovery controls pass
+with MODULE-OK, HARNESS-OK and final OK after declared-tool dependency repair.
+
+
+The follow-up import audit found both syntax-wrapped library identifiers and
+resolved .ssi paths at the actual native import hook. The reader now unwraps
+syntax only for catalog membership and indexes the exact .ssi paths of
+already captured tool contexts. The original import argument still reaches
+the native importer. Unknown identifiers/paths still open the candidate boundary;
+a Core-like spelling or an arbitrary compiled file is not added to the catalog.
+This is a reader classification repair, not permission to run unknown callbacks.
+
+The first independent full-library local batch is retained as failed/cancelled.
+It exposed current producer refusal occurring earlier than older research
+expectations: forged records are unissued, metadata route substitution is refused,
+and replay-time object writes fail before changing the receiver. The corresponding
+controls keep exact errors, callback counts, victim values and case totals.
+The unsafe experimental snapshot helper remains an explicit counterexample:
+its earlier side effect cannot be undone by a later native refusal.
+
+The AOT store-suite facade explicitly calls the installed native load-module
+entry before exposing its extern test bindings. This prevents the source
+harness from evaluating an unlowered substitute for the compiler-issued unit.
+The compiler and loader under the installed Gerbil tree remain untouched.
+The generated source-only qualification tree is source/yuanxu, and the focused
+compiled-import control builds the one prelude before init. Its compiler
+subprocess fences now match the requested 2 GiB test default; its 60-second
+Script limits, read guards and negative compilation assertions are unchanged.
+
+** Focused qualification after the partition repairs
+
+The issued AOT store facade passes all twelve cases with MODULE-OK, HARNESS-OK
+and final OK. Compiler inputs, SDK inputs and independently compiled callback
+hashes pass the post-run checks. The old unprocessed callback remains an explicit
+negative control. No installed compiler/runtime source is modified.
+
+The pinned Nix qualification bundle is realized on Darwin: AWS 5.99.0/5.100.0,
+awscc 1.77.0 and Null 3.2.4, plus the historical binary authentication fixture.
+This is a test prerequisite, not eager production Provider selection. Linux still
+requires its own exact-head CI result.
+
+One calibration run correctly refused a compiler-tool source edit performed
+while it was running. That failed run is retained outside Git; it is not a
+performance or stable-input pass. Branding edits must finish before starting
+source-currentness qualification. Runtime and CI configuration contain no old
+Core package imports or API aliases; product references and recorded historical
+source identities do not create compatibility entrypoints.

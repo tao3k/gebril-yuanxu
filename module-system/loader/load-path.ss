@@ -61,7 +61,7 @@
 
 (def (yuanxu-module-load-path-valid! load-path)
   (unless (yuanxu-module-load-path? load-path)
-    (error "invalid POO Flow module load path" load-path))
+    (error "invalid Yuanxu module load path" load-path))
   (let ((seen (make-hash-table))
         (identities
          (map yuanxu-module-source-collection-identity
@@ -69,7 +69,7 @@
     (for-each
      (lambda (identity)
        (when (hash-key? seen identity)
-         (error "duplicate POO Flow module source collection" identities))
+         (error "duplicate Yuanxu module source collection" identities))
        (hash-put! seen identity #t))
      identities))
   load-path)

@@ -3,9 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: POO Flow domain specialization of standard gerbil-poo types.
+;;; Boundary: Yuanxu domain specialization of standard gerbil-poo types.
 ;;; Invariant: gerbil-poo owns primitive Type validation and prototype dispatch;
-;;; this module owns only evidence-bearing POO Flow classification/contracts.
+;;; this module owns only evidence-bearing Yuanxu classification/contracts.
 
 (import (only-in :clan/poo/object
                  .cc

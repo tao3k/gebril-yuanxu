@@ -72,10 +72,10 @@
     (check-equal? (require-read-route! read) #t)
     (runtime.slot-set! (object-%reads Root) 'ref
       (lambda (_self _key _default) (set! calls (+ calls 1)) read))
-    (check-equal? (object-read-current? read) #t)
-    (check-equal? calls 1)
+    (refuses "changed metadata ref" (cut object-read-current? read))
+    (check-equal? calls 0)
     (refuses "changed metadata ref" (cut guarded-current? read))
-    (check-equal? calls 1)
+    (check-equal? calls 0)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "restoring a method does not erase the side effect between endpoint checks"
     (.def Root port: 5432)
@@ -89,9 +89,9 @@
         (.putslot! Victim 'port ($constant-slot-spec 5440))
         (runtime.slot-set! table 'ref original)
         (original self key default)))
-    (check-equal? (object-read-current? read) #t)
-    (check-equal? (require-read-route! read) #t)
-    (check-equal? (.get Victim port) 5440)
+    (refuses "changed metadata ref" (cut object-read-current? read))
+    (refuses "changed metadata ref" (cut require-read-route! read))
+    (check-equal? (.get Victim port) 5432)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "route checks preserve real transient misses but do not authenticate forged misses"
     (.def Root port: 5432)
@@ -101,5 +101,5 @@
     (check-equal? (guarded-current? read) #t)
     (def forged (make-slot-read Root '(cache-miss missing) (object-revision Root)
       (object-%instance Root) #f '() object-read-current?))
-    (check-equal? (guarded-current? forged) #t)
+    (check-equal? (guarded-current? forged) #f)
     (set! completed (+ completed 1)))))

@@ -31,7 +31,7 @@
   (if existing
     (.o root: existing state: installed cold: #f)
     (let* ((scratch (make-temporary-file-name "core-source-build-"))
-           (fixture-root (path-expand "source/core" scratch))
+           (fixture-root (path-expand "source/yuanxu" scratch))
            (fixture-state (path-expand "gerbil" scratch))
            (lib (path-expand "lib" installed)))
       ;; Keep failed fixtures for diagnosis. No source checkout is modified.

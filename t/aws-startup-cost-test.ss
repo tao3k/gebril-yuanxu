@@ -50,13 +50,15 @@
                             result)
                           (for-each
                             (lambda (module)
-                              (measure module (lambda () (eval-syntax `(import ,module)))))
+                              (measure module (lambda ()
+                                (eval-syntax `(import ,(if (string? module)
+                                                          (path-expand module) module))))))
                             '(:gerbil/core :std/test :clan/poo/object :clan/poo/mop :yuanxu/types
                               :yuanxu/observability/types :yuanxu/observability/funcs
                               :yuanxu/observability/slot-debug :yuanxu/observability/debug
                               :yuanxu/observability/testing-case
                               :yuanxu/modules/json-schema/contracts :yuanxu/scenarios/aws/types
-                              :yuanxu/module-system/selection/init-syntax :yuanxu/init
+                              :yuanxu/module-system/selection/init-syntax "init.ss"
                               :yuanxu/module-system/source/admission))
                           (eval-syntax
                             '(def source-counts (make-hash-table)))

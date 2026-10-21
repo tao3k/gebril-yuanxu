@@ -45,7 +45,7 @@
           (path-expand "t/qualification/module-testing/compiled-test.ss" repository)
           test-file)
         (.def (Compiler @ ProcessScript.)
-          command: (list "gerbil" "-:max-heap=1G,debug=q" "env" "gxc" "-d" lib)
+          command: (list "gerbil" "-:max-heap=2G,debug=q" "env" "gxc" "-d" lib)
           directory: root
           environment: (.o GERBIL_PATH: state
                            GERBIL_LOADPATH:
@@ -59,7 +59,7 @@
                          (not (string-contains (.get receipt output) "*** ERROR")))
               (error "focused native compilation failed" source
                      (.get receipt status) (.get receipt output))))
-          '("init.ss" "compiled-bindings/only.ss" "compiled-bindings/renamed.ss"))
+          '("prelude.ss" "init.ss" "compiled-bindings/only.ss" "compiled-bindings/renamed.ss"))
         (def refusal (.call Compiler .run "compiled-bindings/readonly.ss"))
         (check-equal? (zero? (.get refusal status)) #f)
         (check-equal? (and (string-contains (.get refusal output) "Bad syntax")

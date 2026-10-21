@@ -13,6 +13,18 @@ gerbil_test_runtime_options := "-:max-heap=" + gerbil_test_max_heap + ",debug=" 
 default:
     @just --list
 
+# Compiled/public sources must not reintroduce the removed Core namespace.
+check-package-namespace:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    status=0
+    git grep -nE 'PooFlow|poo-flow-core|poo-flow-|:core/|:poo-flow/|package: core' -- '*.ss' '*.nix' '*.yml' gerbil.pkg || status=$?
+    case "$status" in
+      0) echo 'removed Core namespace found' >&2; exit 1 ;;
+      1) echo 'YUANXU-NAMESPACE-OK' ;;
+      *) exit "$status" ;;
+    esac
+
 build:
     GERBIL_BUILD_VERBOSE=1 env -u SDKROOT gerbil build
 
@@ -48,8 +60,8 @@ test-source-tail-gateway directory:
     export CORE_SOURCE_TAIL_CORE="$(pwd)/"
     test ! -e "$CORE_SOURCE_TAIL_ROOT/source"
     mkdir -p "$CORE_SOURCE_TAIL_ROOT"
-    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
-    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib" just test-file t/source-admission-gateway-test.ss
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" just test-file t/source-admission-gateway-test.ss
 
 # Matched dispatcher policies in an already compiled, captured Core package.
 test-source-tail-policy directory:
@@ -59,7 +71,7 @@ test-source-tail-policy directory:
     export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
     export CORE_SOURCE_TAIL_CORE="$(pwd)/"
     test -f "$CORE_SOURCE_TAIL_ROOT/lib/yuanxu/module-system/source/admission.o1"
-    export GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-$HOME/.gerbil}/lib"
+    export GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib"
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/refine-tail-policy.ss
     if [[ "$CORE_SOURCE_TAIL_POLICY" == unrestricted ]]; then
         just test-file t/source-admission-closed-tail-test.ss
@@ -109,7 +121,7 @@ compile-slot-read-costs directory file:
 test-slot-read-costs directory file label:
     #!/usr/bin/env bash
     set -euo pipefail
-    POO_READ_COST_LABEL="{{ label }}" GERBIL_LOADPATH="{{ directory }}/lib:{{ directory }}/source:$(pwd):$HOME/.gerbil/lib" just test-file "{{ file }}"
+    YUANXU_READ_COST_LABEL="{{ label }}" GERBIL_LOADPATH="{{ directory }}/lib:{{ directory }}/source:$(pwd):$HOME/.gerbil/lib" just test-file "{{ file }}"
 
 # Body-only hook correction: keep dependents only with unchanged interface bindings.
 test-slot-read-replay-object directory:
@@ -329,8 +341,9 @@ compile-mop-store-boundary directory:
     set -euo pipefail
     export CORE_STORE_ROOT="{{ directory }}"
     mkdir -p "$CORE_STORE_ROOT/lib"
-    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
-    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/qualification/mop-state/precompiled-stores.ss t/mop-store-boundary-test.ss t/mop-store-boundary-driver-test.ss ../.gerbil/lib/clan/poo/object~0.scm > "$CORE_STORE_ROOT/inputs.sha256"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
+    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/qualification/mop-state/precompiled-stores.ss t/mop-store-boundary-test.ss t/mop-store-boundary-driver-test.ss "$GERBIL_PATH/lib/clan/poo/object~0.scm" > "$CORE_STORE_ROOT/inputs.sha256"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-store-boundary.ss
     just build-mop-store-boundary-runtime "$CORE_STORE_ROOT"
 
@@ -338,7 +351,8 @@ build-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_STORE_ROOT="{{ directory }}"
-    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
     shasum -a 256 "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
     sdk_home="$(cat "$CORE_STORE_ROOT/sdk-home")"
@@ -360,7 +374,8 @@ verify-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_STORE_ROOT="{{ directory }}"
-    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib:$(pwd)/../.gerbil/lib"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
+    export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     just test-file t/artifact-closure-test.ss
     just test-file t/mop-store-boundary-driver-test.ss
     shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
@@ -378,8 +393,8 @@ compile-build-publication directory:
     set -euo pipefail
     mkdir -p "{{ directory }}/lib"
     export CORE_BUILD_PUBLICATION_LIB="{{ directory }}/lib"
-    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/../.gerbil}"
-    export GERBIL_LOADPATH="$CORE_BUILD_PUBLICATION_LIB:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$(pwd)/../.gerbil/lib"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
+    export GERBIL_LOADPATH="$CORE_BUILD_PUBLICATION_LIB:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/compile.ss
 
 # Reuse an owned, previously qualified Core closure; compile changed source units.
@@ -397,8 +412,8 @@ compile-build-publication-delta directory baseline:
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
     set -euo pipefail
-    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/../.gerbil}"
-    export GERBIL_LOADPATH="{{ directory }}/lib:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$(pwd)/../.gerbil/lib"
+    export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
+    export GERBIL_LOADPATH="{{ directory }}/lib:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     just test-file "{{ file }}"
 
 check-build-publication trace:
@@ -460,7 +475,7 @@ test-files group="all":
     set -euo pipefail
     export LC_ALL=C
     case "{{ group }}" in
-      all|bootstrap|modules|contracts|objects|scenarios|runtime) ;;
+      all|bootstrap|modules|contracts|objects|scenarios|providers|runtime) ;;
       *) echo 'unknown test group' >&2; exit 64 ;;
     esac
     shopt -s nullglob
@@ -468,9 +483,10 @@ test-files group="all":
       case "$file" in
         t/package-*|t/prelude-*|t/core-build-*|t/module-build-*|t/module-bootstrap-*|t/runtime-publication-identity-*) owner=bootstrap ;;
         t/module-*|t/feature-system-*) owner=modules ;;
+        t/opentofu-*|t/nix-flake-source-*|t/json-schema-aws-value-contract-test.ss) owner=providers ;;
         t/json-schema-*|t/source-*|t/contract-*|t/admission-*|t/contribution-*|t/configuration-*) owner=contracts ;;
         t/poo-*|t/object-*|t/issued-*|t/path-*|t/evidence-*|t/issuer-*) owner=objects ;;
-        t/aws-*|t/gitea-*|t/opentofu-*|t/nix-*|t/ops-*) owner=scenarios ;;
+        t/aws-*|t/gitea-*|t/nix-*|t/ops-*) owner=scenarios ;;
         *) owner=runtime ;;
       esac
       if [[ "{{ group }}" == all || "{{ group }}" == "$owner" ]]; then printf '%s\n' "$file"; fi
@@ -484,7 +500,7 @@ check-test-groups:
     trap 'rm -rf "$scratch"' EXIT
     just test-files all > "$scratch/all"
     test -s "$scratch/all"
-    for group in bootstrap modules contracts objects scenarios runtime; do
+    for group in bootstrap modules contracts objects scenarios providers runtime; do
       just test-files "$group" > "$scratch/$group"
       test -s "$scratch/$group"
       cat "$scratch/$group" >> "$scratch/groups"
@@ -493,6 +509,39 @@ check-test-groups:
     sort "$scratch/groups" > "$scratch/sorted"
     cmp "$scratch/all" "$scratch/sorted"
     printf 'TEST-GROUPS-OK\n'
+
+# Supply the existing compilation fixture before invoking its std/test facade.
+# These suites inspect issued AOT callbacks, not interpreted substitutes.
+test-discovered-file path:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ path }}" in
+      t/artifact-closure-test.ss|t/mop-store-boundary-test.ss|t/mop-store-boundary-driver-test.ss)
+        fixture=$(mktemp -d)
+        trap 'rm -rf "$fixture"' EXIT
+        just compile-mop-store-boundary "$fixture"
+        if [[ "{{ path }}" == t/artifact-closure-test.ss ]]; then
+          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file "{{ path }}"
+        else
+          printf 'AOT-SUITE %s facade=t/mop-store-boundary-driver-test.ss\n' "{{ path }}"
+          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file t/mop-store-boundary-driver-test.ss
+        fi
+        shasum -a 256 -c "$fixture/callback-artifacts.sha256"
+        shasum -a 256 -c "$fixture/inputs.sha256"
+        shasum -a 256 -c "$fixture/sdk-inputs.sha256"
+        ;;
+      t/source-admission-gateway-test.ss)
+        fixture=$(mktemp -d)
+        trap 'rm -rf "$fixture"' EXIT
+        just test-source-tail-gateway "$fixture"
+        ;;
+      t/artifact-authority-test.ss|t/source-loader-authority-test.ss)
+        fixture=$(mktemp -d)
+        trap 'rm -rf "$fixture"' EXIT
+        CORE_STORE_ROOT="$fixture" just test-file "{{ path }}"
+        ;;
+      *) just test-file "{{ path }}" ;;
+    esac
 
 test-directory group="all":
     #!/usr/bin/env bash
@@ -506,7 +555,7 @@ test-directory group="all":
     printf '%s\n' "${files[@]}"
     failed=()
     for file in "${files[@]}"; do
-      if ! just test-file "$file"; then
+      if ! just test-discovered-file "$file"; then
         failed+=("$file")
       fi
     done

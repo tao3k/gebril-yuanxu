@@ -31,7 +31,7 @@ insufficient for ordinary build.ss startup and is superseded by
 its historical successful receipts do not establish normal startup.
 
 Core's test-file launcher now prepends CORE_QUALIFICATION_ROOT when explicitly
-running source qualification. This directory has gerbil.pkg with package: core;
+running source qualification. This directory has gerbil.pkg with package: yuanxu;
 Gerbil's existing package-prefix lookup limits that source priority to Core.
 Other packages still use their compiled public dependencies before their source
 fallback. The source-only CI launcher declares the same order explicitly:

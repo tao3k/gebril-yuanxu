@@ -24,12 +24,12 @@ policy, PackageSpec or Kubernetes implementation to realize this protocol.
 
 * Naming rule for this target chain
 
-Every Core-owned public procedure in proposed code below uses yuanxu-;
-Core compiler paths use :yuanxu/.... The product facade alone retains
-yuanxu-load-modules. Existing implementations with :core paths and poo-flow-
-procedure names are recorded in [[file:11.22-migrated-core-guestbook-chain.org][the current-state audit]], not mixed into target
-code. The [[file:../../../module-system/design/05-namespace-and-build-ownership.org][migration ledger]] maps old bindings to proposed names. Renaming is pending;
-existing mechanism support is not availability of its renamed API.
+Core-owned public procedures use yuanxu- and compiler paths use :yuanxu/....
+The package migration is implemented; there are no forwarding aliases to the old
+Core package. The product checkout owns its own APIs. The historical revision
+inspection in [[file:11.22-migrated-core-guestbook-chain.org][11.22]] is not a current import guide; use
+[[file:../13-module-loading/13.16-yuanxu-package-and-prelude.org][13.16]] for the implemented package/prelude boundary. Proposed Guestbook
+provider adaptation remains design work, independently of namespace availability.
 
 * One complete Guestbook authoring chain
 

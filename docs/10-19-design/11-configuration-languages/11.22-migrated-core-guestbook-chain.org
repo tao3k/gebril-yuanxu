@@ -7,7 +7,12 @@
 #+filetags: :config-language:guestbook:module-system:feature-system:design:
 #+property: STATUS current-api-audit-and-design-no-implementation-no-loader
 
-* Scope and current ownership
+* Historical revision inspection
+
+This is a frozen source audit, superseded for current package/import guidance by
+[[file:../13-module-loading/13.16-yuanxu-package-and-prelude.org][13.16 Yuanxu Package Identity]]. It does not establish compatibility entries.
+The product imports below identify the inspected product revision, not Yuanxu
+imports to copy into current code.
 
 This audit uses Core worktree 06fe336bc671 and product revision 921152c088d1 after the
 migration, not removed product src paths or a historical gitlink. It records source

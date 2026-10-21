@@ -46,7 +46,7 @@
 (def (yuanxu-debug-raise-memory-anomaly receipt)
   (let (failure
         (YuanxuDebugMemoryAnomaly
-         "POO Flow debug memory policy rejected the observed phase"
+         "Yuanxu debug memory policy rejected the observed phase"
          irritants: '()))
     (set! (YuanxuDebugMemoryAnomaly-receipt failure) receipt)
     (raise failure)))
@@ -75,7 +75,7 @@
 
 (def (yuanxu-debug-memory-snapshot phase collect?: (collect? #f))
   (unless (and (symbol? phase) (boolean? collect?))
-    (error "invalid POO Flow debug memory snapshot request" phase collect?))
+    (error "invalid Yuanxu debug memory snapshot request" phase collect?))
   (yuanxu-debug-memory-sample-from-counters
    phase (yuanxu-debug-memory-counters collect?)))
 
@@ -107,7 +107,7 @@
                 reason: reason-value)))
          (failure
           (YuanxuDebugDurationAnomaly
-           "POO Flow testing Case duration budget exceeded"
+           "Yuanxu testing Case duration budget exceeded"
            irritants: (list reason-value limit-value elapsed-value))))
     (set! (YuanxuDebugDurationAnomaly-receipt failure) receipt)
     (raise failure)))
@@ -132,7 +132,7 @@
                                        port: (port (current-error-port))
                                        emit?: (emit? #f))
   (unless (and (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow debug memory checkpoint output request"))
+    (error "invalid Yuanxu debug memory checkpoint output request"))
   (let* ((after
           (yuanxu-debug-memory-snapshot
            phase collect?: (.ref policy 'collect-before-sample?)))
@@ -168,7 +168,7 @@
                                            port: (port (current-error-port))
                                            emit?: (emit? #f))
   (unless (procedure? thunk)
-    (error "POO Flow debug memory span requires a thunk"))
+    (error "Yuanxu debug memory span requires a thunk"))
   (let (before
         (yuanxu-debug-memory-snapshot
          phase collect?: (.ref policy 'collect-before-sample?)))
@@ -205,11 +205,11 @@
                                               max-duration-milliseconds:
                                               (max-duration-milliseconds #f))
   (unless (procedure? thunk)
-    (error "POO Flow debug memory monitor requires a thunk"))
+    (error "Yuanxu debug memory monitor requires a thunk"))
   (unless (or (not max-duration-milliseconds)
               (and (exact-integer? max-duration-milliseconds)
                    (> max-duration-milliseconds 0)))
-    (error "invalid POO Flow debug Case duration limit"
+    (error "invalid Yuanxu debug Case duration limit"
            max-duration-milliseconds))
   (let* ((policy-label (.ref policy 'label))
          (started-jiffy (current-jiffy))
@@ -312,7 +312,7 @@
                (boolean? emit?)
                (exact-integer? max-duration-milliseconds)
                (> max-duration-milliseconds 0))
-    (error "invalid POO Flow testing Case watchdog request"
+    (error "invalid Yuanxu testing Case watchdog request"
            phase max-duration-milliseconds))
   (let* ((owner (current-thread))
          (gate (make-mutex))

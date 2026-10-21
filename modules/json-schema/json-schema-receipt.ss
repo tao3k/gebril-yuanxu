@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Contract: public receipt for JSON Schema to POO Flow contract generation.
+;;; Contract: public receipt for JSON Schema to Yuanxu contract generation.
 
 (import (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-native-contract->alist)

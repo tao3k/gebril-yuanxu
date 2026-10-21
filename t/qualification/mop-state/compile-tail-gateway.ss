@@ -10,7 +10,7 @@
 ;; Snapshot current runtime sources as one coherent package. A single relocated
 ;; Core library mixed with live source imports is correctly refused by the reader.
 ;; Copy source/data roles, not compiled artifacts or a frozen older qualification.
-(def source-core (path-expand "source/core/" root))
+(def source-core (path-expand "source/yuanxu/" root))
 (def (snapshot directory relative)
   (for-each
     (lambda (name)
@@ -26,7 +26,7 @@
                   (lambda (port) (display (call-with-input-file input read-all-as-string) port)))))))))
     (directory-files directory)))
 (snapshot core "")
-(def path (path-expand "source/core/module-system/source/admission.ss" root))
+(def path (path-expand "source/yuanxu/module-system/source/admission.ss" root))
 (def text (call-with-input-file (path-expand "module-system/source/admission.ss" core) read-all-as-string))
 (def offset (string-contains text original))
 (unless offset (error "source event gateway changed; re-audit before qualification"))

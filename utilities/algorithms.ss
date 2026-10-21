@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Reusable algorithmic functions for the POO Flow core.
+;;; Reusable algorithmic functions for the Yuanxu core.
 
 (export yuanxu-memoize
         yuanxu-read-datums/append-map

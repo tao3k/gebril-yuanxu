@@ -94,7 +94,7 @@
 (def (yuanxu-debug-raise-call-anomaly receipt)
   (let (failure
         (YuanxuDebugCallAnomaly
-         "POO Flow debug call admission rejected the invocation"
+         "Yuanxu debug call admission rejected the invocation"
          irritants: '()))
     (set! (YuanxuDebugCallAnomaly-receipt failure) receipt)
     (raise failure)))
@@ -125,9 +125,9 @@
                                      emit?: (emit? #t))
   (unless (and (symbol? call-id) (list? arguments)
                (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow debug trace request" call-id))
+    (error "invalid Yuanxu debug trace request" call-id))
   (unless (eq? (validate YuanxuDebugCallPolicyContract policy) policy)
-    (error "invalid POO Flow debug call policy"))
+    (error "invalid Yuanxu debug call policy"))
   (let* ((path (yuanxu-debug-active-call-path))
          (started-jiffy (current-jiffy))
          (depth (length path))

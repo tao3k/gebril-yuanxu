@@ -172,7 +172,7 @@
 ;; : (-> Symbol Natural YuanxuDebugCallPolicy)
 (def (yuanxu-debug-call-policy label-value maximum-depth-value)
   (unless (> maximum-depth-value 0)
-    (error "POO Flow debug call depth must be positive" maximum-depth-value))
+    (error "Yuanxu debug call depth must be positive" maximum-depth-value))
   (validate YuanxuDebugCallPolicyContract
     (.o (:: @ DebugCallPolicy.)
         label: label-value
@@ -224,7 +224,7 @@
 ;; : (-> Symbol Natural YuanxuDebugSlotPolicy)
 (def (yuanxu-debug-slot-policy label-value maximum-depth-value)
   (unless (> maximum-depth-value 0)
-    (error "POO Flow debug slot depth must be positive" maximum-depth-value))
+    (error "Yuanxu debug slot depth must be positive" maximum-depth-value))
   (validate YuanxuDebugSlotPolicyContract
     (.o (:: @ DebugSlotPolicy.)
         label: label-value

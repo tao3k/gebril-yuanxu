@@ -16,7 +16,7 @@
 ;; Reuse the maintained Ops Script protocol. Only the test's .run starts it.
 (.def (Build @ (.get Ops prototypes Script))
   command: '("env" "-u" "CORE_QUALIFICATION_ROOT" "-u" "GERBIL_LOADPATH"
-                  "-u" "SDKROOT" "gerbil" "-:max-heap=1G,debug=q" "env" "gxi" "build.ss")
+                  "-u" "SDKROOT" "gerbil" "-:max-heap=2G,debug=q" "env" "gxi" "build.ss")
   directory: (.get Fixture root)
   ;; Inherit the project's available-CPU setting; do not pin a worker count.
   ;; Complete build invocations remain sequential under the same watchdog.

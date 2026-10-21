@@ -3,10 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: POO Flow user-facing facts for hot-plug module selection.
+;;; Boundary: Yuanxu user-facing facts for hot-plug module selection.
 ;;; Invariant: this module stays below profile/doctor presentation logic.
 ;;; Descriptor realization stays in package-root modules.
-;;; Intent: keep the downstream surface focused on POO Flow module activation.
+;;; Intent: keep the downstream surface focused on Yuanxu module activation.
 
 (import (only-in :clan/poo/object .o .ref .slot?)
         (only-in :yuanxu/object-family/syntax

@@ -29,6 +29,8 @@ jobs:
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
           GERBIL_BUILD_VERBOSE=1 gerbil deps --install
+      - name: Check Yuanxu package namespace
+        run: just check-package-namespace
       - name: Build Yuanxu
         run: just build
       - name: Test public Yuanxu prelude
@@ -52,9 +54,9 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 7
       matrix:
-        group: [bootstrap, modules, contracts, objects, scenarios, runtime]
+        group: [bootstrap, modules, contracts, objects, scenarios, providers, runtime]
     env:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
     steps:
@@ -66,5 +68,19 @@ jobs:
           path: ${{ runner.temp }}
       - name: Restore same-head artifacts
         run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
+      - name: Prepare real Provider qualification inputs
+        if: matrix.group == 'providers'
+        run: |
+          inputs=$(nix-build --no-out-link t/fixtures/opentofu/ci.nix)
+          families=$(readlink -f "$inputs/families")
+          {
+            echo "YUANXU_OPENTOFU_ARTIFACT=$families"
+            echo "YUANXU_OPENTOFU_FLAKE_ARTIFACT=$families"
+            echo "YUANXU_JSON_SCHEMA_AWS_EXPORT=$families/aws/schema.json"
+            echo "YUANXU_OPENTOFU_TEST_PARENT_ARTIFACT=$(readlink -f "$inputs/parent")"
+            echo "YUANXU_OPENTOFU_TEST_CHILD_ARTIFACT=$(readlink -f "$inputs/child")"
+            echo "YUANXU_AWS_BINARY=$(readlink -f "$inputs/binary")/provider"
+            echo "YUANXU_NIX_TEST_TOOLS=$(cat "$inputs/tools")"
+          } >> "$GITHUB_ENV"
       - name: Run complete group with serial 2 GiB workers
         run: just test-directory '${{ matrix.group }}'

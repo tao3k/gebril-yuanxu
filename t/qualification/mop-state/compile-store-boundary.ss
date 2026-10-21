@@ -62,7 +62,7 @@
 ;; Follow native constructor callers too: optimized .def can bypass dynamic
 ;; :init! dispatch, while .cc/.+ can reach it through ordinary runtime calls.
 (read-definitions
-  (path-expand "../.gerbil/lib/clan/poo/object~0.scm" core)
+  (path-expand "lib/clan/poo/object~0.scm" (gerbil-path))
   (lambda (form)
     (or (and (pair? (caddr form)) (eq? (car (caddr form)) 'lambda))
         (string-suffix? "-set!" (symbol->string (cadr form))))))

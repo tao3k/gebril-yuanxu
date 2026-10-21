@@ -29,7 +29,7 @@
         yuanxu-test-case
         yuanxu-test-case/with)
 
-;;; All declared POO Flow cases receive this default.  The heap counters are
+;;; All declared Yuanxu cases receive this default.  The heap counters are
 ;;; process-wide, so the memory policy is a guard on a Case execution span,
 ;;; not a claim of independent thread-local heap accounting.  Assertions stay
 ;;; on the native harness thread; a separate sampler may interrupt it.  The native
@@ -49,10 +49,10 @@
       .run: (lambda (self description thunk)
               (let (problem (yuanxu-testing-case-profile-problem self))
                 (when problem
-                  (error "invalid POO Flow testing Case profile"
+                  (error "invalid Yuanxu testing Case profile"
                          problem)))
               (unless (and (string? description) (procedure? thunk))
-                (error "invalid POO Flow testing Case" description thunk))
+                (error "invalid Yuanxu testing Case" description thunk))
               (def policy
                (yuanxu-debug-memory-policy
                 (.ref self 'identity)

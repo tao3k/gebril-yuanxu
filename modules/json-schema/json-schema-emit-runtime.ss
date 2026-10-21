@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Contract: emit POO Flow object contracts from normalized JSON Schema IR.
+;;; Contract: emit Yuanxu object contracts from normalized JSON Schema IR.
 ;;; Optimization boundary: this module builds predicate closures once while
 ;;; emitting contracts; value validation reuses those closures without walking
 ;;; the normalized schema again.

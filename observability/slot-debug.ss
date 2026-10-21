@@ -53,7 +53,7 @@
 (def (yuanxu-debug-raise-slot-anomaly receipt)
   (let (failure
         (YuanxuDebugSlotAnomaly
-         "POO Flow debug slot admission rejected lazy resolution"
+         "Yuanxu debug slot admission rejected lazy resolution"
          irritants: '()))
     (set! (YuanxuDebugSlotAnomaly-receipt failure) receipt)
     (raise failure)))
@@ -150,9 +150,9 @@
   (unless (and (symbol? receiver) (list? sources)
                (andmap object? sources)
                (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow slot debug batch request" receiver))
+    (error "invalid Yuanxu slot debug batch request" receiver))
   (unless (eq? (validate YuanxuDebugSlotPolicyContract policy) policy)
-    (error "invalid POO Flow debug slot policy"))
+    (error "invalid Yuanxu debug slot policy"))
   (map (lambda (source)
          (yuanxu-debug-poo/validated
           policy receiver source port emit?))
@@ -185,7 +185,7 @@
                          emit?: (emit? #t))
   (unless (and (symbol? receiver) (object? source)
                (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow slot debug request" receiver))
+    (error "invalid Yuanxu slot debug request" receiver))
   (unless (eq? (validate YuanxuDebugSlotPolicyContract policy) policy)
-    (error "invalid POO Flow debug slot policy"))
+    (error "invalid Yuanxu debug slot policy"))
   (yuanxu-debug-poo/validated policy receiver source port emit?))

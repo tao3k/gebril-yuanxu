@@ -126,7 +126,9 @@ the prepared Module scope. A concrete orchestration function is:
 No new Scheme Schema evaluator is introduced. The exact current files are
 core/modules/json-schema/json-schema-normalize.ss, json-schema-emit-contracts.ss,
 json-schema-receipt.ss, json-schema-validate.ss and json-schema-valid.ss. Current
-names have poo-flow- prefixes; target Core naming/publication remains separate.
+names use yuanxu- prefixes and :yuanxu module identities. Namespace migration
+is implemented; the conversion coverage described here retains its own evidence
+and admission boundary.
 
 A generation receipt must account for EVERY encountered source semantic as mapped,
 retained annotation, explicit external obligation, or unsupported. The common gate

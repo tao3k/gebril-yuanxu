@@ -58,18 +58,18 @@
     (refuses "stale slot dependency"
       (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "a warm replay observer can mutate; final replay rejects without undoing the callback"
+  (yuanxu-test-case "a warm replay observer is refused before mutating its receiver"
     (.def Root port: 5432)
     (def roots (recorded (cut .get Root port)))
     (def calls 0)
-    (refuses "stale slot dependency"
+    (refuses "object mutation during read replay"
       (lambda ()
         (replay-slot-reads! roots
           (lambda (_receiver _key)
             (set! calls (+ 1 calls))
             (.putslot! Root 'port ($constant-slot-spec 5433))))))
     (check-equal? calls 1)
-    (check-equal? (.get Root port) 5433)
+    (check-equal? (.get Root port) 5432)
     (set! completed (+ completed 1)))
   (yuanxu-test-fixture "a cold MOP frame and restored dynamic observer do not fence a source file"
     (fixture DirectoryFixture)

@@ -11,8 +11,8 @@
 (export json-schema-aws-value-contract-test)
 
 (def (ref value key) (yuanxu-contract-object-ref value key #f))
-(def source-path (or (getenv "POO_JSON_SCHEMA_AWS_EXPORT")
-                     (error "Set POO_JSON_SCHEMA_AWS_EXPORT to the acquired AWS provider export")))
+(def source-path (or (getenv "YUANXU_JSON_SCHEMA_AWS_EXPORT")
+                     (error "Set YUANXU_JSON_SCHEMA_AWS_EXPORT to the acquired AWS provider export")))
 (def provider-export (yuanxu-json-schema-read-file source-path))
 (def providers (ref provider-export 'provider_schemas))
 (def tofu-provider (ref providers 'registry.opentofu.org/hashicorp/aws))

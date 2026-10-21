@@ -53,7 +53,7 @@
     (def forged (copy-read genuine object-read-current?))
     (check-equal? (object-read-current? forged) #f)
     (refuses "unowned slot-read record" (cut require-owned-reads! (list forged)))
-    (refuses "stale slot dependency"
+    (refuses "unissued slot dependency"
       (cut replay-slot-reads! (list forged) (lambda (_r _k) (void))))
     (set! completed (+ completed 1)))
   (yuanxu-test-case "bootstrap checker success alone does not authenticate issuance"
@@ -65,12 +65,12 @@
     (def genuine (car (filter (lambda (read)
       (equal? (slot-read-key read) '(bootstrap compute-slot))) roots)))
     (def forged (copy-read genuine object-read-current?))
-    (check-equal? (object-read-current? forged) #t)
+    (check-equal? (object-read-current? forged) #f)
     (refuses "unowned slot-read record" (cut require-owned-reads! (list forged)))
     (check-equal? (require-owned-reads! roots) #t)
     (check-equal? hooks 0)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "a synthetic cache miss also passes native currentness without issuance"
+  (yuanxu-test-case "transient native misses are valid while synthetic misses lack issuance"
     (.def Root port: 5432)
     (.get Root port)
     (def genuine (recorded (cut .ref/cached Root 'missing (lambda () #f))))
@@ -82,10 +82,10 @@
     (refuses "unowned slot-read record" (cut require-owned-reads! (list genuine-miss)))
     (def forged (make-slot-read Root '(cache-miss missing) (object-revision Root)
       (object-%instance Root) #f '() object-read-current?))
-    (check-equal? (object-read-current? forged) #t)
+    (check-equal? (object-read-current? forged) #f)
     (refuses "unowned slot-read record" (cut require-owned-reads! (list forged)))
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "native replay executes a foreign checker; preflight refuses without calling it"
+  (yuanxu-test-case "native replay refuses a foreign checker before calling it"
     (.def Root port: 5432)
     (.def Victim port: 5432)
     (.get Root port)
@@ -96,9 +96,10 @@
         (.putslot! Victim 'port ($constant-slot-spec 5440)) #t)))
     (refuses "foreign slot-read checker" (cut require-owned-reads! (list forged)))
     (check-equal? calls 0)
-    (replay-slot-reads! (list forged) (lambda (_r _k) (void)))
-    (check-equal? calls 2)
-    (check-equal? (.get Victim port) 5440)
+    (refuses "unissued slot dependency"
+      (cut replay-slot-reads! (list forged) (lambda (_r _k) (void))))
+    (check-equal? calls 0)
+    (check-equal? (.get Victim port) 5432)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "owned root does not hide a foreign checker in its dependency graph"
     (.def External port: 5432)
@@ -127,9 +128,9 @@
     (def forged (copy-read genuine object-read-current?))
     (hash-put! (object-%reads Root) 'port forged)
     (check-equal? (require-owned-reads! (list forged)) #t)
-    (check-equal? (object-read-current? forged) #t)
+    (check-equal? (object-read-current? forged) #f)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "actual SourceAdmissionContract consumes an injected checker without authenticity gate"
+  (yuanxu-test-case "actual SourceAdmissionContract rejects an injected checker before effects"
     (def sample (probe '()))
     (def candidate (.get sample candidate))
     (def dependency (.get sample external))
@@ -142,10 +143,9 @@
         (.putslot! dependency 'port ($constant-slot-spec 5440)) #t)))
     (def Contract (.cc (.get sample contract)
       .obligations: (lambda (_candidate _context) (%deliver-slot-read forged #t) '())))
-    (def evidence (.call Contract .admit candidate #f))
-    (check-equal? (.get evidence accepted?) #t)
-    (check-equal? (> calls 0) #t)
-    (check-equal? (.get dependency port) 5440)
+    (refuses "unissued slot dependency" (cut .call Contract .admit candidate #f))
+    (check-equal? calls 0)
+    (check-equal? (.get dependency port) 5432)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "fixed checker identity still depends on trusted metadata table methods"
     (.def Root port: 5432)
@@ -163,9 +163,13 @@
         (ref self key default)))
     ;; The earlier snapshot stores this table's identity, not its method body.
     (check-equal? (state-current! snapshot) #t)
-    (check-equal? (state-closed? snapshot) #t)
-    (check-equal? (object-read-current? genuine) #t)
-    (check-equal? (> calls 0) #t)
+    (def snapshot-calls calls)
+    (check-equal? (> snapshot-calls 0) #t)
+    (refuses "changed metadata ref" (cut state-closed? snapshot))
+    (refuses "changed metadata ref" (cut object-read-current? genuine))
+    (check-equal? calls snapshot-calls)
+    ;; The native guard cannot undo an effect already performed by the weak
+    ;; experimental snapshot helper; it must not invoke that route again.
     (check-equal? (.get Victim port) 5440)
     (set! completed (+ completed 1)))
   (yuanxu-test-fixture "real services retain two requirements, child evidence, ordering and parent cache"

@@ -9,7 +9,7 @@
   (for (round (in-range 3))
     (defvalues (value costs) (measure action repetitions))
     (check-equal? value 5432)
-    (write (list 'READ-COST (getenv "POO_READ_COST_LABEL" "unlabelled")
+    (write (list 'READ-COST (getenv "YUANXU_READ_COST_LABEL" "unlabelled")
                  phase round repetitions costs))
     (newline)))
 

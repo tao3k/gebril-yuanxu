@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: POO Flow import conventions over Core SourceRef identities.
+;;; Boundary: Yuanxu import conventions over Core SourceRef identities.
 ;;; Invariant: imports describe source refs or inline profiles.
 ;;; They never load files, query registries, or evaluate modules.
 ;;; Intent: callers can inspect provenance and profile payloads before any loader exists.

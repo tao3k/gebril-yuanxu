@@ -11,7 +11,7 @@
     (test-case "prepared command retains the configured deadline and signal policy"
       (.def (Script @ ProcessScript.) command: '("printf" "ok") timeout: 2)
       (check-equal? (prepare-script-command Script)
-        '("timeout" "--verbose" "--foreground" "--signal=TERM" "--kill-after=5s" "2s" "printf" "ok")))
+        '("timeout" "--verbose" "--signal=TERM" "--kill-after=5s" "2s" "printf" "ok")))
     (test-case "a successful command has no watchdog diagnostic noise"
       (.def (Script @ ProcessScript.) command: '("printf" "ok") timeout: 2)
       (check-equal? (.get (.call Script .run) output) "ok"))

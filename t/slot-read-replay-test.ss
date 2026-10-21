@@ -2,9 +2,9 @@
 ;;; Consumer regression tests for the gerbil-poo MOP read protocol.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/objects gitea-application)
-        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/types ApplicationContract)
-        (only-in :yuanxu/scenarios/gitea-postgresql/postgresql/types Port PostgreSQLConfigContract)
+        (only-in "../scenarios/gitea-postgresql/gitea/objects.ss" gitea-application)
+        (only-in "../scenarios/gitea-postgresql/gitea/types.ss" ApplicationContract)
+        (only-in "../scenarios/gitea-postgresql/postgresql/types.ss" Port PostgreSQLConfigContract)
         (only-in :yuanxu/configuration/json config-json-file)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/t/qualification/service-publication/fixtures

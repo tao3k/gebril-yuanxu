@@ -298,8 +298,8 @@ its own value, so this does not impose global once-only execution.
 
 The fixture scope below is a native private bridge to known implementation
 functions, not a simulated Loader admission or an installed JsonSchema Module.
-Target names require the planned namespace migration; the existing implementation
-names in the source audit have the corresponding poo-flow- prefix.
+Core names now use the implemented yuanxu- namespace. This private fixture
+remains a qualification bridge, not an alternative public module entrypoint.
 
 #+begin_src scheme
 (.def FixtureSchemaScope

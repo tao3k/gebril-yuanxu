@@ -202,6 +202,8 @@
                 (write `(yuanxu! mode: explicit
                           (json-schema @ ,(path-expand "modules/json-schema" (current-directory)))
                           (nix @ ,(path-expand "modules/nix" (current-directory)))
+                          (ops @ ,(path-expand "ops" (current-directory)))
+                          (funflow @ ,(path-expand "modules/funflow" (current-directory)))
                           (opentofu @ ,upstream)
                           :app (infrastructure) :unused (bomb disable: #t)) port))))
           (write-source (path-expand "types.ss" owner)
@@ -255,7 +257,8 @@
           (assert 'core-source-is-not-copied
             (not (file-exists? (path-expand "modules/opentofu" root))))
           (assert 'selected-dependency-order
-            (equal? (.get parent-view dependency-order) '(json-schema nix opentofu app/infrastructure)))
+            (equal? (.get parent-view dependency-order)
+                    '(json-schema nix ops funflow opentofu app/infrastructure)))
           (let* ((records (.get parent-view selected-records))
                  (json-schema (find (lambda (record) (eq? (.get record identity) 'json-schema)) records))
                  (nix (find (lambda (record) (eq? (.get record identity) 'nix)) records))

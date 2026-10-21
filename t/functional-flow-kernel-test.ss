@@ -17,7 +17,21 @@
                  test-error
                  test-suite)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/modules/funflow/control-plane/api)
+        "../modules/funflow/control-plane/flow-syntax.ss"
+        :yuanxu/modules/funflow/control-plane/flow
+        :yuanxu/modules/funflow/control-plane/flow-strand
+        :yuanxu/modules/funflow/control-plane/failure
+        :yuanxu/modules/funflow/control-plane/strategy
+        :yuanxu/modules/funflow/control-plane/runtime-adapter
+        :yuanxu/modules/funflow/control-plane/runtime-protocol
+        :yuanxu/modules/funflow/control-plane/runner
+        :yuanxu/modules/funflow/control-plane/config
+        :yuanxu/modules/funflow/control-plane/graph
+        :yuanxu/modules/funflow/control-plane/roles
+        :yuanxu/modules/funflow/control-plane/policy
+        :yuanxu/modules/funflow/control-plane/replay
+        :yuanxu/modules/funflow/control-plane/receipt
+        :yuanxu/modules/funflow/control-plane/task)
 
 (export functional-flow-kernel-test)
 

@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Contract: normalize JSON-like schema values into POO Flow JSON Schema IR.
+;;; Contract: normalize JSON-like schema values into Yuanxu JSON Schema IR.
 ;;; Invariant: this module performs pure import-boundary normalization only.
 ;;; It does not fetch schemas, execute validators, or emit runtime payloads.
 
