@@ -39,8 +39,13 @@ jobs:
         uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
         with:
           install_url: https://releases.nixos.org/nix/nix-2.28.5/install
-      - name: Verify native Nix store access
-        run: bash tools/ci/check-nix-store.sh
+          enable_kvm: false
+      - name: Verify required Nix commands and native store access
+        run: |
+          nix-store --version
+          nix-instantiate --version
+          nix-build --version
+          bash tools/ci/check-nix-store.sh
       - name: Install the supported Just CLI
         uses: extractions/setup-just@f8a3cce218d9f83db3a2ecd90e41ac3de6cdfd9b # v3
         with:

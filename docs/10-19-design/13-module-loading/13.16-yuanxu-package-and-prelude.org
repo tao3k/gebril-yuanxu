@@ -77,8 +77,9 @@ library lookup order unchanged. The focused runtime-publication-identity test
 passes with the installed, unchanged Gerbil and the declared dependency build:
 the load path, held Contract, its prototype and validation result retain their
 identities across the source init import and build-data projection. The test
-requires MODULE-OK, HARNESS-OK and final OK. This does not turn the previously
-recorded full-build deadline failures into passes.
+requires MODULE-OK, HARNESS-OK and final OK. The eleven-case Gitea/PostgreSQL publication control also passes after this
+integration, including MODULE-OK, HARNESS-OK and final OK. These focused results
+do not turn the previously recorded full-build deadline failures into passes.
 
 * Source identity is checked, not aliased
 
