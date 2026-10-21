@@ -25,8 +25,9 @@
         (eval-syntax `(import (only-in ,(path-expand "init.ss" root) init.build-spec)))
         (check-equal? (load-path) paths)
         (check-equal? (pair? ((eval-syntax 'init.build-spec) '())) #t))
-      ;; Explicit build projection may register its source package. Runtime
-      ;; import above remains inert; neither route may reinstall the objects.
+      ;; Projection returns build data; only the actual build entry may
+      ;; prioritize source packages in its own compiler process.
+      (check-equal? (load-path) paths)
       (check-equal? (eq? contract PooFlowDebugDurationReceiptContract) #t)
       (check-equal? (eq? proto (.ref PooFlowDebugDurationReceiptContract 'proto)) #t)
       (check-equal? (eq? (validate PooFlowDebugDurationReceiptContract held) held) #t))))

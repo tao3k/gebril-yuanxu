@@ -4,8 +4,6 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
-        (only-in :std/source this-source-file)
-        (only-in "./source-package.ss" register-module-build-source!)
         (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process)
         (only-in :core/module-system/source/declaration current-module-build-phase?)
         (only-in :clan/poo/object .o .ref)
@@ -77,8 +75,6 @@
     (reverse result)))
 
 (def (poo-flow-core-project-source-spec source retained root entry-source)
-  (register-module-build-source!
-    (path-expand "../.." (path-directory (this-source-file))) 'core)
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
   (unless (and (string? root) (path-absolute? root)
