@@ -55,13 +55,13 @@ def main():
     core = (repo / 'core/types.ss').read_bytes()
     if digest(core) != lock['core_types_sha256']:
         raise ValueError('Core types differs from the recorded source; requalify explicitly')
-    (root / 'core').mkdir()
-    (root / 'core/types.ss').write_bytes(core)
+    (root / 'yuanxu').mkdir()
+    (root / 'yuanxu/types.ss').write_bytes(core)
     # Test-source package declaration only: no dependency install or Loader.
-    package = b'(package: core)\n'
-    (root / 'core/gerbil.pkg').write_bytes(package)
-    source_hashes['core/types.ss'] = digest(core)
-    source_hashes['core/gerbil.pkg'] = digest(package)
+    package = b'(package: yuanxu)\n'
+    (root / 'yuanxu/gerbil.pkg').write_bytes(package)
+    source_hashes['yuanxu/types.ss'] = digest(core)
+    source_hashes['yuanxu/gerbil.pkg'] = digest(package)
     (root / 'home').mkdir()
     env = os.environ.copy()
     env.update(GERBIL_PATH=str(root / 'home'), GERBIL_LOADPATH=str(root))

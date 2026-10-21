@@ -313,3 +313,10 @@ present before selection (which must report the unknown admission). Source-byte
 changes retain the current reader's stale prepared build source diagnostic.
 The ten deep contribution controls and the build-role controls pass locally;
 full exact-head CI remains the completion gate.
+
+Per user request, the grouped tests now inherit the existing 2 GiB per-worker
+heap default; no group overrides it to 1 GiB. Workers remain serial within each
+runner, and timeouts/assertions are unchanged. Historical executable projection
+probes also declare the yuanxu package rather than creating a legacy core
+namespace. Their recorded source hashes remain authentic historical guards;
+renaming a probe does not qualify it against a different source cut.

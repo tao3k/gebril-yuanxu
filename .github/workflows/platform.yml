@@ -66,5 +66,5 @@ jobs:
           path: ${{ runner.temp }}
       - name: Restore same-head artifacts
         run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
-      - name: Run complete group with serial 1 GiB workers
+      - name: Run complete group with serial 2 GiB workers
         run: just test-directory '${{ matrix.group }}'

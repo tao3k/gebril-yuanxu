@@ -506,7 +506,7 @@ test-directory group="all":
     printf '%s\n' "${files[@]}"
     failed=()
     for file in "${files[@]}"; do
-      if ! GERBIL_TEST_MAX_HEAP=1G just test-file "$file"; then
+      if ! just test-file "$file"; then
         failed+=("$file")
       fi
     done
