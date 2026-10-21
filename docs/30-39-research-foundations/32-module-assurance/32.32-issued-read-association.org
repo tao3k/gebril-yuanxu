@@ -115,7 +115,7 @@ production Scenario's contract policy.
 
 * Formal correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/IssuedRead.lean][IssuedRead.lean]] proves mint authenticity, rejection of public construction,
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRead.lean][IssuedRead.lean]] proves mint authenticity, rejection of public construction,
 borrowed identity and changed payload, whole-selected-closure authenticity,
 transient issuance independent of cache registration, association identity before
 payload verification, and preservation of route, both requirements and child
@@ -123,7 +123,7 @@ ownership on acceptance. Its explicit private-state-corruption witness records
 the trust limit; it is not a claim that arbitrary record-field edits authorize a
 new native association.
 
-[[file:../../../proofs/quint/IssuedRead.qnt][IssuedRead.qnt]] models source-first diagnostics, persistent/miss issuance,
+[[file:../../../dev/proofs/quint/IssuedRead.qnt][IssuedRead.qnt]] models source-first diagnostics, persistent/miss issuance,
 borrowed and displaced closures, payload tampering, a forged dependency, route
 replacement, and observer-time changes. Mutants remove issuance, full-closure
 checking, route protection or final checking; force miss registration; drop the

@@ -170,7 +170,7 @@ its changed bytes. Dynamic unwinding restores the binding, not the filesystem.
 
 * Lean laws and correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/SnapshotLifetime.lean][Admission.SnapshotLifetime]] reuses SnapshotEntry/ReadOnlyEntry rather than
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SnapshotLifetime.lean][Admission.SnapshotLifetime]] reuses SnapshotEntry/ReadOnlyEntry rather than
 replacing their guard, source or first-diagnostic models.
 
 | Theorem | Result |
@@ -198,7 +198,7 @@ source coverage, child obligations and plan identity laws remain required.
 
 * QNT controls: certification is not execution fencing
 
-[[file:../../../proofs/quint/SnapshotLifetime.qnt][SnapshotLifetime]] separates entry, mutation, pre-use check, another possible
+[[file:../../../dev/proofs/quint/SnapshotLifetime.qnt][SnapshotLifetime]] separates entry, mutation, pre-use check, another possible
 gap, use and final certification. Scenarios include supported value ABA,
 external dependency changes, observer ABA, active-child veto and combined
 source/record failure. Two independent requirements and final receiver ownership

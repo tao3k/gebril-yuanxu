@@ -34,6 +34,7 @@ import PooFlowCoreProof.Admission.SnapshotLifetime
 import PooFlowCoreProof.Admission.SerialUse
 import PooFlowCoreProof.Admission.IssuedRootForwarding
 import PooFlowCoreProof.Admission.ReadRetention
+import PooFlowCoreProof.Admission.RootCollection
 import PooFlowCoreProof.Admission.CallPhases
 import PooFlowCoreProof.Admission.AdmissionBody
 import PooFlowCoreProof.Admission.ReturnTail
@@ -104,6 +105,8 @@ run_cmd do
   for required in #[
       `PooFlowCoreProof.Admission.IssuedRootForwarding.preserves_issuance,
       `PooFlowCoreProof.Admission.ReadRetention.closure_coverage,
+      `PooFlowCoreProof.Admission.RootCollection.callbacks_unchanged,
+      `PooFlowCoreProof.Admission.RootCollection.first_diagnostic_unchanged,
       `PooFlowCoreProof.Admission.ReadRetention.omitted_dependency_refused,
       `PooFlowCoreProof.Admission.ReadRetention.child_context_keeps_joint_claim,
       `PooFlowCoreProof.Admission.ReadRetention.changed_child_context_misses,

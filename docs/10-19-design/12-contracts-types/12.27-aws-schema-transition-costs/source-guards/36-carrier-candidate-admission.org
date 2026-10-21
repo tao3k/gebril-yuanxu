@@ -165,12 +165,12 @@ enrollment. It is not the implemented API.
 
 * Quint and Lean correspondence
 
-[[file:../../../../../proofs/quint/CarrierAdmission.qnt][CarrierAdmission]] models private preparation, effects during lookup, first
+[[file:../../../../../dev/proofs/quint/CarrierAdmission.qnt][CarrierAdmission]] models private preparation, effects during lookup, first
 admission, optional callback, return admission and execution. It requires a
 checked valid value at hook entry and execution, with exactly one check for a
 successful closed call and two for a successful hook call. Skipping either
 boundary has its own negative control; acceptance has a non-vacuity control.
-Existing [[file:../../../../../proofs/quint/CarrierReturn.qnt][CarrierReturn]] still owns the focused mutation-after-construction counterexample.
+Existing [[file:../../../../../dev/proofs/quint/CarrierReturn.qnt][CarrierReturn]] still owns the focused mutation-after-construction counterexample.
 
 With the final carrier/query/watchdog sources bound by the existing source-cut
 receipt, =CarrierAdmission= qualifies all four cases and =CarrierReturn=
@@ -179,7 +179,7 @@ required counterexamples; the acceptance controls prevent vacuous rejection.
 Earlier backend readiness timeouts are retained as failed infrastructure
 attempts, not model counterexamples. The backend limits were not changed.
 
-Lean's [[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately proves arbitrary-value functional laws:
+Lean's [[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately proves arbitrary-value functional laws:
 
 - =closed_carrier_admission_is_one_check=;
 - =refused_carrier_cannot_reach_hook=;
@@ -267,8 +267,8 @@ just test-file t/module-candidate-stage-test.ss true
 just test-file t/module-candidate-metadata-test.ss true
 just test-file t/module-testing-isolation-test.ss true
 just test-file t/execution-cancellation-test.ss true
-python3 proofs/quint/check.py --case-prefix CarrierAdmission --typecheck-scope selected --receipt ../.data/qualification/carrier-admission.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix CarrierAdmission --typecheck-scope selected --receipt ../.data/qualification/carrier-admission.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 

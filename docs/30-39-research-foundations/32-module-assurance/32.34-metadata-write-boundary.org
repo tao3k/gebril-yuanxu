@@ -107,7 +107,7 @@ and current. An unselected error-producing slot is never evaluated.
 
 * Lean correspondence and the necessary missing condition
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/RouteMutation.lean][RouteMutation.lean]] binds the Quint digest and proves:
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RouteMutation.lean][RouteMutation.lean]] binds the Quint digest and proves:
 
 - =equal_projection_same_decision=: any gate over identical endpoint
   observations gives the same answer. No endpoint-only policy can infer the
@@ -134,7 +134,7 @@ closure environment; this experiment does not change its mint or authority.
 
 * Quint matched controls
 
-[[file:../../../proofs/quint/RouteMutation.qnt][RouteMutation.qnt]] models edit, invocation and restoration as separate
+[[file:../../../dev/proofs/quint/RouteMutation.qnt][RouteMutation.qnt]] models edit, invocation and restoration as separate
 transitions. Its receiver revision remains unchanged, matching the raw native
 experiment. The normal positive model assumes a generation owned by a future
 write boundary. =endpoint= removes history checking; =untracked= leaves the
@@ -196,8 +196,8 @@ heap-fenced Core =just test-file= entry for =t/mop-route-mutation-test.ss= and
 From Core, use:
 
 #+begin_src sh
-python3 proofs/quint/check.py --case-prefix RouteMutation --receipt /private/tmp/route-mutation.ss
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix RouteMutation --receipt /private/tmp/route-mutation.ss
+cd dev/proofs/lean
 timeout 120s lake build
 #+end_src
 

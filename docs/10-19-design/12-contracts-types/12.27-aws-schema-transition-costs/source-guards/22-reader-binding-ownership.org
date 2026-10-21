@@ -130,18 +130,18 @@ additional factories. No new projection for those receipts is claimed here.
 
 * Quint, Lean and native checks have separate jobs
 
-[[file:../../../../../proofs/quint/PublicationReads.qnt][PublicationReads]] explores finite completion/failure, mutation and publication
+[[file:../../../../../dev/proofs/quint/PublicationReads.qnt][PublicationReads]] explores finite completion/failure, mutation and publication
 schedules. Controls omit a distinct same-key token, lose failure support,
 suppress original observations, drop a callback-only suffix or skip replay.
 The acceptance control prevents reject-all from appearing safe.
 All seven expected Quint outcomes passed against the source-bound candidate;
 the focused Lean PublicationReads target also built successfully.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/PublicationReads.lean][Lean]] proves, for arbitrary dependency graphs, that root-membership
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/PublicationReads.lean][Lean]] proves, for arbitrary dependency graphs, that root-membership
 equivalence preserves every demanded identity. Therefore identity deduplication
 preserves the complete currentness proposition, including cyclic/shared
 suffixes. It does not prove a GC byte bound or certify the SDK prelude cache.
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][Existing import correspondence]] continues to require exact canonical SDK
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][Existing import correspondence]] continues to require exact canonical SDK
 identity and absence of omitted private registration before cutting a shared
 SDK subtree. A matching name alone grants neither condition.
 

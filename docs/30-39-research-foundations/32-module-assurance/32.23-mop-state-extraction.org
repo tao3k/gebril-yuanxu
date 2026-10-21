@@ -145,7 +145,7 @@ fixture; the shipped 5432-only defaults are not silently relaxed.
 
 * Lean correspondence and its limits
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/SnapshotEntry.lean][Admission.SnapshotEntry]] represents observed roots, record/checker references,
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SnapshotEntry.lean][Admission.SnapshotEntry]] represents observed roots, record/checker references,
 selected object revisions/cache/specification references, ordered ancestry,
 precedence, anchors and the observer reference as concrete data. IDs project
 native reference identity; they are not port values or user display names.
@@ -186,7 +186,7 @@ Two negative laws are equally important:
 
 * QNT matched controls
 
-[[file:../../../proofs/quint/SnapshotEntry.qnt][SnapshotEntry]] derives closure from the observed checker/cache/protocol/observer
+[[file:../../../dev/proofs/quint/SnapshotEntry.qnt][SnapshotEntry]] derives closure from the observed checker/cache/protocol/observer
 state. It represents two independent port requirements and final plan ownership
 separately from the snapshot. No plan or source authority is granted by a
 successful structural guard. The positive finite check preserves both demands;

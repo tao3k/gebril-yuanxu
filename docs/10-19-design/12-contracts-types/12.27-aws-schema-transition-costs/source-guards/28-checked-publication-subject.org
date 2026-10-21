@@ -99,12 +99,12 @@ authorized by a normalized candidate or an accepted evidence boolean.
 
 * Correspondence and cost boundary
 
-[[file:../../../../../proofs/quint/SourcePrefix.qnt][SourcePrefix]] tracks the checked and projected reference separately. The new
+[[file:../../../../../dev/proofs/quint/SourcePrefix.qnt][SourcePrefix]] tracks the checked and projected reference separately. The new
 =rawSubject= mutant substitutes the original receiver while leaving source
 checks intact; =SameAdmittedSubject= must find a counterexample. This adds an
 eleventh expected outcome to the existing callback/invalidation/cleanup family.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.checked_subject_guard_covers]] transports support only along
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.checked_subject_guard_covers]] transports support only along
 the exact admitted reference identity. Complete support and fresh revisions
 remain premises; structural object equality, a passed shape check or a Contract
 name do not establish them. The model does not prove Scheme normalization,

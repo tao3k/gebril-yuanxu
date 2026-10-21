@@ -107,7 +107,7 @@ The rejected gateway writes do not establish interception of generated stores.
 
 * Lean and Quint correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/MetadataOwnership.lean][MetadataOwnership.lean]] derives target owners from an association relation.
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataOwnership.lean][MetadataOwnership.lean]] derives target owners from an association relation.
 =unknown_refused= rejects missing association; =associated_selected_refused=
 checks ANY associated selected owner; =nested_keeps_outer= retains outer
 membership. =restored_raw_route_keeps_effect= proves equal endpoint observation
@@ -116,7 +116,7 @@ another receiver guard model. Complete native alias coverage, SDK interception,
 and serial dynamic-scope correctness remain correspondence premises; these
 are not eliminated by giving them theorem names.
 
-[[file:../../../proofs/quint/MetadataOwnership.qnt][MetadataOwnership.qnt]] checks nine scoped outcomes: conditional positive safety;
+[[file:../../../dev/proofs/quint/MetadataOwnership.qnt][MetadataOwnership.qnt]] checks nine scoped outcomes: conditional positive safety;
 missing guard, unknown-target allowance, missing backend coverage, missing
 second requirement, parent-plan reuse, eager branch access, the normal-model
 raw bypass, and an acceptance witness. Association coverage is required AFTER

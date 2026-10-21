@@ -158,13 +158,13 @@ ownership from simply hashing whatever native make happened to leave on disk.
 source fixture isolates destructive outputs; it does not replace the native
 build dispatcher or invent a different root script.
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/CoreBuildPublication.lean][Lean]] proves joint replacement refusal, final-check necessity, both requirements,
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/CoreBuildPublication.lean][Lean]] proves joint replacement refusal, final-check necessity, both requirements,
 saved/direct gate equivalence and native-cache independence. The compiler,
 filesystem and Scheme extraction are premises, not proved by these theorems.
-[[file:../../../proofs/lean/CoreBuildPublicationCheck.lean][The independent decoder]] checks six actual native decisions; changing a measured
+[[file:../../../dev/proofs/lean/CoreBuildPublicationCheck.lean][The independent decoder]] checks six actual native decisions; changing a measured
 refusal to acceptance must make it fail.
 
-[[file:../../../proofs/quint/CoreBuildPublication.qnt][QNT]] keeps nine scoped outcomes: positive safety plus adopting an unissued cache,
+[[file:../../../dev/proofs/quint/CoreBuildPublication.qnt][QNT]] keeps nine scoped outcomes: positive safety plus adopting an unissued cache,
 trusting disk, skipping
 saved-entry checks, skipping return checks, dropping the second requirement,
 parent corruption, eager unused work and an acceptance witness. Ordinary native

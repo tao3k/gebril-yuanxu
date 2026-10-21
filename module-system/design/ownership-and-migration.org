@@ -55,7 +55,7 @@ evidence status; use the current ownership guide when they disagree.
 * Source migrations remain separate work
 
 The earlier chapter migration moved documentation and associated evidence.
-Shared proof packages have subsequently moved into [[file:../../proofs/README.org][Core proof ownership]];
+Shared proof packages have subsequently moved into [[file:../../dev/proofs/README.org][Core proof ownership]];
 this remains separate from runtime source migration.
 The shared Feature System implementation has now migrated into Core. Product
 Scenario/Plan conversion is a separate downstream module; generic Bundle output

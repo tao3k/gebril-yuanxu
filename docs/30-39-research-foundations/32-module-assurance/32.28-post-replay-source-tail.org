@@ -166,7 +166,7 @@ currentness. No publish/deploy effect is executed or claimed qualified here.
 
 * Lean: historical checks versus applicable return
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
 versions, the successful earlier MOP check, and the source versions seen at each
 file comparison. These are projections of the native controls, not new runtime
 epochs or trusted user labels.
@@ -192,7 +192,7 @@ cache controls from prior chapters remain in the full regression catalog.
 
 * Quint: three limitation witnesses on the correct implementation model
 
-[[file:../../../proofs/quint/ReturnTail.qnt][ReturnTail]] models early callbacks, MOP replay, first-file inspection,
+[[file:../../../dev/proofs/quint/ReturnTail.qnt][ReturnTail]] models early callbacks, MOP replay, first-file inspection,
 second-file inspection and final return. It records the object revision at replay
 and the source versions at their respective read times, rather than inventing a
 single atomic snapshot. Terminal states have an explicit self-step.

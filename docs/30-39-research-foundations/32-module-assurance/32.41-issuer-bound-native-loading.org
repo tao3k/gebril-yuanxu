@@ -203,7 +203,7 @@ separate capabilities too.
 
 * Lean and QNT correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/IssuedLoading.lean][IssuedLoading.lean]] proves changed source/record, artifact and private-snapshot
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedLoading.lean][IssuedLoading.lean]] proves changed source/record, artifact and private-snapshot
 facts refuse the declared protocol. It also separates byte consumption from
 latest-path state:
 
@@ -223,14 +223,14 @@ theorem public_replace_preserves_consumed_bytes
 snapshot after its check defeats the consumption guarantee. The latter is a
 model/environment counterexample, not a native late-pool code-execution test.
 
-[[file:../../../proofs/lean/IssuedLoadingCheck.lean][IssuedLoadingCheck.lean]] decodes nine actual controls, recomputes their protocol
+[[file:../../../dev/proofs/lean/IssuedLoadingCheck.lean][IssuedLoadingCheck.lean]] decodes nine actual controls, recomputes their protocol
 decisions and requires zero completed consumption for rejected requests. It
 also requires the actual original-SDK cache bypass observation; the positive
 decoder does NOT certify that bypass as safe. Changing a native refusal field
 to acceptance makes it fail. Extraction, hashing, trusted child identity,
 private-pool ownership and native compiler semantics remain bridge premises.
 
-[[file:../../../proofs/quint/IssuedLoading.qnt][IssuedLoading.qnt]] has eleven scoped outcomes. The positive model admits only
+[[file:../../../dev/proofs/quint/IssuedLoading.qnt][IssuedLoading.qnt]] has eleven scoped outcomes. The positive model admits only
 the controlled entry and private-pool authority. Negative controls cover
 self-reissuing sidecars, skipped handoff checks, loading the public path,
 skipped cache authority, late private-pool writes, latest-path currentness,

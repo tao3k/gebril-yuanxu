@@ -140,7 +140,7 @@ part of the maintained implementation. Native origin syntax remains unchanged.
 
 * Quint and Lean have different responsibilities
 
-[[file:../../../../../proofs/quint/OwnedReads.qnt][Quint OwnedReads]] reuses the existing bounded finish/mutation/GC/publication
+[[file:../../../../../dev/proofs/quint/OwnedReads.qnt][Quint OwnedReads]] reuses the existing bounded finish/mutation/GC/publication
 model. Its external parent-policy identity now covers native validation
 ancestors as well as CLOS carrier prototypes. The additional parentDuring
 control must find a counterexample if an operation weakens ownership after
@@ -149,7 +149,7 @@ covers later parent changes, including after the temporary receiver is gone.
 Ten expected outcomes distinguish acceptance from those deliberately invalid
 implementations; no second Graph model is introduced.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] retains arbitrary-identity frontier/currentness proofs and
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] retains arbitrary-identity frontier/currentness proofs and
 adds parent-snapshot refusal and ancestor-policy preservation under explicit
 coverage. It does not repeat Quint's schedule exploration. Runtime premises
 remain native revision fidelity, complete traversal of actual supers, weak
@@ -168,8 +168,8 @@ just test-file t/contract-analysis-test.ss true
 just test-file t/module-declaration-retention-test.ss true
 just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-testing-isolation-test.ss
-python3 proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/checked-role-reads.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/checked-role-reads.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 

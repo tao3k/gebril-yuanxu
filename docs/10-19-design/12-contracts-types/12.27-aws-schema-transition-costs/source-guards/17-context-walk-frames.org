@@ -24,7 +24,7 @@ unchanged. This is a Core implementation change, not an upstream Gerbil patch.
 
 * Quint owns finite order and interaction controls
 
-[[file:../../../../../proofs/quint/ContextWalk.qnt][ContextWalk]] models explicit frames over the shared diamond/cycle fixture,
+[[file:../../../../../dev/proofs/quint/ContextWalk.qnt][ContextWalk]] models explicit frames over the shared diamond/cycle fixture,
 followed by another root and a repeated root. It checks the output prefix and
 complete postorder against an independent explicit expected sequence. Cuts and
 sharing are execution semantics, rather than arbitrary reorderings justified by
@@ -89,7 +89,7 @@ Observation and progress-aware timeout stay enabled under the original policy.
 * Reproduction
 
 #+begin_src text
-python3 proofs/quint/check.py --case-prefix ContextWalk --typecheck-scope selected --receipt .data/qualification/context-walk.scm
+python3 dev/proofs/quint/check.py --case-prefix ContextWalk --typecheck-scope selected --receipt .data/qualification/context-walk.scm
 just test-file t/module-context-walk-test.ss true
 just test-file t/module-publication-test.ss
 just test-file t/module-testing-isolation-test.ss

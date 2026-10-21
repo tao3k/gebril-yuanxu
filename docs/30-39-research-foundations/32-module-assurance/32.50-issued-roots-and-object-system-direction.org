@@ -135,7 +135,7 @@ failure reason and concrete file identity are still checked.
 
 * Lean and QNT correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean][IssuedRootForwarding.lean]] models tokens as original native registry identities:
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuedRootForwarding.lean][IssuedRootForwarding.lean]] models tokens as original native registry identities:
 
 - =exact_membership=: identity deduplication neither adds nor drops a root.
 - =preserves_issuance=: genuinely issued roots stay genuine after forwarding.
@@ -150,7 +150,7 @@ native private registry, arbitrary callback purity or filesystem atomicity.
 Native tests exercise the corresponding identities and refusals; there is no
 new verified Scheme-to-Lean compiler or automatic extraction theorem.
 
-[[file:../../../proofs/quint/IssuedRootForwarding.qnt][IssuedRootForwarding.qnt]] has a normal safety control and matched omission,
+[[file:../../../dev/proofs/quint/IssuedRootForwarding.qnt][IssuedRootForwarding.qnt]] has a normal safety control and matched omission,
 fabrication, source-check removal, second-requirement removal, eager-branch and
 acceptance controls. Runs use 1000 samples, 6 steps and seed 50. Negative controls
 must produce actual invariant violations, not arbitrary failures. It models

@@ -14,7 +14,7 @@
 (def (snapshot directory relative)
   (for-each
     (lambda (name)
-      (unless (member name '(".git" ".gerbil" ".cache" ".lake" ".data" "docs" "proofs"))
+      (unless (member name '(".git" ".gerbil" ".cache" ".lake" ".data" "docs" "dev"))
         (let ((input (path-expand name directory)) (local (string-append relative name)))
           (if (eq? (file-info-type (file-info input #f)) 'directory)
             (snapshot input (string-append local "/"))

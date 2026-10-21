@@ -15,8 +15,8 @@ connects no Loader. The earlier 356 native reads are not a new measurement.
 No optimization is authorized until native snapshot extraction and the complete
 selected replay correspondence are established.
 
-Proof owners are [[file:../../../proofs/lean/PooFlowCoreProof/Admission/ReadOnlyEntry.lean][Admission.ReadOnlyEntry]] and
-[[file:../../../proofs/quint/ReadOnlyEntry.qnt][ReadOnlyEntry.qnt]]. They reuse IdentityDFS/DFSFrames, ReplayBoundary,
+Proof owners are [[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReadOnlyEntry.lean][Admission.ReadOnlyEntry]] and
+[[file:../../../dev/proofs/quint/ReadOnlyEntry.qnt][ReadOnlyEntry.qnt]]. They reuse IdentityDFS/DFSFrames, ReplayBoundary,
 SourceWindows and LeanPoo's actual C4/MetaBootstrap proofs. =ClosedOp= is a
 private proof instruction type, not a proposed configuration language.
 

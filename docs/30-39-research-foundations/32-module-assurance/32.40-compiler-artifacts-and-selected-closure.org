@@ -162,7 +162,7 @@ to a safe selected callback.
 
 * Lean and Quint correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ArtifactClosure.lean][ArtifactClosure.lean]] defines the protocol over actual serialized facts:
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ArtifactClosure.lean][ArtifactClosure.lean]] defines the protocol over actual serialized facts:
 
 #+begin_src lean
 def admit (issued observed : String)
@@ -180,13 +180,13 @@ and preserve both domain requirements after artifact admission. These prove
 the decision protocol. They do not prove the native resolver, structural
 scanner, cryptographic collision resistance or trusted issuer authentic.
 
-[[file:../../../proofs/lean/ArtifactClosureCheck.lean][ArtifactClosureCheck.lean]] independently consumes all twelve native observation
+[[file:../../../dev/proofs/lean/ArtifactClosureCheck.lean][ArtifactClosureCheck.lean]] independently consumes all twelve native observation
 rows, recomputes this decision, and checks positive/negative coverage. Flipping
 the first native acceptance field creates a deliberately invalid trace that
 must be rejected. This bridge is stronger than a model with no native data,
 but still assumes that the actual observation extractor reports its inputs.
 
-[[file:../../../proofs/quint/ArtifactClosure.qnt][ArtifactClosure.qnt]] has ten scoped outcomes: positive selection and negative
+[[file:../../../dev/proofs/quint/ArtifactClosure.qnt][ArtifactClosure.qnt]] has ten scoped outcomes: positive selection and negative
 policies omitting dependencies, ignoring native resolution, trusting an old
 body, skipping compiler inputs, ignoring prior loading, dropping a domain
 requirement, corrupting Parent's cached value, forcing an unused branch and rejecting every

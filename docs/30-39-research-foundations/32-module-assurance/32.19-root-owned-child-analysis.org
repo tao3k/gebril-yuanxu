@@ -90,7 +90,7 @@ scalar values happen to match but configuration identity does not.
 
 * Formal correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/RootChild.lean][Admission.RootChild]] supplies conditional =child_sources=,
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/RootChild.lean][Admission.RootChild]] supplies conditional =child_sources=,
 =requirements_retained=, =coverage_bound=, =cached_parent_rejected=,
 =post_effect_change_rejected= and =batching_equivalent=. Its =Analysis= has no
 source certificate. The implementation keeps child evidence analytic and the

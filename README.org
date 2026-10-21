@@ -105,6 +105,6 @@ These documentation changes do not update the pinned submodule revision.
 
 * Core proof ownership
 
-[[file:proofs/README.org][The Core proof packages]] own shared Module System and Profile contract
+[[file:dev/proofs/README.org][The Core proof packages]] own shared Module System and Profile contract
 projection models. Product proofs depend on Core in one direction. No duplicate
 source tree or Core-to-product proof dependency is maintained.

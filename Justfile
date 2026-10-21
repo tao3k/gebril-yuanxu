@@ -181,7 +181,7 @@ benchmark-redefinition:
 proofs: proofs-quint proofs-lean
 
 proofs-lean:
-    cd proofs/lean && timeout 120s lake build
+    cd dev/proofs/lean && timeout 120s lake build
 
 # Source-level ownership controls; heap fence applies before any imports.
 test-module-ownership:
@@ -299,29 +299,29 @@ test-opentofu path="t/opentofu-schema-test.ss":
 
 # All maintained finite models are Quint; receipts remain local artifacts.
 proofs-quint receipt="/private/tmp/core-quint-proof.ss":
-    python3 proofs/quint/check.py --receipt "{{ receipt }}"
+    python3 dev/proofs/quint/check.py --receipt "{{ receipt }}"
 
 # Tool/backend bootstrap is preparation, never an accepted proof receipt.
 prepare-quint:
-    npm ci --prefix proofs/quint --no-audit --no-fund
-    python3 proofs/quint/prepare.py
+    npm ci --prefix dev/proofs/quint --no-audit --no-fund
+    python3 dev/proofs/quint/prepare.py
 
 # Native issuer observations are checked independently by the Lean projection.
 check-issuer-projection trace:
-    cd proofs/lean && timeout 120s lake env lean --run IssuerProjectionCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run IssuerProjectionCheck.lean "{{ trace }}"
 
 # Independent decoder consumes actual native alias/cache observations.
 check-metadata-allocation trace:
-    cd proofs/lean && timeout 120s lake env lean --run MetadataAllocationCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run MetadataAllocationCheck.lean "{{ trace }}"
 
 check-store-lowering trace:
-    cd proofs/lean && timeout 120s lake env lean --run StoreLoweringCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run StoreLoweringCheck.lean "{{ trace }}"
 
 check-artifact-closure trace:
-    cd proofs/lean && timeout 120s lake env lean --run ArtifactClosureCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run ArtifactClosureCheck.lean "{{ trace }}"
 
 check-issued-loading trace:
-    cd proofs/lean && timeout 120s lake env lean --run IssuedLoadingCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run IssuedLoadingCheck.lean "{{ trace }}"
 
 # Process-local compiler lowering; production SDK/source untouched.
 compile-mop-store-boundary directory:
@@ -382,6 +382,18 @@ compile-build-publication directory:
     export GERBIL_LOADPATH="$CORE_BUILD_PUBLICATION_LIB:$(pwd)${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$(pwd)/../.gerbil/lib"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/compile.ss
 
+# Reuse an owned, previously qualified Core closure; compile changed source units.
+# This is a separate gate, not a pass of the monolithic 47-unit compile deadline.
+compile-build-publication-delta directory baseline:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f "{{ baseline }}/core-sources.sha256"
+    test ! -e "{{ directory }}"
+    mkdir -p "{{ directory }}/lib"
+    cp -R "{{ baseline }}/lib/." "{{ directory }}/lib/"
+    export CORE_BUILD_PUBLICATION_BASE="{{ baseline }}"
+    just compile-build-publication "{{ directory }}"
+
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -390,16 +402,16 @@ test-build-publication directory file="t/build-artifact-publication-test.ss":
     just test-file "{{ file }}"
 
 check-build-publication trace:
-    cd proofs/lean && timeout 120s lake env lean --run CoreBuildPublicationCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run CoreBuildPublicationCheck.lean "{{ trace }}"
 
 check-build-handoff trace:
-    cd proofs/lean && timeout 120s lake env lean --run CoreBuildHandoffCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run CoreBuildHandoffCheck.lean "{{ trace }}"
 
 check-store-recovery trace:
-    cd proofs/lean && timeout 120s lake env lean --run CoreStoreRecoveryCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run CoreStoreRecoveryCheck.lean "{{ trace }}"
 
 check-approved-recovery trace:
-    cd proofs/lean && timeout 120s lake env lean --run CoreApprovedRecoveryCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run CoreApprovedRecoveryCheck.lean "{{ trace }}"
 
 # Independent snapshot consumer; uses the same pre-import heap fence as tests.
 nix-head-reader profile:
@@ -426,7 +438,7 @@ build-store-worker root lib identity mode record selected candidate:
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/worker.ss "{{ root }}" "{{ lib }}" "{{ identity }}" "{{ mode }}" "{{ record }}" "{{ selected }}" "{{ candidate }}"
 
 check-source-loader trace:
-    cd proofs/lean && timeout 120s lake env lean --run SourceLoaderCheck.lean "{{ trace }}"
+    cd dev/proofs/lean && timeout 120s lake env lean --run SourceLoaderCheck.lean "{{ trace }}"
 
 test-issuer-projection directory:
     #!/usr/bin/env bash

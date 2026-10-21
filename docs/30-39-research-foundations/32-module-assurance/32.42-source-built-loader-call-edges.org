@@ -103,17 +103,17 @@ changed-source rejection still apply. Loader authorization is not domain policy.
 
 * Lean, actual observations and QNT
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/SourceLoader.lean][SourceLoader.lean]] proves =changed_cache_refused=, =stable_cache_allowed=,
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SourceLoader.lean][SourceLoader.lean]] proves =changed_cache_refused=, =stable_cache_allowed=,
 =saved_edge_independent_of_rebinding= and =both_requirements=. Its explicit
 =old_edge_counterexample= distinguishes an old unchecked procedure from the
 rebuilt checked one. These are call-edge protocol theorems, not compiler proofs.
 
-[[file:../../../proofs/lean/SourceLoaderCheck.lean][The independent decoder]] consumes actual error messages, authorization event
+[[file:../../../dev/proofs/lean/SourceLoaderCheck.lean][The independent decoder]] consumes actual error messages, authorization event
 deltas and completed-consumption deltas. It requires four ordered observations,
 positive authorization and zero new consumption on each hot request. Changed
 cases must agree with the Lean decision and the exact native refusal.
 
-[[file:../../../proofs/quint/SourceLoader.qnt][SourceLoader.qnt]] has eight scoped outcomes: positive safety plus old saved
+[[file:../../../dev/proofs/quint/SourceLoader.qnt][SourceLoader.qnt]] has eight scoped outcomes: positive safety plus old saved
 edge, missing reload check, unchecked retry, dropped second requirement, parent
 corruption, eager unused work and acceptance controls. Negative controls must
 produce counterexamples. Retry coverage is source inspection plus a finite

@@ -188,7 +188,7 @@ These controls establish semantic behavior, not a performance improvement.
 
 * Lean and QNT correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/CheckerOrigin.lean][CheckerOrigin.lean]] reuses the existing LeanPoo-backed admission models.
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/CheckerOrigin.lean][CheckerOrigin.lean]] reuses the existing LeanPoo-backed admission models.
 It proves that a passing identity/membership gate retains both comparisons,
 every member of the supplied closure passes, both requirements and child
 ownership remain necessary, and the prior source fault keeps priority. Concrete
@@ -201,7 +201,7 @@ being primitive read-only metadata operations. The raw HashTable-method control
 shows why this is a runtime premise, not an automatic proof of Scheme effects.
 Neither this theorem nor checker pointer equality establishes that premise.
 
-[[file:../../../proofs/quint/CheckerOrigin.qnt][CheckerOrigin.qnt]] has one conditional positive model and eight matched
+[[file:../../../dev/proofs/quint/CheckerOrigin.qnt][CheckerOrigin.qnt]] has one conditional positive model and eight matched
 counterexample checks: identity-only ownership, arbitrary checker invocation,
 root-only validation, raw table replacement, metadata method dispatch, a dropped
 second requirement, parent-plan substitution and an acceptance witness.

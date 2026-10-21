@@ -33,11 +33,6 @@
 ;; tokens (including every external callback's suffix), but do not append the
 ;; same identity thousands of times to the enclosing selected-Graph getter.
 ;; This is an ownership projection, not a source/currentness result cache.
-(def (publication-read-roots reads)
-  (def seen (make-hash-table-eq))
-  (filter (lambda (read)
-            (and (not (hash-key? seen read))
-                 (begin (hash-put! seen read #t) #t))) reads))
 (def (deliver-publication-reads reads)
   ;; The enclosing native frame receives the SAME issued roots. Its original
   ;; dependency edges remain intact; no application-made aggregate is trusted.
@@ -89,10 +84,11 @@
       (lambda ()
         (with-catch
           (lambda (exception) (set! failed? #t) (set! failure exception) '())
-          (lambda () (call-with-values action list))))))
+          (lambda () (call-with-values action list))))
+      unique-roots?: #t))
   (def roots
     (observe-reader-work 'reader-projection-start 'reader-projection-end
-      (lambda () (publication-read-roots reads))))
+      (lambda () reads)))
   (def guarded-results
     (if (or failed? (not finish)) results
       (with-catch
@@ -103,7 +99,7 @@
   (deliver-publication-reads roots)
   (when (current-module-source-observer)
     ((current-module-source-observer)
-      (list 'reader-read-roots (cons 'deliveries (length reads))
+      (list 'reader-read-roots (cons 'stored-roots (length reads))
                                (cons 'identities (length roots))) 1))
   (if failed? (raise failure) (apply values guarded-results)))
 (def (reader-evaluation-observers owned completed)

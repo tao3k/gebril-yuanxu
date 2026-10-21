@@ -118,7 +118,7 @@ The manifests are test artifact bindings, not a production code certificate.
 
 * Formal projection and negative controls
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] adds three precompiled route constructors to the existing
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] adds three precompiled route constructors to the existing
 model. The actual theorem proofs are:
 
 #+begin_src lean
@@ -134,13 +134,13 @@ theorem precompiled_callees_preserve_cold :
 #+end_src
 
 These are exact results of the finite route projection. They do NOT prove that
-arbitrary binaries are mediated. The independent [[file:../../../proofs/lean/StoreLoweringCheck.lean][Lean decoder]] now requires all
+arbitrary binaries are mediated. The independent [[file:../../../dev/proofs/lean/StoreLoweringCheck.lean][Lean decoder]] now requires all
 six actual trace rows in order, checks their owner counts and cache values, and
 rejects a tampered precompiled-generated row with Cold=5440. Ownership derivation
 continues to reuse the existing MetadataAllocation/IdentityDFS/LeanPoo model.
 
-[[file:../../../proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] includes the three precompiled routes. The new
-[[file:../../../proofs/quint/StoreLowering_missCallback.qnt][missCallback control]] removes mediation only from those callees while retaining
+[[file:../../../dev/proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] includes the three precompiled routes. The new
+[[file:../../../dev/proofs/quint/StoreLowering_missCallback.qnt][missCallback control]] removes mediation only from those callees while retaining
 the same allocation/protection phases. =DeclaredPreWrite= then fails: caller
 protection cannot substitute for callee-store mediation. The original
 unlowered counterexample still violates =NoPoison= after replacement/restoration.

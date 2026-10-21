@@ -23,7 +23,7 @@ between the languages. Native correspondence tests remain necessary.
 
 * Quint: interactions and counterexamples
 
-[[file:../../../../../proofs/quint/SourceClosureWork.qnt][SourceClosureWork]] uses a shared diamond, a topology cycle, multiple roots and
+[[file:../../../../../dev/proofs/quint/SourceClosureWork.qnt][SourceClosureWork]] uses a shared diamond, a topology cycle, multiple roots and
 an unrelated cold identity. This is a source-support topology, not permission
 to accept a cyclic native module import. The DFS worklist is checked against
 an independent finite saturation oracle, rather than its own resulting list.
@@ -54,7 +54,7 @@ are not silently classified as pure by this model.
 
 * Lean: cardinality-independent work accounting
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.lean]] reuses TestAdmission's discovery semantics instead of
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.lean]] reuses TestAdmission's discovery semantics instead of
 defining another closure relation. The costed state projects to the existing
 discovery exactly. It proves:
 
@@ -116,8 +116,8 @@ native AWS qualification. No runtime Loader or push is part of this change.
 From Core, use the existing qualification tools:
 
 #+begin_src text
-python3 proofs/quint/check.py --case-prefix SourceClosureWork --typecheck-scope selected --receipt .data/qualification/source-closure-work.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix SourceClosureWork --typecheck-scope selected --receipt .data/qualification/source-closure-work.scm
+cd dev/proofs/lean
 lake env lean PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean
 cd ../..
 just test-file t/module-closure-work-test.ss true

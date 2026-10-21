@@ -45,7 +45,7 @@ the post-change counter explicitly records one construction. Counts do not
 establish an end-to-end speedup. Physical reads did not decrease: independent
 effect-boundary checks still inspect all required bytes.
 
-The Lean file [[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] adds public_resolution_change_refused and
+The Lean file [[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] adds public_resolution_change_refused and
 repeated_registration_same_requirements. They separate native resolution from
 byte equality and establish idempotent source requirements in one unchanged
 world. They do not authorize reuse of acceptance across native evaluation.

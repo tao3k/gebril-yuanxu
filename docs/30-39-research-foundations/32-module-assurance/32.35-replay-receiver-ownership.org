@@ -118,7 +118,7 @@ new diagnostic and verifies the original value and revision remain unchanged.
 
 * Lean and Quint
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ReplayOwnership.lean][ReplayOwnership.lean]] models actual receiver sets and the affected invalidation
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReplayOwnership.lean][ReplayOwnership.lean]] models actual receiver sets and the affected invalidation
 closure. =selected_write_refused= and =nested_frame_keeps_outer= establish
 pre-write refusal under complete membership. =rejected_edit_has_no_partial_clear=
 requires preflight before state update. =independent_edit_allowed= and
@@ -127,7 +127,7 @@ state the required dynamic-scope/error identity result; native parameterize
 correctness remains a runtime premise checked separately, not a proved compiler.
 The raw write transition still inherits the retained 32.34 side-effect history.
 
-[[file:../../../proofs/quint/ReplayOwnership.qnt][ReplayOwnership.qnt]] has matched mutants for missing guard, dropping the outer
+[[file:../../../dev/proofs/quint/ReplayOwnership.qnt][ReplayOwnership.qnt]] has matched mutants for missing guard, dropping the outer
 frame, partial invalidation, failure to unwind, missing second requirement,
 parent-plan reuse and eager unselected access. A normal-model raw-callback
 counterexample is mandatory, as is a non-vacuous acceptance witness.

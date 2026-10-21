@@ -86,7 +86,7 @@ That negative fixture is not a producer permission or production certificate.
 
 * Quint / Lean / native correspondence
 
-[[file:../../../../../proofs/quint/OwnedReads.qnt][OwnedReads]] checks finish/mutation/collection/publication schedules. It covers
+[[file:../../../../../dev/proofs/quint/OwnedReads.qnt][OwnedReads]] checks finish/mutation/collection/publication schedules. It covers
 external Contract promotion, shared prototype policy, collected local receivers,
 live receivers whose old token disappeared and strong fallback for unknown code.
 Its omission controls must fail; its acceptance control must reach publication.
@@ -94,7 +94,7 @@ The finite owned region includes sharing and a cycle; the Contract is reachable
 only below an owned node. "Escaped" includes retention by an external native
 token's unmodified dependency graph, not only a returned method frame.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
 each required identity is covered by a retained external token, or a live
 carrier's original replay. It also proves that collection cannot waive external
 requirements and that a missing live token refuses admission. Quint explores
@@ -127,8 +127,8 @@ just test-file t/poo-clos-dispatch-test.ss true
 just test-file t/module-authoring-test.ss true
 just test-file t/module-declaration-calibration-test.ss true
 just test-file t/module-testing-isolation-test.ss
-python3 proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/owned-reads.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/owned-reads.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 

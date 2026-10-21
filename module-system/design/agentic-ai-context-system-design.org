@@ -180,7 +180,7 @@ new Orgize revision. Persisting a transient record does not perform that promoti
 |-------+----------------------------|
 | Scope | Bundle/digest, tenant/organization/epoch, Project/WorkTree, actor/task, Session/turn profile, purpose and destination |
 | Demand | Org/query selection, required evidence, Temporal obligations, complete/partial profile and rows/bytes/depth/tokens/work budgets |
-| Evidence | Qualified Org references and original MRR admissions where applicable, source vector, proofs/supports, contradictions and missing obligations |
+| Evidence | Qualified Org references and original MRR admissions where applicable, source vector, dev/proofs/supports, contradictions and missing obligations |
 | Restriction | Readers, destinations, provenance and same-domain half-open leases; composition cannot widen inputs |
 | Projection | Immutable selected/rendered content, scope/demand/evidence/restriction, profile/version, content digest, budget outcome and revision |
 | Use | Trusted enrollment, exact projection/admission/contract binding, grant generation, allowed purposes and current owner observations |

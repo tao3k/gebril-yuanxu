@@ -141,19 +141,19 @@ registry or a demand for users to maintain one.
 
 * Lean, Quint and native correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/MetadataAllocation.lean][MetadataAllocation.lean]] models allocation as adding a cell/receiver association.
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataAllocation.lean][MetadataAllocation.lean]] models allocation as adding a cell/receiver association.
 =allocation_registers_receiver= and =allocation_keeps_existing= prove that adding
 a shared user does not erase prior owners. This registration is a design law;
 the production issuer does not yet certify all specification aliases.
 
 The concrete cache transition is replace, force Cold, restore. Theorems establish
 unchanged parent/hot caches and revision, retained Cold=5440 with spec=5432,
-and the resulting incoherence. [[file:../../../proofs/lean/MetadataAllocationCheck.lean][MetadataAllocationCheck.lean]] independently evaluates
+and the resulting incoherence. [[file:../../../dev/proofs/lean/MetadataAllocationCheck.lean][MetadataAllocationCheck.lean]] independently evaluates
 that transition and checks both actual Scheme JSON rows, including fresh entry
 and shared payload observations. A tampered cold value must fail decoding.
 This is finite native correspondence, not verified compiler store interception.
 
-[[file:../../../proofs/quint/MetadataAllocation.qnt][MetadataAllocation.qnt]] has eight scoped checks: conditional supported-protocol
+[[file:../../../dev/proofs/quint/MetadataAllocation.qnt][MetadataAllocation.qnt]] has eight scoped checks: conditional supported-protocol
 safety, raw restoration incoherence, reflection despite hidden exports,
 last-owner-only registration, missing second requirement, parent-plan reuse,
 eager unselected access, and an acceptance witness. The ownership ledger mutant

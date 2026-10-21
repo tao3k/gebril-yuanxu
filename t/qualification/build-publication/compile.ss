@@ -7,14 +7,30 @@
 (def output (path-expand (getenv "CORE_BUILD_PUBLICATION_LIB")))
 (def observations '())
 (def (digest source) (hex-encode (sha256 (call-with-input-file source read-all-as-u8vector))))
+(def baseline (getenv "CORE_BUILD_PUBLICATION_BASE" #f))
+(def retained (make-hash-table))
+(when baseline
+  (call-with-input-file (path-expand "core-sources.sha256" baseline)
+    (lambda (port)
+      (let loop ()
+        (let (row (read-line port))
+          (unless (eof-object? row)
+            (unless (and (>= (string-length row) 67)
+                         (equal? (substring row 64 66) "  "))
+              (error "invalid baseline source manifest"))
+            (hash-put! retained (substring row 66 (string-length row)) (substring row 0 64))
+            (loop)))))))
 (for-each
   (lambda (source)
     (displayln "CORE-PUBLICATION-COMPILE " source)
     (force-output)
     (def before (digest source))
-    (compile-module source
-      [output-dir: output optimize: #t generate-ssxi: #t invoke-gsc: #t keep-scm: #t])
-    (execute-pending-compile-jobs!)
+    (if (and baseline (equal? before (hash-get retained (path-expand source))))
+      (displayln "CORE-PUBLICATION-REUSE " source)
+      (begin
+        (compile-module source
+          [output-dir: output optimize: #t generate-ssxi: #t invoke-gsc: #t keep-scm: #t])
+        (execute-pending-compile-jobs!)))
     (unless (equal? before (digest source)) (error "Core source changed during compilation" source))
     (set! observations (cons (cons (path-expand source) before) observations)))
   '(;; Compile the CURRENT macro/prelude closure into this owned overlay too.

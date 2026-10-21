@@ -62,7 +62,7 @@ second Module's imports would miss the changed first config in both schedules.
 
 * Quint and Lean have different responsibilities
 
-=proofs/quint/ReaderEffectSupport.qnt= explores entry, initialization, return
+=dev/proofs/quint/ReaderEffectSupport.qnt= explores entry, initialization, return
 and termination with actual-import identities separated from ambient prior
 publication and Schema/policy support. Its five catalog outcomes include
 passing safety plus expected counterexamples for import-only entry, import-only
@@ -199,8 +199,8 @@ workspace, remain the existing entrypoints:
 just test-file t/module-reader-effect-support-test.ss true
 just test-file t/module-testing-isolation-test.ss
 just test-file t/execution-cancellation-test.ss true
-python3 proofs/quint/check.py --case-prefix ReaderEffectSupport --typecheck-scope selected
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix ReaderEffectSupport --typecheck-scope selected
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 

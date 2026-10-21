@@ -82,12 +82,9 @@
 (def (deliver-original-reads reads)
   ;; Preserve native issuer identity and first-delivery order. No reconstructed
   ;; checker, synthetic owner or weak witness may enter the native graph.
-  (def seen (make-hash-table-eq))
   (for-each
     (lambda (read)
-      (unless (hash-key? seen read)
-        (hash-put! seen read #t)
-        (%deliver-slot-read read (slot-read-value read)))) reads))
+      (%deliver-slot-read read (slot-read-value read))) reads))
 
 (def (call-with-owned-read-projection bodies stable? action)
   (if (current-region)
@@ -107,8 +104,9 @@
                     (lambda ()
                       ;; Native policy reads belong to this same recording frame.
                       (stable?)
-                      (begin0 (call-with-values action list) (stable?))))))))))
-      ;; All paths retain the complete original trace. In particular, a failed
+                      (begin0 (call-with-values action list) (stable?))))))))
+          unique-roots?: #t))
+      ;; All paths retain the complete original graph. In particular, a failed
       ;; action must not erase its dependencies from an enclosing computation.
       (deliver-original-reads reads)
       ;; This is observation forwarding, not admission. With no weak projection

@@ -117,7 +117,7 @@ constrains repeated structural discovery, while source changes and cleanup
 remain independent invariants. It does not authorize reuse of checked bytes
 across a macro initializer, callback or effect.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.private_projection_cut]] proves exact ordered projection
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.private_projection_cut]] proves exact ordered projection
 equality for arbitrary context lists when every omitted context has no private
 registration. Existing later_registration_is_visible remains necessary: a
 topology index must not freeze an earlier input lookup. The focused Lean file

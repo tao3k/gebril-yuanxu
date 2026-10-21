@@ -154,7 +154,7 @@ no cross-callback success cache is introduced.
 
 * Lean correspondence and finite-model controls
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ConditionalBuildPublication.lean][ConditionalBuildPublication.lean]] composes the existing =CoreApprovedRecovery.finish=
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ConditionalBuildPublication.lean][ConditionalBuildPublication.lean]] composes the existing =CoreApprovedRecovery.finish=
 with =SerialUse.conditionalCommit=. Its checked properties are:
 
 - =commit_keeps_requirements_and_revision=: approval, source, files, both domain
@@ -171,7 +171,7 @@ The last theorem is a limitation, not external safety. Payload identity in Schem
 and numeric payload projection in Lean are connected by explicit test assertions,
 not by a verified Scheme interpreter or automatic extraction proof.
 
-[[file:../../../proofs/quint/ConditionalBuildPublication.qnt][ConditionalBuildPublication.qnt]] keeps requirements fixed at preparation, then
+[[file:../../../dev/proofs/quint/ConditionalBuildPublication.qnt][ConditionalBuildPublication.qnt]] keeps requirements fixed at preparation, then
 permits a head ABA or uncoordinated external write before commit. Six bounded
 simulation controls retain matching outcomes:
 
@@ -193,7 +193,7 @@ Reproduce from Core, using the existing heap-fenced entrypoint and the captured
 
 #+begin_src sh
 just test-build-publication /private/tmp/core-approved-release-20261019/candidate-13 t/conditional-build-publication-test.ss
-cd proofs/lean
+cd dev/proofs/lean
 timeout 120s lake env lean PooFlowCoreProof/Admission/ConditionalBuildPublication.lean
 #+end_src
 

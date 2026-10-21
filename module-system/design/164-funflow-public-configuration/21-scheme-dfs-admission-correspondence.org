@@ -28,10 +28,10 @@ aliases). The native interner also checks all observed value pairs in its
 
 | Source or artifact | Role |
 |--------------------+------|
-| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Traversal.lean][Traversal.lean]] | Successful recursive DFS invariants, closure and complete root membership |
-| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Projection.lean][Projection.lean]] | Injective identity/edge projection, path equivalence, ordered list equality and correlated Core receipts |
-| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Correspondence.lean][Correspondence.lean]] | Join inherited-root discovery and mandatory RHS requirements to current candidate/context receipt checks |
-| [[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean][NativeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual native run |
+| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Traversal.lean][Traversal.lean]] | Successful recursive DFS invariants, closure and complete root membership |
+| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Projection.lean][Projection.lean]] | Injective identity/edge projection, path equivalence, ordered list equality and correlated Core receipts |
+| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Correspondence.lean][Correspondence.lean]] | Join inherited-root discovery and mandatory RHS requirements to current candidate/context receipt checks |
+| [[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean][NativeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual native run |
 | [[file:21-scheme-dfs-admission-correspondence/probe.ss][Native probe]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/native.log][transcript]] | Actual object/Contract execution, assertions and emitted input/output |
 | [[file:21-scheme-dfs-admission-correspondence/generate-native-fixtures.py][Numeric transcript generator]] | Strict S-expression parsing and deterministic Lean fixture generation, without eval or handwritten observations |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/receipt.json][Receipt]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/build.log][build]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axioms.log][axiom audit]] | Exact sources, dependency pin, output hashes and all-theorem audit |
@@ -215,7 +215,7 @@ clan/poo source at the verified dependency pin and a fresh home. Then run:
 #+begin_src sh
 GERBIL_PATH=/tmp/pooflow-dfs-admit-20261015/home GERBIL_LOADPATH=/tmp/pooflow-dfs-admit-20261015 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/probe.ss > /tmp/profile-native.log
 python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/generate-native-fixtures.py /tmp/profile-native.log /tmp/NativeFixtures.lean
-cmp /tmp/NativeFixtures.lean core/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean
+cmp /tmp/NativeFixtures.lean core/dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/NativeFixtures.lean
 cd packages/proofs/lean-poo
 lake build PooFlowCoreProof.ModuleSystem.Schema.Association
 lake env lean ../../../docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axiom-audit.lean

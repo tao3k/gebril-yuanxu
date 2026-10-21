@@ -150,6 +150,6 @@ Loader adaptation claim.
 * Current ownership after migration
 
 The Core Profile association consumer is now maintained in
-[[file:../../../proofs/lean/README.org][core/proofs/lean]], with the same immutable LeanPoo revision.
+[[file:../../../dev/proofs/lean/README.org][core/dev/proofs/lean]], with the same immutable LeanPoo revision.
 The product package retains its temporal and Context consumers. The historical
 research statements above do not assign Core proof ownership to the product.

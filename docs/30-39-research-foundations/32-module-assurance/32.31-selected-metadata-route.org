@@ -149,14 +149,14 @@ is invented by the test or requested from the user.
 
 * Formal correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/MetadataRoute.lean][MetadataRoute.lean]] binds the QNT source digest and reuses the existing
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/MetadataRoute.lean][MetadataRoute.lean]] binds the QNT source digest and reuses the existing
 LeanPoo-backed admission models. Its laws cover the full route comparison,
 the nested-hash and instance-cache gaps, the conditional closed direct call,
 entry-only staleness, equal endpoints with changed history, transient-projection
 indistinguishability, both requirements/child ownership, and source-first order.
 The pure direct-call state law is not an extracted Scheme effect proof.
 
-[[file:../../../proofs/quint/MetadataRoute.qnt][MetadataRoute.qnt]] contains a callback-free direct path and explicit mutants
+[[file:../../../dev/proofs/quint/MetadataRoute.qnt][MetadataRoute.qnt]] contains a callback-free direct path and explicit mutants
 that admit callbacks between the check and use. Nine scoped outcomes comprise
 one positive safety check and counterexamples for outer-ref-only checks,
 read-table-only checks, entry-only reuse, endpoint-only validation, issuance,

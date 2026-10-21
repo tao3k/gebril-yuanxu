@@ -13,9 +13,9 @@ The implementation boundary is in
 [[file:../../../module-system/building/test-projection.ss][test-projection.ss]] and
 [[file:../../../module-system/building/interface.ss][building/interface.ss]].
 The algorithm model belongs to
-[[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission.lean]];
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission.lean]];
 the finite transition model is
-[[file:../../../proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission.qnt]].
+[[file:../../../dev/proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission.qnt]].
 This extends the existing proof projects and their check catalog. It introduces
 no runtime Loader, replacement Graph, test runner or public configuration syntax.
 
@@ -130,11 +130,11 @@ cleanup, test-file edits and real atomic module execution. Both passed at POO
 =ece6f609357ea918038090559ac051a8d9f3e52f= with natural exit zero and complete harness
 markers. The final narrow gate also checks the exact missing-requirement diagnostic.
 
-Typecheck the Quint source with =quint typecheck proofs/quint/TestSourceAdmission.qnt=.
+Typecheck the Quint source with =quint typecheck dev/proofs/quint/TestSourceAdmission.qnt=.
 The existing proof checker includes its positive case and four named mutants;
 the Lean aggregate imports the new module. Focused Lean verification is
 =lake env lean PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean= from
-=proofs/lean/=. This turn does not claim a complete aggregate proof/CI run.
+=dev/proofs/lean/=. This turn does not claim a complete aggregate proof/CI run.
 
 The final focused Quint/TLC run completed the entire finite state space:
 2,815 generated states, 1,045 distinct states, zero left on the queue. All four

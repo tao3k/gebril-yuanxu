@@ -8,7 +8,7 @@
 #+begin_note
 Model audit (2026-10-18): checklist entries reopened below refer to removed
 premise-only wrappers or projection tautologies. They are design obligations,
-not current implementation verification. See [[file:../../proofs/lean/README.org][the current Lean proof boundary]].
+not current implementation verification. See [[file:../../dev/proofs/lean/README.org][the current Lean proof boundary]].
 #+end_note
 
 * Status

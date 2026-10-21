@@ -121,13 +121,13 @@ input identity, stale source refusal and deferred build projection controls.
 
 * Quint and Lean have different responsibilities
 
-[[file:../../../../../proofs/quint/ReaderProjection.qnt][ReaderProjection]] checks finite demand/registration/effect interactions. Its
+[[file:../../../../../dev/proofs/quint/ReaderProjection.qnt][ReaderProjection]] checks finite demand/registration/effect interactions. Its
 controls expose retained scratch, stale projected input lists after registration,
 cutting an unregistered intermediate node, omitted sources, missing fresh guards
 and reject-everything behavior. These are seven expected outcomes, not a heap
 model. ContextWalk separately owns finite callback-order controls.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] proves that streaming current registrations yields the
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] proves that streaming current registrations yields the
 same ordered input sequence, including multiplicity before publication-level
 deduplication. It also states the premise for a safe private projection cut and
 shows later registrations cannot be omitted. Lean does not prove SDK wrapper

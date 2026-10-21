@@ -3,7 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
-                 slot-read-dependencies slot-read-receiver slot-read-key)
+                 call-with-slot-read-observer slot-read-dependencies slot-read-receiver slot-read-key)
         (only-in :core/module-system/source/admission current-module-source-observer)
         (only-in :core/observability/debug poo-flow-debug-memory-snapshot)
         (only-in :core/observability/funcs poo-flow-debug-allocation-current?)
@@ -15,8 +15,8 @@
 (def allocation-stream-current? #t)
 (def allocation-previous #f)
 (def (test-cleanup!)
-  (unless (= completed 6) (error "retention measurements incomplete" completed))
-  (displayln "READ-RETENTION: 3 cold/warm pairs completed"))
+  (unless (= completed 12) (error "retention measurements incomplete" completed))
+  (displayln "READ-RETENTION: 3 raw/unique cold/warm rounds completed"))
 
 (def (read-graph observed-roots)
   (def seen (make-hash-table-eq))
@@ -54,8 +54,9 @@
   (check-equal? (eq? (.get configuration candidate) (.get final config)) #t)
   (check-equal? (length (.get configuration responsibility-evidence)) 2))
 
-(def (measure round mode child contract context cached parent)
+(def (measure round mode child contract context cached parent unique?)
   (def physical-reads 0)
+  (def observer-keys '())
   (def before (poo-flow-debug-memory-snapshot 'retention-before))
   (when allocation-previous
     (set! allocation-stream-current?
@@ -63,13 +64,17 @@
         allocation-previous (.ref before 'allocated-bytes))))
   (def started (real-time))
   (defvalues (evidence reads)
-    (%call-with-recorded-slot-reads
+    (call-with-slot-read-observer
+      (lambda (read) (set! observer-keys (cons (slot-read-key read) observer-keys)))
       (lambda ()
-        (parameterize ((current-module-source-observer
-                        (lambda (key amount)
-                          (when (and (pair? key) (eq? (car key) 'file-read))
-                            (set! physical-reads (+ physical-reads amount))))))
-          (.call contract .admit child context)))))
+        (%call-with-recorded-slot-reads
+          (lambda ()
+            (parameterize ((current-module-source-observer
+                            (lambda (key amount)
+                              (when (and (pair? key) (eq? (car key) 'file-read))
+                                (set! physical-reads (+ physical-reads amount))))))
+              (.call contract .admit child context)))
+          unique-roots?: unique?))))
   (def seconds (- (real-time) started))
   (def after (poo-flow-debug-memory-snapshot 'retention-after))
   (set! allocation-stream-current?
@@ -81,7 +86,9 @@
   (check-equal? (> (.get graph records) 0) #t)
   (check-equal? (> (.get graph records) (.get graph receivers)) #t)
   (check-equal? (length (.get context contributions)) 2)
+  (when unique? (check-equal? (.get graph deliveries) (.get graph roots)))
   (write (list 'READ-RETENTION round mode
+    'collection (if unique? 'unique 'raw) 'observer-calls (length observer-keys)
     'seconds seconds 'file-reads physical-reads
     'allocation-current? allocation-stream-current? 'raw-allocation-delta
     (- (.ref after 'allocated-bytes) (.ref before 'allocated-bytes))
@@ -89,7 +96,8 @@
     'records (.get graph records) 'receivers (.get graph receivers)
     'edges (.get graph edges) 'misses (.get graph misses)))
   (newline)
-  (set! completed (+ completed 1)))
+  (set! completed (+ completed 1))
+  (reverse observer-keys))
 
 (def read-retention-cost-test
   (test-suite "Real Scenario demanded read-graph cost"
@@ -114,11 +122,21 @@
         (def contract (.get publication contract))
         (def context (.get publication context))
         (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
+        ;; Share descriptor/catalog initialization, not a child value or an
+        ;; approval. Every measured admission still owns fresh source checks.
+        (check-equal? (.get (.call contract .admit parent context) accepted?) #t)
         (for-each
           (lambda (round)
             ;; Cold is a fresh child receiver, not a cold process or cold OS cache.
+            (.def (Raw @ parent)
+              config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
             (.def (Release @ parent)
               config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
-            (measure round 'cold Release contract context cached parent)
-            (measure round 'warm Release contract context cached parent))
+            (def (sample mode unique?)
+              (measure round mode (if unique? Release Raw) contract context cached parent unique?))
+            (def unique-first? (even? round))
+            (def cold (sample 'cold unique-first?))
+            (check-equal? (sample 'cold (not unique-first?)) cold)
+            (def warm (sample 'warm unique-first?))
+            (check-equal? (sample 'warm (not unique-first?)) warm))
           '(1 2 3))))))

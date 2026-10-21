@@ -163,7 +163,7 @@ passed 150 jobs and audited 4,410 declarations with standard axioms only and no
 arbitrary Prop fields. This is a newer, separate formal receipt; the package,
 Scheme and earlier integration results above were not rerun in this follow-up.
 Native producer downloads match the exact declared gerbil-poo revision. See
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for ordered-diagnostic counterexamples, QNT qualification and the still-open
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for ordered-diagnostic counterexamples, QNT qualification and the still-open
 producer/metadata/observer closure correspondence. No Scheme or Loader changed.
 
 The follow-up Quint gate typechecked 47 native sources and completed all 46
@@ -176,7 +176,7 @@ runtime refinement. Raw qualification artifacts remain outside the repository.
 The aggregate now requires IdentityDFS and DFSFrames, including unique/exact
 reachability, recursive-frame termination and final recheck coverage. The new
 Lean gate passed 152 jobs and audited 4,581 declarations with standard axioms
-only; the shape audit passed. See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for QNT receipts, concurrent source-cut
+only; the shape audit passed. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for QNT receipts, concurrent source-cut
 qualification, native assumptions and retained failures. No Scheme or Loader
 implementation is owned by this proof-only follow-up.
 
@@ -192,7 +192,7 @@ callback-independence, bootstrap readiness counterexample and ordered-error laws
 It passed 162 jobs and audited 4,918 declarations with standard axioms only;
 the model shape audit passed. The complete current-source QNT gate passed 66
 expected outcomes after 67 source typechecks. The first attempt's dependency
-source-drift refusal is retained. See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]] for current pin comparison,
+source-drift refusal is retained. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]] for current pin comparison,
 proof premises and the boundary between closed model operations and unimplemented
 native snapshot extraction. No Scheme consumer change or Loader integration is
 claimed by these results.
@@ -205,14 +205,14 @@ ABA/source-authority limits. The final Lean gate passed 163 jobs with 5,027
 audited declarations and the model shape gate. The final QNT receipt binds all
 77 expected outcomes over 78 sources and the qualification Scheme helpers.
 Seven default-runtime extraction cases and eleven real service publication cases
-passed independently. See [[file:../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for compiler-path failures and proof/native
+passed independently. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for compiler-path failures and proof/native
 correspondence limits. This is not atomic extraction or a production byte-cache
 optimization, and the earlier six/76-case receipts are retained separately.
 
 
 * Revision and use-boundary qualification
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] records the seven native lifetime controls and the source-cut
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] records the seven native lifetime controls and the source-cut
 qualification boundary. SnapshotLifetime passes the aggregate Lean build
 (164 jobs, 5081 declarations, shape/axiom audits) and the full 89-case Quint
 catalog. Its scope-ABA and check-to-use witnesses intentionally refute history
@@ -224,7 +224,7 @@ claim. This does not authorize production replay reuse or Loader changes.
 
 * Serial-use qualification
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] records 22 native passing controls, the 165-job/5159-declaration Lean
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] records 22 native passing controls, the 165-job/5159-declaration Lean
 aggregate audits and the 98-outcome/99-source Quint gate. Active-root protection
 does not freeze independent demands or sources. Conditional-commit theorems
 assume an atomic external authority; no native or provider implementation of
@@ -233,7 +233,7 @@ that relation is inferred. Production Scheme and Loader remain untouched.
 
 * Call phase qualification
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] records six actual call controls plus 22 unchanged regressions, the
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] records six actual call controls plus 22 unchanged regressions, the
 166-job/5231-declaration Lean aggregate audits, and the 108-outcome/109-source
 Quint gate. Acquisition and body frames differ; observation must include actual
 body reads. The initially omitted veto-exception outcome was corrected and its
@@ -244,7 +244,7 @@ premises. External conditional commit is still a provider premise.
 
 * Actual source-admission body qualification
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] records 24 passing native cases (including six new actual-adapter cases),
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] records 24 passing native cases (including six new actual-adapter cases),
 167 Lean jobs / 5271 audited declarations, and 118 Quint outcomes / 119 sources.
 The native adapter, not a test replay wrapper, rejects changes made by nested
 obligations before normal return. Revision projection provides a necessary
@@ -255,7 +255,7 @@ premises. External atomic commit remains outside this qualification.
 
 * Post-replay return-tail limitation
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] adds real SourceAdmissionContract return-tail controls and a real service
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] adds real SourceAdmissionContract return-tail controls and a real service
 Scenario witness. A successful earlier replay and individually matched source
 reads do not imply current objects or a coherent source set at return. Lean's
 =ReturnTail.actualReturn= deliberately uses per-read certificates; its read-only
@@ -269,7 +269,7 @@ controls; they do not repair those limitations. No production fix is claimed.
 
 * Constrained verification-segment qualification
 
-[[file:../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] records 22 native variant-case executions (8 unrestricted, 7 return-only,
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] records 22 native variant-case executions (8 unrestricted, 7 return-only,
 7 segment), 169 Lean jobs / 5452 audited declarations, and eight source-bound
 ClosedTail Quint outcomes after typechecking all 137 model files. The segment
 starts before replay; a return-only gate misses a cache-exit callback that writes

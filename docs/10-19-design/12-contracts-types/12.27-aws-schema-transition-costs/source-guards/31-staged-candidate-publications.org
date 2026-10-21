@@ -149,7 +149,7 @@ This is an earlier refusal, not removal of the negative control.
 
 * Quint and Lean correspondence
 
-=proofs/quint/CandidatePublication.qnt= explores local entry, native effects,
+=dev/proofs/quint/CandidatePublication.qnt= explores local entry, native effects,
 open admission, late mutation, commit visibility and termination. Its eleven
 catalog entries include safety plus expected counterexamples for a missing
 import, either open guard, final commit, Schema support, early visibility,
@@ -266,7 +266,7 @@ just test-file t/module-candidate-stage-test.ss true
 just test-file t/module-candidate-metadata-test.ss true
 just test-file t/module-reader-effect-support-test.ss true
 just test-file t/module-declaration-1000-test.ss true
-python3 proofs/quint/check.py --case-prefix CandidatePublication --typecheck-scope selected
+python3 dev/proofs/quint/check.py --case-prefix CandidatePublication --typecheck-scope selected
 #+end_src
 
 Source-only capacity qualification assumes an isolated dependency environment

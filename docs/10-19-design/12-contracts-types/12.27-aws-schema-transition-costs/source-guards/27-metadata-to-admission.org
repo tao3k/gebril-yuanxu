@@ -75,7 +75,7 @@ writer or rollback of arbitrary user callback side effects.
 
 * Quint and Lean have different responsibilities
 
-[[file:../../../../../proofs/quint/SourcePrefix.qnt][SourcePrefix]] now separates cold metadata computation from the subsequent
+[[file:../../../../../dev/proofs/quint/SourcePrefix.qnt][SourcePrefix]] now separates cold metadata computation from the subsequent
 Context admission transition. Metadata completion is recorded explicitly.
 Both stages can change owner/import/policy/Schema support. The ordinary
 protocol must stay current and clean; the existing carry mutant still fails
@@ -83,7 +83,7 @@ even though metadata has been checked before publication. Two additional
 mutants isolate cold-getter-only and Context-only changes. All ten catalogued
 outcomes remain required, including acceptance and termination controls.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
 Its revision-preservation premise is deliberately NOT discharged by a shape
 receipt. The Quint source digest is updated. No duplicate theorem or second
 effect system is introduced: the missing native fact is unchanged actual

@@ -108,10 +108,10 @@ just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-reader-effect-support-test.ss true
 just test-file t/module-candidate-metadata-test.ss true
 just test-file t/execution-cancellation-test.ss true
-python3 proofs/quint/check.py --case-prefix CandidateLocation --typecheck-scope selected
+python3 dev/proofs/quint/check.py --case-prefix CandidateLocation --typecheck-scope selected
 #+end_src
 
-From =proofs/lean=:
+From =dev/proofs/lean=:
 
 #+begin_src text
 lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork

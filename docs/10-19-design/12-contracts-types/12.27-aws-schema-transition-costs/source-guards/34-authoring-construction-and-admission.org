@@ -104,14 +104,14 @@ is a separate negative control, never a way to manufacture a positive result.
 
 * Quint and Lean own different claims
 
-[[file:../../../../../proofs/quint/AuthoringStage.qnt][AuthoringStage]] models finite construction, Contract change, admission,
+[[file:../../../../../dev/proofs/quint/AuthoringStage.qnt][AuthoringStage]] models finite construction, Contract change, admission,
 checked-subject selection and publication schedules. Its controls omit
 admission, reuse an old Contract decision, use the raw subject, skip final
 freshness, and prove non-vacuous acceptance through an expected counterexample.
 Existing candidate/location models still own ambient effects, complete Graph
 commit, previous-value retention and termination.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] adds independent functional and cost laws:
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] adds independent functional and cost laws:
 
 - =refused_profile_cannot_reach_inspection=;
 - =inspection_receives_actual_checked_profile=;
@@ -253,9 +253,9 @@ just test-file t/module-candidate-metadata-test.ss true
 just test-file t/module-declaration-calibration-test.ss true
 just test-file t/module-testing-isolation-test.ss true
 just test-file t/execution-cancellation-test.ss true
-python3 proofs/quint/check.py --case-prefix AuthoringStage --typecheck-scope selected --receipt ../.data/qualification/authoring-stage.scm
-python3 proofs/quint/check.py --case-prefix Candidate --typecheck-scope selected --receipt ../.data/qualification/candidate.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix AuthoringStage --typecheck-scope selected --receipt ../.data/qualification/authoring-stage.scm
+python3 dev/proofs/quint/check.py --case-prefix Candidate --typecheck-scope selected --receipt ../.data/qualification/candidate.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 

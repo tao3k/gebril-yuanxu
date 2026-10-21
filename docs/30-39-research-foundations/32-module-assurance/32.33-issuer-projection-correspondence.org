@@ -82,7 +82,7 @@ both the registry key and the closure's captured record identity remain checked.
 
 * Constructive model and legacy projection
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/IssuerProjection.lean][IssuerProjection.lean]] models separate stores:
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/IssuerProjection.lean][IssuerProjection.lean]] models separate stores:
 
 - =registry=: record identity to original closure identity;
 - =environments=: closure identity to captured owner, payload and key shape;
@@ -133,7 +133,7 @@ native edit-and-restore. It does not construct expected registry rows. It also
 checks that altering an inspection copy leaves the original valid and that a
 read reconstructed from a copy has no issuer association.
 
-[[file:../../../proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck.lean]] independently decodes the current record, actual
+[[file:../../../dev/proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck.lean]] independently decodes the current record, actual
 registry result and actual captured environment. It computes =authenticate= and
 =project= before comparing them with the native result. It also compares native
 currentness with receiver revision/instance and the appropriate persistent-cache
@@ -153,7 +153,7 @@ Repeatable gates, using the normal default Gerbil runtime:
 #+begin_src sh
 just test-issuer-projection /private/tmp/core-issuer-projection-current
 just proofs-lean
-python3 proofs/quint/check.py --case-prefix IssuerProjection \
+python3 dev/proofs/quint/check.py --case-prefix IssuerProjection \
   --receipt /private/tmp/core-issuer-projection-quint.ss
 #+end_src
 
@@ -175,7 +175,7 @@ it but advance revision. Issuance remains genuine, while native currentness and
 replay refuse the old read. Raw writes without revision tracking do not inherit
 this guarantee.
 
-[[file:../../../proofs/quint/IssuerProjection.qnt][IssuerProjection.qnt]] constructs parent and child associations through mint
+[[file:../../../dev/proofs/quint/IssuerProjection.qnt][IssuerProjection.qnt]] constructs parent and child associations through mint
 transitions, admits an unregistered self-consistent user closure as adversarial
 input, and models callback enter/effect/restore as separate steps. It does not
 start with a private Birth/native-origin Boolean. =NoCallbackEffects= is

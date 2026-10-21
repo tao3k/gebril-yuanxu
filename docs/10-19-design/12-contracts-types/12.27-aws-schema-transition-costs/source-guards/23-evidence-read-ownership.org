@@ -136,13 +136,13 @@ registry, accepted Graph or read cache was cleared to obtain either result.
 
 * Model division and remaining premises
 
-[[file:../../../../../proofs/quint/OwnedReads.qnt][Quint OwnedReads]] explores bounded finish, mutation, collection and publish
+[[file:../../../../../dev/proofs/quint/OwnedReads.qnt][Quint OwnedReads]] explores bounded finish, mutation, collection and publish
 orders, including shared/cyclic owned reads. Its nine expected outcomes cover
 frontier omissions, shared policy, missing live tokens, unknown execution,
 borrowed constructor authority, changed constructor generation and acceptance.
 These checks reuse the existing model rather than create another Graph.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] proves arbitrary-identity frontier coverage using the existing
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] proves arbitrary-identity frontier coverage using the existing
 worklist theorem, original-replay requirements for live values and refusal of
 borrowed/mutated construction certificates. It does not repeat finite schedule
 search or prove a GC implementation, heap bound or SDK capacity.
@@ -163,8 +163,8 @@ just test-file t/contract-analysis-test.ss true
 just test-file t/module-declaration-retention-test.ss true
 just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-testing-isolation-test.ss
-python3 proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/evidence-owned-reads.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/evidence-owned-reads.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 

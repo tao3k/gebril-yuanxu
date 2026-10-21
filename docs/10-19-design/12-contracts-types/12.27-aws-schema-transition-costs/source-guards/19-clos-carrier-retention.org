@@ -194,7 +194,7 @@ fails during acquisition never reaches it and remains failed.
 
 * Quint and Lean answer different questions
 
-[[file:../../../../../proofs/quint/CarrierRoots.qnt][CarrierRoots]] models a finite lifecycle: return from a method, retention by
+[[file:../../../../../dev/proofs/quint/CarrierRoots.qnt][CarrierRoots]] models a finite lifecycle: return from a method, retention by
 read records, Graph release, and weak versus strong diagnostic ownership. Matched
 controls reject an observer that becomes a strong owner, dropped payloads and
 forgotten read roots. A separate counterexample rejects clearing canonical SDK
@@ -204,7 +204,7 @@ payloads disappear merely because the call returned. It is a retention topology
 model, not a native GC or allocation model. Constructor validation is a native
 gate; the modeled lifecycle starts at the completed-call boundary.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
 when a shared initializer environment over supplied field values is replaced
 by individual constant captures. The result deliberately preserves payload
 membership, rather than claiming it is freed. It says nothing about field-read
@@ -256,7 +256,7 @@ just test-file t/module-test-observation-test.ss true
 just test-file t/module-declaration-calibration-test.ss true
 just test-file t/module-declaration-1000-test.ss true
 just test-file t/module-testing-isolation-test.ss
-python3 proofs/quint/check.py --case-prefix CarrierRoots --typecheck-scope selected --receipt .data/qualification/carrier-roots.scm
+python3 dev/proofs/quint/check.py --case-prefix CarrierRoots --typecheck-scope selected --receipt .data/qualification/carrier-roots.scm
 #+end_src
 
 Run Scheme gates serially with the unchanged project heap fence, progress-aware

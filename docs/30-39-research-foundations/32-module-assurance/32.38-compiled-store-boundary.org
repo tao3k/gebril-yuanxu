@@ -152,7 +152,7 @@ interpret it and would not exercise this compiler pass.
 
 * Lean correspondence and Quint controls
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] reuses MetadataAllocation and IdentityDFS, including the
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/StoreLowering.lean][StoreLowering.lean]] reuses MetadataAllocation and IdentityDFS, including the
 existing LeanPoo-backed graph reasoning. Four direct allocations plus two
 dependency edges derive the owner list; completeness is not supplied as a list
 field. Key statements:
@@ -170,11 +170,11 @@ theorem unlowered_retains_counterexample :
 
 These are theorem signatures from the compiled model; proofs are in the linked
 source. The route model abstracts refusal and does not prove the compiler
-correct. [[file:../../../proofs/lean/StoreLoweringCheck.lean][StoreLoweringCheck.lean]] independently decodes all three actual AOT trace
+correct. [[file:../../../dev/proofs/lean/StoreLoweringCheck.lean][StoreLoweringCheck.lean]] independently decodes all three actual AOT trace
 rows and compares them to the model. Changing Cold to 5440 makes it fail.
 That bridge covers the observed operations, not arbitrary Scheme execution.
 
-[[file:../../../proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] has nine scoped expected outcomes. The positive model
+[[file:../../../dev/proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] has nine scoped expected outcomes. The positive model
 preserves Parent/Hot, child plan ownership, both requirements and the unused
 branch. Negative variants expose an unlowered callback, missing copy ownership,
 missing carrier or inline protection, dropping the second requirement,

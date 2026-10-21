@@ -37,7 +37,7 @@ constant total startup time. The full selected control passes under the existing
 
 * Reuse the existing model instead of another semantic graph
 
-[[file:../../../../../proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission]] already represents demand discovery, source revisions,
+[[file:../../../../../dev/proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission]] already represents demand discovery, source revisions,
 explicit complete-Graph demand, fixture lifecycle and one Graph identity. It now
 includes a shared dependency and an expansion counter. UniqueDiscovery counts
 structural discovery visits, not mandatory fresh source checks after effects.
@@ -55,14 +55,14 @@ explicit. The pinned native Quint checker typechecks the seven scoped entries
 and their imports; the existing TLC backend checks the positive and six negative
 cases and emits the existing Scheme v1 receipt. No new runner is introduced.
 
-The [[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean][Lean counterpart]] binds the updated Quint source digest. Its existing
+The [[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/TestAdmission.lean][Lean counterpart]] binds the updated Quint source digest. Its existing
 completed_discovery_exact and discover_preserves_unique_reads establish exact
 demand coverage and unique visits. The new discovery_visit_bound proves, for
 arbitrary Node types and fuel, that visited nodes cannot exceed an enclosing
 catalog when roots and dependency edges are covered by that catalog. This is
 not a proof that every edge operation is constant time.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] keeps current input registration distinct from cached
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] keeps current input registration distinct from cached
 native context topology. Later registrations must appear in the next projection;
 missing observations and changed source kinds/bytes remain refusals. The deferred
 Build regression exercises the corresponding native handoff.

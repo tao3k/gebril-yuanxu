@@ -47,7 +47,7 @@ not measured byte residency or an end-to-end speedup claim.
 
 * LeanPoo reuse and correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ReadRetention.lean][ReadRetention.lean]] reuses the existing =IdentityDFS=/=DFSFrames= proof of
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ReadRetention.lean][ReadRetention.lean]] reuses the existing =IdentityDFS=/=DFSFrames= proof of
 LeanPoo's pending/unseen-weight termination argument. =shared_record_once=
 proves the replay order is duplicate-free; =finite_cycle_drains= proves a closed
 finite graph drains. =closure_coverage= and =omitted_dependency_refused= preserve
@@ -70,7 +70,7 @@ no receiver sorting or cross-callback approval reuse is introduced here.
 
 * QNT controls
 
-[[file:../../../proofs/quint/ReadRetention.qnt][ReadRetention.qnt]] has a diamond, a cycle, distinct slots sharing a receiver,
+[[file:../../../dev/proofs/quint/ReadRetention.qnt][ReadRetention.qnt]] has a diamond, a cycle, distinct slots sharing a receiver,
 and a transient miss. The normal model checks coverage, unique work, both
 requirements, fresh post-callback currentness, parent/child isolation and laziness.
 Matched controls deliberately drop receiver-colliding records or misses, reuse

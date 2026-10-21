@@ -138,7 +138,7 @@ No such external authority is implemented here.
 
 * Lean correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
 through SnapshotLifetime. Its actions are concrete: affected edit, independent
 demand edit, source edit and read. The =cold= argument projects a real captured
 native frame, never a user assertion of purity. Native identity-based closure
@@ -166,7 +166,7 @@ before attempting the write; whole-callback rollback is not inferred.
 
 * Quint correspondence and matched controls
 
-[[file:../../../proofs/quint/SerialUse.qnt][SerialUse]] models preparation, an intervening operation, use, ordered
+[[file:../../../dev/proofs/quint/SerialUse.qnt][SerialUse]] models preparation, an intervening operation, use, ordered
 certification, a later external write, and conditional commit. Terminal states
 have an explicit self-step. Native active protection and external conditional
 commit are separate transitions; the latter is an explicitly assumed atomic

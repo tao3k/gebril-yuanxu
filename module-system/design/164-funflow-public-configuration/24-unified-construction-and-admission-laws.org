@@ -177,7 +177,7 @@ inside arbitrary custom .admit methods remain outside the qualified protocol.
 
 * Five new checked reference laws
 
-[[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Construction.lean][Construction.lean]] imports the existing receipt/provenance model. It
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Schema/Association/Construction.lean][Construction.lean]] imports the existing receipt/provenance model. It
 encodes a constructor's n-ary source union as a requirement-algebra fold:
 
 #+begin_src lean

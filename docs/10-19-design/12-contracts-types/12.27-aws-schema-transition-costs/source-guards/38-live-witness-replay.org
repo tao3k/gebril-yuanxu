@@ -217,8 +217,8 @@ just test-file t/module-candidate-metadata-test.ss true
 just test-file t/admission-checked-publication-test.ss true
 just test-file t/execution-cancellation-test.ss true
 just test-file t/module-declaration-1000-test.ss true
-python3 proofs/quint/check.py --case-prefix WitnessReplay --typecheck-scope selected --receipt ../.data/qualification/witness-replay.scm
-cd proofs/lean
+python3 dev/proofs/quint/check.py --case-prefix WitnessReplay --typecheck-scope selected --receipt ../.data/qualification/witness-replay.scm
+cd dev/proofs/lean
 lake build PooFlowCoreProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 

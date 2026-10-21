@@ -176,7 +176,7 @@ child plan authority.
 
 * Lean correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] imports the existing CallPhases and LeanPoo-backed
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] imports the existing CallPhases and LeanPoo-backed
 admission closure. Its =Read= rows project actual receiver identities and
 revisions, not configuration field names. This is a necessary revision projection: native currentness also checks cache,
 instance, checker and dependency identity. Unchanged projected revisions alone
@@ -206,7 +206,7 @@ is passed into the admission consumer.
 
 * Quint correspondence
 
-[[file:../../../proofs/quint/AdmissionBody.qnt][AdmissionBody]] begins after a successful warm call and models another nested
+[[file:../../../dev/proofs/quint/AdmissionBody.qnt][AdmissionBody]] begins after a successful warm call and models another nested
 obligation execution. It distinguishes ordinary and source-aware children, a
 completed body, child-adapter refusal, root source checks, root replay and normal
 return. Terminal states have a self-step. An escaping child error is distinct

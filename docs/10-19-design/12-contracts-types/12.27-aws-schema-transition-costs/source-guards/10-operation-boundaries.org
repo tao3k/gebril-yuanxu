@@ -106,7 +106,7 @@ Its negative cases retain mutation during a native query and add:
 - A native action changes guard.ss. The separate enclosing entry observation
   must refuse, although native inputs-current! alone does not cover that file.
 
-[[file:../../../../../proofs/lean/PooFlowCoreProof/Admission/BoundaryComposition.lean][BoundaryComposition]] reuses SourceWindows.World and its fresh byte-check
+[[file:../../../../../dev/proofs/lean/PooFlowCoreProof/Admission/BoundaryComposition.lean][BoundaryComposition]] reuses SourceWindows.World and its fresh byte-check
 model. composition_equivalent proves the original and normalized classified
 chains have equal results, including failure, for arbitrary actions and lists.
 changed_after_action_rejected retains a fresh post-action refusal. A computed

@@ -41,7 +41,7 @@ reachability, path selection, subtree deletion, inherited child merge and the
 non-convergent one-pass example. Module schema/source and consumer suites check
 the direct migration; no forwarding imports or legacy API aliases remain.
 
-=core/proofs/quint/GraphOperations.qnt= models a bounded ordered program over
+=core/dev/proofs/quint/GraphOperations.qnt= models a bounded ordered program over
 standard nodes, edges and payloads. Independent expected fixtures check order,
 path isolation, delete closure, insertion followed by targeting, and honest
 single-pass receipts. Five matched mutants must violate their named invariant.

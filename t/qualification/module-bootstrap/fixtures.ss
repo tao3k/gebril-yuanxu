@@ -31,7 +31,7 @@
       (copy-fixture-tree owner fixture-root
         (lambda (_path name kind)
           (and (not (string-prefix? "." name))
-               (not (member name '("t" "design" "docs" "proofs" "packages")))
+               (not (member name '("t" "design" "docs" "dev" "packages")))
                (or (eq? kind 'directory) (string-suffix? ".ss" name)
                    (string=? name "gerbil.pkg")))))
       ;; A source-only package state legitimately has no installed lib tree.

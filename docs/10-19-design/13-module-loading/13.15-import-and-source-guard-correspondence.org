@@ -35,7 +35,7 @@ result or a captured input-registration projection.
 
 Input registration can grow while declarations are imported. Every consumption
 therefore resolves =kernel-inputs= against the cached context list again. In
-[[file:../../../proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.lean]], =current_registration_is_never_omitted= and
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.lean]], =current_registration_is_never_omitted= and
 =later_registration_is_visible= prove why filtering registrations only when the
 topology was first cached would be incorrect.
 

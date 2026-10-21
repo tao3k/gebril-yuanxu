@@ -2,21 +2,23 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/source this-source-file)
         (only-in :std/list/list find)
         (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
-        (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?)
+        (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
+                 replay-slot-reads! object-read-issued?)
         (only-in :clan/poo/mop Type.)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
-                 slot-read-key slot-read-dependencies replay-slot-reads!)
+                 slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
                  core-import-module core-expand expander-context-id
                  current-expander-eval module-context? module-context-path module-context-code
                  core-context-prelude core-module->prelude-context expander-context-table)
         (only-in :core/module-system/source/reader module-publication-reader)
         (only-in :core/module-system/building/source-closure
-                 for-each-build-module poo-flow-core-bootstrap-contexts)
+                 for-each-build-module poo-flow-core-bootstrap-contexts poo-flow-core-bootstrap-source-path)
         (only-in :core/module-system/source/preparation poo-flow-prepare-module-build-source)
         (rename-in (only-in :core/module-system/source/declaration .def) (.def publication-definition))
         (only-in :core/module-system/source/declaration current-module-build-phase?)
@@ -36,6 +38,7 @@
   (poo-flow-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
 (def factory-calls 0)
 (def dependencies 'author-value)
+(def core-source-root (path-expand ".." (path-directory (this-source-file))))
 (def native-.ref 'author-shadow)
 (publication-definition Published
   identity: 'custom/published
@@ -435,44 +438,48 @@
               (set! counts (cdr key))))
           (defvalues (_publication reads)
             (parameterize ((current-module-source-observer observe))
-              (%call-with-recorded-slot-reads (cut .call reader read source))))
+              (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t)))
           (def bundle (find (lambda (read) (eq? (slot-read-key read) 'publication-reads)) reads))
-          (check-equal? (if bundle #t #f) #t)
-          (def roots (slot-read-dependencies bundle))
+          ;; The former synthetic bundle is not an authority or a dependency.
+          (check-equal? bundle #f)
+          (def roots reads)
           (def seen (make-hash-table-eq))
           (for-each (lambda (read)
                       (check-equal? (hash-key? seen read) #f)
                       (hash-put! seen read #t)) roots)
-          (check-equal? (length roots) (cdr (assq 'identities counts)))
-          (check-equal? (> (cdr (assq 'deliveries counts)) (length roots)) #t)
-          (replay-slot-reads! (list bundle) (lambda (_receiver _key) (void)))
+          (check-equal? (andmap object-read-issued? roots) #t)
+          (check-equal? (> (cdr (assq 'identities counts)) 0) #t)
+          ;; The outer frame also observes acquisition of the reader function.
+          (check-equal? (>= (length roots) (cdr (assq 'identities counts))) #t)
+          ;; Root storage is now compact at collection time. Slot observers
+          ;; still receive every delivery; this counter measures stored roots.
+          (check-equal? (cdr (assq 'stored-roots counts)) (cdr (assq 'identities counts)))
+          (replay-slot-reads! roots (lambda (_receiver _key) (void)))
           ;; Mutation is a negative injection, not a different source fixture.
           ;; No token is rebuilt and no callback's dependencies are filtered.
           (.put! source 'value "changed-after-publication")
           (check-exception
-            (replay-slot-reads! (list bundle) (lambda (_receiver _key) (void))) error?))))
-    (poo-flow-test-case "reader streams warm source inputs without retained transitive context lists"
+            (replay-slot-reads! roots (lambda (_receiver _key) (void))) error?))))
+    (poo-flow-test-case "reader warm inputs preserve the original graph without a weak projection claim"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def reader (module-publication-reader))
-          (def retained #f)
-          (def (observe key _amount)
-            (when (and (pair? key) (eq? (car key) 'reader-retention))
-              (set! retained (cdr key))))
-          (parameterize ((current-module-source-observer observe))
-            (.call reader read source)
+          (defvalues (_publication roots)
+            (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t))
+          (let ()
             (def first (.call reader inputs source))
-            (def objects (cdr (assq 'source-objects retained)))
-            (check-equal? (> objects 0) #t)
+            (check-equal? (pair? first) #t)
             (.call reader read source)
             (def second (.call reader inputs source))
             ;; The same guarded native inputs are projected again, not cloned
             ;; sources or reused success. Existing currentness controls remain.
             (check-equal? (length second) (length first))
             (for-each (lambda (input) (check-equal? (if (memq input first) #t #f) #t)) second)
-            (check-equal? (cdr (assq 'source-objects retained)) objects)
-            (check-equal? (cdr (assq 'dependency-closures retained)) 0)
-            (check-equal? (cdr (assq 'dependency-contexts retained)) 0)))))
+            (check-equal? (andmap object-read-issued? roots) #t)
+            ;; Full graph retention is intentional. Do not resurrect the old
+            ;; zero-closure telemetry as a passing memory optimization.
+            (check-equal? (any (lambda (read) (pair? (slot-read-dependencies read))) roots) #t)
+            (replay-slot-reads! roots (lambda (_receiver _key) (void)))))))
     (poo-flow-test-fixture "public source preparation is unique but admission remains fresh"
       (library PublicLibraryFixture)
       (with-publication-source
@@ -536,11 +543,11 @@
       (with-publication-source
        (lambda (_root module-root source _view)
          (def projection
-           (path-normalize (module-context-path
-             (core-import-module ':core/module-system/building/build-projection))))
+           (path-normalize (poo-flow-core-bootstrap-source-path
+             (core-import-module ':core/module-system/building/build-projection) core-source-root)))
          (def dependency
-           (path-normalize (module-context-path
-             (core-import-module ':core/module-system/building/source-package))))
+           (path-normalize (poo-flow-core-bootstrap-source-path
+             (core-import-module ':core/module-system/building/source-package) core-source-root)))
          (def (observed-paths reader)
            (def paths (make-hash-table))
            (parameterize ((current-module-source-observer

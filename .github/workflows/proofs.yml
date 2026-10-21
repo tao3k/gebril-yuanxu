@@ -20,7 +20,7 @@ jobs:
             | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Build Core proof package
-        working-directory: proofs/lean
+        working-directory: dev/proofs/lean
         run: lake build
 
   quint:
@@ -37,11 +37,11 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Install pinned Quint
-        run: npm ci --prefix proofs/quint --no-audit --no-fund
+        run: npm ci --prefix dev/proofs/quint --no-audit --no-fund
       - name: Prepare pinned backend
-        run: python3 proofs/quint/prepare.py
+        run: python3 dev/proofs/quint/prepare.py
       - name: Check finite models and matched faults
-        run: python3 proofs/quint/check.py --receipt "$RUNNER_TEMP/core-quint-proof.ss"
+        run: python3 dev/proofs/quint/check.py --receipt "$RUNNER_TEMP/core-quint-proof.ss"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: core-quint-proof

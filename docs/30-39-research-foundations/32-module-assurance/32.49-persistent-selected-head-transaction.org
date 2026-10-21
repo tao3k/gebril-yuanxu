@@ -185,7 +185,7 @@ approval authority or authenticate who may write the store.
 
 * Lean and QNT boundaries
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/PersistentSelectedHead.lean][PersistentSelectedHead.lean]] proves properties of the exact conditional state
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/PersistentSelectedHead.lean][PersistentSelectedHead.lean]] proves properties of the exact conditional state
 transition relation:
 
 - =accepted_binds_revision_fence_selection=: acceptance requires all three
@@ -200,7 +200,7 @@ records only that recovery is identity in this model; it is not a theorem that
 external source files are unchanged. Existing real Scheme domain tests retain
 the two requirements; the new Lean relation does not re-prove their semantics.
 
-[[file:../../../proofs/quint/PersistentSelectedHead.qnt][PersistentSelectedHead.qnt]] adds bounded interleavings, ABA, revision-only and
+[[file:../../../dev/proofs/quint/PersistentSelectedHead.qnt][PersistentSelectedHead.qnt]] adds bounded interleavings, ABA, revision-only and
 fence-only changes, restart and source mutation. Six controls use 1000 samples,
 7 steps and seed 49:
 
@@ -248,7 +248,7 @@ From Core:
 just compile-build-publication /private/tmp/core-persistent-head-20261021
 just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-head-store-test.ss
 just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-selected-head-test.ss
-cd proofs/lean
+cd dev/proofs/lean
 timeout 120s lake env lean PooFlowCoreProof/Admission/PersistentSelectedHead.lean
 #+end_src
 

@@ -222,7 +222,7 @@ introduced by the candidate.
 
 * Lean and Quint correspondence
 
-[[file:../../../proofs/lean/PooFlowCoreProof/Admission/ClosedTail.lean][Admission/ClosedTail]] reuses the earlier LeanPoo-backed admission closure.
+[[file:../../../dev/proofs/lean/PooFlowCoreProof/Admission/ClosedTail.lean][Admission/ClosedTail]] reuses the earlier LeanPoo-backed admission closure.
 =Observer= is an absent observer or an opaque identity. In the latter case,
 =run= refuses without invocation; the former uses the structurally closed
 =InspectEvent= algebra. There is no Boolean claim of arbitrary closure purity.
@@ -240,7 +240,7 @@ They do not automatically extract a Scheme procedure's effects. Serial execution
 trusted producer/reader code and complete prior native observation remain
 correspondence premises.
 
-[[file:../../../proofs/quint/ClosedTail.qnt][ClosedTail]] models the same placement: early callbacks, entry to the restricted MOP
+[[file:../../../dev/proofs/quint/ClosedTail.qnt][ClosedTail]] models the same placement: early callbacks, entry to the restricted MOP
 verification segment, the cache-exit self-removal, two source reads and return.
 Five unsafe variants remove the producer gate, protect only the return phase,
 drop the second requirement, substitute parent identity or alter diagnostics. A separate acceptance witness
