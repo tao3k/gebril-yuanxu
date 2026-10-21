@@ -2,6 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+;; Existing Core module identities remain stable during the Yuanxu migration.
+;; yuanxu/gerbil.pkg owns the public tao3k/yuanxu package and its prelude.
 (package:
  core
  depend:

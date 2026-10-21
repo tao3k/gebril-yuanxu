@@ -2,7 +2,32 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Core
+#+title: Yuanxu · 垣序
+
+* Yuanxu: Model · Compose · Evolve
+
+The repository is [[https://github.com/tao3k/yuanxu][tao3k/yuanxu]]. Existing =:core/...= module identities
+remain unchanged in this first naming step. The repository checkout may still
+be named =core= in a consumer; its directory is not its public brand.
+
+The initial public package is declared in [[file:yuanxu/gerbil.pkg][yuanxu/gerbil.pkg]]:
+
+#+begin_src scheme
+(package: tao3k/yuanxu
+ prelude: :tao3k/yuanxu/prelude)
+#+end_src
+
+[[file:yuanxu/prelude.ss][The prelude]] reexports ordinary Gerbil and gerbil-poo bindings. Its own
+explicit =:gerbil/core= prelude prevents self-import during bootstrap. It does
+not load modules, execute processes, or introduce a new language/DSL. Core's
+role-specific declaration and config preludes keep their existing phase duties.
+The root =gerbil.pkg= retains =package: core=; it does not impose this new
+prelude on the implementation closure. A new consumer can use the package
+declaration above after building/installing the library.
+
+The ordinary build specification includes the prelude before Core roots. Its
+focused test is =yuanxu/tests/prelude-test.ss= and checks implicit prelude
+bindings and inherited values without an explicit POO import.
 
 * What Core owns
 
