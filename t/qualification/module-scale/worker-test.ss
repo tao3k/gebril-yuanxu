@@ -4,6 +4,7 @@
 ;;; Copied unchanged to a generated Module test directory by the Core fixture.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in "../../../init.ss" init.modules init.tests)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
@@ -17,6 +18,7 @@
       (def count (length (.all-slots init.modules)))
       (def counts (make-hash-table-eq))
       (def class-construction-reads 0)
+      (def completed-declarations 0)
       (def previous (current-module-source-observer))
       (def (observe key amount)
         (def category (if (pair? key) (car key) key))
@@ -26,7 +28,20 @@
         ;; This fixture imports only the maintained SDK and its own roles.
         ;; Fail at an unexpected fallback rather than spending the full
         ;; thousand-entry budget proving the same wrong import classification.
+        ;; A warm known import need not import new code. Completion of an
+        ;; actual declaration still advances the Case's scalar progress frame.
+        ;; Do not construct typed checkpoint receipts inside an active reader.
+        (when (eq? category 'publication-end)
+          (set! completed-declarations (+ completed-declarations amount))
+          (execution-progress! '(declaration-completed) completed-declarations))
         (when (eq? category 'candidate-open-boundary)
+          ;; Scalar-only failure attribution: constructing a typed receipt here
+          ;; would reenter the admission whose refusal we are diagnosing.
+          (let (stats (##process-statistics))
+            (displayln "DECLARATION-REFUSAL heap=" (f64vector-ref stats 15)
+                       " live=" (f64vector-ref stats 17)
+                       " allocated=" (f64vector-ref stats 7))
+            (force-output))
           (error "closed native declaration crossed an unexpected open boundary" (cdr key)))
         (when (memq category '(publication-start publication-discovered candidate-local-guard candidate-open-guard
                               reader-declaration reader-body-expanded reader-body-evaluated

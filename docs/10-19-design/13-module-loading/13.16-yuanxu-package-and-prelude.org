@@ -397,3 +397,71 @@ performance or stable-input pass. Branding edits must finish before starting
 source-currentness qualification. Runtime and CI configuration contain no old
 Core package imports or API aliases; product references and recorded historical
 source identities do not create compatibility entrypoints.
+
+The stable-source rerun passes the sixteen-declaration calibration through the
+current reader. It preserves the closed-boundary assertion and exact work counters;
+syntax wrappers and native SSI paths no longer force the open-boundary fallback.
+The sixteen-case native read-replay consumer and eleven-case Gitea/PostgreSQL
+publication suite also pass with all harness markers. The checker-origin suite
+passes its ten cases, including refusal before forged callbacks execute.
+The namespace gate also covers proof models, scripts, generated-code sources and
+package/build metadata. Genuine product references in research and frozen source
+receipts are not runtime compatibility aliases.
+
+** Current CI follow-up boundaries
+
+The adc298c run passes Lean/Quint, both platform builds/bootstrap, both object
+lanes, and the Linux runtime lane. Linux's complete library compilation takes
+127 seconds; setup and source-only qualification are separate steps. This is
+an observed run, not a controlled cross-host speedup claim.
+
+The complete partition now has eight disjoint groups: bootstrap 17, modules 66,
+scale 4, contracts 16, objects 18, scenarios 15, providers 19, runtime 49. All 204
+files remain covered. The four capacity controls have their own runner; each
+runner still executes one 2 GiB test process at a time.
+
+CI now selects the official Nix 2.34.4 installer, matching the existing native
+cache controls. The 2.28.5 cache failures are retained. One pinned package-source
+record supplies both its path and NAR identity. Flake fixtures import that package
+set to obtain real derivations, rather than copying executable packages into
+source inputs and losing their Linux runtime dependency closure. Package setup
+uses the existing Ops execution function, with native Nix progress and owned
+process cleanup. No source lock is updated implicitly.
+
+Provider selection controls consume actual AWS-only/AWS+Null collections; family
+controls consume AWS/awscc/Null. A full family collection must not be injected into
+a control asserting absence of Null. The selected build-graph control clears that
+ambient injection, then exercises the real maintained module build. Its local
+rerun passes, including invalid configuration refusal before successful return.
+The build-selection, artifact-reselection and Nix-cache controls also pass locally.
+
+Source-loader qualification activates both issued module units through the
+installed loader, from verified private copies. A runtime-only ~0 load is not the
+portable module activation protocol. Both executable units belong to the compiler
+pipe's resource issuance; saved procedure/cache and joint replacement controls
+remain intact. The local complete-module activation control passes; Linux still
+requires the next exact-head run.
+
+The source-tail compiler uses the native parallel job interface with the existing
+two-worker bound and drains it before reporting completion. Its 120-second limit
+is unchanged. A busy-host local attempt still exceeds that limit and remains a
+failure; it is not presented as qualification. Compiler process groups must stop
+before owned temporary files are removed.
+
+The capacity controls now report monotonic completed-work counts: completed source
+writes, actual declaration returns, and completed graph-visit batches. Constant
+replays cannot renew progress. There is no timer/output heartbeat and the idle and
+total limits are unchanged. An unexpected reader opening also reports scalar
+heap/live counters before raising, avoiding typed-receipt recursion in diagnostic
+attribution. The capacity rerun remains pending.
+
+Deferred Build support is checked against its complete native transitive closure,
+not a removed bootstrap-only dependency. Macro-location qualification selects a
+fresh source generation after writing malformed input; reusing the prior SourceRef
+would test stale-source refusal instead. The strengthened publication suite passes
+locally with all harness markers.
+
+AWS cost counters distinguish legacy explicit registration from Flake path-info's
+combined registration/evaluation. The original total request bounds remain three
+at selection/binding and five after publication, plus exactly one realization.
+Independent before/after-effect and publication currentness checks remain present.

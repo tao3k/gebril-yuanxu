@@ -1,10 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 # Real qualification inputs. These are not production provider selections.
 let
-  pkgs = import (import ../nixpkgs.nix) { };
+  source = import ../nixpkgs.nix;
+  pkgs = import source.outPath { };
   versions = import ./versioned-schemas.nix { inherit pkgs; };
   inputs = {
   families = import ./family-artifacts.nix { inherit pkgs; };
+  awsOnly = import ./family-artifacts.nix {
+    inherit pkgs; selection.providers = [ "aws" ];
+  };
+  awsNull = import ./family-artifacts.nix {
+    inherit pkgs; selection.providers = [ "aws" "null" ];
+  };
   inherit (versions) parent child;
   # Byte-authentication control for the recorded historical Darwin binary.
   # It is streamed for hashing, never executed on Linux.
@@ -22,6 +29,8 @@ let
     shell = toString pkgs.bash;
     tools = toString pkgs.coreutils;
     system = pkgs.stdenv.hostPlatform.system;
+    nixpkgs = toString source.outPath;
+    nixpkgsHash = source.narHash;
   });
   };
 in pkgs.linkFarm "yuanxu-provider-qualification"

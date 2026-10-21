@@ -3,7 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :std/misc/process run-process)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :yuanxu/ops/progress execution-total-seconds execution-idle-seconds
+                 make-nix-progress-reader)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :std/encoding/json write-json read-json)
         (only-in :std/text/pregexp pregexp-match)
@@ -41,13 +44,14 @@
           (def artifacts (getenv "YUANXU_OPENTOFU_FLAKE_ARTIFACT"))
           (def tools-json (yuanxu-json-schema-source->json-like
                             (call-with-input-string (getenv "YUANXU_NIX_TEST_TOOLS") read-json)))
-          (def shell (yuanxu-contract-object-ref tools-json 'shell #f))
+          (def package-set (yuanxu-contract-object-ref tools-json 'nixpkgs #f))
+          (def package-hash (yuanxu-contract-object-ref tools-json 'nixpkgsHash #f))
           (def tools (yuanxu-contract-object-ref tools-json 'tools #f))
           (def system (yuanxu-contract-object-ref tools-json 'system #f))
           (for-each (lambda (path)
                       (unless (and (string-prefix? "/nix/store/" path) (file-exists? path))
                         (error "real package fixture required" path)))
-                    (list artifacts shell tools))
+                    (list artifacts package-set))
           (def selection (path-expand "selection.json" root))
           (def flake (path-expand "flake.nix" root))
           (def lock (path-expand "flake.lock" root))
@@ -60,10 +64,10 @@
           (write-source flake
             (string-append
               "{ inputs.policy.url = \"path:./policy\"; "
-              "inputs.shell = { url = \"path:" shell "\"; flake = false; }; "
-              "inputs.tools = { url = \"path:" tools "\"; flake = false; }; "
+              "inputs.nixpkgs = { type = \"path\"; path = \"" package-set "\"; narHash = \"" package-hash "\"; flake = false; }; "
               "inputs.artifacts = { url = \"path:" artifacts "\"; flake = false; }; "
-              "outputs = { self, policy, shell, tools, artifacts, ... }: let "
+              "outputs = { self, policy, nixpkgs, artifacts, ... }: let "
+              "pkgs = import nixpkgs { system = \"" system "\"; }; shell = pkgs.bash; tools = pkgs.coreutils; "
               "providers = import ./providers.nix { inherit artifacts; }; "
               "names = builtins.fromJSON (builtins.readFile ./selection.json); "
               "links = builtins.concatStringsSep \"\\n\" (map (name: \"${tools}/bin/ln -s ${providers.${name}} $out/${name}\") names); "
@@ -73,9 +77,14 @@
           (def flake-text (module-source-read flake))
           (write-source selection "[\"aws\"]")
           ;; Package setup explicitly creates the lock; runtime never updates it.
-          (run-process (list "nix" "--extra-experimental-features" "nix-command flakes"
+          (run-script
+            (.cc ProcessScript.
+              'command (list "nix" "--extra-experimental-features" "nix-command flakes"
+                             "--log-format" "internal-json"
                              "flake" "lock" (string-append "path:" (path-normalize root)))
-                       stdin-redirection: #f stderr-redirection: #t check-status: #t)
+              'timeout execution-total-seconds 'idle-timeout execution-idle-seconds
+              'progress make-nix-progress-reader)
+            output-port: (current-error-port))
           (def lock-text (module-source-read lock))
           (def starts (make-hash-table))
           (def measurements '())
@@ -108,7 +117,10 @@
                   (.o aws_security_group: (.o web: (.o name: "web"))))))
           (def (source)
             (.cc NixFlakeSource. 'reference (string-append "path:" (path-normalize root))
-              'attribute (string-append "packages." system ".default")))
+              'attribute (string-append "packages." system ".default")
+              ;; Resolve the same locked immutable path explicitly, retaining
+              ;; Nix's native accessor fingerprint instead of rehashing its tree.
+              'inputs (.o nixpkgs: package-set)))
           (def (build null?)
             (let* ((observed (map (lambda (path) (cons path (module-source-read path)))
                                   (list flake lock selection)))

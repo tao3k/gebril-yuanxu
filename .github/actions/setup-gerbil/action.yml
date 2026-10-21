@@ -27,12 +27,12 @@ runs:
     - name: Install pinned Nix daemon for publication tests
       uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
       with:
-        install_url: https://releases.nixos.org/nix/nix-2.28.5/install
+        install_url: https://releases.nixos.org/nix/nix-2.34.4/install
         enable_kvm: false
     - name: Resolve pinned qualification dependencies through Nix
       shell: bash
       run: |
-        package_set=$(nix-instantiate --eval --strict --json t/fixtures/nixpkgs.nix | jq -er .)
+        package_set=$(nix-instantiate --eval --strict --json t/fixtures/nixpkgs.nix | jq -er .outPath)
         test -d "$package_set"
         echo "NIX_PATH=nixpkgs=$package_set" >> "$GITHUB_ENV"
         coreutils=$(NIX_PATH="nixpkgs=$package_set" nix-build --no-out-link '<nixpkgs>' -A coreutils)

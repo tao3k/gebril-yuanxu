@@ -186,12 +186,12 @@
           (def upstream (path-expand "modules/opentofu" (current-directory)))
           (def maintained (path-expand "modules/opentofu" (current-directory)))
           (def real-catalog (path-expand "t/fixtures/opentofu/family-schemas.nix" (current-directory)))
-          (def catalog (path-expand "catalog.nix" root))
+          (def catalog-path (path-expand "catalog.nix" root))
           (def provider-source (path-expand "providers.nix" (or flake-root root)))
           (def provider-text
             (if flake-root (module-source-read provider-source)
               (string-append "{ pkgs }: import " (call-with-output-string (cut write real-catalog <>)) " { inherit pkgs; }")))
-          (write-source catalog "{ pkgs }: import ./providers.nix { inherit pkgs; }")
+          (write-source catalog-path "{ pkgs }: import ./providers.nix { inherit pkgs; }")
           (write-source provider-source provider-text)
           (write-source (path-expand "gerbil.pkg" root)
                         (string-append "(package: " (symbol->string (gensym 'opentofu-graph-)) ")"))
@@ -218,15 +218,15 @@
               (.cc NixFlakeSource.
                 'reference (string-append "path:" (path-normalize flake-root))
                 'attribute "lib.providerArtifacts")
-              (let ((expression (path-expand "nix/selected-provider-artifacts.nix" maintained))
-                    (collector (path-expand "nix/provider-artifacts.nix" maintained))
+              (let ((expression-path (path-expand "nix/selected-provider-artifacts.nix" maintained))
+                    (collector-path (path-expand "nix/provider-artifacts.nix" maintained))
                     (checker (path-expand "modules/nix/source-inputs.nix" (current-directory))))
                 (.o (:: @ NixSource.)
-                  expression: expression
-                  arguments: (.o catalog: catalog collector: collector)
+                  expression: expression-path
+                  arguments: (.o catalog: catalog-path collector: collector-path)
                   source-inputs:
                   (map (lambda (path) (cons path (module-source-read path)))
-                       (list expression catalog collector checker))))))
+                       (list expression-path catalog-path collector-path checker))))))
           (write-source (path-expand "types.ss" owner)
             (string-append "(import (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract)) "
                            (string-subst (module-source-read (path-expand "types.ss" owner)) "(export Scope)" "(export Scope OpenTofuScopeContract)")))

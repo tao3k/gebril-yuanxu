@@ -16,6 +16,8 @@
 (def resources (map (lambda (name)
   (let (path (path-expand name root)) (cons path (file-digest path))))
   '("store-runtime.scm" "store-runtime.o1" "loader-runtime.scm" "loader-runtime.o1"
+    "lib/yuanxu/t/qualification/mop-state/source-loader.scm"
+    "lib/yuanxu/t/qualification/mop-state/source-loader.o1"
     "lib/yuanxu/t/qualification/mop-state/source-loader~0.scm"
     "lib/yuanxu/t/qualification/mop-state/source-loader~0.o1")))
 (call-with-output-file (list path: (path-expand "resource-inputs.ss" root) truncate: #t)

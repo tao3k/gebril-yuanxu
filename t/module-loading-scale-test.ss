@@ -11,6 +11,7 @@
         (only-in :yuanxu/module-system/graph/funs module-closure)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-loading-scale-test)
 (.def Workspace
@@ -94,12 +95,20 @@
          (def ids (map (lambda (index) (string->symbol (string-append "module-" (number->string index)))) (iota size)))
          (def calls (make-hash-table-eq))
          (def shared (car ids))
+         (def completed 0)
          (def (read-publication id)
            (hash-update! calls id (cut + <> 1) 0)
-           (.o identity: id features: (.o)
-               core: (.o requires: (if (eq? id shared) (.o)
-                                      (.o Shared: (.o module-id: shared)))
-                         exports: (error "resolver linked business scope"))))
+           (def declaration
+             (.o identity: id features: (.o)
+                 core: (.o requires: (if (eq? id shared) (.o)
+                                        (.o Shared: (.o module-id: shared)))
+                           exports: (error "resolver linked business scope"))))
+           ;; A completed batch of actual publications is work progress, not a
+           ;; timer or output heartbeat. Exact-once counts are asserted below.
+           (set! completed (1+ completed))
+           (when (zero? (modulo completed 64))
+             (execution-progress! (list 'declaration-batch size) completed))
+           declaration)
          (def graph
            (select-module-graph
              (.o selected: ids denied-modules: '() generation: "scale")
@@ -115,6 +124,8 @@
            (length (module-closure '(0) identity
                      (lambda (node)
                        (set! edges (+ edges 1))
+                       (when (zero? (modulo edges 64))
+                         (execution-progress! (list 'deep-closure-batch size) edges))
                        (if (< node (- size 1)) (list (+ node 1) 0) '())))) size)
          (check-equal? edges size)
          (yuanxu-test-observe 'selected-declarations (hash-length calls))

@@ -4,6 +4,7 @@
 ;;; Real role sources and init; execution remains the existing init tests .run.
 (import (except-in :clan/poo/object .def .o) :yuanxu/object-syntax/path-slots :std/test
         (only-in :std/source this-source-file)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
@@ -21,6 +22,11 @@
   (lambda ()
     (def fixture-root (path-normalize (make-temporary-file-name "declaration-scale-")))
     (def observation-log (make-temporary-file-name "declaration-scale-observation-"))
+    (def writes 0)
+    (def (write-fixture-source path forms)
+      (write-forms path forms)
+      (set! writes (1+ writes))
+      (execution-progress! (list 'fixture-source-written fixture-root) writes))
     (create-directory fixture-root)
     (with-catch
       (lambda (failure) (clear-temporary-file! fixture-root) (raise failure))
@@ -28,26 +34,26 @@
         (def ids
           (map (lambda (index) (string->symbol (string-append "module-" (number->string index))))
             (iota size)))
-        (write-forms (path-expand "gerbil.pkg" fixture-root)
+        (write-fixture-source (path-expand "gerbil.pkg" fixture-root)
           (list (list 'package: (symbol->string (gensym 'declaration-scale-)))))
-        (write-forms (path-expand "init.ss" fixture-root)
+        (write-fixture-source (path-expand "init.ss" fixture-root)
           `((import :yuanxu/module-system/selection/init-syntax)
             (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))
         (for-each
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
-            (write-forms (path-expand "types.ss" directory)
+            (write-fixture-source (path-expand "types.ss" directory)
               '((import (only-in :yuanxu/types yuanxu-predicate-contract)
                         (only-in :clan/poo/object object?))
                 (def ScopeContract
                   (yuanxu-predicate-contract 'scale/scope object? (lambda (_v _c) '())))
                 (export ScopeContract)))
-            (write-forms (path-expand "objects.ss" directory)
+            (write-fixture-source (path-expand "objects.ss" directory)
               '((import (only-in :clan/poo/object .o))
                 (def Scope (.o ready: #t)) (export Scope)))
-            (write-forms (path-expand "config.ss" directory)
+            (write-fixture-source (path-expand "config.ss" directory)
               '((def Config 'configured) (export Config)))
-            (write-forms (path-expand "interface.ss" directory)
+            (write-fixture-source (path-expand "interface.ss" directory)
               `((.def Module identity: ',id
                   core: (.o requires: ,(if (eq? id 'module-0) '(.o)
                                            '(.o Shared: (.o module-id: 'module-0 contract: ScopeContract)))

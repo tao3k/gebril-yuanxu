@@ -6,7 +6,7 @@
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :gerbil/runtime/loader load-path set-load-path! __find-library-module list-modules)
+        (only-in :gerbil/runtime/loader load-module load-path set-load-path! __find-library-module list-modules)
         "./artifact-closure")
 (export compile-authority install-authority! prepare-source-authority! deactivate-authority!
         authorize-request! load-owned! current-transfer-probe
@@ -163,9 +163,25 @@
   (set! active state)
   (set-load-path! (cons (path-expand "lib" (authority-artifacts state)) (load-path)))
   (setenv "CORE_STORE_ROOT" (authority-pool state))
-  ;; Bootstrap only the verified native-source runtime unit. Its cache and
-  ;; recursive call edges were compiled together; never rebind SDK globals.
-  (load (path-expand "source-loader~0.o1" (authority-pool state))))
+  ;; Bootstrap the complete issued module through the native loader. Loading
+  ;; only ~0 bypasses the module initializer and is not a portable entrypoint.
+  ;; Both units stay in the compiler-issued, private pool throughout activation.
+  (def bootstrap (path-expand "bootstrap/lib" (authority-pool state)))
+  (def directory (path-expand "yuanxu/t/qualification/mop-state" bootstrap))
+  (create-directory* directory)
+  (for-each
+    (lambda (name)
+      (def input (path-expand name (authority-pool state)))
+      (def output (path-expand name directory))
+      (write-bytes output (bytes input))
+      (unless (equal? (file-digest input) (file-digest output))
+        (error "private loader bootstrap bytes changed" name)))
+    '("source-loader.o1" "source-loader~0.o1"))
+  (def previous (load-path))
+  (dynamic-wind
+    (lambda () (set-load-path! (cons bootstrap previous)))
+    (lambda () (load-module "yuanxu/t/qualification/mop-state/source-loader"))
+    (lambda () (set-load-path! previous))))
 (def (deactivate-authority!) (set! active #f))
 (def (reset-native-errors! state)
   (for-each (lambda (entry)

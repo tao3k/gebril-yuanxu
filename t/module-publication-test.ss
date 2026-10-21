@@ -545,9 +545,12 @@
          (def projection
            (path-normalize (yuanxu-bootstrap-source-path
              (core-import-module ':yuanxu/module-system/building/build-projection) core-source-root)))
-         (def dependency
-           (path-normalize (yuanxu-bootstrap-source-path
-             (core-import-module ':yuanxu/module-system/building/source-package) core-source-root)))
+         (def dependencies (make-hash-table))
+         (for-each-build-module
+           (core-import-module ':yuanxu/module-system/building/build-projection)
+           (lambda (context)
+             (let (path (yuanxu-bootstrap-source-path context core-source-root))
+               (when path (hash-put! dependencies (path-normalize path) #t)))))
          (def (observed-paths reader)
            (def paths (make-hash-table))
            (parameterize ((current-module-source-observer
@@ -577,7 +580,10 @@
              (procedure? (.get published core configuration-build function))) #t)
          (def paths (observed-paths demanded))
          (check-equal? (hash-key? paths projection) #t)
-         (check-equal? (hash-key? paths dependency) #t)
+         ;; Compare the entire real native dependency closure, rather than a
+         ;; former compiler-bootstrap helper no longer imported by this owner.
+         (for-each (lambda (entry) (check-equal? (hash-key? paths (car entry)) #t))
+                   (hash->list dependencies))
          ;; A topology hit still requires fresh byte reads on a later check.
          (check-equal? (hash-key? (observed-paths demanded) projection) #t)
          (write-file (path-expand "config.ss" module-root)
@@ -953,10 +959,16 @@
        (lambda (root module-root source view)
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
-         (let* ((prepared (yuanxu-prepare-module-publication source))
+         ;; The malformed text belongs to a fresh source generation; a held
+         ;; SourceRef from before the edit is expected to refuse as stale.
+         (let* ((fresh (yuanxu-load-modules (path-expand "modules" root)))
+                (fresh-source ((.get fresh context locate) 'custom/example))
+                (prepared (yuanxu-prepare-module-publication fresh-source))
                 (wrapper (path-expand "invalid/interface.ss" root)))
            (yuanxu-write-module-publication prepared wrapper)
            (let (message (exception-message (lambda () (core-import-module wrapper))))
+             (unless (string-contains message (path-expand "interface.ss" module-root))
+               (displayln "MACRO-ERROR-ORIGIN " message) (force-output))
              (check-equal? (if (string-contains message (path-expand "interface.ss" module-root)) #t #f) #t))))))
     (yuanxu-test-case "duplicate fields, inherited dependencies and hand-written link wrappers are rejected"
       (for-each

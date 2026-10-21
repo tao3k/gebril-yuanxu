@@ -18,7 +18,7 @@ check-package-namespace:
     #!/usr/bin/env bash
     set -euo pipefail
     status=0
-    git grep -nE 'PooFlow|poo-flow-core|poo-flow-|:core/|:poo-flow/|package: core' -- '*.ss' '*.nix' '*.yml' gerbil.pkg || status=$?
+    git grep -nE 'PooFlow|poo-flow-core|poo-flow-|:core/|:poo-flow/|package: core' -- '*.ss' '*.scm' '*.py' '*.nix' '*.yml' '*.yaml' '*.toml' '*.lean' '*.qnt' '*.sh' gerbil.pkg || status=$?
     case "$status" in
       0) echo 'removed Core namespace found' >&2; exit 1 ;;
       1) echo 'YUANXU-NAMESPACE-OK' ;;
@@ -60,7 +60,7 @@ test-source-tail-gateway directory:
     export CORE_SOURCE_TAIL_CORE="$(pwd)/"
     test ! -e "$CORE_SOURCE_TAIL_ROOT/source"
     mkdir -p "$CORE_SOURCE_TAIL_ROOT"
-    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
     GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" just test-file t/source-admission-gateway-test.ss
 
 # Matched dispatcher policies in an already compiled, captured Core package.
@@ -475,13 +475,14 @@ test-files group="all":
     set -euo pipefail
     export LC_ALL=C
     case "{{ group }}" in
-      all|bootstrap|modules|contracts|objects|scenarios|providers|runtime) ;;
+      all|bootstrap|modules|scale|contracts|objects|scenarios|providers|runtime) ;;
       *) echo 'unknown test group' >&2; exit 64 ;;
     esac
     shopt -s nullglob
     for file in t/*-test.ss; do
       case "$file" in
         t/package-*|t/prelude-*|t/core-build-*|t/module-build-*|t/module-bootstrap-*|t/runtime-publication-identity-*) owner=bootstrap ;;
+        t/module-declaration-1000-test.ss|t/module-declaration-10000-test.ss|t/module-declaration-retention-test.ss|t/module-loading-scale-test.ss) owner=scale ;;
         t/module-*|t/feature-system-*) owner=modules ;;
         t/opentofu-*|t/nix-flake-source-*|t/json-schema-aws-value-contract-test.ss) owner=providers ;;
         t/json-schema-*|t/source-*|t/contract-*|t/admission-*|t/contribution-*|t/configuration-*) owner=contracts ;;
@@ -500,7 +501,7 @@ check-test-groups:
     trap 'rm -rf "$scratch"' EXIT
     just test-files all > "$scratch/all"
     test -s "$scratch/all"
-    for group in bootstrap modules contracts objects scenarios providers runtime; do
+    for group in bootstrap modules scale contracts objects scenarios providers runtime; do
       just test-files "$group" > "$scratch/$group"
       test -s "$scratch/$group"
       cat "$scratch/$group" >> "$scratch/groups"
@@ -529,6 +530,18 @@ test-discovered-file path:
         shasum -a 256 -c "$fixture/callback-artifacts.sha256"
         shasum -a 256 -c "$fixture/inputs.sha256"
         shasum -a 256 -c "$fixture/sdk-inputs.sha256"
+        ;;
+      t/opentofu-build-selection-test.ss|t/opentofu-reselected-artifact-test.ss)
+        if [[ -n "${YUANXU_OPENTOFU_TEST_INPUTS:-}" ]]; then
+          YUANXU_OPENTOFU_ARTIFACT="$(readlink -f "$YUANXU_OPENTOFU_TEST_INPUTS/awsOnly")" \
+          YUANXU_OPENTOFU_TEST_REBUILT="$(readlink -f "$YUANXU_OPENTOFU_TEST_INPUTS/awsNull")" \
+            just test-file "{{ path }}"
+        else
+          just test-file "{{ path }}"
+        fi
+        ;;
+      t/opentofu-selected-graph-test.ss)
+        env -u YUANXU_OPENTOFU_ARTIFACT just test-file "{{ path }}"
         ;;
       t/source-admission-gateway-test.ss)
         fixture=$(mktemp -d)
