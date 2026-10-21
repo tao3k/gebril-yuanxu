@@ -2,6 +2,12 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import (for-syntax (only-in :std/source this-source-file)
+                    (only-in "./module-system/building/source-package.ss"
+                             register-module-build-source!)))
+(begin-syntax
+  (register-module-build-source! (path-directory (this-source-file)) 'core))
+
 (import (only-in :std/build-script defbuild-script)
         (only-in "./init.ss" init.build-spec)
         (only-in "./core-spec.ss" core-spec))

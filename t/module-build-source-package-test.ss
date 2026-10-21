@@ -27,9 +27,13 @@
               (def before (load-path))
               (check-exception (register! foreign 'core) error?)
               (check-equal? (load-path) before)))))
-      (test-case "init registers source before Core imports and guards tool drift"
+      (test-case "build registration precedes init imports and guards tool drift"
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
+          (eval-syntax `(import
+                         (only-in ,(path-expand "module-system/building/source-package.ss" root)
+                                  register-module-build-source!)))
+          ((eval-syntax 'register-module-build-source!) root 'core)
           (eval-syntax `(import
                          (only-in ,(path-expand "init.ss" root) init.build-spec init.build-current!)))
           (check-equal? (core-resolve-library-module-path ':core/object-family/syntax)

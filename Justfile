@@ -21,10 +21,10 @@ test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
     test -f "{{ path }}"
-    options=()
+    set --
     case "{{ observe }}" in
-      true) options=(-D poo-flow-module-test-observation) ;;
-      trace) options=(-D poo-flow-module-test-observation,poo-flow-module-test-trace) ;;
+      true) set -- -D poo-flow-module-test-observation ;;
+      trace) set -- -D poo-flow-module-test-observation,poo-flow-module-test-trace ;;
       false) ;;
       *) echo 'observe must be false, true, or trace' >&2; exit 1 ;;
     esac
@@ -32,8 +32,8 @@ test-file path observe="false":
     trap 'rm -f "$log"' EXIT
     # The outer guard is the SAME finite total budget, not an inactivity timer.
     # Case/Ops enforce idle progress; no shell output/heartbeat renews this cap.
-    budget="$(gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
+    budget="$(gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./module-system/building/source-package.ss")' -e '(register-module-build-source! (current-directory) (quote core))' -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "$@" "{{ path }}" 2>&1 | tee "$log"
     if grep -E 'ERROR (MODULE|CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
     grep -F -x 'MODULE-OK {{ path }}' "$log" >/dev/null
     grep -F 'HARNESS-OK' "$log" >/dev/null

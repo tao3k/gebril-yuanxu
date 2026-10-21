@@ -42,8 +42,12 @@
         '((export core-spec)
           (def core-spec '("utilities/algorithms" "types" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
-      (check-equal? (length spec) 36)
       (def names (map cadr spec))
+      ;; JsonSchema receipts require this ordinary library once; build-only
+      ;; tools must not enter the selected runtime publication.
+      (check-equal? (length spec) 37)
+      (check-equal? (length (filter (cut equal? <> "type-facts/objects") names)) 1)
+      (check-equal? (member "module-system/building/artifacts" names) #f)
       (build-command Build "compile")
       (def first-identities (output-identities lib names))
       (build-command Build "clean")
