@@ -34,7 +34,7 @@ test-file path observe="false":
     # Case/Ops enforce idle progress; no shell output/heartbeat renews this cap.
     # Fence the pure policy import too; it cannot start a download or build.
     budget="$(timeout --signal=TERM --kill-after=5s 60s gerbil env gxi {{ gerbil_test_runtime_options }} -e '(import "./ops/progress.ss")' -e '(display execution-total-seconds)')"
-    GERBIL_LOADPATH="{{ justfile_directory() }}${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
+    GERBIL_LOADPATH="{{ justfile_directory() }}/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gerbil {{ gerbil_test_runtime_options }} test "${options[@]}" "{{ path }}" 2>&1 | tee "$log"
     if grep -E 'ERROR (MODULE|CHECK|CASE|HARNESS)|Heap overflow|Stack overflow' "$log" >/dev/null; then exit 1; fi
     grep -F -x 'MODULE-OK {{ path }}' "$log" >/dev/null
     grep -F 'HARNESS-OK' "$log" >/dev/null
