@@ -447,3 +447,7 @@ test-issuer-projection directory:
     trace="$(cd "{{ directory }}" && pwd)/native-trace.json"
     CORE_ISSUER_TRACE="$trace" just test-file t/issuer-projection-test.ss
     just check-issuer-projection "$trace"
+
+# The nested public package owns its prelude/header, independently of Core roots.
+test-yuanxu-prelude:
+    just test-file yuanxu/tests/prelude-test.ss

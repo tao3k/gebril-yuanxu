@@ -55,6 +55,8 @@ jobs:
         run: GERBIL_BUILD_VERBOSE=1 gerbil deps --install
       - name: Build Core
         run: GERBIL_BUILD_VERBOSE=1 gerbil build
+      - name: Test public Yuanxu prelude
+        run: just test-yuanxu-prelude
       - name: Qualify source-only selected build bootstrap
         run: just test-bootstrap
       - name: Test Core
