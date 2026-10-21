@@ -2,6 +2,9 @@
 #+language: en
 #+startup: overview
 
+Revision qualification: [[file:32.54-current-poo-feature-alignment.org][32.54]] records the newer upstream PR head and
+separates the partial adoption below from qualification against that revision.
+
 Retention follow-up: [[file:32.52-demanded-read-graph-retention.org][32.52]] separates record-identity sharing from receiver
 identity, with LeanPoo/QNT bounds and real Scenario cold/warm measurements.
 
@@ -48,11 +51,14 @@ factory:
 
 #+begin_src scheme
 value-contract:
-(refine (.cc ApplicationValueContract.
-          database-type: (.get database-contract value-contract)
-          port-type: port-type)
-        application-issues)
+(application-value-contract (.get database-contract value-contract) port-type)
 #+end_src
+
+The private constructor composes native ObjectContract values and =refine= in
+an ordinary function. It does not require a second parameterized prototype
+family, a captured type directory or finite inference for these fixed fields.
+=application-issues= remains the named relation passed to =refine= inside that
+constructor. The public Application admission descriptor remains extensible.
 
 =application-issues= consumes =(candidate location)=. Its diagnostic and related
 expected paths are relative to that location. It still rejects mismatched

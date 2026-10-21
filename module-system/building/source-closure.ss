@@ -10,7 +10,33 @@
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source))
 (export yuanxu-bootstrap-spec for-each-build-module yuanxu-bootstrap-contexts
-        yuanxu-bootstrap-source-path yuanxu-library-identity?)
+        yuanxu-bootstrap-source-path yuanxu-library-identity? package-library-spec)
+
+;; Project an explicitly selected package's actual native import graph. This
+;; function does not discover roots, load their runtime, or execute a build.
+;; std/make retains dependency/currentness/compilation ownership.
+(def (package-library-spec root package entries
+                          admit-context: (admit-context void)
+                          exclude: (excluded '()))
+  (def prefix (string-append (symbol->string package) "/"))
+  (def seen (make-hash-table-eq))
+  (def paths (make-hash-table))
+  (def targets '())
+  (def (visit context)
+    (admit-context context)
+    (let* ((identity (expander-context-id context))
+           (name (and (symbol? identity) (symbol->string identity))))
+      (when (and name (string-prefix? prefix name))
+        (let (relative (substring name (string-length prefix) (string-length name)))
+          (unless (or (member relative excluded) (hash-key? paths relative))
+            (hash-put! paths relative #t)
+            (set! targets (cons relative targets)))))))
+  (for-each
+    (lambda (file)
+      (for-each-build-module (core-import-module (path-expand file root)) visit seen))
+    entries)
+  (reverse targets))
+
 (def (for-each-build-module root visit
                            (seen (make-hash-table-eq))
                            (descend? (lambda (_context) #t)))

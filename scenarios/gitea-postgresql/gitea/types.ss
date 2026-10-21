@@ -10,14 +10,14 @@
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at)
         (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator))
 (export ApplicationContract GiteaConfigContract GiteaScopeContract PostgreSQLScopeContract)
-(define-type (GiteaValueContract. @ ObjectContract. port-type)
-  identity: 'gitea/config-value
-  responsibilities:
-  (.o database: (.cc ObjectContract. responsibilities: (.o port: port-type))
-      allowed-ports: (List port-type)))
+(def (gitea-value-contract Port)
+  (.cc ObjectContract. identity: 'gitea/config-value
+    responsibilities:
+    (.o database: (.cc ObjectContract. responsibilities: (.o port: Port))
+        allowed-ports: (List Port))))
 (define-type (GiteaConfigContract @ YuanxuContract.)
   identity: 'gitea/config
-  value-contract: (.cc GiteaValueContract. port-type: (IntegerRange min: 1 max: 65535)))
+  value-contract: (gitea-value-contract (IntegerRange min: 1 max: 65535)))
 ;; Root value validation owns normalization. Contextual descendants retain the
 ;; service classifiers/obligations and must admit that exact checked child.
 (define-type (ConfigurationAdmission. @ YuanxuContract. database-contract)
@@ -40,24 +40,25 @@
   (.cc ObjectContract. responsibilities: (.o config: Object plan: Object)))
 (def ConfigEnvelope
   (.cc ObjectContract. responsibilities: (.o postgresql: Object gitea: Object)))
-(define-type (ApplicationValueContract. @ ObjectContract. database-type port-type)
-  identity: 'gitea/application-value
-  client-type: (.cc GiteaValueContract. port-type: port-type)
-  config-type: (.cc ObjectContract. responsibilities:
-                (.o postgresql: database-type gitea: client-type))
-  plan-type: (.cc ObjectContract. responsibilities:
-              (.o configuration: Object
-                  postgresql: (.cc ObjectContract. responsibilities: (.o port: port-type))
-                  gitea: (.cc ObjectContract. responsibilities: (.o database-port: port-type))))
-  responsibilities: (.o config: config-type plan: plan-type)
+(def (application-value-contract database-type Port)
+  (def client-type (gitea-value-contract Port))
+  (def config-type (.cc ObjectContract. responsibilities:
+                    (.o postgresql: database-type gitea: client-type)))
+  (def plan-type (.cc ObjectContract. responsibilities:
+                  (.o configuration: Object
+                      postgresql: (.cc ObjectContract. responsibilities: (.o port: Port))
+                      gitea: (.cc ObjectContract. responsibilities: (.o database-port: Port)))))
+  (.cc (refine (.cc ObjectContract. identity: 'gitea/application-value
+                 responsibilities: (.o config: config-type plan: plan-type))
+               application-issues)
   ;; Stage diagnosis so null server settings cannot force the derived client.
   preflight:
-  (foldr diagnostic-then (lambda (_value _path) '())
-    (list (cut diagnose ApplicationEnvelope <> <>)
-          (source-diagnose-at ConfigEnvelope '(config))
-          (source-diagnose-at database-type '(config postgresql))
-          (source-diagnose-at client-type '(config gitea))
-          (source-diagnose-at plan-type '(plan)))))
+    (foldr diagnostic-then (lambda (_value _path) '())
+      (list (cut diagnose ApplicationEnvelope <> <>)
+            (source-diagnose-at ConfigEnvelope '(config))
+            (source-diagnose-at database-type '(config postgresql))
+            (source-diagnose-at client-type '(config gitea))
+            (source-diagnose-at plan-type '(plan))))))
 (def (application-issues candidate location)
   (def database (.get candidate config postgresql))
   (def client (.get candidate config gitea))
@@ -94,9 +95,7 @@
   .locate-diagnostic: (config-diagnostic-locator documents '(config))
   identity: 'gitea/application
   value-contract:
-  (refine (.cc ApplicationValueContract.
-            database-type: (.get database-contract value-contract) port-type: port-type)
-          application-issues)
+  (application-value-contract (.get database-contract value-contract) port-type)
   responsibilities:
   (.o config: (.cc ConfigurationAdmission. database-contract: database-contract))
   requirement-type: (.cc ObjectContract. responsibilities:
