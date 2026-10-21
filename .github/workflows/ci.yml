@@ -35,6 +35,15 @@ jobs:
           echo "GERBIL_GCC=$gcc_bin" >> "$GITHUB_ENV"
           openssl_prefix="$(brew --prefix openssl@3 2>/dev/null || brew --prefix openssl)"
           echo "PKG_CONFIG_PATH=$openssl_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+      - name: Install Nix for the existing approved-publication tests
+        uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
+        with:
+          enable_kvm: false
+      - name: Verify required Nix commands
+        run: |
+          nix-store --version
+          nix-instantiate --version
+          nix-build --version
       - name: Install the supported Just CLI
         uses: extractions/setup-just@f8a3cce218d9f83db3a2ecd90e41ac3de6cdfd9b # v3
         with:
