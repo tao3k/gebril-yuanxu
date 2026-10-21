@@ -26,9 +26,9 @@ No examples were executed for this new document; no manifests were applied.
 The platform code is a reviewable design, not a shipping module API.
 
 The actual upstream [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/pkg/server.k][schema]], [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/base/base.k][baseline]],
-[[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/main.k][dev]] and [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/ci-test/stdout.golden.yaml][golden output]] are now stored under the
-[[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/README.org][source corpus]], with commit/blob identities and original licenses. Read these
-files for exact source; the doc snippets are explanatory adaptations.
+[[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/main.k][dev]] and [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/ci-test/stdout.golden.yaml][golden output]] remain fixed-revision external references.
+The examples repository is not a POO Flow submodule or build dependency. Read
+the linked upstream files for exact source; the doc snippets are explanatory adaptations.
 
 * Upstream ownership: schema/defaults, baseline and consumer
 
