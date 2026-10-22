@@ -287,3 +287,10 @@ serialization, requires a =/nix/store/= string, and preserves the existing
 pinned store source successfully. Only that committed action line changes;
 the other session's working-tree Nix relocation is not included or replaced.
 This local control does not assert a green rerun of the complete Core workflow.
+
+The first CI action edit contained an extra closing parenthesis that the separate
+local control had not exercised. The subsequent CI failure is retained rather
+than described as a runtime failure. The corrected action is now parsed as YAML;
+every actual =run= block passes =bash -n=, and the exact extracted path-selection
+and directory-check lines execute against the fixed input. This closes the
+specific validation gap; complete workflow status remains a separate result.

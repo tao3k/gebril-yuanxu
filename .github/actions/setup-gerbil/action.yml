@@ -32,7 +32,7 @@ runs:
     - name: Resolve pinned qualification dependencies through Nix
       shell: bash
       run: |
-        package_set=$(nix-instantiate --eval --strict --json --expr '(import ./t/fixtures/nixpkgs.nix).outPath' | jq -er 'strings | select(startswith("/nix/store/"))'))
+        package_set=$(nix-instantiate --eval --strict --json --expr '(import ./t/fixtures/nixpkgs.nix).outPath' | jq -er 'strings | select(startswith("/nix/store/"))')
         test -d "$package_set"
         echo "NIX_PATH=nixpkgs=$package_set" >> "$GITHUB_ENV"
         coreutils=$(NIX_PATH="nixpkgs=$package_set" nix-build --no-out-link '<nixpkgs>' -A coreutils)
