@@ -275,3 +275,15 @@ SelectionReplay Lean file also passed with the existing locked Lean environment.
 This extra check establishes that the submitted proof scope does not depend on
 other uncommitted workstreams. It is not a new runtime performance measurement
 or a replacement for the integrated Scenario regressions above.
+
+** Core CI environment preparation control
+
+The first Core #19 run at =d3efaae= failed before importing Gerbil: the pinned
+Nix input has an =outPath= attribute and serializes as a JSON string, while the
+setup action attempted =jq .outPath= on that result. The bounded local control
+explicitly selects =(import ./t/fixtures/nixpkgs.nix).outPath= before JSON
+serialization, requires a =/nix/store/= string, and preserves the existing
+=test -d=, pinned input, Nix store checks and job budgets. It returned the exact
+pinned store source successfully. Only that committed action line changes;
+the other session's working-tree Nix relocation is not included or replaced.
+This local control does not assert a green rerun of the complete Core workflow.
