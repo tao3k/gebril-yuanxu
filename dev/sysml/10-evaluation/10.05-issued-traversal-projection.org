@@ -294,3 +294,14 @@ than described as a runtime failure. The corrected action is now parsed as YAML;
 every actual =run= block passes =bash -n=, and the exact extracted path-selection
 and directory-check lines execute against the fixed input. This closes the
 specific validation gap; complete workflow status remains a separate result.
+
+** Core CI follow-up: fixed Just installation
+
+At =9291075=, Ubuntu failed before dependency installation: setup-just reported
+no matching =1.56.0= release. The official Just release and both Linux/macOS
+assets were independently checked and do exist. The installer is replaced with
+a commit-pinned taiki-e action using =just@1.56.0=, checksums enabled and no
+build fallback. A post-install exact version assertion prevents accidental
+selection of another binary. This repairs the installer path without changing
+the tool version, compiler release, job budgets or test checks. Actual YAML run
+blocks are syntax-checked; CI remains the cross-platform execution gate.
