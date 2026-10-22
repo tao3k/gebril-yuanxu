@@ -152,3 +152,12 @@ The final candidate covers both slot-replay (including cache exit) and
 return-currentness. A return-only gate is retained as an unsafe matched control.
 Only source-observer calls are restricted; arbitrary MOP record/checker ownership
 and external snapshot/commit remain separate premises.
+
+* Issuer-owned traversal projection
+
+[[file:lean/YuanxuProof/Admission/SelectionReplay.lean][SelectionReplay]] binds the declared producer revision, object-source digest and
+ordered replay laws. The selected Quint gate supports =--case-prefix
+SelectionReplay --typecheck-scope selected= and optional =--producer-source=
+to bind the actual producer sources.
+See [[file:../sysml/10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]] for runtime controls, retained failures
+and the distinction between structure reuse and fresh authentication.

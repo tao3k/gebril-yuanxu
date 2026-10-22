@@ -53,6 +53,7 @@ import YuanxuProof.Admission.IssuedLoading
 import YuanxuProof.Admission.SourceLoader
 import YuanxuProof.Admission.CoreStoreRecovery
 import YuanxuProof.Admission.CoreApprovedRecovery
+import YuanxuProof.Admission.SelectionReplay
 import YuanxuProof.Admission.CoreBuildHandoff
 import YuanxuProof.Admission.CoreBuildPublication
 import YuanxuProof.FeatureSystem.DomainCase.Resolution

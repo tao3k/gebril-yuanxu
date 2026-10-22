@@ -16,6 +16,18 @@ import tempfile
 import time
 
 CASES = [
+    ("SelectionReplay", "safety", False),
+    ("SelectionReplay_skipObserver", "Current", True),
+    ("SelectionReplay_reorder", "Diagnostic", True),
+    ("SelectionReplay", "RejectAll", True),
+    ("SelectionReplay", "FewerMeansFaster", True),
+    ("SelectionReplay_falseMiss", "FalseHit", True),
+    ("SelectionReplayTopology", "safety", False),
+    ("SelectionReplayTopology_verdict", "Fresh", True),
+    ("SelectionReplayTopology_roots", "Order", True),
+    ("SelectionReplayTopology_seen", "Delivery", True),
+    ("SelectionReplayTopology_constructor", "Construction", True),
+
     ("RootCollection", "safety", False),
     ("RootCollection_suppress", "ObserverOrder", True),
     ("RootCollection_observerOrder", "ObserverOrder", True),
@@ -505,6 +517,8 @@ def main():
     parser.add_argument("--server-endpoint", default=os.environ.get("QUINT_SERVER_ENDPOINT"))
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--case-prefix", help="Qualify an explicitly scoped subset; default is the complete catalog")
+    parser.add_argument("--producer-source", type=Path,
+                        help="Bind a local gerbil-poo source tree for SelectionReplay correspondence")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--typecheck-scope", choices=("all", "selected"), default="all",
@@ -520,6 +534,17 @@ def main():
         parser.error("case prefix selects no catalogued models")
     if args.typecheck_scope == "selected" and not args.case_prefix:
         parser.error("selected typechecking requires an explicit --case-prefix")
+    producer_bound = []
+    if args.producer_source:
+        if not args.case_prefix or not args.case_prefix.startswith("SelectionReplay"):
+            parser.error("producer-source is scoped to SelectionReplay correspondence")
+        args.producer_source = args.producer_source.resolve()
+        producer_bound = [args.producer_source / name for name in
+                          ("gerbil.pkg", "object.ss", "object-state.ss", "slot-observation.ss",
+                           "read-route.ss", "slot-layout.ss", "prototype-map.ss",
+                           "support/object-syntax.ss", "t/issued-read-test.ss")]
+        if not all(p.is_file() for p in producer_bound):
+            parser.error("producer-source must contain the complete selected native source owners")
     args.receipt.unlink(missing_ok=True)
     version = subprocess.check_output([args.quint, "--version"], text=True, timeout=5).strip()
     if version != "0.33.0":
@@ -533,9 +558,43 @@ def main():
                 core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean"])
     def digests():
         current = set(bound) | set(models.glob("*.qnt"))
-        return {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
-                for p in sorted(current)}
+        if all(case[0].startswith("SelectionReplay") for case in selected_cases):
+            current = (set(selection_bound) | set(models.glob("*.qnt")) |
+                       set((core / "dev/proofs/lean/YuanxuProof").rglob("*.lean")))
+        result = {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in sorted(current)}
+        result.update({os.path.relpath(p, core):
+                       hashlib.sha256(p.read_bytes()).hexdigest() for p in producer_bound})
+        return result
     issued_roots_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean"
+    selection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean"
+    selection_digest = "sha256:" + hashlib.sha256((models / "SelectionReplay.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{selection_digest}"' not in selection_lean.read_text():
+        raise AssertionError("Lean retains a stale SelectionReplay Quint source binding")
+    topology_digest = "sha256:" + hashlib.sha256((models / "SelectionReplayTopology.qnt").read_bytes()).hexdigest()
+    if f'topologySourceDigest : String := "{topology_digest}"' not in selection_lean.read_text():
+        raise AssertionError("Lean retains a stale replay topology Quint source binding")
+    declared_poo = re.search(r'github\.com/tao3k/gerbil-poo@([0-9a-f]{40})',
+                             (core / "gerbil.pkg").read_text())
+    if not declared_poo or f'declaredPooRevision : String := "{declared_poo[1]}"' not in selection_lean.read_text():
+        raise AssertionError("Replay proof correspondence retains a stale gerbil-poo revision")
+    if producer_bound:
+        producer_digest = "sha256:" + hashlib.sha256((args.producer_source / "object.ss").read_bytes()).hexdigest()
+        if f'projectionObjectDigest : String := "{producer_digest}"' not in selection_lean.read_text():
+            raise AssertionError("Replay projection proof retains a stale native object source binding")
+    selection_bound = [selection_lean, core / "module-system/source/reader.ss",
+                       core / "module-system/source/admission.ss", core / "module-system/source/link.ss",
+                       core / "module-system/source/publication.ss", core / "t/module-publication-test.ss",
+                       core / "t/reader-root-collection-test.ss", core / "t/slot-read-replay-test.ss",
+                       core / "t/module-source-cost-test.ss"]
+    selection_bound += [core / "t/mop-checker-origin-test.ss"]
+    selection_bound += [core / "admission/source.ss", core / "gerbil.pkg",
+                        core / "dev/proofs/lean/lakefile.lean",
+                        core / "dev/proofs/lean/lake-manifest.json",
+                        core / "dev/proofs/lean/lean-toolchain",
+                        core / "dev/proofs/lean/YuanxuProof.lean",
+                        Path(__file__).resolve(), models / "backend.py"]
+    bound.extend(selection_bound)
     retention_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean"
     collection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean"
     collection_digest = "sha256:" + hashlib.sha256((models / "RootCollection.qnt").read_bytes()).hexdigest()
