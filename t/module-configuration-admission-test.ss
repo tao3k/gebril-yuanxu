@@ -4,7 +4,7 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
         (only-in :clan/poo/mop Function)
-        (only-in :yuanxu/types YuanxuContract.)
+        (only-in :yuanxu/object-types/contracts YuanxuContract.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/source/admission admit-module-configuration!))
 (export module-configuration-admission-test)

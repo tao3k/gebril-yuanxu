@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .o .ref .slot? .all-slots object?)
         (only-in :clan/poo/mop define-type)
-        (only-in :yuanxu/types YuanxuObjectContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts YuanxuObjectContract. yuanxu-predicate-contract)
         (only-in "functional.ss" yuanxu-contract-json-object?)
         (only-in "json-schema-receipt.ss" yuanxu-json-schema-contract-artifact?))
 (export SchemaSourceContract SchemaArtifactContract JsonSchemaConfigContract JsonSchemaScopeContract

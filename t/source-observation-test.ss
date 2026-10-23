@@ -4,7 +4,7 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
-        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
         (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
         (only-in :yuanxu/module-system/source/admission

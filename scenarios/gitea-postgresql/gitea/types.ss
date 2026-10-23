@@ -2,11 +2,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/mop define-type Object Any)
-        (only-in :clan/poo/number IntegerRange)
+        (only-in :yuanxu/object-types/ports Port)
         (only-in :clan/poo/type List)
         (only-in :clan/poo/object-diagnostics diagnostic-then)
         (only-in :std/list/list every)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract)
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at)
         (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator))
 (export ApplicationContract GiteaConfigContract GiteaScopeContract PostgreSQLScopeContract)
@@ -17,7 +17,7 @@
         allowed-ports: (List Port))))
 (define-type (GiteaConfigContract @ YuanxuContract.)
   identity: 'gitea/config
-  value-contract: (gitea-value-contract (IntegerRange min: 1 max: 65535)))
+  value-contract: (gitea-value-contract Port))
 ;; Root value validation owns normalization. Contextual descendants retain the
 ;; service classifiers/obligations and must admit that exact checked child.
 (define-type (ConfigurationAdmission. @ YuanxuContract. database-contract)

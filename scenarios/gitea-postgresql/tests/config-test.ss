@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Scenario public behavior only; no Core provenance/relocation machinery.
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/scenarios/gitea-postgresql/objects application-scope)
-        (only-in :yuanxu/scenarios/gitea-postgresql/gitea/objects gitea-application)
+        (only-in "../objects.ss" application-scope)
+        (only-in "../gitea/objects.ss" gitea-application)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export config-test)
 ;; Minimal dependency scopes supply the actual public constructor's input shape.

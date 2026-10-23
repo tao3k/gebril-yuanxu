@@ -19,7 +19,7 @@
         (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
-                 yuanxu-native-contract)
+                 yuanxu-object-contract)
         (only-in :yuanxu/utilities/functional
                  yuanxu-all?
                  yuanxu-find

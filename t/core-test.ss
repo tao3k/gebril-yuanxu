@@ -5,13 +5,14 @@
 
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :clan/poo/object .o .ref .call)
+        (only-in :yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :yuanxu/observability/memory
                  call-with-yuanxu-debug-memory-case-watchdog
                  yuanxu-debug-memory-policy YuanxuDebugDurationAnomaly?
                  YuanxuDebugMemoryAnomaly-receipt YuanxuDebugDurationAnomaly-receipt)
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
                  YuanxuObjectContract.
                  yuanxu-predicate-contract
                  yuanxu-contract-admit
@@ -57,6 +58,10 @@
                        (yuanxu-contract-admit CoreNameContract value #f))
                       #t)
         (check-equal? (element? CoreNameContract (.o name: 'core)) #f)))
+    (test-case "shared endpoint ports retain the complete range constraint"
+      (for-each (lambda (value) (check-equal? (element? Port value) #t)) '(1 5432 65535))
+      (for-each (lambda (value) (check-equal? (valid-port? value) #f))
+        '(0 -1 65536 5432.0 "5432" #f)))
     (test-case "object-family projection stays POO-native"
       (let (value (.o name: 'core))
         (check-equal? (core-name value) 'core)

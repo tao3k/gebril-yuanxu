@@ -13,7 +13,7 @@
         (only-in :yuanxu/modules/funflow/check-objects
                  yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
                  yuanxu-cicd-check-compensation-refs)
-        (only-in :yuanxu/scenarios/funflow/scope
+        (only-in "../../../scenarios/funflow/scope.ss"
                  FunflowProfiles. Funflow make-funflow-scope)
         (only-in :yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline

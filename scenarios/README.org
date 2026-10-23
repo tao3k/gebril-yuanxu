@@ -1,31 +1,23 @@
-#+title: Maintained Core Scenarios
+#+title: Maintained Scenarios and Profiles
 #+language: en
 
-| Scenario | User change | Explicit effect |
-|----------+-------------+-----------------|
-| [[file:null/README.org][Null local hello-world]] | message | Local provisioner, then destroy |
-| [[file:aws-validation/README.org][AWS configuration validation]] | instance_type | init and validate only |
-| [[file:aws/README.org][AWS Profile contribution]] | instance_type | Pure defaults and contextual publication; no deployment |
+| Source | Maintained purpose | Publication |
+|--------+--------------------+-------------|
+| [[file:gitea-postgresql/README.org][Gitea / PostgreSQL]] | JSON defaults, effective ports, independent requirements and plan admission | Module roles selected by the root =Scenarios= window |
+| [[file:funflow/gerbil-scheme.ss][Funflow Gerbil CI Profile]] | Reusable build/test/package defaults and receiver-relative Pipeline | Standalone Profile source; not a Core library build root |
 
-[[file:init.ss][init.ss]] selects the two executable examples with the existing module reader.
-The selection root owns init; individual module directories own interface and
-role sources. Package realization supplies their provider-directory config.
-Selection is not execution. The existing tests manually bind an engine at the platform boundary, then let users inherit the maintained Scenario and change values.
+[[file:../init.ss][The root init]] selects the Gitea/PostgreSQL application and both service
+dependencies through the existing Module System. Its =rename: Scenarios= mount
+exposes =Scenarios.services.postgresql=, =Scenarios.services.gitea= and
+=Scenarios.applications.gitea-postgresql=. Namespace reflection leaves business
+scopes cold. Scenario public behavior tests live beside their module roles;
+Core provenance, relocation and runtime-boundary controls live under =t/=.
 
-[[file:../modules/opentofu/execution.ss][OpenTofu's shared Funflow Job]] owns wire generation and Ops orchestration.
-It is available as prototypes.execution and execution on the OpenTofu scope.
-The focused native gate is just test-opentofu-admission-execution from Core;
-it supplies real pinned provider packages and consumes these maintained sources.
-The existing provider fixture targets aarch64-darwin; that local qualification
-must not be reported as cross-platform or cloud deployment acceptance.
+=core-spec.ss= owns library roots only. Scenario compiler inputs come from the
+same init-owned selected Graph and =init.exports.std-make-spec= consumed by
+=build.ss=. Selecting or compiling a Scenario does not start a service or process.
+The standalone Funflow Profile controls import their explicit source; they do not
+add hidden Scenario targets back to =core-spec.ss=.
 
-* Package binding is not complete
-
-[[file:../docs/10-19-design/12-contracts-types/12.22-selected-packages-and-scenario-binding.org][The selected-package audit]] is the current architecture reading entry. The
-examples execute, but empty requirements and manually injected paths do not yet
-provide the maintained package-to-Scenario interface demonstrated by devenv/NixOS.
-The target reuses Graph, SelectedPackages., publication and Ops. It adds no user
-wrapper or Loader, and does not make field access an implicit package build.
-
-Both executable examples expose .run workspace. Validation is a DAG node;
-Null cleanup is an after-start finalizer interpreted through Funflow and Ops.
+AWS, OpenTofu and Nix implementation/qualification belong to Agentic AI Lab, not
+this pure Core library. They are not implicitly restored as Core dependencies.

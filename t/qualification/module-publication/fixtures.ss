@@ -30,7 +30,7 @@
        (write-file (path-expand "gerbil.pkg" root)
                    (string-append "(package: " (symbol->string (gensym 'publication-fixture-)) ")"))
        (write-file (path-expand "types.ss" module-root)
-         "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
+         "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
        (write-file (path-expand "objects.ss" module-root)
          "(import (only-in :clan/poo/object .o)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope)")
        (write-file (path-expand "config.ss" module-root)

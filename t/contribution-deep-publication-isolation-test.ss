@@ -25,7 +25,7 @@
     (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
            (delete-directory path)) (delete-file path)))
 (def TypesSource
-  "(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
+  "(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
 (def ScopeContract (yuanxu-predicate-contract 'fixture/scope object? (lambda (_v _c) '())))
 (def ObjectValue (yuanxu-predicate-type 'fixture/object object?))
 (def ApplicationContract

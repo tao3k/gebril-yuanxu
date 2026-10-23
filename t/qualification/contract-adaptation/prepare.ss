@@ -47,6 +47,6 @@
     (write-source (path-expand "fixture-core.ss" destination)
       (string-append
         "(import :clan/poo/object (only-in :gerbil/core/contract using) :clan/poo/object-contract\n"
-        " (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence\n"
+        " (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence\n"
         "  yuanxu-contract-admit yuanxu-validation-evidence-accepted?))\n(export #t)\n"
         (list-ref blocks 5)))))

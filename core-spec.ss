@@ -55,7 +55,8 @@
     "feature-system/interface"
     "feature-system/domain-case/syntax"
     "object-family/read-projection"
-    "types"
+    "object-types/contracts"
+    "object-types/ports"
     "object-family/funcs"
     "object-family/indexed"
     "object-family/syntax"
@@ -176,7 +177,5 @@
     "profile-composition/policy"
     "module-system/catalog/values"
     "module-system/authoring/syntax"
-    "module-system/selection/init-syntax"
-    "scenarios/funflow/gerbil-scheme"
-    "scenarios/funflow/scope"))
+    "module-system/selection/init-syntax"))
 

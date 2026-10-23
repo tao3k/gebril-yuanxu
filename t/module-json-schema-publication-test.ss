@@ -5,7 +5,7 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)
-        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-json-schema-publication-test)
@@ -23,7 +23,7 @@
                         '((type . "object") (required . ("port"))
                           (properties . ((port . ((type . "integer") (minimum . 1)))))))))
         (check-equal? (.get view selected-graph module-order)
-                      '(json-schema funflow))
+                      '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o port: 80) #f)) #t)

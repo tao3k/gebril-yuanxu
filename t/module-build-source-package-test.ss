@@ -45,7 +45,7 @@
                            (core-resolve-library-module-path ':clan/poo/object)) #f)
           (def spec (eval-syntax '(.get yuanxu.init.exports std-make-spec)))
           (def current! (eval-syntax '(.get yuanxu.init.exports admit-current)))
-          (def retained '("utilities/algorithms" "types" "core-spec"))
+          (def retained '("utilities/algorithms" "object-types/contracts" "core-spec"))
           (def targets (spec retained))
           (check-equal? (eq? targets (spec retained)) #t)
           (current!)

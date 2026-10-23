@@ -10,7 +10,7 @@
         (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles)
         (only-in :std/list/list any)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/publication
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)

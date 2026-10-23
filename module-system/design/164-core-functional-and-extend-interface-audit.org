@@ -110,7 +110,7 @@ decision for each current owner and the interface that users should see.
 | =module-system/objects= | select an already admitted SemanticModule | =SemanticModule.=, =ModuleSourceRole.=, =ModuleAuthoringProfile.= and =make-semantic-module= authoring |
 | =module-system/schema/relations= | use maintained identity/import/profile/capability values | build Module identities, import contributions and extensible relation prototypes |
 | =module-system/config= | inspect an existing Interface id, schemas, schema spec, authoring and metadata | =make-module-interface=, String schema and option-policy declarations; schema-index construction is I |
-| =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =yuanxu-contract-value-type=, =yuanxu-contract-slot=, =yuanxu-native-contract= and new predicates |
+| =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =yuanxu-contract-value-type=, =yuanxu-contract-slot=, =yuanxu-object-contract= and new predicates |
 | =module-system/schema/interface= | use maintained admitted objects and supplied Types | schema/object/field/transformer authoring and explicit field-resolution; internal caches/indexes remain I |
 | =module-system/schema/validation= | product-owned validation of declared values | low-level validation helpers stay E; they are not a new root config vocabulary |
 | =module-system/projection/option-objects= | inspect option validation receipts | construct option projections bound to their owning Interface |

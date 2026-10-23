@@ -54,7 +54,8 @@
     "object-types/facts.ss"
     "modules/json-schema/json-schema-receipt.ss"
     "object-family/read-projection.ss"
-    "types.ss"
+    "object-types/contracts.ss"
+    "object-types/ports.ss"
     "admission/source.ss"
     ;; Keep the CLOS runtime and its macro interface on the SAME source cut as
     ;; its carrier Types; installed factors may otherwise cache older protos.

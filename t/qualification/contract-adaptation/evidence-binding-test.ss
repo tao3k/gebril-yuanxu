@@ -6,7 +6,7 @@
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :yuanxu/modules/json-schema/contracts
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
           YuanxuContract. yuanxu-contract-admit
           yuanxu-classification-evidence
           yuanxu-validation-evidence-accepted?))

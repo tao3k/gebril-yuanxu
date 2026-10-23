@@ -3,7 +3,7 @@
 (import :std/test
         (only-in :clan/poo/object .o .get .putslot! $thunk-slot-spec object?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read current-module-source-observer admit-module-value!)

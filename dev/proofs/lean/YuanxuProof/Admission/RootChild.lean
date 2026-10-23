@@ -3,7 +3,7 @@
 import YuanxuProof.Admission.SourceWindows
 import LeanPoo.Functional.DeclarativeMetadata
 
-/-! Ownership-scoped analysis routing is implemented by `types.ss` and
+/-! Ownership-scoped analysis routing is implemented by `object-types/contracts.ss` and
 `admission/source.ss`. Its one-shot edge is modeled below, separately from the
 finite port/contribution batching reference. An analysis mode is never a source
 certificate. Native callbacks and complete interception remain explicit bounds.

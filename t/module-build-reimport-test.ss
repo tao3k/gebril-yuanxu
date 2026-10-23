@@ -71,8 +71,8 @@
           (def current! (eval-syntax '(.get yuanxu.init.exports admit-current)))
           (def retained (eval-syntax 'core-spec))
           ;; Fail before any compile if the fixture is accidentally a full build.
-          (check-equal? retained '("utilities/algorithms" "types" "core-spec"))
-          (unless (equal? retained '("utilities/algorithms" "types" "core-spec"))
+          (check-equal? retained '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))
+          (unless (equal? retained '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))
             (error "same-state regression requires the bounded JsonSchema fixture"))
           (def targets (spec retained))
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))

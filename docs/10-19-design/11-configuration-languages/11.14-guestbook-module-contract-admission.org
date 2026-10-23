@@ -85,7 +85,7 @@ module's functional owner, not in downstream config files.
   accepted?: yuanxu-validation-evidence-accepted?)
 #+end_src
 
-The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-native-contract]] derives
+The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-object-contract]] derives
 it from yuanxu-predicate-contract. It can participate in responsibilities and
 public .admit. The .cc adapter above retains that descriptor and replaces its
 obligations with the existing full-root validator. This matters because the

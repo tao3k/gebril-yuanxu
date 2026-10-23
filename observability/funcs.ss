@@ -9,7 +9,7 @@
 ;;; source consumers and compiled owners share the same process.
 (import (only-in :clan/poo/object .o .ref .slot? object?)
         (only-in :clan/poo/mop validate raise-type-error)
-        (only-in :yuanxu/types YuanxuValidationEvidence)
+        (only-in :yuanxu/object-types/contracts YuanxuValidationEvidence)
         :yuanxu/observability/types)
 (export yuanxu-observation-admission-facts
         yuanxu-observation-admission-explanation

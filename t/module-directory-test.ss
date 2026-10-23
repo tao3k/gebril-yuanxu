@@ -5,7 +5,7 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         :yuanxu/feature-system/model
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/init

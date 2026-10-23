@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop Type. define-type TypeError?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
           YuanxuObjectContract. yuanxu-predicate-contract
           yuanxu-contract-admit yuanxu-validation-evidence-accepted?
           yuanxu-validation-evidence->alist))

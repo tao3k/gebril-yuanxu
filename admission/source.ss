@@ -5,7 +5,7 @@
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
         (only-in :clan/poo/object-diagnostics diagnostic-then)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-validation-evidence call-with-contract-analysis-root)
         (only-in :yuanxu/configuration/slot-origin admit-field-sources!)
         (only-in :yuanxu/module-system/source/admission

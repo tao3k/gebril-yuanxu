@@ -8,7 +8,7 @@
         (rename-in (only-in "../init.ss" yuanxu.init.exports) (yuanxu.init.exports ModuleNamespace))
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/module-system/source/admission module-source-read)
         (only-in :yuanxu/observability/testing-fixture
                  with-yuanxu-fixture yuanxu-test-fixture)
@@ -41,6 +41,12 @@
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'spec) #f)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'selected-graph) #f))
     (test-case "namespace reflection returns real keys without demanding leaf values"
+      (def scenarios (.get yuanxu.init.exports Scenarios))
+      (check-equal? (.all-slots/sort scenarios) '(applications services))
+      (check-equal? (.all-slots/sort (.get scenarios services)) '(gitea postgresql))
+      (check-equal? (.all-slots/sort (.get scenarios applications)) '(gitea-postgresql))
+      (check-equal? (.ref/cached (.get scenarios applications) 'gitea-postgresql) #f)
+      (check-equal? (.ref/cached (.get scenarios services) 'postgresql) #f)
       (def modules (.get yuanxu.init.exports Modules))
       (check-equal? (eq? modules (.get yuanxu.init.exports Modules)) #t)
       (check-equal? (eq? modules (.get ModuleNamespace Modules)) #t)
@@ -69,7 +75,11 @@
       ;; Empty selection must never become gxtest's implicit directory scan.
       (check-exception (.call (.call (.get yuanxu.init.exports tests) .select '()) .run) error?)
       (check-exception (.get (.call (.get yuanxu.init.exports tests) .select '(unselected)) spec) error?)
-      (check-equal? (.get yuanxu.init.exports tests spec) (append json flow))
+      (def scenarios
+        (.get (.call (.get yuanxu.init.exports tests) .select
+                '(services/postgresql services/gitea applications/gitea-postgresql)) spec))
+      (check-equal? (map path-strip-directory scenarios) '("config-test.ss"))
+      (check-equal? (.get yuanxu.init.exports tests spec) (append json flow scenarios))
       (check-equal? (eq? json (.get (.call (.get yuanxu.init.exports tests) .select '(json-schema)) spec)) #t)
       (def selected (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
       (check-equal? (.slot? selected '.run) #t)
@@ -88,6 +98,7 @@
       (check-equal? (eq? spec ((.get yuanxu.init.exports std-make-spec) '())) #t)
       (check-equal? (and (member "modules/json-schema/interface" (map cadr spec)) #t) #t)
       (check-equal? (and (member "modules/funflow/interface" (map cadr spec)) #t) #t)
+      (check-equal? (and (member "scenarios/gitea-postgresql/interface" (map cadr spec)) #t) #t)
       (check-equal? (ormap (lambda (entry) (string-contains (cadr entry) "/tests/")) spec) #f)
       (check-equal? (eq? files (.get yuanxu.init.exports tests spec)) #t)
       ((.get yuanxu.init.exports admit-current))

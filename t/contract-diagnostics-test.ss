@@ -3,7 +3,7 @@
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/mop validate TypeError?)
         (only-in :std/error Error?)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-diagnostics-test)

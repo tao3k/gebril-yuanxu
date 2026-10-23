@@ -50,7 +50,7 @@
             (check-equal? (length (filter (cut equal? <> name) names)) 1))
           '("modules/json-schema/types" "modules/json-schema/config"
             "modules/json-schema/func" "modules/json-schema/objects"
-            "modules/json-schema/interface" "types" "utilities/algorithms"
+            "modules/json-schema/interface" "object-types/contracts" "utilities/algorithms"
             "module-system/building/interface" "core-spec"))
         (check-equal?
           (filter (lambda (name)
@@ -69,7 +69,7 @@
                 (lambda () (write-source path text)))))
           '(("build.ss" . "stale selected build input")
             ("core-spec.ss" . "stale prepared build source")
-            ("types.ss" . "compiler tool source changed; use a fresh reader")))
+            ("object-types/contracts.ss" . "compiler tool source changed; use a fresh reader")))
         (check-equal? (spec-of run) spec)
         (def fresh (script-main (path-expand "build.ss" root)))
         (check-equal? (spec-of fresh) spec)

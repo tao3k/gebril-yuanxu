@@ -6,7 +6,7 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .mix .ref .ref/cached .cc)
         (only-in :clan/poo/mop element? validate TypeError?)
-        (only-in :yuanxu/types yuanxu-contract-admit)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/schema/relations
                  yuanxu-semantic-identity yuanxu-module-imports)

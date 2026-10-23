@@ -32,7 +32,7 @@
       (def directory (path-expand (car row) root))
       (def id (cdr row))
       (write-forms (path-expand "types.ss" directory)
-        '((import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract))
+        '((import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
           (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '())))
           (export Scope)))
       (write-forms (path-expand "objects.ss" directory) '((def Defaults #t) (export Defaults)))

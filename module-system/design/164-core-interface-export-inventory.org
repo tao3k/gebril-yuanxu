@@ -531,14 +531,14 @@ Source: [[file:../schema/slot-contracts.ss][core/module-system/schema/slot-contr
 | =yuanxu-contract-slot-predicate-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
 | =yuanxu-contract-slot-required?= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
 | =yuanxu-contract-slot-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract= | E | Declare a new slot/type Contract or owner admission assertion. |
-| =yuanxu-native-contract-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract-owner= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract-object-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract-slots= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract= | E | Declare a new slot/type Contract or owner admission assertion. |
+| =yuanxu-object-contract-key= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract-owner= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract-object-kind= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract-slots= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract-metadata= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
 | =yuanxu-contract-slot->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
-| =yuanxu-native-contract->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
+| =yuanxu-object-contract->alist= | D | Inspect supplied slot Contract/Type values; alist is a projection. |
 | =yuanxu-contract-check-slot!= | E | Declare a new slot/type Contract or owner admission assertion. |
 
 * core/module-system/schema/support/contracts.ss

@@ -5,7 +5,7 @@
                  slot-read-dependencies)
         (only-in :clan/poo/t/closure-measure measure)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/types yuanxu-classification-evidence)
+        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)

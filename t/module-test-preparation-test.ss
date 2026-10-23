@@ -27,7 +27,7 @@
       '((import :yuanxu/module-system/selection/init-syntax)
         (yuanxu! mode: explicit source: "./modules" (example))))
     (forms root "modules/example/types.ss"
-      '((import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract))
+      '((import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
         (def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))
         (export Scope)))
     (forms root "modules/example/config.ss" '((def Config (.o enabled: #t))))

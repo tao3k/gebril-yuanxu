@@ -11,7 +11,7 @@
          :std/test
         :yuanxu/observability/objects
         :yuanxu/observability/types
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
                  yuanxu-validation-evidence-accepted?))
 
 (def (observability-test-ref row key)

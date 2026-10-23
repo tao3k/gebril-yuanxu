@@ -404,7 +404,7 @@
         (owned-read-copy! evidence (.cc evidence 'responsibility slot))))))
 
 ;;; Domain declarations inherit this native prototype-aware responsibility contract.
-(def (yuanxu-native-classify identity proto candidate context)
+(def (yuanxu-prototype-classify identity proto candidate context)
   (let (accepted?
         (and (object? candidate)
              (if (memq proto (compute-precedence-list! candidate)) #t #f)))
@@ -416,4 +416,4 @@
 ;;; Invariant: native objects must prove prototype ancestry before slot obligations run.
 (define-type (YuanxuObjectContract. @ YuanxuContract.
                                          identity proto)
-  .classify: (cut yuanxu-native-classify identity proto <> <>))
+  .classify: (cut yuanxu-prototype-classify identity proto <> <>))

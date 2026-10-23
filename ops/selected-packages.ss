@@ -4,7 +4,7 @@
 ;;; Operational consumer of Core's selected external-package contributions.
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
-        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/module-system/source/build unique-build-inputs)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-name?
                  module-source-read module-source-admit-current! call-with-module-source-read-cache

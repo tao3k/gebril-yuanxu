@@ -22,7 +22,7 @@
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :yuanxu/module-system/source/objects

@@ -9,7 +9,7 @@
 (import (only-in :clan/poo/object .cc .o .ref)
         (only-in :clan/poo/mop element? raise-type-error)
         (only-in :std/list/list filter-map)
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
                  yuanxu-predicate-contract
                  yuanxu-predicate-type))
 
@@ -22,14 +22,14 @@
         yuanxu-contract-slot-predicate-key
         yuanxu-contract-slot-required?
         yuanxu-contract-slot-metadata
-        yuanxu-native-contract
-        yuanxu-native-contract-key
-        yuanxu-native-contract-owner
-        yuanxu-native-contract-object-kind
-        yuanxu-native-contract-slots
-        yuanxu-native-contract-metadata
+        yuanxu-object-contract
+        yuanxu-object-contract-key
+        yuanxu-object-contract-owner
+        yuanxu-object-contract-object-kind
+        yuanxu-object-contract-slots
+        yuanxu-object-contract-metadata
         yuanxu-contract-slot->alist
-        yuanxu-native-contract->alist
+        yuanxu-object-contract->alist
         yuanxu-contract-check-slot!)
 
 ;; report-kind is receipt metadata only.  Runtime admission always dispatches
@@ -93,7 +93,7 @@
             (else #f))))
        slots))))
 
-(def (yuanxu-native-contract identity owner object-kind predicate
+(def (yuanxu-object-contract identity owner object-kind predicate
                                slots slot-present? slot-ref metadata)
   (.cc (yuanxu-predicate-contract
         identity
@@ -104,19 +104,19 @@
        'slots slots
        'metadata metadata))
 
-(def (yuanxu-native-contract-key contract)
+(def (yuanxu-object-contract-key contract)
   (.ref contract 'identity))
 
-(def (yuanxu-native-contract-owner contract)
+(def (yuanxu-object-contract-owner contract)
   (.ref contract 'owner))
 
-(def (yuanxu-native-contract-object-kind contract)
+(def (yuanxu-object-contract-object-kind contract)
   (.ref contract 'object-kind))
 
-(def (yuanxu-native-contract-slots contract)
+(def (yuanxu-object-contract-slots contract)
   (.ref contract 'slots))
 
-(def (yuanxu-native-contract-metadata contract)
+(def (yuanxu-object-contract-metadata contract)
   (.ref contract 'metadata))
 
 (def (yuanxu-contract-slot->alist slot-contract)
@@ -128,14 +128,14 @@
         (cons 'required? (yuanxu-contract-slot-required? slot-contract))
         (cons 'metadata (yuanxu-contract-slot-metadata slot-contract))))
 
-(def (yuanxu-native-contract->alist contract)
-  (list (cons 'key (yuanxu-native-contract-key contract))
-        (cons 'owner (yuanxu-native-contract-owner contract))
-        (cons 'object-kind (yuanxu-native-contract-object-kind contract))
+(def (yuanxu-object-contract->alist contract)
+  (list (cons 'key (yuanxu-object-contract-key contract))
+        (cons 'owner (yuanxu-object-contract-owner contract))
+        (cons 'object-kind (yuanxu-object-contract-object-kind contract))
         (cons 'slots
               (map yuanxu-contract-slot->alist
-                   (yuanxu-native-contract-slots contract)))
-        (cons 'metadata (yuanxu-native-contract-metadata contract))))
+                   (yuanxu-object-contract-slots contract)))
+        (cons 'metadata (yuanxu-object-contract-metadata contract))))
 
 (def (yuanxu-contract-check-slot! slot-contract value)
   (if (element? (yuanxu-contract-slot-type slot-contract) value)

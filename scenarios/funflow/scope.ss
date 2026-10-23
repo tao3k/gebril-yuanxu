@@ -8,7 +8,7 @@
                  make-yuanxu-module-local-source yuanxu-module-source-ref?)
         (only-in :yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
-        (only-in :yuanxu/scenarios/funflow/gerbil-scheme
+        (only-in "./gerbil-scheme.ss"
                  make-gerbil-scheme-ci-profile))
 (export FunflowProfiles. Funflow make-funflow-scope)
 

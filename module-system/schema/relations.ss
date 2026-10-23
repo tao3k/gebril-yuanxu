@@ -7,7 +7,7 @@
 ;;; Authoring roles and source-file policy belong to the consuming package.
 (import (only-in :clan/poo/object .o .mix .ref)
         (only-in :clan/poo/mop define-type validate)
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
                  YuanxuContract. YuanxuObjectContract.
                  yuanxu-classification-evidence))
 (export SemanticSymbol

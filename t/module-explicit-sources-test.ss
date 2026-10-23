@@ -25,7 +25,7 @@
    (lambda (entry)
      (let ((directory (path-expand (car entry) root)) (id (cdr entry)))
        (write-source (path-expand "types.ss" directory)
-         "(import (only-in :yuanxu/types yuanxu-predicate-contract) :clan/poo/object) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
+         "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) :clan/poo/object) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
        (write-source (path-expand "objects.ss" directory)
          "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")

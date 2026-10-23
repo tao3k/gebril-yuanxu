@@ -8,7 +8,7 @@
                  object-%precedence-list object-%all-slots)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type element?)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract))
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract
         module-publication? module-scope-context?
         module-publication-contract-current? module-publication-dependency-projection)

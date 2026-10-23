@@ -9,7 +9,7 @@
         (only-in :yuanxu/admission/contributions bind-publication-contributions)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/string/path path-absolute?)
-        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?
                  call-with-contract-analysis-root)
         (only-in :yuanxu/module-system/source/admission
           module-source-read module-source-admit-current! call-with-module-source-read-cache

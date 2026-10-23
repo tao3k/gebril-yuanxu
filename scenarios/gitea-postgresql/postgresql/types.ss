@@ -1,13 +1,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object :clan/poo/object-contract
-        (only-in :clan/poo/mop define-type element?)
-        (only-in :clan/poo/number IntegerRange)
+        (only-in :clan/poo/mop define-type)
+        (only-in :yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/type List)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-predicate-contract))
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract))
 (export Port PostgreSQLValueContract PostgreSQLConfigContract PostgreSQLScopeContract valid-port?)
-(def Port (IntegerRange min: 1 max: 65535))
-(def (valid-port? value) (element? Port value))
 (def PostgreSQLValueContract
   (.cc ObjectContract. identity: 'postgresql/config-value
     responsibilities:

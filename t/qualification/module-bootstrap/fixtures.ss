@@ -67,5 +67,5 @@
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
           (write '(export core-spec) port) (newline port)
-          (write '(def core-spec '("prelude" "utilities/algorithms" "types" "core-spec")) port)))
+          (write '(def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))

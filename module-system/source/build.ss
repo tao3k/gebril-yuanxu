@@ -7,7 +7,7 @@
         (only-in :std/string/path path-absolute? path-default-extension)
         (only-in :std/list/list find)
         (only-in :clan/poo/object .o .cc .ref .slot? .all-slots object?)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)

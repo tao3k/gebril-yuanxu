@@ -24,7 +24,7 @@
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
   (write-source (path-expand "types.ss" directory)
-    "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export ScopeContract)")
+    "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export ScopeContract)")
   (write-source (path-expand "private/helper.ss" directory)
     "(def greeting \"hello\") (export greeting)")
   (write-source (path-expand "objects.ss" directory)

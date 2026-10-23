@@ -41,7 +41,7 @@ been removed from this chapter rather than retained as a second current entry.
 
 ;; modules/app/infrastructure/types.ss
 (import (only-in :clan/poo/object object?)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract))
 (def Scope
   (yuanxu-predicate-contract 'app/infrastructure/scope object?

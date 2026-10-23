@@ -6,12 +6,12 @@
 ;;; Contract: public receipt for JSON Schema to Yuanxu contract generation.
 
 (import (only-in :yuanxu/module-system/schema/slot-contracts
-                 yuanxu-native-contract->alist)
+                 yuanxu-object-contract->alist)
         (only-in :yuanxu/object-types/facts
                  yuanxu-type-fact-contract->alist
                  yuanxu-lean-fact-contract->alist
-                 yuanxu-native-contract->type-facts
-                 yuanxu-native-contract->lean-fact-contracts)
+                 yuanxu-object-contract->type-facts
+                 yuanxu-object-contract->lean-fact-contracts)
         (only-in :yuanxu/observability/objects
                  yuanxu-observability-diagnostic-record
                  yuanxu-observability-diagnostic-severity
@@ -117,7 +117,7 @@
          (yuanxu-json-schema-normalization->alist
           (yuanxu-json-schema-contract-artifact-normalization artifact)))
    (cons 'object-contract
-         (yuanxu-native-contract->alist
+         (yuanxu-object-contract->alist
           (yuanxu-json-schema-contract-artifact-object-contract artifact)))
    (cons 'diagnostics
          (yuanxu-contract-project-list
@@ -167,9 +167,9 @@
            yuanxu-json-schema-diagnostic->observability
            (yuanxu-json-schema-normalization-diagnostics normalization)))
          (type-facts
-          (yuanxu-native-contract->type-facts object-contract))
+          (yuanxu-object-contract->type-facts object-contract))
          (lean-fact-contracts
-          (yuanxu-native-contract->lean-fact-contracts object-contract)))
+          (yuanxu-object-contract->lean-fact-contracts object-contract)))
     (make-yuanxu-json-schema-contract-artifact
      'json-schema-contract-artifact
      "yuanxu-json-schema-contract-artifact/v1"

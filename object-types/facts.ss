@@ -14,11 +14,11 @@
                  yuanxu-contract-slot-predicate-key
                  yuanxu-contract-slot-required?
                  yuanxu-contract-slot-metadata
-                 yuanxu-native-contract-key
-                 yuanxu-native-contract-owner
-                 yuanxu-native-contract-object-kind
-                 yuanxu-native-contract-slots
-                 yuanxu-native-contract-metadata))
+                 yuanxu-object-contract-key
+                 yuanxu-object-contract-owner
+                 yuanxu-object-contract-object-kind
+                 yuanxu-object-contract-slots
+                 yuanxu-object-contract-metadata))
 
 (export make-yuanxu-type-fact-contract
         yuanxu-type-fact-contract?
@@ -46,9 +46,9 @@
         yuanxu-contract-required-polarity
         yuanxu-contract-slot-fact-metadata
         yuanxu-contract-slot->type-fact
-        yuanxu-native-contract->type-facts
+        yuanxu-object-contract->type-facts
         yuanxu-contract-slot->lean-fact-contract
-        yuanxu-native-contract->lean-fact-contracts)
+        yuanxu-object-contract->lean-fact-contracts)
 
 ;; yuanxu-type-fact-contract
 ;;   : (-> Symbol Symbol Symbol Symbol Symbol Symbol Symbol Alist YuanxuTypeFactContract)
@@ -159,11 +159,11 @@
   (append
    (list
     (cons 'object-contract
-          (yuanxu-native-contract-key object-contract))
+          (yuanxu-object-contract-key object-contract))
     (cons 'contract-owner
-          (yuanxu-native-contract-owner object-contract))
+          (yuanxu-object-contract-owner object-contract))
     (cons 'object-metadata
-          (yuanxu-native-contract-metadata object-contract))
+          (yuanxu-object-contract-metadata object-contract))
     (cons 'predicate
           (yuanxu-contract-slot-predicate-key slot-contract))
     (cons 'required?
@@ -184,7 +184,7 @@
   (yuanxu-type-fact
    (yuanxu-contract-slot-key slot-contract)
    'slot-contract
-   (yuanxu-native-contract-object-kind object-contract)
+   (yuanxu-object-contract-object-kind object-contract)
    (yuanxu-contract-slot-name slot-contract)
    (yuanxu-contract-slot-name slot-contract)
    (yuanxu-contract-slot-report-kind slot-contract)
@@ -192,20 +192,20 @@
     (yuanxu-contract-slot-required? slot-contract))
    (yuanxu-contract-slot-fact-metadata object-contract slot-contract)))
 
-;; yuanxu-native-contract->type-facts
+;; yuanxu-object-contract->type-facts
 ;;   : (-> YuanxuContract [YuanxuTypeFactContract])
 ;;   | doc m%
 ;;       Project every native slot schema in a Contract into stable type facts.
 ;;       This is a one-way proof projection from native descriptors.
 ;;       # Examples
-;;       (yuanxu-native-contract->type-facts receipt-contract)
+;;       (yuanxu-object-contract->type-facts receipt-contract)
 ;;       # Result
 ;;       A list of type fact contract rows.
 ;;     %
-(def (yuanxu-native-contract->type-facts object-contract)
+(def (yuanxu-object-contract->type-facts object-contract)
   (map (lambda (slot-contract)
          (yuanxu-contract-slot->type-fact object-contract slot-contract))
-       (yuanxu-native-contract-slots object-contract)))
+       (yuanxu-object-contract-slots object-contract)))
 
 ;; yuanxu-contract-slot->lean-fact-contract
 ;;   : (-> YuanxuObjectTypeContract YuanxuSlotContract YuanxuLeanFactContract)
@@ -221,25 +221,25 @@
   (yuanxu-lean-fact
    (yuanxu-contract-slot-key slot-contract)
    'slot-contract
-   (yuanxu-native-contract-object-kind object-contract)
+   (yuanxu-object-contract-object-kind object-contract)
    (yuanxu-contract-slot-name slot-contract)
    (yuanxu-contract-slot-name slot-contract)
    (yuanxu-contract-required-polarity
     (yuanxu-contract-slot-required? slot-contract))
    (yuanxu-contract-slot-fact-metadata object-contract slot-contract)))
 
-;; yuanxu-native-contract->lean-fact-contracts
+;; yuanxu-object-contract->lean-fact-contracts
 ;;   : (-> YuanxuContract [YuanxuLeanFactContract])
 ;;   | doc m%
 ;;       Project every slot contract in an object contract into Lean fact
 ;;       contract requests. The output is data for proof tooling, not execution.
 ;;       # Examples
-;;       (yuanxu-native-contract->lean-fact-contracts receipt-contract)
+;;       (yuanxu-object-contract->lean-fact-contracts receipt-contract)
 ;;       # Result
 ;;       A list of Lean fact contract rows.
 ;;     %
-(def (yuanxu-native-contract->lean-fact-contracts object-contract)
+(def (yuanxu-object-contract->lean-fact-contracts object-contract)
   (map (lambda (slot-contract)
          (yuanxu-contract-slot->lean-fact-contract object-contract
                                                      slot-contract))
-       (yuanxu-native-contract-slots object-contract)))
+       (yuanxu-object-contract-slots object-contract)))

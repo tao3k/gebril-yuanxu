@@ -4,7 +4,7 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/building/test-projection module-test-projection)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
 

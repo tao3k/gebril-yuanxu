@@ -43,7 +43,7 @@
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
             (write-fixture-source (path-expand "types.ss" directory)
-              '((import (only-in :yuanxu/types yuanxu-predicate-contract)
+              '((import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
                         (only-in :clan/poo/object object?))
                 (def ScopeContract
                   (yuanxu-predicate-contract 'scale/scope object? (lambda (_v _c) '())))

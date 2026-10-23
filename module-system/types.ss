@@ -11,7 +11,7 @@
         (only-in :clan/poo/object-contract-validation validation-fields)
         (only-in :clan/poo/validation-rebinding rebind-validation)
         (only-in :yuanxu/object-family/read-projection owned-read-derived!)
-        (only-in :yuanxu/types
+        (only-in :yuanxu/object-types/contracts
                  YuanxuContract. YuanxuObjectContract.
                  yuanxu-classification-evidence)
         (only-in :yuanxu/module-system/schema/relations

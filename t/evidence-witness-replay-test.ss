@@ -4,7 +4,7 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-receiver slot-read-dependencies)
         (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-leaf!)
-        (only-in :yuanxu/types yuanxu-classification-evidence yuanxu-validation-evidence)
+        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))

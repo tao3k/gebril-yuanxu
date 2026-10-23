@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object :clan/poo/mop
         :clan/poo/object-contract ./fixture-schema ./receipt-fixture ./fixture-core
         :yuanxu/modules/json-schema/contracts
-        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?))
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?))
 (export schema-test)
 
 (def vpc-schema

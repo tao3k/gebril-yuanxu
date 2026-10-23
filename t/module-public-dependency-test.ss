@@ -16,7 +16,7 @@
 (def (prepare! root)
   (write-source (path-expand "project/gerbil.pkg" root) "(package: dependency-test)\n")
   (write-source (path-expand "project/modules/app/types.ss" root)
-    "(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (yuanxu-predicate-contract 'app object? (lambda (_v _c) '())))\n")
+    "(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (yuanxu-predicate-contract 'app object? (lambda (_v _c) '())))\n")
   (write-source (path-expand "project/modules/app/objects.ss" root)
     "(import :clan/poo/object) (export Value) (.def Value number: 42)\n")
   (write-source (path-expand "project/modules/app/config.ss" root)

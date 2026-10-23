@@ -10,7 +10,7 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/feature-system/model feature-descriptor)
         (only-in :yuanxu/feature-system/capability-model feature-projection-request)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
@@ -41,7 +41,7 @@
         (lambda (id)
           (let (directory (path-expand (string-append "modules/" id) root))
             (write-file (path-expand "types.ss" directory)
-             "(import (only-in :clan/poo/object object?) (only-in :yuanxu/types yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export Scope)")
+             "(import (only-in :clan/poo/object object?) (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export Scope)")
             (write-file (path-expand "objects.ss" directory)
              "(import (only-in :clan/poo/object .o) \"types.ss\") (def Defaults (.o retained: #t)) (export Defaults)")
             (write-file (path-expand "config.ss" directory) "(import (only-in :std/source this-source-file)) (def Greeting \"ready\") (def Origin (this-source-file)) (export Greeting Origin)")
@@ -91,7 +91,8 @@
       (check-equal? (and (member "module-system/selection/init-syntax" core-spec) #t) #t)
       (check-equal? (and (member "ops/interface" core-spec) #t) #t)
       (check-equal? (member "modules/json-schema/interface" core-spec) #f)
-      (check-equal? (member "modules/funflow/interface" core-spec) #f))
+      (check-equal? (member "modules/funflow/interface" core-spec) #f)
+      (check-equal? (ormap (cut string-prefix? "scenarios/" <>) core-spec) #f))
     (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
       (with-source
        (lambda (root _prefix)

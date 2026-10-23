@@ -52,7 +52,7 @@
       (check-equal?
         (call-with-input-file (path-expand "core-spec.ss" root) read-all)
         '((export core-spec)
-          (def core-spec '("prelude" "utilities/algorithms" "types" "core-spec"))))
+          (def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
       (def names (map cadr spec))
       ;; Module types now import the owned-read projection in addition to

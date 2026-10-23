@@ -9,7 +9,7 @@
 
 (import (only-in :clan/poo/object .def .o .ref object?)
         (only-in :clan/poo/mop .defgeneric validate)
-        (only-in :yuanxu/types yuanxu-contract-admit)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
         (only-in :yuanxu/object-family/syntax defpoo-object-family)
         :yuanxu/observability/funcs
         (only-in :yuanxu/observability/types

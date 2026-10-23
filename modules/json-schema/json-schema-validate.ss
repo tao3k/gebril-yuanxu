@@ -14,8 +14,8 @@
                  yuanxu-contract-slot-required?
                  yuanxu-contract-slot-type
                  yuanxu-contract-slot->alist
-                 yuanxu-native-contract-key
-                 yuanxu-native-contract-slots)
+                 yuanxu-object-contract-key
+                 yuanxu-object-contract-slots)
         (only-in "./functional.ss"
                  yuanxu-contract-any?
                  yuanxu-contract-json-object?
@@ -188,11 +188,11 @@
 
 ;; : (-> YuanxuObjectTypeContract [Diagnostic] YuanxuJsonSchemaObjectContractValidation)
 (def (yuanxu-json-schema-validation-receipt object-contract diagnostics)
-  (let (slots (yuanxu-native-contract-slots object-contract))
+  (let (slots (yuanxu-object-contract-slots object-contract))
     (make-yuanxu-json-schema-object-contract-validation
      'json-schema-object-contract-validation
      "yuanxu-json-schema-object-contract-validation/v1"
-     (yuanxu-native-contract-key object-contract)
+     (yuanxu-object-contract-key object-contract)
      (yuanxu-json-schema-validation-diagnostics-valid? diagnostics)
      diagnostics
      (yuanxu-contract-project-list
@@ -216,7 +216,7 @@
 ;; : (-> YuanxuObjectTypeContract JsonSchemaCandidateObject YuanxuJsonSchemaObjectContractValidation)
 (def (yuanxu-json-schema-object-contract-validate object-contract candidate)
   (let* ((slots
-          (yuanxu-native-contract-slots object-contract))
+          (yuanxu-object-contract-slots object-contract))
          (shape-diagnostics
           (if (or (hash-table? candidate)
                   (yuanxu-contract-json-object? candidate)

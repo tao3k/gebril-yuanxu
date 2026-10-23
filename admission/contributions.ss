@@ -5,7 +5,7 @@
         (only-in :clan/poo/mop .defgeneric validate)
         (only-in :std/list/list every append-map)
         (only-in :yuanxu/module-system/source/publication ContributionRouteContract)
-        (only-in :yuanxu/types yuanxu-context-contract-obligations)
+        (only-in :yuanxu/object-types/contracts yuanxu-context-contract-obligations)
         (only-in :yuanxu/module-system/source/admission call-with-module-source-read-cache))
 (export bind-publication-contributions yuanxu-contract-contribution-obligations)
 

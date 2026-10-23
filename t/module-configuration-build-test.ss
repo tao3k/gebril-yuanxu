@@ -22,7 +22,7 @@
 (def (shell root id configuration requirements build?)
   (let (owner (path-expand (string-append "modules/" id) root))
     (write-source (path-expand "types.ss" owner)
-      "(import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
+      "(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
     (write-source (path-expand "objects.ss" owner)
       "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
     (write-source (path-expand "config.ss" owner) configuration)

@@ -33,16 +33,16 @@
             (def entry (path-expand "build.ss" root))
             (def (project roots (source-root root) (source-entry entry) (source view))
               (yuanxu-project-source-spec source roots source-root source-entry))
-            (def artifact (project '("utilities/algorithms" "types")))
+            (def artifact (project '("utilities/algorithms" "object-types/contracts")))
             (check-equal? (eq? (.get artifact build-graph) selected) #t)
             (check-equal? (.get artifact source-root) root)
             (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
-            (check-equal? (length (filter (lambda (row) (equal? (cadr row) "types"))
+            (check-equal? (length (filter (lambda (row) (equal? (cadr row) "object-types/contracts"))
                                         (.get artifact spec))) 1)
             (check-equal? (rejects? "conflicting retained compiler options"
-                            (lambda () (project '((gxc: "types" "-debug"))))) #t)
+                            (lambda () (project '((gxc: "object-types/contracts" "-debug"))))) #t)
             (check-equal? (rejects? "duplicate retained compiler target"
-                            (lambda () (project '("types" "types")))) #t)
+                            (lambda () (project '("object-types/contracts" "object-types/contracts")))) #t)
             (check-equal? (rejects? "retained build entries require"
                             (lambda () (project #t))) #t)
             (let (original (module-source-read entry))
@@ -53,14 +53,15 @@
                 (lambda () (write-source entry original))))
             ((.get artifact admit-current))
             (let* ((links (path-expand "links" temporary))
-                   (link (path-expand "types.ss" links))
+                   (link (path-expand "object-types/contracts.ss" links))
                    (build (path-expand "build.ss" links)))
+              (create-directory* (path-expand "object-types" links))
               (write-source (path-expand "gerbil.pkg" links) "(package: yuanxu)\n")
               (write-source build "(export #t)")
               (dynamic-wind
-                (lambda () (create-symbolic-link (path-expand "types.ss" root) link))
+                (lambda () (create-symbolic-link (path-expand "object-types/contracts.ss" root) link))
                 (lambda () (check-equal? (rejects? "non-regular or a symlink"
-                                          (lambda () (project '("types") links build))) #t))
+                                          (lambda () (project '("object-types/contracts") links build))) #t))
                 (lambda () (delete-file link))))
             (let* ((foreign (path-expand "foreign" temporary))
                    (build (path-expand "build.ss" foreign)))
@@ -74,10 +75,10 @@
               (set! build (path-expand "build.ss" foreign))
               (write-source build "(export #t)")
               (write-source (path-expand "gerbil.pkg" foreign) "(package: yuanxu)\n")
-              (write-source (path-expand "types.ss" foreign)
-                            (module-source-read (path-expand "types.ss" root)))
+              (write-source (path-expand "object-types/contracts.ss" foreign)
+                            (module-source-read (path-expand "object-types/contracts.ss" root)))
               (check-equal? (rejects? "conflicting compiler inputs"
-                              (lambda () (project '("types") foreign build))) #t))
+                              (lambda () (project '("object-types/contracts") foreign build))) #t))
             (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)))))
     (begin
       (displayln "SKIP module-build-spec: CORE_QUALIFICATION_ROOT is unset")

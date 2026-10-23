@@ -23,7 +23,7 @@
         (string-append "(package: " prefix
           " prelude: :gerbil/core)\n"))
       (write-source (path-expand "types.ss" root)
-        "(import (only-in :yuanxu/types yuanxu-predicate-contract)) (def ScopeContract (yuanxu-predicate-contract 'role/scope object? (lambda (_v _c) '()))) (export ScopeContract)\n")
+        "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def ScopeContract (yuanxu-predicate-contract 'role/scope object? (lambda (_v _c) '()))) (export ScopeContract)\n")
       (write-source (path-expand "objects.ss" root)
         "(import (only-in :std/source this-source-file)) (.def Value answer: 42 origin: (this-source-file)) (export Value)\n")
       (write-source (path-expand "func.ss" root)

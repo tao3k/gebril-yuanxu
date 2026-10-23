@@ -19,7 +19,7 @@
         (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
-                 yuanxu-native-contract)
+                 yuanxu-object-contract)
         (only-in :yuanxu/utilities/functional
                  yuanxu-all?
                  yuanxu-find
@@ -137,7 +137,7 @@
                   (yuanxu-json-schema-node->alist node)))
            (yuanxu-json-schema-object-metadata object)
            (yuanxu-json-schema-node-metadata node))))
-    (yuanxu-native-contract
+    (yuanxu-object-contract
      object-key
      owner
      object-kind
@@ -164,7 +164,7 @@
       object-kind
       object-key))
     (else
-     (yuanxu-native-contract
+     (yuanxu-object-contract
       object-key
       owner
       object-kind

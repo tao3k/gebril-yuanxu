@@ -661,7 +661,7 @@ def main():
     root_child_digest = "sha256:" + hashlib.sha256((models / "RootChild.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{root_child_digest}"' not in root_child_lean.read_text():
         raise AssertionError("Lean retains a stale RootChild Quint source binding")
-    bound.extend([root_child_lean, core / "types.ss", core / "admission/publication.ss"])
+    bound.extend([root_child_lean, core / "object-types/contracts.ss", core / "object-types/ports.ss", core / "admission/publication.ss"])
     return_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean"
     return_digest = "sha256:" + hashlib.sha256((models / "ReturnWindows.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String :=\n  "{return_digest}"' not in return_lean.read_text():

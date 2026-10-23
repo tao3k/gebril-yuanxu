@@ -32,7 +32,7 @@
         "(yuanxu! source: \"./modules\" mode: auto)")
       (def chosen (path-expand "modules/chosen/" root))
       (write-source (path-expand "types.ss" chosen)
-        "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'scale object? (lambda (_v _c) '()))) (export ScopeContract)")
+        "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'scale object? (lambda (_v _c) '()))) (export ScopeContract)")
       (write-source (path-expand "objects.ss" chosen)
         "(import :clan/poo/object) (def Scope (.o unused: (error \"scope forced\"))) (export Scope)")
       (write-source (path-expand "config.ss" chosen) "(def Enabled #t) (export Enabled)")

@@ -4,7 +4,7 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :yuanxu/types YuanxuContract. yuanxu-classification-evidence
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-predicate-contract yuanxu-contract-admit
                  yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/admission/publication AdmissionPublication.)

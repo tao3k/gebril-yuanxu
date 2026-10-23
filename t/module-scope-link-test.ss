@@ -4,7 +4,7 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .ref .get .call object? object-slots $constant-slot-spec?)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/types yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/interface)
 (export module-scope-link-test)

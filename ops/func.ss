@@ -4,7 +4,7 @@
 (import :clan/poo/object "./types.ss"
         (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation
                  copy-process-output)
-        (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
         (only-in :std/os/error os-error? OSError-errno ESRCH)

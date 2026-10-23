@@ -8,4 +8,12 @@
 (yuanxu!
   :load-modules "./modules" mode: explicit rename: Modules
   (json-schema)
-  (funflow))
+  (funflow)
+
+  ;; Same module protocol, separate window. Library roots never own Scenarios.
+  :load-modules "./scenarios" mode: explicit rename: Scenarios
+  :services
+  (postgresql @ "./scenarios/gitea-postgresql/postgresql")
+  (gitea @ "./scenarios/gitea-postgresql/gitea")
+  :applications
+  (gitea-postgresql @ "./scenarios/gitea-postgresql"))

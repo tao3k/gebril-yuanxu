@@ -8,7 +8,7 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .call .o)
-        (only-in :yuanxu/types yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
@@ -51,7 +51,7 @@
                          '((type . "object") (required . ("value"))
                            (properties . ((value . ((type . "string")))))))))
         (check-equal? (.get view selected-graph module-order)
-                      '(json-schema funflow))
+                      '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)

@@ -5,7 +5,7 @@
         (only-in :clan/poo/mop validate element?)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :yuanxu/types yuanxu-contract-admit)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
         (only-in :yuanxu/admission/publication AdmissionPublication.)
         (only-in :yuanxu/module-system/source/selection select-module-graph)
         (only-in :yuanxu/module-system/source/build module-build-graph)

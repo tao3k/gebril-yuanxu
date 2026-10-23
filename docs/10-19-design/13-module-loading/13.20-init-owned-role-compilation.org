@@ -494,3 +494,72 @@ no diagnostic reads inside the interrupted frame, and swallowed-stop refusal;
 they passed in 47.41 seconds. Gitea/PostgreSQL passed in 117.46 seconds under
 concurrent host load. No memory limit, timeout, currentness check or source
 boundary was relaxed. Ten-thousand-module capacity is still unqualified.
+
+
+** Library, Scenario selection, and shared Type ownership
+
+Core's =core-spec.ss= contains ordinary library roots only. It does not list
+Scenario source files. The =Scenarios= window in =init.ss= selects the maintained
+Gitea/PostgreSQL application and its explicitly declared service dependencies.
+The unchanged =build.ss= combines =init.exports.std-make-spec= with =core-spec=;
+there is no second Scenario build list. Reflecting the Scenario namespace leaves
+its business scopes cold. Its public config test is discovered through that same
+selection. The old Funflow Profile controls use direct relative source imports,
+not an installed Scenario library target.
+
+The evidence-bearing Yuanxu Type/Contract implementation now lives at
+=object-types/contracts.ss=, published as =:yuanxu/object-types/contracts=.
+There is no compatibility =:yuanxu/types= entry. =object-types/ports.ss= owns
+the shared =Port= descriptor (exact integer 1..65535) and =valid-port?=.
+PostgreSQL and Gitea reference that same descriptor. Protocol connection
+requirements, joint allowed-port obligations, source association, and plan
+identity remain domain rules in the Scenario; moving a scalar Type does not
+replace them. Port zero for ephemeral binding is intentionally a distinct policy.
+
+The original shared checkout has concurrent staged Contract changes; migration
+and qualification occur in the existing PR owner worktree without replacing
+those changes. Source-bound proof inputs move with the Contract implementation.
+The native =gerbil clean= command, followed by the default build and focused
+Harness, qualifies the new paths without repairing generated files by hand.
+
+
+The slot-schema constructor and its metadata/fact projections use
+=yuanxu-object-contract*=, replacing the redundant =native= qualifier without
+adding aliases. Prototype ancestry classification is named
+=yuanxu-prototype-classify=; it remains separate from structural field admission.
+Historical frozen experiments retain their own source snapshots and receipts.
+
+
+*** Qualification of the ownership migration
+
+The native clean/build passed with 248 targets and 536 compile jobs. After the
+slot-schema API rename, the incremental build passed with 115 targets and 249
+jobs. A subsequent default new-process =just build= compiled ZERO targets,
+including prelude (21.05 seconds wall, 16.75 user, 3.87 system). These are local
+receipts, not a complete-CI performance claim.
+
+The updated native lifecycle passed spec (26.22 seconds), cold compile (49.61),
+new-process zero-compile reuse (12.62), clean (17.64), rebuild (32.61), and clean
+(10.48), with 41 targets and the original child deadline. Its source-registration
+negative controls passed. Focused Core, slot Contract, JSON Schema publication,
+JSON Schema generated-value Contract, source authoring, selected build Graph,
+selected tests, Gitea/PostgreSQL publication, relocation, standalone Funflow
+Profile, and source bootstrap controls passed their Harness and failure-marker
+checks. Both independent port requirements and cached-parent isolation remain.
+
+The real multi-owner qualification control also passed with its exact workspace
+residue assertion retained. On Darwin, xcrun's native =xcrun_db= environment
+setting places its cache in a second acquisition of the SAME existing Workspace
+Fixture. Source-reader scratch still uses the original workspace. No cache file
+is filtered from the assertion, no shared host cache is deleted, and both owned
+directories are released. The installed Xcode libxcrun documents that setting
+in its diagnostic strings; a direct owned-directory probe confirmed placement.
+The earlier failed assertion is retained as a local receipt.
+
+The RootChild Lean target built successfully (79 jobs), and all ten RootChild
+Quint qualification cases passed, including expected counterexample controls.
+The source binding now includes both shared Contract and Port modules. Neither
+result establishes a capacity theorem for the physical read graph. At bfc2d5c,
+both platforms' build/bootstrap and all non-scale CI shards passed; both scale
+shards still failed the original ten-thousand-module gate. No full-green claim
+is made, and the memory budget/complete read dependencies remain unchanged.

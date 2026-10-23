@@ -31,7 +31,7 @@
        #t
        '((boundary . contract-schema))))
     (def +contract-schema-fixture-contract+
-      (yuanxu-native-contract
+      (yuanxu-object-contract
        'contract-schema/fixture
        'module-system
        'YuanxuContractSchemaFixture
@@ -53,7 +53,7 @@
 
 (let (row
       (contract-schema-eval
-       '(yuanxu-native-contract->alist
+       '(yuanxu-object-contract->alist
          +contract-schema-fixture-contract+)))
   (unless (and (eq? (contract-schema-test-ref row 'object-kind)
                     'YuanxuContractSchemaFixture)

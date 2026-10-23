@@ -10,8 +10,8 @@
         (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
-                 yuanxu-native-contract
-                 yuanxu-native-contract->alist))
+                 yuanxu-object-contract
+                 yuanxu-object-contract->alist))
 
 (import :yuanxu/graph/types-core)
 
@@ -43,7 +43,7 @@
         YuanxuGraphNodePayloadSlot
         YuanxuGraphNodeMetadataSlot))
 (def YuanxuGraphNodeContract
-  (yuanxu-native-contract
+  (yuanxu-object-contract
    'graph/node 'graph 'YuanxuGraphNode yuanxu-graph-node?
    YuanxuGraphNodeSlots
    (lambda (candidate slot) (.slot? candidate slot))
@@ -51,7 +51,7 @@
    '((scope . graph) (projection . graph-node))))
 
 (def (yuanxu-graph-node-type-contract->alist)
-  (yuanxu-native-contract->alist YuanxuGraphNodeContract))
+  (yuanxu-object-contract->alist YuanxuGraphNodeContract))
 
 (def YuanxuGraphSymbolType
   (yuanxu-contract-value-type 'Symbol symbol? 'Symbol))
@@ -77,7 +77,7 @@
         YuanxuGraphEdgeKindSlot
         YuanxuGraphEdgeMetadataSlot))
 (def YuanxuGraphEdgeContract
-  (yuanxu-native-contract
+  (yuanxu-object-contract
    'graph/edge 'graph 'YuanxuGraphEdge yuanxu-graph-edge?
    YuanxuGraphEdgeSlots
    (lambda (candidate slot) (.slot? candidate slot))
@@ -85,7 +85,7 @@
    '((scope . graph) (projection . graph-edge))))
 
 (def (yuanxu-graph-edge-type-contract->alist)
-  (yuanxu-native-contract->alist YuanxuGraphEdgeContract))
+  (yuanxu-object-contract->alist YuanxuGraphEdgeContract))
 
 (def YuanxuGraphNodeListType
   (yuanxu-contract-value-type
@@ -115,7 +115,7 @@
         YuanxuGraphEdgesSlot
         YuanxuGraphMetadataSlot))
 (def YuanxuGraphContract
-  (yuanxu-native-contract
+  (yuanxu-object-contract
    'graph 'graph 'YuanxuGraph yuanxu-graph?
    YuanxuGraphSlots
    (lambda (candidate slot) (.slot? candidate slot))
@@ -123,7 +123,7 @@
    '((scope . graph) (projection . graph))))
 
 (def (yuanxu-graph-type-contract->alist)
-  (yuanxu-native-contract->alist YuanxuGraphContract))
+  (yuanxu-object-contract->alist YuanxuGraphContract))
 
 (def YuanxuGraphNumberType
   (yuanxu-contract-value-type 'Number number? 'Number))
@@ -165,7 +165,7 @@
    (yuanxu-graph-analysis-slot
     'graph.analysis/metadata 'metadata YuanxuGraphMetadataType)))
 (def YuanxuGraphAnalysisContract
-  (yuanxu-native-contract
+  (yuanxu-object-contract
    'graph/analysis 'graph 'YuanxuGraphAnalysis yuanxu-graph-analysis?
    YuanxuGraphAnalysisSlots
    (lambda (candidate slot) (.slot? candidate slot))
@@ -173,7 +173,7 @@
    '((scope . graph) (projection . graph-analysis))))
 
 (def (yuanxu-graph-analysis-type-contract->alist)
-  (yuanxu-native-contract->alist YuanxuGraphAnalysisContract))
+  (yuanxu-object-contract->alist YuanxuGraphAnalysisContract))
 
 (def YuanxuGraphComponentListType
   (yuanxu-contract-value-type
@@ -213,7 +213,7 @@
    (yuanxu-graph-loop-analysis-slot
     'graph.loop-analysis/metadata 'metadata YuanxuGraphMetadataType)))
 (def YuanxuGraphLoopAnalysisContract
-  (yuanxu-native-contract
+  (yuanxu-object-contract
    'graph/loop-analysis 'graph 'YuanxuGraphLoopAnalysis
    yuanxu-graph-loop-analysis?
    YuanxuGraphLoopAnalysisSlots
@@ -222,4 +222,4 @@
    '((scope . graph) (projection . graph-loop-analysis))))
 
 (def (yuanxu-graph-loop-analysis-type-contract->alist)
-  (yuanxu-native-contract->alist YuanxuGraphLoopAnalysisContract))
+  (yuanxu-object-contract->alist YuanxuGraphLoopAnalysisContract))

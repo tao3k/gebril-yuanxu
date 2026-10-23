@@ -10,7 +10,7 @@
         (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :yuanxu/module-system/authoring/roles TypesSourceRole.)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
-        (only-in :yuanxu/types yuanxu-classification-evidence yuanxu-validation-evidence
+        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
                  yuanxu-classification-evidence? yuanxu-validation-evidence?
                  YuanxuContract. yuanxu-contract-admit)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
