@@ -29,6 +29,7 @@
 (create-directory* root)
 (def resource (.call SourceLoaderFixture .acquire))
 (def state (.get resource issuer))
+(displayln "AUTHORITY-PHASE fixture-ready") (force-output)
 (def artifacts (authority-artifacts state))
 (def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
@@ -54,7 +55,9 @@
     ;; Capture the actual compiled native entry BEFORE first target loading.
     (def saved yuanxu/t/qualification/mop-state/source-loader#load-module)
     (check-equal? (eq? load-module old-sdk-entry) #t)
+    (displayln "AUTHORITY-PHASE saved-entry-start") (force-output)
     (check-equal? (string? (saved entry)) #t)
+    (displayln "AUTHORITY-PHASE saved-entry-complete") (force-output)
     (def loaded-count (length (.get (authority-status state) consumed)))
     (def before (length (.get (authority-status state) events)))
     (check-equal? (string? (saved entry)) #t)

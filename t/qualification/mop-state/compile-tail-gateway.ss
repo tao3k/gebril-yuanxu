@@ -41,12 +41,19 @@
     (display (substring text (+ offset (string-length original)) (string-length text)) port)))
 (def original-import (current-expander-module-import))
 (def seen (make-hash-table-eq))
+;; The package has one ordinary namespace and one explicitly named prelude.
+;; Route both to the same snapshot; never mix the host's prelude into its clone.
+(def (snapshot-source name)
+  (cond
+    ((equal? name "tao3k/yuanxu/prelude") (path-expand "prelude.ss" source-core))
+    ((and name (string-prefix? "yuanxu/" name))
+     (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") source-core))
+    (else #f)))
 (def (source-import path (reload? #f))
   (def datum (syntax-e path))
   (def name (and (symbol? datum) (symbol->string datum)))
-  (def source
-    (and name (string-prefix? ":yuanxu/" name)
-         (path-expand (string-append (substring name (string-length ":yuanxu/") (string-length name)) ".ss") source-core)))
+  (def source (and name (string-prefix? ":" name)
+                     (snapshot-source (substring name 1 (string-length name)))))
   (original-import (if (and source (file-exists? source)) source path) reload?))
 (def (visit context)
   (cond
@@ -58,14 +65,19 @@
      (for-each visit (module-context-import context))
      (let* ((identity (expander-context-id context))
             (name (and (symbol? identity) (symbol->string identity)))
-            (source (and name (string-prefix? "yuanxu/" name)
-                         (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") source-core))))
+            (source (snapshot-source name)))
        (when (and source (file-exists? source))
          (displayln "SOURCE-TAIL-COMPILE " name) (force-output)
          (compile-module source [output-dir: (path-expand "lib" root)
                                  invoke-gsc: #t keep-scm: #t parallel: #t]))))))
 (parameterize ((current-expander-context (make-top-context))
                (current-expander-module-import source-import))
+  ;; The Harness imports init at runtime, and test-projection deliberately
+  ;; delays TestingScript until .run. Compile those actual roots as well as
+  ;; the test body; a static walk of the body alone misses their Core imports.
+  ;; This prepares code only: no Script or selected business scope executes.
+  (visit (core-import-module (path-expand "init.ss" source-core)))
+  (visit (core-import-module (path-expand "observability/testing-script.ss" source-core)))
   (visit (core-import-module (path-expand "t/source-admission-gateway-test.ss" source-core)))
 )
 (execute-pending-compile-jobs!)
