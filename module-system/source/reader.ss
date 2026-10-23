@@ -211,7 +211,13 @@
      ((and (pair? tail) (memq (car tail) '(package: namespace:)))
       (loop (cddr tail) prelude))
      (else (append prelude imports tail)))))
-(def compiler-core-root (path-normalize (path-expand "../.." (path-directory (this-source-file)))))
+;; Keep the compile anchor lexical: an installed SDK may outlive its compiler
+;; sandbox. The existing bootstrap source projection checks file presence before
+;; guarding source; compiled contexts retain their native SDK trust boundary.
+(def compiler-core-root
+  (let* ((source-directory (path-directory (this-source-file)))
+         (module-directory (path-directory (path-strip-trailing-directory-separator source-directory))))
+    (path-directory (path-strip-trailing-directory-separator module-directory))))
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
 (def (public-dependency-input path (prepared #f))

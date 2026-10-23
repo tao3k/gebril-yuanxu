@@ -178,3 +178,20 @@ markers even inside quoted child output. The role Make control compares numeric
 modification timestamps rather than identities of opaque SDK time objects.
 The optional source-only qualification has also been updated to mutate root
 package/prelude inputs; it no longer assumes a directory package file exists.
+
+* Installed Reader and deleted compiler sandboxes
+
+The product build exposed an additional production boundary after the Core,
+Parser, Ascent and Orgize actions completed: loading the compiled Reader tried
+to physically normalize its embedded compiler sandbox path, which Bazel had
+already removed. The failure occurred before publication admission.
+
+The Reader now derives its two lexical parent directories with SDK path
+operations. It neither resolves a deleted path at module initialization nor
+retains unresolved =..= components. The latter are still refused by the existing
+owner-confinement gate; that negative result was retained during qualification.
+The existing bootstrap source projection checks actual file presence before
+projecting sources. Compiled SDK contexts retain their existing native runtime
+trust boundary. No current-directory fallback, substitute source root or relaxed
+source check is introduced. Selected Module/configuration inputs retain their
+own complete currentness checks independently of the compiler's build directory.
