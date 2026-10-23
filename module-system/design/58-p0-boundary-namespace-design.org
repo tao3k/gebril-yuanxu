@@ -167,7 +167,7 @@ agentic-ai-lab.<category>.<module>
 
 Old names should be removed when touched:
 - =funflow= as a project namespace;
-- =poo*= or =pooFLow= spelling variants;
+- retired project spelling variants;
 - =popflow=;
 - =merge= as a layer name;
 - public =agentic-ai-lab.modules.*= namespaces.

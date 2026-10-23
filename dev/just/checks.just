@@ -5,7 +5,7 @@ check-package-namespace:
     #!/usr/bin/env bash
     set -euo pipefail
     status=0
-    git grep -nE 'AgenticAILab|agentic-ai-lab-core|agentic-ai-lab-|:core/|:agentic-ai-lab/|package: core' -- '*.ss' '*.scm' '*.py' '*.nix' '*.yml' '*.yaml' '*.toml' '*.lean' '*.qnt' '*.sh' gerbil.pkg || status=$?
+    git grep -nE 'AgenticAILab|agentic-ai-lab-core|agentic-ai-lab-|:co[r]e/|:agentic-ai-lab/|package: core' -- '*.ss' '*.scm' '*.py' '*.nix' '*.yml' '*.yaml' '*.toml' '*.lean' '*.qnt' '*.sh' gerbil.pkg || status=$?
     case "$status" in
       0) echo 'removed Core namespace found' >&2; exit 1 ;;
       1) echo 'YUANXU-NAMESPACE-OK' ;;
