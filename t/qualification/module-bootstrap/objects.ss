@@ -2,22 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import "../../../init.ss" :clan/poo/object "./fixtures.ss"
-        (only-in :yuanxu/ops/progress execution-progress! make-test-progress-reader)
+        (only-in :yuanxu/observability/testing-script make-compiler-progress-reader)
         (only-in :std/source this-source-file))
 (export Build InputChecks Fixture)
 (def owner (path-expand "../../.." (path-directory (this-source-file))))
 (def host-state (path-expand (gerbil-path)))
 (def Ops (.get yuanxu.init.exports Modules ops scope))
-(def (compiler-progress-reader)
-  (def completed 0)
-  (make-test-progress-reader (lambda (line)
-    ;; std/make emits these rows for real compilation/scheduling work. Relay
-    ;; that work to the enclosing watchdog; elapsed time alone is not progress.
-    (when (or (string-prefix? "... compile " line)
-              (string-prefix? "... invoke " line)
-              (string-prefix? "... execute compile job " line))
-      (set! completed (+ completed 1))
-      (execution-progress! 'bootstrap-compiler completed)))))
 ;; Lazy fixture data; declaring this object creates no fixture or process.
 (.def Fixture
   value: (source-build-fixture owner)
@@ -26,7 +16,7 @@
   cold: (.get value cold))
 ;; Reuse the maintained Ops Script protocol. Only the test's .run starts it.
 (.def (Build @ (.get Ops prototypes Script))
-  progress: compiler-progress-reader
+  progress: make-compiler-progress-reader
   idle-timeout: 60
   command: '("env" "-u" "CORE_QUALIFICATION_ROOT" "-u" "GERBIL_LOADPATH"
                   "-u" "SDKROOT" "gerbil" "-:max-heap=2G,debug=q" "env" "gxi" "build.ss")

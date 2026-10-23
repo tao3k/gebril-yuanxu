@@ -4,6 +4,8 @@
         (only-in :yuanxu/module-system/source/init module-init-export-name))
 (export import-fixture-init!)
 (def (import-fixture-init! path)
+  ;; A fresh top context has no import transformers until its prelude is bound.
+  (eval-syntax '(import :gerbil/core))
   (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
     (let (binding (module-init-export-name identity))
       (eval-syntax

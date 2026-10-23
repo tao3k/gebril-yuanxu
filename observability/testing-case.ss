@@ -74,13 +74,15 @@
               (def started-cpu
                 (and observing? (yuanxu-debug-cpu-microseconds)))
               (def counts (and observing? (make-hash-table-eq)))
+              (def checkpoint-wall 0)
+              (def checkpoint-cpu-total 0)
               (def allocation-previous #f)
               (def allocation-current? #t)
               (def (observe key amount)
                 (unless (and (symbol? key) (exact-integer? amount) (>= amount 0))
                   (error "test work observation requires a symbol and natural count"))
                 (when (and (not (hash-key? counts key)) (>= (hash-length counts) 64))
-                  (error "test work observation exceeded its bounded categories"))
+                  (error "test work observation exceeded its bounded categories" key (hash-keys counts)))
                 (let (next (+ (or (hash-get counts key) 0) amount))
                   (hash-put! counts key next) next))
               (def (observed-checkpoint phase)
@@ -109,11 +111,11 @@
                   ;; Attribute explicit receipt construction/output separately
                   ;; from domain work. Scalar source-event accounting and the
                   ;; watchdog remain outside this deliberately narrow measure.
-                  (observe 'checkpoint-microseconds
+                  (set! checkpoint-wall (+ checkpoint-wall
                     (quotient (* (- (current-jiffy) checkpoint-started) 1000000)
-                              (jiffies-per-second)))
-                  (observe 'checkpoint-cpu-microseconds
-                    (- (yuanxu-debug-cpu-microseconds) checkpoint-cpu))
+                              (jiffies-per-second))))
+                  (set! checkpoint-cpu-total (+ checkpoint-cpu-total
+                    (- (yuanxu-debug-cpu-microseconds) checkpoint-cpu)))
                   receipt))
               (parameterize ((current-case-checkpoint (if counts observed-checkpoint void))
                              (current-case-observer (and counts observe)))
@@ -133,10 +135,11 @@
                   (lambda ()
                     (when counts
                       (yuanxu-write-observation-line!
-                        "test-case-timing case=%s elapsed-ms=%s cpu-ms=%s"
+                        "test-case-timing case=%s elapsed-ms=%s cpu-ms=%s checkpoint-us=%s checkpoint-cpu-us=%s"
                         description
                         (quotient (* (- (current-jiffy) started) 1000) (jiffies-per-second))
-                        (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000))
+                        (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
+                        checkpoint-wall checkpoint-cpu-total)
                       (yuanxu-write-observation-line!
                         "test-work case=%s allocation-current?=%s final-counts=%s"
                         description allocation-current? (hash->list counts)))))))))

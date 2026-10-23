@@ -890,7 +890,7 @@ def main():
     if f'witnessReplayQuintDigest : String := "{witness_digest}"' not in " ".join(witness_lean.read_text().split()):
         raise AssertionError("Lean retains a stale WitnessReplay Quint source binding")
     bound.extend([core / "poo-clos/classes.ss", core / "observability/memory.ss",
-                  core / "t/execution-progress-test.ss",
+                  core / "t/testing-script-test.ss",
                   core / "t/qualification/module-scale/worker-test.ss"])
     bound.extend([core / "t/module-candidate-stage-test.ss",
                   core / "t/module-candidate-metadata-test.ss",

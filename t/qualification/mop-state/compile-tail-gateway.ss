@@ -4,9 +4,9 @@
 (def root (path-expand (getenv "CORE_SOURCE_TAIL_ROOT")))
 (def core (path-expand (getenv "CORE_SOURCE_TAIL_CORE")))
 (def original
-  "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    ((current-module-source-observer) kind amount)))")
+  "(def (observe-source kind (amount 1))\n  (when (and (symbol? kind) (current-module-source-operation-times))\n    (hash-update! (current-module-source-operation-times) (list 'source kind)\n      (cut + <> amount) 0))\n  (when (current-module-source-observer)\n    ((current-module-source-observer) kind amount)))")
 (def candidate
-  "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    (when (memq (current-module-source-phase) '(slot-replay return-currentness))\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))")
+  "(def (observe-source kind (amount 1))\n  (when (and (symbol? kind) (current-module-source-operation-times))\n    (hash-update! (current-module-source-operation-times) (list 'source kind)\n      (cut + <> amount) 0))\n  (when (current-module-source-observer)\n    (when (memq (current-module-source-phase) '(slot-replay return-currentness))\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))")
 ;; Snapshot current runtime sources as one coherent package. A single relocated
 ;; Core library mixed with live source imports is correctly refused by the reader.
 ;; Copy source/data roles, not compiled artifacts or a frozen older qualification.

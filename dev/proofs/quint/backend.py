@@ -27,7 +27,7 @@ def terminate(process):
 
 @contextmanager
 def backend_session(progress, quint_executable):
-    executable = Path.home() / '.quint/apalache-dist-0.62.1/apalache/bin/apalache-mc'
+    executable = Path(os.environ.get('QUINT_HOME', Path.home() / '.quint')) / 'apalache-dist-0.62.1/apalache/bin/apalache-mc'
     if not executable.is_file():
         raise RuntimeError('prepare the pinned Apalache 0.62.1 distribution first')
     with socket.socket() as reservation:

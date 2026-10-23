@@ -124,3 +124,29 @@ The nested Harness result must name the exact normalized absolute source file,
 in addition to its =HARNESS-OK= and final =OK=. A relative-path substring is not
 a valid substitute for the native module identity. Compiler progress is not a
 successful test result, and a completed compilation cannot waive Harness failure.
+
+** Current-head CI recovery (2026-10-23)
+
+The default test preparation and the cold bootstrap fixture share
+=make-compiler-progress-reader=. It forwards only actual =std/make= compile,
+invoke and compiler-job rows into the existing Ops progress frame. Preparation
+also streams the captured compiler output to the enclosing owner. Its existing
+120-second preparation limit, 60-second idle limit and final artifact admission
+remain unchanged; neither elapsed time nor a timer produces progress.
+
+Checkpoint wall/CPU accounting is held in two private scalar totals, reported by
+=test-case-timing=. It must not consume the unchanged 64 domain observation
+categories. The full-category regression remains unchanged. An overflow reports
+both the attempted key and the already occupied categories.
+
+Core init selects JsonSchema, Ops and Funflow. Discovery/isolation regressions
+use those real owners and retain an unforced Ops scope while JsonSchema and
+Funflow qualification sources execute. Product OpenTofu operational-round tests
+belong in the product repository, alongside their actual producer, rather than
+importing a removed OpenTofu directory from the Core library.
+
+The pinned Quint backend resolves its distribution relative to =QUINT_HOME=,
+with the same default as the installed Quint CLI. The source cut binds the
+current testing-script controls instead of a deleted execution-progress test;
+this is an executable-input correction, not a new theorem or a replacement for
+the finite model's positive/negative checks.

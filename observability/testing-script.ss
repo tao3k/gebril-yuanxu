@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Testing policy over Ops and the original std/test harness, not a runner.
 (import :clan/poo/object
-        (only-in :yuanxu/ops/progress make-test-progress-reader call-with-execution-watchdog)
+        (only-in :yuanxu/ops/progress make-test-progress-reader call-with-execution-watchdog execution-progress!)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/ops/func run-script)
@@ -11,7 +11,18 @@
         (only-in "./testing-case.ss" yuanxu-selected-testing-case-profile
                  yuanxu-testing-case-profile? yuanxu-test-checkpoint)
         (only-in "./testing-fixture.ss" call-with-yuanxu-fixture))
-(export TestingScript. admit-testing-result admit-testing-process-result testing-script-for-source)
+(export TestingScript. admit-testing-result admit-testing-process-result testing-script-for-source make-compiler-progress-reader)
+
+;; Relay only real std/make work through the existing Ops progress frame.
+(def (make-compiler-progress-reader)
+  (def completed 0)
+  (make-test-progress-reader
+    (lambda (line)
+      (when (or (string-prefix? "... compile " line)
+                (string-prefix? "... invoke " line)
+                (string-prefix? "... execute compile job " line))
+        (set! completed (+ completed 1))
+        (execution-progress! 'compiler completed)))))
 
 ;; Use the original harness's feature channel, not an environment probe or a
 ;; second launcher. Only observation booleans cross this process boundary;
@@ -155,7 +166,8 @@
           (def receipt (run-script
             (.cc ProcessScript.
               'directory (.get script directory)
-              'environment (.+ environment (.o GERBIL_BUILD_CORES: "1"))
+              'environment (.+ environment (.o GERBIL_BUILD_CORES: "1" GERBIL_BUILD_VERBOSE: "1"))
+              'progress make-compiler-progress-reader
               'timeout 120 'idle-timeout 60
               'command
               (append
@@ -168,7 +180,8 @@
                   (if times
                     '("-e" "(displayln \"test-prepare phase=make-import seconds=\" (- (real-time) test-make-started))")
                     '())
-                  (list "-e" (object->string expression)))))))
+                  (list "-e" (object->string expression)))))
+            output-port: (current-error-port)))
           ;; Report the actual compiler before completion admission: a refused
           ;; new generation must not erase the producer's diagnostic counts.
           (when times

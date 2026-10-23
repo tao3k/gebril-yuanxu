@@ -172,7 +172,7 @@
       (call-with-temporary-directory "testing-launch-"
         (lambda (directory)
           (def counter (path-expand "executions" directory))
-          (def file "t/qualification/testing/launch-count-test.ss")
+          (def file (path-normalize (path-expand "t/qualification/testing/launch-count-test.ss")))
           (.def (Driver @ TestingScript.)
             source: (.o spec: (list file) source-root: (current-directory) admit-current: void)
             command: (list "gxi" "-:max-heap=2G,debug=q"

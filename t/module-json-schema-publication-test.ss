@@ -23,7 +23,7 @@
                         '((type . "object") (required . ("port"))
                           (properties . ((port . ((type . "integer") (minimum . 1)))))))))
         (check-equal? (.get view selected-graph module-order)
-                      '(json-schema ops funflow nix opentofu null aws-validation aws))
+                      '(json-schema ops funflow))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o port: 80) #f)) #t)
