@@ -784,3 +784,27 @@ CPU inside the port-read span. This does not retrospectively establish the
 cause of older uninstrumented receipts. The VM allocation stream is unqualified,
 and fewer calls alone establishes no speedup. The costing model and negative
 control retain that distinction; no additional currentness check was removed.
+
+* Forward owner discovery and role compilation boundary, 2026-10-23
+
+An auto-selected directory can be the target of a native type import before its
+publication is demanded. The directory context now resolves only that requested
+path through its existing locator. Explicit decisions, including disabled
+Modules, retain authority. This does not enumerate or activate the auto window.
+The focused window suite passed with a forward owner, a changed type source,
+a disabled owner and malformed unselected interfaces remaining cold. Canonical
+owner paths remain required; crossing an owner with unresolved =../= spelling
+is still refused.
+
+Directory organization is not a separate Gerbil package boundary. A nested
+=modules/gerbil.pkg= or =scenarios/gerbil.pkg= must not be required merely to
+select role-specific default bindings. The root package owns identity; the
+=yuanxu!= selection and existing source preparer own role lowering. Prepared
+reader forms already inject declaration bindings and role imports. Native
+Make entry points must consume corresponding prepared role inputs instead of
+requiring a directory package to repair bare source imports. This remaining
+build-path correspondence is not established by the focused window result.
+
+The complete baseline run retained failures in both declaration scale suites,
+compiled namespace execution and the isolated source gateway. No timeout,
+memory budget, source confinement or unissued-output rejection was relaxed.

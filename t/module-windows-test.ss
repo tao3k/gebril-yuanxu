@@ -117,6 +117,43 @@
           '((yuanxu! :load-modules "./modules" mode: explicit rename: Changed (engine))))
         (check-exception (eval-syntax '(.all-slots (.get FixtureExports Modules))) error?)
         (check-exception (eval-syntax '(.call CapturedTests .run)) error?)))
+    (yuanxu-test-fixture "forward type imports resolve only their eligible auto-window owner"
+      (root Workspace)
+      (fixture! root)
+      (write-forms (path-expand "scenarios/release/types.ss" root)
+        `((import :clan/poo/object (only-in ,(path-normalize (path-expand "modules/engine/types.ss" root)) Scope))
+          (export Scope)))
+      (def (declare! disabled? (directory root))
+        (write-forms (path-expand "init.ss" directory)
+          `((import :yuanxu/module-system/selection/init-syntax)
+            (yuanxu! :load-modules "./modules" mode: auto rename: Modules
+                     ,@(if disabled? '((engine disable: #t)) '())
+                     :load-modules "./scenarios" mode: explicit rename: Scenarios (release)))))
+      (def (load! (directory root))
+        (parameterize ((current-expander-context (make-top-context)))
+          (import-fixture-init! (path-expand "init.ss" directory))))
+      (declare! #f)
+      (def exports (load!))
+      (def release (.get exports Scenarios release))
+      (check-equal? (length (.get release tests spec)) 1)
+      (check-equal? (.ref/cached release 'scope) #f)
+      (check-equal? (.ref/cached (.get exports Modules engine) 'scope) #f)
+      ;; Both bomb interfaces are malformed: resolving either would refuse.
+      ;; Captured support must still notice a change to the demanded type file.
+      (def current! (.get release tests admit-current))
+      (call-with-output-file (list path: (path-expand "modules/engine/types.ss" root) append: #t)
+        (cut display "\n;; changed demanded contract\n" <>))
+      (check-exception (current!) error?)
+      ;; A fresh native package distinguishes disabled-owner refusal from
+      ;; rejection of the earlier, deliberately stale init/type snapshot.
+      (def denied-root (path-expand "denied" root))
+      (fixture! denied-root)
+      (write-forms (path-expand "scenarios/release/types.ss" denied-root)
+        `((import :clan/poo/object (only-in ,(path-normalize (path-expand "modules/engine/types.ss" denied-root)) Scope))
+          (export Scope)))
+      (declare! #t denied-root)
+      (def denied (load! denied-root))
+      (check-exception (.get denied Scenarios release tests spec) error?))
     (yuanxu-test-fixture "auto mounts locate on demand and reject a shared publication identity"
       (root Workspace)
       (fixture! root)

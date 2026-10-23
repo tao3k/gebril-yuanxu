@@ -134,10 +134,40 @@
              (when (hash-key? source-owners key)
                (error "duplicate declared module source owner" id directory init-path))
              (hash-put! source-owners key (.o identity: id root: key))))) decisions)
+      ;; An auto-window owner may be referenced by types before its publication
+      ;; is demanded. Invert only the requested path; do not enumerate modules.
+      (def auto-owner-roots
+        (map (lambda (directory)
+               (path-strip-trailing-directory-separator (path-normalize directory)))
+             (if windows
+               (map window-root (filter (lambda (window) (eq? (.ref window 'mode) 'auto)) windows))
+               (if (eq? (.ref intent-value 'mode) 'auto) (list root-path) '()))))
+      (def (auto-source-owner directory)
+        (def identities
+          (delete-duplicates/hash
+            (filter-map
+              (lambda (root)
+                (def prefix (string-append root "/"))
+                (and (string-prefix? prefix directory)
+                     (let (id (string->symbol
+                                (substring directory (string-length prefix) (string-length directory))))
+                       ;; Explicit declarations (including disable) own identity;
+                       ;; an auto directory must never shadow their source.
+                       (and (not (decision-row id)) id)))) auto-owner-roots)))
+        (and (pair? identities)
+             (eq? (observe! module-source-type (path-expand "interface.ss" directory)) 'regular)
+             (begin
+               (when (pair? (cdr identities))
+                 (error "ambiguous imported module owner" directory identities))
+               ;; Reuse the normal locator and its policy/currentness carrier.
+               ;; It registers ownership only after path/style admission.
+               (locate-source (car identities))
+               (hash-get source-owners directory))))
       (def (source-owner path)
         (let loop ((directory (path-strip-trailing-directory-separator
                                (path-directory (path-normalize path)))))
           (or (hash-get source-owners directory)
+              (and (pair? auto-owner-roots) (auto-source-owner directory))
               (let (parent (path-strip-trailing-directory-separator (path-directory directory)))
                 (and (not (equal? parent directory)) (loop parent))))))
       (def source-tree
