@@ -28,13 +28,6 @@
   (when (getenv "GERBIL_BUILD_VERBOSE" #f)
     (displayln "BUILD-START Core " args " at=" (real-time)) (force-output))
   (begin0
-    (if (and (pair? args) (equal? (car args) "clean"))
-      ;; Module cleanup also owns identities outside the package prefix.
-      ((.get yuanxu.init.exports std-make-run) core-spec package-main args)
-      (let (spec ((.get yuanxu.init.exports std-make-spec) core-spec))
-        (when (getenv "GERBIL_BUILD_VERBOSE" #f)
-          (displayln "BUILD-SPEC Core targets=" (length spec) " at=" (real-time)) (force-output))
-        (begin0 (package-main spec args)
-          ((.get yuanxu.init.exports admit-current)))))
+    ((.get yuanxu.init.exports std-make-run) core-spec package-main args publication: #f)
     (when (getenv "GERBIL_BUILD_VERBOSE" #f)
       (displayln "BUILD-FINISH Core " args " at=" (real-time)) (force-output))))

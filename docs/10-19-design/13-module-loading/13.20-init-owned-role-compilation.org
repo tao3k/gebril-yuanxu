@@ -1,0 +1,180 @@
+#+title: 13.20 Init-Owned Role Compilation
+
+* Decision and implementation status
+
+Within one Gerbil package, directory organization must not require an additional
+=gerbil.pkg= merely to supply Module role bindings. The package root owns the
+package identity and ordinary language entry. =yuanxu!= owns the selection whose
+existing source preparer lowers role files into native compiler inputs.
+
+The implementation joins the existing native dispatch boundary to the prepared
+role inputs. Qualification must include a package using only its root metadata;
+a reader-only result is insufficient to remove directory metadata.
+
+* Public source boundary
+
+The package metadata remains at the actual package root:
+
+#+begin_src scheme
+(package: agentic-ai-lab
+ prelude: :tao3k/yuanxu/prelude)
+#+end_src
+
+The existing directory-window declaration selects and names exports:
+
+#+begin_src scheme
+(yuanxu!
+ :load-modules "./modules" mode: explicit rename: modules
+ (checks)
+ :load-modules "./scenarios" mode: explicit rename: scenarios
+ (release))
+#+end_src
+
+=rename= determines a mounted export path. It does not rename a Gerbil package,
+grant a dependency, or choose a second language entry. Ordinary independently
+packaged dependencies and the separate development package retain their real
+package metadata; this decision concerns role-directory workarounds.
+
+* One lowering, two native consumers
+
+The preparer already produces =reader-forms= and =compiler-forms=. Both must use
+the same role inventory, actual native compiler identities and original syntax
+locations. Module discovery remains demand-driven. Neither expansion nor
+ordinary interface loading executes =build.ss= or starts an Ops process.
+
+For a selected checks interface, the generated compiler frame has this shape;
+these headers and imports belong to generated input, not user configuration:
+
+#+begin_src scheme
+prelude: :tao3k/yuanxu/prelude
+package: agentic-ai-lab/modules/checks
+namespace: agentic-ai-lab/modules/checks/interface
+(import (only-in :yuanxu/module-system/source/declaration
+                .def define-module-build-binding)
+        "./types.ss" "./objects.ss" "./func.ss" "./config.ss")
+(include "/original/package/modules/checks/interface.ss")
+#+end_src
+
+Only present roles appear. Build bindings retain the existing explicit build
+phase. Ordinary objects use the ordinary POO binding; interface declarations
+use the existing declaration binding. An explicitly selected custom prelude
+must not be silently replaced. Original slot and expression syntax locations
+survive the generated frame.
+
+The reader consumes the prepared forms. The native build must consume their
+corresponding materialization through the existing selected build projection.
+Returning a native target list while compiling the original bare files is not
+that correspondence. Installing directory metadata or modifying the SDK's
+private module registry is not an acceptable substitute.
+
+* Native layout and reuse obligations
+
+Native Make owns dependency scheduling and native compilation. Its expected
+product paths depend on the source root, package prefix and target name. Those
+paths must match the compiler identities recorded by the source preparer,
+including the explicitly named =tao3k/yuanxu/prelude=. Do not manufacture a
+second namespace alias to make an incorrectly projected target look current.
+
+The generated-source layout must preserve selected source, compiler and output
+associations across cold compilation and signed hot recovery. Merely restoring
+file bytes does not establish Make timestamp correspondence. No new cache
+protocol, cached admission verdict, implicit build effect or compiler patch is
+authorized by this design. Existing source currentness and artifact issuance
+remain the acceptance boundaries.
+
+* Required closure before removing directory metadata
+
+1. Exercise a root package with no directory-level package files. The generated
+   types, objects, functions, Config and interface must expand and compile with
+   the same native identities and effective values as reader publication.
+2. Verify explicit custom bindings, hygienic names and original source ranges;
+   Config construction and include bodies must not evaluate twice.
+3. Verify selected dependencies, disabled dependencies, cycles and cold optional
+   roles through the existing Module mechanism, without widening source roots.
+4. Run native cold and fresh-process hot builds. Record actual compilation and
+   reject stale sources, forged products and unissued later object generations.
+5. Preserve production/test phase separation, loading-without-running, parent
+   cache isolation and both Gitea/PostgreSQL contribution requirements.
+6. Remove the Core directory metadata only after the normal build and Harness
+   paths satisfy these controls. Do not substitute a passing reader-only probe
+   for native build or complete CI qualification.
+
+The remaining failures and focused receipts are recorded in
+[[file:13.18-guarded-test-precompilation.org][13.18]]. This chapter changes the architectural requirement; it does not
+relabel those failures as successes.
+
+* Native compiler integration
+
+=std-make-run= and explicit =.compile= share one internal role-lowering
+callback on the prepared projection. The existing =std-make-run= default still
+uses issued compilation. The maintained package build scripts explicitly pass
+=publication: #f= to retain ordinary SDK incrementality without granting
+publication approval. No existing caller silently loses the issuance check;
+explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
+binds the SDK's public =current-expander-module-import= only for that action.
+Both the Make coordinator and compiler driver consult this parameter. Original
+native source targets, compiler identities and Make dependency timestamps are
+unchanged. No compiler source, private registry, new Builder or persistent cache
+protocol is introduced.
+
+The role set comes from the prepared publication's =role-sources=. Ordinary
+retained libraries and private helpers keep their ordinary native import path.
+Each redirected import checks its original input before and after expansion;
+the enclosing compilation retains complete source checks, plus artifact issuance
+when explicitly requested through =.compile=.
+The temporary frames are cleaned on normal and exceptional exit. Original body
+syntax retains source locations and relative-import ownership.
+
+Default role frames use the existing context-aware Module prelude, including
+its native =.def/ctx= lowering for non-interface roles. The no-directory-metadata
+control exposed an unbound exported object because the native reader had already
+resolved the prelude to a path; comparing that value with a source symbol never
+selected the role prelude. Classification now uses actual native context identity
+or the SDK-resolved library path, without guessing from basenames. Explicit role imports retain authority over weak
+prelude bindings. Unrecognized custom preludes are not replaced.
+
+The qualification also retained the strict refusal of old unissued =.o2= files.
+The validation prefix is cleaned through the installed SDK's ordinary =clean=
+entry, not by accepting those files or widening issuance. A compiled-source
+pass alone does not count as successful publication.
+
+* Bootstrap and acceptance controls
+
+Role preludes expose the same Core compile-time phases as the package language.
+They bootstrap directly from Gerbil Core and POO, rather than importing the
+optional package-language module by library path before it has been installed.
+The prepared configuration reader places all native headers before generated
+role imports, including deferred =build.ss= evaluation.
+
+The default =just test-file= controls exercise:
+
+- a root-only package using =:gerbil/core=, with ordinary role objects and
+  original =this-source-file= values, hidden role bindings, native Make cold/hot
+  compilation, and source mutation refusal;
+- the complete publication suite, including a macro initializer running once
+  and demand-only evaluation of deferred Build;
+- real Gitea/PostgreSQL admission, including both independent requirements,
+  cached parent plans, final child ports and source mutation refusal;
+- selected build Graph and multi-window ownership, disabled/cold branches and
+  unchanged default issuance. A callback producing no binaries must be refused
+  by the default path; ordinary package mode returns no publication authority.
+
+These are implementation regressions, not a new formal proof or a claim that
+all pre-existing CI failures have closed. Raw intermediate failures remain local
+artifacts; maintained source records the controls and bounded conclusions.
+
+* Recorded local qualification
+
+On 2026-10-23 the installed Gerbil =1cfb032= and pinned POO =80b590b= compiled
+all 237 Core targets in a newly created prefix containing only the POO dependency
+and its SDK manifest. Before invocation that prefix contained no =lib/yuanxu=.
+The normal =just build= completed in approximately 158 seconds with two native
+workers, under the unchanged 600-second limit. This is a local cold-build
+receipt, not a CI result or an end-to-end performance comparison.
+
+The maintained default test entry =just test-file= is used serially. Successful
+receipts require =MODULE-OK=, =HARNESS-OK= and final =OK=, and reject failure
+markers even inside quoted child output. The role Make control compares numeric
+modification timestamps rather than identities of opaque SDK time objects.
+The optional source-only qualification has also been updated to mutate root
+package/prelude inputs; it no longer assumes a directory package file exists.

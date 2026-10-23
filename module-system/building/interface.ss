@@ -154,7 +154,8 @@
   (def (module-namespace) (.get (selected!) modules))
   ;; Execute the installed SDK's dispatcher unchanged. Core only owns the
   ;; before/after boundary and the retained result of a successful compile.
-  (def (build-run roots package-main args (libdir (path-expand "lib" (gerbil-path))))
+  (def (build-run roots package-main args (libdir (path-expand "lib" (gerbil-path)))
+                  publication: (publication? #t))
     ;; Pass the admitted value to the SDK dispatcher. The compile boundary
     ;; below owns fresh checks before and after its callback; the callback
     ;; must not re-enter source preparation to obtain the same specification.
@@ -162,7 +163,11 @@
     (def (dispatch) (package-main spec args))
     (cond
       ((or (null? args) (equal? (car args) "compile"))
-       (.call prepared .compile libdir dispatch))
+       ;; Preserve the existing default issuance contract. Maintained package
+       ;; build scripts explicitly request ordinary SDK compilation; that path
+       ;; shares role lowering but cannot grant publication approval.
+       (if publication? (.call prepared .compile libdir dispatch)
+           (.call prepared .with-compiler-inputs dispatch)))
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))

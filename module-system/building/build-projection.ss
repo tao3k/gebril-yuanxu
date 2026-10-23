@@ -15,7 +15,7 @@
         (only-in :clan/poo/object .o .ref .get .call)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/build unique-build-inputs)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
 (export yuanxu-project-source-spec)
@@ -269,8 +269,15 @@
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
         source-inputs: observed
+        ;; Ordinary package Make and issued compilation share role lowering,
+        ;; not authority. A package build does not mint publication approval.
+        .with-compiler-inputs:
+        (lambda (action)
+          (current!)
+          (begin0 (call-with-module-compiler-inputs entries action) (current!)))
         .compile: (lambda (libdir action)
-                    (call-with-build-artifact-issuance projection libdir action))
+                    (call-with-build-artifact-issuance projection libdir
+                      (lambda () (.call projection .with-compiler-inputs action))))
         .process: (lambda (libdir command)
                    (run-build-artifact-process projection libdir command))
         source-root: root spec: build-value admit-current: current!)))

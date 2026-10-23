@@ -2,24 +2,41 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
-(import (only-in :clan/poo/object .o .ref)
+(import (only-in :clan/poo/object .o .ref .slot?)
         (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
         (only-in :yuanxu/module-system/source/declaration include-module-body)
         (only-in :yuanxu/module-system/source/config-prelude)
-        (only-in :gerbil/expander core-read-module/sexp core-library-package-plist syntax->datum
+        (only-in :yuanxu/module-system/source/module-prelude)
+        (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :gerbil/expander current-expander-module-import expander-context-id syntax-e
+                 core-read-module/sexp core-library-package-plist syntax->datum
+                 core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
 (export yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
-        yuanxu-prepare-module-private-source)
+        yuanxu-prepare-module-private-source call-with-module-compiler-inputs)
 (def (source-metadata source key)
   (let (entry (assq key (yuanxu-module-source-ref-metadata source)))
     (and entry (cdr entry))))
 (def (module-compiler-identity path)
   (module-source-observe read-module-compiler-identity path))
+(def (default-role-prelude? prelude)
+  ;; core-read-module/sexp has already resolved native prelude references. Do
+  ;; not compare its result to the spelling originally written in gerbil.pkg.
+  (cond
+    ((not prelude) #t)
+    ((or (module-context? prelude) (prelude-context? prelude))
+     (memq (expander-context-id prelude) '(gerbil/core tao3k/yuanxu/prelude)))
+    ((string? prelude)
+     (ormap (lambda (identity)
+              (with-catch (lambda (_missing) #f)
+                (lambda () (equal? prelude (core-resolve-library-module-path identity)))))
+       '(:gerbil/core :tao3k/yuanxu/prelude)))
+    (else (memq (syntax->datum prelude) '(:gerbil/core :tao3k/yuanxu/prelude)))))
 (def (read-module-compiler-identity path (text #f))
   ;; Native package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
@@ -32,7 +49,8 @@
                 (else prelude))
           identity namespace
           (or (not text)
-              (equal? (syntax->datum body) (call-with-input-string text read-all))))))
+              (equal? (syntax->datum body) (call-with-input-string text read-all)))
+          (default-role-prelude? prelude))))
 (def (package-source-snapshot path)
   ;; Observe the native reader's ancestor lookup, not a second package resolver.
   ;; Negative entries matter when a closer gerbil.pkg is added later.
@@ -130,9 +148,7 @@
         ;; copy its full export set into every generated interface's strong
         ;; import table. Explicit role/import bindings still override the prelude.
         ;; A contributor's custom prelude keeps the original explicit imports.
-        (def shared-prelude?
-          (or (not (car compiler-info))
-              (eq? (syntax->datum (car compiler-info)) ':gerbil/core)))
+        (def shared-prelude? (list-ref compiler-info 4))
         (def (publication-forms imports)
           (append
            (if shared-prelude?
@@ -210,7 +226,7 @@
   (context-current!)
   (let* ((text (module-source-read source-path))
          (packages (package-source-snapshot source-path)))
-    (let-values (((prelude id namespace header-free?)
+    (let-values (((prelude id namespace header-free? default-prelude?)
                   (apply values (read-module-compiler-identity source-path (and tool? text)))))
       ;; Header extraction owns and releases the temporary syntax frame. The
       ;; persistent POO projection retains only metadata and guarded source bytes;
@@ -229,9 +245,11 @@
           source-inputs: (cons (cons source-path text) packages)
           compiler-forms:
           (append (cond
-                    ((and (not tool?) (string=? (path-strip-directory source-path) "config.ss")
-                          (or (not prelude) (eq? (syntax->datum prelude) ':gerbil/core)))
-                     '(prelude: :yuanxu/module-system/source/config-prelude))
+                    ((and (not tool?)
+                          (member (path-strip-directory source-path)
+                            '("types.ss" "objects.ss" "func.ss" "config.ss" "build.ss"))
+                          default-prelude?)
+                     '(prelude: :yuanxu/module-system/source/module-prelude))
                     (prelude (list 'prelude: prelude))
                     (else '()))
                   (list 'package: (path-strip-trailing-directory-separator
@@ -278,3 +296,55 @@
               (error "private source is missing, non-regular or a symlink" next))
             (when (pair? (cdr parts)) (walk next (cdr parts))))))))
     (yuanxu-prepare-module-build-source path context-current!)))
+
+;; The native compiler and Make coordinator both call the SDK's public import
+;; parameter. Redirect only the selected prepared inputs, preserving their native
+;; identity and original included syntax. Make still owns original source targets
+;; and dependency/product timestamps; generated frames are not new build targets.
+(def (call-with-module-compiler-inputs entries action)
+  (call-with-temporary-directory "yuanxu-compiler-roles"
+    (lambda (directory)
+      (def native-import (current-expander-module-import))
+      (def inputs (make-hash-table))
+      ;; Reuse the publication's admitted role inventory. Ordinary retained
+      ;; libraries and private helpers retain their native source import path.
+      (def roles (make-hash-table))
+      (for-each
+        (lambda (entry)
+          (def input (.ref entry 'input))
+          (when (.slot? input 'role-sources)
+            (hash-put! roles (path-normalize (.ref entry 'path)) #t)
+            (for-each (lambda (path) (hash-put! roles (path-normalize path) #t))
+              (.ref input 'role-sources)))) entries)
+      (for-each
+        (lambda (entry)
+          (def original (path-normalize (.ref entry 'path)))
+          (def input (.ref entry 'input))
+          (def identity (.ref input 'compiler-identity))
+          (def target
+            (path-expand (string-append (symbol->string identity) ".ss") directory))
+          ((.ref input 'admit-current))
+          (create-directory* (path-directory target))
+          (call-with-output-file (list path: target truncate: #f)
+            (lambda (port)
+              (for-each (lambda (form) (write form port) (newline port))
+                (.ref input 'compiler-forms))))
+          (def row (list input target identity))
+          (hash-put! inputs original row)
+          (hash-put! inputs (string->symbol (string-append ":" (symbol->string identity))) row))
+        (filter (lambda (entry) (hash-key? roles (path-normalize (.ref entry 'path)))) entries))
+      (def (import-input path (reload? #f))
+        (def datum (syntax-e path))
+        (def row
+          (hash-get inputs
+            (if (string? datum) (path-normalize (path-expand datum)) datum)))
+        (if (not row) (native-import path reload?)
+          (let ((input (car row)) (target (cadr row)) (identity (caddr row)))
+            (when reload? (error "prepared compiler input requires a fresh source epoch" datum))
+            ((.ref input 'admit-current))
+            (let (context (native-import target #f))
+              (unless (eq? identity (expander-context-id context))
+                (error "prepared compiler identity changed" datum identity))
+              ((.ref input 'admit-current))
+              context))))
+      (parameterize ((current-expander-module-import import-input)) (action)))))

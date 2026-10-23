@@ -22,35 +22,24 @@ There is no consumer source alias, replacement main, SDK patch or additional
 macro. The original JsonSchema interface.ss is byte-for-byte unchanged in the
 qualification. It contains its Module .def and no imports.
 
-* Use Gerbil's package prelude, not an invented compiler hook
+* Selected role lowering belongs to yuanxu!
 
-The repository's module-tree owner declares one ordinary modules/gerbil.pkg:
+This section supersedes the earlier directory-level package workaround. See
+[[file:13.20-init-owned-role-compilation.org][13.20]] for the current integration and qualification boundary.
+The actual package root owns =gerbil.pkg=. A =modules/= or =scenarios/=
+directory does not become another package merely to receive role bindings.
 
-#+begin_src scheme
-(package: yuanxu/modules
- prelude: :yuanxu/module-system/source/module-prelude)
-#+end_src
+The existing source preparer emits the declaration and ordinary role frames.
+Its admitted =role-sources= inventory serves reader publication and native Make.
+The internal compiler callback uses the SDK's public import parameter, retains
+native identities and original syntax, and cleans its temporary frames. An
+explicit custom prelude remains authoritative. Native Make still owns source
+and product timestamps; plain package compilation grants no publication approval.
 
-Gerbil already reads package and prelude from this file. The namespace remains
-core/modules/json-schema; adding the prelude does not rename compiler outputs.
-This metadata is established before reading the source epoch. init.build-spec
-does not rewrite author files or mutate Gerbil's package cache to install it.
-
-The prelude itself is an ordinary module:
-
-#+begin_src scheme
-(import (except-in :gerbil/core object? make-object)
-        (except-in :clan/poo/object .def)
-        (only-in :yuanxu/module-system/source/declaration .def))
-(export (import: :gerbil/core :clan/poo/object) .def)
-#+end_src
-
-Existing explicit role imports keep their normal authority over weak prelude
-bindings. The existing declaration .def is extended, not replaced by a new
-public syntax. At an interface.ss source location it emits the discovered role
-imports before expanding the existing POO declaration. For other conventional
-role files its .def delegates to gerbil-poo's .def/ctx, so a normal Config or
-prototype definition does not become a Module declaration.
+Maintained build scripts consume =std-make-run=, rather than taking an inert
+=std-make-spec= and compiling bare role sources outside the prepared callback.
+Explicit =.compile= reuses the same callback inside its existing issuance guard.
+No per-directory metadata, compiler patch or new Builder is needed.
 
 * One inventory, two consumers
 

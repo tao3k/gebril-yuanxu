@@ -57,11 +57,12 @@ or acceptance check reads inputs again. It is not a persistent validity cache.
 
 * Role association and build ownership
 
-[[file:13.10-automatic-role-projection.org][Automatic role association]] keeps interface.ss declarative. One static
-modules/gerbil.pkg supplies the existing Gerbil prelude mechanism; the existing
-Module .def expands adjacent role imports in the declaration's source scope.
-Publication preparation uses the same role inventory. The compilation path
-therefore consumes the original interface, not a manually repaired copy.
+[[file:13.10-automatic-role-projection.org][Automatic role association]] keeps interface.ss declarative. The actual package
+root supplies package metadata. =yuanxu!= owns the selected role projection;
+reader publication and =std-make-run= consume its prepared role inventory.
+Native compilation redirects selected roles through the same hygienic frames
+without editing author files or adding directory-level package metadata.
+See [[file:13.20-init-owned-role-compilation.org][13.20]] for native compiler integration and qualification.
 
 Building is SDK-imported Module System infrastructure under module-system/;
 it is not selected through its own Module Graph. Its observed public dependency

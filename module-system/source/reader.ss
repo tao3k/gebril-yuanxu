@@ -201,7 +201,7 @@
     (begin (for-each (lambda (name) (remove-reader-tree (path-expand name path))) (directory-files path))
            (delete-directory path))
     (delete-file path)))
-(def (reader-body forms)
+(def (reader-body forms (imports '()))
   ;; Preparation owns these native compiler headers; preserve its prelude while
   ;; assigning a fresh private identity to this interpreter-only projection.
   (let loop ((tail forms) (prelude '()))
@@ -210,7 +210,7 @@
       (loop (cddr tail) (list (car tail) (cadr tail))))
      ((and (pair? tail) (memq (car tail) '(package: namespace:)))
       (loop (cddr tail) prelude))
-     (else (append prelude tail)))))
+     (else (append prelude imports tail)))))
 (def compiler-core-root (path-normalize (path-expand "../.." (path-directory (this-source-file)))))
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
@@ -720,7 +720,9 @@
                  ;; sufficient. Core sources still use the confined paths above.
                  (let (input (prepare-public-dependency path))
                    (unless input
-                     (error "source import leaves its Module and package kernel" path))
+                     (error "source import leaves its Module and package kernel"
+                            path (list 'module-root root 'kernel-root kernel-root
+                                       'module-tree tree)))
                    (when reload? (error "public dependency reload requires a fresh environment"))
                    (let* ((id (.ref input 'compiler-identity))
                           (known (hash-get tool-contexts id))
@@ -1025,10 +1027,10 @@
               (lambda (port)
                 (write 'package: port) (display " " port) (write prefix port) (newline port)
                 (for-each (lambda (form) (write form port) (newline port))
-                  (append (if (and role-imports? (eq? input prepared))
-                            (list `(import :clan/poo/object
-                                           ,@(map (cut .ref <> 'path) related))) '())
-                          (reader-body (.ref input 'compiler-forms))
+                  (append (reader-body (.ref input 'compiler-forms)
+                            (if (and role-imports? (eq? input prepared))
+                              (list `(import :clan/poo/object
+                                             ,@(map (cut .ref <> 'path) related))) '()))
                           (if (eq? input prepared) (list `(export ,binding)) '())))))))))
     ;; Private dependencies are the exact source closure already observed by
     ;; publication reading. Owner-private inputs receive wrappers; recorded

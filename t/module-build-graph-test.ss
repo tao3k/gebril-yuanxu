@@ -104,6 +104,21 @@
            'forwarded)
          (check-equal? (dispatch '() receive '("spec")) 'forwarded)
          (check-equal? calls 1)
+         ;; A native package callback returns no publication authority. The
+         ;; original default path must still reject its missing compiler outputs.
+         (def compile-calls 0)
+         (def (uncompiled admitted arguments)
+           (set! compile-calls (1+ compile-calls))
+           (check-equal? (eq? admitted expected) #t)
+           (check-equal? arguments '("compile"))
+           'package-only)
+         (check-exception
+           (dispatch '() uncompiled '("compile") (path-expand "lib" root)) error?)
+         (check-equal? compile-calls 1)
+         (check-equal?
+           (dispatch '() uncompiled '("compile") (path-expand "lib" root) publication: #f)
+           'package-only)
+         (check-equal? compile-calls 2)
          (def config (path-expand "modules/core/schema/config.ss" root))
          (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
          (check-exception (dispatch '() receive '("spec")) error?)
