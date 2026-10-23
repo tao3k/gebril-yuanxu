@@ -1,5 +1,5 @@
 #+title: RFC 163 -- Standard Module, Lazy Industry Packs, and Conformance Receipts
-#+author: POO Flow Team
+#+author: Agentic AI Lab Team
 #+date: 2026-09-17
 #+startup: overview
 #+property: SDD_KIND architecture-decision
@@ -12,7 +12,7 @@
 
 ** 10.06.163.10 Decision
 
-POO Flow SHALL provide one core =standards= module for declaring, selecting,
+Agentic AI Lab SHALL provide one core =standards= module for declaring, selecting,
 resolving, composing and verifying external standards.  Concrete Standard
 Providers and immutable packs live in their owning vertical modules; Lambda
 Episteme Healthcare owns the first FHIR Provider and pack composition.  Other
@@ -36,7 +36,7 @@ grammar may have executable owners, but ordinary standard data SHALL NOT be
 compiled into one permanently loaded Gerbil module per standard.
 
 FHIR is the first planned concrete Standard Provider composed by Lambda
-Healthcare on top of POO Flow Standards.  FHIR JSON and XML do not
+Healthcare on top of Agentic AI Lab Standards.  FHIR JSON and XML do not
 create a =gerbil-parser= dependency: ordinary data readers preserve syntax,
 while the Lambda Healthcare FHIR Provider owns FHIR conformance meaning.
 An actual language embedded in the ecosystem, such as FHIRPath, may later use
@@ -49,10 +49,10 @@ Healthcare or national implementation-guide ownership to =gerbil-parser=.
 - Let Profiles select standards without loading every catalog member.
 - Let Cases bind exact editions and dependency closures without ambient
   =latest= resolution.
-- Reuse the existing POO Flow source-ref, catalog, loader, fixed-point,
+- Reuse the existing Agentic AI Lab source-ref, catalog, loader, fixed-point,
   observability and receipt boundaries.
 - Support cross-industry composition without moving industry vocabulary into
-  POO Flow core.
+  Agentic AI Lab core.
 - Separate discovery, resolution, loading, materialization, conformance and
   application admission evidence.
 - Keep startup and resident memory proportional to the catalog index plus the
@@ -84,8 +84,8 @@ Healthcare or national implementation-guide ownership to =gerbil-parser=.
 
 | Owner | Owns | Must not own |
 |-------+------+--------------|
-| POO Flow =standards= core | Standard types, POO protocols, exact selection, dependency-closure rules, load/materialization contracts, validation-closure contracts, budgets and receipts | Application-domain vocabulary, ambient standard selection |
-| POO Flow module system | Source refs, ordered load paths, loader admission, lazy-slot observability and module receipts | Interpreting a concrete standard artifact |
+| Agentic AI Lab =standards= core | Standard types, POO protocols, exact selection, dependency-closure rules, load/materialization contracts, validation-closure contracts, budgets and receipts | Application-domain vocabulary, ambient standard selection |
+| Agentic AI Lab module system | Source refs, ordered load paths, loader admission, lazy-slot observability and module receipts | Interpreting a concrete standard artifact |
 | Lambda vertical Standard Provider | Concrete industry Standard families, editions, machine-readable packs and conformance semantics | Core Standard protocol or generic loader semantics |
 | Lambda Episteme | Vertical Provider modules, industry mappings, Profiles, Cases, authoritative domain Sources and use of admitted Standard bundles | Core Standard protocol or generic loader semantics |
 | Standard pack publisher | Immutable artifacts, package index, dependency declarations, provenance and digest | Runtime activation or Case admission |
@@ -93,7 +93,7 @@ Healthcare or national implementation-guide ownership to =gerbil-parser=.
 | Runtime Provider | Bounded execution of an admitted validation closure and external terminology requests | Selecting an ambient version or mutating a standard bundle |
 | Application | Profile, Case, Provider and exact lock selection | Reinterpreting a failed or stale receipt as success |
 
-No reverse dependency from POO Flow to Lambda Episteme is permitted.  Mounting
+No reverse dependency from Agentic AI Lab to Lambda Episteme is permitted.  Mounting
 or importing a contributor package does not activate any of its standards.
 
 ** 10.06.163.50 Vocabulary and object model
@@ -146,7 +146,7 @@ section, a normative table or a machine-readable conformance profile.
 *** 10.06.163.54 =StandardConstraintProfile=
 
 A declared refinement of one or more accepted base editions.  This name is
-deliberately more precise than an unqualified =Profile=: a POO Flow Profile
+deliberately more precise than an unqualified =Profile=: a Agentic AI Lab Profile
 selects capabilities for an application composition, while a
 =StandardConstraintProfile= describes standard-level constraints and
 refinement.
@@ -392,7 +392,7 @@ to another edition.
 
 *** 10.06.163.83 Profile and Case semantics
 
-A POO Flow Profile selects Standard requirements.  It does not copy full
+A Agentic AI Lab Profile selects Standard requirements.  It does not copy full
 standard content into its slots.  A Case composes Profiles, resolves the union
 of selected requirements, rejects conflicts and binds the resulting exact
 Standard bundle.
@@ -414,7 +414,7 @@ functional composition.  This RFC does not approve a new public macro DSL.
 
 ** 10.06.163.90 Four-layer module shape
 
-The POO Flow implementation SHALL follow RFC 162's responsibility audit:
+The Agentic AI Lab implementation SHALL follow RFC 162's responsibility audit:
 
 #+begin_example
 modules/standards/
@@ -455,7 +455,7 @@ packages/lambda-episteme/modules/healthcare/
 Provider x Standard-family dispatch requires two independently extensible axes
 and an explicit CLOS method bundle; Provider-name =case= expressions in the
 generic caller are prohibited.  The exact pack storage layout is subject to
-source and license constraints.  POO Flow SHALL NOT absorb independently owned
+source and license constraints.  Agentic AI Lab SHALL NOT absorb independently owned
 or restricted standard content merely to satisfy a test fixture.
 
 ** 10.06.163.100 FHIR first vertical slice
@@ -463,7 +463,7 @@ or restricted standard content merely to satisfy a test fixture.
 *** 10.06.163.101 Boundary
 
 FHIR is a concrete Standard family maintained by Lambda Healthcare through the
-POO Flow Standards protocol.  POO Flow knows only Standard identities,
+Agentic AI Lab Standards protocol.  Agentic AI Lab knows only Standard identities,
 dependencies, validation closures, generic receipts and Provider dispatch.  Lambda owns FHIR
 constraints, package identities, conformance semantics, Healthcare mappings
 and Cases.
@@ -487,7 +487,7 @@ conformance receipt.
 
 *** 10.06.163.102 Parsing decision
 
-FHIR JSON and XML are data representations, not a new POO Flow public DSL.
+FHIR JSON and XML are data representations, not a new Agentic AI Lab public DSL.
 Their readers produce representation-level values and typed parse failures.
 FHIR conformance comes from FHIR artifacts and the FHIR Provider's validation meaning,
 not from treating JSON/XML parse success as Standard admission.
@@ -498,7 +498,7 @@ through a separate parse-artifact qualification boundary; its parser receipt
 does not grant evaluator, terminology, model-navigation or conformance
 authority.  FHIR Shorthand, CQL or another real language may follow the same
 boundary.  The dependency direction must respect the existing fact that
-=gerbil-parser= consumes POO Flow; POO Flow core
+=gerbil-parser= consumes Agentic AI Lab; Agentic AI Lab core
 cannot introduce the reverse production edge.
 
 *** 10.06.163.103 Conformance ladder
@@ -624,17 +624,17 @@ parser-owned source digest, grammar digest and projection receipt digest to
 match the retained Lambda Case exactly. Lambda imports only the projection and
 does not implement HL7 delimiters or positional PID parsing.
 
-Migration is a FeatureModule below the POO Flow StandardsModule, not a sibling
+Migration is a FeatureModule below the Agentic AI Lab StandardsModule, not a sibling
 domain module.  The composition chain is deliberately four levels:
 
 #+begin_example
-PooFlowStandardsModule
-  -> PooFlowStandardMigrationFeatureModule
+AgenticAILabStandardsModule
+  -> AgenticAILabStandardMigrationFeatureModule
        -> HealthcareStandardMigrationFeatureModule
             -> AUHealthcareMigrationFixture
 #+end_example
 
-POO Flow owns only the generic FeatureModule shape and the migration extension
+Agentic AI Lab owns only the generic FeatureModule shape and the migration extension
 points: source adapter, mapping proposal, human review, conformance, admission
 and fixture attachment.  Lambda Healthcare extends that FeatureModule with the
 healthcare source-interface kinds and candidate/admission methods.  The AU
@@ -677,7 +677,7 @@ declarations, while an explicit Case consumer imports and composes this Case.
 Missing human review, AI decision authority, a target Profile mismatch, an
 unbound candidate or failed conformance produces a typed fail-closed migration
 receipt.  The old interface and its source snapshot remain available for
-rollback until an application-owned cutover policy retires them.  POO Flow
+rollback until an application-owned cutover policy retires them.  Agentic AI Lab
 does not parse HL7v2/CDA, infer a compatibility mapping or authorize cutover.
 
 ** 10.06.163.107 NASA software-engineering second-industry increment
@@ -710,11 +710,11 @@ Profile-specialized boundary.
 
 *** 10.06.163.108 Cross-industry Profile Case qualification
 
-Core exposes =poo-flow-standard-compose-profiles= as a pure domain-neutral
-Case boundary.  It accepts ordered =PooFlowStandardConstraintProfile= values,
+Core exposes =agentic-ai-lab-standard-compose-profiles= as a pure domain-neutral
+Case boundary.  It accepts ordered =AgenticAILabStandardConstraintProfile= values,
 deduplicates exact edition and dependency identities through native hash
 tables, preserves Profile order, invokes the existing exact resolver once, and
-returns a =PooFlowStandardProfileCompositionReceipt=.  The receipt binds the
+returns a =AgenticAILabStandardProfileCompositionReceipt=.  The receipt binds the
 Case identity, exact Profile revisions, selected base editions, constraints,
 artifact and terminology dependencies, resolution receipt, first typed
 failures and a deterministic composition digest.  A duplicate Profile identity
@@ -923,7 +923,7 @@ Rejected as the default storage model because dynamically loaded modules are
 not an artifact cache, cannot provide the required eviction boundary and turn
 untrusted inert standard data into executable namespace growth.
 
-*** Put every industry standard in POO Flow core
+*** Put every industry standard in Agentic AI Lab core
 
 Rejected because it reverses contributor ownership, expands the trusted core
 and forces unrelated applications to absorb domain vocabulary.
@@ -948,7 +948,7 @@ without a source change and no stable receipt could bind the result.
 
 ** 10.06.163.170 References
 
-- [[file:04-poo-flow-module-system-design.org][POO Flow Module System Design]]
+- [[file:04-agentic-ai-lab-module-system-design.org][Agentic AI Lab Module System Design]]
 - [[file:40-module-registry-scale-architecture.org][Module Registry Scale Architecture]]
 - [[file:44-current-project-programming-style.org][Current Project Programming Style]]
 - [[file:89-poo-native-lazy-evaluation-research.org][POO Native Lazy Evaluation Research]]

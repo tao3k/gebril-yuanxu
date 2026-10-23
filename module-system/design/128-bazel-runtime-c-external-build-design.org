@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Bazel Runtime-C External Build Design
-#+author: poo-flow contributors
+#+author: agentic-ai-lab contributors
 #+date: 2026-07-12
 #+startup: overview
 

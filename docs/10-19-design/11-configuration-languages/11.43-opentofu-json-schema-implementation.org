@@ -29,7 +29,7 @@ explicit. No Go component is required to consume an already-exported schema.
 
 See [[file:../../../t/fixtures/opentofu/README.org][fixture provenance]] in the product checkout (the Core submodule alone does not
 contain the product test directory). The executable owner is
-=poo-flow/t/opentofu-schema-test.ss=.
+=agentic-ai-lab/t/opentofu-schema-test.ss=.
 
 The real AWS Security Group block is extracted unchanged from the official
 historical =terraform-json= fixture at commit

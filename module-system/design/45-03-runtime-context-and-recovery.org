@@ -12,25 +12,25 @@
 This module exclusively owns the initialization gate, runtime context, cell
 lifecycle, structured conditions, continuations, and recovery authority.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 The generic realization lifecycle described in this module is owned by
 =gerbil-poo=.  Demand cells, memoization, dependency graphs, fixed-point
 evaluation, continuation capture at a demand boundary, and the generic
-condition/restart mechanism are not a second POO Flow runtime.
+condition/restart mechanism are not a second Agentic AI Lab runtime.
 
-POO Flow consumes those mechanisms to define =gerbil-poo= policy objects for
+Agentic AI Lab consumes those mechanisms to define =gerbil-poo= policy objects for
 Profile and Mix governance.  It owns the recovery-policy and resource-policy
 roles, authority rules, runtime-handoff barriers, bounded observation
 projections, receipts, and qualification requirements.
 
 If the pinned =gerbil-poo= revision lacks a general evaluation extension point
 required below, that item is a =gerbil-poo= extension requirement.  It MUST NOT
-be satisfied by a shadow evaluator or local fixed-point package in POO Flow.
+be satisfied by a shadow evaluator or local fixed-point package in Agentic AI Lab.
 
 Consequently, references below to a realization context, demand cell,
 dependency graph, or captured continuation describe either an existing
-=gerbil-poo= object or a required general =gerbil-poo= extension.  POO Flow
+=gerbil-poo= object or a required general =gerbil-poo= extension.  Agentic AI Lab
 adds domain policy and evidence around that object without replacing its
 semantics.
 
@@ -401,7 +401,7 @@ flowchart LR
 #+end_src
 
 The Lean owner
-=PooFlowProof/PooC4/RecoveryPolicyAuthorization.lean= proves a negative and a
+=AgenticAILabProof/PooC4/RecoveryPolicyAuthorization.lean= proves a negative and a
 positive boundary:
 
 - two receipts may carry the same bare =policyEvidence= while naming different
@@ -426,12 +426,12 @@ Exact symbol evidence from that dependency is:
 | =object.ss= | =.ref= / =.@=, =.has?= | Demand and inspect POO slots. | =symbol-located= |
 | =object.ss= | =.def= / =.o= | Hygienically declare ordinary POO objects and slot specifications. | =symbol-located= |
 
-These mechanisms are sufficient in shape for POO Flow to define a
+These mechanisms are sufficient in shape for Agentic AI Lab to define a
 recovery-policy prototype and immutable receipt object. They are not a
-recovery-policy API and do not themselves construct a POO Flow recovery
+recovery-policy API and do not themselves construct a Agentic AI Lab recovery
 receipt.
 
-Current POO Flow implementation evidence is absent:
+Current Agentic AI Lab implementation evidence is absent:
 
 - 45-03 contains no concrete =src/module-system= owner reference;
 - exact owner queries for
@@ -447,8 +447,8 @@ flowchart TD
   P["proto.ss<br/>compose-proto + instantiate-protos"]
   O["object.ss<br/>.mix + .extend + .def + .@"]
   M["REC-004S-P<br/>generic mechanism symbol-located"]
-  F["POO Flow recovery-policy prototype<br/>implementation owner unobserved"]
-  R["POO Flow recovery receipt constructor/validator<br/>implementation owner unobserved"]
+  F["Agentic AI Lab recovery-policy prototype<br/>implementation owner unobserved"]
+  R["Agentic AI Lab recovery receipt constructor/validator<br/>implementation owner unobserved"]
   Q["REC-004S<br/>Scheme correspondence blocked"]
 
   G -->|"owns sole Scheme POO implementation"| P
@@ -463,12 +463,12 @@ flowchart TD
 Local Lean 4.31.0 qualification passes as part of the 63-job package build.
 Independent AXLE qualification is currently
 =blocked-verifier-import-boundary=: the cached verifier does not contain local
-=PooFlowProof= modules, while its default mode replaces the local import.
+=AgenticAILabProof= modules, while its default mode replaces the local import.
 Combined-source export was not authorized and therefore was not performed.
 
 This proof projection does not establish the concrete Scheme constructor or
 receipt-validation correspondence. The generic pinned =gerbil-poo= symbols are
-now located; their behavior qualification and the POO Flow recovery-receipt
+now located; their behavior qualification and the Agentic AI Lab recovery-receipt
 constructor remain open. =gerbil-poo= remains the sole Scheme POO library.
 
 * Resource governance, cancellation, and performance conditions
@@ -678,7 +678,7 @@ capability that produces it participates through the POO-native capability
 surface; it MUST NOT introduce a parallel record or alist DSL.
 
 =gerbil-poo= continues to own generic demand completion, suspension, lineage,
-and continuation-aware realization.  POO Flow owns the provider qualification
+and continuation-aware realization.  Agentic AI Lab owns the provider qualification
 policy that decides whether evidence is portable across realization contexts.
 
 The provider MUST fail closed:
@@ -739,7 +739,7 @@ QualificationCellAddress        = (runtimeContextId, QualificationKey)
 #+end_src
 
 The entrypoint is private.  There is no public =initial= syntax.  Callers supply
-Requirement and Policy; POO Flow constructs Observation and Decision internally.
+Requirement and Policy; Agentic AI Lab constructs Observation and Decision internally.
 
 The entrypoint MUST reject caller-supplied Observation, DecisionReceipt,
 runtime-context identity, cell identity, or recovery token.
@@ -749,14 +749,14 @@ runtime-context identity, cell identity, or recovery token.
 The qualification control plane must operate before
 =QualifiedDependencyCapability= is published.  This does not mean G0 bootstraps
 Scheme or discovers =gerbil-poo= from nothing: the pinned dependency is already
-loadable for POO Flow to run, while G0 qualifies the exact module bindings and
+loadable for Agentic AI Lab to run, while G0 qualifies the exact module bindings and
 shapes required for public capability use.
 
 The control state remains POO-native:
 
 #+begin_src text
 POO control objects:
-  PooFlowRuntimeContext
+  AgenticAILabRuntimeContext
   QualificationRegistry
   DependencyQualificationCell
   RecoverySet
@@ -807,7 +807,7 @@ semantics, or manufacture capability values.
 
 * Runtime context
 
-The registry is scoped to a private =PooFlowRuntimeContext=, never a
+The registry is scoped to a private =AgenticAILabRuntimeContext=, never a
 process-global, Profile-local, or child-local registry.
 
 #+begin_mermaid
@@ -841,9 +841,9 @@ nextEvaluationId
 Requirement, Observation, Policy, DecisionReceipt, a canonical digest, module
 identity, or package identity.
 
-The production path creates one default context per POO Flow runtime instance.
+The production path creates one default context per Agentic AI Lab runtime instance.
 An embedding process may host multiple independent contexts.  Tests may create
-fresh contexts only through POO Flow private test support; GSLPH does not create
+fresh contexts only through Agentic AI Lab private test support; GSLPH does not create
 or identify them.
 
 The import environment is captured before the first cell enters =evaluating=
@@ -906,7 +906,7 @@ replace-runtime-context
 
 There is no “continue as if qualified” recovery.
 
-POO Flow owns an initialization supervisor around continuable condition
+Agentic AI Lab owns an initialization supervisor around continuable condition
 delivery.  A handler receives the condition plus a closed condition-specific
 RecoverySet.  Returning an arbitrary procedure, POO object, boolean, or
 capability is invalid.
@@ -944,7 +944,7 @@ move a capability across contexts, or roll back a published outcome.
 * Condition hierarchy
 
 #+begin_src text
-PooFlowRuntimeCondition
+AgenticAILabRuntimeCondition
 ├── QualificationCondition
 ├── EvaluationResourceLimitCondition
 ├── CompositionEvaluationCondition
@@ -971,7 +971,7 @@ object has not reached dependency qualification.
 The bounded hierarchy is:
 
 #+begin_src text
-PooFlowRuntimeCondition
+AgenticAILabRuntimeCondition
 ├── QualificationCondition
 │   ├── QualificationRejectedCondition
 │   ├── ModuleObservationFailedCondition

@@ -139,7 +139,7 @@ without treating any of them as interchangeable.
 
 Identity representation uses native =gerbil-poo= object capabilities and
 [[file:45-15-receipt-object-canonical-evidence-projection.org][the canonical
-evidence contract]].  POO Flow introduces no string-based identity system.
+evidence contract]].  Agentic AI Lab introduces no string-based identity system.
 
 #+begin_src mermaid
 flowchart LR
@@ -270,7 +270,7 @@ Submodule realization is pure POO evaluation.  External effects cross explicit
 runtime or Marlin boundaries.  Re-entrant demand follows the existing
 cycle/progress condition contract.
 
-POO Flow records demand, identity, generation, and lineage evidence around the
+Agentic AI Lab records demand, identity, generation, and lineage evidence around the
 sole =gerbil-poo= evaluator.  It MUST NOT add a second lazy cache, realization
 registry, or evaluator.  Exact sharing mechanics remain subject to pinned
 =gerbil-poo= API evidence.
@@ -397,7 +397,7 @@ flowchart TB
 - [ ] Unused submodules remain unrealized.
 - [ ] Submodule realization remains pure and crosses explicit boundaries for
   effects.
-- [ ] POO Flow adds no lazy cache, realization registry, or replacement
+- [ ] Agentic AI Lab adds no lazy cache, realization registry, or replacement
   evaluator.
 - [ ] Distinct contribution identities remain ordered refinements even when
   their produced values appear similar.
@@ -409,7 +409,7 @@ flowchart TB
 - [ ] Later providers may satisfy earlier imports.
 - [ ] Nested submodules require explicit export and re-export.
 - [ ] Child-local state does not leak to parents or siblings.
-- [ ] POO Flow does not implement a replacement fixed-point evaluator.
+- [ ] Agentic AI Lab does not implement a replacement fixed-point evaluator.
 
 * Related RFCs
 

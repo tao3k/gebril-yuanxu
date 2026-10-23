@@ -29,7 +29,7 @@ there is no silent fallback.
 - Do not add a JSON contract owner.
 - Do not retain a =ctypes= production or diagnostic lane.
 - Do not move graph plans, checkpoints, stores, context, messages/tools,
-  subgraphs, builder loops, or prebuilt strategies into POO Flow semantic
+  subgraphs, builder loops, or prebuilt strategies into Agentic AI Lab semantic
   ownership.
 - Do not freeze ABI v1.
 - Do not add Rust, TypeScript, or other downstream runtime adapters.
@@ -55,9 +55,9 @@ flowchart LR
     APP["Python application"]
     FACADE["RuntimeGraphRuntime<br/>public graph-domain facade"]
     BACKEND["NativeRuntimeBackend<br/>internal production backend"]
-    CFFI["_poo_flow_runtime_v0<br/>out-of-line CFFI extension"]
+    CFFI["_agentic_ai_lab_runtime_v0<br/>out-of-line CFFI extension"]
     LIB["Bundled runtime_v0<br/>native library"]
-    KERNEL["POO Flow C ABI<br/>handles / arenas / batches / receipts"]
+    KERNEL["Agentic AI Lab C ABI<br/>handles / arenas / batches / receipts"]
     REF["PurePythonReferenceBackend<br/>explicit tests only"]
 
     APP --> FACADE
@@ -171,7 +171,7 @@ out-of-line CFFI extension.  Loader paths are package-relative:
 - Linux: =$ORIGIN=;
 - Windows: package-local DLL directory.
 
-=POO_FLOW_RUNTIME_V0_LIBRARY= is the single explicit override.  Override does
+=AGENTIC_AI_LAB_RUNTIME_V0_LIBRARY= is the single explicit override.  Override does
 not bypass ABI/schema/capability negotiation.  Universal ABI-guessing wheels
 are forbidden; each platform and architecture artifact is qualified
 independently.

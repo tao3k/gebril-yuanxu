@@ -230,7 +230,7 @@ prevents either RFC from becoming a combined architecture and style document.
 The generic POO type foundation belongs to the pinned =gerbil-poo=
 dependency.  In particular, primitive validation and typed value-pair
 machinery remain upstream responsibilities of =gerbil-poo/type.ss=.
-POO Flow MUST NOT implement a parallel generic type system.
+Agentic AI Lab MUST NOT implement a parallel generic type system.
 
 =Type=, =Contract=, =ObjectType=, and =ModuleType= are frozen here as
 semantic relations and higher-order POO design values.  Their names do
@@ -247,7 +247,7 @@ construction, or value-pair mechanics.
 
 #+begin_src mermaid
 flowchart TD
-  U["Pinned gerbil-poo/type.ss"] -->|"provides primitive validation and typed value-pair mechanics"| T["POO Flow domain type specializations"]
+  U["Pinned gerbil-poo/type.ss"] -->|"provides primitive validation and typed value-pair mechanics"| T["Agentic AI Lab domain type specializations"]
   P["Pinned gerbil-poo proto and object algebra"] -->|"constructs native prototype-derived values"| T
   T -->|"classifies responsibility-slot evidence"| O["ObjectType semantic relation"]
   O -->|"specializes identity, imports, capabilities, and profiles"| M["ModuleType admission relation"]
@@ -293,7 +293,7 @@ compatibility adapter:
 
 #+begin_src mermaid
 flowchart LR
-  U["gerbil-poo Type. and define-type"] -->|"owns primitive descriptor and validation mechanics"| F["POO Flow Type and Contract prototypes"]
+  U["gerbil-poo Type. and define-type"] -->|"owns primitive descriptor and validation mechanics"| F["Agentic AI Lab Type and Contract prototypes"]
   F -->|"specializes classify and obligations"| D["Observability Contract descriptors"]
   P["Observability POO prototypes"] -->|"native supers extension constructs candidate"| O["Diagnostic or Receipt POO object"]
   D -->|"classifies and admits without effects"| O

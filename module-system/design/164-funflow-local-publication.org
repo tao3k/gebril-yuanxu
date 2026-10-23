@@ -33,9 +33,9 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
 (import (only-in :clan/poo/object .def .o)
         (only-in :yuanxu/module-system/source/objects
                  make-yuanxu-module-local-source yuanxu-module-source-ref?)
-        (only-in :poo-flow/modules/funflow/config-prototypes
+        (only-in :agentic-ai-lab/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
-        (only-in :poo-flow/modules/funflow/profiles/gerbil-scheme
+        (only-in :agentic-ai-lab/modules/funflow/profiles/gerbil-scheme
                  make-gerbil-scheme-ci-profile))
 (export FunflowModule. Funflow make-funflow-scope)
 
@@ -150,7 +150,7 @@ checks 用外层槽词法绑定，不捕获已缓存的父列表，也不需要�
 (import :yuanxu/object-syntax/path-slots
         :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .get)
-        (only-in :poo-flow/modules/funflow/native-scope Funflow))
+        (only-in :agentic-ai-lab/modules/funflow/native-scope Funflow))
 
 (.def ProjectCI
   funflow: (use-module Funflow as ff (.o (:: @ ff))))

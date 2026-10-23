@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO Flow Capability Gradient and Default Expression Surface
+#+title: Agentic AI Lab Capability Gradient and Default Expression Surface
 #+date: [2026-09-23]
 #+property: SDD_KIND architecture-decision
 #+property: STATUS accepted-normative-surface-contract
 
 * Decision
 
-POO Flow MAY have a high capability ceiling without imposing the same height
+Agentic AI Lab MAY have a high capability ceiling without imposing the same height
 on its default expression surface. The semantic carrier is the native
 =gerbil-poo= object, prototype and slot algebra. The ordinary user interface
 is an embedded Scheme configuration language: domain/Module declarations,
@@ -188,7 +188,7 @@ runtime memory sampling is not a substitute for this pre-execution check.
 The Testing Interface owns test-worker memory Profiles and batching; the
 build script does not create a process for each test or claim to observe each
 child worker's heap from the parent process.  Every worker gets the inherited
-managed-heap limit.  POO Flow's =yuanxu-test-case= projects to native
+managed-heap limit.  Agentic AI Lab's =yuanxu-test-case= projects to native
 =std/test= and adds a default Case execution-span Profile; the corresponding
 =yuanxu-test-case/with= form inherits the POO prototype and overrides Case
 slots such as memory policy and maximum duration.  It does not replace
@@ -203,7 +203,7 @@ of unmodified =std/test= declarations still requires an upstream callback.
 
 * Capability height is not expression height
 
-POO Flow has two independent axes.
+Agentic AI Lab has two independent axes.
 
 | Axis | Question | Progression |
 |------+----------+-------------|
@@ -294,7 +294,7 @@ named pure function, an extension author MUST NOT raise it to CLOS or MOP.
 
 ** Meta surface
 
-The meta surface serves POO Flow kernel maintainers.  It owns linearization,
+The meta surface serves Agentic AI Lab kernel maintainers.  It owns linearization,
 slot resolution, method selection and combination, metaobject lifecycle,
 macro-expansion infrastructure and controlled instrumentation.
 
@@ -404,7 +404,7 @@ User-facing declarations MUST use the native Gerbil POO slot algebra documented
 by =gerbil-poo/doc/poo.md=.  Domain slots name values such as =events=,
 =edges=, =profiles= and =sources=.  The base prototype supplies a default
 computation and a descendant refines the inherited nested object with ===>.+=.
-POO Flow MUST not place a second command vocabulary, action AST or patch
+Agentic AI Lab MUST not place a second command vocabulary, action AST or patch
 language around those slots.
 
 | Declaration intent | Native slot form | Required semantics |
@@ -463,7 +463,7 @@ source of merge semantics.
 ** Exclusion, revocation and removal
 
 Native POO provides override, default and inherited refinement, but it does not
-publish an ordinary pure slot-deletion operator.  POO Flow MUST keep exclusion
+publish an ordinary pure slot-deletion operator.  Agentic AI Lab MUST keep exclusion
 explicit instead of inventing a generic declaration vocabulary for deletion.
 
 Configuration selection MAY exclude an inherited identity through ===>= and a

@@ -59,7 +59,7 @@ manifest, bridge, or Marlin ABI boundaries.
 
 ** 10.06.31.20 Evidence
 =.data/grafonnix/README.md= states that most functions return POP objects and
-that those objects are extended by methods on the object. In =poo-flow= the
+that those objects are extended by methods on the object. In =agentic-ai-lab= the
 Gerbil POO syntax already gives the better version of that idea: the object is
 the profile, and extension is ordinary prototype inheritance.
 
@@ -198,9 +198,9 @@ The removed row DSL has no downstream compatibility surface. The replacement is
 plain POO:
 
 #+begin_src scheme
-(import :poo-flow/src/user-interface/init-syntax
-        :poo-flow/modules/nono-sandbox/profile-interface
-        :poo-flow/modules/sandbox-core/profile-interface)
+(import :agentic-ai-lab/src/user-interface/init-syntax
+        :agentic-ai-lab/modules/nono-sandbox/profile-interface
+        :agentic-ai-lab/modules/sandbox-core/profile-interface)
 
 (def session-metadata
   '((intent . coding-agent)

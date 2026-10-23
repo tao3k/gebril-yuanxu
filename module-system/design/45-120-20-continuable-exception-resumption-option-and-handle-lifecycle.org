@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Continuable Exception, Resumption Option, and Handle Lifecycle
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -18,7 +18,7 @@ continuations can also retain large object graphs, escape dynamic resource
 scopes, repeat effects, re-enter stale generations, or bypass capability and
 budget checks.
 
-POO Flow therefore separates the pure semantic resumption option from the raw
+Agentic AI Lab therefore separates the pure semantic resumption option from the raw
 runtime continuation handle.
 
 * Decision
@@ -160,7 +160,7 @@ receipt and successor evidence.
 - termination of further invocation after an indeterminate outcome.
 
 Underlying Scheme support for repeated continuation invocation does not imply
-POO Flow authority to expose it.
+Agentic AI Lab authority to expose it.
 
 * Expiry and retirement
 

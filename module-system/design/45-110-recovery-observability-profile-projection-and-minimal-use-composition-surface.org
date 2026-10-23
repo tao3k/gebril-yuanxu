@@ -232,7 +232,7 @@ Framework authors may:
 
 - define new typed profile facets;
 - extend policy and responsibility prototypes;
-- implement POO Flow adapters around upstream POO objects;
+- implement Agentic AI Lab adapters around upstream POO objects;
 - connect admitted POO values to explicit runtime boundaries.
 
 Framework extension remains POO-native.  Raw alists, records, patch DSLs, and

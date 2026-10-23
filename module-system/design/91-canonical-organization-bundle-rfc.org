@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+TITLE: RFC 91 — Canonical Organization Bundle
-#+SUBTITLE: Typed Semantic Core for POO Flow Organizations
+#+SUBTITLE: Typed Semantic Core for Agentic AI Lab Organizations
 #+OPTIONS: toc:3 num:t
 #+LANGUAGE: en
 
@@ -14,7 +14,7 @@ Status: *Accepted; implementation planning*
 Implementation readiness depends on written suite review and the P0 gate in RFC 94.
 
 * Decision
-This RFC defines the Canonical Organization Bundle as the normative, runtime-independent semantic artifact produced by POO Flow.
+This RFC defines the Canonical Organization Bundle as the normative, runtime-independent semantic artifact produced by Agentic AI Lab.
 
 The accepted decision is:
 
@@ -27,7 +27,7 @@ The accepted decision is:
 7. Cross-facet validation is mandatory before activation or projection to the C Runtime Interface, Cedar, Lean, or evidence contracts.
 8. Dynamic reorganization creates an immutable epoch linked to its parent; it never mutates an active Bundle in place.
 9. Ambiguous or unsafe composition is a typed compilation error. Last-writer-wins behavior is forbidden.
-10. The Bundle, not a Python object model, C structure, Cedar policy, Lean model, or runtime implementation, is POO Flow's cross-language semantic center.
+10. The Bundle, not a Python object model, C structure, Cedar policy, Lean model, or runtime implementation, is Agentic AI Lab's cross-language semantic center.
 
 * Purpose
 
@@ -77,7 +77,7 @@ A /definition/ is an authoring-time POO declaration or functional value. An /ent
 This RFC is the contract owner for Bundle identity, manifest and lineage, facet boundaries and composition, compilation, validation, reorganization, and conformance. The Bundle is input to later runtime, authorization, proof, and evidence stages.
 
 * RFC Suite Dependencies
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
 - RFC 91 defines the semantic owner consumed by [[file:92-c-runtime-interface-and-python-validation-runtime-rfc.org][RFC 92]] and [[file:93-assurance-proof-and-evidence-chain-rfc.org][RFC 93]].
 - [[file:94-agentic-control-plane-migration-rfc.org][RFC 94]] is the contract owner for phase order, shadow validation, and canonical cutover.
 
@@ -340,4 +340,4 @@ This RFC is implemented when:
 15. Protocol refinement cannot introduce an untyped or unauthorized external effect.
 16. Evidence obligations accumulate and discharge only explicitly.
 17. The complete positive, negative, mutation, determinism, and epoch test matrix passes.
-18. The Bundle is enforced as POO Flow's sole cross-language semantic center.
+18. The Bundle is enforced as Agentic AI Lab's sole cross-language semantic center.

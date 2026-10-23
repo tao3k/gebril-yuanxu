@@ -132,7 +132,7 @@ languages receive a projection after composition; they do not own this syntax.
 ** 10.06.84.45 Python Runtime Load Fixture
 
 Python runtime fixtures must exercise the same public UI that users write. The
-fixture loaded by =poo_flow_runtime.load(...)= should therefore return a
+fixture loaded by =agentic_ai_lab_runtime.load(...)= should therefore return a
 =use-composition= object:
 
 #+begin_src scheme
@@ -167,7 +167,7 @@ an in-process projection-row cache keyed by the user Scheme file, cwd, runtime
 projection owner, and the Scheme module owners that define composition and
 FunFlow projection semantics. A changed file or changed owner invalidates the
 cache. Users may call =clear_load_cache()=, pass =cache=False=, or set
-=POO_FLOW_SCHEME_LOAD_CACHE=0= when they need a forced cold projection.
+=AGENTIC_AI_LAB_SCHEME_LOAD_CACHE=0= when they need a forced cold projection.
 
 Cold projection should prefer a direct =gxi= invocation when the local Gerbil
 package environment is already materialized under =.gerbil=. It falls back to
@@ -182,18 +182,18 @@ one synchronously by default. This is deliberate: the executable compile is
 appropriate for CI, package installation, or an explicit warmup step, while a
 user's first request must not unexpectedly spend minutes in native compilation.
 Callers that explicitly want compile-on-load may pass =compile_aot=True= or set
-=POO_FLOW_SCHEME_LOAD_AOT_COMPILE=1=.
+=AGENTIC_AI_LAB_SCHEME_LOAD_AOT_COMPILE=1=.
 
 The package exposes the explicit warmup path as a module command, without
 adding another project script entry:
 
 #+begin_src sh
-uv run --project packages/python-runtime python -m poo_flow_runtime.scheme_load_aot \
+uv run --project packages/python-runtime python -m agentic_ai_lab_runtime.scheme_load_aot \
   precompile packages/python-runtime/t/fixtures/funflow_user_module.ss \
   --cwd .
 #+end_src
 
-The command emits one =poo-flow.scheme-load-aot.v1= receipt with the source,
+The command emits one =agentic-ai-lab.scheme-load-aot.v1= receipt with the source,
 workspace root, binary path, rebuild flag, and elapsed time. That receipt is the
 CI/debug surface for proving that AOT was prepared before a fresh Python
 process relies on it.
@@ -202,13 +202,13 @@ Exact benchmark receipts are owned by the Python runtime benchmark control
 plane:
 
 #+begin_src sh
-uv run --project packages/python-runtime python -m poo_flow_runtime.benchmarks \
+uv run --project packages/python-runtime python -m agentic_ai_lab_runtime.benchmarks \
   scheme-load-aot --iterations 10 \
   --source packages/python-runtime/t/fixtures/funflow_user_module.ss \
   --cwd .
 #+end_src
 
-This suite reports =poo-flow.scheme-load-aot-benchmark.v1= rows for
+This suite reports =agentic-ai-lab.scheme-load-aot-benchmark.v1= rows for
 =scheme-load-cache-hit=, =scheme-load-in-process-aot-reuse=, and
 =scheme-load-fresh-process-aot-reuse=. Each row carries exact =samples-us= plus
 =min-us=, =median-us=, =mean-us=, =p95-us=, and =max-us=. The
@@ -219,7 +219,7 @@ be hidden inside default runtime checks.
 After a projection artifact is exported, benchmark the no-Gerbil path with:
 
 #+begin_src sh
-uv run --project packages/python-runtime python -m poo_flow_runtime.benchmarks \
+uv run --project packages/python-runtime python -m agentic_ai_lab_runtime.benchmarks \
   scheme-load-aot --iterations 10 --include-artifact --preproject-artifact \
   --source packages/python-runtime/t/fixtures/funflow_user_module.ss \
   --cwd .
@@ -240,7 +240,7 @@ Local receipt on 2026-07-08 for =funflow_user_module.ss=:
   iterations.
 
 Exact benchmark suite receipt on 2026-07-08, using
-=python -m poo_flow_runtime.benchmarks scheme-load-aot --iterations 10
+=python -m agentic_ai_lab_runtime.benchmarks scheme-load-aot --iterations 10
 --include-artifact --preproject-artifact= after AOT precompile:
 
 - =scheme-load-projection-artifact=: samples-us =(534 532 515 523 519 521
@@ -277,7 +277,7 @@ The artifact format stays Scheme-native. It is a Scheme datum, not JSON, with a
 small manifest wrapper:
 
 #+begin_src scheme
-((schema "poo-flow.scheme-load-projection-artifact.v1")
+((schema "agentic-ai-lab.scheme-load-projection-artifact.v1")
  (source-digest "...")
  (projection-digest "...")
  (rows ((schema "yuanxu.funflow-plan-projection.v1") ...)))
@@ -301,7 +301,7 @@ The runtime load order is:
 The publish-time command shape is:
 
 #+begin_src sh
-uv run --project packages/python-runtime python -m poo_flow_runtime.scheme_projection_artifact \
+uv run --project packages/python-runtime python -m agentic_ai_lab_runtime.scheme_projection_artifact \
   export packages/python-runtime/t/fixtures/funflow_user_module.ss \
   --cwd .
 #+end_src
@@ -315,10 +315,10 @@ The Python runtime wheel workflow therefore has two explicit lanes:
 1. =projection-artifact=: Gerbil-enabled authoring/release lane. It restores or
    builds Gerbil with =ccache=, routes package compilation through a
    =GERBIL_GSC= wrapper that passes Gambit =gsc -cc= to a =ccache gcc= wrapper,
-   builds the POO Flow package, runs
-   =poo_flow_runtime.scheme_projection_artifact export= against packaged Scheme
+   builds the Agentic AI Lab package, runs
+   =agentic_ai_lab_runtime.scheme_projection_artifact export= against packaged Scheme
    projection sources, and uploads the resulting
-   =*.poo-flow-projection.sexp= files as CI artifacts.
+   =*.agentic-ai-lab-projection.sexp= files as CI artifacts.
 2. =wheel=: no-Gerbil runtime lane. It downloads those generated artifacts,
    builds the Python wheel, installs the wheel in a clean virtualenv, asserts
    =gxi=, =gxc=, and =gxpkg= are absent, and loads the packaged projection from
@@ -328,11 +328,11 @@ The no-Gerbil wheel lane command shape is:
 
 #+begin_src sh
 uv build --project packages/python-runtime --wheel --out-dir dist/python-runtime-wheel
-python -m venv /tmp/poo-flow-runtime-wheel-smoke
-/tmp/poo-flow-runtime-wheel-smoke/bin/python -m pip install \
-  dist/python-runtime-wheel/poo_flow_runtime-0.1.0-py3-none-any.whl
-/tmp/poo-flow-runtime-wheel-smoke/bin/python -m poo_flow_runtime.scheme_projection_artifact --help
-/tmp/poo-flow-runtime-wheel-smoke/bin/python -m poo_flow_runtime.benchmarks scheme-load-aot --help
+python -m venv /tmp/agentic-ai-lab-runtime-wheel-smoke
+/tmp/agentic-ai-lab-runtime-wheel-smoke/bin/python -m pip install \
+  dist/python-runtime-wheel/agentic_ai_lab_runtime-0.1.0-py3-none-any.whl
+/tmp/agentic-ai-lab-runtime-wheel-smoke/bin/python -m agentic_ai_lab_runtime.scheme_projection_artifact --help
+/tmp/agentic-ai-lab-runtime-wheel-smoke/bin/python -m agentic_ai_lab_runtime.benchmarks scheme-load-aot --help
 #+end_src
 
 This CI lane proves that the downstream Python package can install and expose
@@ -341,8 +341,8 @@ incapable of generating projection artifacts; it must consume the real artifacts
 uploaded by the Gerbil-enabled lane.
 
 For built-in flows, the release lane must place both the Scheme source and the
-adjacent =*.poo-flow-projection.sexp= artifact under the Python package tree
-before =uv build=, for example under =src/poo_flow_runtime/projections/=. The
+adjacent =*.agentic-ai-lab-projection.sexp= artifact under the Python package tree
+before =uv build=, for example under =src/agentic_ai_lab_runtime/projections/=. The
 wheel build lane verifies that these package data files are present in the
 wheel and that the installed package can load them without a source checkout.
 It does not generate real projection artifacts; that remains the responsibility

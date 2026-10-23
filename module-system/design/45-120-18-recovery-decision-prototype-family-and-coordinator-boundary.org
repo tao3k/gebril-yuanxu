@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Recovery Decision Prototype Family and Coordinator Boundary
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -21,7 +21,7 @@ A central action tag and =case= statement would close the recovery model around
 one registry.  It would also encourage decisions, authority, runtime handles,
 and effects to collapse into one command object.
 
-POO Flow instead uses an open prototype family and native POO dispatch.
+Agentic AI Lab instead uses an open prototype family and native POO dispatch.
 
 * Decision
 

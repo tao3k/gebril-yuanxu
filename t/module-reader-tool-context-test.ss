@@ -90,7 +90,7 @@
         (with-change "modules/json-schema/types.ss"
           (lambda (text) (string-append "(import \"interface.ss\")\n" text))
           (lambda ()
-            (check-equal? (rejects? "POO-FLOW-MODULE-E007 reversed module role dependency"
+            (check-equal? (rejects? "YUANXU-MODULE-E007 reversed module role dependency"
                             (lambda () (.get (yuanxu-load-modules
                                                (path-expand "init.ss" root)) build-graph))) #t)))))
     (begin

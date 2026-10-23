@@ -155,6 +155,6 @@ Three zero-job native-projection builds measured 51.68, 38.24, and 28.63
 seconds. Three zero-job receipt-hit builds measured 31.73, 47.97, and 39.80
 seconds. The medians were 38.24 and 39.80 seconds respectively, making the
 receipt path about 4.1 percent slower. The receipt implementation, policy slot,
-CI timing lane, and downstream opt-ins were removed. POO Flow retains the
+CI timing lane, and downstream opt-ins were removed. Agentic AI Lab retains the
 standard native closure and =std/make= even though the remaining warm latency
 is unresolved.

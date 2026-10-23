@@ -8,7 +8,7 @@
 * 10.06.55.10 Purpose
 This document is the reader-facing architecture for the POO/C4 linearization proof layer. It is not only a list of Lean files. It explains the theory, mathematical model, design intent, and expected use by humans and agents.
 
-PooC4 means the proof-facing view of POO objects after C4 linearization. In other words, it is POO/C4 linearization plus the control-plane proof obligations that must hold for the linearized result. It starts from the practical problem in POO flow: policy objects, strategy objects, shared profiles, sessions, sandboxes, subagents, and runtime handoff can be freely composed. That freedom is the value of POO, but it also creates hidden correctness risks:
+PooC4 means the proof-facing view of POO objects after C4 linearization. In other words, it is POO/C4 linearization plus the control-plane proof obligations that must hold for the linearized result. It starts from the practical problem in Agentic AI Lab: policy objects, strategy objects, shared profiles, sessions, sandboxes, subagents, and runtime handoff can be freely composed. That freedom is the value of POO, but it also creates hidden correctness risks:
 
 The Lean modules do not prove or reproduce Gerbil's C4 linearizer or its suffix
 property. Native Gerbil v0.19 supplies the order; this layer reasons about
@@ -20,7 +20,7 @@ projected facts and control-plane obligations after that boundary.
 - a subagent may receive a message without lifecycle, channel, or policy evidence;
 - a production reference such as OpenRATH may be mistaken for a POO-owned proof fact.
 
-The proof layer is the answer to those risks. It makes the implicit control-plane rules explicit, gives them mathematical names, and checks them in Lean. The goal is not to prove a full Scheme interpreter. The goal is to prove that policy, strategy, workflow, session, and runtime-handoff decisions emitted by this project satisfy the POO flow rules they claim to satisfy.
+The proof layer is the answer to those risks. It makes the implicit control-plane rules explicit, gives them mathematical names, and checks them in Lean. The goal is not to prove a full Scheme interpreter. The goal is to prove that policy, strategy, workflow, session, and runtime-handoff decisions emitted by this project satisfy the Agentic AI Lab rules they claim to satisfy.
 
 * 10.06.55.15 Why Scheme Modules Need Proof
 Scheme is the right language for this control plane because it gives us macros, symbolic data, functional composition, and Gerbil POO prototype objects. Those strengths are exactly why the proof boundary is needed. The same mechanisms that make policy code compact and extensible also make it easy to create a configuration that looks reasonable but is semantically too broad.
@@ -156,7 +156,7 @@ That path makes generated policy reviewable. A human reviewer can inspect not on
 * 10.06.55.37 AI Strategy/Policy Boundary
 The proof target is not a worker-execution claim. A worker executes a unit of work after a policy has selected it. The hard object is the AI strategy/policy system: the logic that decides when a session may start, continue, hand off, launch a subagent, open a sandbox scope, call a tool, retry a loop, or declare completion.
 
-For POO Flow, that policy is not a free-form prompt. It is the composition of POO/C4-linearized profiles, Scheme facts, runtime readiness predicates, sandbox capability scopes, and loop transition rules. The verified surface must answer questions like:
+For Agentic AI Lab, that policy is not a free-form prompt. It is the composition of POO/C4-linearized profiles, Scheme facts, runtime readiness predicates, sandbox capability scopes, and loop transition rules. The verified surface must answer questions like:
 | Axis | Policy question | Proof obligation |
 |------+-----------------+------------------|
 | Session | Which session owns this action and which child sessions can inherit it? | Lineage and handoff edges are explicit, acyclic, and authorized. |
@@ -188,17 +188,17 @@ $
 
 This is why the Scheme side must expose typed facts, not loose JSON manifests. The Lean side should check propositions about the same policy objects that the Scheme control plane will execute. The runtime can then reject an agent action because a proof obligation is absent, not because a human reviewer noticed the bug after execution.
 * 10.06.55.39 Relation To Agent Frameworks And Research
-OpenRATH and Flue are useful reference frameworks because they make real production concerns visible: durable sessions, sandbox placement, tools, skills, workflows, memory, selectors, and runtime harnesses. They are not verification authorities for POO Flow. A reference framework can tell us which runtime axes matter; it cannot prove that a POO/C4-linearized Scheme policy is safe unless its facts are mapped into our Lean obligations.
+OpenRATH and Flue are useful reference frameworks because they make real production concerns visible: durable sessions, sandbox placement, tools, skills, workflows, memory, selectors, and runtime harnesses. They are not verification authorities for Agentic AI Lab. A reference framework can tell us which runtime axes matter; it cannot prove that a POO/C4-linearized Scheme policy is safe unless its facts are mapped into our Lean obligations.
 
-| Reference | Useful signal | Boundary for POO Flow |
+| Reference | Useful signal | Boundary for Agentic AI Lab |
 |-----------+---------------+-----------------------|
 | [[https://arxiv.org/abs/2210.03629][ReAct]] | Interleaves reasoning traces and actions, making action plans easier to inspect. | A trace improves observability, but it is not a machine-checked policy proof. |
 | [[https://arxiv.org/abs/2303.11366][Reflexion]] | Uses feedback and episodic memory to improve later decisions. | Reflection can improve search, but it does not certify session, sandbox, or loop invariants. |
 | [[https://arxiv.org/abs/2309.15817][ToolEmu]] | Shows tool-using LM agents can produce realistic high-impact failures. | It is an evaluation and risk-discovery framework, not the proof contract for our policies. |
-| [[https://arxiv.org/abs/2406.13352][AgentDojo]] | Shows prompt-injection and untrusted-tool-data risks in realistic agent tasks. | It gives adversarial scenarios; POO Flow still needs typed local proof obligations. |
+| [[https://arxiv.org/abs/2406.13352][AgentDojo]] | Shows prompt-injection and untrusted-tool-data risks in realistic agent tasks. | It gives adversarial scenarios; Agentic AI Lab still needs typed local proof obligations. |
 | [[https://dl.acm.org/doi/10.1145/263699.263712][Proof-Carrying Code]] | Establishes the pattern that code can carry a proof checked by the host. | We adapt the pattern to policy actions, not to proving a full Scheme interpreter. |
 | [[https://www.cs.princeton.edu/~appel/papers/says.pdf][Proof-Carrying Authentication]] | Shows a requester can supply a proof that the receiver checks before authorization. | We use the same shape for agent actions: construct evidence, then check before accept. |
-| [[https://github.com/Rath-Team/OpenRath][OpenRATH]] | Makes Session, Sandbox, Memory, Tool, Agent, Workflow, and Selector first-class runtime objects. | It is a production reference for axes and vocabulary, not a source of POO Flow truth. |
+| [[https://github.com/Rath-Team/OpenRath][OpenRATH]] | Makes Session, Sandbox, Memory, Tool, Agent, Workflow, and Selector first-class runtime objects. | It is a production reference for axes and vocabulary, not a source of Agentic AI Lab truth. |
 | [[https://flueframework.com/][Flue]] | Treats sessions, tools, skills, filesystem access, and sandbox runtime as a programmable harness. | It helps frame harness requirements; it does not discharge POO/C4 or Lean obligations. |
 | Codex/Claude-style coding agents | Strong at generating code, running tools, and iterating with human feedback. | They need an external typed proof contract before generated policy can be trusted as rigorous logic. |
 | Pi/Flue-style harnesses | Useful for durable execution and runtime packaging. | Harness durability is not the same as verified strategy/policy correctness. |
@@ -207,14 +207,14 @@ OpenRATH and Flue are useful reference frameworks because they make real product
 flowchart LR
   External["External frameworks and papers"] --> RefFacts["Reference evidence"]
   RefFacts --> Axes["Session / Sandbox / Loop / Tool axes"]
-  Scheme["POO Flow Scheme facts"] --> Obligations["Lean proof obligations"]
+  Scheme["Agentic AI Lab Scheme facts"] --> Obligations["Lean proof obligations"]
   Axes --> Obligations
   Obligations --> Checker["Proof checker"]
   Checker --> Accept["Accept action"]
   Checker --> Reject["Reject action"]
 #+end_src
 
-The important distinction is evidence ownership. OpenRATH, Flue, ReAct, Reflexion, ToolEmu, and AgentDojo help us understand the shape of modern agent systems and their failure modes. POO Flow facts still come from this repository: Scheme modules, POO/C4 profile composition, declared dependencies, sandbox contracts, session links, and loop strategy rules.
+The important distinction is evidence ownership. OpenRATH, Flue, ReAct, Reflexion, ToolEmu, and AgentDojo help us understand the shape of modern agent systems and their failure modes. Agentic AI Lab facts still come from this repository: Scheme modules, POO/C4 profile composition, declared dependencies, sandbox contracts, session links, and loop strategy rules.
 
 The detailed support evidence record is maintained in [[file:56-ai-strategy-policy-support-evidence.org][10.06.56 AI Strategy/Policy Support Evidence]]. That document owns the literature/framework mapping, failure-mode taxonomy, evidence levels, and evidence-to-obligation rule. This architecture document only summarizes the boundary.
 * 10.06.55.40 Architecture
@@ -249,7 +249,7 @@ The important boundary is that runtime evidence and production reference evidenc
 
 #+begin_src typst
 $
-op("PooFlowOwnedFact")(C) & => C \
+op("AgenticAILabOwnedFact")(C) & => C \
 op("ReferenceObservation")(R,C) & arrow.r.double.not C \
 op("VerifiedFromReference")(r)
   & => op("AdoptionCertificate")(r) \
@@ -257,7 +257,7 @@ op("AdoptionCertificate")(r) & => C
 $
 #+end_src
 
-This is why OpenRATH can be a production reference but not a verification authority. It can suggest cases. It cannot close a POO flow proof unless the POO proof boundary adopts the observation through a certificate.
+This is why OpenRATH can be a production reference but not a verification authority. It can suggest cases. It cannot close a Agentic AI Lab proof unless the POO proof boundary adopts the observation through a certificate.
 
 * 10.06.55.45 Scheme To Lean Proof Chain
 The proof chain is the bridge between implementation and mathematics. It is also the chain agents should preserve when they modify the system.
@@ -473,7 +473,7 @@ First, Scheme should emit typed proof facts instead of loose metadata. The contr
 
 Second, user-interface cases should become scenario proofs. A UI config is not only a sample. It is a concrete composition of profiles, policies, strategies, and sessions. The proof layer should be able to say which scenario starts, which step is blocked, and which policy fact explains the decision.
 
-Third, production references should remain reference evidence. OpenRATH and similar systems are useful because they reveal real control-plane shapes. They should generate candidate obligations, not verified facts. POO flow remains the authority for POO flow correctness.
+Third, production references should remain reference evidence. OpenRATH and similar systems are useful because they reveal real control-plane shapes. They should generate candidate obligations, not verified facts. Agentic AI Lab remains the authority for Agentic AI Lab correctness.
 
 Fourth, runtime and FFI boundaries should become explicit certificates. When Gerbil, C FFI, or Marlin runtime handoff is involved, the proof should record what the Scheme side owns, what the runtime side owns, and which side is forbidden from manufacturing the other side's proof facts.
 

@@ -14,7 +14,7 @@ The following continuing rules remain normative:
 
 1. default builds use Building Framework topology and one upstream
    =std/make= session when the caller declares no tight memory cap;
-2. a positive =POO_FLOW_BUILD_MAX_RSS_BYTES= activates adaptive windows, and
+2. a positive =AGENTIC_AI_LAB_BUILD_MAX_RSS_BYTES= activates adaptive windows, and
    every completed window must retain canonical JSON evidence; safe growth is
    capacity-capped and geometric, while native concurrency remains bounded by
    the detected worker count;
@@ -35,7 +35,7 @@ The following continuing rules remain normative:
 7. =//scheme:tests= is the ordinary serial acceptance suite, while
    =//scheme:performance_tests= remains an explicit separate gate until its
    native fixture-contract drift is repaired; and
-8. =build.ss= must cold-start without importing =:poo-flow= from an installed
+8. =build.ss= must cold-start without importing =:agentic-ai-lab= from an installed
    output tree, and Bazel actions must declare every =.ss=, =.ssi=, =.scm=,
    =.inc=, user-interface, and native-header input they consume; and
 9. the root =justfile= must remain a declarative catalog of Bazel targets and
@@ -51,4 +51,4 @@ Phase-level overlap remains an upstream proposal.  The next performance path
 is to change the upstream expansion/import and native-job flush behavior so
 native compilation can overlap earlier with Scheme expansion.  That work must
 remain inside the canonical =std/make= coordinator; it must not introduce a
-second executor in POO Flow.
+second executor in Agentic AI Lab.

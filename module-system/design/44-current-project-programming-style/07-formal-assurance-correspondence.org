@@ -12,7 +12,7 @@ second user-facing model or feed proof-engine records back as semantic owners.
 
 * Quint three-part closure
 
-POO Flow calls a Quint model closed only when three independent artifacts agree:
+Agentic AI Lab calls a Quint model closed only when three independent artifacts agree:
 
 1. native =.qnt= source declares the bounded transition system and
    invariants;

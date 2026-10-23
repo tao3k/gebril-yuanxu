@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+TITLE: RFC 54: Lean C FFI Proof Bridge For User Interface Policy
-#+PROPERTY: RFC_ID poo-flow.rfc.54
+#+PROPERTY: RFC_ID agentic-ai-lab.rfc.54
 #+PROPERTY: STATUS draft
 #+PROPERTY: OWNER module-system
 #+PROPERTY: REVIEW_KIND rfc
@@ -89,7 +89,7 @@ checks that the facts satisfy the proof model.
 The initial C surface has an explicit header:
 
 #+begin_src c
-#include "poo_flow_proof_ffi.h"
+#include "agentic_ai_lab_proof_ffi.h"
 #+end_src
 
 That header is the C side of the stable interface. It defines ABI version,
@@ -98,11 +98,11 @@ The C implementation exports raw accessors for each field and Lean IO wrappers
 for the same values:
 
 #+begin_src c
-uint32_t poo_flow_proof_abi_version_raw(void);
-uint32_t poo_flow_proof_tag_width_raw(void);
-uint32_t poo_flow_proof_obligation_count_raw(void);
-uint32_t poo_flow_proof_required_obligation_mask_raw(void);
-uint32_t poo_flow_proof_ui_config_well_formed_bit_raw(void);
+uint32_t agentic_ai_lab_proof_abi_version_raw(void);
+uint32_t agentic_ai_lab_proof_tag_width_raw(void);
+uint32_t agentic_ai_lab_proof_obligation_count_raw(void);
+uint32_t agentic_ai_lab_proof_required_obligation_mask_raw(void);
+uint32_t agentic_ai_lab_proof_ui_config_well_formed_bit_raw(void);
 #+end_src
 
 Lean imports those wrappers and decodes the raw ABI payload into typed
@@ -112,7 +112,7 @@ before binding richer Gerbil-owned C structures.
 This follows the Lean 4 FFI pattern:
 
 #+begin_src lean
-@[extern "poo_flow_proof_required_obligation_mask"]
+@[extern "agentic_ai_lab_proof_required_obligation_mask"]
 opaque cRequiredObligationMask : IO UInt32
 #+end_src
 
@@ -208,7 +208,7 @@ lake build ffiSmoke
 Expected FFI smoke output:
 
 #+begin_src text
-poo-flow proof FFI smoke: ok
+agentic-ai-lab proof FFI smoke: ok
 #+end_src
 
 * Open Questions

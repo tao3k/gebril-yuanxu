@@ -137,7 +137,7 @@ diagnostic evidence when useful.
 When compile-time dependencies are incomplete, the explanation states that
 reuse proof is unavailable and identifies the unproven dependency class.
 
-The macro remains valid.  POO Flow performs fresh expansion and conservative
+The macro remains valid.  Agentic AI Lab performs fresh expansion and conservative
 recomputation without falsely claiming that the semantic definition changed.
 
 * Causal propagation
@@ -185,7 +185,7 @@ prototype.
 
 * Complete cause closure
 
-POO Flow MUST preserve every causally relevant cause in the explanation
+Agentic AI Lab MUST preserve every causally relevant cause in the explanation
 closure.
 
 A user interface may project one primary cause for concise presentation.  The

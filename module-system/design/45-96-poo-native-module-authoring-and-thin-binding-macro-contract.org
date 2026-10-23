@@ -39,13 +39,13 @@ Parser-owned ASP discovery currently identifies:
 
 - =use-composition= as a macro owner in
   =src/module-system/profile-composition/use-syntax.ss=;
-- the historical =poo-flow-composition-module-binding= helper (the current
+- the historical =agentic-ai-lab-composition-module-binding= helper (the current
   inert binding owner is =core/profile-composition/bindings.ss=);
 - composition accessors and builders as internal implementation surfaces;
 - no emitted owner for =defmodule=, =define-module=, or =module!=.
 
 The direct selector bridge from =use-composition= to
-=poo-flow-composition-module-binding= is not proven. Exact selector queries for
+=agentic-ai-lab-composition-module-binding= is not proven. Exact selector queries for
 both owners currently fail with the exact ASP diagnostic: =current source snapshot omitted exact-selector owner bytes=.
 
 Therefore:
@@ -99,7 +99,7 @@ Name selection is admitted only after:
 
 - Gerbil core and standard library bindings are checked;
 - the pinned =gerbil-poo= public surface is checked;
-- the POO Flow project namespace is checked;
+- the Agentic AI Lab project namespace is checked;
 - macro expansion and diagnostic behavior are demonstrated;
 - the name does not imply that the macro owns Gerbil module loading.
 
@@ -209,7 +209,7 @@ or =profiles=:
 
 * Semantic Module and Gerbil module separation
 
-A POO Flow =Module= is a semantic POO object.
+A Agentic AI Lab =Module= is a semantic POO object.
 
 A Gerbil module is a compilation, namespace, import, and load boundary.
 
@@ -261,13 +261,13 @@ it.
 The following names are current implementation evidence, not approved public
 Module authoring APIs:
 
-- =poo-flow-composition-module-binding=;
-- =poo-flow-composition-profile-binding=;
-- =poo-flow-composition-object/profile-bindings=;
-- =poo-flow-composition-modules=;
-- =poo-flow-composition-profiles=;
-- =poo-flow-composition-stages=;
-- =poo-flow-composition-stage-clauses=.
+- =agentic-ai-lab-composition-module-binding=;
+- =agentic-ai-lab-composition-profile-binding=;
+- =agentic-ai-lab-composition-object/profile-bindings=;
+- =agentic-ai-lab-composition-modules=;
+- =agentic-ai-lab-composition-profiles=;
+- =agentic-ai-lab-composition-stages=;
+- =agentic-ai-lab-composition-stage-clauses=.
 
 Their current alist, clause, or staging assumptions do not constrain the new
 architecture.
@@ -470,7 +470,7 @@ Implementation work is not admitted until:
 
 - [ ] exact selector owner bytes are available for =use-composition=;
 - [ ] exact selector owner bytes are available for
-  =poo-flow-composition-module-binding=;
+  =agentic-ai-lab-composition-module-binding=;
 - [ ] the current bridge between those owners is proven or rejected;
 - [ ] the pinned =gerbil-poo= public primitives are cited by exact identity;
 - [ ] Module object construction is mapped to verified POO primitives;

@@ -195,7 +195,7 @@ Phase 3: deepen session policy generation.
   tool-grant alist accessors, and policy =->alist= projection now route through
   =policy-syntax.ss=.
 - Completed policy object row-frame slice:
-  =poo-flow-session-policy-object= now preserves base rows, generated policy
+  =agentic-ai-lab-session-policy-object= now preserves base rows, generated policy
   slots, metadata, runtime owner, and runtime-executed order through an
   owner-local tail helper instead of stitching constructor rows with =append=.
 - Completed validation slice: policy tool-attempt alist accessors, validation
@@ -218,17 +218,17 @@ Phase 3: deepen session policy generation.
   accessor wrappers and =->alist= projection now route through
   =receipt-syntax.ss=, with diagnostic rows computed once before final
   projection.
-- Completed materialization receipt slice: =poo-flow-session-materialization-receipt->alist=
+- Completed materialization receipt slice: =agentic-ai-lab-session-materialization-receipt->alist=
   now routes through =receipt-syntax.ss= with its receipt guard preserved at
   the generated function boundary.
-- Completed selector receipt slice: =poo-flow-session-selector-receipt= is now
+- Completed selector receipt slice: =agentic-ai-lab-session-selector-receipt= is now
   defstruct-backed, while selector candidates remain POO objects and project
-  through =poo-flow-session-selector-candidate->alist= at the ABI boundary.
-  =poo-flow-session-selector-receipt->alist= still routes through
+  through =agentic-ai-lab-session-selector-candidate->alist= at the ABI boundary.
+  =agentic-ai-lab-session-selector-receipt->alist= still routes through
   =receipt-syntax.ss= with its selector guard preserved at the generated
   function boundary; selector candidate id projections use single-pass
   functional recursion under the existing performance gate.
-- Completed registry receipt slice: object-backed =poo-flow-session-registry-receipt->alist=
+- Completed registry receipt slice: object-backed =agentic-ai-lab-session-registry-receipt->alist=
   now routes through =receipt-syntax.ss=, and session-agent graph projection
   delegates registry rows back to the registry owner instead of inlining them.
   Registry receipt construction now derives =session-ids= and
@@ -255,7 +255,7 @@ Phase 3: deepen session policy generation.
   an anonymous map. Loop-engine output session refs and session-agent node
   construction now use named graph-owner reverse accumulators instead of
   anonymous =map= frames before the shared registry and communication passes.
-- Completed AgentParam contract slice: =poo-flow-session-agent-param-contract->alist=
+- Completed AgentParam contract slice: =agentic-ai-lab-session-agent-param-contract->alist=
   now routes through =receipt-syntax.ss= while preserving the AgentParam guard
   and the existing batch projection performance gate.
 - Completed session graph presentation performance slice: graph presentation
@@ -267,10 +267,10 @@ Phase 3: deepen session policy generation.
   files can otherwise break facade re-export checks.
 
 - Completed user-interface scenario batch benchmark slice: the scenario-batch performance owner now derives row counts, runtime flags, and case names through owner-local reverse accumulators instead of recursive append or non-tail list scans, while keeping benchmark payloads under =t/scenarios/performance= and leaving public =user-interface/= POO declarations unchanged.
-- Completed AgentParam batch projection slice: =poo-flow-session-agent-param-contracts->alists= now uses the shared session receipt batch macro, and that macro expands to an ordered reverse accumulator instead of an anonymous =map= frame for session receipt batch projections.
+- Completed AgentParam batch projection slice: =agentic-ai-lab-session-agent-param-contracts->alists= now uses the shared session receipt batch macro, and that macro expands to an ordered reverse accumulator instead of an anonymous =map= frame for session receipt batch projections.
 - Completed core/session/workflow row-frame projection slice: session transform and session value metadata prefixes now use owner-local fixed-prefix tail helpers; core plan, runner, receipt, runtime, failure, strategy, task, flow registry, and validation fixed receipt or error detail rows route through =defpoo-core-receipt-projection=; CI/CD runtime metadata and runtime readiness rows now use declarative field/tail helpers instead of hand-written =cons= towers.
 - Completed agent-sandbox projection and merge slice: request, profile, descriptor, validation, bridge, Marlin, Cube, nono, and sandbox resource final rows now share =modules/agent-sandbox/projection-syntax.ss= instead of copying owner-local =list (cons ...)= frames, while sandbox resource merge now collects unseen right-hand bindings in reverse accumulators and appends them to the left side once instead of repeatedly growing lists with =append=.
-- Completed session-agent topology accumulator follow-up: =poo-flow-session-agent-node-topology-summary= now derives agent ids, lineage edge pairs, and durable policy refs with one tail-recursive reverse accumulator instead of recursively rebuilding the tail summary before each cons.
+- Completed session-agent topology accumulator follow-up: =agentic-ai-lab-session-agent-node-topology-summary= now derives agent ids, lineage edge pairs, and durable policy refs with one tail-recursive reverse accumulator instead of recursively rebuilding the tail summary before each cons.
 - Completed workflow CI/CD runtime projection readability slice: runtime metadata, runtime policy, command envelopes, durable rows, and check receipt field projections now use an owner-local =yuanxu-cicd-field-rows= declarative macro over the bounded row-tail helper instead of hand-written nested =cons= towers, preserving durable-field tail composition without making public =user-interface/= declarations depend on benchmark or ABI plumbing.
 - Completed sandbox-core profile-support projection helper slice:
   profile derivation, resolve, backend capability policy diagnostics,
@@ -282,7 +282,7 @@ Phase 3: deepen session policy generation.
   projection.
 - Completed user-interface scenario benchmark gate repair:
   =user-interface/custom/my-module/cases/session-policy.ss= now uses canonical
-  =poo-flow-session-*= POO constructors and canonical =->alist= projectors
+  =agentic-ai-lab-session-*= POO constructors and canonical =->alist= projectors
   instead of stale short facade names, and
   =user-interface/custom/my-module/cases/loop-engine.ss= now keeps selector
   and materialization profile slots as session receipt objects until the
@@ -306,7 +306,7 @@ Phase 3: deepen session policy generation.
 - Completed loop-engine runtime-agent projection follow-up: agent profile, harness, session, and topology field-value projections now use runtime-agent owner reverse accumulators instead of anonymous =map= lambdas under the loop-engine session-agent graph performance gate.
 - Completed clean optimized build bootstrap follow-up: =runtime-bootstrap= now includes the shared session registry/agent owners and loop-engine intent/session-agent graph/runtime-agent owners so clean =gxpkg build -R -O= no longer depends on stale interface artifacts for the loop-engine session-agent graph performance path.
 - Profile summaries and presentation slot copies remain optimized, while
-  duplicate and missing-setting admission runs once through POO Flow Testing
+  duplicate and missing-setting admission runs once through Agentic AI Lab Testing
   Policy slots rather than through a second presentation path.
 - Completed durable runtime store operation follow-up: default operation receipt batches and row bridge handoff operation batches now use durable-operation owner reverse accumulators instead of =map= plus =append= frames while preserving Marlin handoff operation order.
 - Completed module-system support projection follow-up: loader tree lazy plans, module registry source refs, diagnostic duplicate details and family/kind rows, interface object alists, projection option config/schema/validation rows, declaration-case trace stages, init-syntax slot groups, and POO slot authoring observations/statuses now use owner-local recursive projection helpers instead of anonymous =map= frames.
@@ -356,7 +356,7 @@ Phase 4: broaden runtime projection generation carefully.
   entries, unordered dependency nodes, and pipeline-run blocked-step summaries
   now use owner-local recursion instead of anonymous =map= / =filter= frames.
 - Completed workflow CI/CD runtime projection batch slice:
-  =poo-flow-user-config-workflow-cicd-runtime-projection= now computes the
+  =agentic-ai-lab-user-config-workflow-cicd-runtime-projection= now computes the
   shared check-map/profile-catalog runtime rows once, then config and profile
   presentations consume that owner-local receipt instead of rediscovering
   manifests, summaries, ABIs, and receipts through separate config-level scans.
@@ -423,8 +423,8 @@ Phase 4: broaden runtime projection generation carefully.
   recursion instead of append/map/filter intermediate lists while preserving
   review order under the loop human-audit performance gate.
 - Completed module descriptor object-frame slice:
-  =poo-flow-module-descriptor-prototype= and
-  =make-poo-flow-module-descriptor/full= now route through
+  =agentic-ai-lab-module-descriptor-prototype= and
+  =make-agentic-ai-lab-module-descriptor/full= now route through
   =poo-core-role-object= while keeping user-facing module syntax in
   =descriptor-syntax.ss= and activation/import validation in the descriptor
   owner.
@@ -497,13 +497,13 @@ Phase 4: broaden runtime projection generation carefully.
   catalog-validation row from metadata and project catalog id/ref, catalog
   validity, resolved/unresolved tool refs, sandbox-required refs, action
   mismatch rows, and tool-core diagnostics through the bounded
-  =poo-flow-session-policy-validation-receipt->alist= ABI.
+  =agentic-ai-lab-session-policy-validation-receipt->alist= ABI.
 - Completed session-policy/memory-core bridge slice:
   effective session policy validation receipts consume an optional memory-core
   catalog-validation row from metadata and project catalog id/ref, catalog
   validity, catalog store refs, intent store refs, resolved/unresolved store
   refs, and memory-core diagnostics through the same bounded
-  =poo-flow-session-policy-validation-receipt->alist= ABI. AgentParam
+  =agentic-ai-lab-session-policy-validation-receipt->alist= ABI. AgentParam
   contracts now project the resolved memory catalog facts beside topology-owned
   =memory-refs= for Marlin handoff.
 - Completed memory-core validation summary slice:
@@ -566,7 +566,7 @@ Phase 4: broaden runtime projection generation carefully.
   capability lookup, resource policy derivation, and strict handoff validation
   remain explicit.
 - Completed sandbox derivation flattening slice:
-  =poo-flow-user-config-sandbox-profile-derivations= now preserves user module
+  =agentic-ai-lab-user-config-sandbox-profile-derivations= now preserves user module
   declaration order with a single reverse accumulator instead of appending one
   derivation list per selected module.
 - Completed helper naming cleanup slice: optional module-selection source-ref
@@ -608,7 +608,7 @@ Phase 4: broaden runtime projection generation carefully.
 - The former Profile Doctor presentation path has been removed.  User and
   Profile presentations remain shallow report-only values; profile and
   profile-set admission now extend the ASP Testing Interface once through
-  =+poo-flow-testing-interface+=.  This avoids rebuilding the full presentation
+  =+agentic-ai-lab-testing-interface+=.  This avoids rebuilding the full presentation
   graph merely to decide whether a declaration is admissible.
 Phase 4b: keep user fragment loading source-aware and compile-time bounded.
 - Keep =src/authoring/fragment-syntax.ss= as the syntax owner for =load!=
@@ -637,11 +637,11 @@ Phase 5: generate private =use-module= branches last.
 - Remove stale compatibility clauses when a raw public form has been deleted.
 - Completed first private branch slice: =use-module= now routes repeated
   =funflow=, =tool-core=, and =memory-core= =:config (.def ...)= branches
-  through the internal =poo-flow-use-module-poo-config= helper, preserving the
+  through the internal =agentic-ai-lab-use-module-poo-config= helper, preserving the
   same POO-native public syntax and owner config flag projectors.
 - Completed sandbox profile branch slice: =nono-sandbox=, =cubeSandbox=, and
   =docker-sandbox= profile declarations now route through
-  =poo-flow-use-module-sandbox-profile-config=, which only generates inert
+  =agentic-ai-lab-use-module-sandbox-profile-config=, which only generates inert
   profile prototypes and delegates backend policy meaning to each existing
   config flag projector.
 - Completed sandbox profile fast-path slice: simple keyword-only sandbox
@@ -654,7 +654,7 @@ Phase 5: generate private =use-module= branches last.
   order with a single functional accumulator rather than =apply append=.
 - Completed loop-engine config branch slice: =use-module loop-engine :config
   (.def ...)= now routes through the shared
-  =poo-flow-use-module-poo-config= helper, so the mechanical prototype binding,
+  =agentic-ai-lab-use-module-poo-config= helper, so the mechanical prototype binding,
   quoted payload, and config flag frame match =funflow=, =tool-core=, and
   =memory-core=. Loop-engine policy, diagnostics, handoff, and result-contract
   semantics remain explicit in their existing owners.

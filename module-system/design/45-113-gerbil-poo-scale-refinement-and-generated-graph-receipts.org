@@ -13,13 +13,13 @@ scale-parametric proof in RFC 45-112 and executable graphs made from the unique
 Scheme POO library, ~gerbil-poo~.
 
 It does not admit the executable implementation.  It fixes the evidence that an
-implementation must produce before POO Flow may claim that one
+implementation must produce before Agentic AI Lab may claim that one
 ~use-composition~ safely operates hundreds or thousands of Modules.
 
 * Decisions carried into this RFC
 
-- ~gerbil-poo~ is the unique Scheme implementation of POO used by POO Flow.
-- POO Flow reuses its object and prototype semantics; it does not implement a
+- ~gerbil-poo~ is the unique Scheme implementation of POO used by Agentic AI Lab.
+- Agentic AI Lab reuses its object and prototype semantics; it does not implement a
   second fixed-point library.
 - The historical public-entry decision in this RFC is superseded by RFC 45-92.
   Scale evidence applies to the admitted value graph and does not own the
@@ -82,14 +82,14 @@ constraints.  The abstract result is one composition root.
 The concrete witness is a finite graph whose nodes are native ~gerbil-poo~
 objects:
 
-- POO Flow declares a Module prototype whose native object slots project stable
+- Agentic AI Lab declares a Module prototype whose native object slots project stable
   identity, imports, exported Profiles, and capability constraints;
-- POO Flow declares a Profile prototype whose native object slots project
+- Agentic AI Lab declares a Profile prototype whose native object slots project
   stable identity and reachable responsibilities;
 - an import edge refers to another Module identity;
 - a final ~use-composition~ invocation selects the aggregate Profiles from
   which the reachable Module closure is computed;
-- POO Flow declares receipt prototypes whose native object slots record the
+- Agentic AI Lab declares receipt prototypes whose native object slots record the
   observed graph, closure, capability result, fixed-point outcome, resource
   attribution, and deterministic digest.
 
@@ -148,11 +148,11 @@ observability boundaries.
 
 The following concepts are not native domain concepts of ~gerbil-poo~:
 ~Module~, ~Profile~, ~imports~, ~capability~, ~receipt~, and
-~use-composition~.  POO Flow defines them as prototypes, objects, slots, and a
+~use-composition~.  Agentic AI Lab defines them as prototypes, objects, slots, and a
 thin hygienic projection over the verified native substrate.  It must not claim
 that ~gerbil-poo~ itself owns those names or their policy.
 
-In particular, stable Module/Profile identity is an explicit POO Flow slot.  It
+In particular, stable Module/Profile identity is an explicit Agentic AI Lab slot.  It
 must not be derived from an in-memory object address or treated as a
 ~gerbil.pkg~ package identity.
 
@@ -177,12 +177,12 @@ expansion.  The hygienic ~use-composition~ form may project to ordinary
 
 | Abstract component | Concrete ~gerbil-poo~ witness | Required equality |
 |-
-| Module index | POO Flow ~identity~ slot on a native Module object | bijective identity map |
-| Profile selection | POO Flow Profile object exported through a native slot | exact selected identity |
-| import relation | POO Flow ~imports~ slot containing native Module objects | exact edge relation after identity projection |
+| Module index | Agentic AI Lab ~identity~ slot on a native Module object | bijective identity map |
+| Profile selection | Agentic AI Lab Profile object exported through a native slot | exact selected identity |
+| import relation | Agentic AI Lab ~imports~ slot containing native Module objects | exact edge relation after identity projection |
 | reachable closure | projected native Module objects | sound and complete identity set |
-| capability meet | POO Flow capability object/slot | no capability amplification |
-| fixed-point result | POO Flow observation over native evaluation | exact outcome |
+| capability meet | Agentic AI Lab capability object/slot | no capability amplification |
+| fixed-point result | Agentic AI Lab observation over native evaluation | exact outcome |
 | composition root | final ~use-composition~ native-object result | exactly one root |
 
 #+begin_src text
@@ -381,7 +381,7 @@ Verification receipts:
   declarations, errors, or warnings:
   ~b9310c61-2d84-4d58-b4aa-840d334c60ec~;
 - AXLE preserved-import attempt — blocked before proof checking because the
-  remote environment cannot resolve the project-local ~PooFlowProof~ prefix:
+  remote environment cannot resolve the project-local ~AgenticAILabProof~ prefix:
   ~6fa1e773-aaa1-42bf-acbe-55712fef33d4~;
 - concrete Gerbil refinement implementation — not admitted.
 
@@ -423,7 +423,7 @@ is normalized before encoding.
 
 #+begin_src text
 $ op("semantic-preimage")(b) := (
-    "poo-flow/profile-bundle/semantic/v1",
+    "agentic-ai-lab/profile-bundle/semantic/v1",
     op("definition-id")(b.module),
     op("instance-id")(b.module),
     op("ordered-map")(op("revision-id"), b.profiles),
@@ -435,7 +435,7 @@ $ op("semantic-id")(b)
     := H(op("canonical-encode")(op("semantic-preimage")(b))) $
 
 $ op("activation-preimage")(b, g) := (
-    "poo-flow/profile-bundle/activation/v1",
+    "agentic-ai-lab/profile-bundle/activation/v1",
     op("semantic-id")(b),
     op("generation-id")(g),
 ) $
@@ -525,7 +525,7 @@ alternative user interface.
 #+begin_src mermaid
 flowchart LR
   A["Abstract Fin(n) model"] -->|"proved: selection and closure laws"| R["Refinement relation"]
-  G["Generated native gerbil-poo graph"] -->|"pending: POO Flow slot projection"| R
+  G["Generated native gerbil-poo graph"] -->|"pending: Agentic AI Lab slot projection"| R
   R -->|"pending: identity / edge / Profile equality"| C["Concrete semantic receipt"]
   C -->|"pending: cycle outcome and capability attenuation"| F["Fixed-point receipt"]
   F -->|"pending: PID / phase / RSS / PSS attribution"| P["Performance receipt"]
@@ -644,7 +644,7 @@ Local verification receipts:
 - local Lean environment — ~4.31.0~;
 - AXLE Python package — UV optional dependency ~axiom-axle~, resolved to
   ~1.4.0~ in this verification;
-- project AXLE entry — ~uv run --extra axle poo-flow-axle-verify FILE...~;
+- project AXLE entry — ~uv run --extra axle agentic-ai-lab-axle-verify FILE...~;
 - project AXLE entry self-validation — ~ScaleParametricModuleGraph~ accepted,
   request ~a51af5a9-e4e1-4a8b-ab13-7d8caf197fc8~; wrapper and focused test
   source pass Ruff;
@@ -668,7 +668,7 @@ Local verification receipts:
     ~e579b384-424d-4e9f-9f19-44c0fbedb2f1~;
 - preserved-import AXLE verification — blocked ~5/5~ before proof checking
   because the remote environment cannot resolve the project-local
-  ~PooFlowProof~ module prefix:
+  ~AgenticAILabProof~ module prefix:
   - ~852790b9-9f74-4231-b187-b80a9ab95889~;
   - ~21d1973e-e916-4ca3-992f-c5feda85f5dc~;
   - ~3fb1fcdd-5aa2-4528-a855-ebde79d13620~;
@@ -686,16 +686,16 @@ Gerbil scale admission.
   mechanisms rather than native Module/Profile domain concepts.
 - [X] Confirm ~compose-proto~ / ~compose-proto*~ as the native functional
   prototype-composition substrate.
-- [X] Confirm that stable Module/Profile identities are explicit POO Flow
+- [X] Confirm that stable Module/Profile identities are explicit Agentic AI Lab
   slots, not native object addresses or package identities.
 - [X] Confirm that runtime ~imports~ retain native Module-object edges and that
   receipts compare their stable identity projection.
 - [X] Confirm RFC 45-93 as the owner of Module/Profile/ProfileBundle domain
   meaning.
-- [X] Confirm the exact POO Flow Module prototype responsibilities and minimal
+- [X] Confirm the exact Agentic AI Lab Module prototype responsibilities and minimal
   physical slots used by the
   projection.
-- [X] Confirm the exact POO Flow Profile prototype responsibilities and minimal
+- [X] Confirm the exact Agentic AI Lab Profile prototype responsibilities and minimal
   physical slots used by the
   projection.
 - [X] Confirm the two-slot physical ProfileBundle and its computed projections.
@@ -787,7 +787,7 @@ A =ProfileBundle= has two derived identities:
 Neither identity is a =gerbil.pkg= package identity, dependency-source
 identity, filesystem path, lexical alias, process-local object address, or
 package coordinate.  In particular,
-=PooFlowProof.DependencySourceIdentity= remains the owner of source and build
+=AgenticAILabProof.DependencySourceIdentity= remains the owner of source and build
 boundary identity; it is not the POO object identity algorithm.
 
 The semantic preimage contains exactly:
@@ -806,7 +806,7 @@ semantic identity, but it is an explicit input to activation identity.
 
 #+begin_src text
 #let semantic-preimage(definition, instance, profiles, imports, capability) = (
-  domain: "poo-flow.profile-bundle.semantic.v1",
+  domain: "agentic-ai-lab.profile-bundle.semantic.v1",
   definition: definition,
   instance: instance,
   profiles: profiles,
@@ -815,7 +815,7 @@ semantic identity, but it is an explicit input to activation identity.
 )
 
 #let activation-preimage(semantic, generation) = (
-  domain: "poo-flow.profile-bundle.activation.v1",
+  domain: "agentic-ai-lab.profile-bundle.activation.v1",
   semantic: semantic,
   generation: generation,
 )
@@ -943,7 +943,7 @@ The semantic preimage has the following fixed positional schema:
   normalized-import-revisions,
   capability-contract,
 ) = (
-  "poo-flow/profile-bundle/semantic",
+  "agentic-ai-lab/profile-bundle/semantic",
   1,
   module-definition,
   module-instance,
@@ -953,7 +953,7 @@ The semantic preimage has the following fixed positional schema:
 )
 
 #let activation-v1(semantic-identity, generation-identity) = (
-  "poo-flow/profile-bundle/activation",
+  "agentic-ai-lab/profile-bundle/activation",
   1,
   semantic-identity,
   generation-identity,

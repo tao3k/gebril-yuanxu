@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 * 10.06.48 Execution Plan
-This is the executable advancement plan for =poo-flow=. It starts from the structure audit in =10.06.47= and turns the project direction into ordered work packages.
+This is the executable advancement plan for =agentic-ai-lab=. It starts from the structure audit in =10.06.47= and turns the project direction into ordered work packages.
 
 The plan is operational rather than aspirational. Each package has a purpose, ownership boundary, deliverables, validation surface, and exit criteria. We use it to decide what to start next, what must remain stable, and when a slice is complete enough to move forward.
 
@@ -15,7 +15,7 @@ The plan is operational rather than aspirational. Each package has a purpose, ow
 5. Testing follows the current testing framework. Focused single-file selection is handled by native =gxtest=. This plan names test files and scenario gates rather than prescribing obsolete wrapper commands.
 6. Scenarios are acceptance gates. Every structural refactor must be tied to at least one real =user-interface/*= scenario and one focused test file. User-facing scenarios must demonstrate actual sandbox, loop, funflow, session, or Marlin use cases.
 7. Scheme remains the strategy/control plane. This repository owns POO-native configuration, functional composition, validation, presentation, manifest/receipt projection, and report-only handoff. Heavy execution and scheduling belong in =marlin-agent-core= or another runtime owner.
-8. Marlin integration is consumer-owned. The Gerbil package under =marlin-agent-core/crates= should depend on =poo-flow= through =gerbil.pkg= and adapt the ABI there. =poo-flow= provides Scheme-side contracts, runtime manifest discovery, and receipt/request shapes; it does not become the direct Rust ABI implementation owner.
+8. Marlin integration is consumer-owned. The Gerbil package under =marlin-agent-core/crates= should depend on =agentic-ai-lab= through =gerbil.pkg= and adapt the ABI there. =agentic-ai-lab= provides Scheme-side contracts, runtime manifest discovery, and receipt/request shapes; it does not become the direct Rust ABI implementation owner.
 
 ** 10.06.48.20 Start Conditions
 Before starting a package:
@@ -53,11 +53,11 @@ Before starting a package:
 - P5 arrow/Kleisli validation evidence for this slice: =gxtest t/funflow-functional-dag-test.ss=, =gxtest t/user-interface-cicd-test.ss=, and =gxtest t/user-interface-custom-loop-workflow-agreement-test.ss=.
 - Gate 2 has a first loop-profile memory selection slice: memory receipts now expose =policy-count=, =available-use-cases=, and =selected-policy-found?= so users and Marlin can inspect the selected report-only memory policy path without executing recall, commit, ranking, retention, or store mutation.
 - Gate 2 validation evidence for this slice: =gxtest t/user-interface-custom-loop-engine-test.ss=, =gxtest t/user-interface-custom-loop-engine-runtime-manifest-test.ss=, and =gxtest t/user-interface-custom-loop-engine-profile-test.ss=.
-- Gate 3 has a session policy macro migration slice: =poo-flow-session-policy-object= now materializes generated policy slots as normal POO slots, and =defpoo-session-policy-family= generates foundational, model, prompt, tool-permission, hook-tool-permission, resource-sharing, and agent-execution policy constructors. =agent-execution= uses the explicit =(scope-ref <expr>)= macro clause because its public constructor scope is =session-ref= rather than the second positional argument.
+- Gate 3 has a session policy macro migration slice: =agentic-ai-lab-session-policy-object= now materializes generated policy slots as normal POO slots, and =defpoo-session-policy-family= generates foundational, model, prompt, tool-permission, hook-tool-permission, resource-sharing, and agent-execution policy constructors. =agent-execution= uses the explicit =(scope-ref <expr>)= macro clause because its public constructor scope is =session-ref= rather than the second positional argument.
 - Gate 3 validation evidence for this slice: =GERBIL_BUILD_CORES=1 gxpkg env gxi build.ss compile --optimized --release=, =gxpkg build -R -O=, =gxtest t/session-policy-contract-test.ss=, =gxtest t/session-policy-validation-test.ss=, =gxtest t/session-agent-param-contract-test.ss=, =gxtest t/session-agent-tool-policy-test.ss=, =gxtest t/session-hook-tool-policy-test.ss=, =gxtest t/user-interface-config-presentation-test.ss=, and =gxtest t/user-interface-presentation-test.ss=.
-- Gate 4 has a first implementation slice: =src/loops/spec-evolution.ss= owns POO-native =external-feedback-receipt=, =spec-change-proposal=, and =spec-evolution-review-item= values, projects them into Human Audit review rows, and emits report-only runtime manifest rows for checked mutation eligibility. =user-interface/custom/my-module/cases/loop-engine.ss= now carries one profile-change Human Audit example as a report-only loop-engine profile slot. The Marlin ABI consumer remains owned by =marlin-agent-core= after it depends on =poo-flow= through =gerbil.pkg=.
-- Gate 4 validation evidence for this slice: =gxpkg build=, =gxpkg env gxi -e '(import :poo-flow/t/loop-spec-evolution-test)'=, =gxpkg env gxi -e '(import :poo-flow/t/user-interface-custom-loop-engine-test)'=, =gxpkg env gxi -e '(import :poo-flow/t/user-interface-custom-loop-engine-runtime-manifest-test)'=, and =gxpkg env gxi -e '(import :poo-flow/t/user-interface-custom-loop-engine-profile-test)'=.
-- Gate 4 downstream ABI consumer evidence: =marlin-agent-core/crates/marlin-gerbil-scheme/gerbil/gerbil.pkg= now pins =github.com/tao3k/poo-flow@1367aff9865bcabc6cddf04cd41e157b25c7979a=, Marlin's loop-engine policy contract map includes session-agent-graph and spec-evolution receipt families, =cargo test -p marlin-gerbil-scheme loop_governor_bridge= passes, and =gxpkg env gxi build.ss test t/marlin-user-interface-prefab-test.ss= passes.
+- Gate 4 has a first implementation slice: =src/loops/spec-evolution.ss= owns POO-native =external-feedback-receipt=, =spec-change-proposal=, and =spec-evolution-review-item= values, projects them into Human Audit review rows, and emits report-only runtime manifest rows for checked mutation eligibility. =user-interface/custom/my-module/cases/loop-engine.ss= now carries one profile-change Human Audit example as a report-only loop-engine profile slot. The Marlin ABI consumer remains owned by =marlin-agent-core= after it depends on =agentic-ai-lab= through =gerbil.pkg=.
+- Gate 4 validation evidence for this slice: =gxpkg build=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/loop-spec-evolution-test)'=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-test)'=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-runtime-manifest-test)'=, and =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-profile-test)'=.
+- Gate 4 downstream ABI consumer evidence: =marlin-agent-core/crates/marlin-gerbil-scheme/gerbil/gerbil.pkg= now pins =github.com/tao3k/agentic-ai-lab@1367aff9865bcabc6cddf04cd41e157b25c7979a=, Marlin's loop-engine policy contract map includes session-agent-graph and spec-evolution receipt families, =cargo test -p marlin-gerbil-scheme loop_governor_bridge= passes, and =gxpkg env gxi build.ss test t/marlin-user-interface-prefab-test.ss= passes.
 - P6 must wait. Public =use-module= syntax has the largest blast radius, so it should only be generated after the lower-level policy, receipt, loop, and funflow surfaces prove the pattern.
 
 ** 10.06.48.50 P0 Baseline Matrix
@@ -114,9 +114,9 @@ Purpose: remove repeated constructor/accessor/projection structure from session 
 
 Tasks:
 - Keep =modules/session/policy-syntax.ss= as the internal syntax owner.
-- Maintain one internal policy family macro that describes schema, policy kind, required slots, defaults, validation predicates, and projection fields while delegating runtime owner and runtime-executed defaults to =poo-flow-session-policy-object=.
+- Maintain one internal policy family macro that describes schema, policy kind, required slots, defaults, validation predicates, and projection fields while delegating runtime owner and runtime-executed defaults to =agentic-ai-lab-session-policy-object=.
 - Use the generated family for foundational constructors: isolation, sandbox, context, history, communication, sharing, and resource.
-- Keep compatibility assertions for =poo-flow-session-policy->alist= and durable policy attachment.
+- Keep compatibility assertions for =agentic-ai-lab-session-policy->alist= and durable policy attachment.
 - Migrate larger model, prompt, tool, hook, resource-sharing, and agent-execution policy families only after adding equivalent compatibility tests.
 
 Deliverables:
@@ -197,7 +197,7 @@ Exit criteria:
 - Memory profile variants are visible in scenario output and receipt projection.
 
 ** 10.06.48.100 P5 Funflow Functional Kernel Alignment
-Purpose: align =poo-flow= with the useful core of Funflow: functional DAG composition, arrow/Kleisli style flow, and reportable run receipts.
+Purpose: align =agentic-ai-lab= with the useful core of Funflow: functional DAG composition, arrow/Kleisli style flow, and reportable run receipts.
 
 Tasks:
 - Use =.data/gerbil-poo/fun.ss= and =.data/funflow= as reference material for functional composition, not as a direct port target.
@@ -273,9 +273,9 @@ Purpose: make the Scheme/Rust boundary explicit without moving heavy runtime wor
 
 Tasks:
 - Audit =marlin-agent-core= Gerbil consumer expectations for =poo.loop-governor.marlin-abi.v1=, =poo.loop-governor.marlin-request.v1=, and =govern-loop=.
-- Confirm that the downstream Gerbil package depends on =poo-flow= through =gerbil.pkg= and owns ABI adaptation.
+- Confirm that the downstream Gerbil package depends on =agentic-ai-lab= through =gerbil.pkg= and owns ABI adaptation.
 - Put loop governor request discovery into runtime manifest/bridge output so Marlin does not guess entry points.
-- Keep =poo-flow= handoff receipt report-only: no scheduling, no persistent runtime state, no direct Rust ABI implementation.
+- Keep =agentic-ai-lab= handoff receipt report-only: no scheduling, no persistent runtime state, no direct Rust ABI implementation.
 - Document the downstream package user path: =gerbil.pkg= dependency, =GERBIL_LOADPATH=, native =gxtest=, policy harness, and root =user-interface/*= conventions.
 
 Deliverables:
@@ -344,7 +344,7 @@ This is the concrete queue for the next implementation pass. It is the plan to s
 Purpose: make sure every later slice uses the current testing architecture.
 
 Actions:
-1. Remove or quarantine old public documentation that presents =poo-flow test <file>= or =gxpkg env poo-flow test <file>= as the focused single-file path.
+1. Remove or quarantine old public documentation that presents =agentic-ai-lab test <file>= or =gxpkg env agentic-ai-lab test <file>= as the focused single-file path.
 2. Keep native =gxtest <file>= as the focused owner-boundary gate.
 3. Keep =gxpkg clean= and =gxpkg build -R -O= as package-manager lifecycle gates.
 4. Treat performance tests as separate gates from focused functional tests, so compile-time or benchmark failures do not obscure the owner-boundary result.
@@ -441,12 +441,12 @@ Purpose: make the downstream Rust/Scheme boundary explicit before ABI code is mo
 
 Actions:
 1. Audit =marlin-agent-core/crates= Gerbil consumers for =poo.loop-governor.marlin-abi.v1=, =poo.loop-governor.marlin-request.v1=, and =govern-loop=.
-2. Confirm the downstream Gerbil package depends on =poo-flow= through =gerbil.pkg= and owns ABI adaptation.
+2. Confirm the downstream Gerbil package depends on =agentic-ai-lab= through =gerbil.pkg= and owns ABI adaptation.
 3. Put loop governor request discovery into the runtime manifest/bridge surface.
 4. Document the downstream user path for =gerbil.pkg= dependency, =GERBIL_LOADPATH=, native =gxtest=, policy harness, and root =user-interface/*= conventions.
 
 Exit criteria:
-- =poo-flow= owns Scheme-side contracts, validated request/receipt shapes, and report-only manifests.
+- =agentic-ai-lab= owns Scheme-side contracts, validated request/receipt shapes, and report-only manifests.
 - =marlin-agent-core= owns ABI consumer adaptation, scheduling, and heavy execution.
 - No direct Rust ABI implementation responsibility is introduced into this repository.
 

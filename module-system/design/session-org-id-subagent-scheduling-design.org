@@ -57,7 +57,7 @@ identity. Organization and epoch are checked independently of ID lookup.
 A fork/new child receives a fresh ID; resume preserves ID and advances revisions.
 Closed identities and retired generations are never reused.
 
-Existing Session values require symbol IDs and =poo-flow-session-by-id= uses
+Existing Session values require symbol IDs and =agentic-ai-lab-session-by-id= uses
 =eq?=. The runtime migration must update constructors, references, indexes,
 fixtures and receipts together. Public textual IDs must not be globally interned
 into symbols. Existing symbol-based authoring names become declaration names,
@@ -75,7 +75,7 @@ that binding. Titles, paths and byte offsets are revision-local locators.
 * Investigate query admission
 :PROPERTIES:
 :ID:                      69e030b8-0263-4a9a-9804-df31546e8485
-:POO_FLOW_SESSION_ID:     038509c0-7670-4dc2-ad82-27ebc4021875
+:AGENTIC_AI_LAB_SESSION_ID:     038509c0-7670-4dc2-ad82-27ebc4021875
 :END:
 ** Inspect source provenance
 :PROPERTIES:
@@ -83,7 +83,7 @@ that binding. Titles, paths and byte offsets are revision-local locators.
 :END:
 #+end_src
 
-=POO_FLOW_SESSION_ID= is a proposed POO convention, an inspectable root/primary
+=AGENTIC_AI_LAB_SESSION_ID= is a proposed POO convention, an inspectable root/primary
 association hint. It is not a standard Org property or a dispatch instruction.
 One Session may consume several Org anchors; one anchor may participate in
 several Sessions. The admitted binding index owns this many-to-many relation.

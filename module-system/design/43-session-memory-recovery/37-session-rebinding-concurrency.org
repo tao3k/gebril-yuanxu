@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.37 Session Source Rebinding Concurrency
 :PROPERTIES:
-:ID: poo-flow-context-session-rebinding-concurrency
+:ID: agentic-ai-lab-context-session-rebinding-concurrency
 :STATUS: module-protocol-local-verification
 :END:
 

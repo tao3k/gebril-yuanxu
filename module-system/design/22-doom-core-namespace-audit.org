@@ -17,7 +17,7 @@ Focused files:
 - =static/init.example.el= for the user-facing declaration shape.
 
 This audit studies namespace and module-system boundaries only. It does not
-copy Doom internals into =poo-flow=.
+copy Doom internals into =agentic-ai-lab=.
 
 ** 10.06.22.20 Doom Boundary Pattern
 Doom keeps its module-system mechanics under core/library names:
@@ -32,8 +32,8 @@ The important naming lesson is that =:user= is a virtual module and
 =doom-user-dir= is a user config directory. Doom does not name core module-system
 implementation files as "user interface" components.
 
-** 10.06.22.30 POO Flow Namespace Consequence
-=poo-flow= should keep three namespaces distinct:
+** 10.06.22.30 Agentic AI Lab Namespace Consequence
+=agentic-ai-lab= should keep three namespaces distinct:
 - =src/module-system/*= for module-system mechanics, root profile projection
   helpers, loader/doctor/projection owners, and shared POO object contracts.
 - =modules/<domain>/*= for developer-owned built-in modules such as
@@ -49,7 +49,7 @@ not live under =src/modules= or use =user-interface= as a mechanism namespace.
 ** 10.06.22.40 Current ownership
 
 Core owns generic Module contracts, source identities, Catalog lookup, and
-lazy-load values under =core/module-system/=. POO Flow product policy lives
+lazy-load values under =core/module-system/=. Agentic AI Lab product policy lives
 with its Authoring, User Interface, Testing, and runtime owners. Consumers
 import those modules directly; there is no aggregate Module System facade.
 Concrete built-in modules live under =modules/<domain>/=.

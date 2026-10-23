@@ -274,7 +274,7 @@ From the CURRENT Core directory, the isolated source tree maps:
 
 #+begin_example
 /private/tmp/poo-current-deep-publication-20261017/source/
-  core -> /Users/guangtao/ghq/github.com/tao3k/poo-flow/core
+  core -> /Users/guangtao/ghq/github.com/tao3k/agentic-ai-lab/core
   clan -> the pinned gerbil-poo source namespace used by 10.12
 #+end_example
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: RFC 54 — Authority Context Freshness and Stale Receipt Replay Closure
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+language: en
 
 * Status
@@ -203,7 +203,7 @@ stateDiagram-v2
 
 The model is implemented in:
 
-- =PooFlowProof.Enterprise.ReceiptContextFreshnessClosure=
+- =AgenticAILabProof.Enterprise.ReceiptContextFreshnessClosure=
 
 The proof surface contains:
 

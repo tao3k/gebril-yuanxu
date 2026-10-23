@@ -1,4 +1,4 @@
-#+title: POO Flow Context, Temporal and Lifecycle Policy System
+#+title: Agentic AI Lab Context, Temporal and Lifecycle Policy System
 #+date: [2026-10-10]
 #+language: en
 #+property: STATUS joint-design-with-qualified-local-window-policy
@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 * Decision and evidence boundary
 
-POO Flow owns the semantic design of Context, Temporal applicability, strategy
+Agentic AI Lab owns the semantic design of Context, Temporal applicability, strategy
 composition, lifecycle transitions and effect admission. Its FFI/C ABI projects
 that design to Runtime adapters. MRR owns relational Context derivation and proof
 admission. MRR Data owns physical scheduling, storage, resource ownership and
@@ -53,7 +53,7 @@ Use a product of state machines. One scalar status cannot represent all facts.
 | Source lineage | Registered authority/subject, source identity, cut, generation; live/retired | Source owner through trusted Runtime control |
 | Context projection | Proposed, admitted, prepared, invalidated, superseded, retired | AI Agentic-context |
 | Evidence applicability | Necessary/possible/refuted plus current/stale and required/missing obligations | Temporal and MRR |
-| Strategy | Admitted graph digest, schema/implementation identities, revision; active/retired | POO Flow policy composition |
+| Strategy | Admitted graph digest, schema/implementation identities, revision; active/retired | Agentic AI Lab policy composition |
 | Session | Open/closing/closed, owner revision and Turn | Session |
 | Attempt | Claimed, disclosed, result-received, admitted, invalidated, recovery-pending, reconciled | Session with Context consumer gates |
 | Effect | Requested, dispatched, observed, ambiguous, resolved | Runtime/provider receipts |
@@ -93,7 +93,7 @@ Missing evidence, incomparable clocks or unsupported demanded semantics block
 the consequential operation. A historical display uses a separately authorized
 purpose and preserves historical labels; it does not become current inference.
 
-POO Flow's existing ASCENT-backed temporal-causality Module is the primary
+Agentic AI Lab's existing ASCENT-backed temporal-causality Module is the primary
 semantic foundation. Its native causal cuts, temporal lenses, original evaluator
 proofs, support applicability and dependency/Impact owners determine the joint
 Context design. Clock ordering is one of their input constraints. A Session ID
@@ -170,7 +170,7 @@ withdrawals, catalog changes and partial execution, then connect the registered
 witness to disclosure/result/publication. Keep the window-policy and owner-CAS
 models as component checks inside that architecture.
 
-* Core strategy composition in POO Flow
+* Core strategy composition in Agentic AI Lab
 
 Strategy is a native POO value contributing pure named functions, immutable
 policy decisions and explicit effect intents. Reuse the existing Module source
@@ -247,7 +247,7 @@ implicit eviction or fallback to historical authority is allowed.
 | close | Terminal Session/Context intent | No unresolved effects, obligations or leases; terminal retirement cannot reopen |
 | revisit | New assessment/retention/due proposal | Current evidence and policy; fresh Attempt identity rather than old-use resurrection |
 
-Two POO Flow checks around an external operation are not a distributed atomic
+Two Agentic AI Lab checks around an external operation are not a distributed atomic
 transaction. For dispatch, publish an idempotent fenced outbox or an equivalent
 qualified gateway intent, then obtain a provider receipt. A revocation ordered
 before dispatch admission blocks that new dispatch. A payload already disclosed
@@ -265,7 +265,7 @@ it; timeout, a cancel request, or dropping a waiter is insufficient evidence.
 
 * FFI/C ABI and downstream responsibilities
 
-POO Flow implements native Types, Objects, Funs, config/profile and interface
+Agentic AI Lab implements native Types, Objects, Funs, config/profile and interface
 closure for the semantic contract. Privileged control enrollment and ordinary
 inert evaluation stay distinct. The ABI negotiates envelope version and profile,
 rejects unknown/missing/duplicate fields and unsupported operations, and returns

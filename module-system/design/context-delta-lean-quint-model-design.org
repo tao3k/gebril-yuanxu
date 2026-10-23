@@ -90,12 +90,12 @@ modules within the existing =packages/proofs/lean-poo/= Lake workspace:
 
 | Proposed proof source | Obligation |
 |-----------------------+------------|
-| =PooFlowContextProof/DeltaTypes.lean= | Projection, Delta, operation, binding and rejection definitions |
-| =PooFlowContextProof/DeltaApply.lean= | Executable reference apply/admission and structural laws |
-| =PooFlowContextProof/DeltaCoverage.lean= | Restricted Query dependency semantics and coverage theorem |
-| =PooFlowContextProof/DeltaUse.lean= | Publication/use guards, exact consumer binding and rejection laws |
-| =PooFlowContextProof/QuintCorrespondence.lean= | Concrete abstraction and bounded action relation |
-| =PooFlowContextProof/AxiomAudit.lean= | Theorem/assumption inventory and prohibited proof shortcuts |
+| =AgenticAILabContextProof/DeltaTypes.lean= | Projection, Delta, operation, binding and rejection definitions |
+| =AgenticAILabContextProof/DeltaApply.lean= | Executable reference apply/admission and structural laws |
+| =AgenticAILabContextProof/DeltaCoverage.lean= | Restricted Query dependency semantics and coverage theorem |
+| =AgenticAILabContextProof/DeltaUse.lean= | Publication/use guards, exact consumer binding and rejection laws |
+| =AgenticAILabContextProof/QuintCorrespondence.lean= | Concrete abstraction and bounded action relation |
+| =AgenticAILabContextProof/AxiomAudit.lean= | Theorem/assumption inventory and prohibited proof shortcuts |
 
 Add a library target to that workspace when these sources are implemented; the
 names above do not create a delivered target merely by appearing here.
@@ -263,7 +263,7 @@ gates; it does not report them as executed or passed.
 The core now exports native =AiAgenticContextDelta.= and
 =AiAgenticContextEdit.= proposals and a declarative Delta Type.
 =funs-delta.ss= owns =delta-between=, =delta-apply= and =delta-admit= public
-functions under the =poo-flow-ai-agentic-context-= prefix. Patch admission
+functions under the =agentic-ai-lab-ai-agentic-context-= prefix. Patch admission
 checks exact base, expected old units, duplicate identities and complete target
 order. Source admission replays the original bytes, constructs the target from
 current bytes and compares both content and recomputed target commitment.
@@ -278,7 +278,7 @@ exact replacement, deletion, frame preservation across edit sequences, different
 admission and rejection. All compile, with an audit of 19 total theorems including
 generated declarations using only standard Lean axioms. These are abstract
 value laws, not a proof of native serialization, Query coverage or runtime refinement.
-The Lake workspace declares =PooFlowContextProof= and CI builds that target.
+The Lake workspace declares =AgenticAILabContextProof= and CI builds that target.
 Local qualification compiles the standalone core-only source through
 =just check-context-delta-lean= without claiming a fresh LeanPoo dependency build.
 
@@ -365,7 +365,7 @@ resolves producer authority or performs dispatch, CAS or durable publication.
 
 * Joint Context, Temporal and lifecycle policy refinement
 
-[[file:context-temporal-lifecycle-policy-system-design.org][The POO Flow joint policy system design]] defines orthogonal lifecycle states,
+[[file:context-temporal-lifecycle-policy-system-design.org][The Agentic AI Lab joint policy system design]] defines orthogonal lifecycle states,
 explicit Temporal applicability and clock domains, admitted strategy composition,
 and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure native window
 policy and separates its local qualification from the prospective joint protocol

@@ -259,7 +259,7 @@ The runtime transports live continuation invocation across the explicit effect
 boundary and preserves the resulting POO evidence.  It does not decide
 candidate closure, selection, or fixed-point meaning.
 
-Native =gerbil-poo= supplies the POO evaluation semantics.  POO Flow defines
+Native =gerbil-poo= supplies the POO evaluation semantics.  Agentic AI Lab defines
 the contribution identities, generation closure, conditions, authority
 scopes, and receipts.
 

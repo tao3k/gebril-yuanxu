@@ -18,7 +18,7 @@ LangChain, LangGraph, CrewAI, Pi Agent core, and similar agent frameworks expose
 - guardrails, permissions, and sandbox/tool scopes;
 - streaming events, traces, and observability.
 
-POO Flow should not clone each framework one by one. POO Flow should own the common control-planner layer that those frameworks repeatedly need: reusable policy objects, strategy composition, graph/loop/durable intent, proof-facing facts, and runtime handoff receipts.
+Agentic AI Lab should not clone each framework one by one. Agentic AI Lab should own the common control-planner layer that those frameworks repeatedly need: reusable policy objects, strategy composition, graph/loop/durable intent, proof-facing facts, and runtime handoff receipts.
 
 * Core Claim
 
@@ -38,7 +38,7 @@ op("AgentFramework")(f)
 $
 
 $
-op("POOFlow")
+op("AgenticAILab")
   =
     op("ComposablePolicyObjects")
     times op("ControlPlanner")
@@ -47,14 +47,14 @@ op("POOFlow")
 $
 #+end_src
 
-The important point is direction. POO Flow does not map itself into LangGraph, CrewAI, LangChain, or Pi Agent core. It lifts their shared policy/control layer into reusable POO profiles and composition, then lowers the verified plan into a runtime language such as Python.
+The important point is direction. Agentic AI Lab does not map itself into LangGraph, CrewAI, LangChain, or Pi Agent core. It lifts their shared policy/control layer into reusable POO profiles and composition, then lowers the verified plan into a runtime language such as Python.
 
 #+begin_src text
 LangChain / LangGraph / CrewAI / Pi Agent core
       share agent-loop / tool / state / graph / flow capabilities
                   |
                   v
-        POO Flow profile + policy + composition
+        Agentic AI Lab profile + policy + composition
                   |
                   v
         proof facts + runtime handoff receipt
@@ -68,7 +68,7 @@ LangChain / LangGraph / CrewAI / Pi Agent core
 
 * Capability Matrix
 
-| Capability | LangChain | LangGraph | CrewAI | Pi Agent core | POO Flow abstraction |
+| Capability | LangChain | LangGraph | CrewAI | Pi Agent core | Agentic AI Lab abstraction |
 |---+---+---+---+---+---|
 | Agent loop | model + harness loop | graph node loop | agent/task process | LLM -> tool -> result loop | loop policy + progress facts |
 | Tool calling | tools passed to model | tool nodes/actions | agent tools | tool execution | tool profile + sandbox scope |
@@ -79,9 +79,9 @@ LangChain / LangGraph / CrewAI / Pi Agent core
 | Human-in-loop | middleware/handoff | interrupts/state edits | human input triggers | steering/follow-up | human gate proof obligations |
 | Observability | callbacks/tracing | streams/traces | usage/tracing | event stream | trace coverage facts |
 
-* POO Flow Advantage
+* Agentic AI Lab Advantage
 
-The advantage is not only that POO Flow can express these patterns. The advantage is that POO Flow can express them with maximal reuse and a proof boundary.
+The advantage is not only that Agentic AI Lab can express these patterns. The advantage is that Agentic AI Lab can express them with maximal reuse and a proof boundary.
 
 - A shared profile can be reused by many downstream compositions.
 - A local override can solve a one-off scenario without polluting the reusable library.
@@ -110,7 +110,7 @@ op("SafeSpecialization")(o,p)
 $
 #+end_src
 
-This is why POO Flow is a control planner rather than another agent framework. It pushes policy, strategy, composition, proof, and runtime receipt alignment to the strongest layer, then lets runtime languages implement the operational behavior.
+This is why Agentic AI Lab is a control planner rather than another agent framework. It pushes policy, strategy, composition, proof, and runtime receipt alignment to the strongest layer, then lets runtime languages implement the operational behavior.
 
 * Runtime Language Boundary
 
@@ -128,7 +128,7 @@ The Scheme layer should only grow new source capabilities when the missing featu
 
 * Proof Value
 
-Frameworks can execute plausible agent plans. POO Flow should reject unsafe plans before runtime execution.
+Frameworks can execute plausible agent plans. Agentic AI Lab should reject unsafe plans before runtime execution.
 
 #+begin_src typst
 $
@@ -162,4 +162,4 @@ Existing scenarios should be interpreted as examples of the same convergence lay
 - =profiles/tool-calling.ss= and =cases/tool-calling-agent-loop.ss= show the shared tool calling control-plane layer.
 - Future Pi Agent core-style scenarios should focus on session state, tool loop, attachment/message state, event streaming, and runtime provider bindings.
 
-The implementation target is not a separate module per framework. The target is a small number of strong POO Flow primitives that make these framework-style capabilities cheap to express, prove, and run.
+The implementation target is not a separate module per framework. The target is a small number of strong Agentic AI Lab primitives that make these framework-style capabilities cheap to express, prove, and run.

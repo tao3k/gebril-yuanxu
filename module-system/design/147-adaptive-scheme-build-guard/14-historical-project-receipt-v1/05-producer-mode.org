@@ -27,4 +27,4 @@ The 552.130-second value is a new-pin action-identity materialization receipt,
 not steady incremental time.  The immediate rerun proves that the pin update
 does not repeat the nine-minute chain.  Compiler-mode correctness is grounded
 in the upstream native-package, provider, and pass-through probes; the receipt
-gate proves the pinned POO Flow consumer and stable v1 envelope.
+gate proves the pinned Agentic AI Lab consumer and stable v1 envelope.

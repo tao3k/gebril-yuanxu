@@ -4,7 +4,7 @@
 
 * 2026-07-24 real downstream acceptance
 
-The gerbil-bazel v1 adaptation was tested through a POO Flow command-line module
+The gerbil-bazel v1 adaptation was tested through a Agentic AI Lab command-line module
 override in a fresh Bazel output root.  This acceptance exercises the complete
 declared dependency chain rather than a synthetic Gerbil package.
 
@@ -13,7 +13,7 @@ flowchart LR
   Pin["gerbil-bazel v1 candidate"] --> Utils["gerbil_utils_package"]
   Utils --> POO["gerbil_poo_package"]
   POO --> GSLPH["gslph_package"]
-  GSLPH --> Root["POO Flow scheme compile"]
+  GSLPH --> Root["Agentic AI Lab scheme compile"]
   CPU["logical CPU count"] --> Guard["Scheme resource guard"]
   Memory["available memory minus RSS headroom"] --> Guard
   Request["preserved Bazel worker request"] --> Guard

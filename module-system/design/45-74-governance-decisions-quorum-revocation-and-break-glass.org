@@ -14,7 +14,7 @@ not current implementation verification. See [[file:../../dev/proofs/lean/README
 * Status
 
 This RFC records the accepted governance intervention semantics for human and
-institutional decisions in POO Flow.
+institutional decisions in Agentic AI Lab.
 
 It extends proposal, evidence, capability, continuation, effect, and audit
 contracts. A governance decision is immutable evidence. It is not a permanent

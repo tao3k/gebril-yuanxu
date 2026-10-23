@@ -16,11 +16,11 @@ ABI freeze readiness: *blocked* until the gerbil-mysql owner-index research gate
 Design approval fixes the architecture and invariants. It does not freeze the final ABI v1 binary layout.
 
 * Decision
-This RFC defines the normative C Runtime Interface exported by POO Flow and the role of the first-party Python runtime.
+This RFC defines the normative C Runtime Interface exported by Agentic AI Lab and the role of the first-party Python runtime.
 
 The approved decisions are:
 
-1. POO Flow is the contract owner for a versioned, language-neutral C runtime boundary derived from the Canonical Organization Bundle.
+1. Agentic AI Lab is the contract owner for a versioned, language-neutral C runtime boundary derived from the Canonical Organization Bundle.
 2. This layer does not implement first-party Rust, TypeScript, or other downstream language runtimes.
 3. Python is a complete, production-grade runtime implemented exclusively through the public C ABI.
 4. Python proves interface completeness under production workloads but is not the semantic owner.
@@ -34,13 +34,13 @@ The approved decisions are:
 
 * Purpose
 
-POO Flow needs a runtime boundary that is language-independent, stable, complete, explicit about memory and failure, compatible with authorization and evidence, and efficient under high event rates and large context payloads.
+Agentic AI Lab needs a runtime boundary that is language-independent, stable, complete, explicit about memory and failure, compatible with authorization and evidence, and efficient under high event rates and large context payloads.
 
 A function-per-object binding would cause excessive FFI crossings, implicit conversions, unclear ownership, and dependency on Scheme internals. This RFC instead specifies a semantic state-machine protocol with separate control, hot, and bulk lanes.
 
 #+begin_src mermaid
 flowchart LR
-    G["POO Flow<br/>Gerbil / POO Control Plane"]
+    G["Agentic AI Lab<br/>Gerbil / POO Control Plane"]
     subgraph ABI["Versioned C Runtime Interface"]
         C["Control Lane<br/>negotiate / open / close<br/>cancel / checkpoint / restore"]
         H["Hot Event Lane<br/>poll_batch / submit_batch"]
@@ -87,10 +87,10 @@ A conforming runtime MUST be implementable without importing private Gerbil modu
 
 If the production Python runtime requires a private bypass for required behavior, the ABI is incomplete. No Python exception is permitted.
 
-The Bundle is the semantic owner, RFC 92 and its generated ABI are the runtime-contract owner, and each runtime project is its implementation owner. No runtime may introduce private semantic states, effects, authority rules, or receipt kinds and present them as POO Flow semantics.
+The Bundle is the semantic owner, RFC 92 and its generated ABI are the runtime-contract owner, and each runtime project is its implementation owner. No runtime may introduce private semantic states, effects, authority rules, or receipt kinds and present them as Agentic AI Lab semantics.
 
 * RFC Suite Dependencies
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
 - [[file:91-canonical-organization-bundle-rfc.org][RFC 91]] defines the semantic Bundle projected into this ABI.
 - [[file:93-assurance-proof-and-evidence-chain-rfc.org][RFC 93]] defines token, proof, receipt, root, and assurance semantics transported by this ABI.
 - [[file:94-agentic-control-plane-migration-rfc.org][RFC 94]] is the contract owner for ABI introduction, evidence gates, and freeze/cutover order.
@@ -266,7 +266,7 @@ References:
 
 Rust, TypeScript, and other integrations are downstream-owned. They MAY use different schedulers and memory models but MUST negotiate the same ABI, obey lifecycle/ownership rules, preserve semantic event and result kinds, bind receipts to Bundle/epoch, pass conformance vectors, declare capabilities/assurance, and preserve authorization/evidence identities.
 
-POO Flow does not require downstream sources in this repository. Conformance does not imply equal assurance; each runtime publishes its own profile and evidence.
+Agentic AI Lab does not require downstream sources in this repository. Conformance does not imply equal assurance; each runtime publishes its own profile and evidence.
 
 * Gerbil and Gambit Evidence Boundary
 
@@ -368,7 +368,7 @@ ABI v1 may freeze only when:
 
 This RFC is implemented when:
 
-1. POO Flow publishes a versioned C interface derived from the Canonical Organization Bundle.
+1. Agentic AI Lab publishes a versioned C interface derived from the Canonical Organization Bundle.
 2. Control, hot event, and bulk buffer lanes are distinct.
 3. Production exchange supports batched =poll_batch= and =submit_batch=.
 4. Batches use contiguous fixed-width descriptors and bounded payload slices or negotiated arenas.

@@ -112,7 +112,7 @@ flowchart LR
 - Scheme AC-08: =8 cases / 23 checks=.
 - C strict, UBSan, and leak gates pass; macOS reports zero leaks.
 - Lean AC-08 claim qualification builds as part of the 53-job
-  =PooFlowProof= library.  Fixtures prove L3 requires verified signature and
+  =AgenticAILabProof= library.  Fixtures prove L3 requires verified signature and
   inclusion flags; signature bytes alone and Buffered receipts cannot upgrade
   the claim.
 - Installed wheel Strict and Batched receipts are recorded separately in the

@@ -22,20 +22,20 @@ introduce another package entry point.
 The package keeps one verification entry point:
 
 #+begin_src text
-poo-flow-axle-verify = poo_flow_proof.axle_verify:main
+agentic-ai-lab-axle-verify = agentic_ai_lab_proof.axle_verify:main
 #+end_src
 
 The existing binary selects Lean-owned closure verification through flags:
 
 #+begin_src sh
 uv run --project packages/proofs/python \
-  poo-flow-axle-verify \
+  agentic-ai-lab-axle-verify \
   --environment lean-4.31.0 \
   --lean-root packages/proofs/lean \
-  --root-module PooFlowProof.PooC4.Enterprise.Core \
+  --root-module AgenticAILabProof.PooC4.Enterprise.Core \
   --root-declaration \
-    PooFlowProof.PooC4.Enterprise.Core.baseAdmissionRequiresAuthorityEvidence \
-  --closure-output /private/tmp/poo-flow-enterprise-core-exact-closure.json
+    AgenticAILabProof.PooC4.Enterprise.Core.baseAdmissionRequiresAuthorityEvidence \
+  --closure-output /private/tmp/agentic-ai-lab-enterprise-core-exact-closure.json
 #+end_src
 
 There is no second console script and no =scripts/= compatibility route.
@@ -102,7 +102,7 @@ The projector fails closed when:
 ** v1 stabilization rule
 
 The declaration-closure contract remains
-=poo-flow.lean-declaration-closure.v1=.  =source_range=, phase timing,
+=agentic-ai-lab.lean-declaration-closure.v1=.  =source_range=, phase timing,
 generated-declaration normalization, and root sharding are optional,
 backward-compatible refinements of v1.  They MUST NOT introduce a v2 schema,
 a second closure identity, or a parallel verification path.
@@ -122,7 +122,7 @@ identity and the aggregate receipt MUST expose every shard result.
 
 ** v1 stabilization evidence
 
-- [X] Preserve =poo-flow.lean-declaration-closure.v1=.
+- [X] Preserve =agentic-ai-lab.lean-declaration-closure.v1=.
 - [X] Preserve readability of older v1 receipts without =source_range=.
 - [X] Normalize Lean-generated declarations to their source declaration in
   exact round-trip and independent-bundle dependency projection.
@@ -165,11 +165,11 @@ guarantees.
 
 The implementation and proof owners are:
 
-- =PooFlowProof/Export/DeclarationClosure.lean=: Lean-owned environment and
+- =AgenticAILabProof/Export/DeclarationClosure.lean=: Lean-owned environment and
   source-family fixed point.
-- =PooFlowProof/Export/DeclarationClosureModel.lean=: counterexample and
+- =AgenticAILabProof/Export/DeclarationClosureModel.lean=: counterexample and
   sufficiency theorems.
-- =poo_flow_proof/axle_exact_closure.py=: source quotient, namespace prelude,
+- =agentic_ai_lab_proof/axle_exact_closure.py=: source quotient, namespace prelude,
   bounded AXLE phases, and exact round-trip.
 
 The larger-root failures were therefore v1 model defects, not evidence for a
@@ -272,7 +272,7 @@ namespace-preserving local projection.
 
 #+begin_src mermaid
 flowchart LR
-    CLI["poo-flow-axle-verify flags"]
+    CLI["agentic-ai-lab-axle-verify flags"]
     LAKE["Lake build and module import"]
     LEAN["Lean declaration closure exporter"]
     AXLE_PARSE["AXLE extract_decls"]
@@ -303,7 +303,7 @@ flowchart LR
 
 * Implementation checklist
 
-- [X] Keep =poo-flow-axle-verify= as the only AXLE verification console script.
+- [X] Keep =agentic-ai-lab-axle-verify= as the only AXLE verification console script.
 - [X] Add closure flags directly to =axle_verify:main=.
 - [X] Build the requested Lean module before exporting declarations.
 - [X] Export a dependency-first, cycle-safe Lean constant closure.
@@ -323,12 +323,12 @@ flowchart LR
 
 * Files
 
-- =packages/proofs/lean/PooFlowProof/Export/DeclarationClosure.lean=
-- =packages/proofs/python/src/poo_flow_proof/lean_declaration_closure.py=
-- =packages/proofs/python/src/poo_flow_proof/axle_exact_closure.py=
-- =packages/proofs/python/src/poo_flow_proof/axle_closure_verify.py=
-- =packages/proofs/python/src/poo_flow_proof/independent_bundle_projection.py=
-- =packages/proofs/python/src/poo_flow_proof/axle_verify.py=
+- =packages/proofs/lean/AgenticAILabProof/Export/DeclarationClosure.lean=
+- =packages/proofs/python/src/agentic_ai_lab_proof/lean_declaration_closure.py=
+- =packages/proofs/python/src/agentic_ai_lab_proof/axle_exact_closure.py=
+- =packages/proofs/python/src/agentic_ai_lab_proof/axle_closure_verify.py=
+- =packages/proofs/python/src/agentic_ai_lab_proof/independent_bundle_projection.py=
+- =packages/proofs/python/src/agentic_ai_lab_proof/axle_verify.py=
 - =packages/proofs/python/tests/test_lean_declaration_closure.py=
 - =packages/proofs/python/tests/test_axle_exact_closure.py=
 - =packages/proofs/python/tests/test_axle_closure_verify.py=
@@ -340,13 +340,13 @@ flowchart LR
 
 #+begin_src text
 root-module:
-  PooFlowProof.PooC4.Enterprise.Core
+  AgenticAILabProof.PooC4.Enterprise.Core
 root-declaration:
-  PooFlowProof.PooC4.Enterprise.Core.baseAdmissionRequiresAuthorityEvidence
+  AgenticAILabProof.PooC4.Enterprise.Core.baseAdmissionRequiresAuthorityEvidence
 owner-modules:
   YuanxuProof.ModuleSystem.Graph.Aggregation
   YuanxuProof.Contribution.Qualification
-  PooFlowProof.PooC4.Enterprise.Core
+  AgenticAILabProof.PooC4.Enterprise.Core
 lean-constant-count: 22
 axle-source-declaration-count: 10
 lean-closure-digest:
@@ -358,7 +358,7 @@ exact-bundle-digest:
 independent-declaration-bundle-digest:
   sha256:ea761ac793ab268890feb3179354c3391c5b80fc64d1747ccfc41f8f46feaa7c
 resolved-source:
-  package-id: poo-flow-proof
+  package-id: agentic-ai-lab-proof
   revision:
     workspace:9a0e976ecc09ba080e0ac9f546caa72c56f4046a3ecc98fe560ab67d76f66bdc
   source-tree-digest:
@@ -382,11 +382,11 @@ uv run --project packages/proofs/python pytest -q packages/proofs/python/tests
 uv run --project packages/proofs/python ruff check packages/proofs/python
 All checks passed!
 
-uv run --project packages/proofs/python poo-flow-axle-verify --help
+uv run --project packages/proofs/python agentic-ai-lab-axle-verify --help
 exit-code: 0
 
 cd packages/proofs/lean
-lake env lean PooFlowProof/Export/DeclarationClosure.lean
+lake env lean AgenticAILabProof/Export/DeclarationClosure.lean
 exit-code: 0
 #+end_src
 

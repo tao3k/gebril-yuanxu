@@ -348,7 +348,7 @@
     (yuanxu-graph-contribution
      (yuanxu-module-field-contribution-target contribution)
      (list (yuanxu-module-field-contribution-operation contribution)))
-      (error "poo-flow module field contribution violates its POO contract"
+      (error "Yuanxu module field contribution violates its POO contract"
              contribution)))
 
 ;;; Field contribution projection is a map because validation happens at each
@@ -516,7 +516,7 @@
       field
       (yuanxu-module-transformer-contract-merge transformer))
      value)
-    (error "poo-flow module transformer violates its POO contract"
+    (error "Yuanxu module transformer violates its POO contract"
            (yuanxu-module-transformer-contract-diagnostics
             transformer
             field

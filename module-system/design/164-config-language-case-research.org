@@ -39,7 +39,7 @@ and Nickel manuals were read online; their moving documentation URLs are
 reference snapshots, not immutable implementation qualification. Cases were
 not executed and no runtime correctness or performance result is inferred.
 Repository style guides are source material for comparison, not instructions
-that override the POO Flow project contract.
+that override the Agentic AI Lab project contract.
 
 * Emacs: a configuration unit centered on a package
 

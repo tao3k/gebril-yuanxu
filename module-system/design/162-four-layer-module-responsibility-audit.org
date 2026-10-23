@@ -1,5 +1,5 @@
 #+title: Four-Layer Module Responsibility Audit
-#+author: POO Flow Team
+#+author: Agentic AI Lab Team
 #+date: 2026-09-16
 #+startup: overview
 

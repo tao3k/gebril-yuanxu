@@ -28,7 +28,7 @@ are outside this task. No Loader is implemented or connected.
 
 The complete [[file:../../../module-system/design/02-directory-sources.org][DirectorySnapshot Contract and directory-view design code]] now lives
 in the Core submodule. Source-role rules and publication/selection protocols are
-also owned there. This POO Flow document keeps only JsonSchema and Guestbook
+also owned there. This Agentic AI Lab document keeps only JsonSchema and Guestbook
 consumer wiring. Do not duplicate or evolve a second generic directory protocol here.
 
 * interface.ss publishes the existing Core schema capability

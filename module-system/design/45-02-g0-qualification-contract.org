@@ -40,7 +40,7 @@ instantiate-protos
 #+end_src
 
 All three binding shape predicates are named
-=poo-flow.shape/procedure=.  The required capabilities are:
+=agentic-ai-lab.shape/procedure=.  The required capabilities are:
 
 #+begin_src text
 poo.prototype-composition
@@ -83,7 +83,7 @@ shapeResult               ; true | false | absent
 =shapeResult= is absent when the module or binding could not be obtained.  It is
 never guessed from source text, a package declaration, or a build target.
 
-POO Flow constructs Observation inside the runtime qualification transaction.
+Agentic AI Lab constructs Observation inside the runtime qualification transaction.
 A runtime caller supplies Requirement and Policy only.  Caller-constructed
 Observation or Decision values are invalid at the runtime entrypoint.
 
@@ -186,7 +186,7 @@ The eleven instances have distinct responsibilities:
 | precedence sentinel | 1 | prove no rejection is manufactured when all required facts pass |
 
 Pure cases test the Decision function with constructed semantic values.  Live
-witnesses test POO Flow's internal Observation construction against controlled
+witnesses test Agentic AI Lab's internal Observation construction against controlled
 Gerbil module environments.  A live witness result is not itself a
 DecisionReceipt.
 
@@ -222,7 +222,7 @@ The following are explicitly absent from this contract:
 - [X] Keep exactly three semantic rejection reasons.
 - [X] Define Requirement module, binding, shape, and capability projections.
 - [X] Define module and binding Observation results.
-- [X] Make POO Flow the only runtime Observation constructor.
+- [X] Make Agentic AI Lab the only runtime Observation constructor.
 - [X] Fix rejection precedence.
 - [X] Separate expected golden values from runtime-produced values.
 - [X] Preserve expected byte lengths and digests without calling them current.

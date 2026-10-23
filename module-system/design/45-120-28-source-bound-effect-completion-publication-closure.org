@@ -161,7 +161,7 @@ Lean owns both the projection and its validation result through =Lean.Json=,
 The projection schema is:
 
 #+begin_example
-poo-flow.effect-completion-validation.v1
+agentic-ai-lab.effect-completion-validation.v1
 #+end_example
 
 The current concrete Lean receipt evaluates to:
@@ -171,7 +171,7 @@ The current concrete Lean receipt evaluates to:
   "errors": [],
   "okay": true,
   "receiptId": "completion-receipt-1",
-  "schemaId": "poo-flow.effect-completion-validation.v1"
+  "schemaId": "agentic-ai-lab.effect-completion-validation.v1"
 }
 #+end_src
 
@@ -259,13 +259,13 @@ first defect against the existing v1 ledger predicate.
 | Effect provider | idempotent execution and completion acknowledgement | replay planning |
 | Atomic storage provider | one commit over ledger and completion frontier | Cedadr policy decisions |
 | Cedadr | retry authority over the exact replay values | completion or storage acknowledgement |
-| =poo-flow-axle-verify= | transport Lean-owned declaration JSON to AXLE | reinterpret proof semantics |
+| =agentic-ai-lab-axle-verify= | transport Lean-owned declaration JSON to AXLE | reinterpret proof semantics |
 | Python | process and JSON transport only | source parsing or proof ownership |
 
 * Current verification receipt
 
 - Lean owner source:
-  =PooFlowProof/Enterprise/SourceBoundEffectCompletionPublicationClosure.lean=
+  =AgenticAILabProof/Enterprise/SourceBoundEffectCompletionPublicationClosure.lean=
 - owner source digest:
   =sha256:5531802a1fe4433a8e7b0d3bec4fde7ad5194f1c897c483aa6b8ee6fef07bb20=
 - focused Lean build: =200 jobs=
@@ -273,7 +273,7 @@ first defect against the existing v1 ledger predicate.
 - complete Python proof tests: =76 passed in 9.89s=
 - Python lint: =ruff check .=, green
 - concrete Lean JSON result:
-  =schemaId= = =poo-flow.effect-completion-validation.v1=,
+  =schemaId= = =agentic-ai-lab.effect-completion-validation.v1=,
   =okay=true=, =errors=[]=
 - =jq -e= validation of the Lean-emitted JSON: green
 - Org structure: parsed successfully with GNU Emacs
@@ -289,7 +289,7 @@ first defect against the existing v1 ledger predicate.
 | =independentlyClosedCompletionOwnersCompose= | 1 | 0.343 s |
 
 All three stable roots produced
-=poo-flow.axle-exact-declaration-closure.v1= with =okay=true= against
+=agentic-ai-lab.axle-exact-declaration-closure.v1= with =okay=true= against
 the current owner source.
 
 Two typed projection roots also passed current-source AXLE:

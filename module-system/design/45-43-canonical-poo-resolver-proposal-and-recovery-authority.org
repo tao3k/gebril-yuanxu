@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: =gerbil-poo= objects and POO Flow evaluation
+- Semantic core :: =gerbil-poo= objects and Agentic AI Lab evaluation
 - Related modules :: =45-41-poo-profile-slot-contribution-priority.org= and =45-42-poo-conflict-recovery-generation-resumption.org=
 
 This module separates pure conflict-resolution policy from live recovery authority. A resolver may propose a semantic change, but it cannot authorize or apply that change.

@@ -63,7 +63,7 @@ Focused gates:
 
 * Step 3 — Kernel And Bulk C ABI
 
-Implement =poo_flow_proof_case_measure= and =poo_flow_proof_case_write= over a
+Implement =agentic_ai_lab_proof_case_measure= and =agentic_ai_lab_proof_case_write= over a
 validated handle and caller-owned buffer. Add stable transport errors, exact
 sizing, no partial publication, and bounded scalar diagnostic accessors.
 

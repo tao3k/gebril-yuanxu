@@ -4,7 +4,7 @@
 
 #+title: RFC 150 — Runtime Language ABI Lane for Protocol-Person Promotion
 #+subtitle: Canonical cross-language execution contract; Marlin and Python are implementations
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+date: 2026-07-22
 #+status: implementation-draft
 #+property: header-args:typst :exports both
@@ -53,7 +53,7 @@ The authority stack is:
 2. Org is a durable authoring, governance, and audit source. Org parser / AST
    queries may emit JSON or AST data into Runtime Language admission; neither
    Org nor its emitted representation becomes a semantic co-owner.
-3. POO Flow admits source data against the POO Contract and lowers approved
+3. Agentic AI Lab admits source data against the POO Contract and lowers approved
    semantics into canonical subjects, commitments, promotion
    intents, and validation receipts.
 4. Cedar decides whether the principal may authorize the promotion.
@@ -86,17 +86,17 @@ The artifact-projection receipt has no source-query dependency. The chains may r
 | Concern | Canonical owner | Forbidden substitution |
 |-
 | Organization source and amendment | Org + Contract | mutable Markdown/JSON as authority |
-| Subject, commitment, promotion semantics | POO Flow | runtime-local policy objects |
+| Subject, commitment, promotion semantics | Agentic AI Lab | runtime-local policy objects |
 | Authorization | Cedar evidence | adapter boolean without decision identity |
 | Invariant proof | Lean evidence | runtime assertion as proof |
 | Wire and effect contract | Runtime Language ABI | Marlin- or Python-specific protocol |
-| Execution | qualified runtime implementation | POO Flow pretending to execute effects |
+| Execution | qualified runtime implementation | Agentic AI Lab pretending to execute effects |
 | Audit and cutover | receipts + qualification vectors | logs without content identity |
 
 * Promotion state machine
 
 Normative ownership: =approved= is a POO Contract policy decision produced by
-the POO Flow + (Cedar + Lean) dual engine. Submitted states belong to runtime
+the Agentic AI Lab + (Cedar + Lean) dual engine. Submitted states belong to runtime
 execution receipts; approval remains upstream.
 
 ABI qualification states describe projection compatibility only. Runtime
@@ -128,7 +128,7 @@ and cannot confer admission. The projection binds Contract identity and
 version, source Contract digest, projector identity and version, and the
 Contract artifact-projection receipt.
 
-The request schema is =poo-flow.runtime-language.promotion-request.1=.  It must
+The request schema is =agentic-ai-lab.runtime-language.promotion-request.1=.  It must
 carry:
 
 - ABI major/minor and required capability bits;
@@ -179,7 +179,7 @@ $ Accept(r, p) => Required(p) subset.eq Supported(r) $
 
 * Epoch fence
 
-The ABI request repeats all four epochs already checked by POO Flow.  The
+The ABI request repeats all four epochs already checked by Agentic AI Lab.  The
 runtime compares them again immediately before committing an effect.  This is
 an execution-time fence, not a second policy decision.
 
@@ -230,7 +230,7 @@ ABI itself is not the causal owner. This receipt is independent of, and may
 only causally reference, the source-query, Runtime Language admission, and
 Contract artifact-projection receipts.
 
-The receipt schema is =poo-flow.runtime-language.promotion-receipt.1=.  It must
+The receipt schema is =agentic-ai-lab.runtime-language.promotion-receipt.1=.  It must
 carry:
 
 - request idempotency identity and canonical request digest;
@@ -247,12 +247,12 @@ and =failed=.
 
 * Cross-language qualification
 
-POO Flow derives the shared qualification vector from the identified POO
+Agentic AI Lab derives the shared qualification vector from the identified POO
 Contract and its artifact-projection receipt. Consumers compare normalized
 Contract semantics first; byte equality qualifies only that representation.
 Adapter-specific fixtures cannot replace this shared contract-derived vector.
 
-POO Flow emits one deterministic line-oriented qualification vector.  Python,
+Agentic AI Lab emits one deterministic line-oriented qualification vector.  Python,
 Marlin, and future runtimes must consume the same vector and return a normalized
 receipt satisfying this RFC.  Adapter-specific test fixtures cannot replace
 the canonical vector.
@@ -300,7 +300,7 @@ approve its own contract change.
 
 - Lean proves stale/duplicate requests cannot become active.
 - Scheme tests pass for the canonical ABI objects and vectors.
-- Python tests parse and validate the POO Flow vector without a private schema.
+- Python tests parse and validate the Agentic AI Lab vector without a private schema.
 - Marlin returns an equivalent normalized receipt from the same vector.
 - installed artifacts report matching ABI major/minor, capability bits, and
   schema identities.
@@ -353,7 +353,7 @@ approve its own contract change.
   =3/3= without cached test results. The Scheme test passed in =34.8s=; C
   parity and vector tests passed in =0.2s= and =0.3s=.
 - The =gerbil-bazel= source-visibility and resolution-receipt tests pass
-  non-cached =2/2=. The temporary poo-flow MODULE projection was removed after
+  non-cached =2/2=. The temporary agentic-ai-lab MODULE projection was removed after
   qualification; publication and pinning remain open.
 - Default-scheduling Scheme guard qualification passes non-cached =1/1=
   (=79.0s= test, =326.744s= total). The guard receipt now records both

@@ -14,7 +14,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 * Status
 
 This RFC records the accepted incremental reevaluation and cache-correctness
-semantics for POO Flow.
+semantics for Agentic AI Lab.
 
 It extends graph-wide compatibility closure and SCC evidence. Cache reuse is an
 optimization over canonical POO semantics; it is not an alternative semantic
@@ -134,7 +134,7 @@ single undifferentiated global memo table.
 Pure object and prototype semantics remain owned by the canonical
 =gerbil-poo= dependency.
 
-POO Flow records demand dependencies, SCC evaluation, cache identities,
+Agentic AI Lab records demand dependencies, SCC evaluation, cache identities,
 budgets, suspensions, continuations, invalidation, and observability over those
 objects.
 

@@ -331,7 +331,7 @@ $ "legacy-parser-fallback" = false $
 - [X] Unverified ~gerbil-poo~ calls block implementation.
 
 These obligations are checked by
-=PooFlowProof.PooC4.UserCompositionMacroContract=.  They establish the
+=AgenticAILabProof.PooC4.UserCompositionMacroContract=.  They establish the
 abstract current-gap witness, thin hygienic target boundary, direct-replacement
 law, phase separation, and fail-closed admission predicate.  They do not mark
 the original executable macro, User Interface case, or admission checklists as
@@ -340,10 +340,10 @@ implemented.
 ** Verification receipts
 
 | Verification surface | State | Receipt |
-| Local Lean module | =accepted= | =lake build PooFlowProof.PooC4.UserCompositionMacroContract=: 34/34 jobs |
+| Local Lean module | =accepted= | =lake build AgenticAILabProof.PooC4.UserCompositionMacroContract=: 34/34 jobs |
 | Local Lean closure | =accepted= | =lake build=: 107/107 jobs |
 | AXLE independent declaration check | =accepted= | Request =23dabac7-7ffa-4126-b6d1-5e5007e9cce5=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =466a7b25-3301-4c98-9565-9dc0c4ab9717= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =466a7b25-3301-4c98-9565-9dc0c4ab9717= cannot resolve local module prefix =AgenticAILabProof= |
 | ~user-composition~ implementation | =not-admitted= | All 57 shape, binding, hygiene, value-level, negative-surface, User Interface, cross-plane, and admission items remain pending |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -459,7 +459,7 @@ The ~imports~ closure:
 
 - deduplicates nodes by stable identity;
 - intersects capability requirements;
-- preserves cycles for POO Flow fixed-point evaluation;
+- preserves cycles for Agentic AI Lab fixed-point evaluation;
 - emits cycle, budget, and projection receipts;
 - supports incremental and cached reevaluation under the owning RFCs; and
 - projects the minimal required Gerbil import or load boundaries only after
@@ -648,7 +648,7 @@ Implementation may begin only when:
 
 - [[file:44-current-project-programming-style.org][44: current project programming style]]
 - [[file:45-84-profile-object-and-prototype-extension-correspondence.org][45-84: Profile object and prototype extension correspondence]]
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85: POOF proof adoption and POO Flow correspondence]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85: POOF proof adoption and Agentic AI Lab correspondence]]
 - [[file:45-91-control-policy-profile-projection-and-user-composition-interface.org][45-91: user-composition interface]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93: Module selection, ProfileBundle, and imports closure algebra]]
 - [[file:../../../src/module-system/profile-composition/use-syntax.ss][current use-composition macro owner]]

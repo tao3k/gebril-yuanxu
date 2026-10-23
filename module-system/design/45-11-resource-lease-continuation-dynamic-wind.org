@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the POO Flow semantics for runtime-local resource leases across
+This module owns the Agentic AI Lab semantics for runtime-local resource leases across
 first-class continuation capture, dynamic extent exit, re-entry, cancellation,
 and realization-boundary termination.
 
@@ -18,7 +18,7 @@ It distinguishes:
 These are orthogonal state spaces.  Entering or leaving a dynamic extent MUST
 NOT implicitly repeat an external acquire or release operation.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= owns generic POO identity, demand realization, suspension,
 memoization, lineage, and continuation-aware control.
@@ -26,7 +26,7 @@ memoization, lineage, and continuation-aware control.
 Gerbil Scheme owns the language semantics of first-class continuations,
 continuable exceptions, and =dynamic-wind=.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - the POO-native resource-provider capability contract;
 - lease identity, policy, and realization-boundary scope;
@@ -278,7 +278,7 @@ names, and =dynamic-wind= helpers remain =semantic-required= until the relevant
 flow-qualified.
 
 Any generally reusable continuation-aware lease mechanism belongs upstream in
-=gerbil-poo=.  POO Flow MUST NOT ship a shadow continuation runtime, fallback
+=gerbil-poo=.  Agentic AI Lab MUST NOT ship a shadow continuation runtime, fallback
 resource evaluator, or private replacement for Scheme =dynamic-wind=.
 
 * Explicit exclusions

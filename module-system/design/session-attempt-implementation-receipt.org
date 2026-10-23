@@ -16,7 +16,7 @@ Types and routing/capacity invariants. =funs-attempt.ss= closes through =funs.ss
 and =interface.ss=. No separate =session-core= Module is introduced.
 
 The pure named functions =schedule=, =claim=, =complete=, =recover=, =reconcile=
-and =close= use the =poo-flow-session-= prefix. Every transition returns an intent
+and =close= use the =agentic-ai-lab-session-= prefix. Every transition returns an intent
 with =runtime-published?=, =action-authorized?= and =durable?= false. The supplied
 state is a proposal, never proof that an owner published it. A Host must load its
 own current state, resolve producer/terminal/isolation receipts and atomically
@@ -72,7 +72,7 @@ recorded O0 setting; production modules use the unchanged default compiler.
 
 =SessionAttempt.lean= proves eight named routing/recovery laws; its axiom audit
 inventories 13 theorems including generated declarations with standard Lean
-axioms only. CI builds the separate =PooFlowAttemptProof= target. The finite
+axioms only. CI builds the separate =AgenticAILabAttemptProof= target. The finite
 model and matched controls are documented in [[file:context-delta-lean-quint-model-design.org][the Context Delta model receipt]].
 Source hash/invariant binding proves metadata freshness only. The native controls
 are matched by condition; automated model trace-to-native replay is still absent.

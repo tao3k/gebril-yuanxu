@@ -37,7 +37,7 @@ lineage, non-repudiation, and the lifecycle of the acting session.
   it acts; session events record start, finish, and failure; enterprise policy
   includes canonical custom-agent definitions and an MCP registry.
 - Confidence boundary: this release note describes GitHub behavior; it is not a
-  proof of audit completeness or of POO Flow behavior.
+  proof of audit completeness or of Agentic AI Lab behavior.
 - Candidate obligations:
   - acting-agent identity and represented-principal identity must remain distinct;
   - every admitted session must end in a terminal lifecycle receipt;
@@ -72,7 +72,7 @@ lineage, non-repudiation, and the lifecycle of the acting session.
 - Reported claim: identification, authorization, auditing, non-repudiation, and
   prompt-injection controls are explicit open enterprise concerns.
 - Confidence boundary: a concept paper identifies a standards problem; it does
-  not choose or validate the POO Flow construction.
+  not choose or validate the Agentic AI Lab construction.
 - Candidate obligations:
   - no action receipt exists without a stable acting principal;
   - delegation binds grantor, grantee, scope, purpose, time, and evidence;
@@ -162,7 +162,7 @@ The following names are proposed owners, not yet implemented modules:
 | =Enterprise.CredentialRotationClosure= | Key rotation, revocation, migration, and stale-credential closure |
 
 Tenant noninterference remains owned by the existing tenant/organization
-isolation proof family.  Cedar authorization remains behind the POO Flow
+isolation proof family.  Cedar authorization remains behind the Agentic AI Lab
 =CedarAdapter= and is not redefined here.
 
 * Proof checklist

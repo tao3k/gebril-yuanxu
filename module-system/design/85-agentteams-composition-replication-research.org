@@ -10,8 +10,8 @@
 This note records the AgentTeams research lane after cloning
 ~agentscope-ai/AgentTeams~ into ~.data/AgentTeams~.
 
-The question is not whether POO Flow should copy AgentTeams.  The useful
-question is not whether POO Flow can be compatible with AgentTeams either.
+The question is not whether Agentic AI Lab should copy AgentTeams.  The useful
+question is not whether Agentic AI Lab can be compatible with AgentTeams either.
 
 AgentTeams is a capability-validation sample.  The question is whether a
 community agent framework's core policy and flow mechanism can be expressed as a
@@ -29,7 +29,7 @@ stable Composition surface and a Python runtime adapter.
 AgentTeams must not become an internal namespace that we copy.  That would be
 the wrong lesson.
 
-The long-term problem is that POO Flow will inspect hundreds or thousands of
+The long-term problem is that Agentic AI Lab will inspect hundreds or thousands of
 agent projects.  Each project will have its own names: manager, worker, team,
 crew, swarm, graph, node, run, thread, task, router, planner, executor, and many
 others.  If every audit produces a new project-shaped module, the system becomes
@@ -56,10 +56,10 @@ Leader~, and ~Human~.  The internal kernel is more general:
 - artifact/result contract;
 - runtime projection.
 
-This means POO Flow should not grow an ~agentteams~ semantic core.  At most,
+This means Agentic AI Lab should not grow an ~agentteams~ semantic core.  At most,
 AgentTeams is an external validation projection: a way to prove that the kernel
 can reproduce the behavior of this downstream framework.  The reusable owners
-inside POO Flow should be names like:
+inside Agentic AI Lab should be names like:
 
 - ~generic-worker/base~;
 - ~role-profile~;
@@ -88,7 +88,7 @@ samples.  They should be treated the same way as AgentTeams:
 - AgentTeams contributes lessons about declared organization topology,
   Manager/Leader/Worker boundaries, durable project/task flow, and loop policy.
 
-These names are evidence labels, not ontology labels.  The reusable POO Flow
+These names are evidence labels, not ontology labels.  The reusable Agentic AI Lab
 kernel should absorb the mechanisms behind them, then expose those mechanisms as
 composition families.  We should not create one semantic namespace per audited
 framework.
@@ -135,7 +135,7 @@ The evidence does not show a single public ontology enum named
 - the protocol reports sub-agent activity as lifecycle events;
 - the resolver binds a request to the concrete role/config material.
 
-This is exactly the distinction POO Flow needs.  A Manager, Worker, Explorer,
+This is exactly the distinction Agentic AI Lab needs.  A Manager, Worker, Explorer,
 Awaiter, Planner, or Reviewer should not be a separate hardcoded ontology root.
 It should be:
 
@@ -154,7 +154,7 @@ tool boundary, activity policy, and coordinator context are applied.
 
 ** Session Composition Kernel Gap Design
 
-The current POO Flow gap is not that we lack another agent namespace.  The gap
+The current Agentic AI Lab gap is not that we lack another agent namespace.  The gap
 is that session-as-flowing-value is not yet the obvious center of the user
 surface.
 
@@ -234,7 +234,7 @@ This makes a role cheap to define and easy to override:
 
 *** Layer 3: Multi-Agent Mode Policy
 
-Codex exposes multi-agent behavior as a mode.  POO Flow should generalize this
+Codex exposes multi-agent behavior as a mode.  Agentic AI Lab should generalize this
 into a policy object rather than a global flag.
 
 The minimal domain is:
@@ -260,7 +260,7 @@ scheduler limits.  The Scheme layer owns the policy; the runtime owns execution.
 *** Layer 4: Activity Lifecycle
 
 The lifecycle is the event vocabulary for session transformation.  Codex exposes
-started, interacted, and interrupted for sub-agent activity.  POO Flow should
+started, interacted, and interrupted for sub-agent activity.  Agentic AI Lab should
 keep that minimal surface but make the session event stream the durable source.
 
 Base lifecycle:
@@ -332,7 +332,7 @@ think in low-level POO object internals first.
 OpenRath's useful UI lesson is concept compression.  A user starts from a
 flowing session and applies agent/workflow layers; they do not manually assemble
 every internal executor, memory, selector, and backend object at the call site.
-POO Flow should be stricter than OpenRath internally, but the visible macro
+Agentic AI Lab should be stricter than OpenRath internally, but the visible macro
 surface should be at least as compact.
 
 The old explicit style is intentionally rejected as too noisy.  It repeats the
@@ -453,7 +453,7 @@ Implementation should proceed from stable contracts outward:
    and AgentTeams-style Manager/Leader/Worker session flows.
 6. Only then add runtime-specific accelerators in Python/Rust.
 
-This fills the design gap without turning POO Flow into a copy of any one agent
+This fills the design gap without turning Agentic AI Lab into a copy of any one agent
 framework.
 
 * Evidence Route
@@ -581,7 +581,7 @@ The outer layer is replaceable infrastructure:
 - manager and worker containers.
 
 This layer is operationally useful, but it is not a deep framework advantage.
-POO Flow should not treat Kubernetes as the interesting part.  We can project
+Agentic AI Lab should not treat Kubernetes as the interesting part.  We can project
 the same deployment contract into Kubernetes, nginx, a Scheme service, a local
 supervisor, or another runtime-owned deployment lane.
 
@@ -605,7 +605,7 @@ resource families:
   service switches.
 
 This is exactly the layer that JSON Schema to Scheme contracts can absorb.  The
-deployment resource schema should become a POO Flow contract projection:
+deployment resource schema should become a Agentic AI Lab contract projection:
 
 - schema fields become Scheme contract fields;
 - enum/status fields become policy domains;
@@ -650,7 +650,7 @@ The important rule is that a role is not just a label.  A role is a bundle of:
 - delegation rights;
 - task/result obligations.
 
-This is the part POO Flow should learn from.  A useful Agent Team is not created
+This is the part Agentic AI Lab should learn from.  A useful Agent Team is not created
 by starting multiple agents.  It is created by declaring a topology of roles and
 then projecting that topology into runtime identities, communication channels,
 artifact namespaces, and task policies.
@@ -667,7 +667,7 @@ AgentTeams' best role rule is the Manager/Team boundary:
 This is a good policy boundary.  It avoids turning the Manager into a global
 bottleneck and gives the Team its own local planning loop.
 
-For POO Flow, this should become a role-topology policy:
+For Agentic AI Lab, this should become a role-topology policy:
 
 - ~manager -> team-leader~ is allowed for team-level delegation.
 - ~team-leader -> team-worker~ is allowed for in-team task assignment.
@@ -695,7 +695,7 @@ This is not inherently Kubernetes-specific.  Kubernetes is one reconcile
 backend.  A Scheme service, Python runtime supervisor, local process supervisor,
 or nginx-fronted service can implement the same projection.
 
-For POO Flow, the owner should be:
+For Agentic AI Lab, the owner should be:
 
 - Scheme contract: validate the team topology;
 - POO resource profile: define defaults and overrides;
@@ -703,7 +703,7 @@ For POO Flow, the owner should be:
 - runtime projection: create the concrete processes, identities, channels, and
   namespaces.
 
-** Role Families For POO Flow
+** Role Families For Agentic AI Lab
 
 The role model should be expressed as reusable POO families:
 
@@ -783,7 +783,7 @@ The implementation is practical, but not policy-native enough:
 - stop condition is declarative text, not an executable/verifiable strategy;
 - Leader evaluation is outside the formal policy model.
 
-POO Flow can improve this by making Loop Policy an object family:
+Agentic AI Lab can improve this by making Loop Policy an object family:
 
 - iteration generator;
 - readiness strategy;
@@ -797,7 +797,7 @@ POO Flow can improve this by making Loop Policy an object family:
 The AgentTeams lesson is not their exact implementation.  The lesson is the
 shape: a durable leader-driven loop with a DAG inside each iteration.
 
-** POO Flow Loop Policy Shape
+** Agentic AI Lab Loop Policy Shape
 
 A POO-native loop policy should look like a composition of strategies:
 
@@ -819,14 +819,14 @@ This is stronger than AgentTeams because the loop behavior is not buried in a
 runtime helper.  It is a reusable policy family that can be composed with role
 topology, durable project state, and runtime projection.
 
-* Where AgentTeams Is Weaker Than POO Flow
+* Where AgentTeams Is Weaker Than Agentic AI Lab
 
 ** Semantics Are Not Lifted Into Policy Families
 
 The project/task semantics are implemented as runtime functions over files and
 strings.  They are effective, but they are not first-class policy families.
 
-In POO Flow, the same semantics should be represented as reusable objects:
+In Agentic AI Lab, the same semantics should be represented as reusable objects:
 
 - project lifecycle policy;
 - task delegation policy;
@@ -845,7 +845,7 @@ AgentTeams has correct DAG readiness and loop readiness primitives, but the
 composition layer is not the main abstraction.  Scheduling is mostly encoded by
 the runtime helper functions.
 
-POO Flow can make this stronger by using functional strategy combinators:
+Agentic AI Lab can make this stronger by using functional strategy combinators:
 
 - ~dag-ready-by-dependencies~
 - ~loop-ready-by-iteration~
@@ -864,7 +864,7 @@ The evidence shows a CoPaw projectflow tool and a TeamHarness MCP server that
 both carry project/task runtime behavior.  Even if this is intentional for
 packaging, it creates drift risk.
 
-POO Flow should avoid that split.  The normalized Composition should own the
+Agentic AI Lab should avoid that split.  The normalized Composition should own the
 state machine once.  Runtime surfaces should project that state machine into
 Python functions, C ABI calls, MCP tools, or other adapters.
 
@@ -873,7 +873,7 @@ Python functions, C ABI calls, MCP tools, or other adapters.
 AgentTeams uses practical schemas, files, and tests.  That is enough for a
 working system, but it is not the same as a typed policy contract.
 
-POO Flow can put the contract one level higher:
+Agentic AI Lab can put the contract one level higher:
 
 - Composition validates the profile shape.
 - POO objects hold reusable defaults and overrides.
@@ -883,13 +883,13 @@ POO Flow can put the contract one level higher:
 
 * Replication Thesis
 
-AgentTeams can be reproduced by POO Flow through:
+AgentTeams can be reproduced by Agentic AI Lab through:
 
 - a POO-native AgentTeams profile family;
 - functional DAG and loop strategy combinators;
 - a Python runtime adapter for MCP, Matrix, filesync, and execution;
 - durable policy backends for project/task state;
-- tests that mirror AgentTeams' behavior while preserving POO Flow's stronger
+- tests that mirror AgentTeams' behavior while preserving Agentic AI Lab's stronger
   composition model.
 
 The core should not be implemented as a Python-only agent framework.  Python is
@@ -904,7 +904,7 @@ There are three plausible ways to reproduce AgentTeams.
 This route would implement projectflow, taskflow, roomflow, filesync, and MCP
 projection directly in the Python runtime package.
 
-It would be fast to start, but it gives up the main advantage of POO Flow.  The
+It would be fast to start, but it gives up the main advantage of Agentic AI Lab.  The
 state machine, transition guards, and DAG/loop policies would become Python
 framework code.  Users would extend it with Python classes and callbacks instead
 of reusable POO policy objects.
@@ -927,10 +927,10 @@ engine.
 ** Option C: AgentTeams Capability-Validation Projection
 
 This route emulates the AgentTeams tool names and file layout first, then maps
-them inward to POO Flow.
+them inward to Agentic AI Lab.
 
 It is useful for validation because it lets us replay AgentTeams-shaped
-project/task fixtures and prove that POO Flow can reproduce the same core flow
+project/task fixtures and prove that Agentic AI Lab can reproduce the same core flow
 mechanism.  It should not become the internal architecture.  The AgentTeams
 shape is a projection used for proof, not the semantic owner.
 
@@ -942,9 +942,9 @@ capability-validation projection for tests and migration.
 Option A should be avoided except for short-lived experiments because it would
 turn Python into another workflow policy engine.
 
-* Mapping To POO Flow
+* Mapping To Agentic AI Lab
 
-| AgentTeams concept | POO Flow owner | Runtime owner |
+| AgentTeams concept | Agentic AI Lab owner | Runtime owner |
 |--------------------+----------------+---------------|
 | projectflow tool | project lifecycle policy family | Python callable / MCP tool |
 | taskflow tool | task transition policy family | Python callable / MCP tool |
@@ -959,7 +959,7 @@ turn Python into another workflow policy engine.
 
 This mapping is the key reason the project is a good downstream validation
 case.  AgentTeams' runtime shell is broad, but its semantic core maps cleanly
-onto POO Flow's intended abstractions.
+onto Agentic AI Lab's intended abstractions.
 
 * Proposed Composition Surface
 
@@ -1063,7 +1063,7 @@ tests:
   - loop iteration waiting for decision;
   - project ready for completion.
 
-This is enough to prove that POO Flow can reproduce the AgentTeams kernel
+This is enough to prove that Agentic AI Lab can reproduce the AgentTeams kernel
 without Matrix, Kubernetes, or AgentScope being required for the semantic core.
 
 * Runtime Design
@@ -1114,21 +1114,21 @@ But the semantic center is smaller:
 - result validation;
 - repair diagnostics.
 
-POO Flow is built exactly for this second layer.  Once these become POO-native
+Agentic AI Lab is built exactly for this second layer.  Once these become POO-native
 policy families and functional strategy combinators, AgentTeams-style behavior
 is configuration plus runtime adapters.
 
 That is the dimensional reduction:
 
 - AgentTeams must implement the workflow semantics inside its runtime tools.
-- POO Flow should declare those semantics once and project them into any
+- Agentic AI Lab should declare those semantics once and project them into any
   runtime.
 - Python, Rust, or other runtimes only need high-performance bindings and I/O
   adapters.
 
 * Where We Still Need To Improve
 
-This research also exposes gaps in POO Flow:
+This research also exposes gaps in Agentic AI Lab:
 
 - The AgentTeams profile family is not yet modeled as a first-class module.
 - The Python runtime package still needs a clean project/task API that mirrors
@@ -1161,7 +1161,7 @@ Validation should happen in this order:
    - compile and test performance gates.
 
 The benchmark target is not merely to match AgentTeams.  The target is to show
-that POO Flow can reproduce the kernel and then compose stronger policies with
+that Agentic AI Lab can reproduce the kernel and then compose stronger policies with
 less duplicated runtime code.
 
 * Research Conclusion
@@ -1170,7 +1170,7 @@ AgentTeams is a strong downstream validation case.  Its production shell is
 serious, and its task/team abstractions are practical.  But its policy semantics
 are still embedded in runtime-oriented Python tools and file protocols.
 
-POO Flow should absorb the useful shape:
+Agentic AI Lab should absorb the useful shape:
 
 - durable project/task kernel;
 - role-aware task transitions;
@@ -1178,7 +1178,7 @@ POO Flow should absorb the useful shape:
 - runtime tool projection;
 - human/agent collaboration adapters.
 
-Then POO Flow should improve the layer where AgentTeams is weakest:
+Then Agentic AI Lab should improve the layer where AgentTeams is weakest:
 
 - policy reuse;
 - native object extension;

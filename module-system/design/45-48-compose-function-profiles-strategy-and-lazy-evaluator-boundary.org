@@ -13,7 +13,7 @@
 - Semantic core :: Native =gerbil-poo= objects, prototypes, and operations
 - Related modules :: =45-41-poo-profile-slot-contribution-priority.org= and =45-47-user-composition-root-binding-and-thin-macro-contract.org=
 
-This module separates the ordinary =compose= function, the first-class =profiles= POO composition strategy, and the POO Flow evaluator.
+This module separates the ordinary =compose= function, the first-class =profiles= POO composition strategy, and the Agentic AI Lab evaluator.
 
 * Core decision
 
@@ -146,7 +146,7 @@ flowchart LR
       normalized profile identity.
 - [ ] Prove =priority= has no standalone public binding.
 
-* Responsibilities of the POO Flow evaluator
+* Responsibilities of the Agentic AI Lab evaluator
 
 The evaluator receives an already constructed composition value and performs:
 
@@ -167,7 +167,7 @@ flowchart LR
     O["Profile operands as ordinary POO values"] -->|"pass without forcing business slots"| C["compose ordinary function"]
     S["profiles POO strategy"] -->|"provide the pure composition protocol"| C
     C -->|"construct an immutable lazy graph root"| V["Pure composition value"]
-    V -->|"canonical projection establishes semantic generation"| G["POO Flow evaluator"]
+    V -->|"canonical projection establishes semantic generation"| G["Agentic AI Lab evaluator"]
     G -->|"demand one semantic slot"| D["Demand-driven evaluation"]
     D -->|"discover runtime dependency topology"| F["Fixed-point and current-generation SCC"]
     F -->|"produce a value, conflict, or continuable condition"| E["Semantic and operational evidence"]

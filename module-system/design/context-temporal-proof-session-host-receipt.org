@@ -161,7 +161,7 @@ MRR transport or MRR Data integration claim follows from the native Context gate
 
 * Open exact-pin gate and producer candidate
 
-The migrated POO Flow production build completed with normal settings. The
+The migrated Agentic AI Lab production build completed with normal settings. The
 six qualification suites compiled and the native executable linked. Running
 that executable against the fixed Orgize/parser pair failed before test cases:
 the generated native fold SSI contained empty =%#import= forms, which this SDK's
@@ -185,7 +185,7 @@ packages changed. The producer dependency and parser revision checks passed,
 and locked Cargo metadata resolves both packages to the declared commit.
 The remote Orgize branch matched the published commit immediately after push.
 
-POO Flow now pins this Orgize commit and the same parser revision for its
+Agentic AI Lab now pins this Orgize commit and the same parser revision for its
 separate Query/compiler imports. Archive digests and both platform Bazel lock
 projections were regenerated and the dependency contract check passed. The
 Context source boundary imports Orgize's current =languages/org/event-runtime=
@@ -210,7 +210,7 @@ native dependency installation and the isolated Bazel package build because
 Orgize's standard build did not generate =orgize/fold= before importing it.
 Orgize now publishes =790212d09d0d5d7294a06c9657a8737d9a3e1728= with an owned
 declaration/generation/runtime bootstrap. The public event and headline property
-interfaces are explicit build targets. POO Flow pins this producer and remains a
+interfaces are explicit build targets. Agentic AI Lab pins this producer and remains a
 consumer of its public interfaces; it does not generate Org parsing modules.
 
 The producer's standard package build completed with exit zero. Its dynamic
@@ -222,7 +222,7 @@ successful completeness check. Earlier failed trials remain negative receipts.
 
 The producer's four-case dynamic source-headline qualification entry failed its
 five-second output watchdog before emitting cases. No timeout was extended.
-Fresh native consumer behavior remains required. The POO Flow production build
+Fresh native consumer behavior remains required. The Agentic AI Lab production build
 against these products completed in a continuation after its first bounded
 180-second pass timed out; the initial pass remains a failed receipt.
 

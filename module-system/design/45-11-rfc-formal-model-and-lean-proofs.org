@@ -34,7 +34,7 @@ The existing =AuthorizedEffectEvidence.lean= proves Boolean qualification
 levels.  The new modules add algebraic data types and impossible-transition
 proofs; they do not replace the earlier evidence-level theorems.
 
-=gerbil-poo= is the sole Scheme POO library.  These Lean types model POO Flow
+=gerbil-poo= is the sole Scheme POO library.  These Lean types model Agentic AI Lab
 semantics and proof obligations; they do not specify or authorize another POO
 implementation.
 
@@ -77,11 +77,11 @@ AXLE:
 
 | Owner | Result | Receipt |
 |-
-| =PooFlowProof/PooC4/EffectBoundary.lean= | 0 failed declarations, 0 errors, 0 warnings | =f7dd396f-d644-4fcc-a39d-07f130f8a4f1= |
+| =AgenticAILabProof/PooC4/EffectBoundary.lean= | 0 failed declarations, 0 errors, 0 warnings | =f7dd396f-d644-4fcc-a39d-07f130f8a4f1= |
 
 The receipt proves the model and the refinement consequence. It does not prove
 that the concrete Marlin runtime has emitted a receipt satisfying the premise.
-Current POO Flow source and tests explicitly keep runtime execution false and
+Current Agentic AI Lab source and tests explicitly keep runtime execution false and
 name =marlin-agent-core= as runtime owner. Therefore:
 
 - =EFF-005CR-M= is =theorem-proven=: the runtime receipt proof contract is
@@ -93,7 +93,7 @@ name =marlin-agent-core= as runtime owner. Therefore:
 flowchart TD
   M["Lean AtomicCommitArbitration<br/>theorem-proven"]
   C["RuntimeArbitrationReceipt contract<br/>theorem-proven"]
-  H["POO Flow handoff<br/>runtime-executed = false"]
+  H["Agentic AI Lab handoff<br/>runtime-executed = false"]
   X["Marlin atomic execution evidence<br/>blocked-external-owner"]
   Q["EFF-005CR qualification<br/>not closed"]
 
@@ -105,7 +105,7 @@ flowchart TD
 #+end_src
 
 This split preserves the architecture: =gerbil-poo= is the only Scheme POO
-implementation, POO Flow owns governance semantics, and Marlin owns the atomic
+implementation, Agentic AI Lab owns governance semantics, and Marlin owns the atomic
 runtime operation.
 
 ** Retry causal linkage and reconciliation barrier
@@ -451,7 +451,7 @@ The synchronization rule is bidirectional:
   these exact names rather than to an informal analogue.
 
 The Lean owner is
-=PooFlowProof/PooC4/RecoveryPolicyAuthorization.lean=.
+=AgenticAILabProof/PooC4/RecoveryPolicyAuthorization.lean=.
 
 | Lean declaration | Result |
 |-
@@ -468,11 +468,11 @@ The exact Scheme correspondence is layered:
 | Canonical package identity | =github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead= | dependency-declared |
 | Functional prototype mechanism | =compose-proto=, =compose-proto*=, =instantiate-proto=, =instantiate-protos= | =symbol-located= |
 | POO object mechanism | =.mix=, =.extend=, =.+=, =.ref/.@=, =.has?=, =.def/.o= | =symbol-located= |
-| POO Flow recovery-policy prototype | no exact implementation owner observed | =implementation-unobserved= |
-| POO Flow recovery receipt constructor/validator | no exact implementation owner observed | =implementation-unobserved= |
+| Agentic AI Lab recovery-policy prototype | no exact implementation owner observed | =implementation-unobserved= |
+| Agentic AI Lab recovery receipt constructor/validator | no exact implementation owner observed | =implementation-unobserved= |
 
 No theorem or RFC may project the first two mechanism rows directly into the
-last two POO Flow domain objects. The missing constructor is owned by POO Flow,
+last two Agentic AI Lab domain objects. The missing constructor is owned by Agentic AI Lab,
 not by =gerbil-poo=.
 
 Evidence state:
@@ -481,9 +481,9 @@ Evidence state:
 |-
 | Local Lean model | =theorem-proven= | Lean 4.31.0 package build completed 63 jobs. |
 | AXLE default-import check | =blocked-verifier-import-boundary= | Request =645847d4-fce9-4387-a230-e6e117f81f6a= replaced the local import and therefore could not resolve the effect model. |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =9a73f9ff-a949-4362-9022-154878b60096= reported unknown local module prefix =PooFlowProof=. |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =9a73f9ff-a949-4362-9022-154878b60096= reported unknown local module prefix =AgenticAILabProof=. |
 | =gerbil-poo= mechanism correspondence | =symbol-located= | Exact generic prototype/object symbols above are parser-observed but not yet behavior-qualified for this use. |
-| POO Flow constructor correspondence | =implementation-unobserved= | No concrete recovery-policy prototype or receipt constructor/validator owner is present in the observed module-system surface. |
+| Agentic AI Lab constructor correspondence | =implementation-unobserved= | No concrete recovery-policy prototype or receipt constructor/validator owner is present in the observed module-system surface. |
 
 These AXLE results are verifier-environment failures, not failed Lean
 declarations in the local package. No combined private source projection was
@@ -901,7 +901,7 @@ impact.  The owning =45-08= discussion approved the combined rule:
 
 1. =gerbil-poo= remains the sole Scheme POO implementation;
 2. the provider owns external idempotency, terminal proof, and reconciliation;
-3. the POO Flow effect-boundary prototype owns atomic terminal-state
+3. the Agentic AI Lab effect-boundary prototype owns atomic terminal-state
    acceptance and conflict governance;
 4. an explicit runtime substrate performs the requested atomic
    compare-and-transition without becoming another POO library.
@@ -921,7 +921,7 @@ Command: lake build
 Result: Build completed successfully (62 jobs).
 #+end_example
 
-The aggregate =PooFlowProof= root imports all three new modules, so the receipt
+The aggregate =AgenticAILabProof= root imports all three new modules, so the receipt
 is not an isolated file check.
 
 ** AXLE
@@ -1000,7 +1000,7 @@ evidence.  They MUST NOT be inferred merely from a green Lean build.
       #+end_src
 - [X] Prove that every valid finite trace accepts at most one commit event.
 - [X] Resolve the =EFF-005C= model gap through approved combined provider
-      evidence and POO Flow atomic arbitration semantics.
+      evidence and Agentic AI Lab atomic arbitration semantics.
 - [ ] Prove that the concrete runtime atomic primitive linearizes concurrent
       proposals to =AtomicCommitArbitration=.
 - [ ] Prove that two different verified commit receipts cannot be accepted for

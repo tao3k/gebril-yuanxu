@@ -36,7 +36,7 @@ Cross-boundary recovery authority belongs to the smallest common demand
 boundary that owns every edge.  External projection respects Capability
 visibility while internal diagnostics retain the complete trace.
 
-These rules instrument =gerbil-poo=; POO Flow does not implement another fixed
+These rules instrument =gerbil-poo=; Agentic AI Lab does not implement another fixed
 point or cycle evaluator.
 
 * Semantic observation unit
@@ -58,7 +58,7 @@ Wall-clock duration, stack depth, allocation count, log volume, and effect retry
 count are not semantic units.  Runtime pointers, closures, and continuations do
 not enter unit identity.
 
-The budget Capability consumes admitted semantic transition units.  POO Flow
+The budget Capability consumes admitted semantic transition units.  Agentic AI Lab
 projects transitions actually exposed by =gerbil-poo= and MUST NOT synthesize
 progress.  If pinned API evidence cannot expose a required transition, the
 alignment records an API gap rather than substituting a timer or guess.
@@ -104,7 +104,7 @@ no-progress cycle remains a cycle even when it consumes little host capacity.
 Host observations do not enter fixed-point identity or semantic progress.  Host
 guard policy belongs to the runtime or admission boundary aligned with
 [[file:45-13-demand-admission-backpressure-cleanup-capacity.org][the demand
-admission RFC]].  It does not make POO Flow a scheduler.
+admission RFC]].  It does not make Agentic AI Lab a scheduler.
 
 Semantic-budget extension and host-resource authority are separate
 continuations and cannot substitute for each other.  Test and benchmark
@@ -184,7 +184,7 @@ cannot widen or replenish the delegation.
 Budget extension requires explicit authority.  An authorized continuation
 issues a new immutable budget Capability in a successor generation and records
 a receipt.  It does not mutate the exhausted object.  This mechanism is not a
-budget DSL and does not make POO Flow a scheduler.
+budget DSL and does not make Agentic AI Lab a scheduler.
 
 #+begin_src mermaid
 flowchart LR

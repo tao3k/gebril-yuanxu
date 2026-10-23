@@ -153,7 +153,7 @@ Native object and prototype semantics are owned by the canonical dependency:
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-POO Flow supplies demand evaluation, cycle evidence, budgets, caching, and
+Agentic AI Lab supplies demand evaluation, cycle evidence, budgets, caching, and
 observability over those objects.
 
 The project must not implement a second POO library, a second independent

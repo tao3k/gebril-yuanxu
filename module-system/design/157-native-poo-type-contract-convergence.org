@@ -16,7 +16,7 @@ the legacy record-contract modules have been removed.
 
 * Decision
 
-POO Flow uses the pinned =gerbil-poo= meta-object protocol as its only generic
+Agentic AI Lab uses the pinned =gerbil-poo= meta-object protocol as its only generic
 type and dispatch foundation.  A project Type or Contract is a native
 prototype-derived Type descriptor.  It is not a record, symbolic value-kind,
 predicate registry, object-kind tag, or alist schema.
@@ -28,7 +28,7 @@ wrapper, dual lookup path, or translation registry is admitted.
 
 #+begin_src mermaid
 flowchart TD
-  M["gerbil-poo mop.ss"] -->|"define-type and sparse generic dispatch"| T["POO Flow shared types.ss"]
+  M["gerbil-poo mop.ss"] -->|"define-type and sparse generic dispatch"| T["Agentic AI Lab shared types.ss"]
   Y["gerbil-poo type.ss"] -->|"primitive Type descriptors and validate"| T
   T -->|"native Type and Contract basis"| Q["Shared contract-schema.ss"]
   Q -->|"POO slot schemas and pure obligations"| C["Domain Contract descriptor"]
@@ -149,7 +149,7 @@ validation, and analysis receipt construction.
 
 The sandbox resource owner stores filesystem, CPU, ports, memory, and timeout
 constraints as native Type descriptors inside POO slot-schema objects.  Its
-=PooFlowSandboxResourcesPrototypeContract= is a native =YuanxuContract.=
+=AgenticAILabSandboxResourcesPrototypeContract= is a native =YuanxuContract.=
 descriptor whose pure obligations reject missing required slots and values that
 fail upstream =element?= admission.
 
@@ -185,12 +185,12 @@ slot rejection, projection shape, and constructor gates.
 * Sandbox profile vertical slice
 
 The agent-sandbox owner defines the canonical profile kind and one native
-=PooFlowSandboxProfileContract=.  Its eight required slots cover profile
+=AgenticAILabSandboxProfileContract=.  Its eight required slots cover profile
 identity, backend selection, network policy, capabilities, resource policy, and
 metadata.  The sandbox-core facade re-exports that owner without copying its
 type semantics.
 
-Public =poo-flow-sandbox-profile?= now performs native Contract admission.
+Public =agentic-ai-lab-sandbox-profile?= now performs native Contract admission.
 Descriptor projection requires the same evidence before portability checks and
 before the legacy runtime descriptor boundary.  Parent-profile derivation uses
 the same predicate instead of a shallow kind-only check.  Invalid or incomplete

@@ -6,7 +6,7 @@
 #+startup: overview
 
 * Scope
-This document records how POO Flow should align Scheme durable policies with the Python runtime Turso backend.
+This document records how Agentic AI Lab should align Scheme durable policies with the Python runtime Turso backend.
 
 The Scheme side owns durable policy intent. The Python runtime language owns database execution, checkpoint persistence, store IO, and sync driver binding. The contract between them is a fail-closed capability check: a Scheme manifest may require backend capabilities, and the Python adapter must prove those requirements through a runtime receipt before executing durable workflows.
 
@@ -103,7 +103,7 @@ Operationally:
 - If any requirement is not satisfied, adapter construction fails before a store or checkpointer is used.
 
 * AI Runtime Implications
-POO Flow should not put vector storage, embedding generation, or retrieval execution into the Scheme control plane. Scheme should describe the policy shape:
+Agentic AI Lab should not put vector storage, embedding generation, or retrieval execution into the Scheme control plane. Scheme should describe the policy shape:
 
 - whether a workflow requires vector retrieval,
 - which checkpoint and replay policy applies,
@@ -114,7 +114,7 @@ POO Flow should not put vector storage, embedding generation, or retrieval execu
 Python, Marlin, or another runtime language should execute those IO-heavy parts. The durable adapter receipt is the bridge that lets proof gates and agents check that the runtime backend satisfies the Scheme policy.
 
 * Concurrency Implications
-Turso's MVCC concurrent-write claim is useful for agent workloads where many sessions may update independent checkpoint/store namespaces. POO Flow should still model concurrency at the policy level:
+Turso's MVCC concurrent-write claim is useful for agent workloads where many sessions may update independent checkpoint/store namespaces. Agentic AI Lab should still model concurrency at the policy level:
 
 - Use per-session/thread checkpoint IDs.
 - Keep namespace prefixes explicit, such as =(tenant agent session)=.

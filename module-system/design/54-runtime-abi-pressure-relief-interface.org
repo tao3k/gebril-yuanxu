@@ -7,11 +7,11 @@
 ** 10.06.54.10 Purpose
 
 This document turns the LoopX pressure test and Marlin ABI evidence into a
-runtime-facing interface plan for =poo-flow=.
+runtime-facing interface plan for =agentic-ai-lab=.
 
 The goal is not to make every runtime language understand Gerbil, POO objects,
 C4 slot precedence, functional strategy combinators, or downstream UI concepts.
-The goal is to make =poo-flow= a pressure-relief layer:
+The goal is to make =agentic-ai-lab= a pressure-relief layer:
 
 #+begin_src text
 POO-native policy families
@@ -27,7 +27,7 @@ the same packet contract without copying Marlin internals.
 
 ** 10.06.54.20 Terms
 
-- Author UI :: the user-facing =poo-flow= surface: POO-native policy families,
+- Author UI :: the user-facing =agentic-ai-lab= surface: POO-native policy families,
   profile fragments, and functional strategy combinators.
 - Runtime UI :: the runtime-author surface: capability negotiation, packet
   validation, action batches, and receipt batches.
@@ -39,7 +39,7 @@ the same packet contract without copying Marlin internals.
 
 ** 10.06.54.30 Boundary Ownership
 
-=poo-flow= owns:
+=agentic-ai-lab= owns:
 - POO object construction, inheritance, slot precedence, and role composition;
 - functional strategy composition;
 - eligibility, gate, capability, fallback, and readiness decisions;
@@ -141,7 +141,7 @@ Required fields:
 - =supports-readiness-gates?=
 - =runtime-executed?=
 
-For descriptors produced by =poo-flow=, =runtime-executed?= is always =#f=.
+For descriptors produced by =agentic-ai-lab=, =runtime-executed?= is always =#f=.
 Runtime-returned descriptors may include runtime-owned probe receipts.
 
 *** 10.06.54.60.20 Policy Profile Packet
@@ -167,7 +167,7 @@ Required fields:
 - =diagnostics=
 - =runtime-executed?=
 
-This packet is where =poo-flow= removes pressure from runtime authors. It
+This packet is where =agentic-ai-lab= removes pressure from runtime authors. It
 contains final policy facts. It does not contain POO objects, slot resolution
 rules, macros, closures, or user-facing DSL fragments.
 
@@ -210,7 +210,7 @@ Allowed =action-kind= values for the first closure:
 - =handoff=
 - =validate-only=
 
-=poo-flow= may emit non-executing action packets such as =quiet-skip= and
+=agentic-ai-lab= may emit non-executing action packets such as =quiet-skip= and
 =ask-owner=. This keeps readiness failures, missing symbols, unsupported
 capabilities, and human gates visible before a runtime attempts execution.
 
@@ -258,7 +258,7 @@ states otherwise.
 
 Marlin gives the first concrete mapping for this interface:
 
-| =poo-flow= packet concept | Marlin reference concept |
+| =agentic-ai-lab= packet concept | Marlin reference concept |
 |---------------------------+--------------------------|
 | =runtime-capability-descriptor.v1= | native ABI id/version/exported-symbols and readiness plan |
 | =policy-profile-packet.v1= | =LoopPolicyProfile= plus governance/evidence policy |
@@ -273,9 +273,9 @@ Marlin gives the first concrete mapping for this interface:
 | runtime concurrency policy | =TokioRuntimePolicy= and =TokioRuntimePolicyReceipt= |
 | high-frequency native calls | Gerbil native request epoch backing and conversion profile |
 
-The mapping rule is strict: =poo-flow= should align with these shapes where
+The mapping rule is strict: =agentic-ai-lab= should align with these shapes where
 they are already semantically right, but Marlin remains the runtime owner.
-=poo-flow= should not import Marlin's Tokio policy into the author UI.
+=agentic-ai-lab= should not import Marlin's Tokio policy into the author UI.
 
 ** 10.06.54.90 Other Runtime Language SDK Pattern
 

@@ -326,7 +326,7 @@ macros.
 
 #+begin_src mermaid
 flowchart TD
-  U["Pinned gerbil-poo/fun.ss"] -->|"provides generic higher-order functional algebra"| S["Shared POO Flow functional combinators"]
+  U["Pinned gerbil-poo/fun.ss"] -->|"provides generic higher-order functional algebra"| S["Shared Agentic AI Lab functional combinators"]
   S -->|"supplies project-wide reusable pure operations"| F["Module-local func.ss"]
   T["Module-local types.ss"] -->|"constrains domain inputs and results"| F
   F -->|"provides only unique domain transformations"| O["Module-local objects.ss"]

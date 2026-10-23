@@ -25,10 +25,10 @@ but does not resolve an unbound module name from the filesystem.
 
 * What the existing module system actually does
 
-[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][yuanxu-load-modules]] accepts a source collection object and projects the
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][yuanxu-load-modules]] accepts a source collection object and projects the
 collection's conventional interface.ss SourceRefs. Collection discovery lists its
 module directories; a selected module can instead be located by key without
-projecting every interface. [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/source-registry.ss][User tree source policy]] independently names init.ss
+projecting every interface. [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/source-registry.ss][User tree source policy]] independently names init.ss
 and config.ss. These are source selection/discovery mechanisms, not evaluation
 of all implementation bodies or a raw path-to-lexical-binding macro.
 

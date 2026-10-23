@@ -15,13 +15,13 @@ are implementation escape hatches, not the recommended interface.
 
 ** 10.06.16.20 Local POO Source Evidence
 =.data/gerbil-poo/object.ss= and the installed =clan/poo/object= package expose
-the object model that =poo-flow= should use directly:
+the object model that =agentic-ai-lab= should use directly:
 - objects carry supers, slots, defaults, instances, precedence lists, and slot
   functions;
 - slot resolution is already backed by C4 through =clan/list=;
 - =.def=, =.o=, ==>=, and ==>.+= are the native authoring vocabulary.
 
-=poo-flow= should depend on that instead of reimplementing C4 or presenting a
+=agentic-ai-lab= should depend on that instead of reimplementing C4 or presenting a
 second profile DSL to users.
 
 ** 10.06.16.30 Current Good Landing

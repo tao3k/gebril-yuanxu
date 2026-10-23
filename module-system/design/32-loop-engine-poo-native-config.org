@@ -51,7 +51,7 @@ The public loop-engine object graph is:
 
 OpenRath's async session loop adds one important extension point: tool dispatch
 is grouped by a =resource_key(args)= concept so same-resource calls serialize
-while independent resources may proceed in parallel. POO Flow should model this
+while independent resources may proceed in parallel. Agentic AI Lab should model this
 as a future POO-native =loop-engine-resource-policy= object rather than a
 numeric scheduling flag or row DSL clause.
 
@@ -113,7 +113,7 @@ OpenRath's backend, memory, compression, and operational policy layers suggest m
 
 The legacy =govern-loop= Marlin ABI manifest now carries a =loop-engine-discovery= table that references the same loop-engine runtime command contract, object families, and receipt contracts used by runtime handoff manifests. This keeps downstream consumers on one discovery surface without copying receipt contracts into a second source.
 
-The package build spec now includes root =t/*.ss= test modules as a separate test build slice while still excluding =t/fixtures=. This makes =gxpkg clean= and =gxpkg build= authoritative for stale =:poo-flow/t/...= imports used by =t/unit-tests.ss=.
+The package build spec now includes root =t/*.ss= test modules as a separate test build slice while still excluding =t/fixtures=. This makes =gxpkg clean= and =gxpkg build= authoritative for stale =:agentic-ai-lab/t/...= imports used by =t/unit-tests.ss=.
 
 * Verification
 

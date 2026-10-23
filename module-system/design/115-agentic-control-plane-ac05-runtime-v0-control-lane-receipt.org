@@ -11,13 +11,13 @@ pre-v1 control lane.  =abi-v1-frozen?= remains =#f=.
 
 * Delivered
 
-- Installed public header =poo_flow/runtime_v0.h=.
-- Installed static and shared =libpoo_flow_runtime_v0= libraries.
+- Installed public header =agentic_ai_lab/runtime_v0.h=.
+- Installed static and shared =libagentic_ai_lab_runtime_v0= libraries.
 - Version/capability contract generating the public header and conformance
   vector.  AC-06 subsequently moved this owner to POO-native Scheme types and
   removed the intermediate JSON/Python generator route.
 - Gerbil projection from validated Bundle Kernel state to
-  =poo-flow.runtime-v0.control-packet.1=.
+  =agentic-ai-lab.runtime-v0.control-packet.1=.
 - Fixed-width opaque handles with instance, resource, generation, and kind.
 - Negotiation, profile, Bundle, session, cancel, close, release, checkpoint,
   restore, owned bytes, error messages, and typed statuses.
@@ -36,7 +36,7 @@ flowchart LR
   Contract --> Vector["Conformance vector"]
   Header --> Engine["C lifecycle and handle engine"]
   Projection --> Engine
-  Engine --> Library["libpoo_flow_runtime_v0"]
+  Engine --> Library["libagentic_ai_lab_runtime_v0"]
   Library --> Harness["Installed-artifact pure C harness"]
   Graph["Python graph-domain runtime"] --> DomainReceipt["Domain receipt; no old C ABI"]
 #+end_src
@@ -77,8 +77,8 @@ contain no pointer.  The C engine validates lifecycle envelopes and never
 reimplements Organization, Authority, Context, Protocol, Evidence, Cedar, or
 Lean semantics.
 
-The Python runtime no longer publishes =PooFlowRuntimeBinding=,
-=PooFlowRuntimeCffiBinding=, =materialize_runtime_graph_plan=, ABI probe scripts,
+The Python runtime no longer publishes =AgenticAILabRuntimeBinding=,
+=AgenticAILabRuntimeCffiBinding=, =materialize_runtime_graph_plan=, ABI probe scripts,
 or the legacy ABI surface manifest.  Graph-domain code remains available without
 claiming control-plane ABI conformance.
 

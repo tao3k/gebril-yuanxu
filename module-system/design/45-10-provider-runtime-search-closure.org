@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the English-only POO Flow contract for resolving the provider
+This module owns the English-only Agentic AI Lab contract for resolving the provider
 capability required by an effect intent.  It defines:
 
 - the boundary-scoped provider search closure;
@@ -20,13 +20,13 @@ It does not own Profile or Mix authoring, effect execution, effect evidence-stat
 transitions, package management, build-system resolution, or generic POO cycle
 evaluation.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= remains the sole Scheme POO implementation.  It owns prototype
 identity, refinement composition, lazy demand, memoization, fixed-point
 mechanics, and generic lineage/cycle evidence.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - the structural boundary from which provider resolution begins;
 - the capability-space closure admitted by containment and explicit imports;
@@ -128,7 +128,7 @@ Mix =imports= are lazy POO dependencies.  They are not Gerbil imports,
 =gerbil.pkg= dependencies, Bazel targets, or Nix module declarations.
 
 Provider closure traversal uses =gerbil-poo= demand, memoization, fixed-point,
-and cycle evidence.  POO Flow MUST NOT introduce a local linearizer, eager graph
+and cycle evidence.  Agentic AI Lab MUST NOT introduce a local linearizer, eager graph
 walker, fallback evaluator, or second fixed-point implementation.
 
 Recursive capability spaces may be productive.  A repeated lineage node alone
@@ -143,7 +143,7 @@ flowchart LR
   P -->|"memoized fixed-point demand"| B
   I -->|"dependency returns without new evidence"| C["State: cycle evidence"]
   I -->|"waits on effect-boundary progress"| W["State: typed external wait edge"]
-  C -->|"gerbil-poo lineage mechanism reports evidence"| D["State: POO Flow policy diagnosis"]
+  C -->|"gerbil-poo lineage mechanism reports evidence"| D["State: Agentic AI Lab policy diagnosis"]
   W -.->|"observation does not force provider or effect"| D
 #+end_src
 
@@ -253,7 +253,7 @@ macro, and condition identifiers remain =semantic-required= until the real
 2. =behavior-proven=;
 3. =flow-qualified=.
 
-POO Flow MUST extend =gerbil-poo= when a generally reusable POO mechanism is
+Agentic AI Lab MUST extend =gerbil-poo= when a generally reusable POO mechanism is
 missing.  It MUST NOT ship a shadow provider resolver or fallback POO runtime.
 
 * Explicit exclusions

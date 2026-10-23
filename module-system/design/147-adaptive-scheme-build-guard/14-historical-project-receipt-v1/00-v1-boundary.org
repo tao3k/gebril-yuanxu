@@ -4,11 +4,11 @@
 
 * Historical stable Gerbil project receipt v1 boundary
 
-POO Flow pins gerbil-bazel revision
+Agentic AI Lab pins gerbil-bazel revision
 =0d5ef5362674d788e0fc9e146b8e9e1daf78f137=.  That revision preserves
 =gerbil-bazel.project-receipt.v1= as the stable outer envelope for every
 =gerbil_project_compile= action.  Prefix-derived producer evidence does not
-replace the envelope; POO Flow's =poo-flow.project-compile-guard.v1= receipt is
+replace the envelope; Agentic AI Lab's =agentic-ai-lab.project-compile-guard.v1= receipt is
 nested under =buildReceipt=.  Optional Gerbil-Bazel process-guard evidence is
 nested independently under =resourceGuard=.
 
@@ -64,11 +64,11 @@ be created as a convenience rename.
 The Bazel target =//scheme:compile_receipt_v1_test= is the executable contract
 gate.  It resolves =gxi= through the registered Gerbil toolchain, applies the
 upstream Scheme validator to the formal v1 schema and the actual
-=//scheme:compile= receipt, and then applies a POO Flow Scheme validator to the
+=//scheme:compile= receipt, and then applies a Agentic AI Lab Scheme validator to the
 nested build receipt.  CI executes the target immediately after the Scheme
 compile and before publishing the artifact evidence.
 
-This receipt gate proves the stable envelope and POO Flow consumer contract;
+This receipt gate proves the stable envelope and Agentic AI Lab consumer contract;
 it does not substitute for compiler-mode normalization evidence.  Upstream
 provider and toolchain probes separately prove complete =FLAGS_DYN= and
 =FLAGS_OBJ= restoration, the =-c/-link/-exe= pass-through boundary, and final
@@ -79,9 +79,9 @@ flowchart LR
   Compile["//scheme:compile"] --> Outer["gerbil-bazel.project-receipt.v1"]
   Outer --> Core["Stable required v1 fields"]
   Outer --> Guard["Optional resourceGuard"]
-  Outer --> Build["buildReceipt: poo-flow.project-compile-guard.v1"]
+  Outer --> Build["buildReceipt: agentic-ai-lab.project-compile-guard.v1"]
   Outer --> Generic["Upstream Scheme v1 validator"]
-  Build --> Consumer["POO Flow Scheme consumer validator"]
+  Build --> Consumer["Agentic AI Lab Scheme consumer validator"]
   Generic --> Gate{"Both validators pass?"}
   Consumer --> Gate
   Gate -->|"yes"| Publish["Publish receipt evidence"]

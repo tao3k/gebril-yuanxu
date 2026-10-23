@@ -589,10 +589,10 @@ All paths are repository-relative; no host installation or temporary output
 path is part of this receipt.
 
 - Focused Lean:
-  =cd packages/proofs/lean && direnv exec . lake env lean PooFlowProof/Enterprise/ReceiptContextSuccessorAdmissionBindingClosure.lean=
+  =cd packages/proofs/lean && direnv exec . lake env lean AgenticAILabProof/Enterprise/ReceiptContextSuccessorAdmissionBindingClosure.lean=
   returned exit =0= with no Lean diagnostic.
 - AXLE exact declaration closure:
-  =cd packages/proofs/python && uv run --extra axle poo-flow-axle-verify=
+  =cd packages/proofs/python && uv run --extra axle agentic-ai-lab-axle-verify=
   in closure mode verified six root declarations and returned exit =0=,
   =status: accepted=, and zero failed declarations.
 - AXLE closure declarations: =54=; source declarations: =28=; environment
@@ -603,7 +603,7 @@ path is part of this receipt.
   =sha256:2d8d22a003c478cd77b795f3e07808c29c4bd4d47c28842ccc4d106224d62d50=.
 - AXLE canonical source digest:
   =sha256:982ba017949ff03896e8b6fd8964ecf1c00532d4d93ce1126de2bfb2d17df977=.
-- Enterprise aggregate: =lake build PooFlowProof.Enterprise= returned exit =0=
+- Enterprise aggregate: =lake build AgenticAILabProof.Enterprise= returned exit =0=
   for =484= jobs.
 - Full aggregate: =lake build= returned exit =0= for =556= jobs.
 - Both aggregates reported only the pre-existing =unnecessarySimpa= warning

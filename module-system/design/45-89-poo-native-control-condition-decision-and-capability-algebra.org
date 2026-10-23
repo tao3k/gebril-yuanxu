@@ -123,7 +123,7 @@ remain pending.
 | Local Lean module | =accepted= | =lake build YuanxuProof.Modules.Funflow.Control=: 31/31 jobs |
 | Local Lean closure | =accepted= | =lake build=: 104/104 jobs |
 | AXLE independent declaration check | =accepted= | Request =c1dc27f7-ada1-4df4-a27c-173bcf18f173=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =e293a097-ca99-47ba-9b0b-373477c4478e= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =e293a097-ca99-47ba-9b0b-373477c4478e= cannot resolve local module prefix =AgenticAILabProof= |
 | POO control-algebra implementation | =not-admitted= | All 41 algebra, handler, capability, cross-plane, and admission items remain pending |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -176,7 +176,7 @@ The control protocol consists of three distinct POO object families:
 All three are immutable POO objects.  Their public extension mechanism is
 prototype composition and object extension governed by the native
 ~gerbil-poo~ semantics adopted in
-[[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]].
+[[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]].
 
 The control protocol shall not be represented as:
 
@@ -396,7 +396,7 @@ functional helpers may implement this adapter, but raw
 * Decision return-value discipline
 
 Under Gambit semantics, the value returned by a continuable exception handler
-becomes the value of ~raise~.  POO Flow must prevent that mechanism from
+becomes the value of ~raise~.  Agentic AI Lab must prevent that mechanism from
 smuggling a control object into native evaluation.
 
 The safe-point helper therefore owns the result of ~raise~:
@@ -595,7 +595,7 @@ Implementation may begin only when:
 
 * References
 
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85: POOF proof adoption and POO Flow correspondence obligations]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85: POOF proof adoption and Agentic AI Lab correspondence obligations]]
 - [[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86: POO conservative-extension criterion and cross-module obligations]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87: live continuation capabilities and portable suspension boundary]]
 - [[file:45-88-gerbil-gambit-continuation-and-condition-runtime-correspondence.org][45-88: Gerbil and Gambit continuation and condition runtime correspondence]]

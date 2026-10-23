@@ -43,9 +43,9 @@ flowchart TD
   =bad9c5d0781d0a99e2f8d58cb94abae9dfc2eda4c71a01009897f7fc5419e0e7=.
 - Canonical 424-byte vector digest:
   =970eaffbfaae38970e2107b89fa11258c6211a5c293a1e400a464527b7a0e44a=.
-- Vector digest domain: =poo-flow.proof-case-vector.v1=.
+- Vector digest domain: =agentic-ai-lab.proof-case-vector.v1=.
 - Theorem-set digest domain:
-  =poo-flow.authorized-effect-theorem-set.v1=.
+  =agentic-ai-lab.authorized-effect-theorem-set.v1=.
 - The manifest generates the C, Python, Lean, and fixture projections; the
   generated-artifact freshness check passes.
 

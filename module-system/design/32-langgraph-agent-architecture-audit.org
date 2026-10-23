@@ -11,7 +11,7 @@ LangGraph was cloned for local research under =.data/langgraph=.
 - Snapshot: =5931a5f=, 2026-06-29, =release(langgraph): 1.2.7 (#8223)=
 - Audit date: 2026-06-30
 
-This audit uses LangGraph as engineering comparison material for =poo-flow=. It does not treat LangGraph as a design target to copy. The useful evidence is how LangGraph separates graph declarations, runtime injection, durable state, human interrupts, prebuilt agent loops, and deployment tooling.
+This audit uses LangGraph as engineering comparison material for =agentic-ai-lab=. It does not treat LangGraph as a design target to copy. The useful evidence is how LangGraph separates graph declarations, runtime injection, durable state, human interrupts, prebuilt agent loops, and deployment tooling.
 ** 10.06.32.20 Project Shape
 LangGraph is a monorepo with library boundaries that are explicit in its own agent instructions:
 - =libs/langgraph= owns the core stateful graph framework.
@@ -21,9 +21,9 @@ LangGraph is a monorepo with library boundaries that are explicit in its own age
 - =libs/cli= owns project creation, local development server, Docker build, and config-driven graph discovery.
 - =libs/sdk-py= and =libs/sdk-js= own client APIs for the LangGraph Server API.
 
-The dependency shape is only comparison evidence. It is not the =poo-flow= engineering boundary.
+The dependency shape is only comparison evidence. It is not the =agentic-ai-lab= engineering boundary.
 
-The =poo-flow= engineering boundary is the Doom Emacs-style module boundary:
+The =agentic-ai-lab= engineering boundary is the Doom Emacs-style module boundary:
 - categories group module families;
 - modules are enabled through the compact user interface;
 - features are optional module facets;
@@ -31,9 +31,9 @@ The =poo-flow= engineering boundary is the Doom Emacs-style module boundary:
 - module owners maintain their own =config.ss=, =types.ss=, validators, projections, and runtime handoff helpers;
 - =init.ss= stays small, like a Doom =init.el=: it selects modules and tunes exposed options, but it does not define upstream module internals.
 
-LangGraph's package split is useful because it shows which concerns should not collapse into one runtime object. In =poo-flow= those concerns should be absorbed through module ownership, not copied as a repository/package split. Persistence, SDK, CLI, deployment, checkpoint policy, human audit, routing, and prebuilt agent loops should enter the system as module-owned POO objects and projections. Scheme remains the module control plane; runtime execution, durable storage, process isolation, and deployment stay with Marlin or other backend owners.
+LangGraph's package split is useful because it shows which concerns should not collapse into one runtime object. In =agentic-ai-lab= those concerns should be absorbed through module ownership, not copied as a repository/package split. Persistence, SDK, CLI, deployment, checkpoint policy, human audit, routing, and prebuilt agent loops should enter the system as module-owned POO objects and projections. Scheme remains the module control plane; runtime execution, durable storage, process isolation, and deployment stay with Marlin or other backend owners.
 ** 10.06.32.25 Module Boundary Translation
-Translate LangGraph terms into =poo-flow= module terms before designing implementation:
+Translate LangGraph terms into =agentic-ai-lab= module terms before designing implementation:
 - =libs/langgraph= core graph :: =workflow= / =funflow= module-owned POO objects.
 - =libs/checkpoint= saver contract :: =session-durability= or =checkpoint-policy= feature under the session/workflow module.
 - =libs/prebuilt= agent helpers :: optional module profiles or cases, not root abstractions.
@@ -66,7 +66,7 @@ The important properties are:
 - =compile= creates a runnable graph and accepts =checkpointer=, =store=, =interrupt_before=, =interrupt_after=, =debug=, and =name=.
 - checkpointer plus =thread_id= is the durable execution key for pause, resume, replay, and time-travel debugging.
 
-For =poo-flow=, this confirms that the user surface should stay compact and declarative, but our surface should be module-owned and POO-native rather than Python builder-native. A =poo-flow= user enables modules and writes profile/case POO objects inside those module surfaces. Module projections then play the role that LangGraph's =compile= plays: they turn declarations into validated descriptors and runtime handoff receipts without executing the runtime.
+For =agentic-ai-lab=, this confirms that the user surface should stay compact and declarative, but our surface should be module-owned and POO-native rather than Python builder-native. A =agentic-ai-lab= user enables modules and writes profile/case POO objects inside those module surfaces. Module projections then play the role that LangGraph's =compile= plays: they turn declarations into validated descriptors and runtime handoff receipts without executing the runtime.
 ** 10.06.32.40 Runtime Injection
 LangGraph has a run-scoped =Runtime= object injected into graph nodes. It bundles:
 - =context= for static run dependencies such as user id or database handles;
@@ -78,7 +78,7 @@ LangGraph has a run-scoped =Runtime= object injected into graph nodes. It bundle
 - =server_info= for deployment metadata;
 - =control= for cooperative drain requests.
 
-This is a useful comparison point for =poo-flow=. We should keep Scheme objects inert, but the projected runtime handoff should name the same classes of facts: context, store or memory owner, stream sink, heartbeat or progress semantics, execution identity, server/deployment metadata, and cooperative control state. Those should be validated descriptors, not hidden dynamic parameters.
+This is a useful comparison point for =agentic-ai-lab=. We should keep Scheme objects inert, but the projected runtime handoff should name the same classes of facts: context, store or memory owner, stream sink, heartbeat or progress semantics, execution identity, server/deployment metadata, and cooperative control state. Those should be validated descriptors, not hidden dynamic parameters.
 ** 10.06.32.50 Checkpoint And Durable Execution
 LangGraph makes checkpointing a first-class contract. =BaseCheckpointSaver= exposes synchronous and asynchronous methods for:
 - fetching a checkpoint or checkpoint tuple;
@@ -90,7 +90,7 @@ LangGraph makes checkpointing a first-class contract. =BaseCheckpointSaver= expo
 
 The base contract says =thread_id= is the primary key. Without it the checkpointer cannot save state, resume from interrupts, or support time-travel debugging. =InMemorySaver= stores data under thread id, checkpoint namespace, checkpoint id, task id, writes, and blobs. It is explicitly debug/test-only; production use is delegated to persistent savers such as Postgres.
 
-For =poo-flow=, the matching design is not to implement a Scheme checkpoint database. The matching design is to model checkpoint intent and session identity as POO objects:
+For =agentic-ai-lab=, the matching design is not to implement a Scheme checkpoint database. The matching design is to model checkpoint intent and session identity as POO objects:
 - =session-id= or =thread-id=;
 - checkpoint namespace;
 - checkpoint policy;
@@ -109,11 +109,11 @@ The prebuilt layer adds typed human review shapes:
 - =HumanInterrupt= combines an action request, a config describing allowed human actions, and an optional description.
 - =HumanResponse= can be =accept=, =ignore=, =response=, or =edit=.
 
-This validates the current =poo-flow= distinction between =loop-governor= and =human-audit=. A governor can be an agent or multi-agent control role. A human audit is a specific human intervention node derived from governance but requiring a real human response. In POO terms, =human-audit= should inherit governance slots but add stricter gates: checkpoint required, allowed responses declared, resume policy declared, and ordinary task overrides unable to remove the gate.
+This validates the current =agentic-ai-lab= distinction between =loop-governor= and =human-audit=. A governor can be an agent or multi-agent control role. A human audit is a specific human intervention node derived from governance but requiring a real human response. In POO terms, =human-audit= should inherit governance slots but add stricter gates: checkpoint required, allowed responses declared, resume policy declared, and ordinary task overrides unable to remove the gate.
 ** 10.06.32.70 Routing And Fanout
 LangGraph's =Command= can update graph state, resume interrupts, or route to another node or graph. =Send= sends a custom state packet to a specific node and is used for fanout patterns such as map-reduce. =create_react_agent(..., version="v2")= uses =Send= to distribute tool calls across multiple tool node instances.
 
-The =poo-flow= analogue should not be raw =goto= commands in Scheme user config. It should be typed POO routing descriptors:
+The =agentic-ai-lab= analogue should not be raw =goto= commands in Scheme user config. It should be typed POO routing descriptors:
 - deterministic node transition;
 - delegated operation;
 - fanout over inputs;
@@ -131,7 +131,7 @@ LangGraph's prebuilt =create_react_agent= creates a graph that cycles between an
 - debug mode;
 - =v1= and =v2= tool execution modes.
 
-This is useful as a warning. A prebuilt agent loop is ergonomic, but it hard-codes a particular LLM/tool loop. =poo-flow= should expose prebuilt cases only as module profiles or cases, not as the root abstraction. The root abstraction remains a POO object graph with profile, workflow, sandbox, session, route, governor, and human-audit roles.
+This is useful as a warning. A prebuilt agent loop is ergonomic, but it hard-codes a particular LLM/tool loop. =agentic-ai-lab= should expose prebuilt cases only as module profiles or cases, not as the root abstraction. The root abstraction remains a POO object graph with profile, workflow, sandbox, session, route, governor, and human-audit roles.
 ** 10.06.32.90 CLI And Deployment Surface
 LangGraph CLI uses a =langgraph.json= file:
 #+begin_src json
@@ -154,8 +154,8 @@ The CLI owns:
 - =langgraph build= for Docker image build;
 - =langgraph dockerfile= for generated deployment artifacts.
 
-For =poo-flow= this reinforces that user project config and runtime/deployment config should remain separate. =init.ss= should stay clean and POO-native. Backend/runtime descriptors can be projected into Marlin-owned config or future deployment artifacts without putting Docker/server concerns into the Scheme user interface.
-** 10.06.32.100 POO Flow Design Takeaways
+For =agentic-ai-lab= this reinforces that user project config and runtime/deployment config should remain separate. =init.ss= should stay clean and POO-native. Backend/runtime descriptors can be projected into Marlin-owned config or future deployment artifacts without putting Docker/server concerns into the Scheme user interface.
+** 10.06.32.100 Agentic AI Lab Design Takeaways
 LangGraph is useful precisely where it exposes clean engineering boundaries:
 - Builder declarations are inert until compiled.
 - Runtime dependencies are injected as a structured runtime object.
@@ -164,7 +164,7 @@ LangGraph is useful precisely where it exposes clean engineering boundaries:
 - Agent loops can be prebuilt, but they compile to ordinary graph nodes and edges.
 - CLI/deployment is a separate package layer.
 
-The =poo-flow= translation should be:
+The =agentic-ai-lab= translation should be:
 - module-owned POO objects express strategy, policy fragments, workflow roles, session identity, route intent, and human gates.
 - Doom Emacs-style module selection remains the public engineering boundary; package or backend splits are implementation evidence, not the user-facing architecture.
 - C4 determines deterministic composition order, but validators decide whether the final object is legal.

@@ -7,7 +7,7 @@
 
 * 10.06.47 Current decision
 
-This is the executable advancement plan for the current POO Flow, Lambda Aitia
+This is the executable advancement plan for the current Agentic AI Lab, Lambda Aitia
 and Lambda Episteme checkouts.  It replaces the former phase sequence that
 treated Session policy syntax, runtime projection syntax and SDLC ownership as
 future work.
@@ -40,7 +40,7 @@ landed or released baseline.
    import closure projection and =std/make= owns compilation.
 6. =yuanxu-load-modules= owns runtime module-source discovery. It does not
    execute inside =build.ss=.
-7. POO Flow owns domain-neutral infrastructure. Lambda Aitia owns
+7. Agentic AI Lab owns domain-neutral infrastructure. Lambda Aitia owns
    Software/SDLC, NASA, GitOps, ADR and causal assurance. Lambda Episteme owns
    non-SDLC vertical knowledge such as Healthcare and ontology modules.
 8. Generated =source.lock.ss= files are products. The reusable implementation
@@ -55,7 +55,7 @@ landed or released baseline.
 
 | Area | Current state | Remaining closure |
 |------+---------------+-------------------|
-| Profile and Scenario expression | Direct =poo-flow.scenario-case.v1= values, cached ExecutionPlan and 1,000/5,000 Profile receipts exist | finish directory discovery and user-facing config roles |
+| Profile and Scenario expression | Direct =agentic-ai-lab.scenario-case.v1= values, cached ExecutionPlan and 1,000/5,000 Profile receipts exist | finish directory discovery and user-facing config roles |
 | Session policy generation | =modules/session/policy-syntax.ss= exists | verify family coverage and reduce remaining large owners |
 | Runtime projection generation | =src/utilities/runtime-receipt-syntax.ss= exists | separate receipt/request/envelope/manifest/snapshot owners |
 | Loop intent | =runtime-intent.ss= exists but remains a large mixed owner | make =runtime.ss= a small orchestrator |
@@ -89,7 +89,7 @@ Goal: stop unrelated owners from accumulating in one unverifiable change.
 
 Deliverables:
 
-- classify every dirty path by POO Flow, Aitia or Episteme ownership;
+- classify every dirty path by Agentic AI Lab, Aitia or Episteme ownership;
 - keep Standards, Sources Lock, User Interface, Observability and Governance as
   bounded parent slices;
 - validate and commit each child repository before changing its parent gitlink;
@@ -269,7 +269,7 @@ authorize a release.
 ** 10.06.47.82 Lambda Episteme
 
 Episteme owns non-SDLC knowledge verticals, including Healthcare/FHIR and
-ontology Providers. Its generated =source.lock.ss= values consume the POO Flow
+ontology Providers. Its generated =source.lock.ss= values consume the Agentic AI Lab
 Feature and remain contributor-owned products.
 
 ** 10.06.47.83 Integration

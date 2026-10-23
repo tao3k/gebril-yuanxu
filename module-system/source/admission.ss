@@ -361,7 +361,7 @@
                 (when (yuanxu-module-top-form-references-role?
                        datums 'import module-name
                        (symbol->string forbidden-role))
-                  (error "POO-FLOW-MODULE-E007 reversed module role dependency"
+                  (error "YUANXU-MODULE-E007 reversed module role dependency"
                          module-name source-role forbidden-role)))
               (cdr layer))))))
      layers)))
@@ -388,7 +388,7 @@
                     (yuanxu-module-authoring-admit-datums
                       interface (if (eq? role 'func) 'funs role) (read-datums path))))
               (unless (yuanxu-module-authoring-admission-accepted? admission)
-                (error "POO-FLOW-MODULE-E009 role violates Interface authoring Contract"
+                (error "YUANXU-MODULE-E009 role violates Interface authoring Contract"
                        module-name role path
                        (car (yuanxu-module-authoring-admission-diagnostics admission))))))
           (filter
@@ -401,7 +401,7 @@
   (unless (eq? (module-source-type module-root) 'directory)
     (error "module source must be a directory" module-name module-root))
   (when (file-exists? (path-expand "init.ss" module-root))
-    (error "POO-FLOW-MODULE-E005 init.ss belongs to the selection root" module-name))
+    (error "YUANXU-MODULE-E005 init.ss belongs to the selection root" module-name))
   ;; Read each selected role once. The caller may record these exact bytes in
   ;; its generation; all checks consume the same inert source snapshot.
   (let ((texts (make-hash-table)) (parsed (make-hash-table)))
@@ -436,7 +436,7 @@
           (let (findings (yuanxu-module-owner-import-datum-observations
                            (string->symbol path) datum (.ref policy 'source-policy)))
             (when (pair? findings)
-              (error "POO-FLOW-MODULE-E008 module owner imports aggregate facade"
+              (error "YUANXU-MODULE-E008 module owner imports aggregate facade"
                      module-name path (car findings)))))
         (read-datums path))) texts)
     (yuanxu-module-role-authoring-validate! policy module-name module-root read-role read-datums))

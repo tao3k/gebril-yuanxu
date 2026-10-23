@@ -41,7 +41,7 @@ loading, capability discovery or init-source resolution.
 
 * Product source organization
 
-POO Flow's former src tree is removed. Product workflow/runtime policy, authoring
+Agentic AI Lab's former src tree is removed. Product workflow/runtime policy, authoring
 conventions, UI, Scenario planning and qualification now live in named modules.
 Shared Graph primitives, JSON Schema Contracts, type-fact projection and pure
 utilities moved into Core with their actual dependencies. No arbitrary all-src
@@ -58,7 +58,7 @@ module initialization. The existing load-modules collection API is unchanged.
 * Validation and remaining qualification
 
 The Core-only source environment contains Core and the immutable gerbil-poo
-099b381 dependency, with no POO Flow namespace. All 17 relocated Feature/DomainCase/
+099b381 dependency, with no Agentic AI Lab namespace. All 17 relocated Feature/DomainCase/
 functional/overlay suites pass there. A separate fresh native build of the full
 Core build graph also completes. Installed product .ssi files were not used as
 an import fallback; incompatible older native artifacts were excluded.

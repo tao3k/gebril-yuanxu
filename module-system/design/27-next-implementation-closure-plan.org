@@ -30,13 +30,13 @@ baseline:
 - =modules/funflow/config.ss= lowers compact
   =(use-module funflow :config (pipeline ...))= declarations into workflow
   check maps.
-- =pooFlowUserConfigPresentation= exposes workflow CI/CD pipeline count,
+- =agenticAiLabUserConfigPresentation= exposes workflow CI/CD pipeline count,
   readiness rows, receipt rows, runtime command manifest maps, compact manifest
   summaries, sandbox runtime summaries, sandbox handoff summaries, unresolved
   profile refs, and presentation trace stages.
-- =pooFlowUserProfilePresentation= forwards the workflow CI/CD projection
+- =agenticAiLabUserProfilePresentation= forwards the workflow CI/CD projection
   surface.  The Testing Policy separately admits profile declarations through
-  =+poo-flow-testing-interface+=.
+  =+agentic-ai-lab-testing-interface+=.
 - =src/user-interface/declaration-case.ss= treats the expanded workflow CI/CD
   trace stages as part of the maintained downstream declaration case.
 - Focused tests now cover Funflow pipeline lowering, workflow check maps,
@@ -164,7 +164,7 @@ Exit criteria:
 
 Status 2026-06-20:
 - Implemented =workflow-cicd-runtime-command-manifest-agreement= as a report-only agreement receipt.
-- =pooFlowUserConfigPresentation= and =pooFlowUserProfilePresentation= expose
+- =agenticAiLabUserConfigPresentation= and =agenticAiLabUserProfilePresentation= expose
   agreement validity and diagnostics; the Testing Policy owns declaration
   admission rather than reproducing presentation data.
 - The presentation trace includes =workflow-cicd-runtime-command-manifest-agreement= between compact summaries and receipts.
@@ -208,8 +208,8 @@ Exit criteria:
 The current code slice lands M4: a report-only runtime handoff ABI for Marlin.
 
 Status 2026-06-20:
-- Implemented =poo-flow-cicd-check-map->marlin-runtime-handoff-abi=.
-- Implemented =poo-flow-cicd-runtime-command-manifest-map->marlin-runtime-handoff-abi=.
+- Implemented =agentic-ai-lab-cicd-check-map->marlin-runtime-handoff-abi=.
+- Implemented =agentic-ai-lab-cicd-runtime-command-manifest-map->marlin-runtime-handoff-abi=.
 - The ABI uses =+yuanxu-cicd-marlin-runtime-handoff-abi-schema+= and sets =runtime-owner= to =marlin-agent-core=.
 - Entries whitelist the Marlin-facing fields from runtime command manifests and preserve =handoff-required #t=, =runtime-executed #f=, =runtime-parses-scheme-source #f=, and =scheme-manufactures-runtime-handlers #f=.
 - =t/workflow-cicd-check-map-test.ss= now verifies the ABI map, dependency graph, entry payloads, argv, request data, policy refs, runtime owner, and non-execution flags.
@@ -249,7 +249,7 @@ Current M4 tests:
 *** 10.06.27.45 M5: User-Interface Marlin Handoff Projection
 Scope:
 - Reuse the workflow-owned Marlin handoff ABI instead of creating another runtime contract.
-- Project ABI rows from =pooFlowUserConfigPresentation= so agents can inspect handoff payloads from normal user config/profile surfaces.
+- Project ABI rows from =agenticAiLabUserConfigPresentation= so agents can inspect handoff payloads from normal user config/profile surfaces.
 - Keep compact ABI summaries separate from full payload rows.
 - Extend profile and doctor presentations by forwarding the same config-level projection.
 Exit criteria:
@@ -268,7 +268,7 @@ Scope:
 - Keep =modules/workflow/flows.ss= as report/catalog owner; it records the gate but does not import or execute user custom config.
 - Use tests to prove a real downstream Funflow CI/CD config reaches Marlin ABI payload data through the user-interface presentation.
 Exit criteria:
-- =poo-flow-funflow-tutorial-alignment-report= exposes a stage-23 user-interface Marlin handoff gate.
+- =agentic-ai-lab-funflow-tutorial-alignment-report= exposes a stage-23 user-interface Marlin handoff gate.
 - The CI receipt manifest includes the user-interface handoff gate and proof command.
 - The focused alignment test asserts both report metadata and real user-config ABI projection.
 - Runtime execution remains =#f= and no provider-specific CI/CD adapter is introduced.
@@ -297,7 +297,7 @@ Scope:
   admission rather than a second presentation.
 - Bind the tutorial alignment stage-23 gate to the bundle field and expected bundle kind.
 Exit criteria:
-- =pooFlowUserConfigPresentation= exposes the bundle without realizing descriptors or executing runtime adapters.
+- =agenticAiLabUserConfigPresentation= exposes the bundle without realizing descriptors or executing runtime adapters.
 - Bundle access does not recurse through POO slot names; local bundle values use a distinct =...-row= binding before assignment to the public slot.
 - The presentation trace is strictly computed before object slot exposure so agents can inspect it without triggering lazy POO recursion.
 - =t/user-interface-cicd-test.ss= proves downstream Funflow config reaches the Marlin handoff bundle.

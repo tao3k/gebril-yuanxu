@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.18 Concurrent Registry and Session Retirement
 :PROPERTIES:
-:ID: poo-flow-context-concurrent-registry-retirement
+:ID: agentic-ai-lab-context-concurrent-registry-retirement
 :STATUS: local-concurrency-retirement-joint-pass-external-integration-open
 :END:
 

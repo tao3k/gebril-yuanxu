@@ -33,7 +33,7 @@ def main():
     if log_path.exists() or receipt_path.exists():
         parser.error('refusing to overwrite an existing receipt; choose a fresh label')
 
-    root = Path(tempfile.mkdtemp(prefix='pooflow-combined-', dir='/private/tmp'))
+    root = Path(tempfile.mkdtemp(prefix='agenticailab-combined-', dir='/private/tmp'))
     source_hashes = {}
     prefix = f"gerbil-poo-{lock['pinned_POO_revision']}/"
     with tarfile.open(args.archive) as archive:

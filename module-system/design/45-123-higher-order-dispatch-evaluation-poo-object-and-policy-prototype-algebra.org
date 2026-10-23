@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Higher-Order Dispatch Evaluation POO Object and Policy-Prototype Algebra
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -229,7 +229,7 @@ The semantics-proven upstream families are:
 - missing-method condition: =NoApplicableMethod=;
 - precedence: =compute-precedence-list!= using upstream C4 behavior.
 
-No POO Flow adapter is admitted merely because the upstream operation exists.
+No Agentic AI Lab adapter is admitted merely because the upstream operation exists.
 
 * Immutability boundary
 
@@ -253,7 +253,7 @@ evaluation in place.
 * Lazy-slot and cache boundary
 
 Upstream object slots may compute lazily and memoize within one object
-instance.  POO Flow admits that behavior only when:
+instance.  Agentic AI Lab admits that behavior only when:
 
 - the instance is immutable at the semantic layer;
 - required inputs are explicit;
@@ -262,7 +262,7 @@ instance.  POO Flow admits that behavior only when:
 - cached outcomes preserve explanation and redaction boundaries.
 
 Native slot memoization is local to one =DispatchEvaluation= instance.
-Cross-evaluation caching is a separate POO Flow semantic cache governed by the
+Cross-evaluation caching is a separate Agentic AI Lab semantic cache governed by the
 cache identity defined in RFC 45-122.
 
 A cached value cannot erase:

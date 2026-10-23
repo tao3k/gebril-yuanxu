@@ -5,14 +5,14 @@
 * 10.06.17 POO Best Practices
 ** 10.06.17.10 Purpose
 This document records the practical engineering rules for writing POO-style
-module code in =poo-flow=.
+module code in =agentic-ai-lab=.
 
 Detailed programming rules derived from =.data/gerbil-poo= live in
 [[file:29-gerbil-poo-programming-guidelines.org][29 Gerbil POO Programming Guidelines]].
 This file is the module-system entrypoint; =29= is the deeper language-style
 contract.
 
-The goal is to keep =poo-flow= native to Gerbil POO while preserving a simple
+The goal is to keep =agentic-ai-lab= native to Gerbil POO while preserving a simple
 declarative user interface.
 
 ** 10.06.17.20 Reference Signals
@@ -24,11 +24,11 @@ The useful external patterns are:
 - grafonnix: constructors return POP objects, extension stays on objects, and
   final values project into plain data only at the boundary.
 
-The =poo-flow= interpretation is POO-native: user files extend prototype
+The =agentic-ai-lab= interpretation is POO-native: user files extend prototype
 objects directly rather than calling a chain API or writing row/alist DSLs.
 
 ** 10.06.17.30 Local Owner Rules
-The current =poo-flow= rule is:
+The current =agentic-ai-lab= rule is:
 
 #+begin_src text
 extension graph primitives live in modules/extension.ss.
@@ -58,7 +58,7 @@ Profile interface modules own public POO prototypes and helpers. They are the
 surface users and agents should import through =init-syntax= or the facade.
 
 ** 10.06.17.35 Harness API Rule
-=poo-flow= must not copy the Gerbil harness proof vocabulary.
+=agentic-ai-lab= must not copy the Gerbil harness proof vocabulary.
 
 The upstream dependency =gerbil-scheme-language-project-harness= owns
 structured POO evidence APIs such as:
@@ -73,7 +73,7 @@ validation. =load!= follows the same rule for object entrypoints.
 
 Validation receipts must have a stable user-facing projection. Do not
 reimplement local variants of =type-proof=, =relation-proof=, proof trees, or
-obligation engines in =poo-flow=. If a stronger formal validation surface is
+obligation engines in =agentic-ai-lab=. If a stronger formal validation surface is
 needed, extend the harness dependency first and then consume the exported API
 here.
 
@@ -91,8 +91,8 @@ Use Gerbil POO supers for inheritance:
 #+begin_src scheme
 (yuanxu-module-object
  'objects.nono-sandbox.profile
- (list poo-flow-sandbox-core-profile-object
-       poo-flow-nono-sandbox-object)
+ (list agentic-ai-lab-sandbox-core-profile-object
+       agentic-ai-lab-nono-sandbox-object)
  fields
  metadata)
 #+end_src

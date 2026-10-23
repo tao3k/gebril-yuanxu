@@ -47,8 +47,8 @@ Run these bounded documentation probes from the repository root:
 #+begin_src sh
 nix-instantiate --eval --strict --json docs/10-19-design/10.06-poo-module-system/164-module-interface-comparison/probes/receiver.nix
 # With the existing isolated pinned-source package environment:
-GERBIL_PATH=/tmp/pooflow-core-prototype-specializer/home \
-GERBIL_LOADPATH=/tmp/pooflow-core-prototype-specializer \
+GERBIL_PATH=/tmp/agenticailab-core-prototype-specializer/home \
+GERBIL_LOADPATH=/tmp/agenticailab-core-prototype-specializer \
 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-module-interface-comparison/probes/receiver.ss
 #+end_src
 

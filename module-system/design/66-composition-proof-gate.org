@@ -47,7 +47,7 @@ $
 * Why This Exists
 
 LangChain and LangGraph scenarios are not runtime implementations in this
-project. They are composition cases that prove POO Flow can express the same
+project. They are composition cases that prove Agentic AI Lab can express the same
 control-plane intent with reusable profiles, scoped overrides, graph policies,
 and formal acceptance gates.
 
@@ -86,7 +86,7 @@ runtime state, does not execute a graph, and does not concatenate Lean source
 strings.
 
 #+begin_src scheme
-(poo-flow-composition-contract->proof-facts
+(agentic-ai-lab-composition-contract->proof-facts
  'generated-langgraph-composition-receipt
  #t #t #t #t #t #f)
 #+end_src

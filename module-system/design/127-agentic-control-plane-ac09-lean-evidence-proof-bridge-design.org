@@ -44,7 +44,7 @@ The first complete proof case is an =AuthorizedEffectToken= bound to:
 | Lean package | Typed decode, theorem ownership, and proof-receipt construction |
 | Downstream adapters | Adapt the public C ABI into Rust, TypeScript, or other runtime languages |
 
-The =poo-flow= layer does not implement a second Rust or TypeScript runtime.
+The =agentic-ai-lab= layer does not implement a second Rust or TypeScript runtime.
 Downstream runtimes remain downstream-owned. Python remains a valid production
 runtime and the complete retained validation runtime for this repository.
 
@@ -100,9 +100,9 @@ are invalid.
 
 ** Digest identity derivation
 Proof identity v1 uses =sha256= with two distinct, manifest-owned domains:
-- =poo-flow.proof-case-vector.v1= hashes the domain, one zero separator byte,
+- =agentic-ai-lab.proof-case-vector.v1= hashes the domain, one zero separator byte,
   and the exact canonical 424-byte native vector;
-- =poo-flow.authorized-effect-theorem-set.v1= hashes the domain, one zero
+- =agentic-ai-lab.authorized-effect-theorem-set.v1= hashes the domain, one zero
   separator byte, and the ordered newline-separated theorem names.
 
 The digest algorithm, domains, and ordered theorem set are part of the
@@ -125,14 +125,14 @@ through native SHA-256 and cross-runtime differential gates.
 The production path is caller-owned and bulk-oriented:
 
 #+begin_src c
-poo_flow_status
-poo_flow_proof_case_measure(
-    poo_flow_proof_case_handle handle,
-    poo_flow_proof_case_layout *out_layout);
+agentic_ai_lab_status
+agentic_ai_lab_proof_case_measure(
+    agentic_ai_lab_proof_case_handle handle,
+    agentic_ai_lab_proof_case_layout *out_layout);
 
-poo_flow_status
-poo_flow_proof_case_write(
-    poo_flow_proof_case_handle handle,
+agentic_ai_lab_status
+agentic_ai_lab_proof_case_write(
+    agentic_ai_lab_proof_case_handle handle,
     void *buffer,
     size_t capacity,
     size_t *written);

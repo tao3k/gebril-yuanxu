@@ -21,8 +21,8 @@ Neither entry carries a second normative body.
 | Optional extension descriptors, dependencies and projections | Core Feature System |
 | Contracts, native POO composition, scope and generic protocols | Corresponding Core mechanism and its design |
 | Configuration-language UX and ecosystem comparison methodology | Core Config Languages design |
-| Actual Funflow, JsonSchema, Kubernetes and other provider wiring | POO Flow or contributing package |
-| Maintained application Profiles, Scenarios and deployment cases | POO Flow or contributing package |
+| Actual Funflow, JsonSchema, Kubernetes and other provider wiring | Agentic AI Lab or contributing package |
+| Maintained application Profiles, Scenarios and deployment cases | Agentic AI Lab or contributing package |
 | External KCL, HiveBus and Omnibus reference repositories | Pinned product research submodules |
 
 Module, Profile and Scenario are distinct responsibilities. Relocating design
@@ -46,7 +46,7 @@ failed results are not rewritten to imply a new run. A runner containing a
 historical checkout path or dependency layout must be qualified against its
 original receipt before replay. Merely moving a probe is not a passing test.
 
-The collection includes earlier POO Flow runtime architecture and consumer
+The collection includes earlier Agentic AI Lab runtime architecture and consumer
 integration discussions. Their historical presence is not an instruction for
 Core to import those adapters or own application execution policy. Existing
 interfaces, proposed interfaces and experimental fixtures retain their original
@@ -69,7 +69,7 @@ No directory Loader adapter is connected by this migration.
 
 * Repository-local module publication
 
-Core, POO Flow and each contributing repository own their module directory and
+Core, Agentic AI Lab and each contributing repository own their module directory and
 init declaration. The shared Module System specifies one publication and
 selection protocol: a repository exports its collection through its own
 interface; =yuanxu-load-modules= consumes that declared collection. No parent

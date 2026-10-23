@@ -16,7 +16,7 @@ publication. Resource authors supply ordinary configuration objects and call
 native =.admit=. No Loader, provider acquisition on demand, RPC, plan or apply
 is introduced here. This is configuration admission, not a deployable plan.
 
-The executable consumer is POO Flow's
+The executable consumer is Agentic AI Lab's
 =t/opentofu-configuration-families-test.ss=. It requires the actual AWS 5.100.0,
 awscc 1.77.0 and Null 3.2.4 artifacts from =family-schemas.nix=; no synthetic
 schema or fallback artifact replaces them.

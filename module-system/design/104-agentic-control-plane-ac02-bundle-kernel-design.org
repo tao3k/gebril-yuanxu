@@ -52,7 +52,7 @@ A kernel state is a POO object with these slots:
 
 | Slot | Meaning |
 |------+---------|
-| =kind= | =poo-flow.organization-bundle-kernel-state= |
+| =kind= | =agentic-ai-lab.organization-bundle-kernel-state= |
 | =schema= | versioned kernel state schema |
 | =phase= | =candidate=, =validated=, or =advanced= |
 | =bundle= | immutable Bundle value associated with this state |
@@ -70,7 +70,7 @@ transition.  An earlier state remains valid for replay and comparison.
 
 ** Open
 
-=poo-flow-organization-bundle-kernel-open= accepts a Bundle and optional digest
+=agentic-ai-lab-organization-bundle-kernel-open= accepts a Bundle and optional digest
 provider selection.  It canonicalizes the Bundle and computes its identity.  It
 returns a =candidate= state and an accepted =kernel-opened= receipt.
 
@@ -79,7 +79,7 @@ returns =kernel-canonicalization-failed= without constructing a partial state.
 
 ** Validate
 
-=poo-flow-organization-bundle-kernel-validate= accepts a candidate or already
+=agentic-ai-lab-organization-bundle-kernel-validate= accepts a candidate or already
 validated state.  It invokes the AC-01 validator.
 
 An accepted validation returns a new =validated= state at the same epoch.  A
@@ -91,7 +91,7 @@ Validating an already validated state is deterministic and idempotent.
 
 ** Compare and advance
 
-=poo-flow-organization-bundle-kernel-advance= accepts:
+=agentic-ai-lab-organization-bundle-kernel-advance= accepts:
 
 - a validated or advanced current state;
 - the caller's expected current identity;
@@ -142,7 +142,7 @@ A kernel receipt is a POO object with:
 
 | Slot | Meaning |
 |------+---------|
-| =kind= | =poo-flow.organization-bundle-kernel-receipt= |
+| =kind= | =agentic-ai-lab.organization-bundle-kernel-receipt= |
 | =schema= | versioned receipt schema |
 | =operation= | =open=, =validate=, or =advance= |
 | =accepted?= | operation acceptance |

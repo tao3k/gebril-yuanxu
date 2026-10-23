@@ -17,13 +17,13 @@ Runtime execution remains outside this project.
 The executable entrypoint is:
 
 #+begin_src scheme
-(poo-flow-proof-gate-receipts->bundle receipts)
+(agentic-ai-lab-proof-gate-receipts->bundle receipts)
 #+end_src
 
 The receipt shape is:
 
 #+begin_src scheme
-((schema . poo-flow.user-interface.langgraph.proof-receipts)
+((schema . agentic-ai-lab.user-interface.langgraph.proof-receipts)
  (composition . ...)
  (scenario . ...)
  (handoff . ...))
@@ -31,13 +31,13 @@ The receipt shape is:
 
 Each sub-receipt is converted through the existing proof facts layer:
 
-- =poo-flow-composition-receipt->proof-facts=
-- =poo-flow-scenario-gap-receipt->proof-facts=
-- =poo-flow-control-plane-handoff-receipt->proof-facts=
+- =agentic-ai-lab-composition-receipt->proof-facts=
+- =agentic-ai-lab-scenario-gap-receipt->proof-facts=
+- =agentic-ai-lab-control-plane-handoff-receipt->proof-facts=
 
 * LangGraph-Like UI Gate
 
-=poo-flow-langgraph-user-interface-proof-gate-bundle= is the first
+=agentic-ai-lab-langgraph-user-interface-proof-gate-bundle= is the first
 receipt-driven gate for a LangGraph-like scenario. It covers:
 
 - accepted profile composition;
@@ -55,8 +55,8 @@ The rejection matrix includes:
 * FFI Contract
 
 Receipts do not cross the FFI boundary directly. They are normalized into proof
-facts, wrapped by =poo-flow-proof-facts->ffi-wire=, and then grouped by
-=poo-flow-proof-gate-bundle=.
+facts, wrapped by =agentic-ai-lab-proof-facts->ffi-wire=, and then grouped by
+=agentic-ai-lab-proof-gate-bundle=.
 
 This keeps the bridge contract stable:
 
@@ -68,9 +68,9 @@ $
 
 * P0 External Blocker
 
-The ASP lifecycle audit issue is outside POO Flow. The root rollout exists, but
+The ASP lifecycle audit issue is outside Agentic AI Lab. The root rollout exists, but
 =asp agent session lifecycle audit= reports =scannedRolloutCount = 0=. That
 means ASP lifecycle is not resolving the root rollout from =CODEX_THREAD_ID=.
 
-POO Flow should not work around this by reading raw source. The correct fix
+Agentic AI Lab should not work around this by reading raw source. The correct fix
 belongs in =agent-semantic-protocols= lifecycle audit.

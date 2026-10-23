@@ -14,7 +14,7 @@ authorization-subject semantics.  This RFC owns only the missing source-level
 assurance boundary: reconstructing and verifying their external Cedar/Lean
 dependency closure without losing Lean module context.
 
-It does not weaken either Cedar theorem, copy Cedar declarations into POO Flow,
+It does not weaken either Cedar theorem, copy Cedar declarations into Agentic AI Lab,
 or treat an installed =.olean= as source authority.
 
 * 2. Current receipt and corrected diagnosis
@@ -157,7 +157,7 @@ does not name adapter files such as =script.py=.
 | Cedar decision engine | backend =cedar=, language =rust= | crate path, executable path |
 | Lean assurance engine | backend =axle=, language =lean= | client process and transport |
 | Optional orchestration bridge | language =python= | module filename and script path |
-| POO Flow user surface | POO object plus functional combinators | proof packaging layout |
+| Agentic AI Lab user surface | POO object plus functional combinators | proof packaging layout |
 
 Python may implement an internal ABI adapter, but Python source paths are not
 part of the declarative composition contract.  The same rule applies to Rust
@@ -253,7 +253,7 @@ generation.
 
 - Treating a longer timeout as a semantic repair.
 - Rebuilding Cedar through request-time AXLE multi-document merge.
-- Copying Cedar Lean declarations into POO Flow.
+- Copying Cedar Lean declarations into Agentic AI Lab.
 - Trusting compiled dependency artifacts without source identities.
 - Publishing Python, Rust, or Lean filenames as user configuration.
 - Adding more ad hoc namespace/string rewriting to declaration slices.

@@ -31,7 +31,7 @@ adds Contracts, documentation and export control. The manual's inputs/local/outp
 layout is a convention, not a built-in module taxonomy.
 
 This motivates our decisions below; it does not establish equivalent semantics
-or implementation completeness in POO Flow Core.
+or implementation completeness in Agentic AI Lab Core.
 
 * Ecosystem evidence: actual Omnibus NCL
 

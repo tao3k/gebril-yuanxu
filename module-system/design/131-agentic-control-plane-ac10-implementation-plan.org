@@ -41,7 +41,7 @@ interpreted large-=.o= slot composition observed during qualification.
 The focused Scheme owner is a Bazel-declared Gerbil test action.  ASP PR #3 and
 Gerbil =std/make= own the native build graph; =gerbil-bazel= owns sandboxing,
 adaptive resource admission, process-tree observation, termination, and the
-=gerbil-bazel.resource-guard-receipt.v1= evidence.  POO Flow does not launch a
+=gerbil-bazel.resource-guard-receipt.v1= evidence.  Agentic AI Lab does not launch a
 second =gxi=, sample =ps= or =/proc=, or define another build guard receipt.
 
 * S2 — Claim and TCB verifier

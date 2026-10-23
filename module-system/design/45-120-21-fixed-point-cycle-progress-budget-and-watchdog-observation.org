@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Fixed-Point Cycle, Progress, Budget, and Watchdog Observation
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -22,12 +22,12 @@ Waiting for stack overflow, wall-clock timeout, or process-memory exhaustion
 loses the first causal point at which the evaluator knew that a dependency path
 had closed.
 
-POO Flow needs immediate structural evidence and domain-specific progress
+Agentic AI Lab needs immediate structural evidence and domain-specific progress
 proofs without reimplementing the upstream =gerbil-poo= fixed-point algebra.
 
 * Decision
 
-This RFC stabilizes =poo-flow.lean-declaration-closure.v1= only.
+This RFC stabilizes =agentic-ai-lab.lean-declaration-closure.v1= only.
 Runtime-watchdog binding, memory attribution, phase timing, and bounded proof-root
 selection are backward-compatible v1 refinements.  They do not authorize a v2
 schema, a second closure identity, or a competing proof-transport path.
@@ -46,7 +46,7 @@ A cycle observation is a structural fact.  It is not itself a failure.
 * Oscillation is a structural v1 progress claim
 
 An =oscillating= classification MUST NOT be justified only by the domain
-=semanticOscillation= hook.  POO Flow first requires a canonical fingerprint
+=semanticOscillation= hook.  Agentic AI Lab first requires a canonical fingerprint
 history that returns to the same fingerprint after at least one intervening
 different fingerprint.  The domain hook then confirms the industry- or
 workflow-specific meaning of that structural return.
@@ -69,7 +69,7 @@ stateDiagram-v2
 #+end_src
 
 The Lean owner is
-=PooFlowProof.Enterprise.SourceBoundProgressEvidenceClosure=.  Its
+=AgenticAILabProof.Enterprise.SourceBoundProgressEvidenceClosure=.  Its
 =fingerprintHistoryHasCanonicalOscillation= predicate owns the structural
 witness; =semanticOscillation= remains an additional contract constraint.
 
@@ -78,7 +78,7 @@ The two AXLE + Lean declaration-closure v1 roots are
 =oscillatingClassificationCarriesCanonicalHistory=.  Their v1 receipts close
 3/3 and 44/19 preflight/exact declarations respectively, with
 =verification.okay=true= and no failed declarations.  They use the top-level
-=PooFlowProof.Enterprise= owner path; =PooFlowProof.PooC4.Enterprise= is not an
+=AgenticAILabProof.Enterprise= owner path; =AgenticAILabProof.PooC4.Enterprise= is not an
 authorized alias.
 
 * Deterministic budget closure
@@ -89,7 +89,7 @@ runtime-watchdog separation, and Lean proof map are specified independently in
 
 This split is normative: progress, deterministic budget, runtime watchdog, and
 recovery authority remain separate evidence owners.  The refinement remains on
-=poo-flow.lean-declaration-closure.v1=.
+=agentic-ai-lab.lean-declaration-closure.v1=.
 
 * Progress classification coherence
 
@@ -173,7 +173,7 @@ flowchart TD
 The upstream =gerbil-poo= package owns the POO object, dispatch, type, Contract,
 debug, and fixed-point foundations.
 
-POO Flow owns evaluation evidence around that algebra:
+Agentic AI Lab owns evaluation evidence around that algebra:
 
 - dependency discovery;
 - canonical dependency edge identity;
@@ -184,7 +184,7 @@ POO Flow owns evaluation evidence around that algebra:
 - cache generation and invalidation evidence;
 - structured diagnostics and recovery options.
 
-POO Flow MUST NOT create a competing generic fixed-point implementation.
+Agentic AI Lab MUST NOT create a competing generic fixed-point implementation.
 
 * First cycle evidence
 
@@ -221,7 +221,7 @@ RFC 149-07 makes the previously informal terms “canonical SCC identity,”
 
 A registry digest and generation alone do not establish these properties.
 Lean countermodels in
-=PooFlowProof.Enterprise.SourceBoundCycleObservationClosure= preserve the
+=AgenticAILabProof.Enterprise.SourceBoundCycleObservationClosure= preserve the
 same-name revision and ghost-cycle failures.  This refinement adds evidence
 semantics only; it does not introduce a second fixed-point runtime.
 
@@ -278,7 +278,7 @@ contract evidence or an exhausted deterministic structural budget.
 Lean owners:
 
 #+begin_src text
-PooFlowProof.Enterprise.SourceBoundProgressEvidenceClosure
+AgenticAILabProof.Enterprise.SourceBoundProgressEvidenceClosure
 progressCoordinatesCannotBindCompleteCycleSubject
 identicalProgressPayloadCanCarryContradictoryClassifications
 completeSourceBoundProgressEvidenceCloses
@@ -318,7 +318,7 @@ a fixed point.  It also cannot mint or consume retry authority.
 Lean owners:
 
 #+begin_src text
-PooFlowProof.Enterprise.SourceBoundRuntimeWatchdogClosure
+AgenticAILabProof.Enterprise.SourceBoundRuntimeWatchdogClosure
 watchdogObservationIdDoesNotProveObservationExists
 matchingWatchdogIdDoesNotProveCoordinateBinding
 scalarTreeRssExceedanceDoesNotProveMemoryAttribution
@@ -427,7 +427,7 @@ available response.  The coordinator validates and executes an admitted
 - [X] Require visited membership, linked path closure, and an explicit closing
   edge in the Lean refinement.
 - [X] Closure-evaluation and recovery-action budgets remain distinct.
-- [X] POO Flow observes rather than replaces upstream fixed-point algebra.
+- [X] Agentic AI Lab observes rather than replaces upstream fixed-point algebra.
 - [X] Recovery remains policy-selected, capability-bounded, and
   coordinator-executed.
 - [ ] Concrete evaluator and progress-evidence source owners have been resolved

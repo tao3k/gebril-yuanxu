@@ -9,7 +9,7 @@
 
 Proof-backed declaration-closure v1 refinement.
 
-This document stabilizes =poo-flow.lean-declaration-closure.v1=.  It does not
+This document stabilizes =agentic-ai-lab.lean-declaration-closure.v1=.  It does not
 authorize a v2 schema, a second closure identity, or a competing proof path.
 
 * Context
@@ -144,7 +144,7 @@ a v2 schema or replace the history owner defined here.
 
 Owner:
 
-- =PooFlowProof.Enterprise.SourceBoundFingerprintHistoryClosure=
+- =AgenticAILabProof.Enterprise.SourceBoundFingerprintHistoryClosure=
 
 Core declarations:
 
@@ -185,8 +185,8 @@ Concrete and composition proofs:
 | =sourceBoundProgressHistoriesCloseExactEvidence= | 88 | 46 | 20195 ms | 16800 ms | =verification.okay=true= |
 | =independentlyClosedProgressAndFingerprintHistoryOwnersCompose= | 1 | 1 | 599 ms | 404 ms | =verification.okay=true= |
 
-All roots use =poo-flow.axle-closure-preflight.v1= and
-=poo-flow.axle-exact-declaration-closure.v1=, with no failed declarations or
+All roots use =agentic-ai-lab.axle-closure-preflight.v1= and
+=agentic-ai-lab.axle-exact-declaration-closure.v1=, with no failed declarations or
 worker timeout.  AXLE's =Mathlib.Tactic= header recommendation remains
 tool-level guidance.
 

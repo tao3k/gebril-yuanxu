@@ -6,7 +6,7 @@
 :PROPERTIES:
 :JD_ID:     10.06.89
 :STATUS:    active
-:OWNER:     poo-flow
+:OWNER:     agentic-ai-lab
 :EVIDENCE:  .data/gerbil-poo/object.ss, .data/gerbil-poo/proto.ss, .data/gerbil/src/std/lazy.ss, src/authoring/fragment-syntax.ss
 :END:
 

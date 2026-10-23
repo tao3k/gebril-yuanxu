@@ -42,7 +42,7 @@ All typed-empty prototypes and instances remain native objects of:
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-POO Flow owns the domain meaning of empty exports, direct imports, and
+Agentic AI Lab owns the domain meaning of empty exports, direct imports, and
 capability requirements. =gerbil-poo= owns object mechanics.
 
 * Evidence state
@@ -85,7 +85,7 @@ semantics to an unverified procedure.
 
 * Central decision
 
-POO Flow has three distinct typed-empty domains:
+Agentic AI Lab has three distinct typed-empty domains:
 
 1. empty exports;
 2. empty direct imports;
@@ -654,5 +654,5 @@ uses isolated destructive construction internally.
 - [[file:45-83-profile-revisions-live-upgrade-and-module-reload-boundaries.org][45-83 - Profile Revisions, Live Upgrade, and Module Reload Boundaries]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
 - [[file:45-97-poo-module-object-construction-export-projection-and-responsibility-attachment-algebra.org][45-97 - POO Module Object Construction, Export Projection, and Responsibility Attachment Algebra]]
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and POO Flow Adapter Minimization]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]
 - [[file:45-99-module-domain-prototype-minimal-projection-and-derived-closure-contract.org][45-99 - Module Domain Prototype Minimal Projection and Derived Closure Contract]]

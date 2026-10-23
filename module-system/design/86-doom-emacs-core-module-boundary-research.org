@@ -4,7 +4,7 @@
 
 * 10.06.86 Doom Emacs Core Module Boundary Research
 ** 10.06.86.10 Purpose
-This note is the current Doom Emacs calibration document for =poo-flow='s module
+This note is the current Doom Emacs calibration document for =agentic-ai-lab='s module
 system.  It is intentionally more concrete than the short module-system design
 summary.  Agents should read this document before changing module kernel,
 factor, plugin, macro, or fixture semantics.
@@ -16,7 +16,7 @@ model:
 - what Doom exposes as user-facing module and feature selection;
 - how macros make authoring concise without being the semantic owner;
 - how diagnostics and sync commands keep the module graph operable;
-- how =poo-flow= should map those lessons into Gerbil POO values and
+- how =agentic-ai-lab= should map those lessons into Gerbil POO values and
   functional composition.
 
 ** 10.06.86.20 Evidence Snapshot
@@ -116,7 +116,7 @@ The important part is where ownership changes:
 - operations own reconciliation and diagnostics;
 - runtime/editor behavior is the final consumer, not the module definition.
 
-The equivalent =poo-flow= shape should be:
+The equivalent =agentic-ai-lab= shape should be:
 
 #+begin_src text
 use-module / use-composition declaration
@@ -163,7 +163,7 @@ a working system.  They select modules and flags.  They may extend through
 documented surfaces.  They do not rebuild the loader, registry, package sync, or
 diagnostic model per configuration.
 
-For =poo-flow=, this means every serious module must have a closed kernel.  The
+For =agentic-ai-lab=, this means every serious module must have a closed kernel.  The
 kernel is not a convenience profile.  It is the contract that makes a module
 remain one thing across user profiles, plugin extensions, runtime projections,
 and test fixtures.
@@ -179,7 +179,7 @@ Useful feature properties:
 - it is known to diagnostics;
 - it does not require users to override core mechanics.
 
-For =poo-flow= this maps to public module factors:
+For =agentic-ai-lab= this maps to public module factors:
 
 - public factors are declared by the module owner;
 - public factors have defaults and validation;
@@ -199,7 +199,7 @@ The Doom lesson is that package and module extension behavior becomes robust
 only when the system knows how to sync, diagnose, and contextualize it.  Merely
 allowing users to run arbitrary code is not a module system.
 
-For =poo-flow= a plugin should:
+For =agentic-ai-lab= a plugin should:
 
 - attach to a declared extension slot;
 - publish capability and projection contracts;
@@ -218,9 +218,9 @@ The plugin should not:
 
 ** 10.06.86.70 What Macros Should Learn From Doom
 Doom uses macros because a large Lisp-family system needs a compact authoring
-surface.  =poo-flow= should copy the discipline, not the exact syntax.
+surface.  =agentic-ai-lab= should copy the discipline, not the exact syntax.
 
-Good macro properties for =poo-flow=:
+Good macro properties for =agentic-ai-lab=:
 
 - a macro has one owner and one authoring purpose;
 - expansion produces ordinary Gerbil bindings, POO descriptors, profile values,
@@ -243,8 +243,8 @@ Bad macro properties:
 The correct Gerbil shape is: macro syntax is authoring sugar over POO-native and
 functional values.  It is not the owner of the runtime.
 
-** 10.06.86.80 POO Flow Mapping Table
-| Doom concept | POO Flow concept | Design rule |
+** 10.06.86.80 Agentic AI Lab Mapping Table
+| Doom concept | Agentic AI Lab concept | Design rule |
 |--------------+------------------+-------------|
 | Compact declaration syntax | =use-module= and module-specific authoring macros | Keep user syntax small, but expand into inspectable POO values. |
 | Module registry/context | Module kernel factors | Core module semantics are owned by the module and closed by default. |
@@ -258,7 +258,7 @@ functional values.  It is not the owner of the runtime.
 | Macro helpers | Gerbil declarative/procedural macros | Macros compress authoring and expand into normal POO/functional values. |
 
 ** 10.06.86.90 Agent Decision Procedure
-When an Agent changes =poo-flow= module semantics, use this procedure:
+When an Agent changes =agentic-ai-lab= module semantics, use this procedure:
 
 1. Identify the module owner.
    If the change is generic mechanics, the owner is =src/module-system/*=.  If
@@ -297,7 +297,7 @@ When an Agent changes =poo-flow= module semantics, use this procedure:
    Every new public factor or plugin slot needs enough receipt data for doctor,
    scenario, or projection lanes to explain it.
 
-** 10.06.86.100 What POO Flow Should Not Copy
+** 10.06.86.100 What Agentic AI Lab Should Not Copy
 Do not copy these Doom traits directly:
 
 - dynamic editor-state mutation during module loading;
@@ -308,7 +308,7 @@ Do not copy these Doom traits directly:
 - user configuration that can replace core registry mechanics;
 - terminology that exposes internal implementation pieces as user choices.
 
-=poo-flow= is a Scheme control plane for policy, composition, and runtime
+=agentic-ai-lab= is a Scheme control plane for policy, composition, and runtime
 projection.  It should absorb Doom's boundary discipline while staying
 POO-native, data-first, receipt-driven, and runtime-neutral.
 
@@ -383,10 +383,10 @@ lightweight =config.ss=. Funflow remains =(:flow . funflow)= and publishes a
 
 This does not invent a second registry or tier system. It mirrors Doom's
 =(:category . module)= keys, separate core/module collections, ordered module
-load paths, and profile-owned enablement. POO Flow keeps one descriptor,
+load paths, and profile-owned enablement. Agentic AI Lab keeps one descriptor,
 source-ref, ordering, and diagnostic model.
 
-The current =poo-flow= design still needs implementation-level checks for:
+The current =agentic-ai-lab= design still needs implementation-level checks for:
 
 - kernel-factor visibility: normal =use-module= should inherit kernels without
   exposing them as user-composed profiles;

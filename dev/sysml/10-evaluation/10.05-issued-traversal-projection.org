@@ -226,7 +226,7 @@ Lean/QNT results, source/product digests and persisted-input comparison. No raw
 logs or patch file are added to either repository.
 
 The maintained producer source is the existing branch working tree at
-=poo-flow/.data/gerbil-poo-replay/=; it has no competing Core implementation.
+=agentic-ai-lab/.data/gerbil-poo-replay/=; it has no competing Core implementation.
 The producer publication and Core pin update are now complete. The remote branch
 retains both independently published Table/Type commits. No new branch or PR was
 created. CI and clean-install qualification remain separate from the local

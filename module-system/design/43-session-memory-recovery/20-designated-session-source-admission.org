@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.20 Designated Session Source and Admission
 :PROPERTIES:
-:ID: poo-flow-context-designated-session-source-admission
+:ID: agentic-ai-lab-context-designated-session-source-admission
 :STATUS: source-admission-joint-pass-external-authentication-open
 :END:
 

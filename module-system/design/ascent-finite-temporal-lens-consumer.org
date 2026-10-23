@@ -15,7 +15,7 @@ Bazel lock validation passed through the captured workspace environment.
 
 ASCENT owns =temporal/lens.ss= and its finite source corpus, time projection,
 positive recursive program, independent models, native evidence and scale
-qualification. POO Flow consumes its POO lens/source/answer values directly.
+qualification. Agentic AI Lab consumes its POO lens/source/answer values directly.
 The module does not add a second Python or POO rule engine.
 
 * Consumer gate
@@ -92,10 +92,10 @@ and native/Bazel contract are rechecked at the final pinned implementation.
 * Explicit bounded-time exchange v1
 
 =modules/temporal-causality/ascent-exchange.ss= is an opt-in POO-native transport.
-=poo-flow-ascent-event-binding= requires one text event identity, a distinct
+=agentic-ai-lab-ascent-event-binding= requires one text event identity, a distinct
 non-reserved native symbol, a valid-time observed instant/bounded observation
 (or =#f= for unknown), and a separately supplied observed knowledge instant.
-=poo-flow-ascent-exchange= requires the owner graph/cut, one bijective binding
+=agentic-ai-lab-ascent-exchange= requires the owner graph/cut, one bijective binding
 per graph event, source/generation/native-clock names, both domain identities,
 and a finite window, knowledge cutoff, horizon and coverage declaration.
 

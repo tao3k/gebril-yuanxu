@@ -9,12 +9,12 @@ plan.
 
 ** Current status
 
-This document is historical.  POO Flow no longer implements the build
+This document is historical.  Agentic AI Lab no longer implements the build
 watchdog, process-tree sampler, RSS policy, compiler supervisor, or guard
 receipt described below.  The root =build.ss= installs the top-level upstream
 =std/build-script#defbuild-script= entrypoint; gerbil-bazel owns its enclosing
 resource guard.  Explicit downstream build work may enter the pinned public ASP
-Gerbil Scheme native memory-guard composition.  The old =POO_FLOW_BUILD_*= variables and local guard
+Gerbil Scheme native memory-guard composition.  The old =AGENTIC_AI_LAB_BUILD_*= variables and local guard
 schemas are not supported interfaces.  Current ownership and evidence limits
 are recorded in RFC 0147 modules 17 and 20.
 
@@ -104,15 +104,15 @@ bootstrap cycle: =package-build.ss= must not depend on the runtime
 =module-system/observability.ss= while it is compiling runtime modules.
 
 Default budgets:
-- =POO_FLOW_BUILD_WARN_SINGLE_TARGET_SECONDS= defaults to =30=;
-- =POO_FLOW_BUILD_FAIL_SINGLE_TARGET_SECONDS= defaults to =120=;
-- =POO_FLOW_BUILD_WARN_STAGE_SECONDS= defaults to =60=;
-- =POO_FLOW_BUILD_FAIL_STAGE_SECONDS= defaults to =300=.
+- =AGENTIC_AI_LAB_BUILD_WARN_SINGLE_TARGET_SECONDS= defaults to =30=;
+- =AGENTIC_AI_LAB_BUILD_FAIL_SINGLE_TARGET_SECONDS= defaults to =120=;
+- =AGENTIC_AI_LAB_BUILD_WARN_STAGE_SECONDS= defaults to =60=;
+- =AGENTIC_AI_LAB_BUILD_FAIL_STAGE_SECONDS= defaults to =300=.
 
 When a budget is crossed, the build emits:
 
 #+begin_src scheme
-|poo-flow-build-observability
+|agentic-ai-lab-build-observability
 #+end_src
 
 Warning budgets produce a diagnostic line. Failure budgets raise an error and
@@ -122,10 +122,10 @@ The build owner also wraps single-target =std/make= calls in a live watchdog
 thread. The watchdog does not replace =std/make=, does not change Gerbil build
 parallelism, and does not run raw =gxc= directly. It only watches the elapsed
 time of the current single-target compile. If the target is still running after
-=POO_FLOW_BUILD_FAIL_SINGLE_TARGET_SECONDS=, it emits:
+=AGENTIC_AI_LAB_BUILD_FAIL_SINGLE_TARGET_SECONDS=, it emits:
 
 #+begin_src scheme
-|poo-flow-build-observability
+|agentic-ai-lab-build-observability
 #+end_src
 
 with =budget-status= =single-target-live-time-budget-exceeded=, then exits the
@@ -136,7 +136,7 @@ requires a human to notice and manually kill Gerbil.
 ** 10.06.58.42 P0 Building Framework Process-Tree Containment
 The live single-target watchdog above was not sufficient for a full
 =build.ss compile=.  The final correction is not a second compiler scheduler.
-POO Flow now submits one standard Gerbil make project to Building Framework and
+Agentic AI Lab now submits one standard Gerbil make project to Building Framework and
 places a Scheme-owned process-tree monitor around that single execution.
 
 #+begin_src mermaid
@@ -160,16 +160,16 @@ flowchart TB
 
 The implementation invariants are:
 - =build.ss compile= enters the guarded API and invokes
-  =poo-flow-project-compile!= exactly once;
+  =agentic-ai-lab-project-compile!= exactly once;
 - Building Framework exclusively owns currentness, topology, source order,
   parallel compilation, stage execution, and build receipts;
 - the guard does not construct spec chunks, topology layers, retry queues, or
   per-subset =gxi= processes;
 - Scheme samples the full process tree rooted at the current =gxi=;
 - the default RSS limit is half of detected physical memory with a 768 MiB
-  minimum, while =POO_FLOW_BUILD_MAX_RSS_BYTES= remains an explicit override;
+  minimum, while =AGENTIC_AI_LAB_BUILD_MAX_RSS_BYTES= remains an explicit override;
 - there is no fixed machine-independent timeout; an unset or zero
-  =POO_FLOW_BUILD_TOTAL_TIMEOUT_SECONDS= means no deadline;
+  =AGENTIC_AI_LAB_BUILD_TOTAL_TIMEOUT_SECONDS= means no deadline;
 - native commands resolve from the configured project environment and must not
   silently select a Nix- or Cellar-internal Gerbil toolchain.
 
@@ -208,7 +208,7 @@ artifacts are skipped without replaying a second project scheduler.
 ** 10.06.58.45 Scenario Test Placement Rule
 The profile library gate exposed a second build-shape issue. A scenario test placed directly under =t/= became part of the package =tests= compile stage, even though it was meant to run through the gxtest scenario harness. On a cold compile this single target took more than a minute and emitted:
 #+begin_src scheme
-|poo-flow-build-observability
+|agentic-ai-lab-build-observability
 #+end_src
 with =budget-status= =single-target-time-budget-warning=.
 

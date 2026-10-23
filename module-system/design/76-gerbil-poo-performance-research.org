@@ -6,7 +6,7 @@
 
 * Purpose
 
-This note records the research baseline before changing the POO Flow
+This note records the research baseline before changing the Agentic AI Lab
 performance scenarios again. The goal is not to copy the upstream project
 harness scenarios, but to use them as a floor and then add scenarios that are
 closer to the actual Gerbil POO implementation model.
@@ -78,7 +78,7 @@ The relevant upstream scenario families include:
 - =poo-z-type-construction-loop-performance=
 - =poo-domain-algebra=
 
-That is already a serious baseline. POO Flow should not regress to smaller
+That is already a serious baseline. Agentic AI Lab should not regress to smaller
 toy cases or generic list traversal. Local scenarios must be at least as
 semantic as these, and should add tighter alignment with the real Gerbil POO
 MOP and prototype implementation.
@@ -97,7 +97,7 @@ Gerbil POO uses advanced Scheme features for performance boundaries:
 - Prototype composition through =compose-proto= and =compose-proto*=.
 - Function-level wrappers through =Functor= and =ParametricFunctor=.
 
-For POO Flow, this means the public API can stay POO-native while the hot path
+For Agentic AI Lab, this means the public API can stay POO-native while the hot path
 is compiled into stable helpers at module or scenario setup time. The user
 should configure object families and strategy combinators; the runtime should
 not rediscover slot structure or validate raw alists inside the loop.
@@ -192,7 +192,7 @@ order.
   code queries to be routed through the =asp-explore= resident that may only
   return compact receipts. That is a selector/query protocol gap and should not
   be treated as source-body evidence.
-- The upstream harness scenarios are broad, but local POO Flow still needs
+- The upstream harness scenarios are broad, but local Agentic AI Lab still needs
   stronger direct coverage for =MonomorphicObject=, =slot-lens=,
   =compose-proto*=, and algebraic normalization.
 - Existing local scenarios should be audited against compile-time cost. Adding
@@ -206,7 +206,7 @@ should implement POO-native scenario families that compile object shape,
 prototype composition, slot projection, lens access, and receipt materialization
 into stable helpers, then benchmark the actual hot path.
 
-That gives POO Flow a stronger position than the upstream harness baseline:
-the harness proves the policy and benchmarking model, while POO Flow should
+That gives Agentic AI Lab a stronger position than the upstream harness baseline:
+the harness proves the policy and benchmarking model, while Agentic AI Lab should
 prove a reusable strategy engine whose configured object families run through
 precomputed POO mechanisms instead of runtime rediscovery.

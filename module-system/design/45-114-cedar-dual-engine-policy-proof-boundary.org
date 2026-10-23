@@ -14,7 +14,7 @@
 
 * Scope
 
-POO Flow uses Cedar as a dual-engine policy boundary:
+Agentic AI Lab uses Cedar as a dual-engine policy boundary:
 
 - the Cedar Lean definitional engine owns policy semantics and formal
   theorems;
@@ -32,11 +32,11 @@ development dependency.  It is not a =gerbil.pkg= package, a POO prototype
 owner, or part of the public =use-composition= interface.
 
 That upstream commit pins =leanprover/lean4:v4.31.0= and Batteries
-=v4.31.0=.  The current POO Flow proof workspace also executes Lean
+=v4.31.0=.  The current Agentic AI Lab proof workspace also executes Lean
 =4.31.0=.  This removes an immediate toolchain-version mismatch, but it does
 not by itself prove semantic refinement.
 
-The POO Flow proof workspace now imports Cedar through Lake:
+The Agentic AI Lab proof workspace now imports Cedar through Lake:
 
 #+begin_src lean
 require Cedar from git
@@ -78,12 +78,12 @@ These evidence classes must not be collapsed:
 
 1. a Cedar Lean theorem proves a property of the definitional semantics;
 2. DRT supplies finite executable conformance evidence for Rust versus Lean;
-3. a POO Flow refinement theorem proves that both engines received the same
+3. a Agentic AI Lab refinement theorem proves that both engines received the same
    canonical input and that their outputs were projected without loss.
 
 DRT is not a universal proof that arbitrary Rust execution equals the Lean
 definition.  Conversely, a Cedar Lean theorem alone says nothing about the
-correctness of the POO Flow adapter.
+correctness of the Agentic AI Lab adapter.
 
 * Canonical policy decision input
 
@@ -118,7 +118,7 @@ admission error and is not normalized.
   capability,
   arbitration,
 ) = (
-  "poo-flow/cedar/policy-input",
+  "agentic-ai-lab/cedar/policy-input",
   1,
   cedar-version,
   policies,
@@ -148,7 +148,7 @@ surface is:
 - exact Cedar decision: =Allow= or =Deny=;
 - exact Cedar determining policy identities;
 - exact Cedar erroring policy identities;
-- POO Flow runtime state: completed, timeout, unavailable, crash, or malformed
+- Agentic AI Lab runtime state: completed, timeout, unavailable, crash, or malformed
   projection;
 - engine semantic version and exact canonical input identity.
 
@@ -215,9 +215,9 @@ flowchart TD
   erroring policy evidence.
 - [ ] Import or reference slicing, typechecking, and verification theorems
   required by the selected policy subset.
-- [ ] State which Cedar extensions POO Flow admits.
+- [ ] State which Cedar extensions Agentic AI Lab admits.
 
-** POO Flow refinement
+** Agentic AI Lab refinement
 
 - [ ] Prove both engines receive one canonical =PolicyInputIdentity=.
 - [ ] Prove the =ProfileBundle= semantic identity and effective capability
@@ -232,7 +232,7 @@ flowchart TD
 
 - [ ] Pin the Cedar Rust production engine commit used by DRT.
 - [ ] Run the applicable upstream authorizer and validator DRT targets.
-- [ ] Add POO Flow adapter corpus cases generated from real
+- [ ] Add Agentic AI Lab adapter corpus cases generated from real
   =use-composition= scenarios.
 - [ ] Retain corpus seed, engine commits, executable digests, case counts, and
   failures in the receipt.
@@ -323,7 +323,7 @@ flowchart TD
 * Local Lean proof owner
 
 The initial arbitration proof owner is
-=PooFlowProof.PooC4.CedarDualEngineArbitration=.  It defines full
+=AgenticAILabProof.PooC4.CedarDualEngineArbitration=.  It defines full
 =AuthorizationOutcome= comparison, strict and conformance-backed evidence,
 truthful receipt kinds, external authority, activation state, and shadow
 evidence.
@@ -348,7 +348,7 @@ Verification:
 - [X] =lake update Cedar=
 - [X] manifest resolves =Cedar= with =subDir = cedar-lean=
 - [X] =lake build Cedar=
-- [X] =lake build PooFlowProof.PooC4.CedarDualEngineArbitration=
+- [X] =lake build AgenticAILabProof.PooC4.CedarDualEngineArbitration=
 - [X] aggregate =lake build=
 - [ ] AXLE verification of the final source identity
 - [ ] refinement against the pinned upstream Cedar Lean definitions
@@ -362,12 +362,12 @@ types.  Therefore it is not yet a Cedar semantic-refinement proof.
 
 The arbitration proof consumes an admitted =AuthorityRisk=.  Its abstract
 projection from an effective capability contract is now owned by
-=PooFlowProof.PooC4.CedarCapabilityRiskProjection=.  A concrete refinement
+=AgenticAILabProof.PooC4.CedarCapabilityRiskProjection=.  A concrete refinement
 from the runtime =gerbil-poo= capability object remains required before
 executable admission.
 * Exact Cedar semantic refinement
 
-The owner =PooFlowProof.PooC4.CedarAuthorizationSemantics= uses the pinned
+The owner =AgenticAILabProof.PooC4.CedarAuthorizationSemantics= uses the pinned
 upstream types directly:
 
 #+begin_src typst
@@ -392,7 +392,7 @@ It proves, without a locally redefined Cedar response:
 
 Verification:
 
-- [X] =lake build PooFlowProof.PooC4.CedarAuthorizationSemantics=
+- [X] =lake build AgenticAILabProof.PooC4.CedarAuthorizationSemantics=
 - [X] aggregate =lake build=
 - [X] Connect exact Cedar =Response= to the runtime engine-evidence envelope
   without losing determining or erroring policies.
@@ -400,7 +400,7 @@ Verification:
 
 * Capability-to-risk projection
 
-The owner =PooFlowProof.PooC4.CedarCapabilityRiskProjection= makes authority
+The owner =AgenticAILabProof.PooC4.CedarCapabilityRiskProjection= makes authority
 risk a projection of an effective capability contract.  A caller-provided
 risk claim is ignored.
 
@@ -423,7 +423,7 @@ authority selects Rust plus bounded Lean shadow.
 
 Verification:
 
-- [X] =lake build PooFlowProof.PooC4.CedarCapabilityRiskProjection=
+- [X] =lake build AgenticAILabProof.PooC4.CedarCapabilityRiskProjection=
 - [X] aggregate =lake build=
 - [ ] Refine =EffectiveCapabilityContract= to the actual =gerbil-poo=
   capability object.
@@ -436,7 +436,7 @@ complete value; the projection is used only to turn an already agreed outcome
 into external =Allow= or =Deny= authority.
 
 The Cedar owner is
-=PooFlowProof.PooC4.CedarResponseArbitrationBridge=.  Its comparable value is:
+=AgenticAILabProof.PooC4.CedarResponseArbitrationBridge=.  Its comparable value is:
 
 #+begin_src text
 #let comparable-cedar-outcome(
@@ -512,7 +512,7 @@ The proof owner establishes:
 Verification:
 
 - [X] generalized arbitration core retains its existing focused proof build;
-- [X] =lake build PooFlowProof.PooC4.CedarResponseArbitrationBridge=;
+- [X] =lake build AgenticAILabProof.PooC4.CedarResponseArbitrationBridge=;
 - [X] aggregate =lake build=;
 - [ ] refine the Cedar adapter's returned value to
   =CedarComparableOutcome=;
@@ -520,11 +520,11 @@ Verification:
   the runtime receipt.
 * Cedar adapter admission contract
 
-POO Flow owns one Cedar adapter boundary.  Cedar's Lean definitional engine,
+Agentic AI Lab owns one Cedar adapter boundary.  Cedar's Lean definitional engine,
 production engine, DRT, and =cedar-spec= checkout are upstream evidence
-providers behind that adapter; none is a separate POO Flow owner.
+providers behind that adapter; none is a separate Agentic AI Lab owner.
 
-The Lean owner =PooFlowProof.PooC4.CedarAdapterContract= defines the evidence
+The Lean owner =AgenticAILabProof.PooC4.CedarAdapterContract= defines the evidence
 required to admit the Cedar adapter.  The contract is not evidence that the
 executable adapter has already been implemented.
 
@@ -599,15 +599,15 @@ The proof owner establishes:
 
 Verification:
 
-- [X] =lake build PooFlowProof.PooC4.CedarAdapterContract=;
+- [X] =lake build AgenticAILabProof.PooC4.CedarAdapterContract=;
 - [X] aggregate =lake build=;
-- [ ] implement the Cedar adapter behind its existing POO Flow owner;
+- [ ] implement the Cedar adapter behind its existing Agentic AI Lab owner;
 - [ ] produce a real =CedarAdapterReceipt= from the configured Cedar engines;
 - [ ] execute pinned DRT targets and retain actual case/failure counts;
 - [ ] refine the adapter receipt into this contract.
 * POO-native Cedar adapter refinement
 
-The single POO Flow owner is a native =gerbil-poo= adapter object.  Its
+The single Agentic AI Lab owner is a native =gerbil-poo= adapter object.  Its
 physical representation has exactly three object slots:
 
 #+begin_src text
@@ -685,7 +685,7 @@ Cedar-specific public macro.  Internal construction may use native
 the public macro surface.
 
 The Lean owner is
-=PooFlowProof.PooC4.CedarPooAdapterRefinement=.  It proves:
+=AgenticAILabProof.PooC4.CedarPooAdapterRefinement=.  It proves:
 
 - all three physical object slots are retained;
 - adapter identity is derived rather than stored independently;
@@ -698,7 +698,7 @@ The Lean owner is
 
 Verification:
 
-- [X] =lake build PooFlowProof.PooC4.CedarPooAdapterRefinement=;
+- [X] =lake build AgenticAILabProof.PooC4.CedarPooAdapterRefinement=;
 - [X] aggregate =lake build=;
 - [X] no Cedar-specific public macro;
 - [X] invocation state excluded from physical adapter slots;

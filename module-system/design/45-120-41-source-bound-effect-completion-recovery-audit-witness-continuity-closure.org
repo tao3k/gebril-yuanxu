@@ -9,7 +9,7 @@
 
 - RFC state: Lean model and owner-bound closure implemented.
 - Language: English only.
-- Scope: Enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: Enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof: [[file:45-120-40-source-bound-effect-completion-recovery-owner-coverage-closure.org][45-120-40 owner coverage closure]].
 - Semantic generation: one v1 definition.
 

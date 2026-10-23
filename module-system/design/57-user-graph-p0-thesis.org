@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 * 10.06.57 User Graph P0 Thesis
-This document defines the P0 product thesis for =poo-flow= after the BAML comparison.
+This document defines the P0 product thesis for =agentic-ai-lab= after the BAML comparison.
 
 The core correction is simple:
 #+begin_src text
@@ -21,7 +21,7 @@ BAML is easier to understand because its product thesis is short:
 Write LLM functions and get typed outputs.
 #+end_src
 
-=poo-flow= needs an equally clear thesis:
+=agentic-ai-lab= needs an equally clear thesis:
 #+begin_src text
 Describe an agentic workflow graph in natural language and get Scheme/POO
 policy code, immediate validation feedback, rejection reasons, and an
@@ -91,11 +91,11 @@ It should teach agents how to map:
 - failure paths into retry, escalation, or stop edges;
 - graph diagnostics back into user-readable repair feedback.
 
-This is where =poo-flow= differs from a DSL-first product. BAML asks users to write DSL functions. =poo-flow= should let users describe an agentic graph, then let agents generate and repair the Scheme/POO policy code.
+This is where =agentic-ai-lab= differs from a DSL-first product. BAML asks users to write DSL functions. =agentic-ai-lab= should let users describe an agentic graph, then let agents generate and repair the Scheme/POO policy code.
 ** 10.06.57.40 P0 Feedback Loop
 The P0 feedback loop is an agent editing loop, not only a user-facing graph display.
 
-BAML's editor/playground matters because it gives immediate feedback after each authoring change: prompt, type, output, and error are visible without waiting for a full runtime integration. =poo-flow= needs the same strength for agent-authored configuration. After an agent changes modules, graph declarations, Scheme/POO profiles, validators, or runtime handoff settings, it must immediately know:
+BAML's editor/playground matters because it gives immediate feedback after each authoring change: prompt, type, output, and error are visible without waiting for a full runtime integration. =agentic-ai-lab= needs the same strength for agent-authored configuration. After an agent changes modules, graph declarations, Scheme/POO profiles, validators, or runtime handoff settings, it must immediately know:
 - did the graph become valid?
 - what changed in the graph?
 - where was the change rejected?
@@ -112,7 +112,7 @@ Priority order:
 4. Agent repair hint: explain which declaration or module choice should change next.
 5. Advanced drill-down: Scheme/POO diff, manifest preview, type facts, and Lean facts when needed.
 
-This is the local equivalent of BAML's playground. BAML previews prompt, type, output, and error. =poo-flow= should preview graph, validation result, rejection reason, and repair target after every agent edit.
+This is the local equivalent of BAML's playground. BAML previews prompt, type, output, and error. =agentic-ai-lab= should preview graph, validation result, rejection reason, and repair target after every agent edit.
 ** 10.06.57.45 Productized Agent Feedback Loop
 The productized feedback loop should feel like an agent repair playground, not a manifest inspector.
 
@@ -124,7 +124,7 @@ The loop has six visible stages:
 5. Agent repair. The system explains what the agent should change next in Scheme/POO declarations. The repair plan should use user vocabulary first and only then offer a Scheme/POO diff for advanced review.
 6. Readiness confirmation. Validators confirm the graph is valid and ready for manifest projection or return graph-positioned errors. Type facts, Lean facts, and manifest rows are available as drill-down artifacts.
 ** 10.06.57.50 Observability As The Feedback Backbone
-Diagnostic records should not be treated as a standalone feature. They are one projection of the =poo-flow= observability framework.
+Diagnostic records should not be treated as a standalone feature. They are one projection of the =agentic-ai-lab= observability framework.
 
 The design rule is:
 #+begin_src text
@@ -312,9 +312,9 @@ Advanced artifacts may hang under those objects:
 
 The important rule is that advanced artifacts attach to graph concepts and agent repair decisions. They should not become the root of the feedback model.
 ** 10.06.57.80 Strength Positioning
-Do not describe =poo-flow= as weaker than BAML in type capability.
+Do not describe =agentic-ai-lab= as weaker than BAML in type capability.
 
-BAML has a strong productized type path for LLM function output. =poo-flow= has a stronger theoretical substrate for whole-system agent policy:
+BAML has a strong productized type path for LLM function output. =agentic-ai-lab= has a stronger theoretical substrate for whole-system agent policy:
 - Scheme is a real host language.
 - POO and C4 can compose multiple policy owners.
 - Structured validation can check object graphs.

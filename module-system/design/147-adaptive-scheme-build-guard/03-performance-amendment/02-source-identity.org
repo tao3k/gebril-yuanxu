@@ -4,7 +4,7 @@
 
 * Versioned build-source identity and comparable performance receipts
 
-Performance measurement uses the native Gerbil package lifecycle.  POO Flow no
+Performance measurement uses the native Gerbil package lifecycle.  Agentic AI Lab no
 longer owns a Scheme runner that recursively starts Bazel servers, performs
 =clean/cquery/build/shutdown=, or simulates Bazel in shell.  Bazel remains an
 integration and hermeticity gate; it is not the cold/warm observer.
@@ -52,7 +52,7 @@ Removed interfaces have no compatibility route:
 
 This keeps the responsibility split precise: native =gxpkg= and Building
 Framework expose Gerbil cold/warm facts, Bazel tests the declared integration,
-and POO Flow only decides whether two explicit observations satisfy its
+and Agentic AI Lab only decides whether two explicit observations satisfy its
 comparison policy.
 
 * 2026-09-01 native cold/warm observation

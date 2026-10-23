@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: Native =gerbil-poo= definitions and POO Flow identity projection
+- Semantic core :: Native =gerbil-poo= definitions and Agentic AI Lab identity projection
 - Related modules :: =45-35-macro-expanded-poo-prototype-definition-identity.org= and =45-45-canonical-poo-composition-root-and-definition-graph-identity.org=
 
 This module separates the stable logical identity of a POO definition from the identity of its current semantic content.

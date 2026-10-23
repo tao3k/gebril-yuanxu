@@ -157,7 +157,7 @@
 
 (def (yuanxu-module-entrypoint-role-valid! entrypoint-role)
   (unless (memq entrypoint-role yuanxu-module-allowed-entrypoint-roles)
-    (error "POO-FLOW-MODULE-E002 unsupported module entrypoint role"
+    (error "YUANXU-MODULE-E002 unsupported module entrypoint role"
            entrypoint-role yuanxu-module-allowed-entrypoint-roles))
   entrypoint-role)
 
@@ -169,7 +169,7 @@
 (def (yuanxu-module-source-collection-role-entrypoints collection
                                                          entrypoint-role)
   (unless (yuanxu-directory-module-source-collection? collection)
-    (error "POO-FLOW-MODULE-E003 invalid module source collection" collection))
+    (error "YUANXU-MODULE-E003 invalid module source collection" collection))
   (yuanxu-module-entrypoint-role-valid! entrypoint-role)
   (let* ((modules-root
           (yuanxu-module-source-collection-modules-root collection))
@@ -184,7 +184,7 @@
                (path-expand (string-append (symbol->string entrypoint-role) ".ss")
                             module-root)))
          (unless (file-exists? entrypoint)
-           (error "POO-FLOW-MODULE-E004 requested optional role is absent"
+           (error "YUANXU-MODULE-E004 requested optional role is absent"
                   name entrypoint-role))
          (yuanxu-module-source-entrypoint
           collection

@@ -28,7 +28,7 @@ cache key.
 This RFC does not introduce a second evaluator.
 
 =gerbil-poo= remains responsible for native objects, prototypes, slot demand
-and open recursion.  POO Flow observes those native operations and adds:
+and open recursion.  Agentic AI Lab observes those native operations and adds:
 
 - stable demand identity;
 - contribution generations;
@@ -61,7 +61,7 @@ single recomputation closure.  Every member participates in the same
 fixed-point convergence claim.
 
 Reusing one member while independently recomputing another could combine
-results from incompatible fixed-point generations.  POO Flow therefore
+results from incompatible fixed-point generations.  Agentic AI Lab therefore
 invalidates, observes, converges, resumes and receipts the complete component.
 
 #+begin_src mermaid
@@ -164,7 +164,7 @@ generation proves:
 6. the newly confirmed dependency footprint is compatible with the result;
 7. no stale resumption, revoked authority or superseded generation is present.
 
-Eligibility does not require that a physical cache exists.  POO Flow may reuse
+Eligibility does not require that a physical cache exists.  Agentic AI Lab may reuse
 an in-memory value, retrieve an encoded value, replay a pure computation, or
 recompute it.  These realization choices do not change the semantic result.
 
@@ -172,7 +172,7 @@ recompute it.  These realization choices do not change the semantic result.
 
 | Concept | Semantic role |
 |---------+---------------|
-| Semantic reuse | The POO Flow decision that a prior result remains equivalent in the current generation |
+| Semantic reuse | The Agentic AI Lab decision that a prior result remains equivalent in the current generation |
 | Physical cache | Optional memory, disk or remote storage for an encoded reusable result |
 | Replay evidence | The receipt chain proving why retrieval and fresh evaluation are equivalent |
 

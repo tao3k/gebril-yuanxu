@@ -42,7 +42,7 @@ coherent; upstream supplies the context. The body looks data-oriented, but it is
 not JSON: functions, imports and self-dependent values are involved.
 
 This is a good first-layer target. The user should not construct each internal
-module descriptor to set a deployment host. POO Flow currently demonstrates this
+module descriptor to set a deployment host. Agentic AI Lab currently demonstrates this
 separation for Funflow defaults, not an equivalent host deployment product.
 A field override is not evidence that we already have HiveBus's output adapters.
 
@@ -145,7 +145,7 @@ lib.mapAttrs (_: v: eachSystem v) {
 }
 #+end_src
 
-The repeated structure is upstream work. POO Flow can factor structural families
+The repeated structure is upstream work. Agentic AI Lab can factor structural families
 with private defrules and pure functions; it should not ask each downstream
 user to repeat this machinery. However, these are POP consumers. This study does
 not infer the external POP implementation's caching or scalability from them.
@@ -234,7 +234,7 @@ forcing old and new configurations. Limited sharing between those evaluations
 is documented. Our cached-parent probe establishes correct child values, not a
 cross-system speed advantage.
 
-For POO Flow: keep source binding, effective object configuration, admission and
+For Agentic AI Lab: keep source binding, effective object configuration, admission and
 execution as separate stages. Keep parent-prototype order separate from task
 execution order. Specify scalar replacement, list combination and object
 refinement separately rather than implying that =>.+ is a universal merge.

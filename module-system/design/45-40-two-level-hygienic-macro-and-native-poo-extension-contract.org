@@ -46,7 +46,7 @@ Domain macros name stable user concepts:
 #+end_src
 
 This form illustrates the cognitive shape only.  The project chooses its exact
-surface grammar from Gerbil and POO Flow requirements rather than copying the
+surface grammar from Gerbil and Agentic AI Lab requirements rather than copying the
 syntax of a reference system.
 
 The resulting Profile is consumed as one named object:
@@ -311,7 +311,7 @@ is not a new language namespace.
 Mature Lisp configuration systems, including Emacs and Doom Emacs, are design
 and implementation references rather than syntax templates.
 
-POO Flow learns:
+Agentic AI Lab learns:
 
 - one concise declaration can hide substantial internal machinery;
 - a small stable vocabulary improves discoverability;
@@ -321,7 +321,7 @@ POO Flow learns:
 - source-aware expansion can explain errors in the user's vocabulary;
 - advanced users should not be trapped by the simplified interface.
 
-POO Flow does not copy:
+Agentic AI Lab does not copy:
 
 - macro names, bang suffixes or keyword punctuation;
 - foreign package-management ownership;

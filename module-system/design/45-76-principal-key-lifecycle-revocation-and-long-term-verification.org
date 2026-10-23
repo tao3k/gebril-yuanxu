@@ -14,7 +14,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 * Status
 
 This RFC records the accepted cryptographic identity, key rotation, revocation,
-algorithm migration, and long-term verification semantics for POO Flow.
+algorithm migration, and long-term verification semantics for Agentic AI Lab.
 
 It extends governance decisions, distributed cache provenance, evidence
 retention, temporal observations, and destructive erasure.

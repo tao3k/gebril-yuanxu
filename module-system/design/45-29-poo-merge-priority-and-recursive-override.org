@@ -230,7 +230,7 @@ set and is suppressed only by an explicitly stronger contribution.
 
 =force= is the top of the priority domain.
 
-Because POO Flow carries authority and recovery semantics, creating or applying
+Because Agentic AI Lab carries authority and recovery semantics, creating or applying
 a =force= priority requires explicit force authority scoped to:
 
 - the root and module instance;
@@ -395,7 +395,7 @@ forced merge.
 =gerbil-poo= owns native prototype, slot, inheritance, and fixed-point
 evaluation.
 
-POO Flow owns the POO priority domain, contribution metadata, selection proof,
+Agentic AI Lab owns the POO priority domain, contribution metadata, selection proof,
 authority, conditions, observability, and receipts.
 
 The runtime does not sort providers or implement a hidden merge evaluator.  It

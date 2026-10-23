@@ -39,7 +39,7 @@ The root =gerbil.pkg= identifies it as
 =github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead=.
 Every POO object, prototype operation, slot behavior, recursive-object
 primitive, and general POO extension used by this RFC suite is owned by that
-library.  POO Flow is a consumer that defines higher-order roles and governance
+library.  Agentic AI Lab is a consumer that defines higher-order roles and governance
 with =gerbil-poo= objects; it is not another POO implementation.
 
 The conceptual and paper lineage is
@@ -52,7 +52,7 @@ dependency revision.
 #+begin_export mermaid
 flowchart LR
     A["metareflection/poof: concept and paper lineage"] --> B["gerbil.pkg: mighty-gerbils/gerbil-poo at pinned revision"]
-    B --> C["POO Flow roles and policies"]
+    B --> C["Agentic AI Lab roles and policies"]
     C --> D["Profile and higher-order Mix prototypes"]
     C --> E["Capability and Submodule prototypes"]
     D --> F["wendao-episteme composition"]
@@ -68,7 +68,7 @@ Any mechanism that is meaningful for an arbitrary POO program independently
 of Profile, Mix, governance, or runtime handoff belongs to =gerbil-poo=.  This
 includes generic prototype linearization, recursive-object and fixed-point
 machinery, demand cells, memoization, dependency-cycle detection, and
-continuation-aware evaluation.  POO Flow owns only the higher-order roles,
+continuation-aware evaluation.  Agentic AI Lab owns only the higher-order roles,
 staged authoring surface, governance policies, runtime boundaries, and
 qualification projections built with those mechanisms.
 
@@ -88,8 +88,8 @@ observability contract is owned by [[file:45-04-observability-and-debugging.org]
 - Public composition remains POO-native and functional-first.
 - Public syntax remains =user-composition=, =use-composition=, =profiles=,
   =compose=, and canonical =use-module MODULE as ALIAS=.
-- POO Flow reuses pinned =gerbil-poo= fixed-point and prototype composition.
-- POO Flow does not implement another fixed point or replace arbitrary =.ref=.
+- Agentic AI Lab reuses pinned =gerbil-poo= fixed-point and prototype composition.
+- Agentic AI Lab does not implement another fixed point or replace arbitrary =.ref=.
 - The parent owns =yuanxu=; a child package does not repeat parent G0.
 - =gerbil.pkg=/=gxpkg= own package management only.
 - Gerbil-Bazel owns build execution only.

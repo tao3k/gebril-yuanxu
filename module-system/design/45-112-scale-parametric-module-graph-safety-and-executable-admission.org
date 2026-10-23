@@ -116,7 +116,7 @@ Recursive submodule imports may contain cycles.  For every admitted root:
 - raw unbounded recursion cannot escape;
 - the result is deterministic for one root revision;
 - incremental reevaluation preserves stable identity; and
-- continuable recovery remains owned by the existing POO Flow control plane.
+- continuable recovery remains owned by the existing Agentic AI Lab control plane.
 
 This RFC introduces no new fixed-point evaluator.
 
@@ -138,7 +138,7 @@ flowchart LR
   R -->|"proved contract: sound and complete closure witnesses"| C["Active imports closure"]
   M -->|"proved: every Module requirement participates"| A["Capability intersection"]
   A -->|"proved: authority can only attenuate"| G["Semantic admission gate"]
-  C -->|"proved boundary: cycles retain identity and budget evidence"| F["Existing POO Flow fixed point"]
+  C -->|"proved boundary: cycles retain identity and budget evidence"| F["Existing Agentic AI Lab fixed point"]
   F -->|"implementation pending: terminate, suspend, or fail closed with receipt"| G
   P -->|"proved: one composed value independent of n"| U["user-composition"]
   G -->|"implementation pending: backend and scale receipts"| U
@@ -198,7 +198,7 @@ Gerbil implementation, runtime termination, or performance measurements.
 | Local Lean module | =accepted= | =lake build YuanxuProof.ModuleSystem.Graph.Aggregation=: 36/36 jobs |
 | Local Lean closure | =accepted= | =lake build=: 109/109 jobs |
 | AXLE independent declaration check | =accepted= | Request =957a32be-0f40-4d4a-ba91-1e570fe36130=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =cfa33796-a221-4dd8-b54e-84eda6571a79= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =cfa33796-a221-4dd8-b54e-84eda6571a79= cannot resolve local module prefix =AgenticAILabProof= |
 | Semantic scale admission | =accepted-abstractly= | 39 scale-parametric theorem declarations are checked for arbitrary ~Fin(n)~ Module families |
 | Executable scale admission | =not-admitted= | All 26 Gerbil refinement, 100/1,000/10,000 Module, resource, cycle, backend, and admission items remain pending |
 
@@ -292,7 +292,7 @@ AXLE:
   declarations, errors, or warnings:
   ~e579b384-424d-4e9f-9f19-44c0fbedb2f1~;
 - preserved-import AXLE attempt — blocked before proof checking because the
-  remote environment cannot resolve the project-local ~PooFlowProof~ prefix:
+  remote environment cannot resolve the project-local ~AgenticAILabProof~ prefix:
   ~06b01132-9897-45d4-8a15-23b437d9e101~.
 
 The accepted independent AXLE receipt and the local Lean receipt are both

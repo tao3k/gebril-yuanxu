@@ -100,7 +100,7 @@ instnace_type, mismatched Type node and omitted source observations also refuse.
 * Execute the checked value through existing Ops
 
 #+begin_src scheme
-(.def Hello triggers: (.o message: "hello from POO Flow"))
+(.def Hello triggers: (.o message: "hello from Agentic AI Lab"))
 (def NullResource (.get Null types resources null_resource))
 ;; NullAdmission uses NullResource.value-type through the same Core producer.
 (def NullPublication

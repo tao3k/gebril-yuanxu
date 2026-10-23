@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.21 Designated Source Verification — Exit Gate Open
 :PROPERTIES:
-:ID: poo-flow-context-source-binding-verification-20261015
+:ID: agentic-ai-lab-context-source-binding-verification-20261015
 :STATUS: assertion-results-pass-process-exit-gate-open
 :DATE: 2026-10-15
 :END:

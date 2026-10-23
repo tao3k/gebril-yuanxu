@@ -34,8 +34,8 @@ These guidelines are based on =.data/gerbil-poo=:
 
 =doc/poo.md:150-177= explains multiple inheritance as a DAG that must be linearized into a precedence list with C4.
 =doc/prototypes.md= frames Prototype Object Orientation as incremental composition of code and data fragments with late binding, implemented as fixed-points of higher-order functions.
-=fun.ss:1-80= models =Category.=, =Functor.=, =ParametricFunctor.=, and =Identity= as POO type objects. This is the source-level reason POO Flow treats functional programming and POO as one design strand.
-=doc/TODO.md= places compositional MOP, method-combination, and storage strategies in future-work territory. POO Flow should not expose those as user-level requirements before the upstream model stabilizes.
+=fun.ss:1-80= models =Category.=, =Functor.=, =ParametricFunctor.=, and =Identity= as POO type objects. This is the source-level reason Agentic AI Lab treats functional programming and POO as one design strand.
+=doc/TODO.md= places compositional MOP, method-combination, and storage strategies in future-work territory. Agentic AI Lab should not expose those as user-level requirements before the upstream model stabilizes.
 =mop.ss= demonstrates meta-level object operations around =.ref=, =.putslot=, slots, methods, and object/type descriptors.
 =brace.ss= keeps object authoring syntax small by lowering brace forms to =.o=.
 =type.ss= and =fun.ss= show type descriptors and functional dictionaries as POO objects rather than a parallel class system.
@@ -45,7 +45,7 @@ These guidelines are based on =.data/gerbil-poo=:
 
 This document is the programming contract for code written after studying =.data/gerbil-poo=. It is more specific than a style guide:
 
-1. POO Flow code must be POO-native at the abstraction boundary.
+1. Agentic AI Lab code must be POO-native at the abstraction boundary.
 2. User-facing extension APIs must compose prototypes, slots, and named functional helpers.
 3. Functional programming is the preferred Scheme control-plane style.
 4. Raw alists, record DSLs, direct merge scripts, and naked =(lambda (self super) ...)= compute hooks are not the primary interface.
@@ -98,7 +98,7 @@ Publish graph Query support through the Query Module's =languages= POO slot.
 It currently contains one =gql= language Contract with a =scheme-poo=
 authoring surface and =gql= source surface.  Do not register Scheme as a peer
 Query language: it is the host notation for the GQL-aligned POO AST.  Do not
-copy the GQL grammar, parser or ParseArtifact alist into POO Flow.
+copy the GQL grammar, parser or ParseArtifact alist into Agentic AI Lab.
 
 If GQL returns a candidate set that still needs domain rules, apply a named,
 typed and bounded native refinement before result admission.  Do not extend
@@ -125,14 +125,14 @@ The public user interface should prefer ==>=, ==>.+=, =?=, =.mix=, and named con
 
 ** 10.06.29.45 Complete Gerbil POO Capability Map
 
-POO Flow must not reduce =gerbil-poo= to =.o= plus =.ref=, nor should it try
+Agentic AI Lab must not reduce =gerbil-poo= to =.o= plus =.ref=, nor should it try
 to demonstrate completeness by calling every operator in ordinary user config.
 The operators form different semantic layers.  The owner of a value determines
 which layer is admissible.
 
 This is an implementation capability map, not the default authoring surface.
 The normative disclosure order and admission boundary are defined by
-[[file:164-capability-gradient-and-default-expression-surface.org][POO Flow Capability Gradient and Default Expression Surface]].
+[[file:164-capability-gradient-and-default-expression-surface.org][Agentic AI Lab Capability Gradient and Default Expression Surface]].
 Ordinary users remain at object, slot, extension and composition even when the
 selected Module uses generics, CLOS or MOP internally.
 
@@ -143,7 +143,7 @@ combiner for collection transformation, and =?= for inherited defaults.
 A parallel command-slot vocabulary duplicates those native forms and is
 non-conforming.
 
-| Capability | Native surface | Meaning | Normal POO Flow owner |
+| Capability | Native surface | Meaning | Normal Agentic AI Lab owner |
 |------------+----------------+---------+-----------------------|
 | Prototype declaration | =.o=, =.def=, =object<-alist=, =object<-fun= | Define an open recursive specification | Module and Profile objects; named boundary adapters only for =object<-= forms |
 | C4 composition | =.mix=, supers in =.o=, =.extend=, =.+= | Compose traits and precedence at runtime | Module composition, Profile refinement, Scenario assembly |
@@ -155,7 +155,7 @@ non-conforming.
 | Fresh stateful instance | =(.mix prototype)= followed by =.put!= or =.set!= | Create an instance cache independent of the exported prototype and update run-local state | Scheme-owned Session, interactive coordinator, bounded CLOS/MOP state |
 | Prototype surgery | =.putslot!=, =.setslot!=, =.def!=, =.putdefault!=, =uninstantiate-object!= | Change the computation graph after declaration | Observability instrumentation, REPL development, controlled hot evolution; never normal Profile customization |
 | Type objects and slot protocol | =define-type=, =Type.=, =validate=, =element?=, =.defgeneric= | Describe values and dispatch a protocol through type-object slots | Module =types.ss= and one-receiver protocol families |
-| Multi-axis open dispatch | POO Flow CLOS generics, specializers, method bundles | Select behavior where two or more independently extensible axes cross | Provider/Profile, Runtime/Contract, or similar open crossings |
+| Multi-axis open dispatch | Agentic AI Lab CLOS generics, specializers, method bundles | Select behavior where two or more independently extensible axes cross | Provider/Profile, Runtime/Contract, or similar open crossings |
 | Fixed projection | =with-slots=, =def-slots=, prefixed variants, =slot-lens= | Bind a known shape once rather than rediscovering it in a loop | Internal hot paths and generated projection helpers |
 | Low-level prototype functions | =instantiate-proto=, =compose-proto=, =compose-proto*= | Build arbitrary fixed-point prototypes whose instances need not be POO records | Internal algebra research only, with a concrete need that =object.ss= cannot express |
 
@@ -177,7 +177,7 @@ Two details are easy to miss:
 3. In the currently pinned provider, =.has? object a b c= checks that =a=,
    =b=, and =c= are slots of the same receiver.  Although the upstream prose
    presents this as a nested path form, the implementation does not descend
-   through =a= and =b=.  POO Flow must select the child explicitly, for example
+   through =a= and =b=.  Agentic AI Lab must select the child explicitly, for example
    =(.has? (.get scenario metadata) owner provider)=, until the provider
    contract changes and the admission test is updated.
 
@@ -207,7 +207,7 @@ This keeps the domain slot stable and delegates nested object merging to POO.
 
 ** 10.06.29.60 Functional Kernel Policy
 
-=fun.ss= shows that Category, Functor, and Identity can be modeled as POO type objects. POO Flow should use that pattern for flows:
+=fun.ss= shows that Category, Functor, and Identity can be modeled as POO type objects. Agentic AI Lab should use that pattern for flows:
 
 1. Pure arrows are values.
 2. Composition is a function over flow values.
@@ -219,7 +219,7 @@ This is why =src/core/flow.ss= owns the functional kernel and why workflow modul
 
 ** 10.06.29.65 Scenario Case Expression Model
 
-A POO Flow Scenario is not merely a record containing a graph name, and it is
+A Agentic AI Lab Scenario is not merely a record containing a graph name, and it is
 not the heavy runtime execution itself.  It is a composed control-plane POO
 object.  Its domain algebra is expressed by noun-valued slots such as
 =profile-selection=, =events=, =edges= and =trajectories=.  Defaults use =?=,
@@ -298,15 +298,15 @@ values deliberately opt into inheritance and native slot refinement.  They are
 not two syntaxes and MUST NOT be routed through two evaluators.
 
 Use native type objects or a slot generic when one receiver family owns the
-behavior.  Use POO Flow CLOS only when independently extensible axes cross.
+behavior.  Use Agentic AI Lab CLOS only when independently extensible axes cross.
 For example, =Scenario.prepare= is normally a method slot; projecting
 =Provider x Profile x ContractKind= is a legitimate CLOS generic.  There is no
 universal requirement that every Module contain both mechanisms.
 
 The first production closure of this model is owned by
 =src/scenario/case.ss=.  =user-composition=
-now returns =poo-flow.scenario-case.v1= directly; the former inert
-=poo-flow.composition= identity and public compatibility accessors are removed.
+now returns =agentic-ai-lab.scenario-case.v1= directly; the former inert
+=agentic-ai-lab.composition= identity and public compatibility accessors are removed.
 The Case owns lazy =execution-plan=, =admission=, and =presentation= slots plus
 =prepare=, =admit=, =project=, =present=, and =new-session= methods.
 
@@ -401,7 +401,7 @@ Tests should include at least one invalid or cyclic case when the surface accept
 
 ** 10.06.29.100 MOP Boundary Policy
 
-=doc/TODO.md= is clear that a compositional MOP and method-combination are future design directions. POO Flow should benefit from the existing POO object model without requiring downstream users to understand or implement a MOP.
+=doc/TODO.md= is clear that a compositional MOP and method-combination are future design directions. Agentic AI Lab should benefit from the existing POO object model without requiring downstream users to understand or implement a MOP.
 
 Rules:
 
@@ -411,11 +411,11 @@ Rules:
 4. If a future feature truly needs MOP behavior, write it as an internal module boundary with tests and a report-only presentation first.
 5. Keep user documentation phrased in prototype, slot, and functional-composition terms.
 
-This prevents POO Flow from inventing a second object system while still leaving room to adopt upstream MOP work later.
+This prevents Agentic AI Lab from inventing a second object system while still leaving room to adopt upstream MOP work later.
 
 ** 10.06.29.110 Syntax And Macro Policy
 
-=brace.ss= shows that syntax should lower to the same object core, not define a new semantic language. POO Flow macros should therefore be hygienic authoring conveniences over POO objects and functional combinators.
+=brace.ss= shows that syntax should lower to the same object core, not define a new semantic language. Agentic AI Lab macros should therefore be hygienic authoring conveniences over POO objects and functional combinators.
 
 Allowed:
 
@@ -435,7 +435,7 @@ When in doubt, expand to an ordinary binding whose value can be inspected and te
 
 =doc/prototypes.md= describes typeclasses as prototypes for type descriptors and names Interface-Passing Style as a core use. =type.ss= and =fun.ss= make that concrete: type descriptors, Category, Functor, Identity, wrapper behavior, and binding/mapping behavior are objects.
 
-Rules for POO Flow:
+Rules for Agentic AI Lab:
 
 1. Model strategy dictionaries, flow categories, sandbox capability sets, and adapter contracts as objects or functional values, not as class hierarchies.
 2. Pass behavior explicitly through slots or constructor arguments; do not rely on ambient global dispatch.
@@ -511,8 +511,8 @@ it behind a validation or doctor contract and return plain receipt data.
 
 The first executable guard for these rules is now in =modules/sandbox-core/profile.ss=:
 
-1. =poo-flow-sandbox-profile-object-row-authoring-diagnostics= reports row-level authoring facts.
-2. =poo-flow-sandbox-profile-object-authoring-diagnostics= batches those facts for profile forms.
+1. =agentic-ai-lab-sandbox-profile-object-row-authoring-diagnostics= reports row-level authoring facts.
+2. =agentic-ai-lab-sandbox-profile-object-authoring-diagnostics= batches those facts for profile forms.
 3. =advanced-row-operator= marks =:append=, =:prepend=, =:remove=, and =:override= as advanced escape hatches.
 4. =raw-compute-hook= marks =:compute=, =$computed-slot-spec=, or literal =lambda= in profile rows as non-primary user interface shapes.
 5. =runtime-executed-marker= catches user metadata that tries to mark Scheme profile authoring as runtime execution.
@@ -538,7 +538,7 @@ Good:
 
 #+begin_src scheme
 (.o (:: @ [lineage placement])
-    kind: 'poo-flow.session.value
+    kind: 'agentic-ai-lab.session.value
     session-id: 'root
     chunks: chunks)
 #+end_src
@@ -546,7 +546,7 @@ Good:
 Bad:
 
 #+begin_src scheme
-(.o kind: 'poo-flow.session.value
+(.o kind: 'agentic-ai-lab.session.value
     lineage: lineage-object
     placement: placement-object)
 #+end_src
@@ -591,7 +591,7 @@ than copying fields:
 (.o (:: @ [session-lineage
           sandbox-placement
           governance-policy])
-    kind: 'poo-flow.session.value)
+    kind: 'agentic-ai-lab.session.value)
 #+end_src
 
 This is the core advantage over a plain DSL: a downstream user can extend,
@@ -662,17 +662,17 @@ mixins. The session object should inherit them:
 
 #+begin_src scheme
 (def lineage
-  (.o lineage-kind: 'poo-flow.session.lineage
+  (.o lineage-kind: 'agentic-ai-lab.session.lineage
       parent-session-ids: '(root)
       branch-kind: 'fork))
 
 (def placement
-  (.o placement-kind: 'poo-flow.session.placement
+  (.o placement-kind: 'agentic-ai-lab.session.placement
       placement-profile-ref: 'agent/session))
 
 (def session
   (.o (:: @ [lineage placement])
-      kind: 'poo-flow.session.value
+      kind: 'agentic-ai-lab.session.value
       session-id: 'child
       chunks: chunks
       runtime-executed: #f))

@@ -160,7 +160,7 @@ bounded progress requirements such as fuel, retry authority, termination
 evidence, and fixed-point observability expectations.
 
 It does not introduce a local fixed-point engine. Evaluation and observation
-reuse =gerbil-poo= and POO Flow mechanisms.
+reuse =gerbil-poo= and Agentic AI Lab mechanisms.
 
 Host =if=, =cond=, or =case= forms are not the ordinary extension interface for
 loop policy. Higher-order POO values and prototype extension remain the
@@ -507,7 +507,7 @@ truth.
 - [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
 
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85 - POOF Proof Adoption and POO Flow Correspondence Obligations]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85 - POOF Proof Adoption and Agentic AI Lab Correspondence Obligations]]
 - [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90 - POO Control Policy Composition, Priority, Conflict, and Veto Resolution]]
 - [[file:45-91-control-policy-profile-projection-and-user-composition-interface.org][45-91 - Control Policy Profile Projection and User Composition Interface]]

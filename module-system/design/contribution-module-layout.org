@@ -2,24 +2,24 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO Flow contribution module layout and build ownership
+#+title: Agentic AI Lab contribution module layout and build ownership
 
-POO Flow documents the reusable module convention. Contribution repositories
-own domain source, while POO Flow owns the Gerbil package namespace and build
+Agentic AI Lab documents the reusable module convention. Contribution repositories
+own domain source, while Agentic AI Lab owns the Gerbil package namespace and build
 environment. Native =std/make= owns source dependency analysis, compilation and
-scheduling; POO Flow does not expose a second compiler or scheduler.
+scheduling; Agentic AI Lab does not expose a second compiler or scheduler.
 
 The contribution exports its domain module interfaces. It owns neither a
-module-source object nor a second module list. POO Flow owns the trusted
+module-source object nor a second module list. Agentic AI Lab owns the trusted
 contribution registry:
 #+begin_src scheme
-(make-poo-flow-contribution-registry-entry
+(make-agentic-ai-lab-contribution-registry-entry
  'lambda-episteme
  "https://github.com/tao3k/lambda-episteme.git"
  "ab31bde9cbd09465798991bd91e3a8400f651d6e"
  "packages/lambda-episteme" "modules"
  '(decision-kind diataxis healthcare ontology))
-(make-poo-flow-contribution-registry-entry
+(make-agentic-ai-lab-contribution-registry-entry
  'lambda-aitia
  "https://github.com/tao3k/lambda-aitia.git"
  "9363bed3a50729cdfe08ceb5144c350eea6003b3"
@@ -27,9 +27,9 @@ contribution registry:
  '(ADR assurance gitops sdlc))
 #+end_src
 
-POO Flow's default PackageSpec is the clean-image bootstrap: six stable
+Agentic AI Lab's default PackageSpec is the clean-image bootstrap: six stable
 framework entrypoints and zero catalog targets. =build.ss= imports only ASP's
-Build API because importing a =:poo-flow= loader before the package exists is a
+Build API because importing a =:agentic-ai-lab= loader before the package exists is a
 self-dependency that fails in a hermetic Bazel image. After bootstrap, module
 selection resolves through the ordered POO load path. Available
 =modules/<module-name>/interface.ss= roots remain catalog data, so adding
@@ -59,7 +59,7 @@ discovery to each direct =modules/<module-name>/= tree and therefore applies
 the same reader-native owner-import admission to contributor roles. Aggregate
 framework imports return the structured
 =yuanxu.module-owner-import-observation.v1= diagnostic and fail with
-=POO-FLOW-MODULE-E008= before a contribution reaches native compilation.
+=AGENTIC-AI-LAB-MODULE-E008= before a contribution reaches native compilation.
 The loader admits exactly the module's public =interface.ss=; native Gerbil
 imports close over its internal
 roles before ASP =package-source-stage= hands the entrypoint to =std/make=.
@@ -75,10 +75,10 @@ Module selection and module location are separate. =yuanxu-modules!= emits
 only POO selection objects: qualified module identity and flags. It does not
 embed the repository that provides the implementation.
 
-POO Flow constructs =module-source-collection= POO objects from registered or
+Agentic AI Lab constructs =module-source-collection= POO objects from registered or
 explicit roots. A =module-load-path= is an immutable POO composition of those
-collections. The default path contains =poo-flow-maintained=. The official
-contribution path adds POO Flow's trusted registry; Lambda itself adds no
+collections. The default path contains =agentic-ai-lab-maintained=. The official
+contribution path adds Agentic AI Lab's trusted registry; Lambda itself adds no
 registry. Lookup stops at the first collection containing the module,
 so a caller needing private overrides constructs a path with its user source
 first. Collection identity, owner, module key and selected entrypoint remain on
@@ -119,11 +119,11 @@ This adapts Doom's ordered module roots and first-match lookup to immutable POO
 objects. Doom's source ordering is defined in
 [[https://github.com/doomemacs/core/blob/master/lisp/doom.el][doom.el]], its lookup and declaration registry in
 [[https://github.com/doomemacs/core/blob/master/lisp/doom-modules.el][doom-modules.el]], and its separately maintained community collection in
-[[https://github.com/doomemacs/modules-contrib/blob/main/README.md][modules-contrib]]. POO Flow preserves the source separation without mutable
+[[https://github.com/doomemacs/modules-contrib/blob/main/README.md][modules-contrib]]. Agentic AI Lab preserves the source separation without mutable
 global load-path state.
 
 * Module structure
-This document describes the POO Flow-owned contract for this repository.
+This document describes the Agentic AI Lab-owned contract for this repository.
 Each direct directory under =modules/= is an independently named module and must
 provide these five roles. Extra focused implementation files and subdirectories
 are permitted; the public entry remains =interface.ss=.
@@ -195,17 +195,17 @@ examples directory. Its Scheme-bearing top level is closed:
 This borrows Doom's fixed entry roles and the repository classification common
 in NixOS configurations. Local =modules/<name>/= trees follow the normal five
 module roles and are ignored by Git; the directory has no source registry or
-loader file. POO Flow's internal loader constructs the user-first source path.
+loader file. Agentic AI Lab's internal loader constructs the user-first source path.
 Promotion to the contribution's top-level =modules/= tree is an explicit
 review boundary.
 
-POO Flow also adds first-class =profiles/=
+Agentic AI Lab also adds first-class =profiles/=
 because a Scenario may reuse the same modules with several independently
 inheritable Profiles. A GitHub Workflow therefore has four distinct layers:
 module enablement in =init.ss=, reusable Profile objects under
 =profiles/<domain>/<case>.ss=, reusable Scenario values under =scenarios/=, and
 final developer/staging/production =use-composition= declarations in
-=config.ss=. POO Flow discovers the two directories once per config expansion;
+=config.ss=. Agentic AI Lab discovers the two directories once per config expansion;
 the user does not write an aggregate import list or wrapper form.
 
 “Best practice” is a quality responsibility of these
@@ -213,8 +213,8 @@ Profile objects; filenames identify concrete reusable cases. A user refinement
 lives under an owner namespace such as =profiles/tao3k/promotion.ss= and records
 its owner and feature set on the native POO object.
 
-The root POO Flow contributor builder validates this shape before invoking ASP.
-Any other top-level =*.ss= file is rejected with =POO-FLOW-UI-E002= rather than
+The root Agentic AI Lab contributor builder validates this shape before invoking ASP.
+Any other top-level =*.ss= file is rejected with =AGENTIC-AI-LAB-UI-E002= rather than
 silently compiled as an unclassified example. Each role directory is a separate
 observable ASP source stage. =init.ss= is loaded before discovered Modules,
 Profiles and Scenarios; =config.ss= closes the sequence. The child repository
@@ -222,7 +222,7 @@ does not own a build script, package file, directory walker, or role registry.
 
 * Directory build
 
-The contribution has no =build-contribute.ss= and no =gerbil.pkg=. POO Flow's
+The contribution has no =build-contribute.ss= and no =gerbil.pkg=. Agentic AI Lab's
 default =build.ss= owns the core PackageSpec and =defbuild-script=. Its separate
 root-level contribution adapter consumes the same POO module source objects
 used by runtime loading. Shared contribution facilities and the closed User
@@ -233,17 +233,17 @@ exists. A new =types.ss=, =funs.ss=, standard leaf, or other Scheme source is
 automatically included in its owning module stage.
 
 Each stage uses the selected entrypoint's containing directory as =srcdir= and
-retains the full =poo-flow/<contribution>/modules/<name>= prefix. The adapter
+retains the full =agentic-ai-lab/<contribution>/modules/<name>= prefix. The adapter
 prints =source-stage-start= before invoking ASP and =source-stage-complete=
 afterward, with elapsed time and receipt count. This makes a cold or stalled
 module attributable without changing ASP or upstream =std/make=.
 
-Contribution tests are a separate lane. POO Flow maps a selected
+Contribution tests are a separate lane. Agentic AI Lab maps a selected
 =t/<module-name>/= tree to one ASP stage containing its =build-root.ss= and all
 recursively discovered =*-test.ss= files, or maps an exact test file to its own
 stage, and delegates currentness and compilation to =std/make=.
 The stage source is the selected file's directory and its install prefix retains
-the complete =poo-flow/<contribution>/t/...= namespace. This prevents the
+the complete =agentic-ai-lab/<contribution>/t/...= namespace. This prevents the
 repository root from shadowing compiled production dependencies and prevents a
 missing prefix from recompiling an unchanged file. No child PackageSpec,
 dependency parser, scheduler, or generated list of test files is introduced.
@@ -305,7 +305,7 @@ seconds including source observation, dynamic import observation, and its 20
 assertions. Its warm source stage reports zero compile entries and about 0.16
 seconds inside the ASP Build API.
 
-Before evaluating an atomic test, POO Flow applies its strict POO slot authoring
+Before evaluating an atomic test, Agentic AI Lab applies its strict POO slot authoring
 observation to the selected module tree and exact test file, then dynamically
 imports that exact compiled test before =gxtest=. Events are flushed at
 =source-start=, =source-scanned=, =source-admitted=, =test-start= and

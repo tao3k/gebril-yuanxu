@@ -19,7 +19,7 @@ The active gerbil-poo PR 13 checkout on =feat/positive-closure-costs=, based on
   other concurrent CI/Bazel edits are not owned by this task.
 - =doc/object-contracts.md= and its README link: English public API documentation.
 
-These changes are local and unpushed. They do not update POO Flow's dependency
+These changes are local and unpushed. They do not update Agentic AI Lab's dependency
 lock or installed package. Other concurrent checkout changes are outside this
 task. The object-contract module imports only standard list helpers, POO objects
 and the existing MOP Type protocol; it imports no Core, Schema, Graph or module
@@ -97,7 +97,7 @@ Focused results:
 Every suite reported MODULE-OK, HARNESS-OK and final OK with no error-case/check/
 harness/module or heap/stack-overflow markers. Logs and generated compiler files
 remain temporary artifacts. No full-package build, Bazel build, benchmark or
-remote CI run is claimed. POO Flow's installed dependency remains unchanged.
+remote CI run is claimed. Agentic AI Lab's installed dependency remains unchanged.
 
 Production module adaptation,
 automatic source association, Loader integration and publication remain out of

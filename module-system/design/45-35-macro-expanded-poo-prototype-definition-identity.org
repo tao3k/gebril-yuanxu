@@ -293,7 +293,7 @@ not make package management responsible for POO semantic evidence.
 =gerbil.pkg= remains Gerbil's package-management mechanism.  It resolves and
 installs package dependencies.
 
-POO Flow MAY use the resolved fixed package identity as one input to a
+Agentic AI Lab MAY use the resolved fixed package identity as one input to a
 definition closure.  It MUST NOT ask =gerbil.pkg= to provide:
 
 - prototype-definition identity;

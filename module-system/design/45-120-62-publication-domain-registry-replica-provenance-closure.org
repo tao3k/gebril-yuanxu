@@ -202,7 +202,7 @@ stateDiagram-v2
 * Lean closure
 
 The proof module is
-=PooFlowProof.Enterprise.PublicationDomainRegistryReplicaProvenanceClosure=.
+=AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaProvenanceClosure=.
 
 It establishes:
 

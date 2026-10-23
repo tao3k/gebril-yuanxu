@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO Flow Agentic Control Plane AC-00 Baseline Receipt
+#+title: Agentic AI Lab Agentic Control Plane AC-00 Baseline Receipt
 #+subtitle: Isolation, owner inventory, validation baseline, and first-slice freeze
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+date: 2026-07-10
 #+status: Baseline captured; AC-01 blocked
 #+options: toc:3 num:t
@@ -13,10 +13,10 @@
 
 | Field | Value |
 |-
-| Schema | =poo-flow.agentic-control-plane.ac00-baseline.v1= |
+| Schema | =agentic-ai-lab.agentic-control-plane.ac00-baseline.v1= |
 | Source commit | =dc3771a65264f9155e2c3cfedd1f2f0631059501= |
 | Branch | =feat/agentic-control-plane-ac00= |
-| Worktree | =/Users/guangtao/.codex/worktrees/poo-flow-ac00= |
+| Worktree | =/Users/guangtao/.codex/worktrees/agentic-ai-lab-ac00= |
 | Isolation | pass |
 | Owner inventory | pass with parser-index limitation |
 | Gerbil build | pass after local package/cache view alignment |
@@ -62,7 +62,7 @@ current owners:
 | Policy | =src/core/policy.ss=, =modules/session/policy.ss=, =policy-syntax.ss=, and =policy-validation*.ss= |
 | Receipts | Core/runner receipts, session receipt syntax and validation receipt, contract receipt, loop-engine extension receipt, and proof-gate receipts |
 | Semantic and contract namespaces | =src/semantic/boundary-namespace.ss= and =src/contract/boundary-namespace.ss= |
-| C ABI | =bindings/runtime-c/include/poo_flow_runtime_abi.h= and =bindings/runtime-c/probe/poo_flow_runtime_abi_probe.c= |
+| C ABI | =bindings/runtime-c/include/agentic_ai_lab_runtime_abi.h= and =bindings/runtime-c/probe/agentic_ai_lab_runtime_abi_probe.c= |
 | Python runtime | =packages/python-runtime/=, including CFFI, C/CFFI ABI tests, probe tests, and C ABI benchmark owners |
 | Proof | =src/proof/= proof fact/gate/FFI owners and =packages/proofs/lean/= |
 | Scenarios | CrewAI, LangChain/LangGraph, lifecycle, proof gate/FFI, tool-calling, and policy observability owners |
@@ -109,8 +109,8 @@ its positive and negative cases.
 ** C ABI And Python Runtime
 
 #+begin_src sh
-uv run --project packages/python-runtime poo-flow-runtime-probe
-uv run --project packages/python-runtime poo-flow-runtime-validate
+uv run --project packages/python-runtime agentic-ai-lab-runtime-probe
+uv run --project packages/python-runtime agentic-ai-lab-runtime-validate
 uv run --project packages/python-runtime pytest packages/python-runtime/tests
 #+end_src
 
@@ -160,7 +160,7 @@ composition authoring path.  The repair must not introduce Bundle semantics.
 
 =t/scenarios/langchain-langgraph-core-test.ss= passes its composition, graph,
 and routing cases, then fails when =.ref= is applied to a
-=poo-flow-graph-runtime-receipt-record=.  The successful-execution and
+=agentic-ai-lab-graph-runtime-receipt-record=.  The successful-execution and
 missing-human-approval cases exhibit the same record/object mismatch.
 
 Owner boundary: the graph runtime receipt accessor contract and its scenario.
@@ -216,7 +216,7 @@ are demonstrated.
 
 * Related Documents
 
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][Architecture RFC]]
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][Architecture RFC]]
 - [[file:94-agentic-control-plane-migration-rfc.org][Migration RFC]]
 - [[file:95-agentic-control-plane-execution-plan.org][Execution Plan]]
 - [[file:96-agentic-control-plane-owner-test-matrix.org][Owner and Test Matrix]]

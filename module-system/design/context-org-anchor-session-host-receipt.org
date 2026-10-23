@@ -93,7 +93,7 @@ A transient Apalache port conflict failed one run; the unchanged full group pass
 after the listener exited. No watchdog or deadline was widened.
 
 CI includes both native regression files, all Quint sources/cases and the extended
-=PooFlowContextProof= target. Exact source hash/invariant metadata binding and six
+=AgenticAILabContextProof= target. Exact source hash/invariant metadata binding and six
 proof-gate tests passed locally. Metadata binding is not semantic refinement;
 automatic counterexample-to-native replay remains absent.
 

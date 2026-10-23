@@ -98,7 +98,7 @@
       user-settings: settings
       public-setting-keys: setting-keys))
 
-;;; Profile sets are the POO Flow analogue of Doom's profiles.el: a named
+;;; Profile sets are the Agentic AI Lab analogue of Doom's profiles.el: a named
 ;;; registry, a default profile key, and profile objects. No package or runtime
 ;;; synchronization happens here.
 ;; : (-> Symbol Symbol [PooUserProfile] POOObject)
@@ -113,7 +113,7 @@
 ;; : (-> Symbol POOObject)
 (def (yuanxuDefaultUserSettings profile-name)
   (yuanxu-settings
-   surface: "poo-flow"
+   surface: "agentic-ai-lab"
    profile: (symbol->string profile-name)
    flow-mode: 'funflow
    loop-strategy: 'governed

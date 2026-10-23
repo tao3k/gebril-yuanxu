@@ -27,7 +27,7 @@ The platform code is a reviewable design, not a shipping module API.
 
 The actual upstream [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/pkg/server.k][schema]], [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/base/base.k][baseline]],
 [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/main.k][dev]] and [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/ci-test/stdout.golden.yaml][golden output]] remain fixed-revision external references.
-The examples repository is not a POO Flow submodule or build dependency. Read
+The examples repository is not a Agentic AI Lab submodule or build dependency. Read
 the linked upstream files for exact source; the doc snippets are explanatory adaptations.
 
 * Upstream ownership: schema/defaults, baseline and consumer

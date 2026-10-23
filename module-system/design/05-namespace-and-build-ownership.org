@@ -17,7 +17,7 @@
 | Type fact projections | :yuanxu/object-types/facts |
 
 The physical core/ submodule checkout does not define a compiler package.
-The product POO Flow retains its own product namespace. Yuanxu imports no
+The product Agentic AI Lab retains its own product namespace. Yuanxu imports no
 product implementation. Semantic module keys such as core/json-schema are
 publication identities, independent of Gerbil library paths.
 

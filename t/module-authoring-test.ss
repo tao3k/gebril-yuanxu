@@ -142,7 +142,7 @@
            (and (error? exception)
                 (string-contains
                  (call-with-output-string (lambda (port) (display-exception exception port)))
-                 "POO-FLOW-MODULE-E008"))))))
+                 "YUANXU-MODULE-E008"))))))
     (yuanxu-test-case "source graph and deferred projection never activate a backend"
       (let* ((calls 0)
              (source (make-yuanxu-module-local-source "example/interface.ss"))

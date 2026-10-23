@@ -236,7 +236,7 @@ flowchart LR
     P -->|"is represented by an explicitly owned module export"| M
     M -->|"binds a normal first-class Scheme value"| V["POO Profile Value"]
     V -->|"is composed explicitly by the user"| C["compose profiles"]
-    C -->|"produces one canonical composition root"| R["POO Flow Evaluation"]
+    C -->|"produces one canonical composition root"| R["Agentic AI Lab Evaluation"]
 #+end_src
 
 * Current wendao-episteme ownership
@@ -337,7 +337,7 @@ Profile construction creates an ordinary pure POO value.
 
 =compose profiles= combines only the values explicitly supplied by the user.
 
-** POO Flow evaluation
+** Agentic AI Lab evaluation
 
 Evaluation resolves the graph, fixed point, contracts, capabilities, and
 evidence.

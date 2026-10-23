@@ -2,12 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Scheme / Marlin Runtime Boundary for POO Flow
+#+title: Scheme / Marlin Runtime Boundary for Agentic AI Lab
 #+date: 2026-07-05
 
 * Boundary
 
-POO Flow's Scheme layer is not a LangGraph runtime clone and must not grow into
+Agentic AI Lab's Scheme layer is not a LangGraph runtime clone and must not grow into
 one.  The Scheme layer owns the strategy object model, profile composition,
 policy contracts, graph intent, durable intent, proof facts, and user interface
 syntax.  Marlin, Rust, or another long-running runtime language owns process
@@ -16,7 +16,7 @@ network IO, and recovery.
 
 This distinction is architectural, not merely implementation detail:
 
-- Scheme/POO Flow should answer: what is allowed, what is composed, what must
+- Scheme/Agentic AI Lab should answer: what is allowed, what is composed, what must
   happen before what, what scope is visible, what policy gates must hold, and
   what proof facts can be generated.
 - Marlin/runtime should answer: how long-running work is executed, persisted,
@@ -51,7 +51,7 @@ verified control-plane receipt that a runtime can consume.
 
 * Durable Means Durable Policy Intent Here
 
-When a user asks for durable behavior in POO Flow, the Scheme layer should model
+When a user asks for durable behavior in Agentic AI Lab, the Scheme layer should model
 durable policy intent, not implement a full durable runtime.
 
 Examples of Scheme-owned durable facts:
@@ -79,10 +79,10 @@ LangGraph is useful as a scenario because it demonstrates production agent
 orchestration requirements: graph nodes and edges, conditional routing,
 superstep-style coordination, channels, checkpointers, interrupts, streaming,
 subgraphs, retries, timeouts, and deployment surfaces.  It is not the semantic
-center of POO Flow.
+center of Agentic AI Lab.
 
-POO Flow must not map its own policy system onto LangGraph as if LangGraph were
-the source of truth.  The direction is the opposite: POO Flow's Policy,
+Agentic AI Lab must not map its own policy system onto LangGraph as if LangGraph were
+the source of truth.  The direction is the opposite: Agentic AI Lab's Policy,
 Durable, Checkpoint, Graph, Loop, and Composition capabilities should be strong
 enough that a LangGraph-like system is only one composition scenario among many.
 When LangGraph exposes a missing capability, the gap belongs under =src= as a
@@ -175,7 +175,7 @@ The runtime side must be implemented by a runtime language. Python is the first 
 
 This is the intended direction:
 #+begin_src text
-POO Flow Scheme control plane
+Agentic AI Lab Scheme control plane
   -> profile composition
   -> graph/loop/policy/proof facts
   -> runtime handoff receipt
@@ -184,7 +184,7 @@ POO Flow Scheme control plane
   -> Scheme/Lean receipt check
 #+end_src
 
-The same boundary applies to LangGraph, CrewAI, and Pi Agent core style systems. POO Flow should not clone those runtimes in Scheme. Instead, POO Flow should make their core capabilities ordinary composition scenarios, then lower the verified plan into Python or another runtime language.
+The same boundary applies to LangGraph, CrewAI, and Pi Agent core style systems. Agentic AI Lab should not clone those runtimes in Scheme. Instead, Agentic AI Lab should make their core capabilities ordinary composition scenarios, then lower the verified plan into Python or another runtime language.
 
 For example:
 - LangChain-like capability maps to model/tool loop policy, prompt/model/parser ordering, middleware/tool constraints, and runtime provider bindings.
@@ -242,7 +242,7 @@ stream multiplexing, or process supervision, it belongs in Marlin/runtime.
 
 If a feature defines policy reuse, profile override, graph shape, lifecycle
 preconditions, proof facts, or runtime handoff contracts, it belongs in
-Scheme/POO Flow.
+Scheme/Agentic AI Lab.
 
 This is the line that keeps the Scheme layer elegant and keeps the production
 runtime in the language that is built to run for a long time.

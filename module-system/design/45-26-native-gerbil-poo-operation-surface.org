@@ -209,7 +209,7 @@ Access is demand-lazy:
 - missing base definitions fail only when demanded;
 - nested objects instantiate only at their point of use;
 - a method is an ordinary function-valued slot;
-- POO Flow must not add a second force, cache, or evaluator layer.
+- Agentic AI Lab must not add a second force, cache, or evaluator layer.
 
 * Nested objects and submodules
 
@@ -245,7 +245,7 @@ The documented native reflection family includes:
 Reflection operates on the object itself.  It does not require a parallel
 Profile registry, string-keyed manifest, or provider index.
 
-POO Flow may build stronger identity, provenance, Capability, and diagnostic
+Agentic AI Lab may build stronger identity, provenance, Capability, and diagnostic
 views from these native operations and the =gerbil-poo= MOP, but it must not
 replace native object reflection.
 
@@ -263,7 +263,7 @@ Their supporting slot-spec constructors include constant, thunk, self, and
 computed slot specifications.
 
 These operations are part of the core native vocabulary.  They are not
-reimplemented behind a POO Flow patch language.
+reimplemented behind a Agentic AI Lab patch language.
 
 They are effectful and therefore cross an explicit lifecycle boundary.  They
 must not silently mutate canonical semantic evidence already used by a
@@ -356,10 +356,10 @@ facade, or reinterpret printed syntax.
 =gerbil-poo= owns the native object representation, syntax, inheritance, lazy
 instantiation, reflection primitives, and effectful operations.
 
-POO Flow uses and extends those objects with module, Capability, identity,
+Agentic AI Lab uses and extends those objects with module, Capability, identity,
 provenance, condition, authority, observability, and receipt semantics.
 
-POO Flow does not fork or reimplement the fixed-point object system.
+Agentic AI Lab does not fork or reimplement the fixed-point object system.
 
 The harness validates the operation contracts and lifecycle receipts.  It is a
 development dependency and not a provider of POO semantics.

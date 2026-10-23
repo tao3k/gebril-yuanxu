@@ -122,7 +122,7 @@ The next =memory-receipt= should expose the case boundary explicitly:
 
 #+begin_src scheme
 ((kind . memory-receipt)
- (contract . poo-flow.loop-engine.memory-receipt.v1)
+ (contract . agentic-ai-lab.loop-engine.memory-receipt.v1)
  (selected-use-case . ci-sweeper)
  (policies
   (((use-case . daily-triage) ...)

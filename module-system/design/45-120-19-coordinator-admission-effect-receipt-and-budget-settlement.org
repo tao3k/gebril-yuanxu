@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Coordinator Admission, Effect Receipt, and Budget Settlement
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -19,7 +19,7 @@ before one bounded attempt.
 The admission transaction can be made atomic with respect to the authoritative
 evidence store, decision identity, capability validation, and budget
 reservation.  An arbitrary external effect cannot generally be made
-exactly-once.  POO Flow therefore separates coordinator admission evidence from
+exactly-once.  Agentic AI Lab therefore separates coordinator admission evidence from
 effect outcome evidence and fails closed when the outcome is indeterminate.
 
 * Decision
@@ -36,7 +36,7 @@ Exactly-once admission, receipt-backed idempotency, and fail-closed handling of
 indeterminate external effects.
 #+end_quote
 
-POO Flow does not claim exactly-once execution for arbitrary external effects.
+Agentic AI Lab does not claim exactly-once execution for arbitrary external effects.
 
 * Admission and execution relationship
 

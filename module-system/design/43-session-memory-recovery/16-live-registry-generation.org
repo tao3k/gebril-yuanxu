@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.16 Live Registry and Consumer Generation
 :PROPERTIES:
-:ID: poo-flow-context-live-registry-generation
+:ID: agentic-ai-lab-context-live-registry-generation
 :STATUS: local-registry-verified-durable-host-open
 :END:
 
@@ -81,7 +81,7 @@ not a stable-source receipt; only a subsequent unchanged-input run qualifies.
 Focused checks, from repository root:
 #+begin_src sh
 python3 packages/proofs/context-lifecycle/check_quint.py --model ContextRegistry
-(cd packages/proofs/lean-poo && timeout 120s lake build PooFlowContextLifecycleProof)
+(cd packages/proofs/lean-poo && timeout 120s lake build AgenticAILabContextLifecycleProof)
 GERBIL_PATH="$CONTEXT_SCHEME_PACKAGE_PATH" \
 GERBIL_LOADPATH="$CONTEXT_SCHEME_PACKAGE_PATH/lib:$CONTEXT_ASCENT_GERBIL_PATH/lib" \
 GAMBOPT=max-heap=1G,debug=q \

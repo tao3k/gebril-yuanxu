@@ -121,7 +121,7 @@ The author may:
 - construct a new higher-order Profile that contributes the policy.
 
 The advanced interface is the native POO interface adopted through
-[[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]].
+[[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]].
 It is not a second policy DSL.
 
 Executable examples of that advanced path must wait until the exact
@@ -247,7 +247,7 @@ checklists remain pending.
 | Local Lean module | =accepted= | =lake build YuanxuProof.Modules.Funflow.ProfileProjection=: 33/33 jobs |
 | Local Lean closure | =accepted= | =lake build=: 106/106 jobs |
 | AXLE independent declaration check | =accepted= | Request =941621a5-28f6-4c04-84de-da6b56c4e2b3=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =81fa56a7-abee-4e34-af4e-7b07e7d1c320= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =81fa56a7-abee-4e34-af4e-7b07e7d1c320= cannot resolve local module prefix =AgenticAILabProof= |
 | POO Profile-projection implementation | =not-admitted= | All 56 ordinary-user, higher-order Profile, duplicate-identity, authority, macro, extension, cross-plane, and admission items remain pending |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -480,7 +480,7 @@ Every higher-order Profile or Module preserves three distinct objects:
 
 An ~imports~ object may contain submodules whose own ~imports~ objects continue
 the graph.  Composition deduplicates nodes by stable identity, intersects
-capability requirements, and preserves cycles for the POO Flow fixed-point and
+capability requirements, and preserves cycles for the Agentic AI Lab fixed-point and
 observability boundaries.
 
 Ordinary users do not enumerate the recursive closure.  A prepared Profile
@@ -649,7 +649,7 @@ Implementation may begin only when:
 * References
 
 - [[file:44-current-project-programming-style.org][44: current project programming style]]
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85: POOF proof adoption and POO Flow correspondence obligations]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85: POOF proof adoption and Agentic AI Lab correspondence obligations]]
 - [[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86: POO conservative-extension criterion]]
 - [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89: POO-native control object algebra]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90: control-policy resolution]]

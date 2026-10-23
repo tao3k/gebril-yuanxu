@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.43 Three-source Competition — Executable Correspondence
 :PROPERTIES:
-:ID: poo-flow-context-three-source-competition
+:ID: agentic-ai-lab-context-three-source-competition
 :STATUS: formal-pass-scheme-natural-exit-open
 :DATE: 2026-10-15
 :END:
@@ -87,7 +87,7 @@ exhausts 229 distinct states (461 generated). Seven
 deliberately unsafe mutations must produce actual invariant counterexamples;
 ten reachability controls prevent vacuous safe success. There are 18 Cases.
 
-[[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/ProviderCompetition.lean][LeanPOO's competition projection]] uses a lawful revision Focus and finite
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/ProviderCompetition.lean][LeanPOO's competition projection]] uses a lawful revision Focus and finite
 provider identities, with separate per-provider epochs and cursors. Seventeen
 conditional theorems and thirteen executable guards distinguish publish from
 receipt-checked acceptance. A receipt's validity is the actual verifier premise,

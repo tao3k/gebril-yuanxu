@@ -51,7 +51,7 @@ publication/selection, and design reasoning from ecosystem comparisons. The
 [[file:../../../module-system/design/README.org][Module System protocol documents]] and
 [[file:../../../feature-system/design/README.org][Feature System migration design]] own shared mechanism boundaries.
 
-POO Flow retains runnable/source-backed business cases and its product adapters.
+Agentic AI Lab retains runnable/source-backed business cases and its product adapters.
 Examples here may cite that consumer, but no such citation creates a Core runtime
 dependency. Workspace-only links to unpublished consumer design notes are marked
 by their location outside this Core checkout; pinned ecosystem code references
@@ -175,7 +175,7 @@ another language's minimal syntax, or claim superiority merely from supporting
 higher-order functions. Use actual library consumers where evidence is available;
 label language-only examples and pending ecosystem research explicitly.
 
-Every comparison must end with a conclusion answering: (1) what POO Flow could
+Every comparison must end with a conclusion answering: (1) what Agentic AI Lab could
 improve for the matched real task, (2) where it is worse or incomplete, (3) why the
 additional abstraction is needed, and (4) what evidence would establish the gain.
 Separate native mechanism, proposed ecosystem capability and measured result.

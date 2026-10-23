@@ -2,19 +2,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POOF Proof Adoption and POO Flow Correspondence Obligations
-#+author: POO Flow
+#+title: POOF Proof Adoption and Agentic AI Lab Correspondence Obligations
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
 
 This RFC records an approved proof-ownership boundary.
 
-- [X] POO Flow adopts the POOF theory, constructions, and proofs.
-- [X] =gerbil-poo= remains the only POO implementation used by POO Flow.
-- [X] POO Flow does not re-prove prototype identity, composition, fixed-point,
+- [X] Agentic AI Lab adopts the POOF theory, constructions, and proofs.
+- [X] =gerbil-poo= remains the only POO implementation used by Agentic AI Lab.
+- [X] Agentic AI Lab does not re-prove prototype identity, composition, fixed-point,
   =self=/=super=, object construction, or multiple-inheritance semantics.
-- [X] POO Flow owns only its domain projection and conservative-extension
+- [X] Agentic AI Lab owns only its domain projection and conservative-extension
   obligations.
 - [X] Prototype primitives are classified as direct correspondence.
 - [X] Slot specifications are classified as representation refinement.
@@ -37,14 +37,14 @@ second POO implementation or a competing proof.
 * Formal adoption boundary
 
 The formal surface proves the ownership and fail-closed boundaries introduced
-by POO Flow.  It does not restate the POOF denotational proof and does not
+by Agentic AI Lab.  It does not restate the POOF denotational proof and does not
 declare the implementation correspondence audit complete.
 
 #+begin_src text
 #let Authority = (
   theory: "POOF",
   implementation: "gerbil-poo",
-  projection: "POO Flow",
+  projection: "Agentic AI Lab",
 )
 
 #let CorrespondenceClass = (
@@ -63,7 +63,7 @@ $ "second POO implementation" = false $
 #+end_src
 
 The three authorities are distinct.  Adoption transfers neither theory
-ownership nor implementation ownership to POO Flow; POO Flow owns only its
+ownership nor implementation ownership to Agentic AI Lab; Agentic AI Lab owns only its
 domain projection and the evidence that this projection follows the adopted
 path.
 
@@ -98,13 +98,13 @@ rejects a Profile value.
 
 ** Lean proof obligations
 
-- [X] POOF theory, =gerbil-poo= implementation, and POO Flow projection are
+- [X] POOF theory, =gerbil-poo= implementation, and Agentic AI Lab projection are
   distinct authorities.
 - [X] POOF owns the adopted theory.
 - [X] =gerbil-poo= owns the Gerbil Scheme implementation.
-- [X] POO Flow owns only its Profile projection.
-- [X] POO Flow does not re-prove the POOF algebra.
-- [X] POO Flow creates no second POO implementation.
+- [X] Agentic AI Lab owns only its Profile projection.
+- [X] Agentic AI Lab does not re-prove the POOF algebra.
+- [X] Agentic AI Lab creates no second POO implementation.
 - [X] Prototype primitives are direct correspondence.
 - [X] Slot specifications are representation refinement.
 - [X] Whole-object construction is implementation refinement.
@@ -115,7 +115,7 @@ rejects a Profile value.
   failure remain distinct outcomes.
 - [X] Missing Racket does not invalidate the published theory.
 - [X] Missing Racket is not an upstream test failure.
-- [X] Racket does not become a POO Flow runtime dependency.
+- [X] Racket does not become a Agentic AI Lab runtime dependency.
 - [X] Profile domain slots remain ordinary POO values.
 - [X] Projection uses no raw alist DSL.
 - [X] Projection uses no symbolic operand kind.
@@ -140,7 +140,7 @@ implementation checklist.
 | Local Lean module | =accepted= | =lake build YuanxuProof.PooClos.ProofBoundary=: 27/27 jobs |
 | Local Lean closure | =accepted= | =lake build=: 100/100 jobs |
 | AXLE independent declaration check | =accepted= | Request =6c99a3b5-402f-4b20-920c-f2cb739bf3d3=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =0e9db41f-38d5-48b7-9fe8-9f3f99aff5fe= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =0e9db41f-38d5-48b7-9fe8-9f3f99aff5fe= cannot resolve local module prefix =AgenticAILabProof= |
 | POOF executable checks | =blocked-missing-runtime= | =make test= stops before checks because =racket= is unavailable |
 | POOF to =gerbil-poo= implementation audit | =incomplete-correspondence= | Four-class review and Gerbil v0.19 runtime identity remain pending |
 
@@ -158,11 +158,11 @@ delegated dependency identity.
 
 The POO algebra is upstream work.
 
-POO Flow SHALL adopt the constructive theory and executable reference
+Agentic AI Lab SHALL adopt the constructive theory and executable reference
 construction published as POOF.  It SHALL use =gerbil-poo= as the Gerbil Scheme
 implementation of that semantic foundation.
 
-POO Flow MUST NOT:
+Agentic AI Lab MUST NOT:
 
 - derive a competing fixed-point calculus;
 - re-prove native prototype composition laws;
@@ -172,7 +172,7 @@ POO Flow MUST NOT:
 - replace native C4 behavior; or
 - present local conformance examples as a new proof of POO.
 
-The work remaining in POO Flow is correspondence, projection, and conservative
+The work remaining in Agentic AI Lab is correspondence, projection, and conservative
 extension.
 
 * Canonical upstream identities
@@ -211,11 +211,11 @@ The durable references are:
 - [[https://github.com/mighty-gerbils/gerbil-poo/blob/1c3225637525400341a09e958296962c10184ead/doc/poo.md][POO operation documentation]]
 
 POOF is the theory and executable reference.  =gerbil-poo= is the Gerbil Scheme
-implementation.  POO Flow is a downstream semantic application.
+implementation.  Agentic AI Lab is a downstream semantic application.
 
 * Adopted upstream content
 
-POO Flow adopts, rather than redefines, the upstream treatment of:
+Agentic AI Lab adopts, rather than redefines, the upstream treatment of:
 
 - the distinction among instances, prototypes, wrappers, generators, objects,
   and classes;
@@ -230,7 +230,7 @@ POO Flow adopts, rather than redefines, the upstream treatment of:
 - interaction between prototype specifications and instantiated targets; and
 - executable examples that witness these constructions.
 
-These semantics are not POO Flow extension points.  A disagreement must first
+These semantics are not Agentic AI Lab extension points.  A disagreement must first
 be resolved against the upstream theory and pinned implementation rather than
 by adding a local patch language or alternate evaluator.
 
@@ -240,13 +240,13 @@ by adding a local patch language or alternate evaluator.
 flowchart LR
     POOF["POOF theory and executable reference"] -->|"defines fixed point, mix, identity, composition, objects, and inheritance"| CONTRACT["adopted POO semantic contract"]
     CONTRACT -->|"is realized for Gerbil Scheme by the pinned revision"| GERBIL["gerbil-poo"]
-    GERBIL -->|"provides native objects, prototypes, slots, self, super, and precedence"| PROFILE["POO Flow Profile projection"]
+    GERBIL -->|"provides native objects, prototypes, slots, self, super, and precedence"| PROFILE["Agentic AI Lab Profile projection"]
     PROFILE -->|"exposes a thin composition surface"| USER["user-composition and compose profiles"]
-    OBS["POO Flow observability and governance"] -->|"conservatively observes or constrains without changing POO meaning"| PROFILE
+    OBS["Agentic AI Lab observability and governance"] -->|"conservatively observes or constrains without changing POO meaning"| PROFILE
     GERBIL -->|"missing or contradictory mapping prevents only a verified correspondence claim"| INCOMPLETE["incomplete correspondence evidence"]
 #+end_src
 
-No arrow permits POO Flow to redefine an upstream POO operation.
+No arrow permits Agentic AI Lab to redefine an upstream POO operation.
 
 * POOF executable reference
 
@@ -270,8 +270,8 @@ composition, alternative groupings, =self=-dependent computation, inherited
 computation, prototype identity, object instantiation, C4 precedence, and
 memoization behavior.
 
-POO Flow SHALL cite these upstream checks as upstream evidence.  It SHALL NOT
-copy the full suite into the POO Flow repository merely to claim local
+Agentic AI Lab SHALL cite these upstream checks as upstream evidence.  It SHALL NOT
+copy the full suite into the Agentic AI Lab repository merely to claim local
 ownership.
 
 * Correspondence classification
@@ -345,7 +345,7 @@ Therefore =object-prototype-function= has no required one-name alias in
 - =.ref=.
 
 This is an implementation refinement of the adopted object/prototype
-construction.  It is not a new proof and not a POO Flow extension point.
+construction.  It is not a new proof and not a Agentic AI Lab extension point.
 
 ** Object-level operations
 
@@ -380,7 +380,7 @@ dependency:
 The import in =object.ss= is =:gerbil/runtime/c3=, but the imported procedure is
 =c4-linearize=. A correspondence receipt MUST identify the Gerbil v0.19 runtime
 revision supplying that implementation. This evidence requirement does not
-transfer runtime ownership to POO Flow or create a runtime Git-identity gate.
+transfer runtime ownership to Agentic AI Lab or create a runtime Git-identity gate.
 
 * Correspondence graph
 
@@ -455,7 +455,7 @@ exposed by its real package, load, compile, or test boundary.
 ** Racket test blocker
 
 The missing local Racket runtime prevents refreshing the executable POOF test
-receipt.  It does not invalidate the published theory, make Racket a POO Flow
+receipt.  It does not invalidate the published theory, make Racket a Agentic AI Lab
 dependency, prevent use of =gerbil-poo=, or close Profile generation
 admission.
 
@@ -483,7 +483,7 @@ No Racket installation is implied or authorized by this RFC.
 
 * POOF to gerbil-poo correspondence obligation
 
-POO Flow depends on =gerbil-poo= rather than executing the Racket reference.
+Agentic AI Lab depends on =gerbil-poo= rather than executing the Racket reference.
 Therefore one bounded implementation-correspondence obligation remains.
 
 The correspondence review MUST verify the four classifications recorded above:
@@ -501,9 +501,9 @@ remains incomplete and the discrepancy belongs first to the pinned
 implementation boundary.  Ordinary runtime admission is not decided by this
 audit.
 
-* POO Flow Profile projection obligations
+* Agentic AI Lab Profile projection obligations
 
-POO Flow introduces domain meaning through POO slots and composition strategy.
+Agentic AI Lab introduces domain meaning through POO slots and composition strategy.
 It must establish only the following projection properties.
 
 ** Domain-slot projection
@@ -524,7 +524,7 @@ Projection MUST NOT require:
 A normal Profile object and a higher-order Profile extension MUST enter the
 adopted upstream composition path without reordering or category batching.
 
-POO Flow may expose named, pure helpers, but those helpers MUST project to the
+Agentic AI Lab may expose named, pure helpers, but those helpers MUST project to the
 pinned native operations.  They cannot define new POO algebra.
 
 ** Root correspondence
@@ -535,13 +535,13 @@ silently instantiate a second root inside the same generation.
 
 ** Failure correspondence
 
-Native structural failures remain native structural failures.  POO Flow may
+Native structural failures remain native structural failures.  Agentic AI Lab may
 attach identity, path, generation, and evidence context, but MUST NOT turn an
 inheritance error into a successful Profile or a resumable semantic recursion.
 
 * Conservative-extension delegation
 
-POO Flow adds operational capabilities above the adopted POO semantics, but
+Agentic AI Lab adds operational capabilities above the adopted POO semantics, but
 the cross-module correctness criterion is not owned by this proof-adoption
 RFC.
 
@@ -554,7 +554,7 @@ obligations are evaluated.
 
 * Conformance tests are not replacement proofs
 
-POO Flow SHOULD retain a small set of correspondence witnesses that protect the
+Agentic AI Lab SHOULD retain a small set of correspondence witnesses that protect the
 pinned integration from drift.
 
 Appropriate local witnesses include:
@@ -564,10 +564,10 @@ Appropriate local witnesses include:
 - one ordinary Profile object composition;
 - one higher-order Profile extension;
 - one mixed ordered composition;
-- one native structural failure with attached POO Flow context; and
+- one native structural failure with attached Agentic AI Lab context; and
 - one observation or suspension that leaves the native result unchanged.
 
-These tests demonstrate that POO Flow is connected to the adopted semantics.
+These tests demonstrate that Agentic AI Lab is connected to the adopted semantics.
 They do not re-establish the general POO proof.
 
 * Evidence and ownership flow
@@ -578,13 +578,13 @@ flowchart TD
     THEORY -->|"is mapped once to the pinned Gerbil implementation"| MAP["POOF to gerbil-poo correspondence receipt"]
     GERBIL["pinned gerbil-poo source"] -->|"supplies the implementation side of the mapping"| MAP
     MAP -->|"supports a verified correspondence claim"| CLAIM["documented implementation correspondence"]
-    PROFILE["Profile correspondence witnesses"] -->|"verify only POO Flow domain projection"| EXT["observability and governance conservative-extension receipts"]
+    PROFILE["Profile correspondence witnesses"] -->|"verify only Agentic AI Lab domain projection"| EXT["observability and governance conservative-extension receipts"]
     CLAIM -->|"supplies upstream lineage without entering runtime composition"| PROFILE
     MAP -->|"missing or contradictory mapping leaves only the claim incomplete"| BLOCKED["unresolved implementation correspondence"]
-    EXT -->|"semantic result changes under observation or governance"| SEMANTIC["POO Flow semantic conformance failure"]
+    EXT -->|"semantic result changes under observation or governance"| SEMANTIC["Agentic AI Lab semantic conformance failure"]
 #+end_src
 
-The POO Flow evidence chain begins from adopted upstream authority; it does not
+The Agentic AI Lab evidence chain begins from adopted upstream authority; it does not
 begin from a local reimplementation.
 
 * Relationship to adjacent RFCs
@@ -595,7 +595,7 @@ begin from a local reimplementation.
 - [[file:45-84-profile-object-and-prototype-extension-correspondence.org][45-84]] owns Profile object/prototype representation and operand admission.
 - [[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86]] owns the cross-module conservative-extension criterion.
 - This RFC owns upstream proof adoption, POOF-to-=gerbil-poo= correspondence,
-  and the proof obligations introduced specifically by POO Flow.
+  and the proof obligations introduced specifically by Agentic AI Lab.
 
 * Prohibited duplication
 
@@ -606,7 +606,7 @@ The following work is outside the approved architecture:
 - a new object-to-prototype algebra;
 - a =.mix=-versus-=.+= candidate competition;
 - a replacement C4 implementation;
-- copying the full upstream test suite into POO Flow;
+- copying the full upstream test suite into Agentic AI Lab;
 - claiming that local examples supersede the POOF source;
 - calling unexecuted upstream checks green; or
 - treating a missing Racket runtime as a failing upstream theorem.

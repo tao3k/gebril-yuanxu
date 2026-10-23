@@ -23,7 +23,7 @@ runtime qualification, Cedar authorization, or recovery gates of 45-08.
 ** 2026-09-14 multi-module correction
 
 The normal user surface now admits several independently owned modules in one
-composition, matching the design in [[file:62-poo-flow-composition-interface.org][the composition interface]]:
+composition, matching the design in [[file:62-agentic-ai-lab-composition-interface.org][the composition interface]]:
 
 #+begin_src scheme
 (use-composition github-workflow
@@ -117,7 +117,7 @@ Instead, it lowers =module-name= to a pure POO identity-demand expression in
 the composition plan.  That expression is an internal staged lookup, not a
 public object type and not a =ModuleUse= wrapper.
 
-The POO Flow evaluator resolves that demand inside the lazy global fixed point.
+The Agentic AI Lab evaluator resolves that demand inside the lazy global fixed point.
 An unforced demand performs no module work.  A forced demand resolves the
 stable module identity, obtains its =ModuleType= prototype, and only then
 applies the already-pure profile prototype refinements.  The existing
@@ -157,7 +157,7 @@ shows only the canonical grammar.  There is no
 
 =profile-composition-accessors.ss= remains the implementation owner for
 composition accessors.  =profile-composition.ss= re-exports the accessors used
-by public scenarios, including =poo-flow-composition-profiles=.  The facade does
+by public scenarios, including =agentic-ai-lab-composition-profiles=.  The facade does
 not duplicate accessor logic or expose representation-specific mutation.
 
 ** Consumer cleanup

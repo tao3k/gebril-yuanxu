@@ -35,7 +35,7 @@ canonical grammar.
 - =profile-composition.ss= explicitly imports and exports the read-only
   accessors owned by =profile-composition-accessors.ss=.
 - Top-level composition profiles are read through
-  =poo-flow-composition-profiles=; =compose= is no longer modeled as a stage
+  =agentic-ai-lab-composition-profiles=; =compose= is no longer modeled as a stage
   clause.
 - LangChain/LangGraph, CrewAI, FunFlow smoke, interface documentation, research
   examples, and the UI README now use the canonical grammar.

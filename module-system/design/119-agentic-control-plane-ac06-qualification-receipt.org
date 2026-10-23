@@ -55,7 +55,7 @@ owner.  =abi-v1-frozen? #f= remains mandatory until Bundle v1 is stable.
 - Generated C declarations and vectors are projections, not sources of truth.
 - The C engine owns native handles, caller arenas, leases, ordered windows,
   generation checks, and the hot batch state machine.
-- Python remains a production-capable validation runtime; POO Flow exports the
+- Python remains a production-capable validation runtime; Agentic AI Lab exports the
   C binding interface and does not own downstream Rust/TypeScript runtimes.
 - Gerbil and gerbil-mysql ownership/release evidence is recorded in RFC 118.
 

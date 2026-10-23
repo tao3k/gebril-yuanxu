@@ -13,7 +13,7 @@
 - Cedar adapter refinement focused build: locally green, 164 jobs
 - Tenant/Organization aggregate build: locally green, 173 jobs
 - Enterprise aggregate build: locally green, 177 jobs
-- PooFlowProof aggregate build: locally green, 252 jobs
+- AgenticAILabProof aggregate build: locally green, 252 jobs
 - Typst correspondence: synchronized
 - AXLE final-source validation: required, not yet executed
 - Cedar DRT and runtime isolation evidence: not yet implemented
@@ -52,15 +52,15 @@ It receives explicit relations:
 
 This permits trees, DAGs, federated organizations, personal tenants, service
 accounts, temporary projects, and industry-specific structures without
-changing the POO Flow theorem vocabulary.
+changing the Agentic AI Lab theorem vocabulary.
 
 * Stable aggregate interface
 
 #+begin_src lean
-import PooFlowProof.PooC4.Enterprise.TenantOrganization
+import AgenticAILabProof.PooC4.Enterprise.TenantOrganization
 #+end_src
 
-The root =PooFlowProof.PooC4.Enterprise= import also re-exports this subfamily
+The root =AgenticAILabProof.PooC4.Enterprise= import also re-exports this subfamily
 through =Enterprise.Assurance=.
 
 * Module topology
@@ -245,16 +245,16 @@ redefine them or create a global organization owner.
 * Local build receipts
 
 #+begin_src text
-rtk lake build PooFlowProof.PooC4.Enterprise.TenantOrganization.CedarEntityClosure
+rtk lake build AgenticAILabProof.PooC4.Enterprise.TenantOrganization.CedarEntityClosure
 Build completed successfully (162 jobs).
 
-rtk lake build PooFlowProof.PooC4.Enterprise.TenantOrganization.CedarAdapterRefinement
+rtk lake build AgenticAILabProof.PooC4.Enterprise.TenantOrganization.CedarAdapterRefinement
 Build completed successfully (164 jobs).
 
-rtk lake build PooFlowProof.PooC4.Enterprise.TenantOrganization
+rtk lake build AgenticAILabProof.PooC4.Enterprise.TenantOrganization
 Build completed successfully (173 jobs).
 
-rtk lake build PooFlowProof.PooC4.Enterprise
+rtk lake build AgenticAILabProof.PooC4.Enterprise
 Build completed successfully (177 jobs).
 
 rtk lake build
@@ -294,7 +294,7 @@ validation.
 - [X] Add the stable subfamily aggregate import.
 - [X] Run focused Tenant/Organization build.
 - [X] Run Enterprise aggregate build.
-- [X] Run PooFlowProof aggregate build.
+- [X] Run AgenticAILabProof aggregate build.
 - [ ] Run final-source AXLE validation under an authorized policy.
 
 ** Executable evidence

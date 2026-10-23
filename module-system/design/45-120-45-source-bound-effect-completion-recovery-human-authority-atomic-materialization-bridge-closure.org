@@ -332,7 +332,7 @@ It proves:
 - [X] Actual core: exit 0.
 - [X] Recovery trace closure: exit 0.
 - [X] Core Lake build: 380 jobs completed successfully.
-- [X] Full =PooFlowProof= build: 508 jobs completed successfully.
+- [X] Full =AgenticAILabProof= build: 508 jobs completed successfully.
 
 The full build retains one unrelated existing linter suggestion in
 =AgentRedTeamProofRegressionClosure.lean= at line 194.

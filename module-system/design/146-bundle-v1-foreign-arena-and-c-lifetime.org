@@ -15,7 +15,7 @@ C-owned, reference-counted native arena.
 
 * Decision
 
-POO Flow owns one runtime interface: the native C ABI. The Scheme control plane
+Agentic AI Lab owns one runtime interface: the native C ABI. The Scheme control plane
 produces a canonical Bundle v1 descriptor and arena image. The C binding copies
 that image once into aligned native storage, validates the owned copy, and then
 exposes immutable zero-copy views and =O(log n)= component lookup.
@@ -23,7 +23,7 @@ exposes immutable zero-copy views and =O(log n)= component lookup.
 Python remains a production-grade runtime used to validate completeness of the
 same interface. A Rust kernel, TypeScript runtime, or another downstream
 runtime is an adapter over the C ABI; it is not a second runtime implemented by
-POO Flow.
+Agentic AI Lab.
 
 The hot path contains no JSON conversion:
 
@@ -113,13 +113,13 @@ diagnostic. The writer never returns a partially accepted image.
 The owning surface is:
 
 #+begin_src c
-poo_flow_bundle_v1_arena_create(...);
-poo_flow_bundle_v1_arena_create_packed(...);
-poo_flow_bundle_v1_arena_retain(...);
-poo_flow_bundle_v1_arena_release(...);
-poo_flow_bundle_v1_arena_view(...);
-poo_flow_bundle_v1_arena_slice(...);
-poo_flow_bundle_v1_arena_find_component(...);
+agentic_ai_lab_bundle_v1_arena_create(...);
+agentic_ai_lab_bundle_v1_arena_create_packed(...);
+agentic_ai_lab_bundle_v1_arena_retain(...);
+agentic_ai_lab_bundle_v1_arena_release(...);
+agentic_ai_lab_bundle_v1_arena_view(...);
+agentic_ai_lab_bundle_v1_arena_slice(...);
+agentic_ai_lab_bundle_v1_arena_find_component(...);
 #+end_src
 
 =arena_create= accepts a naturally aligned native descriptor.
@@ -227,7 +227,7 @@ The Bazel aggregate owns this Scheme-generation-to-C-consumption test as one
 isolated gate rather than leaving either generation or consumption manual.
 
 #+begin_example
-schema=poo-flow.bundle-v1.harness.1
+schema=agentic-ai-lab.bundle-v1.harness.1
 layout=typed-native-regions
 lookup=binary-search
 payload-zero-copy=true
@@ -236,7 +236,7 @@ slice-view=immutable
 packed-byte-order=little-endian
 json-in-hot-path=false
 
-schema=poo-flow.bundle-v1.scheme-c-bridge.1
+schema=agentic-ai-lab.bundle-v1.scheme-c-bridge.1
 scheme-descriptor-accepted=true
 c-owned-alignment=64
 component-lookup=binary-search
@@ -297,4 +297,4 @@ Scheme memory.
 
 The next phase may build production Python CFFI ownership wrappers and broader
 runtime adapter qualification directly on this handle without introducing a
-second POO Flow runtime or a new serialization format.
+second Agentic AI Lab runtime or a new serialization format.

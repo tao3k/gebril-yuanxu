@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative effect and runtime-handoff protocol
-- Semantic core :: Pure POO values, functional composition, and explicit POO Flow runtime boundaries
+- Semantic core :: Pure POO values, functional composition, and explicit Agentic AI Lab runtime boundaries
 - Related modules :: =45-51-live-evaluation-context-narrowing-and-resource-conservation.org= and =45-53-phased-slot-resolution-contracts-and-failure-taxonomy.org=
 
 This module prevents speculative, incremental, cyclic, or resumed semantic evaluation from directly repeating external effects. Pure evaluation constructs an identity-addressed effect intent; live execution occurs only after stabilization and explicit authorization.
@@ -101,7 +101,7 @@ flowchart LR
 - [X] A committed intent cannot transition back to handoff.
 - [X] A reconciled intent is terminal.
 - [X] Lean witness:
-  =PooFlowProof.PooC4.EffectIntentHandoff=.
+  =AgenticAILabProof.PooC4.EffectIntentHandoff=.
 - [ ] A later implementation-refinement proof must bind native POO effect
   intents and the runtime/Marlin handoff receipt to this bridge.
 
@@ -273,7 +273,7 @@ The declared policy distinguishes:
 
 Intent identity may contribute to an idempotency key only when the adapter contract explicitly guarantees the key semantics.
 
-POO Flow does not claim exactly-once delivery merely because an intent is content-addressed.
+Agentic AI Lab does not claim exactly-once delivery merely because an intent is content-addressed.
 
 * Unknown commit outcome
 

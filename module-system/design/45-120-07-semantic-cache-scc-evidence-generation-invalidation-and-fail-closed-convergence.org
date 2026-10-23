@@ -20,7 +20,7 @@ Module authority closure.
 
 It covers:
 
-- the ownership boundary between =gerbil-poo= and POO Flow;
+- the ownership boundary between =gerbil-poo= and Agentic AI Lab;
 - immutable semantic evaluation-node identities;
 - cache soundness and generation invalidation;
 - strongly connected component evidence;
@@ -32,10 +32,10 @@ It covers:
 * Central decision
 
 The fixed-point and prototype composition algebra remains owned by the
-pinned =gerbil-poo= dependency.  POO Flow does not implement a second
+pinned =gerbil-poo= dependency.  Agentic AI Lab does not implement a second
 fixed-point algebra.
 
-POO Flow owns the evaluator around that algebra:
+Agentic AI Lab owns the evaluator around that algebra:
 
 - dependency discovery;
 - incremental scheduling;
@@ -92,7 +92,7 @@ schema-mismatched entry is a miss, not an approximate answer.
 flowchart LR
   N["Semantic evaluation node"] -->|"derives an immutable identity from all result-affecting evidence"| K["Semantic cache key"]
   K -->|"matches exact dependency and evaluator identities"| H["Admitted cache hit"]
-  K -->|"misses, conflicts, or lacks complete evidence"| E["POO Flow evaluator"]
+  K -->|"misses, conflicts, or lacks complete evidence"| E["Agentic AI Lab evaluator"]
   E -->|"evaluates through native gerbil-poo composition"| R["Semantic result evidence"]
   R -->|"publishes an immutable cache entry without changing semantics"| C["Semantic cache"]
   C -->|"reuses only exact evidence-equivalent results"| H
@@ -105,7 +105,7 @@ A new Module, capability, delegation, profile, Contract, or dependency
 generation naturally changes the affected semantic identity.  The old
 entry remains historical evidence but cannot answer the new key.
 
-POO Flow does not require a global mutable invalidation sweep for
+Agentic AI Lab does not require a global mutable invalidation sweep for
 semantic correctness.
 
 Cross-generation reuse is permitted only when a derivation proves that

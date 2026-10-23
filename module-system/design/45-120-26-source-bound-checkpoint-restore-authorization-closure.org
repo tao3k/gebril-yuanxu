@@ -164,7 +164,7 @@ active fence token.  Any earlier focused receipt in this document remains
 useful history, but its pre-fence owner digest is not a current-source receipt.
 
 - Lean owner source:
-  =PooFlowProof/Enterprise/SourceBoundCheckpointRestoreAuthorizationClosure.lean=
+  =AgenticAILabProof/Enterprise/SourceBoundCheckpointRestoreAuthorizationClosure.lean=
 - owner source digest:
   =sha256:06fc7abd7592d329f0590fe3c054e7a9281dce4bec1644b3c7932a1a650191a1=
 - focused Lean build: =198 jobs=
@@ -188,7 +188,7 @@ useful history, but its pre-fence owner digest is not a current-source receipt.
 | =independentlyClosedRestoreOwnersCompose= | 1 | 0.374 s |
 
 All seven roots produced
-=poo-flow.axle-exact-declaration-closure.v1= with =okay=true= against
+=agentic-ai-lab.axle-exact-declaration-closure.v1= with =okay=true= against
 the current owner source.  The receipt proves that a restore request and its
 authorization bind the same canonical root, runtime epoch, and active fence
 token; an epoch-only restore coordinate is not accepted.
@@ -196,7 +196,7 @@ token; an epoch-only restore coordinate is not accepted.
 * Lean declaration map
 
 The implementation owner is
-=PooFlowProof.Enterprise.SourceBoundCheckpointRestoreAuthorizationClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundCheckpointRestoreAuthorizationClosure=.
 
 - =SourceBoundCheckpointRestoreFrontier= owns the current root, latest envelope,
   runtime epoch, and active fence token.
@@ -243,7 +243,7 @@ The implementation owner is
 
 The policy surface is an abstract Cedadr-owned validity predicate.  This RFC
 does not introduce a Rust owner, a Cedar semantic adapter, or a policy engine
-inside POO Flow proof core.
+inside Agentic AI Lab proof core.
 
 * Related effect replay refinement
 
@@ -273,7 +273,7 @@ The concrete fixture closes:
 The focused Lean target is:
 
 #+begin_src sh
-lake build PooFlowProof.Enterprise.SourceBoundCheckpointRestoreAuthorizationClosure
+lake build AgenticAILabProof.Enterprise.SourceBoundCheckpointRestoreAuthorizationClosure
 #+end_src
 
 Final Lean, AXLE, Org, Typst, Python, and diff receipts are published after the

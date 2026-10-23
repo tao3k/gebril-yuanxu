@@ -140,7 +140,7 @@ Extra-slot bindings provide native lazy access to slots expected from the final
 instance even when the current prototype does not define them.
 
 They are the operational basis for imports and cross-slot Capability
-dependencies.  POO Flow strengthens them with:
+dependencies.  Agentic AI Lab strengthens them with:
 
 - Capability identity;
 - provider or contribution identity;
@@ -296,7 +296,7 @@ Demanding a Capability slot may:
    exhaustion, staleness, or denial;
 6. return the demanded fixed-point value with its evidence.
 
-These semantics are expressed by the demanded POO slots themselves.  POO Flow
+These semantics are expressed by the demanded POO slots themselves.  Agentic AI Lab
 does not add a =resolve-capability= evaluator in front of native access.
 
 =.call= invokes an operation represented as a function-valued slot.  The method
@@ -328,7 +328,7 @@ An object-valued slot is a native nested module boundary.
 Nested access preserves the recursive object rather than eagerly instantiating
 or flattening it.  The child may contain further child objects indefinitely.
 
-POO Flow adds canonical child prototype, embedding-edge, causal-instance,
+Agentic AI Lab adds canonical child prototype, embedding-edge, causal-instance,
 runtime-instance, and generation identities.  Native object nesting supplies
 the underlying representation and lazy computation.
 
@@ -359,7 +359,7 @@ Structural presence does not prove that:
 
 Those facts require the corresponding semantic evidence and demand.
 
-POO Flow must not copy reflected slots into a parallel registry and treat that
+Agentic AI Lab must not copy reflected slots into a parallel registry and treat that
 registry as more authoritative than the object.
 
 * Effectful operations are lifecycle transitions
@@ -427,7 +427,7 @@ evaluator.
 
 =gerbil-poo= owns native object and slot semantics.
 
-POO Flow owns the module-level contracts attached to those operations:
+Agentic AI Lab owns the module-level contracts attached to those operations:
 identity, Capability, authority, condition, budget, observability, provenance,
 generation, and receipts.
 

@@ -170,7 +170,7 @@ resolver and does not replace =gerbil.pkg=, Lake, Nix, or Gerbil-Bazel.
 ** Runtime v1 receipt-DAG closure
 
 The runtime algebra accepts one complete typed schema:
-=poo-flow.proof-base-receipt-graph.v1=.  Every source identity,
+=agentic-ai-lab.proof-base-receipt-graph.v1=.  Every source identity,
 independent bundle digest, provided interface, named interface assumption,
 acceptance receipt, edge, and terminal node is required.  There is no
 alternate interpretation for absent fields or another schema identifier.
@@ -299,7 +299,7 @@ stateDiagram-v2
 - [X] Reject duplicate keys and require exact v1 object shapes.
 - [X] Recompute the graph and verified composition receipt during decode.
 - [X] Require byte-for-byte canonical re-encoding.
-- [X] Expose =poo-flow-proof verify-receipt-graph-audit --input --output=.
+- [X] Expose =agentic-ai-lab-proof verify-receipt-graph-audit --input --output=.
 - [X] Prove audit-encoding injectivity from the left-inverse law in Lean.
 - [X] Prove that a digest-only projection cannot be lossless.
 - [X] Independently verify the audit-transport Lean roots with AXLE.
@@ -331,13 +331,13 @@ stateDiagram-v2
 
 - Python focused graph and audit suites :: 23 passed, 0 failed.
 - Python complete proof suite :: 109 passed, 0 failed, 13.05 seconds.
-- Standard CLI :: =poo-flow-proof verify-receipt-graph-audit --input --output=.
+- Standard CLI :: =agentic-ai-lab-proof verify-receipt-graph-audit --input --output=.
 - CLI canonical byte comparison :: =cmp= exit code 0.
 - CLI input SHA-256 :: =be403a3595f6bafb1cbd15cf6555b51e7a6a95219aab4d1f7f52b0d7bb2d6f41=.
 - CLI output SHA-256 :: =be403a3595f6bafb1cbd15cf6555b51e7a6a95219aab4d1f7f52b0d7bb2d6f41=.
 - Lean focused elaboration :: =AuditTransportInjectivityClosure.lean= accepted.
 - Lean complete build :: 530 jobs completed.
-- AXLE entry point :: =poo-flow-axle-verify= console script.
+- AXLE entry point :: =agentic-ai-lab-axle-verify= console script.
 - AXLE roots ::
   - =losslessAuditEncodingIsInjective=
   - =verificationSurvivesCanonicalAuditRoundTrip=
@@ -361,7 +361,7 @@ stateDiagram-v2
 - Python complete proof suite :: 97 passed, 0 failed, 19.18 seconds.
 - Lean focused elaboration :: =ProofBaseReceiptDagClosure.lean= accepted.
 - Lean complete build :: 529 jobs completed.
-- AXLE entry point :: =poo-flow-axle-verify= console script.
+- AXLE entry point :: =agentic-ai-lab-axle-verify= console script.
 - AXLE roots ::
   - =receiptDagClosesTerminalComposition=
   - =cyclicLocalStepsDoNotClose=
@@ -379,7 +379,7 @@ stateDiagram-v2
 
 ** Lean
 
-- Module :: =PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryProofBaseReceiptCompositionClosure=
+- Module :: =AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryProofBaseReceiptCompositionClosure=
 - Direct Lean elaboration :: accepted
 - Positive theorem :: =receiptBoundAssumeGuaranteeComposition=
 - Countermodel theorem :: =digestEqualityAloneDoesNotCloseCanonicalInterface=

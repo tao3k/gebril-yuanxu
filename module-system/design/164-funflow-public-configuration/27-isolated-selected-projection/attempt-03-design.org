@@ -25,7 +25,7 @@ Pipeline.checks against that ordered selector.
 
 Source finding: core/types.ss:302--346 enumerates EVERY slot of descriptor-owned
 responsibilities, reads that child on the candidate and delegates via public
-poo-flow-contract-admit. It does not accept a dynamic selection parameter. Own
+agentic-ai-lab-contract-admit. It does not accept a dynamic selection parameter. Own
 obligations execute only after classification and responsibility success. Putting
 all possible Checks in that map would eagerly admit all of them; calling an
 obligation afterwards cannot undo that demand.

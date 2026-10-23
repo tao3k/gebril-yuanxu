@@ -9,14 +9,14 @@ Start with [[file:README.org][the current protocol guide]] and [[file:ownership-
 The chronological material below contains proposals, superseded alternatives,
 consumer examples and historical receipts. These are not all simultaneously
 implemented interfaces. Generic Module/Feature/Contract/composition design is
-owned here; concrete POO Flow Modules and runtime adapters remain downstream.
+owned here; concrete Agentic AI Lab Modules and runtime adapters remain downstream.
 
 ** 10.06.10 Purpose
-This document pack defines the module-system layer for =poo-flow=. The package is not a port of Doom Emacs and not a copy of Marlin's Gerbil module API. POO Flow is a consumer of the shared Core mechanisms. External systems are reference material for interface shape, diagnostics, and modular organization.
+This document pack defines the module-system layer for =agentic-ai-lab=. The package is not a port of Doom Emacs and not a copy of Marlin's Gerbil module API. Agentic AI Lab is a consumer of the shared Core mechanisms. External systems are reference material for interface shape, diagnostics, and modular organization.
 
 Public consumers import the precise owner: shared POO Module mechanisms from =core/module-system/=, product authoring and UI policy from =modules/module-authoring/= and =modules/user-interface/=, and concrete workflow or sandbox modules from =modules/*=. No aggregate Module System facade is installed.
 ** 10.06.15 Agentic Control Plane RFC Suite
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][90 POO Flow Agentic Control Plane Architecture RFC]]
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][90 Agentic AI Lab Agentic Control Plane Architecture RFC]]
 - [[file:91-canonical-organization-bundle-rfc.org][91 Canonical Organization Bundle RFC]]
 - [[file:92-c-runtime-interface-and-python-validation-runtime-rfc.org][92 C Runtime Interface And Python Validation Runtime RFC]]
 - [[file:93-assurance-proof-and-evidence-chain-rfc.org][93 Assurance, Proof, And Evidence Chain RFC]]
@@ -31,8 +31,8 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 [[file:02-marlin-gerbil-modules-audit.org][02 Marlin Gerbil Modules Audit]]
 - [[file:03-gerbil-scheme-c4-foundation.org][03 Gerbil Scheme C4 Foundation]]
 [[file:03-gerbil-scheme-c4-foundation.org][03 Gerbil Scheme C4 Foundation]]
-- [[file:04-poo-flow-module-system-design.org][04 poo-flow Module System Design]]
-[[file:04-poo-flow-module-system-design.org][04 poo-flow Module System Design]]
+- [[file:04-agentic-ai-lab-module-system-design.org][04 agentic-ai-lab Module System Design]]
+[[file:04-agentic-ai-lab-module-system-design.org][04 agentic-ai-lab Module System Design]]
 - [[file:05-implementation-roadmap.org][05 Implementation Roadmap]]
 [[file:05-implementation-roadmap.org][05 Implementation Roadmap]]
 - [[file:06-doom-nix-interface-principles.org][06 Doom And Nix Interface Principles]]
@@ -75,7 +75,7 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:session-scheduling-granularity-design.org][Session Scheduling Granularity and Incremental Context]]
 - [[file:context-delta-lean-quint-model-design.org][Context Delta Lean/Quint Model Design]]
 - [[file:44-current-project-programming-style.org][44 Current Project Programming Style]]
-- [[file:164-capability-gradient-and-default-expression-surface.org][164 POO Flow Capability Gradient and Default Expression Surface]]
+- [[file:164-capability-gradient-and-default-expression-surface.org][164 Agentic AI Lab Capability Gradient and Default Expression Surface]]
 - [[file:164-core-functional-and-extend-interface-audit.org][164 Core Functional and Extend Interface Audit with Scheme Forms]]
 - [[file:164-core-interface-export-inventory.org][164 Core Per-Export Surface Inventory]]
 - [[file:164-module-interface-comparison.org][164 Modular Configuration Research: NCL, HiveBus, NixOS, Jsonnet, Dhall and POO]]
@@ -116,12 +116,12 @@ Public consumers import the precise owner: shared POO Module mechanisms from =co
 - [[file:149-persistent-native-public-closure-projection.org][149 Rejected Persistent Native Public-Closure Projection]]
 - [[file:163-standard-module-lazy-industry-conformance-rfc.org][163 Standard Module, Lazy Industry Packs, and Conformance Receipts RFC]]
 ** 10.06.30 Local Evidence
-The module-system design builds on existing =poo-flow= contracts:
+The module-system design builds on existing =agentic-ai-lab= contracts:
 - =src/core/roles.ss= owns Gerbil POO role composition and C4-facing slot probing.
 - =src/core/task.ss= owns task-family descriptors and immutable task-family registries.
 - =src/core/flow.ss= owns flow-declaration descriptors and immutable flow-declaration registries.
 - =src/core/config.ss= accepts task and flow registries at the =run-config= boundary.
-- =core/module-system/= owns generic source refs, Catalog lookup, and lazy-load values; POO Flow descriptor, activation, and authoring owners consume them directly.
+- =core/module-system/= owns generic source refs, Catalog lookup, and lazy-load values; Agentic AI Lab descriptor, activation, and authoring owners consume them directly.
 - =src/extensions/*= demonstrates descriptor bundles as extension modules.
 ** 10.06.40 Delivered Surface
 The implemented module-system surface includes:

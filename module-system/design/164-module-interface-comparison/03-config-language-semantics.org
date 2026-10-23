@@ -37,7 +37,7 @@ merge obscures the contract users need to understand.
 | Nickel | recursive record merge with field metadata/priorities | defaults, contracts and documentation travel with definitions |
 | Jsonnet | object inheritance and self/super; explicit +: for nested inheritance | derived fields can see the effective object; nested replacement is otherwise normal |
 | Dhall | typed records, explicit record operations and total functions | a checked function can reconstruct derived outputs explicitly |
-| Current POO Flow | native inheritance, replacement, => and =>.+ | effective receiver relationships work; cross-owner semantic merge is not automatic |
+| Current Agentic AI Lab | native inheritance, replacement, => and =>.+ | effective receiver relationships work; cross-owner semantic merge is not automatic |
 
 The Nickel [[https://nickel-lang.org/user-manual/merging/][merge specification]] describes conflicts rather than an unconditional
 last-writer-wins policy, and metadata determines priority. Native POO's ordered

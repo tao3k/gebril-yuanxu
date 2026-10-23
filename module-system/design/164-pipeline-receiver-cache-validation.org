@@ -42,9 +42,9 @@ ancestor/descendant overlaps, empty segments and unsupported operators.
 Local source test command (in the existing isolated pinned-source environment):
 
 #+begin_src sh
-GERBIL_PATH=/tmp/pooflow-core-prototype-specializer/home \
-GERBIL_LOADPATH=/tmp/pooflow-core-prototype-specializer \
-/opt/homebrew/bin/gxi /tmp/pooflow-core-prototype-specializer/run-path-slots.ss
+GERBIL_PATH=/tmp/agenticailab-core-prototype-specializer/home \
+GERBIL_LOADPATH=/tmp/agenticailab-core-prototype-specializer \
+/opt/homebrew/bin/gxi /tmp/agenticailab-core-prototype-specializer/run-path-slots.ss
 #+end_src
 
 The runner imports :std/test/base and :yuanxu/t/path-slots-test, calls
@@ -106,10 +106,10 @@ probe does not qualify that installed artifact or the complete POO package.
 From the repository root, prepare only temporary source files:
 
 #+begin_src sh
-mkdir -p /tmp/pooflow-pipeline-receiver-pin/support
-curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/object.ss -o /tmp/pooflow-pipeline-receiver-pin/object.ss
-curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/support/base.ss -o /tmp/pooflow-pipeline-receiver-pin/support/base.ss
-shasum -a 256 /tmp/pooflow-pipeline-receiver-pin/object.ss /tmp/pooflow-pipeline-receiver-pin/support/base.ss
+mkdir -p /tmp/agenticailab-pipeline-receiver-pin/support
+curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/object.ss -o /tmp/agenticailab-pipeline-receiver-pin/object.ss
+curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/support/base.ss -o /tmp/agenticailab-pipeline-receiver-pin/support/base.ss
+shasum -a 256 /tmp/agenticailab-pipeline-receiver-pin/object.ss /tmp/agenticailab-pipeline-receiver-pin/support/base.ss
 #+end_src
 
 Verify both hashes against the table before loading. Extract the named Scheme
@@ -119,7 +119,7 @@ blocks to the same temporary directory (no generated file is a repository source
 from pathlib import Path
 import re
 root = Path("docs/10-19-design/10.06-poo-module-system")
-out = Path("/tmp/pooflow-pipeline-receiver-pin")
+out = Path("/tmp/agenticailab-pipeline-receiver-pin")
 def block(filename, name):
     text = (root / filename).read_text()
     pattern = r"^#\+name: " + re.escape(name) + r"\n#\+begin_src scheme\n(.*?)^#\+end_src"
@@ -143,17 +143,17 @@ lexical = block("164-pipeline-receiver-cache-validation.org",
 #+end_src
 
 #+begin_src sh
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/pooflow-pipeline-receiver-pin/minimal.ss
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/pooflow-pipeline-receiver-pin/minimal-with-negative.ss
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/pooflow-pipeline-receiver-pin/probe.ss
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/pooflow-pipeline-receiver-pin/probe-implicit-lexical-slots.ss
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/pooflow-pipeline-receiver-pin/probe-lexical-slots.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/minimal.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/minimal-with-negative.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe-implicit-lexical-slots.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe-lexical-slots.ss
 #+end_src
 
 * Test variables versus the shared module object abstraction
 
 parent-checks and child-checks hold observations for assertions; they do not
-assemble or repair a configured Pipeline. Maintained POO Flow and User Interface
+assemble or repair a configured Pipeline. Maintained Agentic AI Lab and User Interface
 Modules share the same native object/scope semantics. The Pipeline's computed
 checks slot owns list construction from the effective Profile, and the selected
 plan adapter consumes it internally. Ordinary users only refine target paths.
@@ -164,7 +164,7 @@ the unimplemented common Module scope, path syntax or Loader integration.
 
 #+name: native-pipeline-receiver-full-probe
 #+begin_src scheme
-(import "/tmp/pooflow-pipeline-receiver-pin/object")
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
 (def assertions 0)
 (def (assert-equal label actual expected)
@@ -328,7 +328,7 @@ The complete automatic-binding probe is preserved here:
 
 #+name: native-pipeline-lexical-full-probe
 #+begin_src scheme
-(import "/tmp/pooflow-pipeline-receiver-pin/object")
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
 (def assertions 0)
 (def (assert-equal label actual expected)
@@ -460,7 +460,7 @@ The original explicit-receiver minimal program remains preserved unchanged:
 
 #+name: native-pipeline-receiver-explicit-baseline
 #+begin_src scheme
-(import "/tmp/pooflow-pipeline-receiver-pin/object")
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
 (.def (Profile @ [])
   build: (.o value: 'parent-build)

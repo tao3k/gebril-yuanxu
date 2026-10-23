@@ -328,7 +328,7 @@ Lean exposes and closes these v1 design defects:
 * Lean declaration map
 
 The implementation is
-=PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryOwnerEvidenceBindingClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryOwnerEvidenceBindingClosure=.
 
 Key declarations:
 
@@ -348,7 +348,7 @@ Key declarations:
 * Verification receipt
 
 - focused Lean build:
-  =PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryOwnerEvidenceBindingClosure=
+  =AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryOwnerEvidenceBindingClosure=
   completed successfully with 130 jobs;
 - The focused owner-binding module built 130 of 130 jobs.  The Enterprise
   aggregate built 204 of 204 jobs, and the full proof project completed all

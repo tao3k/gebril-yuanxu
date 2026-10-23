@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative composition-strategy protocol
-- Semantic core :: Native =gerbil-poo= objects and POO Flow evaluation
+- Semantic core :: Native =gerbil-poo= objects and Agentic AI Lab evaluation
 - Related modules :: =45-38-poo-observability-profile-projection-retention-and-redaction.org= and =45-48-compose-function-profiles-strategy-and-lazy-evaluator-boundary.org=
 
 This module divides the responsibilities of the first-class =profiles= POO strategy into three normative facets while preserving one higher-order POO object and one native object-extension path.
@@ -169,7 +169,7 @@ flowchart LR
     C -->|"construct without forcing business slots"| V["Pure composition value"]
     V -->|"combine with a pure SlotDemand"| D
     D -->|"produce pure descriptors and requirements"| Q["Demand plan or next demand"]
-    Q -->|"execute with externally supplied live context"| R["POO Flow evaluator"]
+    Q -->|"execute with externally supplied live context"| R["Agentic AI Lab evaluator"]
     R -->|"emit evaluation events"| E
     E -->|"materialize receipts without retaining live handles"| O["Pure evidence objects"]
 #+end_src

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+TITLE: RFC 45-120-47 — Source-Bound Effect Completion Recovery Authorized Transaction Recovery Bridge Closure
-#+AUTHOR: POO Flow
+#+AUTHOR: Agentic AI Lab
 #+LANGUAGE: en
 #+OPTIONS: toc:3 num:t
 
@@ -457,7 +457,7 @@ flowchart LR
 | =SourceBoundEffectCompletionRecoveryAuthorizedTransactionRecoveryBridgeModel.lean= | Independent counterexamples and minimal bridge |
 | =SourceBoundEffectCompletionRecoveryAuthorizedTransactionRecoveryBridgeCore.lean= | Actual RFC45 + RFC149-04 bridge |
 | =SourceBoundEffectCompletionRecoveryAuthorizedTransactionRecoveryBridgeClosure.lean= | Commitment-keyed trace evidence and convergence |
-| =PooFlowProof/Enterprise.lean= | Enterprise aggregate import |
+| =AgenticAILabProof/Enterprise.lean= | Enterprise aggregate import |
 
 The public proof surface reuses the existing owner structures.  No replacement
 transaction, recovery, authorization, or accountability object was added.
@@ -487,7 +487,7 @@ The only emitted Lean warning is the pre-existing
 
 ** Independent AXLE
 
-- [X] =poo-flow-axle-verify= independent mode returned =okay=true=.
+- [X] =agentic-ai-lab-axle-verify= independent mode returned =okay=true=.
 - [X] Failed declarations: 0.
 - [X] Verify request:
   =247a79ad-e746-4033-8d33-94753836f3c2=.

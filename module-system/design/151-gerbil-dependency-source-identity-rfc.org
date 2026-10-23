@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: RFC 151 — Gerbil Dependency Source Identity and Resolution Receipts
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+date: 2026-07-22
 #+startup: overview
 
@@ -78,25 +78,25 @@ project dependency package has no source files: gerbil-poo
 
 * Current decision (corrected 2026-07-27)
 
-The root =gerbil.pkg= is the only POO Flow declaration of Gerbil package
-dependencies. POO Flow MUST NOT copy those dependencies into a Scheme object,
+The root =gerbil.pkg= is the only Agentic AI Lab declaration of Gerbil package
+dependencies. Agentic AI Lab MUST NOT copy those dependencies into a Scheme object,
 POO prototype, JSON contract projection, test fixture, or generated module
 fragment and then treat that copy as canonical package identity.
 
 Gerbil-Bazel may carry the additional immutable revision, archive URL,
 SHA-256, and strip-prefix data required for hermetic Bzlmod materialization.
-Those values are build-adapter inputs and lock data, not a POO Flow domain
+Those values are build-adapter inputs and lock data, not a Agentic AI Lab domain
 contract. Gerbil-Bazel emits the observed source-resolution receipt after
 materialization. A machine-local source path is not canonical identity.
 
-The POO Flow Bazel target calls the Gerbil-Bazel
+The Agentic AI Lab Bazel target calls the Gerbil-Bazel
 =gerbil_project_compile= library API. Gerbil-Bazel owns receipt construction,
-schema validation, and dependency-source-resolution validation. POO Flow does
+schema validation, and dependency-source-resolution validation. Agentic AI Lab does
 not wrap that contract in a local Starlark test rule or Scheme validator.
 
 #+begin_src mermaid
 flowchart LR
-  PF["POO Flow BUILD target"]
+  PF["Agentic AI Lab BUILD target"]
   PKG["gerbil.pkg<br/>package declarations"]
   API["Gerbil-Bazel gerbil_project_compile<br/>single library API"]
   SRC["Resolved dependency sources"]
@@ -201,7 +201,7 @@ When the package path selects a subdirectory of a Git checkout, =sourceSnapshotD
 Schema identity:
 
 #+begin_example
-poo-flow.gerbil.dependency-source-resolution-receipt.1
+agentic-ai-lab.gerbil.dependency-source-resolution-receipt.1
 #+end_example
 
 The receipt MUST carry:
@@ -279,7 +279,7 @@ active materialization and requires a new key.
 | Receipt construction and validation | Gerbil-Bazel |
 | Policy harness and build/test framework | GSLPH development dependency |
 | ABI semantic contracts | POO Contract |
-| ABI Scheme/C qualification result | POO Flow Bazel tests |
+| ABI Scheme/C qualification result | Agentic AI Lab Bazel tests |
 
 POO Contract remains the sole canonical semantic owner for the Runtime
 Language ABI. This RFC governs build-input identity and provenance; it does not
@@ -352,6 +352,6 @@ or user-change overwrite is an acceptable qualification step.
    =gerbil-bazel= owner repository.
 2. Keep the identified replay =3/3= and isolated negative-path =4/4= suites
    green in the =gerbil-bazel= owner repository.
-3. Bind poo-flow's generated source repositories to the resolution receipt.
+3. Bind agentic-ai-lab's generated source repositories to the resolution receipt.
 4. Re-run the exact ABI 0.3 Scheme/C focused labels.
 5. Record the source-resolution receipt and test results in RFC150.

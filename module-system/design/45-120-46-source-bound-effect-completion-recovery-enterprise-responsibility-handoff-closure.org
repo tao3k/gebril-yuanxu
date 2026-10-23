@@ -284,7 +284,7 @@ No global nonreuse claim is made by this RFC.
 
 ** Complete Lean
 
-- =lake build PooFlowProof.Enterprise=: passed, 439 jobs.
+- =lake build AgenticAILabProof.Enterprise=: passed, 439 jobs.
 - =lake build=: passed, 511 jobs.
 - Both aggregate builds report only the pre-existing
   =AgentRedTeamProofRegressionClosure.lean:194:2= suggestion to use =simp=
@@ -292,10 +292,10 @@ No global nonreuse claim is made by this RFC.
 
 ** AXLE
 
-The packaged =poo-flow-axle-verify= CLI exported the independent-model
+The packaged =agentic-ai-lab-axle-verify= CLI exported the independent-model
 declaration closure:
 
-- schema: =poo-flow.lean-declaration-closure.v1=;
+- schema: =agentic-ai-lab.lean-declaration-closure.v1=;
 - roots: 4;
 - declarations: 35;
 - owner modules: 1;

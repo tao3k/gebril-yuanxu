@@ -71,9 +71,9 @@ delivery-plan direction:
 
 | RFC Area | Completion | Evidence | Remaining Work |
 |----------+------------+----------+----------------|
-| POO-native durable policy authoring | Complete | =poo-flow-durable-policy= returns a POO object with durable slots and =durable-runtime-executed: #f=. | Keep public API POO-native. |
-| Policy manifest boundary | Complete | =poo-flow-durable-policy-runtime-manifest-alist/string/bytes= project policy receipts for runtime consumers. | None found. |
-| Runtime store contract | Complete | =poo-flow-durable-runtime-store-contract= models all ledger/store refs and capability flags as a POO object. | None found. |
+| POO-native durable policy authoring | Complete | =agentic-ai-lab-durable-policy= returns a POO object with durable slots and =durable-runtime-executed: #f=. | Keep public API POO-native. |
+| Policy manifest boundary | Complete | =agentic-ai-lab-durable-policy-runtime-manifest-alist/string/bytes= project policy receipts for runtime consumers. | None found. |
+| Runtime store contract | Complete | =agentic-ai-lab-durable-runtime-store-contract= models all ledger/store refs and capability flags as a POO object. | None found. |
 | Backend negotiation | Complete | Backend negotiation checks ledgers, capabilities, operation support, and handoff readiness. | None found in Scheme path. |
 | Marlin handoff | Complete | Runtime manifest and operation handoff emit argv, request schema, manifest, and =runtime-executed #f=. | Runtime side still owns execution. |
 | Operation receipt model | Complete | Operation receipt stores operation id/kind, store/backend/session ids, ledger kind, capability flag, target ref, causal refs, watermark, diagnostics, and metadata. | None found. |

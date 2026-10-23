@@ -8,7 +8,7 @@ Draft for discussion.
 
 This document strengthens the durable-policy thread started in [[file:43-session-memory-recovery-rfc.org][43 Session Memory Durable Policy RFC]].
 The goal is not to copy Codex, Claude Code, OpenRath, Temporal, Azure Durable Functions, or any agent-memory paper.
-The goal is to extract the durable invariants that fit =poo-flow=: functional flow values, POO-native policy objects, explicit session identity, and Rust/Marlin-owned durable runtime machinery.
+The goal is to extract the durable invariants that fit =agentic-ai-lab=: functional flow values, POO-native policy objects, explicit session identity, and Rust/Marlin-owned durable runtime machinery.
 
 ** 10.06.45.20 Main Conclusion
 Durable should be a first-class capability, not a helper called "recovery".
@@ -64,7 +64,7 @@ Design lesson:
 Codex shows that durable agent systems need both a fact log and repairable indexes.
 It is not enough to persist "latest state"; derived state must be rebuildable, claimable, and bounded.
 
-What =poo-flow= should do better:
+What =agentic-ai-lab= should do better:
 - Make durable policy explicit at authoring time, not hidden in runtime conventions.
 - Attach durable behavior to session, memory, workflow, sandbox, and artifact policies through POO inheritance/composition.
 - Validate resume/replay constraints before projection.
@@ -97,7 +97,7 @@ Session -> Agent/Workflow -> Session
 
 This is close to our Funflow direction: flows compose values, while objects carry policy and metadata.
 
-What =poo-flow= should do better:
+What =agentic-ai-lab= should do better:
 - Fork and merge behavior must be policy-governed, not hard-coded.
 - Sandbox sharing must be declared through session/sandbox policy.
 - Persistence must include explicit checkpoint/replay semantics, not only append-only session files.
@@ -132,7 +132,7 @@ Source: [[https://www.anthropic.com/engineering/building-effective-agents][Build
 
 Design lesson:
 Claude's surface is strong at user ergonomics, but its documented checkpointing is explicitly not a full durable runtime.
-=poo-flow= should learn the user affordance, not stop at it.
+=agentic-ai-lab= should learn the user affordance, not stop at it.
 Our durable policy must cover tool-side effects, shell/runtime work, sandbox placement, memory writes, and sub-agent communication, because those are exactly the places a simple local checkpoint cannot fully recover.
 
 *** 10.06.45.30.40 Durable Execution Systems
@@ -156,7 +156,7 @@ Design lesson:
 The strong durable pattern is not heap snapshotting.
 It is event history plus deterministic replay plus explicit side-effect boundaries.
 
-For =poo-flow=:
+For =agentic-ai-lab=:
 - Scheme flow composition should be replay-safe by construction where possible.
 - Runtime effects should sit behind named activities/actions/handoffs.
 - Session ids, loop-run ids, checkpoint ids, artifact ids, and sandbox handles must be durable addresses.
@@ -175,14 +175,14 @@ Design lesson:
 Agent workflows are long-lived, side-effect-heavy computations.
 They need compensation and repair semantics, not only "retry".
 
-For =poo-flow=:
+For =agentic-ai-lab=:
 - Each durable action should declare whether it is replayable, idempotent, compensatable, or terminal.
 - A workflow task should be able to project a compensation receipt.
 - A failed child session should produce structured repair facts for the parent instead of mutating parent context directly.
 
 *** 10.06.45.30.60 Workflow Pattern Literature
 The workflow-patterns literature separates control-flow, data, resource, and exception concerns.
-It is useful because =poo-flow= is not only an agent-loop system; it is also a workflow, CI/CD, deploy, sandbox, and policy system.
+It is useful because =agentic-ai-lab= is not only an agent-loop system; it is also a workflow, CI/CD, deploy, sandbox, and policy system.
 
 Sources:
 - [[https://www.workflowpatterns.com/documentation/][Workflow Patterns documentation]]
@@ -198,7 +198,7 @@ It must cover:
 - exception and compensation state;
 - runtime participant identity.
 
-For =poo-flow=, this argues for a durable policy that can be inherited by workflow, session, memory, sandbox, and CI/CD modules.
+For =agentic-ai-lab=, this argues for a durable policy that can be inherited by workflow, session, memory, sandbox, and CI/CD modules.
 
 *** 10.06.45.30.70 Agent Memory Papers
 Generative Agents uses observation, memory stream, reflection, and planning to sustain believable long-horizon behavior.
@@ -223,7 +223,7 @@ It is a policy-governed pipeline:
 - skill/artifact promotion;
 - retention and deletion.
 
-This matches Codex's local memory job pipeline and should become explicit in =poo-flow= as =memory-policy= inheriting or referencing =durable-policy=.
+This matches Codex's local memory job pipeline and should become explicit in =agentic-ai-lab= as =memory-policy= inheriting or referencing =durable-policy=.
 
 *** 10.06.45.30.80 Self-Improving Harness And Temporal Validity Evidence
 
@@ -351,7 +351,7 @@ Cons:
 
 Verdict: recommended.
 
-** 10.06.45.50 POO Flow Capability Model
+** 10.06.45.50 Agentic AI Lab Capability Model
 Durable should appear in Scheme as a composable capability object family.
 
 Conceptual object families:
@@ -501,14 +501,14 @@ The canonical Bundle must therefore preserve counter-evidence, dissent, rejected
 candidates, and invalidation causes.  Canonicalization must not collapse history
 into one self-reinforcing active story.
 
-** 10.06.45.77 POO Flow + Cedar + Lean Dual-Engine Promotion Approval
+** 10.06.45.77 Agentic AI Lab + Cedar + Lean Dual-Engine Promotion Approval
 
 The normative implementation boundary is specified in
 [[file:149-protocol-person-promotion-rfc.org][149 Protocol Person Promotion And Constitutional Boundary RFC]].
 
-The privilege-promotion core is driven by =poo-flow= plus the Cedar and Lean dual
-engine.  It is not "POO Flow decides, while Cedar and Lean provide optional
-support".  =poo-flow= owns the canonical semantic transaction; Cedar decides
+The privilege-promotion core is driven by =agentic-ai-lab= plus the Cedar and Lean dual
+engine.  It is not "Agentic AI Lab decides, while Cedar and Lean provide optional
+support".  =agentic-ai-lab= owns the canonical semantic transaction; Cedar decides
 whether the actor is authorized to request that transition; Lean verifies the
 declared invariants required by that transition.  Neither engine can substitute
 for the other.
@@ -540,7 +540,7 @@ below remains a separate research and implementation boundary.
 
 | Owner | Promotion responsibility | Must not do |
 |-
-| POO Flow Scheme/POO control plane | Canonicalize the =PromotionIntent= and Bundle delta; resolve identity, role, scope, epochs, evidence, invalidators, rollback, and required obligations; join the two engine decisions. | It must not manufacture Cedar permission or Lean proof success. |
+| Agentic AI Lab Scheme/POO control plane | Canonicalize the =PromotionIntent= and Bundle delta; resolve identity, role, scope, epochs, evidence, invalidators, rollback, and required obligations; join the two engine decisions. | It must not manufacture Cedar permission or Lean proof success. |
 | Cedar authorization engine | Evaluate =principal/action/resource/context= against the current Authority facet and policy epoch: who may promote this candidate to this role and scope? | It cannot prove semantic correctness, non-regression, or scientific truth. |
 | Lean proof engine | Verify the required proof object against the current specification/kernel epoch: does the transition satisfy the declared invariants? | It cannot grant organizational authority or choose human values. |
 | Human Audit / organizational quorum | Supply legitimacy for constitutional changes through a named principal, quorum, signature, or approval evidence referenced by Cedar. | It is not an ad hoc prompt and not an infallible factual oracle. |
@@ -548,7 +548,7 @@ below remains a separate research and implementation boundary.
 
 #+begin_src mermaid
 flowchart TD
-  Candidate["Candidate plus evidence"] --> POO["POO Flow compiles PromotionIntent and Bundle delta"]
+  Candidate["Candidate plus evidence"] --> POO["Agentic AI Lab compiles PromotionIntent and Bundle delta"]
   POO --> Cedar["Cedar: authorized under current Authority epoch?"]
   POO --> Lean["Lean: proof obligations verified under current spec epoch?"]
   Cedar --> Join["Fail-closed promotion join"]
@@ -598,7 +598,7 @@ Constitutional self-amendment requires a cross-epoch rule:
 - a new Lean specification cannot establish its own admissibility only under the
   new specification; the old trusted kernel/specification verifies the declared
   translation, compatibility, or amendment obligations;
-- POO Flow binds the old and new Bundle, policy, proof, and evaluator identities
+- Agentic AI Lab binds the old and new Bundle, policy, proof, and evaluator identities
   into one transition receipt before Marlin can materialize the new epoch.
 
 This places Human Audit at semantic privilege transitions, especially changes to
@@ -615,7 +615,7 @@ assumed correct.  Run the same evolving-agent workload under four policies:
 1. append-only Markdown memory;
 2. TTL-based memory;
 3. bi-temporal fact supersession;
-4. Org-contract semantic role promotion with the POO Flow + Cedar + Lean gate.
+4. Org-contract semantic role promotion with the Agentic AI Lab + Cedar + Lean gate.
 
 Inject controlled faults:
 
@@ -711,5 +711,5 @@ The user should see concise POO-native policy and module forms.
 The Scheme implementation should validate object composition and project bounded receipts.
 The runtime should own storage, replay, backfill, leases, corruption repair, and cross-session delivery.
 
-This makes durable a real differentiator for =poo-flow=:
+This makes durable a real differentiator for =agentic-ai-lab=:
 not just "resume a chat", but a policy-governed substrate for long-running agent projects, multi-agent session graphs, workflow execution, memory consolidation, sandbox isolation, CI/CD, deploy, and recovery.

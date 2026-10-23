@@ -6,7 +6,7 @@
 
 * Executive Summary
 
-This report treats Gerbil Scheme as the current POO Flow control-plane context.
+This report treats Gerbil Scheme as the current Agentic AI Lab control-plane context.
 The core conclusion is direct: the high-performance path is not to make each
 downstream scenario write more objects. The path is to make objects reusable as
 policy families, strategy profiles, prototype compositions, slot projections,
@@ -45,7 +45,7 @@ Local =.data/gerbil-poo= research exposed these important POO owners:
 - =polynomial.ss=, =number.ss=, and =fq.ss=: algebraic object families,
   normalization, composition, and finite-field style type construction.
 
-Local =src= evidence shows these current POO Flow anchors:
+Local =src= evidence shows these current Agentic AI Lab anchors:
 
 - =modules/tool-core/calling-control.ss=: fact-set, fact-ref,
   runtime-validation proof facts, and index ref surfaces.
@@ -58,7 +58,7 @@ Local =src= evidence shows these current POO Flow anchors:
   probing, build observability budget status, live watchdog, debug tracking
   lines, and package compile entry points.
 
-These anchors prove that POO Flow already has object-like surfaces and
+These anchors prove that Agentic AI Lab already has object-like surfaces and
 performance gates. The missing piece is stronger reuse: common object families
 should be promoted to shared owner families instead of being redefined in each
 scenario or subsystem.
@@ -88,7 +88,7 @@ should be a family, not a local object.
 ** Layer 2: Prototype And Strategy Composition
 
 The second layer is composition. Gerbil POO has explicit prototype composition
-surfaces. POO Flow should use the same model for strategy composition.
+surfaces. Agentic AI Lab should use the same model for strategy composition.
 
 The preferred shape is:
 
@@ -187,7 +187,7 @@ Use functional combinators for strategy reuse:
 - Stable call surfaces.
 - Composition before execution, not interpretation during execution.
 
-This matches POO Flow's core direction: POO-native policy families plus
+This matches Agentic AI Lab's core direction: POO-native policy families plus
 functional strategy combinators.
 
 ** Runtime And ABI Features
@@ -373,7 +373,7 @@ Expose the reused families through stable runtime bindings:
 
 * Final Position
 
-Gerbil Scheme gives POO Flow a strong high-performance implementation model:
+Gerbil Scheme gives Agentic AI Lab a strong high-performance implementation model:
 macros can remove repeated boilerplate, POO/MOP can express reusable object
 families, prototype composition can make extension cheap, functional
 combinators can make strategy composition explicit, and runtime boundaries can

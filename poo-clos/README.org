@@ -9,7 +9,7 @@
 Core owns this POO-native CLOS metaprotocol extension.  The Common
 Lisp HyperSpec supplies semantic conformance vectors, but it does not own the
 runtime architecture.  Class precedence is the upstream Gerbil POO prototype
-C4, projected back to the exact CLOS class metaobjects.  POO Flow owns its
+C4, projected back to the exact CLOS class metaobjects.  Agentic AI Lab owns its
 lightweight module descriptor and Loader selection; the Core CLOS runtime
 facade remains lazy and opt-in.
 

@@ -14,7 +14,7 @@ prepared aggregate Profile such as =production=.
 
 * Purpose
 
-This document records the CrewAI-style user composition scenario. CrewAI is a reference framework for collaborative agents, crews, tasks, and flows; it is not the source of truth for POO Flow. The POO Flow fact surface remains profile objects, strategy composition, graph/loop facts, runtime handoff receipts, and Lean proof obligations.
+This document records the CrewAI-style user composition scenario. CrewAI is a reference framework for collaborative agents, crews, tasks, and flows; it is not the source of truth for Agentic AI Lab. The Agentic AI Lab fact surface remains profile objects, strategy composition, graph/loop facts, runtime handoff receipts, and Lean proof obligations.
 
 The goal is to show that a CrewAI-like crew/flow can be expressed as a small reusable profile library plus one composition case:
 
@@ -68,7 +68,7 @@ The public CrewAI docs describe the same high-level shape:
 - Flows orchestrate start/listen/router steps, manage state, persist execution, and resume long-running workflows.
 - Tasks and processes cover sequential, hierarchical, and hybrid execution with guardrails, callbacks, and human-in-the-loop triggers.
 
-* POO Flow Mapping
+* Agentic AI Lab Mapping
 
 #+begin_src typst
 $
@@ -97,7 +97,7 @@ op("CrewAIFlow")
 $
 #+end_src
 
-CrewAI expresses those capabilities as Python agents/tasks/crews/flows. POO Flow expresses them as reusable POO profiles and a composition case. Runtime execution remains outside Scheme; the Scheme control plane produces policy facts and handoff receipts.
+CrewAI expresses those capabilities as Python agents/tasks/crews/flows. Agentic AI Lab expresses them as reusable POO profiles and a composition case. Runtime execution remains outside Scheme; the Scheme control plane produces policy facts and handoff receipts.
 
 * Runtime Language Handoff
 
@@ -107,14 +107,14 @@ The intended lowering is:
 
 #+begin_src text
 user-interface/cases/crewai-research-flow.ss
-  -> POO Flow composition object
+  -> Agentic AI Lab composition object
   -> Scheme graph/loop/proof receipt
   -> Python RuntimeGraphProgram / C ABI
   -> runtime execution receipt
   -> Lean checked facts
 #+end_src
 
-This is also how Pi Agent core-style capabilities should be represented. POO Flow can describe session state, tool calling, agent loop progress, attachment/message state, and provider/tool bindings as policy/profile facts. Python then implements the runtime loop and returns receipts. The Scheme layer should prove that the selected plan is internally sound and that the returned runtime receipt matches the plan.
+This is also how Pi Agent core-style capabilities should be represented. Agentic AI Lab can describe session state, tool calling, agent loop progress, attachment/message state, and provider/tool bindings as policy/profile facts. Python then implements the runtime loop and returns receipts. The Scheme layer should prove that the selected plan is internally sound and that the returned runtime receipt matches the plan.
 
 #+begin_src typst
 $
@@ -185,7 +185,7 @@ op("HandoffAfterProofGate")(c)
 $
 #+end_src
 
-The important distinction is that POO Flow does not merely reproduce CrewAI's runtime surface. It makes the strategy composition explicit and proof-facing, so unsafe task dependencies, undeclared routers, unchecked guardrails, or missing human review can be rejected before a runtime language executes the flow.
+The important distinction is that Agentic AI Lab does not merely reproduce CrewAI's runtime surface. It makes the strategy composition explicit and proof-facing, so unsafe task dependencies, undeclared routers, unchecked guardrails, or missing human review can be rejected before a runtime language executes the flow.
 
 * Implementation Owners
 

@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative slot-resolution protocol
-- Semantic core :: Native POO composition and demand-driven POO Flow evaluation
+- Semantic core :: Native POO composition and demand-driven Agentic AI Lab evaluation
 - Related modules :: =45-41-poo-profile-slot-contribution-priority.org= and =45-52-capability-roles-admission-scope-and-cache-isolation.org=
 
 This module defines an explicit phase pipeline for slot resolution. It prevents metadata inspection from forcing business values, runtime authorization failure from becoming semantic conflict, and disclosure policy from changing business identity.

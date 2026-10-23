@@ -170,10 +170,10 @@ Still assumed/pending are:
 #+begin_src sh
 curl -fLsS --connect-timeout 10 --max-time 30 \
   https://codeload.github.com/tao3k/gerbil-poo/tar.gz/099b381588360a8a49fd772f666a1a00351366f5 \
-  -o /private/tmp/pooflow-poo-099b381-source.tar.gz
+  -o /private/tmp/agenticailab-poo-099b381-source.tar.gz
 
 python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/25-isolated-combined-validation/run.py \
-  --archive /private/tmp/pooflow-poo-099b381-source.tar.gz --label replay
+  --archive /private/tmp/agenticailab-poo-099b381-source.tar.gz --label replay
 #+end_src
 
 The runner rebuilds another fresh directory and refuses an existing label. Native

@@ -9,7 +9,7 @@
 * 10.06.52 Three Loop Human Audit Runtime Plan
 ** 10.06.52.10 Purpose
 This document aligns Andrew Ng's June 2026 three-loop product-development
-framing with =poo-flow='s Scheme/POO control plane.
+framing with =agentic-ai-lab='s Scheme/POO control plane.
 
 The local design goal is not to copy a loop-engineering slogan. The goal is to
 make the boundary precise:
@@ -107,7 +107,7 @@ heavy execution.
 #+begin_src mermaid
 sequenceDiagram
   participant User as User or Agent
-  participant Scheme as poo-flow Scheme control plane
+  participant Scheme as agentic-ai-lab Scheme control plane
   participant Audit as Human Audit Loop
   participant Marlin as Marlin/Rust runtime
 
@@ -195,13 +195,13 @@ Acceptance:
 Phase 4: Runtime manifest bridge.
 - Put the three-loop facts into the existing runtime manifest discovery plane.
 - The manifest should expose report-only handoff facts, not a scheduler.
-- =poo-flow= owns the Scheme control-plane projection.
+- =agentic-ai-lab= owns the Scheme control-plane projection.
 - =marlin-agent-core= owns the Gerbil ABI consumer and Rust execution bridge
-  after it depends on =poo-flow= through =gerbil.pkg=.
+  after it depends on =agentic-ai-lab= through =gerbil.pkg=.
 Acceptance:
 - A focused manifest test proves loop, audit, graph, sandbox, session, and
   budget facts are discoverable from one manifest object.
-- The manifest names the consumer contract without pretending that =poo-flow=
+- The manifest names the consumer contract without pretending that =agentic-ai-lab=
   owns the Marlin runtime ABI.
 - Projection payloads are final alists only at the boundary; user-facing
   construction remains POO-native and functional.
@@ -224,7 +224,7 @@ Phase 6: Documentation and downstream user closure.
 - Keep examples as POO objects and functional combinators. Do not introduce
   alist DSLs or record DSLs as user-facing syntax.
 - Document the downstream path for Marlin:
-  =marlin-agent-core/crates/*/gerbil/gerbil.pkg= depends on =poo-flow=;
+  =marlin-agent-core/crates/*/gerbil/gerbil.pkg= depends on =agentic-ai-lab=;
   Marlin's Gerbil side consumes the manifest and owns ABI tests.
 Acceptance:
 - User-interface scenarios compile through focused =gxtest= files.
@@ -250,7 +250,7 @@ flowchart LR
 #+end_src
 
 This slice gives the project a real three-loop control-plane path while
-preserving the hard boundary: =poo-flow= composes, validates, explains, and
+preserving the hard boundary: =agentic-ai-lab= composes, validates, explains, and
 hands off; Marlin executes.
 - Extend Human Audit review inputs to include spec/profile/eval/policy deltas.
 - Preserve current decisions: pending, approved, rejected, escalated,
@@ -270,7 +270,7 @@ Phase 4: Control-plane runtime manifest.
 
 Acceptance:
 - Focused tests inspect manifest shape.
-- Manifest is versioned and names producer =poo-flow= and consumer
+- Manifest is versioned and names producer =agentic-ai-lab= and consumer
   =marlin-agent-core=.
 
 Phase 5: Graph safety closure.

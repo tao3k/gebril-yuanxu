@@ -109,9 +109,9 @@ flowchart LR
 - [X] =semanticGraphConstructionRequiresComposeProfiles=
 - [X] =moduleImportDoesNotCreateSemanticRequirement=
 - [X] =semanticRequirementDoesNotCreateModuleImport=
-- [X] =pooFlowDoesNotLoadGerbilModules=
-- [X] =pooFlowDoesNotOwnMacroPhases=
-- [X] =pooFlowDoesNotResolveCircularModuleInitialization=
+- [X] =agenticAiLabDoesNotLoadGerbilModules=
+- [X] =agenticAiLabDoesNotOwnMacroPhases=
+- [X] =agenticAiLabDoesNotResolveCircularModuleInitialization=
 - [ ] =circularModuleFailureBelongsToGerbilGraph=
 - [ ] =semanticDivergenceBelongsToPooGraph=
 - [X] =graphIdentitiesRemainDistinct=
@@ -148,7 +148,7 @@ The Gerbil module graph contains:
 
 It is governed by Gerbil module and phase semantics.
 
-POO Flow must not redefine module loading, macro-phase dependency, or circular
+Agentic AI Lab must not redefine module loading, macro-phase dependency, or circular
 module initialization behavior.
 
 * POO semantic definition graph
@@ -209,7 +209,7 @@ When Profile A requires a contract provided by Profile B:
 - the root module explicitly imports both lexical bindings;
 - =compose profiles= receives both values;
 - structural closure resolves the semantic edge;
-- POO Flow evaluates any resulting SCC.
+- Agentic AI Lab evaluates any resulting SCC.
 
 Module A and Module B do not need to import one another circularly.
 
@@ -259,7 +259,7 @@ canonical composition-root value.
 
 ** Structural closure phase
 
-POO Flow resolves:
+Agentic AI Lab resolves:
 
 - anchors and revisions;
 - semantic requirement edges;
@@ -270,7 +270,7 @@ POO Flow resolves:
 
 ** Demand evaluation phase
 
-POO Flow evaluates lazy demands and semantic SCC fixed points with budgets,
+Agentic AI Lab evaluates lazy demands and semantic SCC fixed points with budgets,
 cycle evidence, caching, continuations, and observability.
 
 ** Live handoff phase
@@ -417,7 +417,7 @@ The user does not encode semantic cycles through module imports.
 6. No global provider discovery or import-time registry is used.
 7. Profile modules construct finite pure values.
 8. Mutable placeholders do not encode POO cycles.
-9. Semantic SCCs use verified =gerbil-poo= and POO Flow semantics.
+9. Semantic SCCs use verified =gerbil-poo= and Agentic AI Lab semantics.
 10. Module and semantic graph identities remain distinct.
 11. Macros do not query live semantic or runtime state.
 12. Nested B2B2C cycles remain semantic SCCs.
@@ -433,7 +433,7 @@ The user does not encode semantic cycles through module imports.
 - [ ] Limit requirement resolution to explicit operand closure.
 - [ ] Prevent loaded-module, package, filesystem, and registry discovery.
 - [ ] Define structural closure independently from module loading.
-- [ ] Define semantic SCC evaluation through POO Flow.
+- [ ] Define semantic SCC evaluation through Agentic AI Lab.
 - [ ] Verify native cycle representation against =gerbil-poo=.
 - [ ] Reject mutable placeholder and import-order cycle construction.
 - [ ] Define separate module-graph and semantic-graph identities.

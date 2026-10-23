@@ -10,7 +10,7 @@
 - RFC state: proof model implemented; completion gates pending.
 - Language: English only.
 - Scope: vendor-neutral enterprise agent evidence under
-  =PooFlowProof.Enterprise=.
+  =AgenticAILabProof.Enterprise=.
 - Previous proof:
   [[file:45-120-34-source-bound-effect-completion-recovery-scheduling-deferral-owner-closure.org][45-120-34 scheduler deferral owner closure]].
 - Compatibility policy: none. This is a new proof projection and does not

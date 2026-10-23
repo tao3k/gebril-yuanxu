@@ -24,7 +24,7 @@ The accepted migration is compiler-first and vertical-slice driven:
 - connect Cedar, evidence, and Lean through bound artifacts;
 - cut over once and remove obsolete public routes.
 
-There is no isolated public “POO Flow v2” namespace and no permanent dual semantic center.
+There is no isolated public “Agentic AI Lab v2” namespace and no permanent dual semantic center.
 
 * Decision
 Migration proceeds through P0–P6:
@@ -58,7 +58,7 @@ This RFC owns:
 - the boundary excluding downstream Rust, TypeScript, and other runtimes from this implementation tranche.
 
 * RFC Suite Dependencies
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and overall boundaries.
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and overall boundaries.
 - [[file:91-canonical-organization-bundle-rfc.org][RFC 91]] is the semantic prerequisite for P1 and P2.
 - [[file:92-c-runtime-interface-and-python-validation-runtime-rfc.org][RFC 92]] is the contract prerequisite for P3.
 - [[file:93-assurance-proof-and-evidence-chain-rfc.org][RFC 93]] is the authorization, proof, and evidence prerequisite for P4 and P5.
@@ -416,7 +416,7 @@ Downstream work may begin after a sufficiently stable public C ABI and conforman
 - assurance level;
 - any sandbox, isolation, or attestation used for mediation claims.
 
-POO Flow does not grant assurance merely because a downstream adapter links successfully.
+Agentic AI Lab does not grant assurance merely because a downstream adapter links successfully.
 
 * Risks And Controls
 | Risk | Control |
@@ -453,7 +453,7 @@ A public v2 would encourage indefinite dual semantics. Migration uses internal s
 The first slice must exercise every boundary without requiring markets, debates, dynamic swarms, distributed scheduling, or multiple runtime languages.
 
 ** Downstream Runtime Implementation Deferred
-Rust and TypeScript adapters are valuable consumers of the C ABI, not prerequisites for proving the POO Flow interface complete. Python and the C harness close the first-party implementation gate.
+Rust and TypeScript adapters are valuable consumers of the C ABI, not prerequisites for proving the Agentic AI Lab interface complete. Python and the C harness close the first-party implementation gate.
 
 ** Numeric Performance Target Before Baseline Rejected
 An arbitrary nanosecond target is not portable evidence. The RFC requires a reproducible matrix, receipts, and a release budget established on the actual hot path.

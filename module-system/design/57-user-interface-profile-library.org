@@ -8,7 +8,7 @@
 * 10.06.57.10 Purpose
 
 The =user-interface/= tree is not only a set of readable instance examples.  It
-is also the public contribution surface for reusable POO Flow profiles,
+is also the public contribution surface for reusable Agentic AI Lab profiles,
 strategies, policies, and scenario cases.
 
 The design intent is:
@@ -17,7 +17,7 @@ The design intent is:
    configuration;
 2. community contributors can add reusable profiles instead of copying local
    one-off configuration;
-3. downstream users can import those profiles through the POO Flow library;
+3. downstream users can import those profiles through the Agentic AI Lab library;
 4. downstream users can extend the imported profiles through POO objects and
    functional composition;
 5. every public profile passes testing and Lean proof obligations before it is

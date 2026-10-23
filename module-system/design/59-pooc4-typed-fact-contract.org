@@ -5,7 +5,7 @@
 * 10.06.59 Intent
 This document records the implemented typed contract between Scheme fact
 emission and Lean proof targets.  It is not a plan document: the concrete
-implementation is =PooFlowProof.PooC4.FactContract=.
+implementation is =AgenticAILabProof.PooC4.FactContract=.
 
 The design replaces the previous JSON/stringly manifest direction with a
 typed Lean boundary.  Scheme still owns external key spelling, but Lean owns
@@ -90,7 +90,7 @@ theorem all_scheme_fact_external_names_nodup :
 
 * 10.06.59.35 Module Ownership
 The contract implementation is intentionally split by proof ownership.  The
-public import remains =PooFlowProof.PooC4.FactContract=, but that file is only a
+public import remains =AgenticAILabProof.PooC4.FactContract=, but that file is only a
 facade over smaller modules.
 
 #+begin_src mermaid
@@ -244,22 +244,22 @@ gxpkg env gxi t/session-handoff-lean-facts-smoke.scm
 The Lean =#check= surface confirms:
 
 #+begin_src lean
-#check PooFlowProof.PooC4.FactContract.SchemeFactKey
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.proof
-#check PooFlowProof.PooC4.FactContract.all_contract_keys_exact
-#check PooFlowProof.PooC4.FactContract.all_contracts_well_typed
-#check PooFlowProof.PooC4.FactContract.SchemeFactKey.expectedTarget
-#check PooFlowProof.PooC4.FactContract.all_contracts_exactly_typed
-#check PooFlowProof.PooC4.FactContract.all_scheme_fact_external_names_nodup
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.contractKey
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.missingFact
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.blockedModule
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.blocks_missing_fact
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.contract_key_expected_target
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.required_fact_of_can_start
-#check PooFlowProof.PooC4.FactContract.uiScenarioFactCompletedModule
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.missingModule?
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.requiredBySpec
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.missing_fact_required_by_spec
-#check PooFlowProof.PooC4.FactContract.UiFailureTheorem.benchmark_fixture_guard_reflects_missing_fact
+#check AgenticAILabProof.PooC4.FactContract.SchemeFactKey
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.proof
+#check AgenticAILabProof.PooC4.FactContract.all_contract_keys_exact
+#check AgenticAILabProof.PooC4.FactContract.all_contracts_well_typed
+#check AgenticAILabProof.PooC4.FactContract.SchemeFactKey.expectedTarget
+#check AgenticAILabProof.PooC4.FactContract.all_contracts_exactly_typed
+#check AgenticAILabProof.PooC4.FactContract.all_scheme_fact_external_names_nodup
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.contractKey
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.missingFact
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.blockedModule
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.blocks_missing_fact
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.contract_key_expected_target
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.required_fact_of_can_start
+#check AgenticAILabProof.PooC4.FactContract.uiScenarioFactCompletedModule
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.missingModule?
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.requiredBySpec
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.missing_fact_required_by_spec
+#check AgenticAILabProof.PooC4.FactContract.UiFailureTheorem.benchmark_fixture_guard_reflects_missing_fact
 #+end_src

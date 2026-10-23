@@ -8,7 +8,7 @@ The repository is =tao3k/gebril-yuanxu=. Its root =gerbil.pkg= declares
 =package: yuanxu= with =prelude: :tao3k/yuanxu/prelude=. Library imports use
 =:yuanxu/...=. The consumer checkout may remain =core/=; filesystem location
 is not a namespace. Core-owned public functions, types and configuration
-prefixes migrate to Yuanxu as well; product-owned POO Flow APIs remain product
+prefixes migrate to Yuanxu as well; product-owned Agentic AI Lab APIs remain product
 APIs. Consumers are updated directly rather than given compatibility aliases.
 
 The former nested =yuanxu/= package directory is removed. There are no
@@ -109,7 +109,7 @@ The root selection macro is =yuanxu!=. Module loading uses
 =yuanxu-load-modules=, reusable test helpers use =yuanxu-test-*=, and Core
 contracts use =Yuanxu*= identities, including =YuanxuObjectContract.=.
 The Core proof library/package is =YuanxuProof= under =dev/proofs/lean/=;
-the product's independent =PooFlowProof= aggregate consumes it. Core-owned
+the product's independent =AgenticAILabProof= aggregate consumes it. Core-owned
 environment names use =YUANXU_=. This is a source migration: old source or
 compiled public symbols do not become aliases to the new ones.
 

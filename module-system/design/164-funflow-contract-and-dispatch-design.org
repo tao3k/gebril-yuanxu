@@ -130,7 +130,7 @@ Core base: e85fd45303b208b23e5957fd316e7004994109a4 plus the working-tree
 changes below; no clean-commit, installed-binary or remote-CI result is implied.
 Runtime: /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc. Source hashes
 were checked before and after the successful 56-case run; generated/compiler
-outputs remained under /tmp/pooflow-core-prototype-specializer.
+outputs remained under /tmp/agenticailab-core-prototype-specializer.
 
 | Source | SHA-256 at successful runtime qualification |
 |--------+--------------------------------------------|

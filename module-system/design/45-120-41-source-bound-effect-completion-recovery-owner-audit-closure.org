@@ -8,7 +8,7 @@
 
 - RFC state: proof model and actual Lean closure implemented.
 - Language: English only.
-- Scope: enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof:
   [[file:45-120-40-source-bound-effect-completion-recovery-owner-coverage-closure.org][45-120-40 recovery owner coverage closure]].
 - This RFC defines one canonical proof meaning.  It does not define
@@ -351,24 +351,24 @@ flowchart LR
 * Proof files
 
 - Independent model:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditModel.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditModel.lean=
 - Actual closure:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditClosure.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditClosure.lean=
 - Canonical lightweight audit algebra:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCore.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCore.lean=
 - Strengthened native contracts:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerDeferralAdmissionContractClosure.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerDeferralAdmissionContractClosure.lean=
 
 * Verification receipts
 
 - Focused crash/storage/scheduler freshness build: passed.
 - Focused owner-audit model, core, and actual closure builds: passed.
-- =PooFlowProof.Enterprise=: passed.
+- =AgenticAILabProof.Enterprise=: passed.
 - Full Lean build: passed; one unrelated existing =simpa= linter suggestion
   remains in =AgentRedTeamProofRegressionClosure.lean=.
 - Independent model through =uv run axle --json check=: =okay=true=,
   no failed declarations, errors, or warnings.
-- Canonical actual core through =uv run poo-flow-axle-verify=:
+- Canonical actual core through =uv run agentic-ai-lab-axle-verify=:
   - closure digest:
     =sha256:7d33b9fd89ca6dc45000b0dae1922b615e076c17b8bd62bba1af2f624cbc9f70=;
   - bundle digest:

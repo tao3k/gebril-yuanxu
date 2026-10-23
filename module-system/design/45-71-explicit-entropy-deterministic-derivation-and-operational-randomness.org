@@ -14,7 +14,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 * Status
 
 This RFC records the accepted treatment of deterministic derivation, semantic
-entropy, and operational randomness in POO Flow.
+entropy, and operational randomness in Agentic AI Lab.
 
 It extends explicit temporal observations and deterministic replay. It forbids
 hidden random-number generation inside pure POO fixed-point evaluation.

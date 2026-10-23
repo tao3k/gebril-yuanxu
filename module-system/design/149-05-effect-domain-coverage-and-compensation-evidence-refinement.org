@@ -127,7 +127,7 @@ unresolved or committed outcome according to the owning protocol.
 The proof owner is:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/Enterprise/
+packages/proofs/lean/AgenticAILabProof/Enterprise/
   EffectDomainCoverage.lean
 #+end_src
 
@@ -320,7 +320,7 @@ relabeled =rolledBack=.
 - The owner of an external effect validates its state and compensation
   semantics.
 - Lean owns the coverage countermodels and abstract closure.
-- POO Flow composes the evidence objects and fails closed when any effect
+- Agentic AI Lab composes the evidence objects and fails closed when any effect
   lacks coverage, reversibility classification, or owner validity.
 
 * Implementation checklist
@@ -355,10 +355,10 @@ warnings:
 
 #+begin_src text
 lake env lean \
-  PooFlowProof/Enterprise/EffectDomainCoverage.lean
+  AgenticAILabProof/Enterprise/EffectDomainCoverage.lean
 
 lake build \
-  PooFlowProof.Enterprise.EffectDomainCoverage
+  AgenticAILabProof.Enterprise.EffectDomainCoverage
 #+end_src
 
 The Typst block must compile through the project =devenv.nix= toolchain.

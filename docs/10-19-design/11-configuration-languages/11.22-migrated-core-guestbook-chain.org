@@ -18,7 +18,7 @@ This audit uses Core worktree 06fe336bc671 and product revision 921152c088d1 aft
 migration, not removed product src paths or a historical gitlink. It records source
 inspection, not a fresh test execution. Core owns JSON Schema under
 [[file:../../../modules/json-schema/interface.ss][modules/json-schema]], [[file:../../../feature-system/interface.ss][Feature System]], Module graph primitives and
-[[file:../../../module-system/design/README.org][shared module design]]. POO Flow owns root init/source conventions, actual
+[[file:../../../module-system/design/README.org][shared module design]]. Agentic AI Lab owns root init/source conventions, actual
 business modules and resource-provider adapters. No Core -> product runtime import
 is proposed. Consumer file links outside this checkout are workspace references.
 
@@ -33,11 +33,11 @@ Actual product [[file:../../../../init.ss][root init.ss]]:
 
 #+begin_src scheme
 (import (only-in :clan/poo/object .def)
-        (only-in :poo-flow/modules/module-authoring/module-source-collection
-                 poo-flow-maintained-module-source))
-(export PooFlowModules)
+        (only-in :agentic-ai-lab/modules/module-authoring/module-source-collection
+                 agentic-ai-lab-maintained-module-source))
+(export AgenticAILabModules)
 
-(.def (PooFlowModules @ poo-flow-maintained-module-source))
+(.def (AgenticAILabModules @ agentic-ai-lab-maintained-module-source))
 #+end_src
 
 This declares a source collection. It neither enumerates files nor initializes
@@ -48,12 +48,12 @@ respect the declared location/root, not assume an extra namespace object layer.
 Directly reusable current consumer call:
 
 #+begin_src scheme
-(import (only-in :poo-flow/init PooFlowModules)
-        (only-in :poo-flow/modules/module-authoring/module-source-collection
+(import (only-in :agentic-ai-lab/init AgenticAILabModules)
+        (only-in :agentic-ai-lab/modules/module-authoring/module-source-collection
                  yuanxu-load-modules))
 
 (def ProductInterfaceSources
-  (yuanxu-load-modules PooFlowModules))
+  (yuanxu-load-modules AgenticAILabModules))
 #+end_src
 
 Current [[file:../../../../modules/module-authoring/module-source-collection.ss][yuanxu-load-modules]] projects the collection's conventional interface.ss
@@ -105,7 +105,7 @@ The target Guestbook interface is maintained only in the
 [[file:11.23-source-ref-to-admitted-scope.org][canonical complete Guestbook chain]]. It supersedes this audit's earlier
 handwritten make-guestbook-module factory, imports and export. Role definitions
 remain in module 20; generated dependency injection replaces user assembly.
-The current :core imports and poo-flow- bindings printed in this audit describe
+The current :core imports and agentic-ai-lab- bindings printed in this audit describe
 actual implementation, not target naming. Do not copy them as the final Core API.
 
 Here Core means the selected Module's baseline. Schema compilation and Guestbook
@@ -309,7 +309,7 @@ an assertion that using POO or Core automatically makes startup fast.
 
 | Boundary | Reusable now | Missing integration |
 |----------+--------------+---------------------|
-| Root publication | PooFlowModules source object | Init-source selection/normalization |
+| Root publication | AgenticAILabModules source object | Init-source selection/normalization |
 | Interface discovery | Current collection -> interface SourceRefs | Hierarchical/keyed namespace and source-to-scope linkage |
 | Schema | Core interface, artifacts, generated native Contracts, validation | Full-root/public .admit/default association for Guestbook |
 | Module baseline | Existing descriptors and module-closure | One qualified target core layout, retained module denials |

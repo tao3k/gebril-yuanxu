@@ -336,7 +336,7 @@ recovery authority is evidence only and cannot authorize a live action.
 Gerbil supplies continuable exceptions, first-class continuations, condition
 handling, and hygienic macro facilities.
 
-Native =gerbil-poo= remains the sole POO evaluation mechanism.  POO Flow defines
+Native =gerbil-poo= remains the sole POO evaluation mechanism.  Agentic AI Lab defines
 semantic evidence, diagnostic projections, authority scopes, breakpoint
 meaning, recovery dispositions, and receipts.
 

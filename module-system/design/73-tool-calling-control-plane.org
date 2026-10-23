@@ -14,7 +14,7 @@ native noun slots, maintained Profile responsibilities and no stage DSL in
 
 * Purpose
 
-Tool calling is a first-class control-plane concern. LangChain, LangGraph, CrewAI, Pi Agent core, and similar frameworks all need an agent to choose tools, pass arguments, receive results, update state, and continue the loop. POO Flow should not treat that as an incidental node label. It should model the policy layer explicitly, then lower the verified plan to a runtime language such as Python.
+Tool calling is a first-class control-plane concern. LangChain, LangGraph, CrewAI, Pi Agent core, and similar frameworks all need an agent to choose tools, pass arguments, receive results, update state, and continue the loop. Agentic AI Lab should not treat that as an incidental node label. It should model the policy layer explicitly, then lower the verified plan to a runtime language such as Python.
 
 This document uses "tool calling" for the end-to-end control path. If a scenario also needs cooldown/rate-limit behavior, that remains a policy profile inside the same tool-calling control plane.
 
@@ -131,7 +131,7 @@ The Python runtime should expose tool binding capabilities that correspond to th
 | =tool-result-before-downstream-step= | materialize typed result before downstream node |
 | =runtime-receipt-matches-tool-plan= | return a receipt that names tool, args digest, result digest, status, and trace |
 
-This keeps POO Flow strong at composition and proof, while Python remains responsible for the operational tool call.
+This keeps Agentic AI Lab strong at composition and proof, while Python remains responsible for the operational tool call.
 
 * Implementation Owners
 
@@ -184,8 +184,8 @@ projection, and scenario-specific support-module split:
   ~tool-calling-object-list-control~ elapsed about 1.36ms under a 100ms gate.
 
 The public API is intentionally narrow.  The canonical fact projection is
-~poo-flow-tool-call-runtime-validation-proof-facts~ plus
-~poo-flow-tool-call-fact-ref~.  The older split public calls for plan-valid,
+~agentic-ai-lab-tool-call-runtime-validation-proof-facts~ plus
+~agentic-ai-lab-tool-call-fact-ref~.  The older split public calls for plan-valid,
 receipt-matches-plan, and separate plan/runtime proof facts are not retained as
 compatibility APIs.
 

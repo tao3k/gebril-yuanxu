@@ -9,7 +9,7 @@
 The current project needs to treat POO as the high-performance object system for the control plane. Large and complex objects must not push the implementation back toward raw alists, string assembly, or temporary lambda patching.
 For that reason, performance benchmarks cannot cover only tiny happy paths. They must exercise real POO object construction, repeated access, projection, receipt boundaries, tool-calling control, and composition.
 
-The upstream =gerbil-scheme-language-project-harness= scenarios are reference facts, not final POO Flow facts. We replicate them to bring already validated high-performance POO idioms into this project, then strengthen those idioms under POO Flow's policy, strategy, composition, proof, and runtime handoff semantics.
+The upstream =gerbil-scheme-language-project-harness= scenarios are reference facts, not final Agentic AI Lab facts. We replicate them to bring already validated high-performance POO idioms into this project, then strengthen those idioms under Agentic AI Lab's policy, strategy, composition, proof, and runtime handoff semantics.
 
 * Replicated Scenario Families
 
@@ -20,7 +20,7 @@ The upstream =gerbil-scheme-language-project-harness= scenarios are reference fa
 - Tool calling object-list control: plans, receipts, and facts remain stable POO object lists, and a combined validation/proof projection reuses one traversal.
 - Composition: profile, policy, and strategy combinations go through POO owner families and stable contribution boundaries instead of scattered raw patches.
 
-* Current POO Flow Fixtures
+* Current Agentic AI Lab Fixtures
 
 The unified fixture gate currently covers 15 POO performance scenarios:
 

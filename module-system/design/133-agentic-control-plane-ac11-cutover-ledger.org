@@ -4,7 +4,7 @@
 
 #+title: AC-11 Canonical Cutover Ledger
 #+subtitle: Release decision boundary, canonical routes, retirement candidates, and deletion gates
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+date: 2026-07-12
 #+status: Inventory ready; canonical cutover blocked on explicit migration approval
 #+options: toc:3 num:t
@@ -61,8 +61,8 @@ flowchart LR
 | Bundle authoring and identity | POO-native =src/semantic/organization-bundle.ss= through its contract facade | Bundle, Kernel, five-facet, mutation, and canonical fixture scenarios | =retain= |
 | Runtime control projection | =src/contract/organization-bundle-runtime-v0.ss= | Scheme projection plus strict and installed C consumers | =retain= |
 | Runtime hot and bulk projection | =src/contract/organization-bundle-runtime-v0-batch.ss= and =src/contract/runtime-v0-abi-schema.ss= | 140-block matrix, sanitizer, leak, parity, and installed-consumer gates | =retain= |
-| Native runtime boundary | =bindings/runtime-c/include/poo_flow/runtime_v0.h= and =bindings/runtime-c/src/runtime_v0.c= | Bazel C suites and generated-contract parity | =relabel= |
-| Python production runtime | Out-of-line CFFI API mode under =packages/python-runtime/src/poo_flow_runtime/_native/= | Isolated wheel without Gerbil and Python production/conformance suites | =retain= |
+| Native runtime boundary | =bindings/runtime-c/include/agentic_ai_lab/runtime_v0.h= and =bindings/runtime-c/src/runtime_v0.c= | Bazel C suites and generated-contract parity | =relabel= |
+| Python production runtime | Out-of-line CFFI API mode under =packages/python-runtime/src/agentic_ai_lab_runtime/_native/= | Isolated wheel without Gerbil and Python production/conformance suites | =retain= |
 | Authorization and evidence | AuthorizedEffectToken, native evidence sink, and evidence-chain contract owners | Allow, deny, replay, revocation, substitution, fork, and truncation gates | =retain= |
 | Proof projection and theorem identity | =src/proof/proof-case-projection.ss=, generated ProofCaseVector v1, and locked Lean package | Four-way differential, Lean build, FFI smoke, mutation, and stale-proof rejection | =retain= |
 | Release assurance | =src/contract/release-assurance-manifest.ss=, claim verifier, and =src/qualification/release-assurance.ss= | AC-10 twelve-gate revision-bound manifest | =publish-after-approval= |
@@ -92,10 +92,10 @@ parser-visible consumers and zero facade re-exports:
 
 | Retired export candidate | Canonical POO-native replacement |
 |--------------------------+----------------------------------|
-| =agent-sandbox-option= | =poo-flow-sandbox-profile-object-row-slot= and =poo-flow-sandbox-profile-object-row-value/default= |
-| =agent-sandbox-alist-ref= | =poo-flow-sandbox-profile-object-row-value= and =poo-flow-sandbox-profile-object-row-field= |
-| =agent-sandbox-merge-alists= | =poo-flow-sandbox-profile-object-row-merge= and =poo-flow-sandbox-profile-object-field-with-merge= |
-| =agent-sandbox-override= | =poo-flow-sandbox-profile-object-row-contribution= and =poo-flow-sandbox-profile-object-row-operator= |
+| =agent-sandbox-option= | =agentic-ai-lab-sandbox-profile-object-row-slot= and =agentic-ai-lab-sandbox-profile-object-row-value/default= |
+| =agent-sandbox-alist-ref= | =agentic-ai-lab-sandbox-profile-object-row-value= and =agentic-ai-lab-sandbox-profile-object-row-field= |
+| =agent-sandbox-merge-alists= | =agentic-ai-lab-sandbox-profile-object-row-merge= and =agentic-ai-lab-sandbox-profile-object-field-with-merge= |
+| =agent-sandbox-override= | =agentic-ai-lab-sandbox-profile-object-row-contribution= and =agentic-ai-lab-sandbox-profile-object-row-operator= |
 
 These counts are dependency-topology evidence, not permission to delete.  The
 source index freshness gap must be repaired or compensated by the bounded
@@ -133,10 +133,10 @@ binds the qualified artifacts without promoting or renaming them:
 
 | Dimension | Current bound value | Normative owner | Freeze state |
 |-----------+---------------------+-----------------+--------------|
-| Bundle schema | =poo-flow.organization-bundle.draft.3= | =src/semantic/organization-bundle.ss= | pre-release |
+| Bundle schema | =agentic-ai-lab.organization-bundle.draft.3= | =src/semantic/organization-bundle.ss= | pre-release |
 | Runtime ABI | major =0=, minor =1= | =src/contract/runtime-v0-abi-schema.ss= and generated C contract | =abi-v1-frozen? #f= |
 | Proof vector | version =1= plus schema fingerprint and digest domains | generated ProofCaseVector v1 and TOML source | qualified v1 artifact |
-| Evidence/assurance | =poo-flow.release-assurance-manifest.v1= | assurance manifest, verifier, and qualification owners | qualified v1 artifact |
+| Evidence/assurance | =agentic-ai-lab.release-assurance-manifest.v1= | assurance manifest, verifier, and qualification owners | qualified v1 artifact |
 
 The verifier fails closed on owner/version drift and on any implicit ABI v1
 freeze.  A release decision remains required even when this matrix verifies.
@@ -196,7 +196,7 @@ The initial authoring and Python =ctypes= audits are closed.  Before requesting
 the release decision:
 
 - wait for or repair the external ASP provider/state-schema migration so exact
-  owner selectors can be independently re-certified; this is not a POO Flow
+  owner selectors can be independently re-certified; this is not a Agentic AI Lab
   product-source defect;
 - bind the four old-symbol absence checks to the dedicated post-approval
   removal tranche;

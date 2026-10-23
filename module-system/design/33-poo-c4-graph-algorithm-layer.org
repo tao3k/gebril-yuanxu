@@ -16,7 +16,7 @@ those facts for cycle, strongly connected component, condensation,
 topological-order, and diagnostic questions.  Downstream loop or workflow
 modules should project into this API instead of owning private graph algorithm
 semantics.
-=poo-flow= should implement a graph algorithm layer, but it must be placed at
+=agentic-ai-lab= should implement a graph algorithm layer, but it must be placed at
 the right boundary.
 
 The layer is not "C4 schedules workflows". C4 remains inheritance

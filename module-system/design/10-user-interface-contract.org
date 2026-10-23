@@ -18,7 +18,7 @@ execution.
 
 ** 10.06.10.05 POO Native Functional Contract
 
-POO Flow's user interface must stay 100% POO-native and functional-first. The normal downstream path composes upstream POO objects, prototype rows, category/module/feature declarations, and hygienic functional helpers. It must not expose raw alist DSLs, record DSLs, ad hoc merge languages, or direct =(lambda (self super) ...)= compute hooks as the everyday extension surface.
+Agentic AI Lab's user interface must stay 100% POO-native and functional-first. The normal downstream path composes upstream POO objects, prototype rows, category/module/feature declarations, and hygienic functional helpers. It must not expose raw alist DSLs, record DSLs, ad hoc merge languages, or direct =(lambda (self super) ...)= compute hooks as the everyday extension surface.
 
 Funflow alignment exists to keep workflow authoring on the functional programming route: Gerbil Scheme owns pure flow composition, object metadata, strategy selection, and report-only validation; Rust/Marlin owns scheduling, subprocesses, Docker, CAS, durable state, and artifact realization. New user-facing APIs should therefore read as POO object extension plus functional flow composition, not as backend configuration scripts.
 
@@ -35,7 +35,7 @@ The user-interface layer mirrors Doom's module-selection block:
 - =src/user-interface/root-profile.ss= owns root declaration projection helpers.
 
 =user-interface/init.ss= exports category/module/feature bundle rows. Upstream
-=src/user-interface/root-profile.ss= extends =poo-flow-kernel-profile= with
+=src/user-interface/root-profile.ss= extends =agentic-ai-lab-kernel-profile= with
 those rows. Core workflow, loop, and sandbox rows stay upstream-owned in profile
 config files; users should not have to repeat them just to get a working
 profile.
@@ -47,16 +47,16 @@ block.
 
 ** 10.06.10.07 Doom-Style Profile Set Contract
 
-POO Flow borrows Doom's profile registry shape without copying package
+Agentic AI Lab borrows Doom's profile registry shape without copying package
 management:
 
-- =poo-flow-profile-set= declares a named registry, a default profile, and profile values.
-- =poo-flow-init-module-bundles= is the normal root init entrypoint and creates inspectable bundle rows from category/module/feature declarations.
-- =pooFlowRootProfile= turns root bundle rows into inspectable profile data.
-- =pooFlowRootProfileSet= builds the canonical root profile registry.
-- =pooFlowRootConfig= projects root bundle rows into config data.
-- =pooFlowRootProfileSetPresentation= exposes selected/default profile metadata for inspection.
-- =+poo-flow-testing-interface+= admits the profile set through its
+- =agentic-ai-lab-profile-set= declares a named registry, a default profile, and profile values.
+- =agentic-ai-lab-init-module-bundles= is the normal root init entrypoint and creates inspectable bundle rows from category/module/feature declarations.
+- =agenticAiLabRootProfile= turns root bundle rows into inspectable profile data.
+- =agenticAiLabRootProfileSet= builds the canonical root profile registry.
+- =agenticAiLabRootConfig= projects root bundle rows into config data.
+- =agenticAiLabRootProfileSetPresentation= exposes selected/default profile metadata for inspection.
+- =+agentic-ai-lab-testing-interface+= admits the profile set through its
   =.check-user-profile-set= policy slot before activation.
 
 =src/user-interface/profile-config.ss= owns profile/config data APIs.
@@ -82,9 +82,9 @@ category/module/feature patches in =init.ss= and place custom module bodies
 under =custom=. Root =user-interface= must not contain implementation facade
 files such as =objects.ss=, =config.ss=, or =modules/config.ss=.
 
-Its normal form is a Doom-like =poo-flow-init-module-bundles= declaration using
+Its normal form is a Doom-like =agentic-ai-lab-init-module-bundles= declaration using
 =:category= markers and =+feature= flags for things that can be enabled,
-disabled, or customized. Presentations such as =pooFlowUserConfigPresentation=
+disabled, or customized. Presentations such as =agenticAiLabUserConfigPresentation=
 are projected by upstream helpers; declaration admission remains a Testing
 Policy concern and is not duplicated as a presentation object.
 Ordinary users should not have to call =yuanxuUserConfig=,
@@ -93,7 +93,7 @@ merge internals, or runtime adapters.
 
 * 10.06.10.03 Presentation Contract
 
-=pooFlowUserConfigPresentation= exposes:
+=agenticAiLabUserConfigPresentation= exposes:
 
 - selected module keys and flags;
 - selected setting keys and values;
@@ -114,6 +114,6 @@ The user contract is guarded by:
 - =t/declaration-case-test.ss=
 - =t/module-system-user-interface-test.ss=
 
-The root-facing tests import =:poo-flow/user-interface/init= for declarations
-and project them through =:poo-flow/src/module-system=. They must not depend
-on a root =:poo-flow/user-interface/config= facade.
+The root-facing tests import =:agentic-ai-lab/user-interface/init= for declarations
+and project them through =:agentic-ai-lab/src/module-system=. They must not depend
+on a root =:agentic-ai-lab/user-interface/config= facade.

@@ -11,14 +11,14 @@
 - Independent Lean module owners: initial core implemented
 - Stable aggregate import: implemented
 - Focused Enterprise build: locally green, 177 jobs
-- Aggregate PooFlowProof build: locally green, 252 jobs
+- Aggregate AgenticAILabProof build: locally green, 252 jobs
 - Typst correspondence: initial core synchronized
 - AXLE final-source validation: required, not yet executed
 - Runtime and Cedar DRT evidence: not implemented by this RFC
 
 * Purpose
 
-Enterprise assurance is a core POO Flow product surface.  It SHALL be
+Enterprise assurance is a core Agentic AI Lab product surface.  It SHALL be
 maintained as an independent, highly modular Lean interface rather than as one
 large contributor-governance proof file.
 
@@ -26,7 +26,7 @@ This RFC refines the scenario and contributor architecture in
 =45-128-real-world-ai-assurance-scenarios-and-adapter-governance.org=.
 
 The enterprise proof family connects contributor qualification to existing
-generic POO Flow proofs for governance decisions, capability attenuation,
+generic Agentic AI Lab proofs for governance decisions, capability attenuation,
 principal/key lifecycle, federation, fixed-point composition, authorization,
 and runtime evidence.  It does not duplicate those owners.
 
@@ -35,7 +35,7 @@ and runtime evidence.  It does not duplicate those owners.
 Downstream proofs SHALL import:
 
 #+begin_src lean
-import PooFlowProof.PooC4.Enterprise
+import AgenticAILabProof.PooC4.Enterprise
 #+end_src
 
 The aggregate module currently re-exports the Enterprise assurance surface.
@@ -76,7 +76,7 @@ flowchart TD
     ER["Enterprise.ResponsibilityTransfer"]
     ET["Enterprise.TenantOrganization"]
     EX["Enterprise.Assurance"]
-    API["PooFlowProof.PooC4.Enterprise"]
+    API["AgenticAILabProof.PooC4.Enterprise"]
 
     CQ -->|"qualified asset + governed admission"| EC
     GD -->|"decision, quorum, separation, revocation"| ES
@@ -215,7 +215,7 @@ The split is not merely source organization.
 * Local build receipts
 
 #+begin_src text
-rtk lake build PooFlowProof.PooC4.Enterprise
+rtk lake build AgenticAILabProof.PooC4.Enterprise
 Build completed successfully (177 jobs).
 
 rtk lake build
@@ -239,7 +239,7 @@ runtime, Cedar DRT, or organization-specific policy closure.
 - [X] Add =ResponsibilityTransfer=.
 - [X] Add the independently aggregated =TenantOrganization= subfamily.
 - [X] Add =Assurance=.
-- [X] Add the stable =PooFlowProof.PooC4.Enterprise= aggregate import.
+- [X] Add the stable =AgenticAILabProof.PooC4.Enterprise= aggregate import.
 - [X] Keep generic-to-enterprise dependency direction acyclic.
 
 ** Local proof
@@ -264,7 +264,7 @@ runtime, Cedar DRT, or organization-specific policy closure.
 - [ ] Test delegation revocation and attenuation violations.
 - [ ] Test responsibility transfer gaps and overlapping exclusive authority.
 - [ ] Bind Enterprise admission to CedarAdapter dual-engine receipts.
-- [ ] Bind Enterprise admission to the exact POO Flow runtime action receipt.
+- [ ] Bind Enterprise admission to the exact Agentic AI Lab runtime action receipt.
 
 * Deliberately open enterprise modules
 

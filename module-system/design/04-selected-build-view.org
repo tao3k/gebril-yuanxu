@@ -63,7 +63,7 @@ Contracts and the mapping to a particular build provider remain pending.
 #+end_src
 
 The consumer supplies selected optional contributions through a protocol; Core
-must not import POO Flow's feature model/resolver or ASP build APIs. A build provider
+must not import Agentic AI Lab's feature model/resolver or ASP build APIs. A build provider
 then closes phase imports, macro/for-syntax dependencies, FFI and generated assets.
 Native entry strings in this bounded example are not a qualified complete build
 manifest. Avoid repeating one manually maintained source list in several layers.
@@ -155,7 +155,7 @@ versions or external build inputs invalidate the corresponding graph/spec cache.
 Cache lookup must validate those inputs; SourceRef equality alone is insufficient.
 No measured startup or scalability claim follows from this design.
 
-Current root init exports only PooFlowModules. Product and Core build.ss still
+Current root init exports only AgenticAILabModules. Product and Core build.ss still
 maintain explicit specifications. Automatic init graph publication, facade build
 projection and this adapter remain pending; this document changes neither file.
 

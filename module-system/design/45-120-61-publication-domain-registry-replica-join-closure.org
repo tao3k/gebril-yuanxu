@@ -175,7 +175,7 @@ stateDiagram-v2
 * Lean closure
 
 The proof module is
-=PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure=.
+=AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure=.
 
 It establishes:
 

@@ -4,7 +4,7 @@
 
 #+title: Qualification POO CaseComponent And DomainCase Composition
 #+subtitle: Binding reusable objects, types, and contracts without composition explosion
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+date: 2026-07-12
 #+status: DomainCase design; two bounded capability migrations implemented
 #+options: toc:3 num:t

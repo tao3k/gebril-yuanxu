@@ -15,7 +15,7 @@ No sample was executed or deployed in this revision.
 
 Omnibus excerpts use the retained source archive at commit
 c5d37eb51961fd7bd32f775843044ca7f8191715, read under
-/private/tmp/pooflow-comparison-omnibus. HiveBus uses committed source at
+/private/tmp/agenticailab-comparison-omnibus. HiveBus uses committed source at
 edc6095bed63a3c14f9f7147c931378d3e9d1609. BAML uses the inspected local
 .data/baml source at HEAD 1e1b97e8096219581ddcc16e3f3660bab17ef236.
 These are source cuts, not claims about the latest remote releases. Omnibus and

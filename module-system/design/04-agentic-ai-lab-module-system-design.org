@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: 10.06.04 poo-flow Module System Design
+#+title: 10.06.04 agentic-ai-lab Module System Design
 
 This document records the original module-system design and its historical
 API names. The maintained ownership and import paths are documented in
 [[file:core-module-system-ownership-audit.org][Core Module System ownership and migration audit]]; new code imports Core,
 =src/authoring/=, or =src/user-interface/= directly.
 
-* 10.06.04 poo-flow Module System Design
+* 10.06.04 agentic-ai-lab Module System Design
 ** 10.06.04.05 Current Implementation Delta
 The module system now includes the Marlin-style facade in =src/module-system.ss= while preserving the existing descriptor/catalog/activation API.
 
@@ -25,7 +25,7 @@ Implemented facade pieces:
 
 Direct symbol/string imports remain closed-world dependencies. Source refs and import specs remain metadata and profile values; they do not load Scheme files or manufacture runtime handlers.
 ** 10.06.04.10 Architecture
-The module system is a thin layer over existing =poo-flow= registries.
+The module system is a thin layer over existing =agentic-ai-lab= registries.
 
 #+begin_src text
 source ref
@@ -35,7 +35,7 @@ catalog
   -> binds source refs to already-built module descriptors
   -> resolves selected sources before doctor or activation
 
-poo-flow module descriptor
+agentic-ai-lab module descriptor
   -> task-family registry contribution
   -> flow-declaration registry contribution
   -> module options
@@ -115,7 +115,7 @@ the module boundary:
 - keep sync/doctor-style operations as diagnostics, not as hidden semantic
   owners.
 
-POO Flow should follow the same separation in Gerbil POO terms:
+Agentic AI Lab should follow the same separation in Gerbil POO terms:
 
 - kernel factors are the core implementation;
 - public module factors are feature implementation;
@@ -324,42 +324,42 @@ The implementation is now split under =src/module-system/= instead of being held
 - =resolver.ss= owns source catalog lookup, activation, and run-config lowering;
 - =loader.ss= owns pure source-ref loader backends and load receipts;
 - =projection.ss= owns schemas, validation receipts, runtime projections, value catalogs, presentation receipts, and Nix-style option merge receipts;
-- =src/user-interface/module-diagnostics.ss= and =doctor-presentation.ss= own POO Flow-specific module diagnostics and their Doctor projection; shared observation primitives are imported directly from Core;
+- =src/user-interface/module-diagnostics.ss= and =doctor-presentation.ss= own Agentic AI Lab-specific module diagnostics and their Doctor projection; shared observation primitives are imported directly from Core;
 - =descriptor-syntax.ss= owns user-facing macro sugar that expands to descriptor/catalog data;
 - =src/module-system.ss= remains a thin facade that re-exports the leaf owners.
 
 The Doom/C4 interface additions are data-only:
 - descriptor slots now include =group=, =flags=, =features=, =depth=, =phase-files=, and =hooks=;
-- =poo-module-active?= and =poo-flow-module-value-catalog-active?= provide explicit flag checks;
+- =poo-module-active?= and =agentic-ai-lab-module-value-catalog-active?= provide explicit flag checks;
 - =poo-module-option-merge-receipts= keeps append, override, conflict, constant, required, and missing-schema findings inspectable before runtime;
 - =poo-module-phase-order= projects init/config ordering from depth metadata;
 - runtime projections expose phase ids, hooks, and active metadata without loading files.
 
 This keeps the boundary stable: Scheme owns descriptor data and validation, while loader backends and runtime execution remain separate owners.
 ** 10.06.04.80 User Interface Contract
-The user-facing import is =:poo-flow/src/module-system=. Users should not import leaf owners such as =:poo-flow/src/module-system/loader/context= or =:poo-flow/src/module-system/projection= directly for normal module authoring.
+The user-facing import is =:agentic-ai-lab/src/module-system=. Users should not import leaf owners such as =:agentic-ai-lab/src/module-system/loader/context= or =:agentic-ai-lab/src/module-system/projection= directly for normal module authoring.
 
 The public interface contract is:
 - declare profiles with =poo-module-interface= and string schema helpers;
 - construct modules with =pooModules= or =defpoo-module=;
 - express imports with =poo-import= and =poo-imports=;
 - inspect descriptor metadata with =poo-module-name=, =poo-module-group=, =poo-module-flags=, =poo-module-features=, =poo-module-phase-file=, and =poo-module-hook-values=;
-- ask active/flag questions with =poo-module-active?= and =poo-flow-module-value-catalog-active?=;
+- ask active/flag questions with =poo-module-active?= and =agentic-ai-lab-module-value-catalog-active?=;
 - inspect final option composition with =poo-module-option-merge-receipts= and =poo-module-merged-option-alist=;
-- load source refs into catalogs with =yuanxu-module-static-loader=, =yuanxu-module-load-source-receipts=, and =poo-flow-module-load-catalog=;
+- load source refs into catalogs with =yuanxu-module-static-loader=, =yuanxu-module-load-source-receipts=, and =agentic-ai-lab-module-load-catalog=;
 - group modules with =pooModuleCatalog=;
 - project runtime-facing receipts with =poo-module-workflow=, =pooEvalModules=, and =pooModuleSystemPresentation=;
 - project pre-runtime doctor summaries with =pooModuleDoctorPresentation= and =pooModuleSourceDoctorPresentation=;
 - inspect user config mistakes through validation receipts rather than runtime exceptions.
 
-The regression owner for this contract is =t/module-system-user-interface-test.ss=. That test intentionally imports only =:poo-flow/src/module-system= plus generic POO object accessors.
+The regression owner for this contract is =t/module-system-user-interface-test.ss=. That test intentionally imports only =:agentic-ai-lab/src/module-system= plus generic POO object accessors.
 ** 10.06.04.85 Maintained Downstream User Interface
 =user-interface/= is the root-level maintained user-interface directory. It is not a test fixture and it is not package runtime source.
 The directory models the thin handoff that downstream users see:
 - =init.ss= chooses hot-plug module groups, module ids, flags, and custom module entrypoints;
 - =custom/*/config.ss= is the downstream-owned custom module authoring space;
 - =src/module-system/user-profile.ss= projects those root declarations into the canonical profile/config objects.
-This borrows Doom's small user-facing feel without copying its package-management shape. POO Flow exposes modules, not packages: descriptor schemas, imports, loaders, catalogs, doctors, merge semantics, and sandbox realization stay in =src/module-system= or concrete =modules/<domain>= owners. Tests may verify this directory, but examples and user-facing configuration belong in root-level =user-interface/=.
+This borrows Doom's small user-facing feel without copying its package-management shape. Agentic AI Lab exposes modules, not packages: descriptor schemas, imports, loaders, catalogs, doctors, merge semantics, and sandbox realization stay in =src/module-system= or concrete =modules/<domain>= owners. Tests may verify this directory, but examples and user-facing configuration belong in root-level =user-interface/=.
 ** 10.06.04.90 Doom And Nix Design Boundary
 The detailed design principles are in [[file:06-doom-nix-interface-principles.org][06 Doom And Nix Interface Principles]].
 
@@ -368,4 +368,4 @@ The short version:
 - learn Nix's option and merge semantics, not its syntax;
 - keep Gerbil POO and C4 as the implementation substrate;
 - add macro sugar only after the data API and user-interface tests exist;
-- require user-facing tests to import =:poo-flow/src/module-system= only.
+- require user-facing tests to import =:agentic-ai-lab/src/module-system= only.

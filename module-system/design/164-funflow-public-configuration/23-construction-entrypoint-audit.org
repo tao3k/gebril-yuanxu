@@ -34,7 +34,7 @@ bundle is necessary for this single construction axis.
 
 The audit reads the pinned package source used by module 21, revision
 099b381588360a8a49fd772f666a1a00351366f5, through the existing isolated source
-scope /tmp/pooflow-dfs-admit-20261015/clan/poo. This is not an audit of an
+scope /tmp/agenticailab-dfs-admit-20261015/clan/poo. This is not an audit of an
 unidentified installed artifact or the different .data learning checkout.
 
 | File | SHA-256 checked during this audit |

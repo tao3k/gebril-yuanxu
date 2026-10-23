@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the optional POO Flow debugging and testing semantics for:
+This module owns the optional Agentic AI Lab debugging and testing semantics for:
 
 - receipt-DAG verification;
 - pure re-realization in a fresh POO runtime context;
@@ -18,9 +18,9 @@ Replay is not required for correct production realization.  It is not an
 active-evidence closure, runtime cache, object snapshot, scheduler recording, or
 external-effect emulator.
 
-* Ownership boundary: POO Flow semantics and GSLPH dev harness
+* Ownership boundary: Agentic AI Lab semantics and GSLPH dev harness
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - the replay evidence contract;
 - qualification gates;
@@ -32,11 +32,11 @@ POO Flow owns:
 construction, demand realization, memoization, lineage, fixed-point mechanics,
 and continuation-aware control.
 
-GSLPH is a development dependency.  It may consume POO Flow replay evidence as
+GSLPH is a development dependency.  It may consume Agentic AI Lab replay evidence as
 a policy harness and building/testing framework.  It does not:
 
 - provide production runtime semantics;
-- become a POO Flow provider;
+- become a Agentic AI Lab provider;
 - own replay, effect, recovery, or receipt semantics;
 - enter the production dependency closure merely because replay tests exist;
 - replace Gerbil package management or =gerbil-poo=.
@@ -87,7 +87,7 @@ mutable state and is not required to remain active after realization.
 
 * Qualification gates
 
-Before replay, POO Flow validates:
+Before replay, Agentic AI Lab validates:
 
 - exact composition content and macro-lowering evidence;
 - the resolved =gerbil-poo= dependency revision recorded by build/runtime
@@ -310,7 +310,7 @@ GSLPH may provide development-only:
 - receipt assertions;
 - deterministic test reporting.
 
-POO Flow core emits and validates its own semantic receipts.  GSLPH does not
+Agentic AI Lab core emits and validates its own semantic receipts.  GSLPH does not
 provide production providers, runtime handles, effect results, package
 resolution, or normative policy.
 
@@ -343,11 +343,11 @@ snapshot rules.
 
 The semantics in this module are normative.  Exact artifact, verifier,
 condition, comparison, and harness identifiers remain =semantic-required=
-until the relevant =gerbil-poo= and POO Flow surfaces are symbol-located,
+until the relevant =gerbil-poo= and Agentic AI Lab surfaces are symbol-located,
 behavior-proven, and flow-qualified.
 
 Any generally reusable POO causal replay mechanism belongs upstream in
-=gerbil-poo=.  POO Flow MUST NOT ship a shadow POO evaluator, continuation
+=gerbil-poo=.  Agentic AI Lab MUST NOT ship a shadow POO evaluator, continuation
 serializer, effect emulator, or scheduler recorder.
 
 * Explicit exclusions

@@ -14,7 +14,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 * Status
 
 This RFC records the accepted retention, compaction, disclosure, and physical
-erasure semantics for POO Flow evidence.
+erasure semantics for Agentic AI Lab evidence.
 
 It extends immutable receipts, truth maintenance, governance, continuations,
 reconciliation, and materialization reclamation.

@@ -10,8 +10,8 @@
 Proposal.
 
 This RFC defines how external enterprise-AI reports become research inputs for the
-POO Flow proof layer.  It does not claim that an issue, blog post, benchmark, or
-vendor control proves a POO Flow property.
+Agentic AI Lab proof layer.  It does not claim that an issue, blog post, benchmark, or
+vendor control proves a Agentic AI Lab property.
 
 AXLE final-source validation has been executed against the existing enterprise
 proof family through the uv-managed Python harness.  The current result is
@@ -43,7 +43,7 @@ tenant/organization isolation.
 An issue body is a report by its author.  A vendor blog is a statement by its
 publisher.  A release note describes a product change.  A standards paper
 describes a problem space.  Their claims must retain those source kinds and must
-not be silently rewritten as verified incidents or POO Flow guarantees.
+not be silently rewritten as verified incidents or Agentic AI Lab guarantees.
 
 #+begin_src typst
 $ "External"(e) => not "ProofAuthority"(e) $
@@ -77,7 +77,7 @@ stateDiagram-v2
     Discovered --> Rejected: inaccessible, duplicate, promotional, or unverifiable
     SourceVerified --> Candidate: counterexample and affected boundary extracted
     Candidate --> Open: Lean owner and executable witness assigned
-    Candidate --> Rejected: no POO Flow obligation follows
+    Candidate --> Rejected: no Agentic AI Lab obligation follows
     Open --> Open: proof or runtime evidence incomplete
     Open --> Discharged: Lean plus AXLE plus receipt plus owner certificate
     Open --> Stale: source, artifact, identity, or scope changed
@@ -104,7 +104,7 @@ Every adopted item must carry:
 | =publisher= | Repository owner, standards body, or research team |
 | =reported-claim= | Narrow statement actually supported by the source |
 | =confidence-boundary= | What has not been independently reproduced |
-| =counterexample= | POO Flow property that could be falsified |
+| =counterexample= | Agentic AI Lab property that could be falsified |
 | =lean-owner= | Independent proof module responsible for the obligation |
 | =runtime-witness= | Executable adversarial or conformance scenario |
 | =certificate-owner= | Component allowed to discharge or reject the obligation |

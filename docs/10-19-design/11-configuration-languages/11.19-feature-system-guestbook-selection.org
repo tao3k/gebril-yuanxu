@@ -15,14 +15,14 @@ JSON Schema compiler, baseline Profiles or resource consumer as Feature descript
 merely to fit them into one feature resolver. The previous all-capabilities-as-
 features design and FrameworkCoreRoots list are withdrawn.
 
-The existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptor]] already separates imports, interface, schemas,
+The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptor]] already separates imports, interface, schemas,
 config, features and extensions. The existing [[file:../../../module-system/graph/funs.ss][module-closure]] computes module
-closure with caller-supplied accessors. Existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/model.ss][Feature descriptors]] separately
-model requires/optional-requires/conflicts and projections; [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/resolver.ss][resolve-feature-profile]]
+closure with caller-supplied accessors. Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/model.ss][Feature descriptors]] separately
+model requires/optional-requires/conflicts and projections; [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/resolver.ss][resolve-feature-profile]]
 resolves selected features. These owners should collaborate, not be replaced.
 
 The [[file:../../../module-system/design/README.org][Core design]] owns shared directory, publication/selection and build-view protocols.
-This chapter owns their POO Flow and Guestbook consumption.
+This chapter owns their Agentic AI Lab and Guestbook consumption.
 
 The explicit core layout below is a proposed native descriptor refinement, not an
 already exported field layout. It makes baseline dependencies/exports/build inputs
@@ -69,7 +69,7 @@ Feature just to create an edge:
        roots: '("contributions/guestbook/smoke.ss"))))
 #+end_src
 
-Existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/capability-model.ss][capability constructors]] and [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/adapter-projection-binding.ss][adapter/projection binding]] can represent/check
+Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/capability-model.ss][capability constructors]] and [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/adapter-projection-binding.ss][adapter/projection binding]] can represent/check
 this boundary. Their actual contract/version matching must be qualified for this
 integration. Do not use feature requires with a module id: that field expects a
 feature identity. The smoke source path is a proposed owner unit, not a file that
@@ -88,7 +88,7 @@ separate pending migration from current role conventions.
 
 The public call should converge at yuanxu-load-modules. That does not move
 module definitions into init.ss or hide a second parser/resolver behind the name.
-Existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][source collection code]] already projects interface.ss entrypoints.
+Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][source collection code]] already projects interface.ss entrypoints.
 The target enhancement combines a directory source and normalized init policy,
 then delegates each responsibility to its existing owner.
 
@@ -122,7 +122,7 @@ admitted/normalized inputs from the source/init boundary. build-projections are
 already qualified build contributions of that same selected feature composition;
 this is not a complete Loader or an implementation of automatic scope binding.
 
-The generic lazy view is [[file:../../../module-system/design/04-selected-build-view.org][module-build-view in Core]]. POO Flow supplies an
+The generic lazy view is [[file:../../../module-system/design/04-selected-build-view.org][module-build-view in Core]]. Agentic AI Lab supplies an
 admitted optional-contribution adapter derived from its existing Feature System;
 Core has no dependency on that implementation.
 
@@ -154,7 +154,7 @@ layout and source adapter are pending. The disabled identity list is normalized
 lookup input; the original POO decisions/source records remain retained for tools.
 
 The complete selected-module-closure design is owned by
-[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The POO Flow adapter supplies its admitted source,
+[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The Agentic AI Lab adapter supplies its admitted source,
 init and Feature System values to that protocol; it does not duplicate the helper.
 
 
@@ -250,7 +250,7 @@ come from selected modules; optional entries come only from selected features.
 The following pure-output construction gives a deterministic de-duplicated list:
 
 The complete selected-build-entries design is owned by
-[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The POO Flow adapter supplies its admitted source,
+[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The Agentic AI Lab adapter supplies its admitted source,
 init and Feature System values to that protocol; it does not duplicate the helper.
 
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Profile Objects and Prototype Extensions: Native gerbil-poo Correspondence
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -20,7 +20,7 @@ This RFC records an approved semantic boundary.
 - [X] Object operands are lifted in place without changing declared order.
 - [X] Object-to-prototype correspondence adopts the upstream POOF construction
   through the pinned =gerbil-poo= implementation, as governed by
-  [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]].
+  [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]].
 - [ ] Verify the exact operand-admission predicates against executable
   =gerbil-poo= examples before freezing a public helper name.
 - [ ] Add implementation conformance tests only after the public contract is
@@ -31,7 +31,7 @@ This document specifies architecture.  It does not authorize implementation.
 * Formal correspondence surface
 
 The local proof does not reconstruct the POOF theorem or define another
-object-to-prototype formula.  It proves only the POO Flow correspondence
+object-to-prototype formula.  It proves only the Agentic AI Lab correspondence
 obligations that surround the construction adopted from POOF through the pinned
 =gerbil-poo= dependency.
 
@@ -81,7 +81,7 @@ $ "all-composition-is-mix" = false $
 $ "canonical-entry-point" = "user-composition" $
 #+end_src
 
-The second surface fixes the negative boundary: POO Flow neither replaces
+The second surface fixes the negative boundary: Agentic AI Lab neither replaces
 native fixed-point evaluation nor treats =.mix= as universal composition.
 Prototype recursion and inheritance cycles occupy different semantic planes,
 and slot-local contribution priority cannot rewrite C4 precedence.
@@ -125,7 +125,7 @@ claim to replace it.
 | Local Lean module | =accepted= | =lake build YuanxuProof.ProfileComposition.Prototype=: 26/26 jobs |
 | Local Lean closure | =accepted= | =lake build=: 99/99 jobs |
 | AXLE independent declaration check | =accepted= | Request =04cc0a34-76a5-472e-8878-47ecb2601cae=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =6d13abb4-0a36-4b2d-bd41-763204559767= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =6d13abb4-0a36-4b2d-bd41-763204559767= cannot resolve local module prefix =AgenticAILabProof= |
 
 The accepted AXLE request replaced the project import header with
 =import Mathlib=.  It independently verifies the 25 declarations in this
@@ -135,7 +135,7 @@ explicitly.  Neither result may be reported as full modular AXLE closure.
 
 * Central decision
 
-POO Flow SHALL preserve both native representation layers provided by
+Agentic AI Lab SHALL preserve both native representation layers provided by
 =gerbil-poo=:
 
 1. an ordinary Profile is a POO object whose slots carry identity, imports,
@@ -143,7 +143,7 @@ POO Flow SHALL preserve both native representation layers provided by
 2. a higher-order Profile extension is a prototype that transforms a base
    object through native fixed-point composition.
 
-The two representations are complementary.  POO Flow MUST NOT reduce all
+The two representations are complementary.  Agentic AI Lab MUST NOT reduce all
 Profile composition to =.mix=, and it MUST NOT replace native prototype
 instantiation with a local fixed-point evaluator.
 
@@ -167,7 +167,7 @@ The relevant upstream evidence is:
 
 * Native correspondence
 
-| POO Flow role | Native =gerbil-poo= basis | Boundary |
+| Agentic AI Lab role | Native =gerbil-poo= basis | Boundary |
 | Profile object declaration | =.o= and =.def= | Advanced public object construction |
 | Multiple object composition | =.mix= | Ordinary object contribution composition |
 | Single-base object extension | =.extend= | Direct POO object derivation |
@@ -180,7 +180,7 @@ The relevant upstream evidence is:
 | Multiple-inheritance order | native C4 precedence | Object inheritance only |
 
 This table is a correspondence contract, not permission to expose every native
-operation through a second POO Flow macro.
+operation through a second Agentic AI Lab macro.
 
 * Composition roles
 
@@ -270,14 +270,14 @@ The resulting ordered contribution sequence may be passed to
 =compose-proto*= and instantiated once at the root.  The implementation MUST
 NOT batch all objects into one =.mix= before composing all extensions.
 
-POO Flow MUST NOT invent a second lifting formula or conduct a local
+Agentic AI Lab MUST NOT invent a second lifting formula or conduct a local
 =.mix=-versus-=.+= algebra.  Its remaining responsibility is to verify the
 correspondence between the pinned =gerbil-poo= path and the adopted POOF
-construction before freezing any POO Flow helper name.
+construction before freezing any Agentic AI Lab helper name.
 
-The proof-adoption boundary and the remaining POO Flow correspondence
+The proof-adoption boundary and the remaining Agentic AI Lab correspondence
 obligations are owned by
-[[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]].
+[[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]].
 
 ** Composition root
 
@@ -360,7 +360,7 @@ Prototype recursion belongs to fixed-point semantics.  It can be valid, but a
 particular evaluation may diverge, exceed a budget, or repeatedly demand an
 unproductive slot.
 
-POO Flow observability may attach evaluation paths, budgets, suspension
+Agentic AI Lab observability may attach evaluation paths, budgets, suspension
 receipts, resumptions, and causal evidence to this execution.  These facilities
 observe and govern native prototype evaluation; they do not replace
 =instantiate-proto=.
@@ -371,7 +371,7 @@ The object supers relation is a precedence graph.  A cycle in that graph is
 structurally invalid and native =gerbil-poo= rejects it while computing C4
 precedence.
 
-POO Flow MUST NOT convert this structural error into a resumable fixed-point
+Agentic AI Lab MUST NOT convert this structural error into a resumable fixed-point
 request.  The error must retain the offending object path and fail before the
 root is admitted.
 
@@ -421,14 +421,14 @@ The detailed macro constraints remain owned by
 - [[file:45-83-profile-revisions-live-upgrade-and-module-reload-boundaries.org][45-83]] owns immutable revision and reload boundaries.
 - This RFC owns the correspondence between Profile objects, higher-order
   prototype extensions, and native =gerbil-poo= operations.
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]] owns adoption of the upstream POOF proof and the correspondence
-  obligations that remain in POO Flow.
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]] owns adoption of the upstream POOF proof and the correspondence
+  obligations that remain in Agentic AI Lab.
 
 * Prohibited designs
 
 The following designs are outside the approved architecture:
 
-- reimplementing =instantiate-proto= or =compose-proto*= inside POO Flow;
+- reimplementing =instantiate-proto= or =compose-proto*= inside Agentic AI Lab;
 - treating =.mix= as the complete meaning of =compose profiles=;
 - introducing a local fixed-point object, evaluator, or registry;
 - tagging operands with a =kind= slot or symbolic runtime token;

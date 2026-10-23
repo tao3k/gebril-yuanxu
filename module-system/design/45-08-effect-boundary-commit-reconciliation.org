@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the POO Flow semantics for externally effectful realization
+This module owns the Agentic AI Lab semantics for externally effectful realization
 boundaries:
 
 - evidence states before and after an effect attempt;
@@ -18,13 +18,13 @@ boundaries:
 It does not define a generic transaction manager.  It does not add syntax to
 =user-composition=, Profile, or Mix declarations.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= remains the sole Scheme POO implementation and owns generic POO
 identity, demand realization, suspension, lineage, memoization, and
 continuation-aware control.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - the POO-native effect-provider capability contract;
 - the permitted evidence-state transitions;
@@ -32,18 +32,18 @@ POO Flow owns:
 - commit, cancellation, and reconciliation receipts;
 - observability and cross-context admission consequences.
 
-The runtime or Marlin handoff performs the external operation.  POO Flow
+The runtime or Marlin handoff performs the external operation.  Agentic AI Lab
 governs the evidence and control boundary around that operation; it does not
 replace the external system's native transaction, verification, or
 reconciliation mechanism.
 
 * Concrete runtime correspondence evidence state
 
-Current POO Flow source owners preserve the correct handoff boundary:
+Current Agentic AI Lab source owners preserve the correct handoff boundary:
 
 | Source owner | Observed fact | What it proves |
 |-
-| =modules/memory-core/durable/store-operation.ss= | Runtime owner is =marlin-agent-core=; handoff records =runtime-executed #f=. | POO Flow plans and hands off operations; it does not claim execution. |
+| =modules/memory-core/durable/store-operation.ss= | Runtime owner is =marlin-agent-core=; handoff records =runtime-executed #f=. | Agentic AI Lab plans and hands off operations; it does not claim execution. |
 | =modules/memory-core/durable/store-operation-bridge.ss= | Store, graph, workflow, artifact, and sandbox operations are projected to handoff receipts. | Operation intent crosses an explicit boundary. |
 | =modules/loop-engine/runtime-intent.ss= | Runtime manifests remain =runtime-executed #f= and batch status is =not-executed=. | Scheme emits runtime intent rather than executing it. |
 | =t/durable-runtime-store-operation-test.ss= | Eight operation receipts and the Marlin handoff are checked as not executed. | The non-execution boundary is tested; runtime linearizability is not. |
@@ -61,11 +61,11 @@ A qualifying Marlin runtime receipt MUST bind:
 
 #+begin_src mermaid
 flowchart LR
-  P["POO Flow effect intent<br/>runtime-executed = false"]
+  P["Agentic AI Lab effect intent<br/>runtime-executed = false"]
   H["Marlin handoff<br/>terminal key + proposal"]
   A["Marlin atomic arbiter<br/>compare-and-transition"]
   R["Runtime arbitration receipt<br/>decision + before/after + sequence"]
-  V["POO Flow receipt validator<br/>refinement evidence"]
+  V["Agentic AI Lab receipt validator<br/>refinement evidence"]
   O["POO observability and admission<br/>through gerbil-poo objects"]
 
   P -->|"project operation intent"| H
@@ -77,7 +77,7 @@ flowchart LR
 
 The current evidence state is =runtime-implementation-unobserved=. The formal
 contract is proved, while concrete runtime linearizability remains blocked on
-the =marlin-agent-core= owner and its durable arbitration receipt. POO Flow MUST
+the =marlin-agent-core= owner and its durable arbitration receipt. Agentic AI Lab MUST
 NOT close this gap by implementing a parallel Scheme arbiter or another POO
 library.
 
@@ -106,11 +106,11 @@ defines a proof-carrying =PolicyAuthorizedRetry= bound to an immutable recovery
 decision receipt.
 
 The local Lean model now establishes the formal provenance contract. Concrete
-Scheme correspondence remains open: POO Flow must show that its recovery
+Scheme correspondence remains open: Agentic AI Lab must show that its recovery
 decision receipt is constructed and validated through the exact pinned
 =gerbil-poo= prototype lineage and then consumed by the effect boundary.
 Independent AXLE verification is =blocked-verifier-import-boundary= because the
-remote environment cannot resolve the local =PooFlowProof= import. No combined
+remote environment cannot resolve the local =AgenticAILabProof= import. No combined
 source was exported.
 
 * Retry capability consumption boundary
@@ -372,9 +372,9 @@ terminal-state arbitration does not introduce another object system, POO
 runtime, prototype implementation, evaluator, linearizer, fixed-point engine,
 or fallback library.
 
-The effect boundary is a higher-order POO Flow prototype/capability expressed
+The effect boundary is a higher-order Agentic AI Lab prototype/capability expressed
 through =gerbil-poo= prototype, slot, refinement, demand, and composition
-semantics.  POO Flow owns the higher-order effect-governance meaning; it does
+semantics.  Agentic AI Lab owns the higher-order effect-governance meaning; it does
 not reimplement POO.
 
 An implementation may place an atomic compare-and-transition primitive behind
@@ -393,10 +393,10 @@ is not yet =behavior-proven= and =flow-qualified=.
 |---+---|
 | =gerbil-poo= | the sole Scheme POO implementation: prototypes, slots, composition, demand, lineage, and continuation-aware realization |
 | effect provider | external operation idempotency evidence, terminal proof, and reconciliation capability |
-| POO Flow effect-boundary prototype | operation/attempt governance, atomic terminal-state acceptance, conflict condition, recovery policy, and receipt projection |
+| Agentic AI Lab effect-boundary prototype | operation/attempt governance, atomic terminal-state acceptance, conflict condition, recovery policy, and receipt projection |
 | runtime handoff substrate | execute the atomic compare-and-transition requested by the POO boundary |
 
-The provider and POO Flow responsibilities are both required.  A callable
+The provider and Agentic AI Lab responsibilities are both required.  A callable
 provider does not prove idempotency, and a verified provider receipt does not
 by itself prove that two concurrent receivers cannot both accept different
 terminal results.
@@ -543,6 +543,6 @@ This RFC does not authorize:
 - deriving operation identity from a lexical binding name;
 - serializing POO roots, closures, continuations, active demand cells, or
   external runtime handles;
-- a fallback effect evaluator or transaction implementation inside POO Flow;
+- a fallback effect evaluator or transaction implementation inside Agentic AI Lab;
 - a new public effect syntax before the real =gerbil-poo= capability surface is
   behavior-proven.

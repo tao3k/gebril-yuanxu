@@ -436,7 +436,7 @@
        (yuanxu-module-object-identity object)
        field
        (cdr entry))
-      (error "unknown poo-flow module object field"
+      (error "unknown Yuanxu module object field"
              (yuanxu-module-object-identity object)
              (car entry)))))
 
@@ -450,7 +450,7 @@
        (yuanxu-module-object-identity object)
        field
        (cdr entry))
-      (error "unknown poo-flow module object field"
+      (error "unknown Yuanxu module object field"
              (yuanxu-module-object-identity object)
              (car entry)))))
 

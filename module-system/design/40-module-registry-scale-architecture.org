@@ -45,7 +45,7 @@ presentation graph for a declaration-only user entry.
 ** 40.30 Growth Rule
 Adding a new concrete module should follow this shape:
 #+begin_src scheme
-(def poo-flow-src-module-tree-entrypoints
+(def agentic-ai-lab-src-module-tree-entrypoints
   '(("agent-sandbox" config)
     ("new-module" objects config)))
 #+end_src
@@ -90,7 +90,7 @@ Module admission also performs a reader-native owner-import inspection over
 every =.ss= file below each module root. An implementation role importing an
 aggregate framework surface emits
 =yuanxu.module-owner-import-observation.v1= and fails admission with
-=POO-FLOW-MODULE-E008=. The check reads datums only and never expands or
+=AGENTIC-AI-LAB-MODULE-E008=. The check reads datums only and never expands or
 evaluates module source. Its repository gate covers all maintained module role
 files, including nonstandard private helpers below the canonical role owners.
 
@@ -148,7 +148,7 @@ owners outside the public package closure resolve from source for the selected
 atomic test.  This source-root decision is Scheme POO configuration; no
 user-facing environment setting or =build-test.ss= exists.
 
-The build entry must not import a =:poo-flow= or =./src= owner.  Such an import
+The build entry must not import a =:agentic-ai-lab= or =./src= owner.  Such an import
 loads the package module before the same =std/make= invocation checks it; macOS
 then emits numbered replacement objects and the warm build never becomes
 current.  The Observability source-admission gate reports this as
@@ -156,7 +156,7 @@ current.  The Observability source-admission gate reports this as
 Build-time resource observation remains outside the package action: the shared
 Bazel Gerbil resource guard records effective cores, elapsed time, process-tree
 RSS, and runnable saturation.  The runtime Observability module remains an
-ordinary POO Flow library owner and is never used to bootstrap its own build.
+ordinary Agentic AI Lab library owner and is never used to bootstrap its own build.
 
 Repository-owned command helpers and user configuration are not package
 artifacts.  The PackageSpec excludes the two contribution observation commands
@@ -190,7 +190,7 @@ than amortized across a reused batch heap.
 The Runtime-WASM workflow separately materializes
 =//:dependency_packages= before the package action.  This exposes and
 caches =gerbil-utils=, =gerbil-poo=, and ASP compilation instead of charging
-their cold build to POO Flow.  Existing 30-minute job and 25-minute package
+their cold build to Agentic AI Lab.  Existing 30-minute job and 25-minute package
 timeouts remain unchanged.  A local verbose probe that changed Bazel
 =action_env= was discarded as performance evidence because Bazel explicitly
 invalidated its analysis cache and spent 213 seconds only on external

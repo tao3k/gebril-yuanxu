@@ -127,12 +127,12 @@ Text is bytes plus an explicit encoding tag.  The production path contains no
 
 AC-06 adds:
 
-- =poo_flow_runtime_v0_arena_register=;
-- =poo_flow_runtime_v0_arena_release=;
-- =poo_flow_runtime_v0_poll_batch=;
-- =poo_flow_runtime_v0_submit_batch=;
-- =poo_flow_runtime_v0_batch_ack=;
-- =poo_flow_runtime_v0_arena_recycle=.
+- =agentic_ai_lab_runtime_v0_arena_register=;
+- =agentic_ai_lab_runtime_v0_arena_release=;
+- =agentic_ai_lab_runtime_v0_poll_batch=;
+- =agentic_ai_lab_runtime_v0_submit_batch=;
+- =agentic_ai_lab_runtime_v0_batch_ack=;
+- =agentic_ai_lab_runtime_v0_arena_recycle=.
 
 =poll_batch= returns only complete interpretable items.  It reports produced
 count, required header count, required payload bytes, lease identity, arena

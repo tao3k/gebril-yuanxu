@@ -131,7 +131,7 @@ A local product LeanPoo cache symlink still pointed at the old Core directory.
 Only that known dangling link was repointed to the same immutable dependency
 at its new location; no package was downloaded or compiler changed. The default
 product =lake build= has no target, so the actual consumer check explicitly
-builds =PooFlowProof=. An empty default invocation is not counted as proof success.
+builds =AgenticAILabProof=. An empty default invocation is not counted as proof success.
 
 * Recorded gates and remaining limits
 
@@ -143,7 +143,7 @@ declarations name this revision; the concurrent dirty installed package was not
 reset or overwritten.
 
 The relocated Core Lean aggregate completed 196 jobs with its 6,667-declaration
-shape/standard-axiom audit; the explicit product =PooFlowProof= consumer completed
+shape/standard-axiom audit; the explicit product =AgenticAILabProof= consumer completed
 455 jobs. The RootCollection QNT scope passed all eight controls. Separate
 full-model typechecking hit its unchanged five-second limit at
 =ContextWalk_forgetShared=; a ReadRetention attempt hit its existing real-output

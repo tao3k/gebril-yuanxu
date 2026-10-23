@@ -8,7 +8,7 @@ This audit continues the OpenRath research with a narrower focus: session as
 the flowing value and multi-agent coordination as session graph composition.
 
 The goal is not to copy OpenRath's Python API. The goal is to use OpenRath as
-evidence for a stronger POO Flow design:
+evidence for a stronger Agentic AI Lab design:
 1. user declarations stay POO-native;
 2. functional arrows transform session values;
 3. generated runtime receipts use fixed internal structures where appropriate;
@@ -96,7 +96,7 @@ This makes parent/child and peer communication explicit:
 - cross-root communication must include both =project-id= and target
   =root-session-id= so routing never guesses from a bare child id.
 
-POO Flow should not treat child agents as anonymous rows under one loop. Child
+Agentic AI Lab should not treat child agents as anonymous rows under one loop. Child
 agents should be session-addressable participants. Their session id is both a
 lineage fact and a communication address.
 
@@ -141,7 +141,7 @@ session id is the address, but policy decides what that address can see, touch,
 share, and mutate.
 
 ** 10.06.42.37.50 Agent Execution And Tool Permission Plane
-OpenRath is useful evidence for session-first runtime structure, but its examples do not define a fine-grained authorization plane for tools, hooks, sub-agents, prompts, or resource sharing. POO Flow should make that plane explicit and composable.
+OpenRath is useful evidence for session-first runtime structure, but its examples do not define a fine-grained authorization plane for tools, hooks, sub-agents, prompts, or resource sharing. Agentic AI Lab should make that plane explicit and composable.
 The policy unit is not "the whole process may call tool X." The policy unit is:
 #+begin_src text
 project-id
@@ -172,9 +172,9 @@ The target invariant is stricter than coarse tool permission:
 - communication receipts remain report-only, but validation treats their =channel-id= and =target-session-id= as authorization facts and emits explicit diagnostics when either grant is missing;
 - resource sharing is denied unless the grant names both scope and accounting owner;
 - context and history sharing are separate from tool permission, so "can read files" never implies "can read sibling transcript."
-** 10.06.42.38 POO Flow Strengthening Thesis
-OpenRath's weak points should become POO Flow's strongest layer. OpenRath shows
-that session-first is the right runtime idea; POO Flow should make the missing
+** 10.06.42.38 Agentic AI Lab Strengthening Thesis
+OpenRath's weak points should become Agentic AI Lab's strongest layer. OpenRath shows
+that session-first is the right runtime idea; Agentic AI Lab should make the missing
 policy plane explicit, typed, composable, and inspectable before runtime.
 
 The strengthening direction is:
@@ -194,7 +194,7 @@ The strengthening direction is:
    internally, with bounded alist projection at manifest, JSON, test-summary,
    and Marlin handoff boundaries.
 
-This makes POO Flow stricter than OpenRath in the exact area large agent
+This makes Agentic AI Lab stricter than OpenRath in the exact area large agent
 systems need most: a sub-agent is not just a function call or a hidden message
 history. It is a session-addressed participant with an explicit isolation,
 sandbox, context, history, communication, and resource policy.
@@ -207,27 +207,27 @@ The target invariant is deny-by-default:
 - no cross-root communication without explicit project/root/session ids;
 - no resource sharing unless the policy says how accounting and ownership work.
 
-** 10.06.42.40 What POO Flow Should Not Copy
+** 10.06.42.40 What Agentic AI Lab Should Not Copy
 OpenRath is useful, but several parts should remain runtime-side evidence
 rather than Scheme-side architecture:
-1. =session.to(...)= mutates placement on the session object. POO Flow should
+1. =session.to(...)= mutates placement on the session object. Agentic AI Lab should
    keep placement as an explicit POO prototype/mixin or generated receipt so a
    dry-run presentation can validate it before runtime.
-2. The process-wide async runtime is convenient in Python. POO Flow should not
+2. The process-wide async runtime is convenient in Python. Agentic AI Lab should not
    create a Scheme execution loop for agent turns; it should emit runtime
    handoff facts for Marlin.
-3. =AgentParam= is compact but weakly constrained. POO Flow should model the
+3. =AgentParam= is compact but weakly constrained. Agentic AI Lab should model the
    same concept as typed POO objects plus structured validation: agent system
    session, provider ref, memory refs, tool refs, and sandbox requirements.
 4. =Selector= breaks the normal =Workflow.forward(session) -> session= contract.
-   POO Flow should represent selector output as a selection receipt with a
+   Agentic AI Lab should represent selector output as a selection receipt with a
    contract, candidate set, fallback behavior, and runtime owner.
 5. Lazy materialization is a runtime behavior. Scheme should describe
    =materialization-state= and =pending-runtime-ref= as receipts, not block on
    provider execution.
 
-** 10.06.42.50 Current POO Flow Status
-POO Flow already has the foundation, but not the full multi-agent session graph.
+** 10.06.42.50 Current Agentic AI Lab Status
+Agentic AI Lab already has the foundation, but not the full multi-agent session graph.
 
 Delivered:
 - =modules/session/objects.ss= models session values, chunks, lineage,
@@ -251,7 +251,7 @@ not yet own a reusable multi-agent session topology that other workflows,
 selectors, or future runtime owners can consume.
 
 ** 10.06.42.60 Design Direction
-POO Flow should treat multi-agent orchestration as a session graph problem:
+Agentic AI Lab should treat multi-agent orchestration as a session graph problem:
 
 #+begin_src text
 ProjectSessionSpace
@@ -358,7 +358,7 @@ Candidate owners:
 - =t/session-registry-receipt-test.ss=
 
 Current implementation:
-- =modules/session/registry.ss= owns =poo-flow-session-registry-entry= and =poo-flow-session-registry-receipt=.
+- =modules/session/registry.ss= owns =agentic-ai-lab-session-registry-entry= and =agentic-ai-lab-session-registry-receipt=.
 - Registry entries project session id, parent ids, agent id, placement ref, communication channels, policy summaries, materialization state, runtime owner, and =runtime-executed: #f=.
 - =t/session-registry-receipt-test.ss= proves a root and child session registry without runtime state.
 *** 10.06.42.70.20 P2 Multi-Agent Session Topology
@@ -398,11 +398,11 @@ Execution policy refs should be part of the topology row rather than hidden insi
 - =resource-sharing-policy-ref=.
 - =durable-policy-ref=.
 Current implementation:
-- =modules/session/agent.ss= owns =poo-flow-session-agent-node= and =poo-flow-session-agent-graph=.
+- =modules/session/agent.ss= owns =agentic-ai-lab-session-agent-node= and =agentic-ai-lab-session-agent-graph=.
 - Agent nodes carry project/root/parent/input/output refs, peer session refs, communication channels, model/prompt/tool/hook/resource/durable policy refs, tool/memory refs, sandbox profile ref, role, and result contract.
 - =user-interface/custom/my-module/cases/session-agent-graph.ss= declares a root session with build and audit child-agent sessions.
 - =t/session-multi-agent-graph-test.ss= proves graph topology and registry correlation without executing agents or delivering messages.
-- =modules/loop-engine/runtime-agent.ss= now projects loop-engine agent/judge/human-audit rows into the same =poo-flow-session-agent-graph= topology instead of maintaining a parallel agent/session graph.
+- =modules/loop-engine/runtime-agent.ss= now projects loop-engine agent/judge/human-audit rows into the same =agentic-ai-lab-session-agent-graph= topology instead of maintaining a parallel agent/session graph.
 - =modules/loop-engine/runtime.ss= carries the shared =session-agent-graph= and =session-agent-topology-trace= through runtime envelope, handoff facts, and runtime projections; =src/user-interface/presentation-config.ss= exposes them as =loop-engine-session-agent-graphs= and =loop-engine-session-agent-topology-traces=.
 - =t/user-interface-custom-loop-engine-test.ss= proves intent, handoff, and presentation all reference the same graph and that topology trace profile/session ids stay aligned; =t/performance/loop-engine-session-agent-graph-performance-test.ss= and =t/scenarios/performance/loop-engine-session-agent-graph/benchmark.ss= guard the projection cost.
 *** 10.06.42.70.30 P3 Session Communication Receipt
@@ -432,7 +432,7 @@ Candidate owners:
 
 Current implementation:
 - =modules/session/communication.ss= owns
-  =poo-flow-session-communication-receipt=.
+  =agentic-ai-lab-session-communication-receipt=.
 - The receipt records project id, source and target root session ids, source
   and target session ids, agent ids, channel id, message kind, bounded payload
   summary, delivery policy, runtime owner, =handoff-required: #t=,
@@ -490,9 +490,9 @@ Current implementation:
 - =modules/session/policy-validation.ss= treats isolation and sandbox as first-class effective policy inputs: bounded projection includes =effective-isolation-mode=, isolation sibling/parent/peer controls, =effective-sandbox-profile-ref=, sandbox inheritance mode, and sandbox sharing mode. Metadata-provided sibling session refs drive explicit =sibling-context-not-granted= diagnostics so child sessions cannot read sibling context through a generic context-policy fallback.
 - =t/scenarios/performance/session-policy-family/benchmark.ss= and =t/performance/session-policy-family-performance-test.ss= keep the foundational constructor family as a hot benchmark gate before effective validation.
 - =modules/session/policy-validation.ss= owns the defstruct-backed
-  =poo-flow-session-policy-validation-receipt= constructor, explicit receipt
-  accessors, =poo-flow-session-policy-validation-receipt->alist=, and bounded
-  =poo-flow-session-policy-tool-attempt= rows.
+  =agentic-ai-lab-session-policy-validation-receipt= constructor, explicit receipt
+  accessors, =agentic-ai-lab-session-policy-validation-receipt->alist=, and bounded
+  =agentic-ai-lab-session-policy-tool-attempt= rows.
 - The validation receipt consumes an optional tool-core catalog-validation row
   from metadata and projects catalog id/ref, catalog validity,
   resolved/unresolved tool refs, sandbox-required refs, action mismatch rows,
@@ -536,9 +536,9 @@ module-system presentation before Marlin handoff.
 
 Current implementation:
 - =modules/session/agent-param.ss= owns
-  =poo-flow-session-agent-param-contract=.
-- The constructor takes a =poo-flow-session-agent-node= and an effective
-  =poo-flow-session-policy-validation-receipt=. This keeps P5 attached to P2
+  =agentic-ai-lab-session-agent-param-contract=.
+- The constructor takes a =agentic-ai-lab-session-agent-node= and an effective
+  =agentic-ai-lab-session-policy-validation-receipt=. This keeps P5 attached to P2
   topology and P4 safety validation instead of becoming a separate AgentParam
   DSL.
 - The contract projects project/root/parent/input/output session refs,
@@ -569,19 +569,19 @@ model call. This is stricter than OpenRath's runtime =Selector.forward=.
 
 Current implementation:
 - =modules/session/selector.ss= owns
-  =poo-flow-session-selector-candidate= and
-  =poo-flow-session-selector-receipt=.
+  =agentic-ai-lab-session-selector-candidate= and
+  =agentic-ai-lab-session-selector-receipt=.
 - Candidates are POO objects over =workflow=, =transform=, or =agent-param=
   targets. Each candidate carries a candidate id, target ref, description,
   required receipt fields, runtime owner, and =runtime-executed: #f=, then
-  projects through =poo-flow-session-selector-candidate->alist= at the ABI
+  projects through =agentic-ai-lab-session-selector-candidate->alist= at the ABI
   boundary.
 - The selector receipt is defstruct-backed and records project id, root session
   ref, input session ref, bounded candidate rows, candidate ids,
   workflow/transform/AgentParam candidate buckets, selection policy, fallback
   ref, =selection-state: pending=, =selected-candidate-ref: #f=, and a pending
   selected-result row. Its ABI boundary stays
-  =poo-flow-session-selector-receipt->alist=. This turns OpenRath's
+  =agentic-ai-lab-session-selector-receipt->alist=. This turns OpenRath's
   =EmptyWorkflow= fallback behavior into explicit receipt data.
 - =user-interface/custom/my-module/cases/session-selector.ss= exposes the
   downstream authoring shape over build transform, audit workflow, and governor
@@ -607,8 +607,8 @@ Use the current project rule: generated receipt internals may use Gerbil
 
 Current implementation:
 - =modules/session/materialization.ss= owns
-  =poo-flow-session-materialization-receipt= as a Gerbil =defstruct= and
-  =poo-flow-session-materialization-receipt->alist= as the bounded ABI
+  =agentic-ai-lab-session-materialization-receipt= as a Gerbil =defstruct= and
+  =agentic-ai-lab-session-materialization-receipt->alist= as the bounded ABI
   projection.
 - The receipt records runtime request id, project id, root session ref, session
   ref, parent session refs, =materialization-state=, pending runtime ref,
@@ -690,7 +690,7 @@ Multi-agent systems become understandable when Session is the flowing value and
 agents are transformations over session graphs.
 #+end_quote
 
-POO Flow can make that stronger than OpenRath by moving the declaration,
+Agentic AI Lab can make that stronger than OpenRath by moving the declaration,
 validation, graph topology, and handoff contracts into Gerbil POO while leaving
 execution, lazy materialization, tool calls, and memory mutation to Marlin or
 other runtime owners.

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: POO Conservative-Extension Criterion and Cross-Module Obligations
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -134,7 +134,7 @@ cross-module witnesses.
 | Local Lean module | =accepted= | =lake build YuanxuProof.PooClos.ConservativeExtension=: 28/28 jobs |
 | Local Lean closure | =accepted= | =lake build=: 101/101 jobs |
 | AXLE independent declaration check | =accepted= | Request =ef4314ff-87b3-4a8e-92b8-2a9427d5f3f3=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =0898139d-62e0-4757-9994-5555f732aa4c= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =0898139d-62e0-4757-9994-5555f732aa4c= cannot resolve local module prefix =AgenticAILabProof= |
 | Cross-module implementation witnesses | =pending= | The specialized owners retain the 19 implementation admission obligations |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -149,10 +149,10 @@ until their owner receipts are produced.
 
 * Central decision
 
-POO Flow is a conservative operational extension of the adopted POOF and
+Agentic AI Lab is a conservative operational extension of the adopted POOF and
 =gerbil-poo= semantics.
 
-POO Flow may observe, restrict, suspend, resume, cache, incrementally
+Agentic AI Lab may observe, restrict, suspend, resume, cache, incrementally
 reevaluate, govern, publish, or revert execution.  After control and evidence
 are erased, every allowed completed execution MUST expose the same native POO
 value or native failure.
@@ -273,7 +273,7 @@ domain value.
 
 ** Native-failure preservation
 
-When native POO produces a native failure, POO Flow may attach root revision,
+When native POO produces a native failure, Agentic AI Lab may attach root revision,
 operand identity, demand path, generation context, and causal evidence.
 
 The contextualized result MUST retain the native failure category and semantic
@@ -408,7 +408,7 @@ and local evidence.
 * Ownership map
 
 | Concern | Owner |
-| Adopted POO semantic baseline | [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85]] |
+| Adopted POO semantic baseline | [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]] |
 | Incremental fixed-point correctness | [[file:45-66-incremental-fixed-point-reevaluation-and-cache-correctness.org][45-66]] |
 | Distributed cache admission and provenance | [[file:45-67-distributed-cache-admission-provenance-and-poisoning-resistance.org][45-67]] |
 | Delegation fencing and portable suspension | [[file:45-68-distributed-evaluator-delegation-fencing-and-portable-suspension.org][45-68]] |

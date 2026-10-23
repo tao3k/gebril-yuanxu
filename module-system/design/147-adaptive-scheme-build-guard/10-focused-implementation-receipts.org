@@ -10,7 +10,7 @@ as current API or build instructions.
 
 #+begin_src mermaid
 flowchart LR
-    H["Historical POO Flow build guards"] -->|"superseded"| U["ASP PR #3 Build API"]
+    H["Historical Agentic AI Lab build guards"] -->|"superseded"| U["ASP PR #3 Build API"]
     U --> S["Gerbil std/make"] --> B["gerbil-bazel guarded actions"]
 #+end_src
 
@@ -22,7 +22,7 @@ gate.
 | Harness dynamic compile | =timeout 90s gxpkg env gxc src/building/model.ss src/building/native-toolchain.ss src/building/std-builder.ss src/building/observability.ss t/std-builder-execution-window-test.ss t/building-observability-test.ss=; exit 0; 13.25 s |
 | Harness execution-window runtime | Imported =:gslph/t/std-builder-execution-window-test= and ran =main= under =timeout 90s gxpkg env gxi=; exit 0; seven cases; =All tests OK= |
 | Harness observability runtime | Imported =:gslph/t/building-observability-test= under =timeout 90s gxpkg env gxi=; exit 0; adaptive canonical JSON assertions completed |
-| Superseded POO Flow guard prototype | The former local process guard, adaptive window, project-build CLI, and project compile receipt compiled in 6.87 s.  Those interfaces have been removed; current builds use ASP PR #3 and gerbil-bazel. |
+| Superseded Agentic AI Lab guard prototype | The former local process guard, adaptive window, project-build CLI, and project compile receipt compiled in 6.87 s.  Those interfaces have been removed; current builds use ASP PR #3 and gerbil-bazel. |
 | Direct native environment projection | =tools/run-native-scheme-env= replaced Nix Apple-SDK inputs with =/Applications/Xcode.app/Contents/Developer= and the active macOS SDK; it did not emit an unconditional =env -u= policy |
 | Bazel native environment projection | =bazel run //tools/bazel:native_scheme_env= completed through =rules_shell=; =toolchain.receipt.json= recorded =host_os: mac os x=, =system: darwin=, =environment_policy: active-xcode=, Homebrew =gxi/gxc/gxpkg=, and active Xcode paths |
 | Bazel registered toolchain analysis | =bazel build --toolchain_resolution_debug=//tools/bazel:gerbil_toolchain_type //scheme:compile= selected =@local_gerbil//:toolchain_impl= through =@local_gerbil//:registered_toolchain= on =@platforms//host:host=; exit 0; the compile action remained an action-cache hit; Scheme compile and test rule implementations contain no =@local_gerbil= labels |

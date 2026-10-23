@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.12 Git Project, Worktree and Context Model
 :PROPERTIES:
-:ID: poo-flow-git-project-worktree-context-model
+:ID: agentic-ai-lab-git-project-worktree-context-model
 :STATUS: design-joint-model-pass-runtime-correspondence-open
 :DATE: 2026-10-14
 :END:
@@ -171,7 +171,7 @@ retains historical observations; and rejects stale selected bytes and implicit
 Project-wide scope promotion. Tokens stand for content versions, not actual
 OIDs. Session bindings are a declared example, not dynamic orchestrator proof.
 
-[[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/GitContext.lean][GitContext.lean]] uses the existing functional Focus API for local edits and
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean][GitContext.lean]] uses the existing functional Focus API for local edits and
 proves scope preservation/composition and receipt distinction for changed
 Worktree, selected untracked content or Query revision. It is a typed proof
 projection, not another Scheme source/Query evaluator. Actual C3/C4 object

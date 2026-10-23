@@ -7,7 +7,7 @@
 
 * Problem Boundary
 
-POO Flow does not execute LangGraph, LangChain, durable checkpoint runtime, tool
+Agentic AI Lab does not execute LangGraph, LangChain, durable checkpoint runtime, tool
 runtime, or sandbox runtime in Scheme. Those runtime systems belong to Marlin or
 another runtime owner. The Scheme control plane is responsible for producing a
 precise strategy/policy artifact that a runtime can consume without guessing.
@@ -71,7 +71,7 @@ $
 #+end_src
 
 This is intentionally small but strict. It lets the runtime owner reject a
-payload without reconstructing POO Flow internals. It also gives Lean a stable
+payload without reconstructing Agentic AI Lab internals. It also gives Lean a stable
 surface: each rejection reason corresponds to a missing or invalid invariant,
 not to a textual diagnostic.
 
@@ -87,7 +87,7 @@ The bridge keeps runtime ownership explicit:
 - Runtime owners consume the payload and execute with their own language/runtime.
 
 This prevents the old drift where a UI scenario tried to imitate a runtime
-executor. For LangGraph-like scenarios, POO Flow proves that its Policy, Durable,
+executor. For LangGraph-like scenarios, Agentic AI Lab proves that its Policy, Durable,
 Checkpoint, Graph, Loop, and Composition contracts are sufficient to express the
 scenario. It does not embed LangGraph as a Scheme runtime module.
 
@@ -123,14 +123,14 @@ not JSON manifests.
 
 The concrete Scheme API added by this step is:
 
-- =poo-flow-proof-gate-bundle->decision=
-- =poo-flow-proof-gate-receipts->decision=
-- =poo-flow-proof-gate-decision-accepted?=
-- =poo-flow-proof-gate-decision-rejection-reasons=
-- =poo-flow-langgraph-user-interface-proof-gate-decision=
-- =poo-flow-proof-gate-decision->ffi-payload=
-- =poo-flow-proof-gate-receipts->ffi-payload=
-- =poo-flow-langgraph-user-interface-proof-ffi-payload=
+- =agentic-ai-lab-proof-gate-bundle->decision=
+- =agentic-ai-lab-proof-gate-receipts->decision=
+- =agentic-ai-lab-proof-gate-decision-accepted?=
+- =agentic-ai-lab-proof-gate-decision-rejection-reasons=
+- =agentic-ai-lab-langgraph-user-interface-proof-gate-decision=
+- =agentic-ai-lab-proof-gate-decision->ffi-payload=
+- =agentic-ai-lab-proof-gate-receipts->ffi-payload=
+- =agentic-ai-lab-langgraph-user-interface-proof-ffi-payload=
 
 The bridge payload deliberately preserves the bundle and the decision. This is
 more verbose than a boolean gate, but it is the minimum useful audit artifact for

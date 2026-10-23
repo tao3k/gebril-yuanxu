@@ -55,12 +55,12 @@ retain their phase duties. Compile-time POO construction declares its native
 * What Yuanxu owns
 
 Yuanxu is the =yuanxu= Gerbil package: reusable POO-native mechanisms shared by
-POO Flow, gerbil-parser, and other consumers. The package root is the module
+Agentic AI Lab, gerbil-parser, and other consumers. The package root is the module
 root, so consumers import a precise owner such as =:yuanxu/module-system/config=.
 There is no eager umbrella module or compatibility alias.
 
-Core depends on Gerbil v0.19 and =gerbil-poo=; it does not depend on POO Flow,
-ASP Scheme, or a product runtime. POO Flow includes Core as a Git submodule and
+Core depends on Gerbil v0.19 and =gerbil-poo=; it does not depend on Agentic AI Lab,
+ASP Scheme, or a product runtime. Agentic AI Lab includes Core as a Git submodule and
 builds its sources before its own modules. It does not repeat that submodule as
 a =gerbil.pkg= dependency.
 
@@ -100,16 +100,16 @@ other CLOS semantics absent from the base MOP. Object identity, slot lookup,
 Type validation, and C4 precedence remain owned by =gerbil-poo=. See
 [[file:poo-clos/README.org][the CLOS implementation notes]] for its API and conformance boundary.
 
-* Boundary with POO Flow
+* Boundary with Agentic AI Lab
 
-Core values are inert until a product owner admits or executes them. POO Flow
+Core values are inert until a product owner admits or executes them. Agentic AI Lab
 owns its Module branding, default authoring Profile, Loader selection, source
 interpretation, Doctor presentation, Profiles, and runtime handoff. Core's
 contribution verification can issue or revoke a host-trusted receipt; it does
 not grant runtime authority or execute an effect.
 
-The remaining POO Flow =src/module-system/= is being separated by ownership:
-shared mechanisms move here, while product policy stays in POO Flow. A file's
+The remaining Agentic AI Lab =src/module-system/= is being separated by ownership:
+shared mechanisms move here, while product policy stays in Agentic AI Lab. A file's
 location during migration is not a second permanent implementation contract.
 
 * Build and test
@@ -124,7 +124,7 @@ just test
 just test-file t/module-interface-test.ss
 #+end_src
 
-Core's =t/= tests cover shared semantics. POO Flow retains product selection
+Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
 and cross-package integration tests.
 
 * Module System design proposals
@@ -134,7 +134,7 @@ interface publication versus init selection, selected Module Core/optional exten
 boundaries and pure build contribution views. These are design documents, not
 runtime migrations. The complete former product Module System chapter, including
 its expansions and validation material, is now maintained here; see the
-[[file:module-system/design/ownership-and-migration.org][ownership and migration boundary]]. POO Flow keeps actual business Modules,
+[[file:module-system/design/ownership-and-migration.org][ownership and migration boundary]]. Agentic AI Lab keeps actual business Modules,
 Profiles, Scenarios, reference checkouts and product integration adapters.
 
 * Feature System migration design
@@ -148,7 +148,7 @@ a downstream adapter; no compatibility source tree is retained.
 
 [[file:docs/10-19-design/11-configuration-languages/11.01-index.org][The Core-owned configuration language design]] contains expression, Contract,
 Module organization and extension discussions, including source-backed ecosystem
-comparisons. POO Flow keeps its actual product consumption and application examples.
+comparisons. Agentic AI Lab keeps its actual product consumption and application examples.
 These documentation changes do not update the pinned submodule revision.
 
 * Core proof ownership

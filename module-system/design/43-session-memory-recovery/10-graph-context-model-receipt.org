@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.10 Graph Context Model Verification
 :PROPERTIES:
-:ID: poo-flow-graph-context-model-verification-20261014
+:ID: agentic-ai-lab-graph-context-model-verification-20261014
 :STATUS: historical-joint-model-consumer-pass-org-graph-correspondence-open
 :DATE: 2026-10-14
 :END:
@@ -22,7 +22,7 @@ an ORG-to-C4 simulation theorem or deployed Context orchestration.
 
 * Actual Lean consumer
 
-[[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/GraphContext.lean][GraphContext.lean]] imports the actual C3 cache-coherence theorem, C4
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean][GraphContext.lean]] imports the actual C3 cache-coherence theorem, C4
 VerifiedOrder and Object.Memo/Prototype APIs. Five universal consumer laws:
 
 - Complete C3 cached/reference outcomes agree for the same finite graph/roots.
@@ -41,7 +41,7 @@ values =3/10=. It retains the original object but disproves the unconditional
 claim that an untouched computed declaration must retain its value. The
 revision control retains old =2= while the revised object reads =5=.
 
-=timeout 120s lake build PooFlowContextLifecycleProof= passed with 74 build
+=timeout 120s lake build AgenticAILabContextLifecycleProof= passed with 74 build
 jobs. All current Context roots together contain 31 declared laws and 35
 guards; five laws and eight guards belong to this new consumer. Audited new
 laws use only Lean's existing =propext=, =Classical.choice= and =Quot.sound=.
@@ -112,9 +112,9 @@ Scheme execution retains 120s total, the existing 5s progress watchdog and
 | packages/proofs/lean-poo/lakefile.lean | fe343463a1294ffd4abe7c841390c7f2f4c569c60b8503e91c747b720d9a403f |
 | packages/proofs/lean-poo/lake-manifest.json | 56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc |
 | packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
-| packages/proofs/lean-poo/PooFlowContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
-| packages/proofs/lean-poo/PooFlowContextLifecycleProof/FunctionalComposition.lean | 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 |
-| packages/proofs/lean-poo/PooFlowContextLifecycleProof/GraphContext.lean | ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean | 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean | ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785 |
 | scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
 | gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
 | modules/ai-agentic-context/admission.ss | 08114f145c31b7fa97f8a8b72010ccfbafbf6e515d25bc7d366a1e871a0c493e |
@@ -150,7 +150,7 @@ Use the existing parent Lean package and the current installed Scheme packages:
 
 #+begin_src sh
 cd packages/proofs/lean-poo
-timeout 120s lake build PooFlowContextLifecycleProof
+timeout 120s lake build AgenticAILabContextLifecycleProof
 #+end_src
 
 From the repository root:

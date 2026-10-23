@@ -61,7 +61,7 @@ authorization subject or secondary receipt protocol.
 | Current Bundle digest | Bundle evidence owner relation |
 | Recovery commitment and convergence | RFC 45-120-42 and RFC 45-120-43 trace closures |
 
-POO Flow composes these proofs. It does not compute Cedar digests, certify
+Agentic AI Lab composes these proofs. It does not compute Cedar digests, certify
 engine independence, or declare a Bundle current merely from copied strings.
 
 * Lean-found architecture gaps
@@ -312,7 +312,7 @@ It proves:
 - [X] Actual subject bridge core: exit 0.
 - [X] Recovery trace bridge closure: exit 0.
 - [X] Core Lake build: 379 jobs completed successfully.
-- [X] Full =PooFlowProof= build: 503 jobs completed successfully.
+- [X] Full =AgenticAILabProof= build: 503 jobs completed successfully.
 - [X] Current lifecycle/subject/exporter proof gate: 400 jobs completed
   successfully.
 

@@ -8,7 +8,7 @@
 
 * Decision
 
-POO Flow treats declaration-closure performance as a generation-level proof
+Agentic AI Lab treats declaration-closure performance as a generation-level proof
 substrate property.  One admitted generation performs one Lake build, hashes
 the native exporter once, imports one union Lean environment, derives trusted
 and Cedar proof-base module partitions from module metadata, and emits one
@@ -94,8 +94,8 @@ environment and derives both partitions from its module graph.
 
 | Responsibility | Owner |
 |----------------+-------|
-| One-environment import and module partition | =PooFlowProof/Export/DeclarationClosure.lean= |
-| Native multi-root protocol | =PooFlowProof/Export/DeclarationClosure.lean= |
+| One-environment import and module partition | =AgenticAILabProof/Export/DeclarationClosure.lean= |
+| Native multi-root protocol | =AgenticAILabProof/Export/DeclarationClosure.lean= |
 | Generation build, exporter hash, root cache | =lean_declaration_closure.py= |
 | Reproducible lifecycle/subject benchmark | =tools/benchmark_lean_declaration_closure.py= |
 | Strict remote verification | =axle_closure_verify.py= |
@@ -105,7 +105,7 @@ POO-native composition surface or expose a filename as backend configuration.
 
 * Reflection contract
 
-Native phases use =poo-flow.lean-export-phase.v1=:
+Native phases use =agentic-ai-lab.lean-export-phase.v1=:
 
 - =search-path-initialization=;
 - =environment-import=;
@@ -117,7 +117,7 @@ Native phases use =poo-flow.lean-export-phase.v1=:
 - =proof-base-render=;
 - =receipt-serialization=.
 
-Driver phases use =poo-flow.lean-export-driver-phase.v1=:
+Driver phases use =agentic-ai-lab.lean-export-driver-phase.v1=:
 
 - =generation-lake-build=;
 - =generation-exporter-hash=;
@@ -157,7 +157,7 @@ roots when compared with the latest pre-optimization cache artifacts.
 
 The cold-or-mixed observation is a matched fixture observation, not a p95
 claim.  The ten-run receipt is stored at
-=/private/tmp/poo-flow-lean-declaration-closure-performance-final.json=.
+=/private/tmp/agentic-ai-lab-lean-declaration-closure-performance-final.json=.
 The same-tool maximum-RSS diagnostic fell by approximately 54.7 percent.  The
 Darwin =peak memory footprint= field remained near 132MB and conflicts with
 =maximum resident set size=, so neither absolute field is an admission
@@ -200,7 +200,7 @@ measurement completed, not proof or performance acceptance.
 | Closure digests | Both equal the semantic-identity table above |
 
 The raw current receipt is
-=/private/tmp/poo-flow-m0-generation-20260908.json=.  The measurement used the
+=/private/tmp/agentic-ai-lab-m0-generation-20260908.json=.  The measurement used the
 already installed project-pinned Lean 4.31.0 binary directory first in PATH;
 it did not skip the build, change cache identities, or relax the deadline.
 The build phase remains slow on that path, so launcher behavior alone does
@@ -209,7 +209,7 @@ No new remote AXLE acceptance or full repository acceptance is claimed by
 these focused checks.
 
 A real tiny-budget negative execution also returned exit 1 and wrote
-=/private/tmp/poo-flow-m0-generation-failure-20260908.json=: one failed
+=/private/tmp/agentic-ai-lab-m0-generation-failure-20260908.json=: one failed
 sample out of three requested, zero warm samples, null percentiles, and the
 original =lean-declaration-closure-export-timeout= code with
 =phase=generation-lake-build=.  The diagnostic budget was 0.01 seconds;

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Recursive Module Import Reachability, Fixed-Point Dispatch, and Cycle Observability Contract
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -62,7 +62,7 @@ Pinned =proto.ss= source proves:
 - =proto-bottom=;
 - =instantiate-protos=.
 
-POO Flow uses these as upstream prototype and recursive-instantiation
+Agentic AI Lab uses these as upstream prototype and recursive-instantiation
 semantics.  It must not create a separate =poo-fixed-point= implementation.
 
 Source proof is not project-adapter admission.
@@ -78,7 +78,7 @@ Source proof is not project-adapter admission.
 
 Each reachable Module responsibility is one semantic equation.  Upstream
 prototype composition and recursive instantiation provide the POO fixed-point
-mechanism.  POO Flow supplies only the responsibility algebra, explicit
+mechanism.  Agentic AI Lab supplies only the responsibility algebra, explicit
 evaluation context, capability attenuation, cycle classification, provenance,
 budgets, and structured outcomes.
 

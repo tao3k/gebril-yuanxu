@@ -205,7 +205,7 @@ Each receipt remains authoritative only for its own question.
 
 =gerbil.pkg= remains the sole Gerbil package dependency declaration.
 
-POO Flow does not generate an exact =gerbil.pkg= projection from:
+Agentic AI Lab does not generate an exact =gerbil.pkg= projection from:
 
 - selected profiles;
 - reachable POO semantic imports;
@@ -515,7 +515,7 @@ implementation completion, not owner selection.
 - [[file:45-79-submodule-package-module-and-profile-ownership-boundaries.org][45-79 - Submodule, Package, Module, and Profile Ownership Boundaries]]
 - [[file:45-81-gerbil-module-graph-and-poo-semantic-graph-separation.org][45-81 - Gerbil Module Graph and POO Semantic Graph Separation]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module Profile Selection, Bundle, and Imports Closure Algebra]]
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][45-98 - Gerbil POO Native Boundary and POO Flow Adapter Minimization]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - Gerbil POO Native Boundary and Agentic AI Lab Adapter Minimization]]
 - [[file:45-106-debug-evaluation-context-narrowing-budget-redaction-and-cache-isolation-contract.org][45-106 - Debug Evaluation Context Narrowing, Budget, Redaction, and Cache Isolation Contract]]
 - [[file:45-107-debug-evaluation-outcome-context-transition-and-exactly-once-reconciliation-contract.org][45-107 - Debug Evaluation Outcome, Context Transition, and Exactly-Once Reconciliation Contract]]
 - [[file:45-111-profile-ownership-naming-export-identity-and-composition-repository-boundaries.org][45-111 - Profile Ownership, Naming, Export Identity, and Composition Repository Boundaries]]

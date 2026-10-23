@@ -9,7 +9,7 @@
 
 * Normative responsibility
 
-This module exclusively owns the exact reuse boundary between POO Flow and the
+This module exclusively owns the exact reuse boundary between Agentic AI Lab and the
 pinned =gerbil-poo= implementation.
 
 * Pinned identity
@@ -73,7 +73,7 @@ flowchart LR
     A["poof concept and semantic law"] --> B["gerbil.pkg pinned identity"]
     B --> C["Exact exported clan/poo symbol"]
     C --> D["Behavior proof at the pinned revision"]
-    D --> E["POO Flow lowering and qualification"]
+    D --> E["Agentic AI Lab lowering and qualification"]
 #+end_export
 
 ** =semantic-required=
@@ -101,7 +101,7 @@ resolution.
 
 ** =flow-qualified=
 
-The POO Flow authoring macro lowers to the proved =clan/poo= API, and
+The Agentic AI Lab authoring macro lowers to the proved =clan/poo= API, and
 qualification demonstrates that no local linearizer, shadow evaluator,
 duplicated fixed-point implementation, private-layout dependency, or fallback
 POO implementation participates.
@@ -129,8 +129,8 @@ flowchart TD
     B -->|yes| C["Prove behavior at pinned revision"]
     B -->|no| D{"General to arbitrary POO programs?"}
     D -->|yes| E["Extend gerbil-poo"]
-    D -->|no| F["Define a POO Flow role or policy"]
-    C --> G["Lower POO Flow macro to clan/poo"]
+    D -->|no| F["Define a Agentic AI Lab role or policy"]
+    C --> G["Lower Agentic AI Lab macro to clan/poo"]
     E --> C
 #+end_export
 
@@ -142,32 +142,32 @@ Flow.
 * Semantic ownership test
 
 A requirement belongs to =gerbil-poo= when it is meaningful for an arbitrary
-POO program without referring to Profile, Mix, governance, or a POO Flow
-runtime handoff.  A requirement belongs to POO Flow when it defines how those
+POO program without referring to Profile, Mix, governance, or a Agentic AI Lab
+runtime handoff.  A requirement belongs to Agentic AI Lab when it defines how those
 domain roles use, govern, observe, or qualify =gerbil-poo= objects.
 
 #+begin_export mermaid
 flowchart TD
-    A["New semantic requirement"] --> B{"Independent of POO Flow domains?"}
+    A["New semantic requirement"] --> B{"Independent of Agentic AI Lab domains?"}
     B -->|yes| C["Check against metareflection/poof"]
     C --> D["Implement or extend in gerbil-poo"]
     B -->|no| E{"Profile, Mix, governance, or runtime handoff?"}
-    E -->|yes| F["POO Flow POO role or policy"]
+    E -->|yes| F["Agentic AI Lab POO role or policy"]
     E -->|no| G["Downstream domain profile"]
 #+end_export
 
-| Capability | Scheme implementation owner | POO Flow responsibility |
+| Capability | Scheme implementation owner | Agentic AI Lab responsibility |
 |------------+-----------------------------+-------------------------|
 | Prototype, slot, and =super= | =gerbil-poo= | Direct use and qualification |
 | Recursive object and fixed point | =gerbil-poo= | Composition scenarios and evidence requirements |
 | Demand cell and memoization | =gerbil-poo= | Governance policy and bounded observation |
 | Dependency lineage and cycle detection | =gerbil-poo= | Conditions, traces, and receipts |
 | Continuation-aware evaluation | =gerbil-poo= | Recovery governance and authority rules |
-| Generic condition and restart mechanism | =gerbil-poo= | POO Flow condition and decision prototypes |
+| Generic condition and restart mechanism | =gerbil-poo= | Agentic AI Lab condition and decision prototypes |
 | Ordered prototype composition | =gerbil-poo= | Profile macro lowering |
-| Profile, Mix, Capability, and Submodule roles | POO Flow | Full ownership |
-| Recovery and resource governance rules | POO Flow | Full ownership |
-| Runtime-effect handoff barriers | POO Flow | Full ownership |
+| Profile, Mix, Capability, and Submodule roles | Agentic AI Lab | Full ownership |
+| Recovery and resource governance rules | Agentic AI Lab | Full ownership |
+| Runtime-effect handoff barriers | Agentic AI Lab | Full ownership |
 | =wendao-episteme= cases | =wendao-episteme= | Downstream domain ownership |
 
 ** Flat-lineage responsibility split
@@ -180,14 +180,14 @@ For:
   production)
 #+end_src
 
-the POO Flow expander resolves the =profiles= role, validates cases, preserves
+the Agentic AI Lab expander resolves the =profiles= role, validates cases, preserves
 source order, and emits a flat contribution sequence.  =gerbil-poo= performs
 the actual prototype composition, linearization, slot resolution, and =super=
 semantics.
 
 If the pinned revision already exposes the required ordered composition
-operation, POO Flow uses it directly.  If a missing operation is general to
-POO, it is implemented in =gerbil-poo=.  POO Flow MUST NOT introduce its own
+operation, Agentic AI Lab uses it directly.  If a missing operation is general to
+POO, it is implemented in =gerbil-poo=.  Agentic AI Lab MUST NOT introduce its own
 linearizer.
 
 * Flat prototype composition contract
@@ -286,7 +286,7 @@ github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 
 The pinned repository is
 [[https://github.com/mighty-gerbils/gerbil-poo/tree/1c3225637525400341a09e958296962c10184ead][mighty-gerbils/gerbil-poo at 1c3225637525400341a09e958296962c10184ead]].
-POO Flow and =wendao-episteme= are downstream users of that implementation;
+Agentic AI Lab and =wendao-episteme= are downstream users of that implementation;
 neither is an alternative POO library.
 
 #+begin_export mermaid
@@ -294,7 +294,7 @@ flowchart LR
     A["metareflection/poof"] --> B["POO concepts and prototype paper"]
     B --> C["gerbil.pkg dependency: mighty-gerbils/gerbil-poo"]
     C --> D["Gerbil Scheme POO implementation"]
-    D --> E["POO Flow higher-order roles"]
+    D --> E["Agentic AI Lab higher-order roles"]
     E --> F["wendao-episteme"]
 #+end_export
 
@@ -304,7 +304,7 @@ This lineage establishes three different responsibilities:
 - general executable Scheme POO primitives and extensions belong to
   =gerbil-poo=;
 - Profile, Mix, governance, recovery policy, and runtime handoff semantics
-  specific to this system belong to POO Flow.
+  specific to this system belong to Agentic AI Lab.
 
 * Sole Scheme POO library invariant
 
@@ -312,43 +312,43 @@ This lineage establishes three different responsibilities:
 library.  Its normative source identity is the repository and revision declared
 by =gerbil.pkg=.  API alignment, implementation evidence, and proposals for
 general POO extensions MUST be grounded in that pinned source identity rather
-than a machine-local checkout path.  POO Flow MUST NOT define, embed, emulate,
+than a machine-local checkout path.  Agentic AI Lab MUST NOT define, embed, emulate,
 or fall back to another POO object model.
 
 #+begin_export mermaid
 flowchart LR
     A["gerbil-poo"] --> B["Prototype, slot, super, and recursive-object semantics"]
-    A --> C["POO Flow higher-order roles and policy objects"]
+    A --> C["Agentic AI Lab higher-order roles and policy objects"]
     C --> D["Profile, Mix, Capability, and Submodule composition"]
     D --> E["wendao-episteme"]
 #+end_export
 
 The following consequences are normative:
 
-- all public POO Flow extension and module objects are =gerbil-poo= objects;
+- all public Agentic AI Lab extension and module objects are =gerbil-poo= objects;
 - all generated composition code calls public =gerbil-poo= operations;
 - realization contexts, demand cells, conditions, policies, decisions, and
   receipts are expressed as =gerbil-poo= objects rather than a local object
   runtime;
-- POO Flow does not own a prototype engine, fixed-point engine, alternate slot
+- Agentic AI Lab does not own a prototype engine, fixed-point engine, alternate slot
   resolver, compatibility facade, or shadow evaluator;
 - there is no local =poo-fixed-point= package or fallback implementation;
 - a generally useful POO primitive or evaluation extension is implemented in
   =gerbil-poo= itself, then consumed through the pinned library dependency;
-- POO Flow owns only its domain roles, staged authoring macros, governance
+- Agentic AI Lab owns only its domain roles, staged authoring macros, governance
   policies, runtime handoff boundaries, and qualification evidence.
 
-The realization and recovery model in this RFC suite describes how POO Flow
+The realization and recovery model in this RFC suite describes how Agentic AI Lab
 uses and instruments the public =gerbil-poo= lifecycle.  It does not authorize
 replacement of that lifecycle.  If the library lacks a required general
 extension point, the extension belongs in =gerbil-poo= rather than a parallel
-implementation in POO Flow.
+implementation in Agentic AI Lab.
 
 * Per-boundary composition invocation
 
-POO Flow may build a bounded compile-time projection of Profile, Mix,
+Agentic AI Lab may build a bounded compile-time projection of Profile, Mix,
 Capability, and Submodule contributions, but each structural boundary is
-implemented by one public =gerbil-poo= composition operation.  No POO Flow
+implemented by one public =gerbil-poo= composition operation.  No Agentic AI Lab
 layer may fold slots, perform linearization, or emulate =super= across
 boundaries.
 
@@ -359,7 +359,7 @@ precedence between sibling roots.
 
 * Required prototype API
 
-| Existing API | POO Flow use |
+| Existing API | Agentic AI Lab use |
 |-
 | =instantiate-proto= | close the recursive self fixed point |
 | =identity-proto= | empty/internal composition base |
@@ -367,7 +367,7 @@ precedence between sibling roots.
 | =compose-proto*= | compile ordered Profiles |
 | =instantiate-protos= | optional bottom-based convenience |
 
-POO Flow defines no additional =fix= or prototype-instantiation algorithm.
+Agentic AI Lab defines no additional =fix= or prototype-instantiation algorithm.
 
 The G0 required runtime surface is deliberately smaller than the entire
 dependency:
@@ -391,7 +391,7 @@ ordered Profile prototypes
   -> instantiate-proto with the selected base
 #+end_src
 
-=instantiate-protos= uses =proto-bottom=.  POO Flow may use it only where
+=instantiate-protos= uses =proto-bottom=.  Agentic AI Lab may use it only where
 bottom semantics are intentional; it is not a mandatory replacement for the
 explicit base form.
 
@@ -416,14 +416,14 @@ The pinned =object.ss= layer already owns:
 - object instance caching;
 - precedence-list construction and circular precedence-graph rejection.
 
-These facts constrain POO Flow; they do not enlarge the 45-02 G0 binding list.
-POO Flow MUST NOT copy this cache, mutate private object instance state, or
+These facts constrain Agentic AI Lab; they do not enlarge the 45-02 G0 binding list.
+Agentic AI Lab MUST NOT copy this cache, mutate private object instance state, or
 reimplement precedence calculation.
 
 Circular inheritance precedence and circular lazy slot demand are different.
 The pinned implementation detects the former.  Its own TODO identifies generic
 circular slot-definition detection through a suitable =hash-ensure-ref= variant
-as future work.  POO Flow therefore cannot claim that arbitrary nested =.ref=
+as future work.  Agentic AI Lab therefore cannot claim that arbitrary nested =.ref=
 cycles are already diagnosed.
 
 * Existing debug layer
@@ -447,7 +447,7 @@ The pinned API does not expose a general callback around every nested =.ref=
 cache miss.  Its tracing utilities wrap inherited procedure-valued slots, not
 all slot demand.
 
-Therefore POO Flow guarantees cycle diagnosis only at its own
+Therefore Agentic AI Lab guarantees cycle diagnosis only at its own
 module-capability boundary:
 
 #+begin_src text
@@ -462,12 +462,12 @@ resolve-module-capability
 
 #+begin_mermaid
 flowchart LR
-    Demand["Module capability demand"] --> Guard["POO Flow lineage/wait guard"]
+    Demand["Module capability demand"] --> Guard["Agentic AI Lab lineage/wait guard"]
     Guard --> Computation["Existing gerbil-poo computation"]
     Computation --> Value["Capability value"]
 #+end_mermaid
 
-The POO Flow instrumentation role is:
+The Agentic AI Lab instrumentation role is:
 
 #+begin_src text
 resolve-module-capability
@@ -479,7 +479,7 @@ resolve-module-capability
     -> capabilityValue
 #+end_src
 
-This is a POO Flow internal combinator.  It is not a =gerbil-poo= adapter
+This is a Agentic AI Lab internal combinator.  It is not a =gerbil-poo= adapter
 contract and does not alter the dependency API.
 
 Its responsibilities are limited to:
@@ -507,7 +507,7 @@ instantiation.
 =gerbil.pkg=/=gxpkg= may install the dependency.  They do not project its API,
 select runtime bindings, or attest the reviewed pin.
 
-Gerbil-Bazel may fetch/build the pinned dependency and POO Flow.  It does not
+Gerbil-Bazel may fetch/build the pinned dependency and Agentic AI Lab.  It does not
 define =MixModuleObject= semantics, provide a semantic adapter, or become an
 input to G0 Decision.
 
@@ -550,7 +550,7 @@ GERBIL_POO_SOURCE_MODIFICATION=forbidden
 - [X] Constrain =instantiate-protos= to intentional bottom semantics.
 - [X] Keep object and debug layers outside the G0 binding list.
 - [X] Distinguish precedence cycles from arbitrary lazy slot cycles.
-- [X] Keep instrumentation at POO Flow-owned capability demand.
+- [X] Keep instrumentation at Agentic AI Lab-owned capability demand.
 - [X] Require no dependency source modification.
 - [X] Keep package manager, build system, and GSLPH outside semantic authority.
 - [ ] Map generated Mix module prototypes to exact pinned calls.

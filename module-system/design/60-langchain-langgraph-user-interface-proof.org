@@ -10,7 +10,7 @@ policy, and proof-backed lifecycle receipts.
 
 LangChain is used as the reference shape for a linear chain. LangGraph is used
 as the reference shape for a guarded state graph. The verification facts remain
-owned by POO Flow.
+owned by Agentic AI Lab.
 * 10.06.60.20 Core Claim
 A small POO profile can express the core loop/graph structure.
 
@@ -57,9 +57,9 @@ The current implementation is complete for the core reference shapes:
   human-approval gate, subagent parentage, and handoff reachability.
 
 It is not a full clone of LangChain or LangGraph. The purpose is to demonstrate
-that POO Flow can express the core loop/graph policy shapes with reusable POO
+that Agentic AI Lab can express the core loop/graph policy shapes with reusable POO
 profiles and then verify those shapes through Scheme receipts and Lean facts.
-The runtime executor is therefore a POO Flow proof executor: it records graph
+The runtime executor is therefore a Agentic AI Lab proof executor: it records graph
 semantics and produces receipts; it does not call external tools, models, or
 framework schedulers.
 
@@ -191,7 +191,7 @@ The scenario test rejects cases that look plausible but are unsafe:
 - a production runtime trace whose human-approval gate is required but not
   approved.
 
-These examples are important for user education. They show that POO Flow is not
+These examples are important for user education. They show that Agentic AI Lab is not
 only shorter than a framework clone; it can also reject unsafe shapes before a
 policy becomes reusable public surface.
 * 10.06.60.60 Implementation Boundary
@@ -204,15 +204,15 @@ the reusable profile fragments to the composition macro, creates graph facts,
 checks the graph-control receipt metadata, runs the pure graph runtime receipt
 executor, and checks the generated Lean fact rows.
 
-The Lean owner is =PooFlowProof.PooC4.LangChainLangGraph=. It proves chain
+The Lean owner is =AgenticAILabProof.PooC4.LangChainLangGraph=. It proves chain
 progression, guarded graph safety, runtime production gates, and lane
 containment.
 
 The generated Lean fact owner is
-=PooFlowProof.Generated.LangChainLangGraphRuntime=. It is rendered from a
+=AgenticAILabProof.Generated.LangChainLangGraphRuntime=. It is rendered from a
 Scheme runtime receipt by
-=poo-flow-graph-runtime-receipt->lean-module=. This is the first bridge from
-POO Flow runtime receipts to checked Lean source in this case family: Scheme
+=agentic-ai-lab-graph-runtime-receipt->lean-module=. This is the first bridge from
+Agentic AI Lab runtime receipts to checked Lean source in this case family: Scheme
 still owns the receipt, while Lean checks the generated facts against the
 production runtime gate.
 * 10.06.60.70 Verification Gates
@@ -227,7 +227,7 @@ gxpkg env gxi t/scenarios/langchain-langgraph-core-test.ss
 Composition integration:
 
 #+begin_src sh
-gxpkg env gxi build.ss test scenario-poo-flow-composition
+gxpkg env gxi build.ss test scenario-agentic-ai-lab-composition
 #+end_src
 
 Lean proof synchronization:
@@ -259,7 +259,7 @@ The expected proof evidence is:
 - Runtime rejected case: missing human approval leaves the runtime trace
   finished but prevents reusable production status in the generated Lean facts.
 - Generated Lean module case: the production runtime receipt renders
-  =PooFlowProof.Generated.LangChainLangGraphRuntime=, which defines
+  =AgenticAILabProof.Generated.LangChainLangGraphRuntime=, which defines
   =generatedRuntimeFactRows=, =generatedProductionRuntimeFacts=, and theorem
   witnesses for reusable production runtime facts.
 - Lean case: concrete LangChain step order, concrete LangGraph node/edge facts,

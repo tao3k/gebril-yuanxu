@@ -1,4 +1,4 @@
-#+title: 32.04 Equal-Scope Service Composition: NixOS, Pulumi and POO Flow
+#+title: 32.04 Equal-Scope Service Composition: NixOS, Pulumi and Agentic AI Lab
 #+language: en
 #+property: DOCUMENT_ID 32.04
 #+property: STATUS fixed-source-analysis-not-three-platform-execution

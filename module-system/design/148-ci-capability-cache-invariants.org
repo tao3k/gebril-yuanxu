@@ -346,7 +346,7 @@ canonical =build.ss= definition and the same registered Gerbil toolchain:
 - =//scheme:dev_compile= and =//scheme:dev_unit_tests= are tagged =local= and
   =manual=.  They are entered through =bazel run= and reuse the stable
   workspace-local =.gerbil= root so Building Framework can preserve module
-  products across edits.  =POO_FLOW_BAZEL_DEV_ROOT= may select another
+  products across edits.  =AGENTIC_AI_LAB_BAZEL_DEV_ROOT= may select another
   workspace-relative root when a developer needs isolation.
 
 The development launcher does not rediscover =gxi=, =gxc=, or =gxpkg= from the
@@ -395,7 +395,7 @@ reuses the same Bazel server that owns =//scheme:compile=, builds the existing
 =runtime_c_static= and =runtime_c_shared= targets, and runs the complete Linux
 runtime-C acceptance matrix before publishing any runtime library.
 
-The named =poo-flow-runtime-native-library= artifact contains the staged shared
+The named =agentic-ai-lab-runtime-native-library= artifact contains the staged shared
 library, its producer receipt, and the Bazel acceptance receipt.  The producer
 receipt is fail-closed and records the producer job and target, platform,
 current commit, Gerbil native-ABI capability, artifact path and byte count,
@@ -414,7 +414,7 @@ cross-job delivery protocol.
 The first complete runtime-C native-producer run passed for branch head
 =eafc59f21195174dbb01a460ba4f47085b53fc29=.  GitHub tested pull-request merge
 commit =671a3299e2bdf5be179a1a60af30e0e8a5c3a19e=.  The authoritative run is
-[[https://github.com/tao3k/poo-flow/actions/runs/29650370739][CI run 29650370739]].
+[[https://github.com/tao3k/agentic-ai-lab/actions/runs/29650370739][CI run 29650370739]].
 
 The workflow ran from =2026-07-18T15:38:00Z= through
 =2026-07-18T15:41:01Z=: 181 seconds.  The comparable pre-change run
@@ -434,7 +434,7 @@ matrix required 21 seconds against its 150-second budget.
 
 The runtime-C producer receipt reported:
 
-- schema =poo-flow.ci.runtime-c-handoff.v1=;
+- schema =agentic-ai-lab.ci.runtime-c-handoff.v1=;
 - producer target =//bindings/runtime-c:runtime_c_shared= on =Linux-X64=;
 - Gerbil native-ABI capability
   =8f2f6ea8e4a6c1e86c5b5a31a8e36d185cd9a5d0=;
@@ -485,7 +485,7 @@ The workflow-lint run =29648488847= also completed successfully.
 GitHub Actions =needs= addresses a job identifier, not one expansion of a
 matrix job.  A consumer that needs a two-platform =native= matrix therefore
 waits for both Linux and macOS even when every consumed artifact is produced
-only by Linux.  POO Flow makes that dependency explicit with two one-entry
+only by Linux.  Agentic AI Lab makes that dependency explicit with two one-entry
 jobs, =native-linux= and =native-macos=.  Both jobs consume the same anchored
 step sequence; the split changes scheduling ownership, not build semantics.
 
@@ -529,7 +529,7 @@ regardless of whether =native-macos= is still running.
 
 **** After receipt: run 29960600457
 
-[[https://github.com/tao3k/poo-flow/actions/runs/29960600457][CI run 29960600457]] is the after-refactor receipt.
+[[https://github.com/tao3k/agentic-ai-lab/actions/runs/29960600457][CI run 29960600457]] is the after-refactor receipt.
 
 | Metric                           | Receipt    |
 |----------------------------------+------------|

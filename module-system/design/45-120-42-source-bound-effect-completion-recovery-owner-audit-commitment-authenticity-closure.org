@@ -9,7 +9,7 @@
 - RFC state: independent model, canonical core, and actual Lean closure
   implemented.
 - Language: English only.
-- Scope: enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof:
   [[file:45-120-41-source-bound-effect-completion-recovery-owner-audit-closure.org][45-120-41 recovery owner audit closure]].
 - This RFC defines one canonical proof meaning.  It contains no compatibility,
@@ -308,17 +308,17 @@ flowchart LR
 * Proof files
 
 - Independent model:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentModel.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentModel.lean=
 - Canonical lightweight core:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentCore.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentCore.lean=
 - Actual trace-level closure:
-  =packages/proofs/lean/PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentClosure.lean=
+  =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCommitmentClosure.lean=
 
 * AXLE verification receipts
 
 - Independent model through =uv run axle --json check=: =okay=true=, no
   failed declarations, errors, or warnings.
-- Canonical core through =uv run poo-flow-axle-verify=:
+- Canonical core through =uv run agentic-ai-lab-axle-verify=:
   - 3 owner sources;
   - 60 preflight declarations;
   - 15 exact declarations;
@@ -335,7 +335,7 @@ flowchart LR
 
 - Focused independent model, canonical core, and actual closure builds:
   passed.
-- =PooFlowProof.Enterprise=: passed.
+- =AgenticAILabProof.Enterprise=: passed.
 - Full Lean build: passed; one unrelated existing =simpa= linter suggestion
   remains in =AgentRedTeamProofRegressionClosure.lean=.
 - Orgize projection and lint:

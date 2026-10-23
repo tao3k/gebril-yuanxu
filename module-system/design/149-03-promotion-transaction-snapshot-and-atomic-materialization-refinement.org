@@ -93,7 +93,7 @@ transaction must end at the exact requested target state.
 The proof owner is:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/Enterprise/
+packages/proofs/lean/AgenticAILabProof/Enterprise/
   PromotionTransactionAtomicity.lean
 #+end_src
 
@@ -226,7 +226,7 @@ component that performs that transition.
   authentication, revocation, and responsibility evidence.
 - Marlin owns effect-plan execution, atomic compare-and-swap, rollback,
   idempotency, and commit receipts.
-- POO Flow composes these first-class evidence objects.  It does not
+- Agentic AI Lab composes these first-class evidence objects.  It does not
   reproduce Cedar, Human Audit, or Marlin internals.
 
 * Implementation checklist
@@ -261,10 +261,10 @@ warnings:
 
 #+begin_src text
 lake env lean \
-  PooFlowProof/Enterprise/PromotionTransactionAtomicity.lean
+  AgenticAILabProof/Enterprise/PromotionTransactionAtomicity.lean
 
 lake build \
-  PooFlowProof.Enterprise.PromotionTransactionAtomicity
+  AgenticAILabProof.Enterprise.PromotionTransactionAtomicity
 #+end_src
 
 Python/AXLE regression, Ruff, and =git diff --check= remain repository

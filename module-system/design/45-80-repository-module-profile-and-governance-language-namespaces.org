@@ -163,7 +163,7 @@ The current thin projection is owned by =yuanxu=.
 Therefore its proposed owner-first Gerbil module path is:
 
 #+begin_src scheme
-:poo-flow/profiles/wendao-episteme
+:agentic-ai-lab/profiles/wendao-episteme
 #+end_src
 
 The path communicates:
@@ -185,7 +185,7 @@ The following names are not accepted for the current projection:
 #+begin_example
 :wendao/episteme
 :wendao/lang
-:poo-flow/wendao
+:agentic-ai-lab/wendao
 #+end_example
 
 They obscure one or more of:
@@ -220,9 +220,9 @@ These roles remain distinct even when both contain the text
 The intended user surface is:
 
 #+begin_src scheme
-(import :poo-flow/profiles/base
-        :poo-flow/profiles/wendao-episteme
-        :poo-flow/profiles/production)
+(import :agentic-ai-lab/profiles/base
+        :agentic-ai-lab/profiles/wendao-episteme
+        :agentic-ai-lab/profiles/production)
 
 (user-composition my-system
   (compose profiles
@@ -316,7 +316,7 @@ require this =#lang=.
 
 #+begin_src mermaid
 flowchart LR
-    R["tao3k/wendao-episteme Git Source"] -->|"supplies pinned source provenance"| P[":poo-flow/profiles/wendao-episteme"]
+    R["tao3k/wendao-episteme Git Source"] -->|"supplies pinned source provenance"| P[":agentic-ai-lab/profiles/wendao-episteme"]
     P -->|"exports one lexical Scheme value"| V["wendao-episteme Profile"]
     V -->|"participates as an ordinary operand"| C["compose profiles"]
     L["#lang :wendao/governance"] -->|"provides a governance reader expander and bounded macros"| O["Governance POO Objects"]
@@ -331,7 +331,7 @@ Gerbil namespace.
 
 The current core-owned projection:
 
-- may use =:poo-flow/...=;
+- may use =:agentic-ai-lab/...=;
 - must not claim child ownership;
 - must not claim the future governance language exists.
 
@@ -344,7 +344,7 @@ defines:
 - compatibility with the core-owned projection;
 - package, build, and verification responsibilities.
 
-The child must not take over the =:poo-flow/...= namespace, and core must not
+The child must not take over the =:agentic-ai-lab/...= namespace, and core must not
 occupy child-owned =:wendao/...= paths without an explicit contract.
 
 * Module path is not authority
@@ -381,7 +381,7 @@ The implementation must distinguish at least:
 
 1. Repository, module, profile, and language names remain distinct.
 2. Source identity uses =tao3k/wendao-episteme= and the exact pin.
-3. The core-owned projection uses an owner-first =:poo-flow/...= namespace.
+3. The core-owned projection uses an owner-first =:agentic-ai-lab/...= namespace.
 4. The exported semantic binding remains =wendao-episteme=.
 5. Complete profile identity is evidence-based, not name-based.
 6. A governance language explicitly uses =governance= in its path.
@@ -394,7 +394,7 @@ The implementation must distinguish at least:
 
 * Implementation checklist
 
-- [ ] Reserve =:poo-flow/profiles/wendao-episteme= as the proposed core-owned
+- [ ] Reserve =:agentic-ai-lab/profiles/wendao-episteme= as the proposed core-owned
       projection path.
 - [ ] Export the ordinary =wendao-episteme= profile binding.
 - [ ] Keep source repository and pin in provenance evidence.

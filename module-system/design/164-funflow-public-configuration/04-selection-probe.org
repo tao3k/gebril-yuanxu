@@ -7,7 +7,7 @@
 * Evidence scope
 
 The program below ran on 2026-10-15 using /opt/homebrew/bin/gxi and the isolated
-source environment at /tmp/pooflow-core-prototype-specializer. Its clan/poo
+source environment at /tmp/agenticailab-core-prototype-specializer. Its clan/poo
 source is pinned to 099b381588360a8a49fd772f666a1a00351366f5; its Core path points
 to the current working tree. The result was:
 

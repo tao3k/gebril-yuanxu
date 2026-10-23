@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.14 Session, Query and Project Context Handoff
 :PROPERTIES:
-:ID: poo-flow-session-query-project-handoff
+:ID: agentic-ai-lab-session-query-project-handoff
 :STATUS: joint-protocol-consumer-pass-runtime-correspondence-open
 :DATE: 2026-10-14
 :END:
@@ -115,7 +115,7 @@ entries are never canonicalized away. The idempotent proposal rule also fixes
 the earlier semantic error where a duplicate proposal reset target review.
 No deadline, heap, worker count or assertion was relaxed.
 
-[[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/Handoff.lean][Handoff.lean]] proves seven conditional laws and has six guards. It uses
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean][Handoff.lean]] proves seven conditional laws and has six guards. It uses
 LeanPOO Focus for epoch composition; proves active-stamp check preservation,
 permission necessity, old-epoch refusal and producer retirement retaining
 target/history values. These prove the typed projection's declared properties,

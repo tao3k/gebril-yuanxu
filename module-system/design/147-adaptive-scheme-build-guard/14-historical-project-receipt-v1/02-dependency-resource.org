@@ -4,7 +4,7 @@
 
 * Adaptive dependency-install resource receipt (2026-07-22)
 
-POO Flow consumes the pinned gerbil-bazel =install_dependencies= capability. Native =gxpkg deps --install= remains the package-lifecycle owner; gerbil-bazel only projects the validated =GERBIL_BUILD_CORES= budget, applies the memory cap, runs the child beneath the Scheme resource guard, and records the JSON receipt.
+Agentic AI Lab consumes the pinned gerbil-bazel =install_dependencies= capability. Native =gxpkg deps --install= remains the package-lifecycle owner; gerbil-bazel only projects the validated =GERBIL_BUILD_CORES= budget, applies the memory cap, runs the child beneath the Scheme resource guard, and records the JSON receipt.
 
 This receipt was captured after changing the pinned revision, so native dependency work was observed. It is a revision-change install receipt, not a claim that a no-op warm install or a clean-machine cold install has the same duration.
 
@@ -48,7 +48,7 @@ flowchart LR
   Live --> Budget["max RSS = available memory - 2 GiB headroom"]
   Budget -->|"observable"| Ready["ready / completed"]
   Budget -->|"unobservable"| Exit72["fail closed: exit 72"]
-  Ready --> Compile["POO Flow adaptive compile buildReceipt"]
+  Ready --> Compile["Agentic AI Lab adaptive compile buildReceipt"]
   Compile --> Receipt["Fresh SHA-256 and unit-bearing receipt"]
 #+end_src
 
@@ -73,8 +73,8 @@ flowchart LR
 | Memory-pressure exits                     | no exit =70=, =71=, or =72=                                                    |
 
 The compile action intentionally disables the generic outer process guard:
-POO Flow's =build.ss= owns its adaptive execution and emits
-=poo-flow.project-compile-guard.v1= as the enclosing project's =buildReceipt=.
+Agentic AI Lab's =build.ss= owns its adaptive execution and emits
+=agentic-ai-lab.project-compile-guard.v1= as the enclosing project's =buildReceipt=.
 Each dependency project action enables the generic Scheme process guard and
 therefore carries its own =gerbil-bazel.resource-guard-receipt.v1=.  This gate
 did not execute =@local_gerbil//:install_dependencies=, so it does not claim an
@@ -89,7 +89,7 @@ of the required evidence set.
 
 ** Baseline-correct adaptive worker admission
 
-A subsequent full downstream gate exposed a dimensional error in POO Flow's
+A subsequent full downstream gate exposed a dimensional error in Agentic AI Lab's
 own compile guard.  The guard converted host-available memory directly into an
 absolute process RSS ceiling, even though host-available memory is an
 incremental allocation and the compiler process tree already has a non-zero

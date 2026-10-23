@@ -43,7 +43,7 @@ Prototype ancestry and precedence remain owned by:
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-POO Flow owns the relation-domain and authority judgments applied after native
+Agentic AI Lab owns the relation-domain and authority judgments applied after native
 candidate discovery.
 
 * Evidence state
@@ -258,8 +258,8 @@ Prototype precedence and control-policy priority are different:
 | Dimension | Owner | Meaning |
 |-----------+-------+---------|
 | Prototype precedence | =gerbil-poo= | Structural candidate-origin order. |
-| Typed relation admissibility | POO Flow relation law | Whether shadowing is semantically legal. |
-| Control-policy priority | POO Flow control policy | Strength among authorized policy decisions. |
+| Typed relation admissibility | Agentic AI Lab relation law | Whether shadowing is semantically legal. |
+| Control-policy priority | Agentic AI Lab control policy | Strength among authorized policy decisions. |
 
 The bridge introduces no numeric relation priority.
 
@@ -332,7 +332,7 @@ The bridge fails closed when:
 
 Failure is observable before an uncontrolled recursion consumes the process.
 
-Cycle and budget failures use the POO Flow condition and observation planes.
+Cycle and budget failures use the Agentic AI Lab condition and observation planes.
 They preserve diagnostic continuations only under the live continuation
 capability rules.
 

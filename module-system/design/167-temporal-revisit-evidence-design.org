@@ -10,7 +10,7 @@ Feature and Session as an independent Module composed as a Context dependency. I
 independent evidence, revisit and retention axes defined here. Standalone
 Session/Memory source paths below are implementation inventory for migration.
 
-Design draft for POO Flow PR #34. It does not claim a running review scheduler,
+Design draft for Agentic AI Lab PR #34. It does not claim a running review scheduler,
 source authenticator, verified Memory head, or durable learning engine.
 [[file:43-session-memory-recovery-rfc.org][RFC 43]] and [[file:166-session-memory-orgize-boundary.org][166]] describe the earlier store-centered Memory design. Their
 Session recovery and source-bound selection work remains relevant, but their
@@ -28,7 +28,7 @@ agenda/planning, notes/ID/links/attachments, LOGBOOK, and review facts share
 one Org source identity. Emacs packages such as =org-super-agenda= show how to
 compose a view over already selected agenda entries; the wider Org notes
 ecosystem shows capture, association, and revisit as cooperating operations.
-POO Flow should consume these source-grounded capabilities for policy, not
+Agentic AI Lab should consume these source-grounded capabilities for policy, not
 require each one to become a Memory head. The proposed Orgize module map is
 =languages/org/v1/modules/README.org= on the Orgize design branch.
 
@@ -61,10 +61,10 @@ classification is still partly in Rust. The proposed Orgize document
 =docs/10_architecture/10.08_temporal_revisit_projection.org= makes the
 document-local temporal projection Scheme-owned and requires parity before
 generated Rust execution can replace independent Rust classification. The
-current POO Flow =modules/memory-core/org-selection.ss= calls an Orgize
+current Agentic AI Lab =modules/memory-core/org-selection.ss= calls an Orgize
 Scheme selector on a supplied graph; it cannot attest that the graph came
 from the declared current bytes. This selector is document-local, whereas
-=modules/query= owns POO Flow's canonical Query and ElementSpace contracts.
+=modules/query= owns Agentic AI Lab's canonical Query and ElementSpace contracts.
 
 The Orgize event fold yields Scheme-owned parse events, then its generated
 Rust/Rowan path projects the Elements graph. The Scheme graph-query view
@@ -78,13 +78,13 @@ retains the base parse configuration and can reparse current bytes and rerun
 the Scheme-AOT named query. A changed rule body with the same ID is refused
 even when it happens to select the same records. The [[https://github.com/tao3k/orgize/actions/runs/37254770472][exact-head CI]] records
 the focused test and cross-platform gates. This in-process recheck does not
-authenticate a file, WorkTree cut or grant, or connect to POO Flow's separate
+authenticate a file, WorkTree cut or grant, or connect to Agentic AI Lab's separate
 Scheme graph view. The proposed
-bridge must project parser-owned Elements into POO Flow's ElementSpace and
+bridge must project parser-owned Elements into Agentic AI Lab's ElementSpace and
 bind qualified Query rows to the same source before Session or temporal use;
 comparing a caller-supplied graph with a caller-supplied digest is insufficient.
 
-The optional POO Flow Rust runtime =orgize-source= feature now starts that
+The optional Agentic AI Lab Rust runtime =orgize-source= feature now starts that
 host-side bridge. It reads a bounded UTF-8 file under a host-supplied WorkTree
 root, runs the maintained Orgize named query, and holds the parser-owned
 observation privately. A later use must recheck the declared key, resolved
@@ -96,7 +96,7 @@ Memory/Session head.
 
 The Scheme =modules/query/orgize-source.ss= adapter takes supplied Org text,
 asks Orgize's =org-elements/source-interface.ss= for a bounded source-derived
-headline projection, builds a canonical POO Flow ElementSpace and GQL-aligned
+headline projection, builds a canonical Agentic AI Lab ElementSpace and GQL-aligned
 POO Query, then runs one supported query for open TODO headlines. Canonical
 scalar result rows carry source SHA-256, byte span, title, and TODO state.
 Replay reparses current supplied text and reruns the fixed Query, rejecting a
@@ -105,15 +105,15 @@ digest. It does not read a WorkTree itself or establish host source-cut/grant
 identity, Session admission, temporal evidence qualification, Impact, or
 publication. Those handoffs remain separate work.
 
-POO Flow already has temporal instants/axes, evidence retrieval/use/assessment,
+Agentic AI Lab already has temporal instants/axes, evidence retrieval/use/assessment,
 impact frontiers, and pure Session/Memory policy receipts. Reuse those owners:
 
 | Owner | Decision |
 |-------+----------|
 | Orgize Scheme | Preserve source-local Org identity, spans, planning/repeater and LOGBOOK events; project document-local candidates with reasons |
-| POO Flow Query | Admit the canonical Query over an explicit ElementSpace; bind Provider and bounded result contracts to source-backed rows |
-| POO Flow temporal-causality | Evaluate evidence against current cuts, valid time, changes, contradiction and affected claims |
-| POO Flow Session and policy | Scope, grants, explicit C4 policy order, attempt budget, when to request a revisit and which actor may do it |
+| Agentic AI Lab Query | Admit the canonical Query over an explicit ElementSpace; bind Provider and bounded result contracts to source-backed rows |
+| Agentic AI Lab temporal-causality | Evaluate evidence against current cuts, valid time, changes, contradiction and affected claims |
+| Agentic AI Lab Session and policy | Scope, grants, explicit C4 policy order, attempt budget, when to request a revisit and which actor may do it |
 | MRR Query/Content/Context | Admit derived semantic claims when a revisit uses relational inference; direct test receipts do not need a fabricated MRR derivation |
 | Wendao or a caller's index | Search and rank across documents; preserve Orgize anchors in results |
 | runtime and MRR Data | Execute scheduled checks, retain immutable artifacts, conditionally publish the accepted head and reconcile effects |
@@ -141,7 +141,7 @@ required evidence, current capability, expected head revision, attempt ID,
 budget, and policy revision. Triggers may be elapsed time, a new source cut,
 dependency change, contradictory evidence, or an imminent use of the claim.
 Time merely makes the check eligible; it does not attest the outcome.
-An Orgize named selector can nominate Elements within the document; a POO Flow
+An Orgize named selector can nominate Elements within the document; a Agentic AI Lab
 Query result determines which source-backed candidates a downstream consumer
 may use. The result must retain the document cut and anchor. Query admission
 and receipt metadata alone do not authenticate execution or result rows.
@@ -191,7 +191,7 @@ upgrade on an old note. Repeated retrieval can increase confidence that a
 person can recall a diary insight; independent successful use and explicit
 assessment can support a broader practical lesson. Neither justifies
 claiming universal truth. MRR admits a derived relational claim when that
-form of inference is used; POO Flow retains the temporal and source authority
+form of inference is used; Agentic AI Lab retains the temporal and source authority
 for its future use.
 
 For a fixed bug, the durable product could be a regression test, a scoped
@@ -246,9 +246,9 @@ cannot both publish a head transition.
 
 1. In Orgize, keep document-local parsing, Elements, selectors and temporal
    Org facts Scheme-owned. Preserve source spans, repeaters and LOGBOOK events;
-   compare generated Rust with Scheme on the same fixtures. This gives POO Flow
+   compare generated Rust with Scheme on the same fixtures. This gives Agentic AI Lab
    source-backed Elements, not an independent general Query authority.
-2. In POO Flow =modules/query=, project those Elements into an explicit
+2. In Agentic AI Lab =modules/query=, project those Elements into an explicit
    ElementSpace and bind one canonical Query to bounded, source-backed result
    rows. Qualify a forged graph, changed source, changed selector rule,
    mismatched row digest and incomplete result as refusals. The existing
@@ -275,5 +275,5 @@ retention separately. The spaced-repetition literature informs the human
 recall schedule ([[https://arxiv.org/abs/1602.07032][Reddy et al., 2016]]), while the
 memory-stream/reflection design of [[https://arxiv.org/abs/2304.03442][Generative Agents]] and
 temporal graph work such as [[https://arxiv.org/abs/2501.13956][Zep]] are comparison cases, not
-proof that a particular POO Flow policy is better. The official
+proof that a particular Agentic AI Lab policy is better. The official
 [[https://orgmode.org/manual/Repeated-tasks.html][Org repeat/log semantics]] remain the source syntax contract.

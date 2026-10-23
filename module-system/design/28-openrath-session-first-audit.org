@@ -11,7 +11,7 @@
 ** 10.06.28.01 Scope
 
 This audit studies =Rath-Team/OpenRath= as cloned under
-=.data/OpenRath= for concepts that should inform POO Flow's current
+=.data/OpenRath= for concepts that should inform Agentic AI Lab's current
 implementation and future roadmap.
 
 Evidence snapshot:
@@ -23,14 +23,14 @@ Evidence snapshot:
   - =.data/OpenRath/README.md:22-80=
   - =.data/OpenRath/CONTRIBUTING.md:5-95=
   - =.data/OpenRath/example/README.md:1-160=
-- Current POO Flow evidence:
+- Current Agentic AI Lab evidence:
   - =src/user-interface/presentation.ss:80-304=
   - =src/core/flow.ss:429-516=
   - =modules/sandbox-core/profile.ss:135-212=
   - =modules/workflow/cicd-config.ss:573-649=
 
 This is a design audit, not a dependency proposal. OpenRath is Python
-runtime-oriented; POO Flow remains Scheme control-plane and object-system
+runtime-oriented; Agentic AI Lab remains Scheme control-plane and object-system
 oriented, with heavy runtime execution handed to Rust or other runtimes.
 
 ** 10.06.28.02 Executive Finding
@@ -43,7 +43,7 @@ lineage, backend placement, usage, and branchability. =Agent=, =Workflow=,
 =Tool=, =Memory=, =Sandbox=, and =Selector= are then composable layers around
 that flowing value.
 
-POO Flow already has adjacent pieces:
+Agentic AI Lab already has adjacent pieces:
 
 - a POO-backed functional flow category with =compose=, =identity=, =arr=,
   =map=, =bind=, =fanout=, =first=, and =second=;
@@ -54,7 +54,7 @@ POO Flow already has adjacent pieces:
 - CI/CD Marlin handoff bundles that package manifests, agreement reports, ABI
   summaries, and receipts without Scheme executing the runtime.
 
-The missing layer is a first-class POO Flow session object family. That family
+The missing layer is a first-class Agentic AI Lab session object family. That family
 should make the runtime value inspectable before execution: chunks, lineage,
 placement, memory bindings, tool-call receipts, and handoff manifests.
 
@@ -91,7 +91,7 @@ Implementation evidence from AST summaries:
 - =src/rath/memory/abc.py= separates =MemoryBackend=, =MemoryStore=, and
   =MemoryStoreSpec=.
 
-This split is useful for POO Flow because it mirrors our intended separation:
+This split is useful for Agentic AI Lab because it mirrors our intended separation:
 Scheme owns object configuration, strategy, validation, receipts, and handoff;
 runtime backends own execution.
 
@@ -119,7 +119,7 @@ The ladder adds one concept at a time:
 - =10_provider_variation.py=: provider swap;
 - =11_dynamic_selector.py=: =flow.Selector(provider)= routing across agents.
 
-The lesson for POO Flow is that user examples should be a reviewed public
+The lesson for Agentic AI Lab is that user examples should be a reviewed public
 surface, not ad hoc test fixtures. Our =user-interface/custom/my-module/cases=
 tree should grow a similar ladder, but in POO style:
 
@@ -144,11 +144,11 @@ The exact syntax needs its own design pass, but the target shape should be as
 small as the OpenRath examples: construct a flowing value, place it on a
 backend profile, pass it through an agent/workflow layer, inspect the receipt.
 
-** 10.06.28.05 Current POO Flow Fit
+** 10.06.28.05 Current Agentic AI Lab Fit
 
 *** 10.06.28.05.01 Functional Flow Kernel
 
-POO Flow already has the right foundation for OpenRath-like composition. The
+Agentic AI Lab already has the right foundation for OpenRath-like composition. The
 =flow-category-prototype= records the functional operations as object slots:
 =compose=, =identity=, =arr=, =map=, =bind=, =fanout=, =first=, and =second=.
 
@@ -159,16 +159,16 @@ class hierarchy.
 
 *** 10.06.28.05.02 Sandbox Placement
 The first landed slice is a report-only session placement bridge:
-- =modules/session/objects.ss= owns =poo-flow-session-placement-resolve=.
+- =modules/session/objects.ss= owns =agentic-ai-lab-session-placement-resolve=.
 - The function resolves a placement ref against the existing sandbox profile
-  catalog, for example =poo-flow-default-sandbox-profiles= from
+  catalog, for example =agentic-ai-lab-default-sandbox-profiles= from
   =modules/agent-sandbox/config.ss=.
 - A resolved placement remains a POO mixin prototype. It adds direct slots such
   as =placement-resolved?=, =placement-diagnostics=,
   =placement-runtime-summary=, and =placement-handoff-summary=.
 - Missing or invalid sandbox profiles become diagnostic alist receipts instead
   of runtime execution or hard failure during session graph construction.
-- =pooFlowSessionGraphPresentation= exposes placement refs, resolved flags, and
+- =agenticAiLabSessionGraphPresentation= exposes placement refs, resolved flags, and
   diagnostics alongside lineage edges and chunk counts.
 
 This matches OpenRath's =Session.to(...)= lesson without copying the Python
@@ -181,7 +181,7 @@ The current user-interface case is now compact declaration syntax:
 (def custom-session-root
   (session custom/session-root
     (chunk request user
-           "Run the POO Flow package checks and keep receipts.")
+           "Run the Agentic AI Lab package checks and keep receipts.")
     (lineage root)
     (placement agent/nono)
     (metadata (source . user-interface)
@@ -219,7 +219,7 @@ look it up by =stage= instead of assuming a positional index.
 OpenRath's =Session.to(backend, spec=...)= is the closest match to our sandbox
 profile derivation.
 
-POO Flow already records derivation steps as audit rows, strips stale
+Agentic AI Lab already records derivation steps as audit rows, strips stale
 =runtime-executed= metadata when deriving children, rejects backend rows from
 user profile rows, and resolves row merge operators through field contracts.
 That means backend placement should be modeled as object inheritance and
@@ -235,7 +235,7 @@ Future placement object shape:
 
 *** 10.06.28.05.05 Presentation and Runtime Boundary
 
-POO Flow's =pooFlowUserConfigPresentation= already exposes a broad report-only
+Agentic AI Lab's =agenticAiLabUserConfigPresentation= already exposes a broad report-only
 surface: selected modules, feature facts, CI/CD pipelines, runtime command
 manifests, Marlin handoff ABIs, loop-engine intents, sandbox summaries, user
 entrypoints, API entrypoints, boundary ownership, and replayability.
@@ -252,7 +252,7 @@ while keeping =runtime-executed #f=. Session receipts should follow that shape.
 
 The follow-up AST audit of =.data/OpenRath= at
 =fc0ee661d8173770ab46816a93045e86650c3e5a= adds three concrete details that
-matter for POO Flow.
+matter for Agentic AI Lab.
 
 First, OpenRath's public =run_session_loop= is a lazy runtime handoff wrapper.
 It synchronizes pending sessions, creates an output =Session= seeded from the
@@ -260,7 +260,7 @@ user chunks, binds any live sandbox, registers the parent and output sessions,
 submits an async coroutine to the runtime, stores a =LazyValue= on the output
 session, and only synchronizes immediately when lazy execution is disabled.
 
-This maps directly to POO Flow's Scheme/Rust boundary: Scheme should be able to
+This maps directly to Agentic AI Lab's Scheme/Rust boundary: Scheme should be able to
 build a session or loop receipt that names the pending runtime request, lineage,
 placement, and output handle without executing it.
 
@@ -281,7 +281,7 @@ shape, finish reason, tool-call count, truncation flag, and runtime owner.
 Third, OpenRath's tool dispatch groups calls by =tool.resource_key(args)=. Calls
 with the same resource key are serialized; independent resource keys can run in
 parallel. This is a stronger design input than a generic =max-parallel= knob.
-POO Flow should model it as a POO-native resource/collision policy object under
+Agentic AI Lab should model it as a POO-native resource/collision policy object under
 =loop-engine=:
 
 - =resource-key=: symbolic or computed key description;
@@ -297,19 +297,19 @@ rather than reintroducing row DSL flags. The user-facing shape should remain
 
 *** 10.06.28.05.07 Lineage, Selector, and Tool Policy Evidence
 
-The deeper OpenRath pass adds three useful constraints for POO Flow's next loop-engine step.
+The deeper OpenRath pass adds three useful constraints for Agentic AI Lab's next loop-engine step.
 
 First, OpenRath's lineage layer is explicit session metadata. The AST evidence from =src/rath/session/graph/recording.py= shows =LineageRecorder.stamp_new_session= stamping =parent_session_ids=, =lineage_operator=, =lineage_kind=, and =lineage_extras=. =LineageJournal= records visit order, while =src/rath/session/graph/export.py= projects sessions to JSONL rows with id, parents, operator, kind, extras, chunk count, and cumulative usage.
 
-For POO Flow this means lineage should be an inert POO object family, not a runtime side effect hidden in the executor. The report-only receipt should expose parent session refs, lineage kind, operator name, and extras before Marlin executes anything.
+For Agentic AI Lab this means lineage should be an inert POO object family, not a runtime side effect hidden in the executor. The report-only receipt should expose parent session refs, lineage kind, operator name, and extras before Marlin executes anything.
 
 Second, OpenRath's =Selector= is itself a workflow. Its =forward= asks =select_session= for an index and returns either the chosen workflow or an empty workflow. That makes selection a normal compositional step, not a special scheduler primitive.
 
-For POO Flow this maps to a POO-native =loop-engine-selector-policy= object. Scheme should describe candidate use cases, judge inputs, fallback policy, and the selected branch reference in receipts. Runtime scoring and model calls remain Marlin-owned.
+For Agentic AI Lab this maps to a POO-native =loop-engine-selector-policy= object. Scheme should describe candidate use cases, judge inputs, fallback policy, and the selected branch reference in receipts. Runtime scoring and model calls remain Marlin-owned.
 
 Third, OpenRath's tool layer puts collision semantics on the tool object. =FlowToolCall.resource_key= defaults to a global or safe key, while system tools refine that key for shell execution, code execution, and path-oriented file operations.
 
-For POO Flow this confirms that =loop-engine-resource-policy= should be object-local and extensible. A tool reference should be able to carry a symbolic resource key, a collision class, and an intended dispatch ordering. The Scheme side can project serial/parallel receipt groups, but it must not execute or schedule the tools itself.
+For Agentic AI Lab this confirms that =loop-engine-resource-policy= should be object-local and extensible. A tool reference should be able to carry a symbolic resource key, a collision class, and an intended dispatch ordering. The Scheme side can project serial/parallel receipt groups, but it must not execute or schedule the tools itself.
 
 *** 10.06.28.05.08 Backend, Memory, and Compression Evidence
 
@@ -322,7 +322,7 @@ The second source pass adds runtime-owner evidence below the session, selector, 
 - =src/rath/flow/memory_inject.py:35-105= keeps recall injection behind a policy protocol. =DefaultRecallInjection= reads the last user message, dispatches a find op, converts hits to chunks, and degrades to no injected chunks on failure or unsupported results.
 - =src/rath/session/compress.py:32-164= and =src/rath/flow/compressor.py:14-36= model compression as a workflow transformation that creates a new session and records lineage, not as an in-place log mutation.
 
-For POO Flow, this is not a reason to implement backend lifecycle, locks, stores, or compression execution in Scheme. It is evidence for additional POO-native policy objects:
+For Agentic AI Lab, this is not a reason to implement backend lifecycle, locks, stores, or compression execution in Scheme. It is evidence for additional POO-native policy objects:
 
 - =loop-engine-capability-policy= for sandbox backend capability expectations.
 - =loop-engine-memory-policy= for recall, commit, store-scope, and ranking expectations.
@@ -334,7 +334,7 @@ The first implementation slice should remain report-only. Scheme now projects ca
 
 *** 10.06.28.06.01 Missing Session Object Family
 
-OpenRath makes =Session= the first-class dataflow value. POO Flow has flow
+OpenRath makes =Session= the first-class dataflow value. Agentic AI Lab has flow
 objects, profile objects, presentation rows, loop-engine intents, and runtime
 handoff bundles, but not a single inspectable session value.
 
@@ -351,7 +351,7 @@ Needed objects:
 *** 10.06.28.06.02 Session Graph Operations
 
 OpenRath exposes =fork=, =detach=, lineage recording, JSONL export, traversal,
-and acyclicity checks. POO Flow should add report-only equivalents first:
+and acyclicity checks. Agentic AI Lab should add report-only equivalents first:
 
 - derive child session from parent;
 - detach a session while preserving provenance;
@@ -364,7 +364,7 @@ Runtime execution can remain out of scope for the first milestone.
 *** 10.06.28.06.03 Agent and Selector Surface
 
 OpenRath's =Agent= is a =Workflow= subclass and =Selector= is also a workflow.
-In POO Flow, this should not become a hidden class hierarchy. It should become
+In Agentic AI Lab, this should not become a hidden class hierarchy. It should become
 object mixins:
 
 - =workflow/agent=: prompt, provider ref, tool refs, memory refs;
@@ -379,7 +379,7 @@ sandbox, memory, and provider policy objects without a deep class tower.
 
 OpenRath has =MemoryBackend=, =MemoryStore=, local memory adapters, BM25,
 embedding ranking, resource ingestion, commit operations, and optional external
-providers. POO Flow currently has enough handoff machinery to represent memory,
+providers. Agentic AI Lab currently has enough handoff machinery to represent memory,
 but not a dedicated memory object module.
 
 Recommended future module:
@@ -465,7 +465,7 @@ test-only macro.
 
 Adopt OpenRath's session-first framing as a roadmap input.
 
-The next POO Flow implementation slice should be a report-only session object
+The next Agentic AI Lab implementation slice should be a report-only session object
 family that integrates with existing POO inheritance, sandbox profile
 derivation, presentation traces, and Marlin handoff receipts. After that,
 agent/selector/memory objects can be layered without disturbing the current

@@ -211,8 +211,8 @@ contract and not a claim of runtime persistence.
 - [X] Focused Lean model build.
 - [X] Focused Lean core build.
 - [X] Focused Lean closure build.
-- [X] Aggregate =PooFlowProof.Enterprise= build.
-- [X] Full =PooFlowProof= build.
+- [X] Aggregate =AgenticAILabProof.Enterprise= build.
+- [X] Full =AgenticAILabProof= build.
 - [X] Org parser confirms every Typst and Mermaid block.
 - [X] Typst renders the extracted mathematical blocks.
 - [X] AXLE independently closes the declaration bundle.
@@ -223,7 +223,7 @@ contract and not a claim of runtime persistence.
 
 ** Lean
 
-=lake build PooFlowProof.Enterprise PooFlowProof= completed successfully with
+=lake build AgenticAILabProof.Enterprise AgenticAILabProof= completed successfully with
 516 jobs.  The sole warning is the pre-existing unnecessary-=simpa= lint in
 =AgentRedTeamProofRegressionClosure.lean=.
 
@@ -238,7 +238,7 @@ Orgize parsed four Typst blocks and one Mermaid block.  Typst rendered:
 
 ** AXLE
 
-The UV-managed =poo-flow-axle-verify= CLI exported the independent model
+The UV-managed =agentic-ai-lab-axle-verify= CLI exported the independent model
 closure:
 
 - root declarations: =3=

@@ -46,12 +46,12 @@ uv run pytest -q tests/test_axle_verify.py
 # 1 passed in 0.02s
 
 cd packages/proofs/lean
-lake build PooFlowProof.PooC4.Enterprise
+lake build AgenticAILabProof.PooC4.Enterprise
 # Build completed successfully: 177 jobs
 
 cd packages/proofs/python
-uv run python -m poo_flow_proof.axle_verify \
-  ../lean/PooFlowProof/PooC4/Enterprise/<leaf>.lean
+uv run python -m agentic_ai_lab_proof.axle_verify \
+  ../lean/AgenticAILabProof/PooC4/Enterprise/<leaf>.lean
 # 14 leaf inputs: 7 verified, 7 rejected before verify
 #+end_src
 
@@ -63,14 +63,14 @@ import surfaces; AXLE validation targets declarations in leaf modules.
 A focused preserved-imports diagnostic was also executed:
 
 #+begin_src text
-uv run python -m poo_flow_proof.axle_verify --preserve-imports \
-  ../lean/PooFlowProof/PooC4/Enterprise/Core.lean
+uv run python -m agentic_ai_lab_proof.axle_verify --preserve-imports \
+  ../lean/AgenticAILabProof/PooC4/Enterprise/Core.lean
 # request: a3652e6b-eaea-47eb-9e31-657da9d0a404
-# rejected: unknown module prefix 'PooFlowProof'
+# rejected: unknown module prefix 'AgenticAILabProof'
 #+end_src
 
 The AXLE environment contains Lean, Mathlib, and its prover libraries, but not the
-local =PooFlowProof= package.  Therefore =--preserve-imports= is not a closure
+local =AgenticAILabProof= package.  Therefore =--preserve-imports= is not a closure
 mechanism.  The project must either construct an exact declaration bundle or
 publish a versioned AXLE environment containing the matching project artifacts.
 
@@ -140,9 +140,9 @@ flowchart LR
 - The seven failures identify declaration-closure boundaries that must be made
   explicit; they are not evidence that the stated theorems are false.
 - Preserving imports does not solve the boundary because the remote AXLE
-  environment cannot resolve the local =PooFlowProof= module prefix.
-- Cedar failures remain within the POO Flow =CedarAdapter= proof boundary.  They
-  do not create a new Rust owner or make Cedar runtime internals POO Flow owners.
+  environment cannot resolve the local =AgenticAILabProof= module prefix.
+- Cedar failures remain within the Agentic AI Lab =CedarAdapter= proof boundary.  They
+  do not create a new Rust owner or make Cedar runtime internals Agentic AI Lab owners.
 - New external-evidence, tool-authority, memory-lifecycle, workflow-sequence, and
   supply-chain modules proposed by 45-131 through 45-133 are still absent and
   cannot inherit the seven passing receipts.
@@ -159,7 +159,7 @@ flowchart LR
 - [ ] Construct the cross-domain capability closure for =Enterprise/Delegation.lean=.
 - [ ] Close enterprise admission and separation-of-duties dependencies.
 - [ ] Close tenant admission dependencies without duplicating ownership.
-- [ ] Project Cedar Spec and POO Flow Cedar adapter dependencies into exact final source.
+- [ ] Project Cedar Spec and Agentic AI Lab Cedar adapter dependencies into exact final source.
 - [ ] Review and accept the bundle-primary, environment-refinement decision in 45-135.
 - [ ] Re-run all 14 leaves and require =14/14=.
 - [ ] Implement and verify the new proof owners proposed by 45-131 through 45-133.

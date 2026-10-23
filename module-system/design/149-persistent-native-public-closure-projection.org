@@ -7,10 +7,10 @@
 
 * Decision
 
-POO Flow rejects a persistent cache for the mapping from public entry modules
+Agentic AI Lab rejects a persistent cache for the mapping from public entry modules
 to the ordered local source closure. The experiment accelerated the isolated
 =spec= projection, but it did not accelerate the complete unchanged
-=build.ss -> std/make= path. ASP, POO Flow, and contributor repositories retain
+=build.ss -> std/make= path. ASP, Agentic AI Lab, and contributor repositories retain
 the direct Gerbil-native closure projection and the standard
 =:std/build-script#defbuild-script= entrypoint.
 
@@ -25,7 +25,7 @@ admission in separate processes. It produced large local improvements:
 
 | Projection fixture | Native p50 | Receipt p50 | Local reduction |
 |--------------------+------------+-------------+-----------------|
-| POO Flow, 112 modules | 24.682 s | 0.984 s | 96.0 percent |
+| Agentic AI Lab, 112 modules | 24.682 s | 0.984 s | 96.0 percent |
 | Contributor repository, 39 modules | 9.601 s | 0.534 s | 94.4 percent |
 
 Those figures measure only the PackageSpec projection. A fresh native
@@ -37,7 +37,7 @@ removing it.
 
 * Complete warm-build comparison
 
-Both lanes below used the same POO Flow checkout, 114 targets, the same
+Both lanes below used the same Agentic AI Lab checkout, 114 targets, the same
 =GERBIL_PATH= and =GERBIL_LOADPATH=, zero =compile= lines, and the native
 =std/make= executor. Runs containing delayed recompilation waves were excluded
 before sampling.
@@ -70,7 +70,7 @@ planning interval has no native progress messages.
 * Remaining owner and acceptance gate
 
 Further optimization must use an existing supported Gerbil interface or be
-delivered by the Gerbil owner. POO Flow may add read-only scenarios and receipts,
+delivered by the Gerbil owner. Agentic AI Lab may add read-only scenarios and receipts,
 but it must not modify vendored/upstream Gerbil code or reproduce =std/make=.
 
 A future candidate is accepted only when all conditions hold:
@@ -81,7 +81,7 @@ A future candidate is accepted only when all conditions hold:
 3. candidate p50 improves by at least 20 percent over native =std/make=;
 4. one source edit rebuilds exactly the native affected closure;
 5. no new scheduler, currentness oracle, or persistent dependency graph is
-   introduced in ASP or POO Flow;
+   introduced in ASP or Agentic AI Lab;
 6. the relevant upstream owner supplies useful progress events for long native
    planning, or the absence remains explicitly visible in qualification output.
 

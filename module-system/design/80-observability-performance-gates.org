@@ -56,7 +56,7 @@ The project must declare real policy scenarios through =testing-build=:
 - =scenario-root= points to addressable policy scenario files.
 - the resulting project must contain a =scenario-suite= named =policy-scenarios=.
 
-This matters because =policy: #t= alone is only stored on the TestingBuild object. It does not by itself produce a policy suite or a =delegate-policy= phase. A valid POO Flow testing receipt must show the policy suite and repair guidance in the GSLPH Testing Framework receipt.
+This matters because =policy: #t= alone is only stored on the TestingBuild object. It does not by itself produce a policy suite or a =delegate-policy= phase. A valid Agentic AI Lab testing receipt must show the policy suite and repair guidance in the GSLPH Testing Framework receipt.
 
 The current policy scenarios are:
 - performance fixture gates
@@ -77,7 +77,7 @@ benchmark boundary:
   scenario policy applies.
 
 ASP's =benchmark-run/result= owns timing, sample statistics, selected-result
-identity, runtime memory observations, and pass/fail.  POO Flow does not layer
+identity, runtime memory observations, and pass/fail.  Agentic AI Lab does not layer
 an =observed_total=, static =observedTimings=, best-of-N selector, or a second
 timing gate on top of that receipt.
 
@@ -109,7 +109,7 @@ used when compiled builder modules are absent or stale. A separate warm facade,
 support modules after currentness is proven. This avoids making normal no-op
 builds parse every support source file while still preserving bootstrap safety.
 
-This design is useful beyond POO Flow. If it becomes a general optimization, it
+This design is useful beyond Agentic AI Lab. If it becomes a general optimization, it
 belongs in the GSLPH Testing Framework rather than remaining only in one package
 script. The reusable GSLPH shape should provide:
 - a source-bootstrap facade contract

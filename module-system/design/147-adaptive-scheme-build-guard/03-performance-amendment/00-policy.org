@@ -16,7 +16,7 @@ first approximately nine-minute observation is itself a regression; it is not
 a new baseline.
 
 The root policy defect was that the outer project guard always materialized a
-positive =POO_FLOW_BUILD_MAX_RSS_BYTES= value, while the build planner treated
+positive =AGENTIC_AI_LAB_BUILD_MAX_RSS_BYTES= value, while the build planner treated
 the mere presence of that observation limit as permission to activate adaptive
 execution windows.  That coupling converted the established single upstream
 =std/make= topology session into repeated sequential coordinator sessions.
@@ -33,5 +33,5 @@ This amendment restores the semantic split:
    from an observation value.
 
 The performance acceptance target remains the pre-regression known-good
-envelope, not the =534.76 s= comparison point.  POO Flow issue =#13= owns the
+envelope, not the =534.76 s= comparison point.  Agentic AI Lab issue =#13= owns the
 healthy-host reproduction and CI regression budget.

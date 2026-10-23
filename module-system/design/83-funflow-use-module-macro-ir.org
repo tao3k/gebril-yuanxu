@@ -10,7 +10,7 @@ compatibility surface and MUST NOT be used by new code, documentation, tests,
 or generated Agent guidance.
 
 The canonical architecture and vocabulary are defined by
-[[file:136-gerbil-module-feature-layering.org][RFC 136 — Gerbil Module And POO Flow Feature Layering]].  FunFlow is selected
+[[file:136-gerbil-module-feature-layering.org][RFC 136 — Gerbil Module And Agentic AI Lab Feature Layering]].  FunFlow is selected
 as a POO-native =Feature= through =use-feature=.  Gerbil =module=, =import=, and
 =export= remain language-level compilation and namespace mechanisms; they do
 not represent product feature activation.

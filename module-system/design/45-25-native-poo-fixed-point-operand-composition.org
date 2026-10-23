@@ -309,7 +309,7 @@ reflection, explicit mutation, and instantiation lifecycle.
 
 Gerbil macros own =user-composition= and =compose profiles= expansion.
 
-POO Flow owns the fixed-point core, observability, recovery, Capability,
+Agentic AI Lab owns the fixed-point core, observability, recovery, Capability,
 condition, authority, and receipt contracts expressed through those native
 objects.
 

@@ -35,4 +35,4 @@ The first isolated attempt also exposed two bootstrap defects that a populated
 workspace had hidden: =build.ss= imported its own installed package for the
 observability helper, and the source declaration omitted tracked =.ssi=,
 =.scm=, and =.inc= inputs.  The accepted action removes the self-import cycle
-and declares those inputs.  It cannot read =.gerbil/lib/poo-flow=.
+and declares those inputs.  It cannot read =.gerbil/lib/agentic-ai-lab=.

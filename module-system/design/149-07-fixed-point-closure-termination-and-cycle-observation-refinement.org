@@ -15,7 +15,7 @@ RFC 45-120-23.
 The proof owner is the top-level enterprise scope:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/Enterprise/
+packages/proofs/lean/AgenticAILabProof/Enterprise/
   CompositionalFixedPointClosure.lean
   SourceBoundCompositionalFixedPointClosure.lean
   SourceBoundCycleObservationClosure.lean
@@ -23,7 +23,7 @@ packages/proofs/lean/PooFlowProof/Enterprise/
 
 =Enterprise= is not a child of =PooC4=.  Enterprise proofs may import
 generic POO-C4 composition, policy, and authorization theorems, but the
-enterprise model is owned by =PooFlowProof.Enterprise=.
+enterprise model is owned by =AgenticAILabProof.Enterprise=.
 
 This refinement defines evidence obligations.  It does not introduce a
 second fixed-point runtime beside =gerbil-poo=, and it does not claim
@@ -227,7 +227,7 @@ $ "Osc"(H) equiv exists B, M, S, f:
   and exists g in M: g != f $
 #+end_src
 
-The first conjunct is owned by POO Flow and cannot be replaced by an opaque
+The first conjunct is owned by Agentic AI Lab and cannot be replaced by an opaque
 domain predicate.  The second conjunct remains a domain extension point.
 =progressClassificationSupported= now composes both obligations, and
 =oscillatingClassificationCarriesCanonicalHistory= proves that every closed
@@ -263,17 +263,17 @@ AXLE + Lean declaration-closure v1 receipts:
 | =arbitraryOscillationPredicateDoesNotProveCanonicalHistory= | 3 | 3 | 621 ms | 461 ms | =verification.okay=true= |
 | =oscillatingClassificationCarriesCanonicalHistory= | 44 | 19 | 3877 ms | 6963 ms | =verification.okay=true= |
 
-Both receipts use =poo-flow.axle-closure-preflight.v1= and
-=poo-flow.axle-exact-declaration-closure.v1=, report no failed declarations,
+Both receipts use =agentic-ai-lab.axle-closure-preflight.v1= and
+=agentic-ai-lab.axle-exact-declaration-closure.v1=, report no failed declarations,
 retain default timeouts, and use neither root sharding nor whole-file fallback.
 The current CLI receipt does not publish an exact rendered-byte field, so this
 RFC does not invent one.
 
 An initial preflight used the obsolete
-=PooFlowProof.PooC4.Enterprise.SourceBoundProgressEvidenceClosure= path and
+=AgenticAILabProof.PooC4.Enterprise.SourceBoundProgressEvidenceClosure= path and
 correctly failed at =lake-build-failed=.  The successful receipts use the
 top-level owner
-=PooFlowProof.Enterprise.SourceBoundProgressEvidenceClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundProgressEvidenceClosure=.
 
 ** Raw fingerprint history does not bind a transition
 
@@ -417,7 +417,7 @@ pathClosedCycleCanIncludeDisconnectedSccMember
 
 This is an SCC-classification defect, not a reason to create a second
 declaration-closure protocol.  The correction strengthens
-=poo-flow.lean-declaration-closure.v1= with the internal relation
+=agentic-ai-lab.lean-declaration-closure.v1= with the internal relation
 =SourceBoundSccReachableWithin=.  Every source and target in the named SCC
 must have a finite composition-link path whose intermediate subjects remain
 inside that same SCC.  =cycleObservationSubjectClosed= now requires both the
@@ -560,7 +560,7 @@ Digest, generation, stable state, and empty pending work remain data.
 * Corrected closure
 
 The proof transport for this refinement stabilizes
-=poo-flow.lean-declaration-closure.v1=.  Source ranges, generated-declaration
+=agentic-ai-lab.lean-declaration-closure.v1=.  Source ranges, generated-declaration
 normalization, phase timing, and bounded root sharding are v1 implementation
 refinements only.  This RFC does not authorize a v2 declaration-closure
 schema, a second closure identity, or a competing proof path.
@@ -593,7 +593,7 @@ The proof is formalized by:
   internal traversal constants from receipt declarations.
 
 All three theorems live in
-=PooFlowProof/Export/DeclarationClosureModel.lean=.  The four AXLE receipts are
+=AgenticAILabProof/Export/DeclarationClosureModel.lean=.  The four AXLE receipts are
 green with empty Lean errors, Lean warnings, and failed-declaration sets.
 
 =FixedPointEvidenceClosed= requires:
@@ -886,7 +886,7 @@ available even if later recovery fails.
 
 - =gerbil-poo= remains the unique Scheme POO implementation and the
   implementation substrate for pure objects and prototype composition.
-- POO Flow defines the mix-module evidence contract and composes
+- Agentic AI Lab defines the mix-module evidence contract and composes
   owner-valid objects; it does not reimplement a generic fixed-point
   library.
 - The composition owner binds the finite registry, worklist state, and
@@ -903,7 +903,7 @@ available even if later recovery fails.
 * Implementation checklist
 
 - [X] Move enterprise proofs to the top-level
-  =PooFlowProof.Enterprise= namespace.
+  =AgenticAILabProof.Enterprise= namespace.
 - [X] Prove =stable=true= plus empty pending work is insufficient.
 - [X] Prove a link-closed superset need not be least.
 - [X] Prove root inclusion, link closure, and minimality do not imply
@@ -976,19 +976,19 @@ The proof is admitted only when these project-toolchain commands pass:
 
 #+begin_src text
 lake build \
-  PooFlowProof.Enterprise.CompositionalFixedPointClosure
+  AgenticAILabProof.Enterprise.CompositionalFixedPointClosure
 
 lake build \
-  PooFlowProof.Enterprise.SourceBoundCompositionalFixedPointClosure
+  AgenticAILabProof.Enterprise.SourceBoundCompositionalFixedPointClosure
 
 lake build \
-  PooFlowProof.Enterprise.SourceBoundCycleObservationClosure
+  AgenticAILabProof.Enterprise.SourceBoundCycleObservationClosure
 
 lake build \
-  PooFlowProof.Enterprise.SourceBoundProgressEvidenceClosure
+  AgenticAILabProof.Enterprise.SourceBoundProgressEvidenceClosure
 
 lake build \
-  PooFlowProof.Enterprise.SourceBoundRuntimeWatchdogClosure
+  AgenticAILabProof.Enterprise.SourceBoundRuntimeWatchdogClosure
 
 lake build
 #+end_src

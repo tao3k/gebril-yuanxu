@@ -18,7 +18,7 @@ recovery to complete effect-domain rollback evidence.
 - RFC47 owns authorized transaction recovery, lifecycle admission, durable
   transaction state, the exclusive recovery claim, and the recovery receipt.
 - RFC149-05, implemented by
-  =PooFlowProof.Enterprise.EffectDomainCoverage=, is the sole owner of effect
+  =AgenticAILabProof.Enterprise.EffectDomainCoverage=, is the sole owner of effect
   universe coverage, effect-world validity, rollback obligations, compensation
   receipts, and whole-domain restoration.
 - This RFC owns only the cross-domain bindings between those two owners.

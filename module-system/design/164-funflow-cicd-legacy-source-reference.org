@@ -24,7 +24,7 @@ Profile authors too. Native imports remain a bootstrap implementation mechanism:
 
 #+begin_src scheme
 ;; Upstream authoring, not repeated downstream configuration.
-(import (only-in :poo-flow/modules/funflow/config funflow-check))
+(import (only-in :agentic-ai-lab/modules/funflow/config funflow-check))
 
 (.def GerbilSchemeProfile
   build:
@@ -82,7 +82,7 @@ scoped local spelling without new syntax:
 #+begin_src scheme
 (import
   (rename-in
-    (only-in :poo-flow/modules/funflow/config funflow-check)
+    (only-in :agentic-ai-lab/modules/funflow/config funflow-check)
     (funflow-check funflow/check)))
 
 (.def (NativeBuild @ funflow/check)
@@ -123,12 +123,12 @@ reference; scoped prototype access is for deliberate new-object authoring.
 * Historical source comparison: existing wrapper, not the target interface
 
 From [[file:../../../user-interface/custom/my-module/cases/funflow-cicd.ss][the existing CI/CD user configuration]]. Its import is
-:poo-flow/modules/funflow/config. The payload below preserves every Check and
+:agentic-ai-lab/modules/funflow/config. The payload below preserves every Check and
 Pipeline definition, native header binding and body assignment.
 
 #+begin_src scheme
-(def poo-flow-custom-my-module-funflow-cicd-case
-  (poo-flow-funflow-configs
+(def agentic-ai-lab-custom-my-module-funflow-cicd-case
+  (agentic-ai-lab-funflow-configs
   (.def (funflow/build @ funflow-check
                        check-name profile-ref command-vector
                        artifact-outputs cache-intents result-protocol

@@ -29,7 +29,7 @@ mutable global configuration store or a realization side effect.
 * Native POO boundary
 
 =gerbil-poo= remains the sole implementation of objects, prototypes, slot
-demand and open recursion.  POO Flow schedules native demand and observes its
+demand and open recursion.  Agentic AI Lab schedules native demand and observes its
 results.
 
 The scheduler MUST NOT:
@@ -100,7 +100,7 @@ Depending on the contract, these may include:
 - deterministic convergence;
 - a canonical representation of equal results.
 
-If those laws are absent, POO Flow retains the native deterministic evaluation
+If those laws are absent, Agentic AI Lab retains the native deterministic evaluation
 route for the SCC.  Performance pressure does not authorize a semantic race.
 
 * Native precedence is not canonical sorting

@@ -130,7 +130,7 @@ tests remain pending.
 | Local Lean module | =accepted= | =lake build YuanxuProof.Modules.Funflow.Policy=: 32/32 jobs |
 | Local Lean closure | =accepted= | =lake build=: 105/105 jobs |
 | AXLE independent declaration check | =accepted= | Request =f5fb1605-b512-4341-bf0b-1658a94264e7=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =bdd07370-75cc-4665-92b7-aeb477b8ab85= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =bdd07370-75cc-4665-92b7-aeb477b8ab85= cannot resolve local module prefix =AgenticAILabProof= |
 | POO control-policy resolution implementation | =not-admitted= | All 53 admission, priority, constraint, equal-priority, hard-stop, determinism, cross-plane, and implementation items remain pending |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -183,7 +183,7 @@ The relevant ideas are:
 - constraints attached to a lower-priority contribution remain obligations on
   the selected value.
 
-POO Flow does not adopt Nickel records, field metadata syntax, distinguished
+Agentic AI Lab does not adopt Nickel records, field metadata syntax, distinguished
 priority sentinels, recursive record merge, or its evaluator.
 
 * Central decision
@@ -334,7 +334,7 @@ expand to the ordinary POO object and must not become a new merge DSL.
 
 ** No unlimited priority sentinel
 
-POO Flow does not encode unlimited authority as an extreme number.
+Agentic AI Lab does not encode unlimited authority as an extreme number.
 
 There is no numeric sentinel for unlimited priority.  A candidate with a very
 large priority still cannot:

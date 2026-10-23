@@ -8,7 +8,7 @@
 
 * Controlling decisions, 2026-09-12
 
-POO Flow is the core. Do not create another =yuanxu= package.
+Agentic AI Lab is the core. Do not create another =yuanxu= package.
 =packages/lambda-episteme/= is the independently maintained contributor
 repository. Its modules contribute POO-native domain declarations, profiles,
 source assets and scenarios. They do not own a graph execution engine.
@@ -40,7 +40,7 @@ change and is not part of that pinned revision or a published release.
 
 #+begin_export mermaid
 flowchart LR
-  L["lambda-episteme: source modules"] -->|"public POO extension contract"| P["POO Flow: existing core"]
+  L["lambda-episteme: source modules"] -->|"public POO extension contract"| P["Agentic AI Lab: existing core"]
   A["Application composition"] -->|"explicit module selection"| L
   A -->|"composition and authorization"| P
   T["Child GQL authoring tests"] -->|"parse and source roundtrip"| G["gerbil-parser"]
@@ -49,7 +49,7 @@ flowchart LR
   R -->|"snapshot-bound query evidence"| A
 #+end_export
 
-- POO Flow owns generic source-contribution admission and native composition.
+- Agentic AI Lab owns generic source-contribution admission and native composition.
 - The child owns domain names, policies, source assets, examples and tests.
 - gerbil-parser owns the GQL parser and its syntax artifacts.
 - The selected execution adapter owns executing queries and returning evidence.
@@ -82,7 +82,7 @@ semantic resolution. Do not force users to reconstruct private core machinery.
 
 =core/contribution/objects.ss= owns the pure POO contribution envelope and
 capability admission. =src/module-system/contribution/interface.ss= retains
-POO Flow Profile composition and host-trusted verification. Consumers import
+Agentic AI Lab Profile composition and host-trusted verification. Consumers import
 the precise Core owner for contribution values; no second composition
 language is introduced.
 
@@ -92,7 +92,7 @@ Admission rejects invalid shapes, incompatible contracts, missing requirements
 and duplicate export identities. Successful source admission records
 =runtime-executed? #f=; it cannot be used as execution evidence.
 
-POO Flow's =modules/governance/= core owns the engine-neutral Profile and
+Agentic AI Lab's =modules/governance/= core owns the engine-neutral Profile and
 Source contracts.  Lambda Episteme child modules construct vertical domain
 Profiles containing native ontology and policy objects plus optional Source
 references.  Sources do not read files at import time. Their language is open;
@@ -166,15 +166,15 @@ do not create two independently editable definitions of one executable rule.
 
 * Test isolation
 
-1. POO Flow: =t/contribution-test.ss=, synthetic modules only; no child checkout.
+1. Agentic AI Lab: =t/contribution-test.ss=, synthetic modules only; no child checkout.
 2. Child: =t/governance-test.ss=, native declarations and profile composition
-   against an installed/compiled POO Flow interface; no query engine.
+   against an installed/compiled Agentic AI Lab interface; no query engine.
 3. Child optional syntax lane: =t/gql-source-test.ss=, gerbil-parser only.
 4. Application integration: separately bind graph schemas, execute queries and
    validate witnesses, incomplete scope, snapshot drift and authorized effects.
    This lane must not become a prerequisite of core or child unit tests.
 
-The child declares directory scope through POO Flow's module build API. POO Flow
+The child declares directory scope through Agentic AI Lab's module build API. Agentic AI Lab
 owns layout validation and source discovery; std/make owns compilation. The child
 never discovers or builds its superproject. Release publication remains separate from parent source-pin
 updates; a release must bind concrete revisions and dependency artifacts.

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.03 Context Module Consumer Receipt
 :PROPERTIES:
-:ID: poo-flow-context-module-consumer-20261014
+:ID: agentic-ai-lab-context-module-consumer-20261014
 :STATUS: historical-local-semantic-slice-and-consumer-pass-storage-open
 :DATE: 2026-10-14
 :END:
@@ -95,7 +95,7 @@ it is not an authentication certificate or a cross-language refinement proof.
 | packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
 | packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
 | packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
-| packages/proofs/lean-poo/PooFlowContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
 | scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
 | gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
 | modules/context/consumers.ss | 72a8a65d7d8047f806161be770340a39eee2ade1afdf1b83d5feafb71138c66e |

@@ -13,7 +13,7 @@ regression decision.  These concerns now have separate owners:
    wedged action.  Its receipt names the field =runawayTimeoutSeconds= and does
    not claim =withinBudget=.
 2. The Scheme control plane owns
-   =poo-flow.scheme-compile-performance-budget-receipt.v1=.
+   =agentic-ai-lab.scheme-compile-performance-budget-receipt.v1=.
 3. A performance decision compares equal-size, odd sample sets containing at
    least three observations per side.  It uses each side's median and an
    explicitly supplied maximum regression in basis points.
@@ -75,7 +75,7 @@ same repository.
 
 #+begin_src mermaid
 flowchart LR
-  Build["POO Flow //scheme:compile"]
+  Build["Agentic AI Lab //scheme:compile"]
   API["Gerbil-Bazel gerbil_project_compile"]
   Package["gerbil.pkg"]
   Receipt["Gerbil-Bazel project receipt"]

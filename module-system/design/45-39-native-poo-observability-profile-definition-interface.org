@@ -62,7 +62,7 @@ macro diagnostics can make a large system approachable.  It does not inherit
 their macro names, punctuation, lifecycle phases, package model or mutable
 runtime behavior.
 
-The exact concrete syntax remains a Gerbil and POO Flow interface decision.
+The exact concrete syntax remains a Gerbil and Agentic AI Lab interface decision.
 This RFC fixes the lowering and extension contract rather than prematurely
 fixing clause punctuation.
 
@@ -350,7 +350,7 @@ Emacs and Doom Emacs are useful references for:
 - retaining source context for useful diagnostics;
 - hiding internal machinery from ordinary users.
 
-POO Flow does not copy:
+Agentic AI Lab does not copy:
 
 - =package!=, =use-package!= or bang naming;
 - =:init=, =:config=, =:custom= or another system's phase names;
@@ -359,7 +359,7 @@ POO Flow does not copy:
 - side-effectful configuration bodies;
 - exact keyword or clause punctuation.
 
-POO Flow reconstructs the learned principles through Gerbil hygienic macros,
+Agentic AI Lab reconstructs the learned principles through Gerbil hygienic macros,
 native =gerbil-poo= values, fixed-point semantics and explicit effect
 boundaries.
 

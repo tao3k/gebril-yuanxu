@@ -4,7 +4,7 @@
 
 * 10.06.24 Agent Harness, Session, Run, And Dispatch Design
 ** 10.06.24.10 Status
-This document turns the Flue audit and current =poo-flow= design into an implementation-oriented design for agent harnesses, sessions, workflow runs, operations, dispatch receipts, and UI snapshots.
+This document turns the Flue audit and current =agentic-ai-lab= design into an implementation-oriented design for agent harnesses, sessions, workflow runs, operations, dispatch receipts, and UI snapshots.
 
 The decision is not to copy Flue's TypeScript API. The decision is to adopt the boundary discipline:
 
@@ -13,7 +13,7 @@ The decision is not to copy Flue's TypeScript API. The decision is to adopt the 
 - Rust or another runtime owns durable execution, process control, filesystem isolation, event storage, and deployment integration.
 
 ** 10.06.24.20 Design Problem
-The current =poo-flow= control plane already has flows, tasks, strategies, runners, runtime adapters, receipts, module descriptors, sandbox profile recipes, loop governor objects, and user-facing root declarations.
+The current =agentic-ai-lab= control plane already has flows, tasks, strategies, runners, runtime adapters, receipts, module descriptors, sandbox profile recipes, loop governor objects, and user-facing root declarations.
 
 The missing layer is the agent harness boundary:
 
@@ -29,7 +29,7 @@ Without these separate object families, loop-engine, governor, human-audit, sand
 Local reference documents:
 
 - =10.01-gerbil-poo-funflow-control-plane.org= defines the high-level rule: Scheme owns the conceptual model and Rust owns heavy runtime work.
-- =10.06-poo-module-system/04-poo-flow-module-system-design.org= defines descriptor/catalog/activation as inert module data before runtime lowering.
+- =10.06-poo-module-system/04-agentic-ai-lab-module-system-design.org= defines descriptor/catalog/activation as inert module data before runtime lowering.
 - =10.06-poo-module-system/18-agent-sandbox-profile-interface.org= defines sandbox profiles as inert POO recipes before backend projection.
 - =10.06-poo-module-system/23-flue-agent-harness-audit.org= records Flue's agent/workflow/harness/session/run boundaries.
 - =user-interface/CONTRACT.org= defines root user config as module selection and compact downstream declarations, not implementation internals.
@@ -50,7 +50,7 @@ Workflow
 Workflow run
 #+end_src
 
-The =poo-flow= version should keep this stack, but express it with Gerbil POO object families and runtime handoff descriptors.
+The =agentic-ai-lab= version should keep this stack, but express it with Gerbil POO object families and runtime handoff descriptors.
 
 ** 10.06.24.40 Object Families
 *** 10.06.24.41 Agent Profile
@@ -249,7 +249,7 @@ The manifest request declares the object families it carries:
 The presentation also exposes a =runtime-command-manifest-summary= row so
 agents can validate contract, schema, operation, argv, and runtime ownership
 without walking the full request payload.
-These projections live inside =pooFlowUserConfigPresentation= loop-engine intent
+These projections live inside =agenticAiLabUserConfigPresentation= loop-engine intent
 rows, so custom user modules remain compact while downstream agents still see
 the full runtime boundary.
 The =delegated-operation= row deliberately does not add a new canonical runtime object family. It is the Flue-style readable operation view that ties the parent session, child delegated session reference, workflow run reference, named machine reviewer, named governor, and human audit policy together for agents.

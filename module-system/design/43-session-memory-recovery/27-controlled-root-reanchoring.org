@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.27 Controlled Root Re-anchoring and Controller Recovery
 :PROPERTIES:
-:ID: poo-flow-context-controlled-root-reanchoring
+:ID: agentic-ai-lab-context-controlled-root-reanchoring
 :STATUS: module-protocol-local-joint-pass-remote-durable-open
 :DATE: 2026-10-15
 :END:

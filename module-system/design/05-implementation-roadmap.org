@@ -8,9 +8,9 @@
 ** 10.06.05.05 Current Landing
 Status: Marlin facade migration implemented. Slice 1F also landed Nix-style option merge receipts.
 
-The current code does the large-block migration requested from Marlin's Gerbil module surface into =poo-flow/src/module-system.ss= and =poo-flow/src/module-system/*=. It includes interface/config construction, structured imports, inline module closure, schema/config projection, validation receipts, module workflow projection, value catalogs, eval receipts, and system presentations.
+The current code does the large-block migration requested from Marlin's Gerbil module surface into =agentic-ai-lab/src/module-system.ss= and =agentic-ai-lab/src/module-system/*=. It includes interface/config construction, structured imports, inline module closure, schema/config projection, validation receipts, module workflow projection, value catalogs, eval receipts, and system presentations.
 
-Not included in this landing: Marlin's concrete policy-pack furniture, deck-runtime dependencies, or Rust handler catalog integration. Those are domain-specific consumers of the module facade, not the =poo-flow= module-system core.
+Not included in this landing: Marlin's concrete policy-pack furniture, deck-runtime dependencies, or Rust handler catalog integration. Those are domain-specific consumers of the module facade, not the =agentic-ai-lab= module-system core.
 ** 10.06.05.10 Slice 1: Descriptor Activation And Inspection
 Status: implemented.
 
@@ -56,11 +56,11 @@ Planned loader sources:
 - registry manifests;
 - generated module descriptors.
 Implemented first-pass behavior:
-- initially added =src/module-system/loader/interface.ss=; the later Core migration retired that aggregate, leaving Core loader values and direct POO Flow collection/selection/tree owners;
+- initially added =src/module-system/loader/interface.ss=; the later Core migration retired that aggregate, leaving Core loader values and direct Agentic AI Lab collection/selection/tree owners;
 - added static loader entries for source-ref to descriptor mappings;
 - added load receipts so user tooling can inspect loaded and missing sources before activation;
 - added =poo-module-load-catalog= to hand loaded descriptors to the existing catalog resolver;
-- updated =t/module-system-user-interface-test.ss= to cover loader-to-catalog-to-resolver activation through =:poo-flow/src/module-system=.
+- updated =t/module-system-user-interface-test.ss= to cover loader-to-catalog-to-resolver activation through =:agentic-ai-lab/src/module-system=.
 ** 10.06.05.30 Slice 3: CLI Or Doctor Command
 Status: started. First-pass doctor presentation helpers implemented.
 Add a command or helper surface that can explain:
@@ -70,14 +70,14 @@ Add a command or helper surface that can explain:
 - contributed flow descriptors;
 - missing runtime capabilities;
 - config requirements introduced by modules.
-This is the =poo-flow= equivalent of borrowing Doom's =doctor= idea without borrowing Doom's implementation.
+This is the =agentic-ai-lab= equivalent of borrowing Doom's =doctor= idea without borrowing Doom's implementation.
 Implemented first-pass behavior:
 - added the user-facing Doctor projection, now owned by =src/user-interface/doctor-presentation.ss=;
 - added =pooModuleDoctorPresentation= for value catalogs;
 - added =pooModuleSourceDoctorPresentation= for loader receipts plus module doctor summary;
 - included module ids, import graph, contribution counts, diagnostic status, validation count, merge status, and merged option summary;
 - kept runtime execution out of doctor projections;
-- updated =t/module-system-user-interface-test.ss= to cover both doctor surfaces through =:poo-flow/src/module-system=.
+- updated =t/module-system-user-interface-test.ss= to cover both doctor surfaces through =:agentic-ai-lab/src/module-system=.
 ** 10.06.05.40 Validation Gates
 For each slice:
 - run =gxi build.ss= or the repository build wrapper;
@@ -102,7 +102,7 @@ Delivered behavior:
 - kept module-system mechanics under =src/module-system= leaf owners;
 - added explicit descriptor metadata for =group=, =flags=, =features=, =depth=, =phase-files=, and =hooks=;
 - added descriptor-level =poo-module-active?= checks with Doom-style negative flag requirements;
-- added catalog-level =poo-flow-module-value-catalog-active?= checks for user-facing module predicates;
+- added catalog-level =agentic-ai-lab-module-value-catalog-active?= checks for user-facing module predicates;
 - added =poo-module-phase-order= for init/config ordering projections;
 - added runtime projection fields for phase order and hooks;
 - kept activation data-only and avoided Doom's hidden macro context.
@@ -113,14 +113,14 @@ Delivered behavior:
 - documented Doom as the authoring-experience reference;
 - documented Nix as the option and merge semantics reference;
 - defined a macro design contract for future user-facing DSL work;
-- required macro-facing tests to import only =:poo-flow/src/module-system=;
+- required macro-facing tests to import only =:agentic-ai-lab/src/module-system=;
 - kept macro expansion constrained to inspectable descriptor data.
 ** 10.06.05.19 Slice 1E: Focused Macro Sugar
 Status: implemented.
 
 Delivered behavior:
 - added =src/user-interface/module-authoring-syntax.ss= as the macro-only owner;
-- exported macro sugar through =:poo-flow/src/module-system=;
+- exported macro sugar through =:agentic-ai-lab/src/module-system=;
 - added =poo-module-option-block= for schema/config POO slot blocks;
 - added =poo-module-hook-block= for data-only hook payload blocks;
 - added =poo-module-when= for conditional module list inclusion;
@@ -129,6 +129,6 @@ Delivered behavior:
 ** 10.06.05.21 Slice 1F: Historical Option Merge Receipts
 Status: superseded. The initial =projection/interface.ss= aggregate and its
 general merge-receipt helpers are not the current API. Core now owns native
-Slot value policies and option POO values/validation; POO Flow retains
+Slot value policies and option POO values/validation; Agentic AI Lab retains
 descriptor-specific =src/authoring/module-option-projection.ss=. Module inheritance remains with
 native POO C4, not a second merge evaluator.

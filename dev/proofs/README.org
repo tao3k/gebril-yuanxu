@@ -65,7 +65,7 @@ execution. No Loader or module adaptation is implemented by this migration.
 | Standalone Core Lean 4.31 package | Passed, 55 jobs |
 | Standalone Core association package | Passed, 48 jobs |
 | Product governance and temporal consumers through the Core dependency | Passed, 25 jobs |
-| Complete product PooFlowProof aggregate through the Core dependency | Passed, 598 jobs |
+| Complete product AgenticAILabProof aggregate through the Core dependency | Passed, 598 jobs |
 | Relocated NativeSemanticQuery TLC model | Model checking completed without error |
 | Core-only source import closure | All 53 shared models resolve within Core |
 

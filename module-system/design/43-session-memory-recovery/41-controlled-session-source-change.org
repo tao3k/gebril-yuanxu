@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.41 Controlled Session Source Change — Architecture and Correspondence
 :PROPERTIES:
-:ID: poo-flow-context-controlled-session-source-change
+:ID: agentic-ai-lab-context-controlled-session-source-change
 :STATUS: module-protocol-composed-views-joint-pass-storage-open
 :DATE: 2026-10-15
 :END:

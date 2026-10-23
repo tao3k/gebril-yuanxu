@@ -34,7 +34,7 @@ a second configuration object. Modules, Profiles and Scenarios remain POO values
 
 This review uses the same pinned native source as module 21:
 099b381588360a8a49fd772f666a1a00351366f5. The isolated source is
-/tmp/pooflow-dfs-admit-20261015/clan/poo/object.ss. Its .+ definition at lines
+/tmp/agenticailab-dfs-admit-20261015/clan/poo/object.ss. Its .+ definition at lines
 239--241 is:
 
 #+begin_src scheme

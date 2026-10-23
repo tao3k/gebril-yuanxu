@@ -116,7 +116,7 @@ ordinary function call
   -> POO evidence result
 #+end_example
 
-The demand is a first-class value and composes through the normal POO Flow
+The demand is a first-class value and composes through the normal Agentic AI Lab
 functional route.
 
 * DebugDemand
@@ -159,7 +159,7 @@ It projects:
 
 The context is not a global parameter hidden behind the user functions.
 
-An admitted outer POO Flow evaluation may close over the context
+An admitted outer Agentic AI Lab evaluation may close over the context
 functionally. The semantic evaluator still receives it as an explicit value.
 
 * Inspect forms

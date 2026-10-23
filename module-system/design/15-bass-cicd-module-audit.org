@@ -73,7 +73,7 @@ The manual keeps module language small:
 - focused modules such as =.strings= and =.git= are introduced by the task they
   solve, not by their internal hierarchy.
 
-This is the pattern =poo-flow= should copy. The user manual should not expose
+This is the pattern =agentic-ai-lab= should copy. The user manual should not expose
 our C4 graph, descriptor registry, loader backend, runtime-command manifest
 schema, or Rust handoff internals first. Those belong in design docs and
 diagnostics. The user-facing manual should show the smallest useful action and
@@ -82,7 +82,7 @@ let the module system remain mostly invisible.
 For CI/CD the first manual page should look closer to this:
 
 #+begin_src scheme
-(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! agentic-ai-lab-user-profile agentic-ai-lab-user-profile-set
   (profile developer)
   :workflow
   (funflow
@@ -100,7 +100,7 @@ The above is intentionally not the final implementation syntax. It is the
 manual-facing target: small verbs, obvious nouns, no registry terminology.
 
 ** 10.06.15.26 User Documentation Shape Audit
-The Bass user documentation separates two tracks that =poo-flow= should also separate:
+The Bass user documentation separates two tracks that =agentic-ai-lab= should also separate:
 - =docs/lit/guide.md= is task-first. It is a quick reference for common work: run thunks, read output, provide secrets, cache directories, pass thunk paths, export files/images, pin dependencies, share code, and serve webhook-style scripts.
 - =docs/lit/bassics.md= is concept-first. It defines the small language vocabulary: scope, keyword, operative, applicative/function, source, sink, path, thunk, thunk path, module, hermetic, and runtime.
 The ordering matters. A new user does not start with runtime architecture. They first see:
@@ -120,13 +120,13 @@ The Bass docs also make runtime boundaries feel natural:
 - a =module= is just a scope in a file, introduced by the task that needs it;
 - server mode is presented as a small command for HTTP/webhook endpoints, with limitations stated plainly.
 
-The =poo-flow= user manual should therefore have two matching tracks:
+The =agentic-ai-lab= user manual should therefore have two matching tracks:
 - =guide=: task-first recipes such as define a workflow, run/check it, inspect a receipt, pass a secret, mount/cache an artifact, export a runtime manifest, define CI checks, and hand off to Marlin.
-- =poo-flow bassics=: concept glossary for profile, category, module, =+feature=, POO object, role/C4 composition, descriptor, receipt, runtime manifest, and adapter.
+- =agentic-ai-lab bassics=: concept glossary for profile, category, module, =+feature=, POO object, role/C4 composition, descriptor, receipt, runtime manifest, and adapter.
 
 The =init.ss= surface should now be documented as a category tree, not as a constructor API:
 #+begin_src scheme
-(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! agentic-ai-lab-user-profile agentic-ai-lab-user-profile-set
   (profile developer)
   :workflow
   (funflow +functional +dag +typed-receipts)
@@ -157,7 +157,7 @@ The boundary is nested rather than category-sibling. =:workflow= selects the wor
 - runtime manifests.
 Those nouns should be visible inside the =+cicd= payload:
 #+begin_src scheme
-(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! agentic-ai-lab-user-profile agentic-ai-lab-user-profile-set
   (profile developer)
   :workflow
   (funflow
@@ -182,7 +182,7 @@ Funflow remains the implementation substrate for CI/CD graph composition:
 - Marlin/Rust receives runtime-command manifests for heavy execution.
 
 The =+cicd= feature should be a first-class =funflow= capability, not a minor bridge. It means this workflow can project into CI/CD receipts, runtime manifests, and policy-controlled handoff requests. The public manual should teach =(+cicd ...)= as the user-facing domain vocabulary, with Funflow explained as the engine underneath it.
-** 10.06.15.30 poo-flow Decision
+** 10.06.15.30 agentic-ai-lab Decision
 CI/CD should be implemented as a =funflow= feature payload plus optional adapters, not as logic inside =src/core= and not as a competing top-level category marker.
 
 The Scheme side should own:
@@ -202,7 +202,7 @@ The Scheme side should not own:
 - long-running webhook servers;
 - artifact upload side effects.
 
-Those belong to Rust, Marlin runtime, or downstream adapters. =poo-flow= should
+Those belong to Rust, Marlin runtime, or downstream adapters. =agentic-ai-lab= should
 describe and validate the control plane.
 
 ** 10.06.15.40 Proposed Module Shape
@@ -214,7 +214,7 @@ Use a Funflow-owned feature surface rather than a core path:
 The first public shape should stay small:
 
 #+begin_src scheme
-(yuanxu! poo-flow-user-profile poo-flow-user-profile-set
+(yuanxu! agentic-ai-lab-user-profile agentic-ai-lab-user-profile-set
   (profile developer)
   :workflow
   (funflow
@@ -229,7 +229,7 @@ The first public shape should stay small:
 The descriptor surface should project to ordinary module-system data:
 
 #+begin_src scheme
-(poo-flow-module
+(agentic-ai-lab-module
   name: 'cicd/checks
   group: 'cicd
   provides: '(checks artifacts runtime-manifest)
@@ -245,7 +245,7 @@ should be role-composed instead of flattened into one record type.
 
 Recommended role families:
 
-- =poo-flow-case-module= for all scenario modules;
+- =agentic-ai-lab-case-module= for all scenario modules;
 - =ci-check-provider= for named check maps;
 - =ci-artifact-producer= for files, images, and coverage outputs;
 - =ci-release-producer= for release bundles and publication intents;

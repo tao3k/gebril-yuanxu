@@ -89,7 +89,7 @@ flowchart LR
 The Lean implementation lives in:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/PooC4/SessionLifecycle.lean
+packages/proofs/lean/AgenticAILabProof/PooC4/SessionLifecycle.lean
 #+end_src
 
 The module defines:
@@ -105,10 +105,10 @@ The module defines:
 * 10.06.58.50 Theorem Gates
 
 #+begin_src lean
-import PooFlowProof.PooC4.SessionLifecycle
+import AgenticAILabProof.PooC4.SessionLifecycle
 
-open PooFlowProof.PooC4
-open PooFlowProof.PooC4.SessionLifecycle
+open AgenticAILabProof.PooC4
+open AgenticAILabProof.PooC4.SessionLifecycle
 
 #check session_no_self_dependency
 #check session_no_two_dependency_cycle
@@ -155,7 +155,7 @@ preserves these facts:
 The first concrete projection bridge is:
 
 #+begin_src scheme
-poo-flow-session-handoff->lean-facts
+agentic-ai-lab-session-handoff->lean-facts
 #+end_src
 
 It lives beside the existing handoff ABI projection:
@@ -168,13 +168,13 @@ The Lean proof surface is now split by project model boundary instead of
 placing every obligation in the scenario bridge:
 
 | Lean module | Project model boundary |
-| PooFlowProof.PooC4.Profile | profile declaration, governor, policy set, runtime manifest |
-| PooFlowProof.PooC4.Sandbox | sandbox profile, tool/resource/capability policy, execution grant |
-| PooFlowProof.PooC4.SessionLifecycle | session values, placement, agent graph, dispatch, handoff |
-| PooFlowProof.PooC4.FunctionalFlow | functional flow input, pure transform, validation, handoff, receipt |
-| PooFlowProof.PooC4.LoopEngine | PooC4 loop and module dependency semantics |
-| PooFlowProof.PooC4.UserInterface | UI scenario gates and benchmark preconditions |
-| PooFlowProof.PooC4.ScenarioProof | cross-model composition and Scheme projection packets |
+| AgenticAILabProof.PooC4.Profile | profile declaration, governor, policy set, runtime manifest |
+| AgenticAILabProof.PooC4.Sandbox | sandbox profile, tool/resource/capability policy, execution grant |
+| AgenticAILabProof.PooC4.SessionLifecycle | session values, placement, agent graph, dispatch, handoff |
+| AgenticAILabProof.PooC4.FunctionalFlow | functional flow input, pure transform, validation, handoff, receipt |
+| AgenticAILabProof.PooC4.LoopEngine | PooC4 loop and module dependency semantics |
+| AgenticAILabProof.PooC4.UserInterface | UI scenario gates and benchmark preconditions |
+| AgenticAILabProof.PooC4.ScenarioProof | cross-model composition and Scheme projection packets |
 
 The current Scheme owners for these boundaries are:
 
@@ -208,26 +208,26 @@ The module-level gates are:
 #check execution_grant_blocks_without_tool_policy
 #check execution_grant_blocks_without_resource_policy
 #check execution_grant_blocks_without_capability_policy
-#check PooFlowProof.PooC4.SessionLifecycle.ChannelReceiptProjection
-#check PooFlowProof.PooC4.SessionLifecycle.StrictAgentGraphProjection
-#check PooFlowProof.PooC4.SessionLifecycle.strict_projection_blocks_message_dispatch_without_authorized_receipts
-#check PooFlowProof.PooC4.SessionLifecycle.strict_projection_blocks_handoff_receipt_without_runtime_summary
+#check AgenticAILabProof.PooC4.SessionLifecycle.ChannelReceiptProjection
+#check AgenticAILabProof.PooC4.SessionLifecycle.StrictAgentGraphProjection
+#check AgenticAILabProof.PooC4.SessionLifecycle.strict_projection_blocks_message_dispatch_without_authorized_receipts
+#check AgenticAILabProof.PooC4.SessionLifecycle.strict_projection_blocks_handoff_receipt_without_runtime_summary
 #check FlowState
 #check transform_blocks_without_input
 #check validation_blocks_without_pure_transform
 #check handoff_blocks_without_validation
 #check receipt_blocks_without_handoff
-#check PooFlowProof.PooC4.UserInterface.strategy_plan_blocks_without_selector_policy
-#check PooFlowProof.PooC4.UserInterface.runtime_manifest_blocks_without_memory_policy
-#check PooFlowProof.PooC4.UserInterface.marlin_handoff_blocks_without_runtime_manifest
-#check PooFlowProof.PooC4.UserInterface.scenario_benchmark_blocks_without_performance_fixture
-#check PooFlowProof.PooC4.UserInterface.UiScenarioFact
-#check PooFlowProof.PooC4.UserInterface.uiScenarioStateOfFacts
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_local_validation_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_l1_report
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_performance_fixture
-#check PooFlowProof.PooC4.UserInterface.UiScenarioProjectionFailureMatrix
+#check AgenticAILabProof.PooC4.UserInterface.strategy_plan_blocks_without_selector_policy
+#check AgenticAILabProof.PooC4.UserInterface.runtime_manifest_blocks_without_memory_policy
+#check AgenticAILabProof.PooC4.UserInterface.marlin_handoff_blocks_without_runtime_manifest
+#check AgenticAILabProof.PooC4.UserInterface.scenario_benchmark_blocks_without_performance_fixture
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioFact
+#check AgenticAILabProof.PooC4.UserInterface.uiScenarioStateOfFacts
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_local_validation_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_l1_report
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_performance_fixture
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioProjectionFailureMatrix
 #+end_src
 
 Session channel receipt and strict agent graph projection are owned by
@@ -249,9 +249,9 @@ The Scheme projection now exposes the same boundary as a typed fact-key
 contract, not an informal table:
 
 #+begin_src scheme
-poo-flow-session-handoff-lean-fact-key-contracts
-poo-flow-ui-scenario-lean-fact-key-contracts
-poo-flow-lean-fact-contract-complete?
+agentic-ai-lab-session-handoff-lean-fact-key-contracts
+agentic-ai-lab-ui-scenario-lean-fact-key-contracts
+agentic-ai-lab-lean-fact-contract-complete?
 #+end_src
 
 Each contract entry maps one emitted key to its Lean owner and constructor or
@@ -298,7 +298,7 @@ S11 facts are not meant to be handwritten at call sites. The Scheme control
 plane uses a POO topology object and projects it into handoff metadata:
 
 #+begin_src scheme
-(poo-flow-session-topology->handoff-metadata
+(agentic-ai-lab-session-topology->handoff-metadata
  (.o agent-registered?: #t
      subagent-registered?: #t
      channel-authorized?: #t))
@@ -308,7 +308,7 @@ The real loop-engine path also produces these facts. The agent graph
 constructor enriches graph metadata from its computed topology:
 
 #+begin_src scheme
-poo-flow-session-agent-graph
+agentic-ai-lab-session-agent-graph
 #+end_src
 
 The loop-engine runtime graph builder now supplies declared communication
@@ -334,7 +334,7 @@ $
 The Lean proof surface mirrors that projection:
 
 #+begin_src lean
-open PooFlowProof.PooC4.ScenarioProof
+open AgenticAILabProof.PooC4.ScenarioProof
 
 AgentGraphProjection
 sessionFactsOfAgentGraphProjection
@@ -552,7 +552,7 @@ $
 The Lean checks are:
 
 #+begin_src lean
-open PooFlowProof.PooC4.ScenarioProof
+open AgenticAILabProof.PooC4.ScenarioProof
 
 #check receipt_presence_does_not_imply_authorization
 #check strict_projection_requires_authorized_receipts_for_message_dispatch
@@ -562,42 +562,42 @@ open PooFlowProof.PooC4.ScenarioProof
 #check strict_projection_blocks_handoff_receipt_without_runtime_summary
 #check strict_projection_blocks_handoff_receipt_without_runtime_owner
 #check strict_projection_blocks_handoff_receipt_when_handoff_not_required
-#check PooFlowProof.PooC4.SessionLifecycle.policy_denial_blocks_authorized_dispatch
-#check PooFlowProof.PooC4.SessionLifecycle.strategy_ownership_denial_blocks_authorized_dispatch
-#check PooFlowProof.PooC4.SessionLifecycle.local_validation_denial_blocks_authorized_dispatch
+#check AgenticAILabProof.PooC4.SessionLifecycle.policy_denial_blocks_authorized_dispatch
+#check AgenticAILabProof.PooC4.SessionLifecycle.strategy_ownership_denial_blocks_authorized_dispatch
+#check AgenticAILabProof.PooC4.SessionLifecycle.local_validation_denial_blocks_authorized_dispatch
 #check policy_denial_blocks_authorized_dispatch
 #check strategy_ownership_denial_blocks_authorized_dispatch
 #check local_validation_denial_blocks_authorized_dispatch
 #check session_branch_conflict_blocks_dual_start
 #check ScenarioFailureMatrix
 #check scenarioFailureMatrix
-#check PooFlowProof.PooC4.UserInterface.strategy_plan_blocks_without_selector_policy
-#check PooFlowProof.PooC4.UserInterface.strategy_plan_blocks_without_resource_policy
-#check PooFlowProof.PooC4.UserInterface.strategy_plan_blocks_without_capability_policy
-#check PooFlowProof.PooC4.UserInterface.local_validation_blocks_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.runtime_manifest_blocks_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.runtime_manifest_blocks_without_local_validation
-#check PooFlowProof.PooC4.UserInterface.runtime_manifest_blocks_without_memory_policy
-#check PooFlowProof.PooC4.UserInterface.runtime_manifest_blocks_without_compression_policy
-#check PooFlowProof.PooC4.UserInterface.marlin_handoff_blocks_without_runtime_manifest
-#check PooFlowProof.PooC4.UserInterface.scenario_benchmark_blocks_without_matrix
-#check PooFlowProof.PooC4.UserInterface.scenario_benchmark_blocks_without_l1_report
-#check PooFlowProof.PooC4.UserInterface.scenario_benchmark_blocks_without_performance_fixture
-#check PooFlowProof.PooC4.UserInterface.UiScenarioFailureMatrix
-#check PooFlowProof.PooC4.UserInterface.uiScenarioFailureMatrix
-#check PooFlowProof.PooC4.UserInterface.UiScenarioFact
-#check PooFlowProof.PooC4.UserInterface.UiScenarioFactEnv
-#check PooFlowProof.PooC4.UserInterface.uiScenarioStateOfFacts
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_strategy_without_selector_policy
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_local_validation_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_strategy_plan
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_memory_policy
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_handoff_without_runtime_manifest
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_matrix
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_l1_report
-#check PooFlowProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_performance_fixture
-#check PooFlowProof.PooC4.UserInterface.UiScenarioProjectionFailureMatrix
-#check PooFlowProof.PooC4.UserInterface.uiScenarioProjectionFailureMatrix
+#check AgenticAILabProof.PooC4.UserInterface.strategy_plan_blocks_without_selector_policy
+#check AgenticAILabProof.PooC4.UserInterface.strategy_plan_blocks_without_resource_policy
+#check AgenticAILabProof.PooC4.UserInterface.strategy_plan_blocks_without_capability_policy
+#check AgenticAILabProof.PooC4.UserInterface.local_validation_blocks_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.runtime_manifest_blocks_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.runtime_manifest_blocks_without_local_validation
+#check AgenticAILabProof.PooC4.UserInterface.runtime_manifest_blocks_without_memory_policy
+#check AgenticAILabProof.PooC4.UserInterface.runtime_manifest_blocks_without_compression_policy
+#check AgenticAILabProof.PooC4.UserInterface.marlin_handoff_blocks_without_runtime_manifest
+#check AgenticAILabProof.PooC4.UserInterface.scenario_benchmark_blocks_without_matrix
+#check AgenticAILabProof.PooC4.UserInterface.scenario_benchmark_blocks_without_l1_report
+#check AgenticAILabProof.PooC4.UserInterface.scenario_benchmark_blocks_without_performance_fixture
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioFailureMatrix
+#check AgenticAILabProof.PooC4.UserInterface.uiScenarioFailureMatrix
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioFact
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioFactEnv
+#check AgenticAILabProof.PooC4.UserInterface.uiScenarioStateOfFacts
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_strategy_without_selector_policy
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_local_validation_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_strategy_plan
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_runtime_manifest_without_memory_policy
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_handoff_without_runtime_manifest
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_matrix
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_l1_report
+#check AgenticAILabProof.PooC4.UserInterface.ui_projection_blocks_benchmark_without_performance_fixture
+#check AgenticAILabProof.PooC4.UserInterface.UiScenarioProjectionFailureMatrix
+#check AgenticAILabProof.PooC4.UserInterface.uiScenarioProjectionFailureMatrix
 #check strategy_plan_blocks_without_selector_policy
 #check strategy_plan_blocks_without_resource_policy
 #check strategy_plan_blocks_without_capability_policy
@@ -659,7 +659,7 @@ $
 The Scheme projection for this layer is:
 
 #+begin_src scheme
-poo-flow-ui-scenario->lean-facts
+agentic-ai-lab-ui-scenario->lean-facts
 #+end_src
 
 It accepts a POO object or alist with UI scenario fields such as

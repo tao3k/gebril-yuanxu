@@ -7,7 +7,7 @@
 
 * 2026-09-11 downstream convergence
 
-POO Flow owns no memory guard implementation.  The root package build uses the
+Agentic AI Lab owns no memory guard implementation.  The root package build uses the
 top-level upstream =std/build-script#defbuild-script= entrypoint inside the
 enclosing gerbil-bazel resource guard.  Explicit downstream work such as POO
 CLOS qualification invokes
@@ -31,14 +31,14 @@ degraded observer, or whether native compiler activity was observed.  They do
 not currently prove object retention, assign a peak to a Scheme or native heap
 owner, or prove a generic "heap takeover" condition: that would require a
 phase-correlated structured sample series or another upstream-owned ownership
-signal.  POO Flow therefore must not invent a downstream verdict from the
+signal.  Agentic AI Lab therefore must not invent a downstream verdict from the
 current aggregate fields.  If that diagnosis becomes required, the receipt is
-extended and validated upstream first; POO Flow then consumes the new field or
+extended and validated upstream first; Agentic AI Lab then consumes the new field or
 projection without adding another sampler.
 
 The obsolete local =process-memory-guard-complete.ss= fixture was removed with
 this convergence.  Product runtime memory policies and module-system debug
-observations remain separate POO Flow semantics; they do not supervise builds
+observations remain separate Agentic AI Lab semantics; they do not supervise builds
 and are not replacements for the upstream guard.
 
 * Corrected responsibility
@@ -55,7 +55,7 @@ build starts.  A stable resident set below the hard boundary is normal even
 when its absolute value is relatively high.
 
 The public ASP Building Framework owns the reusable Scheme implementation.
-POO Flow declares its PackageSpec and consumes that implementation;
+Agentic AI Lab declares its PackageSpec and consumes that implementation;
 =std/make= remains the only compiler scheduler.
 
 #+begin_src mermaid
@@ -185,6 +185,6 @@ The pure Scheme classifier and scheduler-frontier suite passed five of five
 cases. The generic source-closure suite passed two of two cases. This closes
 the bootstrap and twelve-to-three admission regressions while keeping the
 rolling-window and hard-line failure paths executable. The same acceptance
-removed the obsolete ASP-owned =poo-flow= component catalog and manifest
+removed the obsolete ASP-owned =agentic-ai-lab= component catalog and manifest
 command; the only remaining closure API derives a generic downstream package
 prefix from that package's own =gerbil.pkg=.

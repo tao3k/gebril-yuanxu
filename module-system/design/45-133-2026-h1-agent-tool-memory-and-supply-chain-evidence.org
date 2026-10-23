@@ -28,7 +28,7 @@ non-authoritative under
   [[https://github.com/microsoft/playwright-mcp/issues/1479][indirect prompt injection through accessibility snapshots]].
 - Reported claim: attacker-controlled accessibility text may enter the same model
   context as instructions, while a multi-page browser session retains earlier data.
-- Confidence boundary: the issue is a reported attack path, not a POO Flow reproduction.
+- Confidence boundary: the issue is a reported attack path, not a Agentic AI Lab reproduction.
 - Candidate obligations:
   - every tool response carries origin, trust, tenant, session, and sensitivity labels;
   - untrusted response content cannot become authority;
@@ -96,7 +96,7 @@ non-authoritative under
   and execution; the stated limitation is that individually allowed calls are not
   yet correlated into workflow-level policy.
 - Confidence boundary: vendor benchmark and performance numbers are not adopted as
-  POO Flow proof evidence.
+  Agentic AI Lab proof evidence.
 - Candidate obligations:
   - every action is admitted before runtime handoff;
   - sequence safety is not derived from pointwise authorization;
@@ -235,7 +235,7 @@ flowchart LR
 | =Enterprise.SessionContextProvenance= | Provenance-preserving context accumulation and contamination resistance |
 
 These are proof-layer owners.  They do not make external MCP servers, Microsoft
-toolkits, or LiteLLM dependencies of POO Flow.
+toolkits, or LiteLLM dependencies of Agentic AI Lab.
 
 * Evidence-quality exclusions
 

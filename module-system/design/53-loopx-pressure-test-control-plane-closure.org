@@ -10,8 +10,8 @@ real community-style product that hand-builds a local control plane for long
 running agents: goals, todos, gates, quota, monitors, run history, projections,
 and public/private boundaries.
 
-The local conclusion is direct: =poo-flow= should not copy LoopX as an
-application. =poo-flow= should absorb the invariant underneath it and expose a
+The local conclusion is direct: =agentic-ai-lab= should not copy LoopX as an
+application. =agentic-ai-lab= should absorb the invariant underneath it and expose a
 better control-plane layer:
 
 #+begin_src text
@@ -54,7 +54,7 @@ requirements. The lesson is that users need a control plane, but they should
 not need to invent one per product.
 
 ** 10.06.53.30 Dimensional Advantage
-=poo-flow= is lower-level than LoopX because it owns the language and
+=agentic-ai-lab= is lower-level than LoopX because it owns the language and
 composition model:
 - task families are POO descriptors, not hard-coded runner branches;
 - registries are immutable POO policy bundles;
@@ -64,7 +64,7 @@ composition model:
 - durable operation receipts project append, checkpoint, lease, repair,
   artifact, communication, and sandbox intents into Marlin handoff data.
 
-=poo-flow= is also higher-level than LoopX because it can make those concepts
+=agentic-ai-lab= is also higher-level than LoopX because it can make those concepts
 domain-neutral. A downstream "monitor todo" is just a policy family plus a
 strategy rule. A downstream "quota should-run" decision is just a composed
 strategy result with gates, capability checks, outcome floors, and fallback
@@ -134,7 +134,7 @@ LoopX exposes many concepts as CLI flags and runtime records:
 =decision_scope=, =claimed_by=, =blocks_agent=, =monitor_target_key=,
 =cadence=, and =next_due_at=.
 
-In =poo-flow= these should become named POO policy families and profile
+In =agentic-ai-lab= these should become named POO policy families and profile
 fragments. A user should declare them as policy objects or functional helpers,
 not by assembling command-line state.
 
@@ -150,7 +150,7 @@ LoopX's =quota should-run= logic is valuable because it encodes real agent
 decisions: run, observe, ask owner, quiet-skip, safe bypass, self-repair,
 capability bridge repair, workspace guard, and scheduler backoff.
 
-If =poo-flow= cannot express those as strategy combinators, users will rebuild
+If =agentic-ai-lab= cannot express those as strategy combinators, users will rebuild
 large condition trees downstream.
 
 Closure requirement:
@@ -181,7 +181,7 @@ Closure requirement:
 
 *** 10.06.53.60.40 Projection And Frontstage Gap
 LoopX is careful that dashboards and reports consume projections, not private
-files. =poo-flow= needs the same discipline as a reusable project invariant.
+files. =agentic-ai-lab= needs the same discipline as a reusable project invariant.
 
 Closure requirement:
 - define projection families for status, attention queue, handoff packet,
@@ -209,7 +209,7 @@ Closure requirement:
   diagnostics instead of large runtime payloads.
 
 *** 10.06.53.60.55 Marlin ABI Pressure Relief
-Marlin is the best real runtime-language integration case for =poo-flow=. The lesson is not that =poo-flow= should duplicate Marlin's runtime ABI. The lesson is that =poo-flow= must reduce pressure on that ABI by sending already-normalized strategy facts instead of forcing Marlin to reconstruct user intent from rich Scheme objects.
+Marlin is the best real runtime-language integration case for =agentic-ai-lab=. The lesson is not that =agentic-ai-lab= should duplicate Marlin's runtime ABI. The lesson is that =agentic-ai-lab= must reduce pressure on that ABI by sending already-normalized strategy facts instead of forcing Marlin to reconstruct user intent from rich Scheme objects.
 
 Evidence from the current Marlin Rust side:
 - =GraphLoopStrategyRuntime= already distinguishes =StaticPolicy=, =NativeScheme=, and =NativeGerbil=. The native variants are typed C ABI adapters, not a license to expose raw Scheme internals.
@@ -223,12 +223,12 @@ Evidence from the current Marlin Rust side:
 - the native request path tracks conversion cost and supports epoch-owned backing for stable match keys, so repeated native calls can reuse graph/profile/root scalar backing and marshal only per-decision payload.
 
 Design implication:
-- =poo-flow= should project POO policy families into compact, Marlin-aligned policy packets: profile id, policy epoch, graph/profile/root ids, action kind, gates, capability/readiness requirements, evidence refs, watermarks, idempotency keys, lease refs, and conflict policy.
-- =poo-flow= should resolve rich POO inheritance, functional combinators, strategy eligibility, and user-facing diagnostics before handoff. Marlin should not need to know why a policy object inherited a slot or which downstream UI concept produced it.
-- ABI readiness must become a normal strategy gate. If readiness fails, =poo-flow= should emit =ask-owner=, =quiet-skip=, =self-repair=, or diagnostic receipts before runtime execution.
+- =agentic-ai-lab= should project POO policy families into compact, Marlin-aligned policy packets: profile id, policy epoch, graph/profile/root ids, action kind, gates, capability/readiness requirements, evidence refs, watermarks, idempotency keys, lease refs, and conflict policy.
+- =agentic-ai-lab= should resolve rich POO inheritance, functional combinators, strategy eligibility, and user-facing diagnostics before handoff. Marlin should not need to know why a policy object inherited a slot or which downstream UI concept produced it.
+- ABI readiness must become a normal strategy gate. If readiness fails, =agentic-ai-lab= should emit =ask-owner=, =quiet-skip=, =self-repair=, or diagnostic receipts before runtime execution.
 - The C ABI remains the compiled native adapter and SDK target. The user interface remains POO-native policy families and functional strategy combinators.
 *** 10.06.53.60.60 Validation Gap
-LoopX keeps many smoke tests because regressions strand automation. =poo-flow=
+LoopX keeps many smoke tests because regressions strand automation. =agentic-ai-lab=
 should reduce the need for downstream smoke sprawl by validating shared
 contracts once.
 
@@ -242,7 +242,7 @@ Closure requirement:
   configure the behavior without writing a new control-plane engine.
 
 ** 10.06.53.70 Closure Definition
-The perfect closure for this layer is not "POO Flow executes everything."
+The perfect closure for this layer is not "Agentic AI Lab executes everything."
 The closure is:
 
 1. A downstream agent-control product can express its goal/todo/gate/quota/
@@ -257,7 +257,7 @@ The closure is:
    happened.
 
 When those conditions hold, LoopX-style products become configuration and
-projection packages over =poo-flow=. When they do not hold, they become
+projection packages over =agentic-ai-lab=. When they do not hold, they become
 parallel engines.
 
 ** 10.06.53.80 Next Design Work

@@ -5,16 +5,16 @@
 
 * Identity and one public entry
 
-The current native package names are =yuanxu= and =poo-flow=. The independently
+The current native package names are =yuanxu= and =agentic-ai-lab=. The independently
 named =:tao3k/yuanxu/prelude= supplies language syntax; it does not rename either
 package. Repository URLs, installation directories and mount names are not
 package identities.
 
 =yuanxu!= obtains its enclosing native module Context through
 =core-context-top= and =expander-context-id=. For =yuanxu/init= it exports
-=yuanxu.init.exports=; for =poo-flow/init= it exports
-=poo-flow.init.exports=. The same declaration can appear in any Scheme module:
-=poo-flow/selection= exports =poo-flow.selection.exports=. The final native
+=yuanxu.init.exports=; for =agentic-ai-lab/init= it exports
+=agentic-ai-lab.init.exports=. The same declaration can appear in any Scheme module:
+=agentic-ai-lab/selection= exports =agentic-ai-lab.selection.exports=. The final native
 module separator becomes a dot; preceding namespace components remain intact.
 =init.ss= is a conventional entry file, not a required suffix. A REPL-only
 declaration without an enclosing module still has no source-qualified export
@@ -28,23 +28,23 @@ binding. There is no compatibility facade, new resolver or cache protocol.
 * Ordinary imports and native paths
 
 #+begin_src scheme
-(import :yuanxu/init :poo-flow/init)
+(import :yuanxu/init :agentic-ai-lab/init)
 (.get yuanxu.init.exports Modules ops scope)
-(.get poo-flow.init.exports Core json-schema scope)
+(.get agentic-ai-lab.init.exports Core json-schema scope)
 #+end_src
 
 The filename does not grant module-loading authority. For example, the same
-directory declaration in =poo-flow/selection.ss= is valid:
+directory declaration in =agentic-ai-lab/selection.ss= is valid:
 
 #+begin_src scheme
-;; selection.ss, inside the poo-flow package
+;; selection.ss, inside the agentic-ai-lab package
 (import :yuanxu/module-system/selection/init-syntax)
 (yuanxu! :load-modules "./modules" mode: explicit rename: Services
   (checks))
 
 ;; A consumer imports the owning module, without prefix-in.
-(import :poo-flow/selection)
-(.get poo-flow.selection.exports Services checks scope)
+(import :agentic-ai-lab/selection)
+(.get agentic-ai-lab.selection.exports Services checks scope)
 #+end_src
 
 These are separate source-file examples. Loading remains demand-driven; changing

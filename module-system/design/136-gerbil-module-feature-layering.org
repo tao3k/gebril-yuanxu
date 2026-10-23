@@ -2,16 +2,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+TITLE: RFC 136 — Gerbil Module And POO Flow Feature Layering
+#+TITLE: RFC 136 — Gerbil Module And Agentic AI Lab Feature Layering
 #+STATUS: Active
 #+DATE: 2026-07-13
 #+OPTIONS: toc:3 num:nil
 
 * Decision
 
-POO Flow distinguishes Gerbil language modules from selectable product
+Agentic AI Lab distinguishes Gerbil language modules from selectable product
 features.  A Gerbil module is a static namespace, compilation, macro-phase,
-import/export, and single-instantiation boundary.  A POO Flow =Feature= is a
+import/export, and single-instantiation boundary.  A Agentic AI Lab =Feature= is a
 POO-native declarative capability contribution selected by a profile.  Importing
 a Gerbil module makes exported definitions available; it never enables a
 Feature.
@@ -20,7 +20,7 @@ The public product vocabulary is =FeatureDescriptor=, =FeatureSelection=,
 =FeatureProfile=, =FeatureActivationPlan=, and =FeatureInstance=.  The public
 =use-module= vocabulary is retired rather than compatibility-wrapped.  Gerbil's
 own =module=, =import=, and =export= vocabulary remains unchanged and is never
-reimplemented by POO Flow.
+reimplemented by Agentic AI Lab.
 
 * Four-layer architecture
 
@@ -75,7 +75,7 @@ borrow another layer's edge semantics.
 
 * Doom Emacs concepts translated without copying its runtime model
 
-| Doom concept | POO Flow concept | Important difference |
+| Doom concept | Agentic AI Lab concept | Important difference |
 |--------------+------------------+----------------------|
 | module category | Feature namespace/category | semantic grouping only |
 | module | FeatureDescriptor | immutable POO value, not a Gerbil module |
@@ -89,7 +89,7 @@ Doom's directory and lifecycle conventions are design input for the product
 feature layer.  They do not redefine Gerbil module instantiation or phase
 semantics.
 
-* Gerbil module capabilities POO Flow should exploit
+* Gerbil module capabilities Agentic AI Lab should exploit
 
 ** Single instantiation
 
@@ -135,7 +135,7 @@ flowchart LR
 
 Gerbil =import= states which definitions are available to compile.  Gerbil
 =export= states which macro and runtime bindings form an owner module's code
-surface.  POO Flow uses this for provenance and static linking, not activation.
+surface.  Agentic AI Lab uses this for provenance and static linking, not activation.
 
 Every static FeatureDescriptor records an explicit semantic =feature-id=,
 =schema-version=, and =owner-module-id=.  Module paths and pointer identity may
@@ -291,7 +291,7 @@ After the new surface is proven, project-owned semantic code moves out of
 =src/module-system=.  Feature descriptors, selection, resolution, profiles, and
 activation plans move to =src/feature-system=.  CaseComponent and DomainCase
 owners move to =src/domain-case=.  Gerbil's module system remains upstream and
-does not receive a POO Flow wrapper pretending to be another language module
+does not receive a Agentic AI Lab wrapper pretending to be another language module
 system.
 
 * Qualification gates

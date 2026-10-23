@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns POO Flow structured cancellation across recursive structural
+This module owns Agentic AI Lab structured cancellation across recursive structural
 boundaries, coalesced demands, effect attempts, runtime resource leases, and
 first-class continuation re-entry.
 
@@ -22,12 +22,12 @@ It defines:
 Cancellation is not a global mutable flag and is not synonymous with throwing
 an exception.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= owns generic POO identity, demand realization, memoization,
 lineage, suspension, fixed-point mechanics, and continuation-aware control.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - cancellation-scope identity and containment;
 - cancellation policy and propagation authority;
@@ -257,7 +257,7 @@ flowchart LR
 
 Graph traversal does not issue cancellation, resume cleanup continuations, or
 force terminal states.  =gerbil-poo= owns generic demand and cycle mechanics;
-POO Flow owns the interpretation of cancellation authority and receipts.
+Agentic AI Lab owns the interpretation of cancellation authority and receipts.
 
 * Observability and receipt contract
 
@@ -302,7 +302,7 @@ generation, condition, restart, and receipt identifiers remain
 symbol-located, behavior-proven, and flow-qualified.
 
 Any generally reusable POO cancellation or continuation-generation mechanism
-belongs upstream in =gerbil-poo=.  POO Flow MUST NOT introduce a shadow
+belongs upstream in =gerbil-poo=.  Agentic AI Lab MUST NOT introduce a shadow
 scheduler, cancellation runtime, or fixed-point evaluator.
 
 * Explicit exclusions

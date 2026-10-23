@@ -201,7 +201,7 @@ historical evidence with their original boundaries.
 
 #+begin_src sh
 python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/27-isolated-selected-projection/run.py \
-  --archive /private/tmp/pooflow-poo-099b381-source.tar.gz --label replay
+  --archive /private/tmp/agenticailab-poo-099b381-source.tar.gz --label replay
 #+end_src
 
 The pinned archive acquisition is documented in module 25. The runner checks all

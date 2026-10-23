@@ -30,7 +30,7 @@ module group or a cache namespace.
 =gerbil-poo= remains the sole implementation of POO objects, prototype
 composition, slot demand and open recursion.
 
-POO Flow derives SCC evidence from native demand.  It MUST NOT add:
+Agentic AI Lab derives SCC evidence from native demand.  It MUST NOT add:
 
 - a second fixed-point evaluator;
 - a static module dependency graph presented as runtime truth;
@@ -58,7 +58,7 @@ An SCC becomes sealed for the current generation only when:
 5. convergence or an authorized continuable condition has produced a receipt;
 6. the observation and convergence budgets have not been bypassed.
 
-Sealing is relative to the demanded semantic closure.  POO Flow does not force
+Sealing is relative to the demanded semantic closure.  Agentic AI Lab does not force
 every syntactically reachable branch merely to construct a global static graph.
 
 #+begin_src mermaid
@@ -188,7 +188,7 @@ A slot computation may reveal different dependencies as provisional values
 change.  Therefore SCC membership may change while the fixed point is being
 observed.
 
-POO Flow MUST:
+Agentic AI Lab MUST:
 
 1. record topology revisions in the current generation;
 2. revoke any provisional convergence claim invalidated by a new edge;

@@ -23,10 +23,10 @@ selection and package dependency suppression are nevertheless different operatio
 Do not inherit Doom's initialization-order semantics as a POO execution or build
 ordering rule; dependency edges must determine those relationships explicitly.
 
-POO Flow already has [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][yuanxu!]], [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][yuanxu-modules!]] and an actual
-[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to native selection values without
+Agentic AI Lab already has [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][yuanxu!]], [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][yuanxu-modules!]] and an actual
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to native selection values without
 reading source files. The current grammar has fixed categories and flag rows;
-[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/selection-flags.ss][flag extension]] merges raw flag keys. Core [[file:../../../module-system/funs.ss][negative-flag queries]] exist, but a
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/selection-flags.ss][flag extension]] merges raw flag keys. Core [[file:../../../module-system/funs.ss][negative-flag queries]] exist, but a
 negative query does not implement disabling an auto-selected feature/dependency.
 Do not call the extended policy below already implemented.
 
@@ -86,7 +86,7 @@ not removed so that discovery could bring it back. -cicd disables one
 Funflow feature while retaining other selected Funflow capabilities.
 
 The Funflow example uses its source-declared CI/CD feature from
-[[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/modules/funflow/config.ss][Funflow config]], not a guessed Kubernetes capability.
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/modules/funflow/config.ss][Funflow config]], not a guessed Kubernetes capability.
 
 The explicit mode describes the desired optional set instead:
 
@@ -125,7 +125,7 @@ one feature, not two independent keys.
 * Module System owns Core; Feature System owns optional extensions
 
 The earlier core?/default-features resolver and subsequent all-Core-as-Feature
-proposal are both withdrawn. Reuse [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptors]] and [[file:../../../module-system/graph/funs.ss][module-closure]] for
+proposal are both withdrawn. Reuse [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptors]] and [[file:../../../module-system/graph/funs.ss][module-closure]] for
 module baseline/import dependencies. Reuse Feature descriptors/resolution and
 capability binding only for selected extensions. [[file:11.19-feature-system-guestbook-selection.org][Module 18]] specifies the corrected
 boundaries and complete bounded design adapters.
@@ -163,7 +163,7 @@ generated schema assets, enabled feature edges and required toolchain inputs.
 An exports-only list cannot infer hidden imports, dynamic loads or generated files.
 Publication must declare dynamic edges or refuse unqualified build closure.
 
-The existing [[https://github.com/tao3k/poo-flow/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/build.ss][build.ss]] still lists module public entries and native build details.
+The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/build.ss][build.ss]] still lists module public entries and native build details.
 The design removes repeated per-module registration from that list. build.ss
 remains a small bootstrap/coordinator for the existing ASP PackageSpec/std-make
 execution owner; init does not replace the compiler/toolchain or grant execution

@@ -4,7 +4,7 @@
 
 * Authoritative CI acceptance receipt (2026-07-19)
 
-GitHub Actions run =29685015556= at POO Flow revision
+GitHub Actions run =29685015556= at Agentic AI Lab revision
 =ee1b2e1464537dab826abd819d6be3a896f67401= completed successfully across the
 Linux and macOS Gerbil lanes, the Lean proof bridge, the runtime-C producer,
 the Bazel acceptance suites, and the Python runtime wheel consumer.
@@ -20,7 +20,7 @@ Both receipts used =execution-policy=adaptive= and
 =build-mode=standard-gerbil-make-project=.  The CI phase budget was 480 seconds
 on each platform, so both Scheme actions passed the declared gate.
 
-These are fresh POO Flow Scheme-output action receipts: all three package
+These are fresh Agentic AI Lab Scheme-output action receipts: all three package
 stages compiled and no package stage was skipped.  They are not full-workflow
 cold receipts, because the CI jobs restored the Gerbil installation and package
 dependency caches and therefore did not rebuild the compiler toolchain.  The

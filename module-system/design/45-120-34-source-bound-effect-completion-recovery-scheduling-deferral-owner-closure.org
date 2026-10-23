@@ -9,7 +9,7 @@
 
 - RFC state: proof model implemented; external AXLE qualification is blocked.
 - Language: English only.
-- Scope: Enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: Enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof:
   [[file:45-120-33-source-bound-effect-completion-recovery-owner-deferral-admission-contract-closure.org][45-120-33 owner deferral and admission contract closure]].
 

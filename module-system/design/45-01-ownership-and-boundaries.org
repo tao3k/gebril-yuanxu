@@ -15,9 +15,9 @@ parent/child, and development-harness boundaries for the 45 RFC family.
 
 | Concern | Owner | Explicitly not owned |
 |-
-| pure-object fixed point, prototype composition, self/super | pinned =gerbil-poo= | POO Flow, GSLPH |
-| Mix/Profile/module composition semantics | POO Flow | Gerbil-Bazel, =gerbil.pkg= |
-| module import and binding behavior | Gerbil module system | POO Flow policy |
+| pure-object fixed point, prototype composition, self/super | pinned =gerbil-poo= | Agentic AI Lab, GSLPH |
+| Mix/Profile/module composition semantics | Agentic AI Lab | Gerbil-Bazel, =gerbil.pkg= |
+| module import and binding behavior | Gerbil module system | Agentic AI Lab policy |
 | dependency installation | =gerbil.pkg=/=gxpkg= | semantic qualification |
 | build graph and build execution | Gerbil-Bazel | Mix/Profile semantics |
 | policy harness and building/testing framework | GSLPH | runtime authority |
@@ -119,7 +119,7 @@ strategy.
 * Checklist
 
 - [X] Assign fixed-point semantics to pinned =gerbil-poo=.
-- [X] Assign Mix/Profile semantics to POO Flow.
+- [X] Assign Mix/Profile semantics to Agentic AI Lab.
 - [X] Keep package and build systems operational only.
 - [X] Keep GSLPH development-only.
 - [X] Keep child qualification downstream-only.

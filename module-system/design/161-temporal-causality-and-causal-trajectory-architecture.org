@@ -23,7 +23,7 @@ type algebra, model/query separation, formal obligations and implementation
 status.  =packages/proofs/quint/model.org= specifies the first finite
 Quint slice and its exact limits.
 
-=Temporal Causality= is a POO Flow core module, not an SDLC-only algorithm and
+=Temporal Causality= is a Agentic AI Lab core module, not an SDLC-only algorithm and
 not a Healthcare-only ontology.  =Impact Analysis= is one derived operation of
 that module; it is not the module name.  Vertical contributors declare domain
 events, relations, time observations and risk semantics; the core owns causal
@@ -33,7 +33,7 @@ receipts.
 
 ** Core engine and vertical ownership
 
-The public =modules/temporal-causality/= API is a reusable engine for POO Flow
+The public =modules/temporal-causality/= API is a reusable engine for Agentic AI Lab
 users and ecosystem packages.  It accepts domain-neutral POO objects for
 observations, clock domains, relations, constraints, hypothesis families,
 interventions, bounds and questions.  Its pure Scheme operations admit,
@@ -97,30 +97,30 @@ implemented here.  Relevance is to the *domain-neutral* Temporal Causality
 module: =high= changes its semantic contract, =medium= informs an optional
 projection or bounded implementation, and =vertical= belongs to a scenario.
 The code column names the current owner or the intended owner of a gap.  A
-paper's use of the word /causal/ does not itself admit a POO Flow causal fact.
+paper's use of the word /causal/ does not itself admit a Agentic AI Lab causal fact.
 
 #+name: temporal-source-correspondence
 #+caption: Primary sources mapped to semantic owners and explicit limits (checked 2026-10-01).
 | ID | Primary paper or resource | Relevance | Corresponding code and design consequence |
 |----+---------------------------+-----------+-------------------------------------------|
-| R1 | Lamport, [[https://lamport.org/pubs/time-clocks.pdf][Time, Clocks, and the Ordering of Events in a Distributed System]] (1978) | high | =modules/temporal-causality/{types,objects,funs}.ss=: =PooFlowTemporalObservation= has clock role and position, but =causal-events-analyze= compares positions without a clock-domain comparison contract. Add explicit comparable-clock and partial-order evidence before treating positions as ordered; equal or incomparable timestamps do not establish causal order. |
+| R1 | Lamport, [[https://lamport.org/pubs/time-clocks.pdf][Time, Clocks, and the Ordering of Events in a Distributed System]] (1978) | high | =modules/temporal-causality/{types,objects,funs}.ss=: =AgenticAILabTemporalObservation= has clock role and position, but =causal-events-analyze= compares positions without a clock-domain comparison contract. Add explicit comparable-clock and partial-order evidence before treating positions as ordered; equal or incomparable timestamps do not establish causal order. |
 | R2 | Kowalski and Sergot, [[https://www.doc.ic.ac.uk/~rak/papers/event%20calculus.pdf][A Logic-based Calculus of Events]] (1986; author-hosted paper) | medium | =modules/temporal-causality/= should distinguish event occurrence, interval state and observation. Current event graph and cut provide occurrence snapshots, not a fluent/event-calculus engine; do not label snapshot reachability as persistent state. |
 | R3 | Kakas, Kowalski and Toni, [[https://www.doc.ic.ac.uk/~rak/papers/abdsurv.pdf][Abductive Logic Programming]] (1992) | high | Add POO-native candidate hypothesis, integrity constraint and explanation-set contracts under =modules/temporal-causality/=. A candidate explains observations only relative to declared assumptions and constraints; current =hypothesized= event modality is not an abductive search result. ASCENT or another rule engine may derive candidates but does not own their admission. |
-| R4 | Halpern and Pearl, [[https://www.journals.uchicago.edu/doi/10.1093/bjps/axi147][Causes and Explanations: A Structural-Model Approach, Part I: Causes]] (2005) | high | Add separate intervention/model-family evidence before any actual-cause claim. =poo-flow-temporal-causal-classify= and GQL paths are structural/temporal witnesses; neither implements structural equations or intervention semantics. |
+| R4 | Halpern and Pearl, [[https://www.journals.uchicago.edu/doi/10.1093/bjps/axi147][Causes and Explanations: A Structural-Model Approach, Part I: Causes]] (2005) | high | Add separate intervention/model-family evidence before any actual-cause claim. =agentic-ai-lab-temporal-causal-classify= and GQL paths are structural/temporal witnesses; neither implements structural equations or intervention semantics. |
 | R5 | Alvaro et al., [[https://www2.eecs.berkeley.edu/Pubs/TechRpts/2009/EECS-2009-173.html][Dedalus: Datalog in Time and Space]] (2009) | medium | For optional ASCENT/Scheme derivation, represent delay and reordering as explicit time/arrival facts; do not assume rule closure equals committed event time. =modules/temporal-causality/= remains the semantic owner, not an ASCENT-specific facade. |
 | R6 | [[https://github.com/informalsystems/quint][Quint specification language]] | high | =packages/proofs/quint/= owns the finite models and verifier entry points; native POO values retain semantic ownership. |
 | R7 | Quint safety and temporal properties | high | A progress claim states fairness and environment assumptions; the shared catalog selects temporal properties explicitly. |
 | R8 | [[https://www.iso.org/standard/76120.html][ISO/IEC 39075:2024, GQL]] | medium | =packages/lambda-episteme/user-interface/scenarios/healthcare/reasoning/prescription-causal-trajectory.gql= asks snapshot graph questions. =modules/query/gql.ss= and the MRR execution boundary may produce candidate paths, not causal admission or complete-world claims. |
-| R9 | =PooFlowProof.PooC4.TemporalCausality= and [[https://lean-lang.org/][Lean]] | medium | =packages/proofs/lean/PooFlowProof/PooC4/TemporalCausality.lean= proves current event modality and cut laws. An optional later theorem can prove soundness of Quint-to-POO projection and result quantifiers after the Scheme contract is executable; source/digest equality alone is not semantic correspondence. |
+| R9 | =AgenticAILabProof.PooC4.TemporalCausality= and [[https://lean-lang.org/][Lean]] | medium | =packages/proofs/lean/AgenticAILabProof/PooC4/TemporalCausality.lean= proves current event modality and cut laws. An optional later theorem can prove soundness of Quint-to-POO projection and result quantifiers after the Scheme contract is executable; source/digest equality alone is not semantic correspondence. |
 | R10 | Akidau et al., [[https://www.vldb.org/pvldb/vol8/p1792-Akidau.pdf][The Dataflow Model]] (2015) | medium | A limited timing reference for event, ingress and processing observations and late data. It does not define the AI evidence-use engine or its impact semantics. |
 | R11 | Wang et al., [[https://arxiv.org/abs/2401.02869][Practical Reasoning in DatalogMTL]] (2024) | medium | A future bounded temporal-rule derivation may inform =modules/temporal-causality/funs.ss= and an optional ASCENT adapter. Metric temporal rule closure is not yet implemented here; its complexity and possible nontermination forbid claiming complete inference from an unbounded rule run. |
 | R12 | TypeSafe AI, [[https://typesafe.ai/blog/introducing-system-one-models-and-jev][Introducing System One Models & Jev]] and [[https://docs.typesafe.ai/introduction][Jev documentation]] (2026) | medium | Jev's state plus typed questions suggest an optional candidate-ranking Provider for hypothesis selection under =modules/temporal-causality/=. Its output is a typed probabilistic judgment, not an observed event, temporal proof, or causal admission. No Jev adapter exists in this repository. These are TypeSafe's product and technical resources; no TypeSafe-authored Jev research paper was verified for this record. |
-| R13 | Sun and Xu, [[https://arxiv.org/abs/2609.26758][Type-Safe Is Not Error-Free]] (2026 preprint) | medium | A future Jev-like Provider must retain question wording, option names, rubrics, model version and calibration evidence in its receipt. Typed output alone does not establish that the model interpreted a hypothesis label correctly; tests must vary labels and question phrasing. This study is external to TypeSafe and is not a POO Flow conformance result. |
+| R13 | Sun and Xu, [[https://arxiv.org/abs/2609.26758][Type-Safe Is Not Error-Free]] (2026 preprint) | medium | A future Jev-like Provider must retain question wording, option names, rubrics, model version and calibration evidence in its receipt. Typed output alone does not establish that the model interpreted a hypothesis label correctly; tests must vary labels and question phrasing. This study is external to TypeSafe and is not a Agentic AI Lab conformance result. |
 | R14 | Wu, Qiu and Xie, [[https://proceedings.iclr.cc/paper_files/paper/2026/hash/f2affea1fddbdf2e7b5542dac3614640-Abstract-Conference.html][DoFlow]] (ICLR 2026) | medium | A future trajectory Provider may propose observational, interventional and counterfactual distributions under an explicitly identified causal DAG and model. =impact/= does not implement DoFlow or its assumption-qualified counterfactual recovery result. |
 | R15 | Li et al., [[https://proceedings.iclr.cc/paper_files/paper/2026/hash/17af43527227c5c96db0f8d4c6aadc4e-Abstract-Conference.html][CLEF]] (ICLR 2026) | high | Future intervention receipts must bind onset time and affected-variable scope. The current exact-grid contrast has no intervention editing or invariance proof for untouched variables; CLEF's sequence-editing scores cannot be promoted to causal admission. |
 | R16 | Chen, Zhang and Chen, [[https://proceedings.iclr.cc/paper_files/paper/2026/hash/cafcbf5d00a961a05bd5875c17ef0fe7-Abstract-Conference.html][HEDRA]] (ICLR 2026) | medium | Event-level temporal-KG representations may rank candidate paths for =modules/temporal-causality/=, but predictive causal disentangling is not an observed edge or an individual effect certificate. |
 | R17 | Shahu et al., [[https://pmc.ncbi.nlm.nih.gov/articles/PMC13370197/][Effects of Longitudinal Modified Treatment Policies on Rates of Change]] (Statistics in Medicine 2026) | high | A future identified trajectory-effect Provider must bind intervention policy, outcome, estimand, support and uncertainty. Its equally spaced visit-grid inference is distinct from =impact/= exact arithmetic on an irregular grid. |
-| R18 | Gaiotti et al., [[https://arxiv.org/abs/2609.04940][Treatment Persistence Drives Estimator Performance]] (2026-09 preprint) | high | Compare estimators only for the same intervention-specific estimand and horizon; retain persistence and support diagnostics. Its simulation result is not a generic performance guarantee for POO Flow. |
+| R18 | Gaiotti et al., [[https://arxiv.org/abs/2609.04940][Treatment Persistence Drives Estimator Performance]] (2026-09 preprint) | high | Compare estimators only for the same intervention-specific estimand and horizon; retain persistence and support diagnostics. Its simulation result is not a generic performance guarantee for Agentic AI Lab. |
 | R19 | Liu et al., [[https://arxiv.org/abs/2608.01913][Diagnosing Search Behavior and Failure Modes in Long-Horizon Search Agents]] (2026 preprint) | high | =modules/temporal-causality/evidence/= separates retrieved evidence from evidence used in a claim; future evaluation must distinguish retrieval gaps from utilization gaps. Search count alone is not a quality certificate. |
 | R20 | Ma et al., [[https://arxiv.org/abs/2608.01964][LongHorizon-Harness]] (2026 preprint) | high | Explicit source and assessment identities prevent task-state or report claims from being silently promoted by self-assessment. The current POO constructor records an attestation reference; it does not independently verify it. |
 | R21 | Jin et al., [[https://www.microsoft.com/en-us/research/publication/toward-generalist-autonomous-research-via-hypothesis-tree-refinement/][Toward Generalist Autonomous Research via Hypothesis-Tree Refinement]] (2026 preprint) | high | Autonomous research needs persistent hypothesis, evidence, artifact and lesson relations across iterations. The current use/dependency graph is a first structural slice, without a verified improvement loop. |
@@ -138,7 +138,7 @@ The 2026 trajectory sources R14--R18 are expanded with research questions,
 formal contrast semantics, negative controls and reproducibility gates in
 [[file:../../../modules/temporal-causality/impact/research.org][the module-local Dynamic Impact research record]].  As of 2026-10-01,
 no paper published after 2026 is available for validation; conference pages
-and author manuscripts establish the stated source claims, while POO Flow has
+and author manuscripts establish the stated source claims, while Agentic AI Lab has
 not reproduced their reported model-training experiments.
 
 The AI-facing R19--R22 map to the [[file:../../../modules/temporal-causality/evidence/model.org][module-local Evidence relation model]].
@@ -181,7 +181,7 @@ attribution. [[file:../../../modules/temporal-causality/design-audit.org][Audit 
 
 The Cedar analogy is useful at the projection boundary: a POO value can own
 semantic identity while language source is composed and validated for an exact
-instance.  The current Cedar path accepts =PooFlowCedarPolicy= objects with
+instance.  The current Cedar path accepts =AgenticAILabCedarPolicy= objects with
 =.cedar= source and projects them to a native engine; its Lean definitional
 semantics and differential tests are separate evidence.  Dynamic Cedar source
 does not mean that every newly supplied policy already has an instance-specific
@@ -343,7 +343,7 @@ truth, action authority, or publication authority.
 |----------+-------------------------------+----------------|
 | Temporal → GQL | cut/projection/generation, graph inventory, query identity, budget | Freeze input universe and expected semantic revision. |
 | Temporal → ASCENT | same cut/projection/generation, finite typed relations, program identity, budget | Bind each relation source to that universe and record completeness. |
-| GQL → Temporal | =poo-flow-gql-candidate-receipt= binds =SourceQueryReceipt=; the finite scalar row profile can be checked separately | Recompute Query admission and Provider binding at the same ElementSpace revision/cut; compare supplied rows to result digest/count/completeness. |
+| GQL → Temporal | =agentic-ai-lab-gql-candidate-receipt= binds =SourceQueryReceipt=; the finite scalar row profile can be checked separately | Recompute Query admission and Provider binding at the same ElementSpace revision/cut; compare supplied rows to result digest/count/completeness. |
 | ASCENT → Temporal | snapshot/program/source digests, completion/diagnostics, candidate rows and bounded support | Match the exact relation snapshot and program; incomplete or diagnostic runs remain candidates. |
 | Temporal join | the providers declared for this query, their exact scopes and witness identities | Inspect provenance and content; no automatic admission from intersection or agreement. |
 
@@ -371,7 +371,7 @@ unchecked =CandidateReceipt=.  It replays the Query admission and Provider
 binding, including the Query source hash and result bounds.  A new POO-native
 finite scalar [[file:../../../modules/query/results/model.org][result-row contract]] canonicalizes materialized rows.  A separate local
 check compares those rows with the candidate digest, count and completion
-bit.  This scalar digest has a distinct =poo-flow.query.scalar-row-v1:= label.
+bit.  This scalar digest has a distinct =agentic-ai-lab.query.scalar-row-v1:= label.
 MRR already has a richer typed =QueryResultAdmissionReceipt= with a native
 CBOR-based digest; the MRR-owned Provider still has no live transport of
 that receipt or its rows.  An end-to-end adapter must preserve MRR's query
@@ -478,7 +478,7 @@ as the named Org Babel block in the module-local record.
 
 * Standard trajectory and Impact contract
 
-=PooFlowCausalTrajectoryContract= is the domain-neutral admission standard for
+=AgenticAILabCausalTrajectoryContract= is the domain-neutral admission standard for
 every vertical Case that presents a correct path beside an error path.  It has
 two explicit layers:
 
@@ -493,7 +493,7 @@ Identity sets are disjoint.  The intended path is ordered from the trigger;
 each error path branches from the trigger or intended path; and Impact members
 must be causally reachable from their corresponding path.  Missing identities,
 incomplete event graphs, broken paths and modality violations produce typed
-=PooFlowCausalTrajectoryAssessment= diagnostics.  Assessment uses one adjacency
+=AgenticAILabCausalTrajectoryAssessment= diagnostics.  Assessment uses one adjacency
 index and two multi-root traversals, so its bound is O(V + E + declared
 trajectory members), not one graph traversal per member.
 
@@ -507,7 +507,7 @@ Governance handoff.  In particular, changing an error-path event from
 ** POO contract and formal Provider projection law
 
 The trajectory contract is declared exactly once as the POO value stored in a
-Case's =trajectory-declarations= slot.  Its =PooFlowCausalTrajectoryAssessment= and
+Case's =trajectory-declarations= slot.  Its =AgenticAILabCausalTrajectoryAssessment= and
 =trajectory-assessment-digest= are the common identity consumed by every
 formal boundary.  Quint, Lean and Cedar do not own parallel Case configuration
 languages.
@@ -561,7 +561,7 @@ does so.
 
 The existing =sdlc-change-impact= already demonstrates deterministic shortest
 witness paths, selected-relation scope, recheck sets and partial/invalid
-inventory states.  That operation should move under the POO Flow Temporal
+inventory states.  That operation should move under the Agentic AI Lab Temporal
 Causality core and be reused by SDLC and Healthcare rather than copied into a
 second vertical framework.
 
@@ -632,7 +632,7 @@ correct handling of whatever evidence and modality the receipt actually binds.
 
 Lean's native module, root and library-target model is the proof equivalent of
 the Scheme PackageSpec boundary.  A proof-bearing =modules/<owner>= has one
-Lake library named =PooFlowModule<Owner>Proof=.  Its =roots= are the public
+Lake library named =AgenticAILabModule<Owner>Proof=.  Its =roots= are the public
 proof roots for that owner, and Lake alone derives their import closure.
 
 Scenario names do not own foundational proof libraries.  Healthcare composes
@@ -643,12 +643,12 @@ an admitted Lean contract receives no placeholder library.
 The ordinary proof gates are therefore:
 
 #+begin_src shell
-lake build PooFlowModuleTemporalCausalityProof
-lake build PooFlowModuleGovernanceProof
-lake build PooFlowModuleAuthorizationProof
+lake build AgenticAILabModuleTemporalCausalityProof
+lake build AgenticAILabModuleGovernanceProof
+lake build AgenticAILabModuleAuthorizationProof
 #+end_src
 
-The repository-wide =PooFlowProof= root remains available only as an explicit
+The repository-wide =AgenticAILabProof= root remains available only as an explicit
 integration qualification.  CI isolates module libraries in separate matrix
 lanes, so changing one POO Module cannot implicitly turn its local validation
 into a build of every enterprise proof family.
@@ -723,7 +723,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
 
 * Delivery sequence
 
-- [X] Establish =modules/temporal-causality/= as the POO Flow core owner of
+- [X] Establish =modules/temporal-causality/= as the Agentic AI Lab core owner of
    causal event graphs, causal trajectories and deterministic witness-path
    analysis.  SDLC adaptation remains a separate compatibility-preserving task.
 - [X] Standardize intended paths, error paths, intended Impact and error Impact
@@ -735,7 +735,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
    candidate paths plus explicit unknown-frontier queries.
 - [ ] Bind those GQL queries to an MRR Rust execution receipt through the
    gerbil-parser native FFI; parser qualification alone is not query execution
-   and Lambda must not add a subprocess or a second graph runtime.  POO Flow's
+   and Lambda must not add a subprocess or a second graph runtime.  Agentic AI Lab's
    typed candidate, CLOS admission, and Scheme-owned typed Rust projection are ready; the
    remaining owner is the MRR Rust adapter from its admitted physical result
    receipt.  That adapter must combine the MRR-owned row count, result digest
@@ -760,7 +760,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
 - [X] Add generic Lean Temporal Causality theorems refining the existing
    =EventIngressCausalCut= contract.
 - [X] Add the Healthcare-specific Lean refinement from the declared Case events
-   into those generic contracts as =PooFlowScenarioHealthcareProof=.
+   into those generic contracts as =AgenticAILabScenarioHealthcareProof=.
 - [X] Bind the exact assurance digest and closed-state blocker into the existing
    Cedar Healthcare snapshot without placing clinical semantics inside the
    Cedar Provider.  Release remains false until the current Cedar boundary.
@@ -784,7 +784,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
 
 * Detached Family history replay boundary
 
-The Library now projects a native =PooFlowTemporalFamilyArchive= through the
+The Library now projects a native =AgenticAILabTemporalFamilyArchive= through the
 Scheme C ABI. Its full Family Model/Query/Source/Frontier premises allow the Rust
 Library adapter to replay a correction/retraction graph in a fresh process with
 an independently retained digest. Native replay reconstructs proofs and canonical

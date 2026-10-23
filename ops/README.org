@@ -223,7 +223,7 @@ current qualification uses the selected Ops Module end to end.
 
 Provider fixtures and structured receipts belong to t/fixtures/opentofu inside
 Core. All OpenTofu, Nix flake and Ops controls and their qualification catalog
-also belong to Core/t; they run through Core/Justfile. The parent POO Flow tree
+also belong to Core/t; they run through Core/Justfile. The parent Agentic AI Lab tree
 holds neither a second fixture tree nor these specialized recipes. A caller may
 supply an installed Gerbil dependency environment without making Core depend on
 the product's source tree.

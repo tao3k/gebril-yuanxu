@@ -49,7 +49,7 @@ This is the only semantic surface. No alternate admission path is defined.
 ** One canonical v1 admission predicate
 
 This RFC defines one semantic contract for authorization admission:
-=PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryCedarAuthorizationLifecycleCore.SourceBoundEffectCompletionRecoveryCedarAuthorizationEvidence.Admitted=.
+=AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryCedarAuthorizationLifecycleCore.SourceBoundEffectCompletionRecoveryCedarAuthorizationEvidence.Admitted=.
 Every producer and consumer must prove that exact predicate over the complete
 Cedar response, live credential, policy snapshot, authority path, separation
 of duty, responsibility scope, accountability identity, runtime epoch, active
@@ -95,7 +95,7 @@ The owners are:
 | Credential lifecycle | Authentication and credential authority |
 | Delegation path | Enterprise authorization graph |
 | Separation of duty | Enterprise governance policy |
-| Commitment and trace convergence | POO Flow recovery core |
+| Commitment and trace convergence | Agentic AI Lab recovery core |
 
 The proof composes these independently owned facts without transferring their
 ownership into the recovery engine.
@@ -191,7 +191,7 @@ $ "authority path authorized"(
 ) $
 #+end_src
 
-The relation owner proves whichever path is valid. POO Flow only requires the
+The relation owner proves whichever path is valid. Agentic AI Lab only requires the
 proof for the exact scope and commitment.
 
 ** Authorization is not accountability
@@ -340,7 +340,7 @@ progress.
 - [X] Independent lifecycle model: exit 0.
 - [X] Cedar authorization lifecycle core: exit 0.
 - [X] Cedar authorization lifecycle trace closure: exit 0.
-- [X] Full =PooFlowProof= build: 499 jobs completed successfully.
+- [X] Full =AgenticAILabProof= build: 499 jobs completed successfully.
 - [X] Current lifecycle/subject/exporter proof gate: 400 jobs completed
   successfully.
 

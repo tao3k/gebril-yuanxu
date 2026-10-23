@@ -72,7 +72,7 @@ flowchart TD
 
 * Multi-shot continuation semantics
 
-Scheme may invoke the same continuation more than once.  POO Flow preserves
+Scheme may invoke the same continuation more than once.  Agentic AI Lab preserves
 that language capability; it does not wrap the continuation in a hidden
 one-shot mutable cell.
 
@@ -235,7 +235,7 @@ calling a handler, requesting authority, or restarting the demand.
 * Runtime and ownership boundary
 
 Gerbil supplies first-class continuations, =call/cc=, and continuable exception
-mechanisms.  POO Flow defines the semantic identities, conditions, receipts,
+mechanisms.  Agentic AI Lab defines the semantic identities, conditions, receipts,
 and authority rules around their use.
 
 Native =gerbil-poo= demand-lazy evaluation remains the sole POO evaluation

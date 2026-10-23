@@ -819,6 +819,6 @@ flowchart LR
 The default/numeric/forced ordering and equal-priority merge behavior learn
 from [[https://nickel-lang.org/user-manual/merging/#merge-priorities][Nickel
 merge priorities]].  The POO object model, Type/Contract ownership, capability
-boundary, evidence identity, and fixed-point integration are POO Flow
+boundary, evidence identity, and fixed-point integration are Agentic AI Lab
 semantics built on the pinned
 [[https://git.cons.io/mighty-gerbils/gerbil-poo][gerbil-poo]] package.

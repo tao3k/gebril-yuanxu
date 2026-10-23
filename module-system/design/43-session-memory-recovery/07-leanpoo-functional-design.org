@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.07 LeanPOO Functional Composition for AI Agentic Context
 :PROPERTIES:
-:ID: poo-flow-agentic-context-leanpoo-functional-composition
+:ID: agentic-ai-lab-agentic-context-leanpoo-functional-composition
 :STATUS: dependency-and-functional-consumer-local-pass-runtime-correspondence-open
 :OWNER: 10.06.43.01
 :DATE: 2026-10-14
@@ -46,7 +46,7 @@ from a marketing description or a generic functional-programming vocabulary.
 | [[https://github.com/tao3k/lean-poo/blob/v0.1.1/LeanPoo/Functional/SolverTransport.lean][SolverTransport]] | Certified transformation pulls data-bearing solutions/solvers | Reuse checked witness data through an explicitly sound projection | Existence alone supplies no executable solver, optimality, resource bound or effect permission |
 
 Functional Provider capability keys describe available dependencies. They are
-not Governance/Host authorization capabilities. The new POO Flow proof therefore
+not Governance/Host authorization capabilities. The new Agentic AI Lab proof therefore
 names these keys Dependency rather than using one overloaded permission term.
 Factory bind is a same-input composition law for explicitly supplied producers;
 it does not prescribe an Agent's hypotheses, exploration order or action choice.
@@ -109,7 +109,7 @@ remain separate relations and checks.
 
 * Executable parent consumer projection
 
-[[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/FunctionalComposition.lean][FunctionalComposition]] imports the actual v0.1.1 APIs. Its Cut is a small
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean][FunctionalComposition]] imports the actual v0.1.1 APIs. Its Cut is a small
 formal projection of source, Contract, consumer-generation and policy stamps,
 not the complete runtime subject or a new Scheme semantic owner.
 

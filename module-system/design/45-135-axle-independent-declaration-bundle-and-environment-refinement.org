@@ -29,11 +29,11 @@ available public AXLE environment from Lean 4.21 through 4.32 has:
 
 - a fixed Lean toolchain;
 - =import Mathlib= as its available import header;
-- no =repo_url=, =revision=, or =subdir= identifying a POO Flow project image.
+- no =repo_url=, =revision=, or =subdir= identifying a Agentic AI Lab project image.
 
-Consequently, preserving =import PooFlowProof...= cannot work in the public
+Consequently, preserving =import AgenticAILabProof...= cannot work in the public
 environment.  The focused request in 45-134 was rejected with
-=unknown module prefix 'PooFlowProof'=.
+=unknown module prefix 'AgenticAILabProof'=.
 
 AXLE itself already supplies the right downstream semantic operations:
 
@@ -47,13 +47,13 @@ AXLE itself already supplies the right downstream semantic operations:
   identify a Lean toolchain and fixed dependency/import surface.
 
 These operations require input that can already elaborate in the selected AXLE
-environment.  AXLE therefore cannot discover missing POO Flow project
+environment.  AXLE therefore cannot discover missing Agentic AI Lab project
 dependencies from an unresolved leaf.  The local Lean project must first
 project the exact dependency closure.
 
 * Decision
 
-The POO Flow proof harness must construct an =IndependentDeclarationBundle=
+The Agentic AI Lab proof harness must construct an =IndependentDeclarationBundle=
 before invoking AXLE.
 
 The bundle is a proof-source projection, not a package manager:
@@ -62,11 +62,11 @@ The bundle is a proof-source projection, not a package manager:
   layout;
 - the Lean compiler environment remains the owner of declaration identity and
   dependency reachability;
-- the POO Flow projector consumes the already-resolved graph and emits the
+- the Agentic AI Lab projector consumes the already-resolved graph and emits the
   minimal exact source closure required by the selected declarations;
 - AXLE remains the owner of remote semantic extraction, merge, checking, and
   strict proof verification;
-- POO Flow remains the owner of the final evidence receipt and explicit
+- Agentic AI Lab remains the owner of the final evidence receipt and explicit
   certificate.
 
 The projector must not resolve Git repositories, invent dependency versions,
@@ -76,7 +76,7 @@ replace =lake-manifest.json=, or become a general
 * Why the project-aware environment is secondary
 
 A project-aware AXLE environment is useful when many requests share the same
-large dependency base, especially Mathlib, Cedar Spec, and stable POO Flow proof
+large dependency base, especially Mathlib, Cedar Spec, and stable Agentic AI Lab proof
 foundations.  It is not the primary certificate artifact because:
 
 - an environment name does not expose the exact reachable declarations used by
@@ -146,7 +146,7 @@ An =IndependentDeclarationBundle= must record:
 
 Mathlib may remain supplied by the selected AXLE environment only when its
 environment identity and toolchain are pinned.  Dependencies not present in
-that environment, including current POO Flow and Cedar project declarations,
+that environment, including current Agentic AI Lab and Cedar project declarations,
 must be projected into the bundle or supplied by a separately pinned
 project-aware environment that satisfies the refinement contract.
 
@@ -194,21 +194,21 @@ The projector must prove or test:
 
 * Cedar boundary
 
-Cedar remains a dependency behind the POO Flow =CedarAdapter= proof boundary.
+Cedar remains a dependency behind the Agentic AI Lab =CedarAdapter= proof boundary.
 The bundle projector may include exact Cedar Spec declarations required by a
-POO Flow proof, but it does not take ownership of Cedar semantics, Rust
+Agentic AI Lab proof, but it does not take ownership of Cedar semantics, Rust
 implementation, or upstream package publication.
 
 The bundle receipt must distinguish:
 
 - upstream Cedar Spec source identity;
-- POO Flow Cedar adapter declaration identity;
-- POO Flow dual-engine arbitration declaration identity;
+- Agentic AI Lab Cedar adapter declaration identity;
+- Agentic AI Lab dual-engine arbitration declaration identity;
 - the selected root theorem;
 - the AXLE environment and executor identity.
 
 This separation prevents a passing upstream Cedar theorem from being reported
-as a proof of the POO Flow adapter correspondence.
+as a proof of the Agentic AI Lab adapter correspondence.
 
 * Failure behavior
 
@@ -246,8 +246,8 @@ Bazel rule, Nix module, or =gerbil.pkg= behavior belongs in this change.
 * Acceptance checklist
 
 - [X] Confirm the uv-resolved AXLE client and environment list.
-- [X] Confirm current public environments contain Mathlib but not POO Flow.
-- [X] Confirm =--preserve-imports= cannot resolve =PooFlowProof=.
+- [X] Confirm current public environments contain Mathlib but not Agentic AI Lab.
+- [X] Confirm =--preserve-imports= cannot resolve =AgenticAILabProof=.
 - [X] Confirm AXLE exposes =merge=, =extract_decls=, =check=, and =verify_proof=.
 - [X] Accept exact declaration bundles as the primary proof artifact.
 - [X] Accept project-aware AXLE environments only as a refinement/acceleration layer.

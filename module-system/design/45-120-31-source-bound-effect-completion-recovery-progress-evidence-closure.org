@@ -259,7 +259,7 @@ Lean exposes and closes these v1 design defects:
 * Lean declaration map
 
 The implementation is
-=PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryProgressEvidenceClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryProgressEvidenceClosure=.
 
 Key declarations:
 
@@ -280,7 +280,7 @@ Key declarations:
 * Verification receipt
 
 - focused Lean build:
-  =PooFlowProof.Enterprise.SourceBoundEffectCompletionRecoveryProgressEvidenceClosure=
+  =AgenticAILabProof.Enterprise.SourceBoundEffectCompletionRecoveryProgressEvidenceClosure=
   completed successfully with 127 jobs;
 - Enterprise aggregate Lean completed successfully with 203 jobs;
 - full Lean completed successfully with 279 jobs;

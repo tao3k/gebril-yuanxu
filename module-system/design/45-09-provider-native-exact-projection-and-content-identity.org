@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Provider-native exact projection and ASP-owned content identity
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+date: 2026-07-26
 #+startup: overview
 
@@ -16,8 +16,8 @@ It refines the implementation gate in
 [[file:45-08-implementation-and-qualification-plan.org][45-08 implementation and qualification plan]].
 
 - GSLPH remains a development-only policy, build, and test harness.
-- GSLPH does not own POO Flow runtime semantics.
-- POO Flow's parent project continues to own only =yuanxu=.
+- GSLPH does not own Agentic AI Lab runtime semantics.
+- Agentic AI Lab's parent project continues to own only =yuanxu=.
 - ASP owns source snapshots, content identity, canonical digests, Merkle
   validation, persistence, and warm-hit verification.
 

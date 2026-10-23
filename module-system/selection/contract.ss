@@ -276,7 +276,7 @@
   (let (validation (yuanxu-use-module-contract-validation module selections))
     (if (yuanxu-use-module-contract-validation-valid? validation)
       selections
-      (error "poo-flow use-module declaration failed contract validation"
+      (error "Yuanxu use-module declaration failed contract validation"
              validation))))
 
 (def (yuanxu-modules-system-use-module/contract module flags)

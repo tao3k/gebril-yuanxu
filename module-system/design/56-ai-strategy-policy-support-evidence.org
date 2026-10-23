@@ -7,7 +7,7 @@
 
 * 10.06.56.10 Purpose
 
-This document records the support evidence behind the POO Flow proof direction.
+This document records the support evidence behind the Agentic AI Lab proof direction.
 It is not a plan and it is not a replacement for Lean code.  It explains why AI
 strategy/policy needs mathematical checking, what external research and
 frameworks tell us, and how those signals map back to Scheme facts and Lean
@@ -29,7 +29,7 @@ op("AgentGeneratedPolicy")(p)
 $
 #+end_src
 
-This distinction matters because POO Flow is designed for complex composition:
+This distinction matters because Agentic AI Lab is designed for complex composition:
 shared profiles, POO/C4 linearized policy objects, session lifecycle links,
 sandbox capability scopes, loop policies, subagent dispatch, workflow
 dependencies, and runtime handoff.  That is exactly the area where generated
@@ -43,10 +43,10 @@ Flow truth.  We need a strict evidence ladder.
 | Level | Name | Owner | Can Accept Runtime Action? |
 |-------+------+-------+----------------------------|
 | E0 | External claim | Paper, framework, website, benchmark | No |
-| E1 | Reference observation | POO Flow docs/research note | No |
-| E2 | Candidate case | POO Flow scenario or test design | No |
-| E3 | Scheme fact | POO Flow Scheme module/control plane | No |
-| E4 | Lean discharge | POO Flow proof package | Yes, for the proven obligation |
+| E1 | Reference observation | Agentic AI Lab docs/research note | No |
+| E2 | Candidate case | Agentic AI Lab scenario or test design | No |
+| E3 | Scheme fact | Agentic AI Lab Scheme module/control plane | No |
+| E4 | Lean discharge | Agentic AI Lab proof package | Yes, for the proven obligation |
 | E5 | Runtime gate | Runtime projection or Marlin handoff checker | Yes, if tied to E4 evidence |
 
 #+begin_src typst
@@ -71,22 +71,22 @@ $
 
 The practical rule is simple: OpenRATH, Flue, ReAct, Reflexion, ToolEmu,
 AgentDojo, Proof-Carrying Code, and Proof-Carrying Authentication can shape the
-questions we ask.  They cannot answer a POO Flow proof obligation unless the
+questions we ask.  They cannot answer a Agentic AI Lab proof obligation unless the
 obligation is represented by local Scheme facts and discharged in Lean.
 
 * 10.06.56.30 Why General Agents Are Not Enough
 
 General coding agents and agent harnesses are strong at generation, execution,
-tool use, and iteration.  They do not, by default, solve the POO Flow
+tool use, and iteration.  They do not, by default, solve the Agentic AI Lab
 strategy/policy rigor problem.
 
-| System class | Strength | Missing default guarantee for POO Flow |
+| System class | Strength | Missing default guarantee for Agentic AI Lab |
 |--------------+----------+----------------------------------------|
 | Codex/Claude-style coding agents | Generate code, inspect files, run tools, iterate with feedback. | They can produce policy text, but the text is not automatically a typed proof about POO/C4 order, session lineage, sandbox scope, or loop invariants. |
 | ReAct-style agents | Interleave reasoning traces and actions. | A trace is inspectable, but it is not a machine-checked theorem. |
 | Reflexion-style agents | Use verbal feedback and memory to improve later attempts. | Reflection improves search behavior, but it does not certify that a strategy preserves invariants. |
 | Pi/Flue-style harnesses | Provide durable sessions, tools, skills, sandbox runtime, and deployment harness. | Durability and harness structure do not prove that a generated policy is semantically safe. |
-| OpenRATH-style frameworks | Make Session, Sandbox, Memory, Tool, Agent, Workflow, and Selector explicit. | Runtime vocabulary helps us model cases, but POO Flow still owns its Scheme facts and Lean obligations. |
+| OpenRATH-style frameworks | Make Session, Sandbox, Memory, Tool, Agent, Workflow, and Selector explicit. | Runtime vocabulary helps us model cases, but Agentic AI Lab still owns its Scheme facts and Lean obligations. |
 
 The proof problem is therefore not "can an agent write code?"  The problem is
 "can a generated strategy be rejected before it violates the control-plane
@@ -113,10 +113,10 @@ plans, handle exceptions, and interact with external environments.  This is
 important evidence for observability: a strategy should expose why an action was
 chosen and which observations shaped it.
 
-POO Flow should adopt the observability lesson, not mistake the trace for a
+Agentic AI Lab should adopt the observability lesson, not mistake the trace for a
 proof.
 
-| ReAct signal | POO Flow implication |
+| ReAct signal | Agentic AI Lab implication |
 |--------------+----------------------|
 | Reasoning and acting are interleaved. | A loop policy should preserve action rationale and observation facts. |
 | External observations can update plans. | Runtime observations must become typed facts before they affect policy. |
@@ -137,14 +137,14 @@ $
 ** 10.06.56.42 Reflexion
 
 [[https://arxiv.org/abs/2303.11366][Reflexion]] shows that agents can improve by reflecting on feedback and storing
-verbal memory.  That supports a useful design point: POO Flow should let agents
+verbal memory.  That supports a useful design point: Agentic AI Lab should let agents
 learn from rejected obligations and carry rejection receipts into later
 attempts.
 
 The boundary is still strict.  Reflection memory is evidence for search and
 repair.  It is not evidence that a policy is correct.
 
-| Reflexion signal | POO Flow implication |
+| Reflexion signal | Agentic AI Lab implication |
 |------------------+----------------------|
 | Feedback can improve later decisions. | Rejected obligations should produce structured repair hints. |
 | Memory affects future attempts. | Reuse of memory must be scoped to session and sandbox policy. |
@@ -169,10 +169,10 @@ modes with serious consequences.  The paper reports that a large fraction of
 identified failures were judged valid real-world failures, and even the safest
 tested agent still exhibited failures under the evaluator.
 
-For POO Flow, the lesson is that tool access cannot be treated as a normal
+For Agentic AI Lab, the lesson is that tool access cannot be treated as a normal
 configuration field.  It is a proof-relevant capability.
 
-| ToolEmu signal | POO Flow implication |
+| ToolEmu signal | Agentic AI Lab implication |
 |----------------+----------------------|
 | Tool use amplifies risks such as data leakage and financial loss. | Tool capabilities belong in sandbox facts and proof obligations. |
 | Long-tail risky cases are hard to enumerate manually. | Scenario benchmarks should generate obligations, not only examples. |
@@ -193,15 +193,15 @@ $
 to prompt injection and that realistic task suites can reveal both utility
 failures and security failures.
 
-For POO Flow, untrusted tool data must not be allowed to rewrite policy.  It can
+For Agentic AI Lab, untrusted tool data must not be allowed to rewrite policy.  It can
 be an observation, but it cannot become an authorization fact unless a local
 owner module projects it into a typed fact with an explicit trust boundary.
 
-| AgentDojo signal | POO Flow implication |
+| AgentDojo signal | Agentic AI Lab implication |
 |------------------+----------------------|
 | Tool-returned data can hijack agent behavior. | Observations and policy instructions must be separated. |
 | Realistic tasks expose failures even without attacks. | Proof should cover ordinary lifecycle and dependency mistakes, not only adversarial cases. |
-| Security tests are extensible and adaptive. | POO Flow scenario benchmarks should evolve into obligation generators. |
+| Security tests are extensible and adaptive. | Agentic AI Lab scenario benchmarks should evolve into obligation generators. |
 
 #+begin_src typst
 $
@@ -222,7 +222,7 @@ $
 accepted by a host only when it carries a proof that the host can check against
 its safety policy.
 
-POO Flow does not need to prove a full Scheme interpreter to use this idea.  We
+Agentic AI Lab does not need to prove a full Scheme interpreter to use this idea.  We
 need policy-carrying strategy: the generated policy action carries facts and a
 proof certificate for the specific control-plane obligation being exercised.
 
@@ -237,7 +237,7 @@ $
 
 ** 10.06.56.46 Proof-Carrying Authentication
 
-[[https://www.cs.princeton.edu/~appel/papers/says.pdf][Proof-Carrying Authentication]] is especially close to POO Flow because it
+[[https://www.cs.princeton.edu/~appel/papers/says.pdf][Proof-Carrying Authentication]] is especially close to Agentic AI Lab because it
 places the burden of proof on the requester and lets the receiver check the
 proof before authorizing access.
 
@@ -272,9 +272,9 @@ vocabulary includes Session, Sandbox, Memory, Tool, Agent, Workflow, and
 Selector.  It also emphasizes that large agent systems need many agents, many
 branchable sessions, durable memory, sandboxed execution, and traceable lineage.
 
-This is strong reference evidence for POO Flow's proof axes:
+This is strong reference evidence for Agentic AI Lab's proof axes:
 
-| OpenRATH runtime object | POO Flow proof axis |
+| OpenRATH runtime object | Agentic AI Lab proof axis |
 |-------------------------+---------------------|
 | Session | session lineage, branch ownership, handoff graph |
 | Sandbox / Backend | capability scope, file/tool/secret boundary |
@@ -294,12 +294,12 @@ $
 
 $
 op("OpenRATHObject")(x)
-  arrow.r.double.not op("POOFlowProofFact")(x)
+  arrow.r.double.not op("AgenticAILabProofFact")(x)
 $
 #+end_src
 
 OpenRATH should influence scenario selection and vocabulary.  It should not be
-used as a proof oracle.  POO Flow must still emit local facts from Scheme and
+used as a proof oracle.  Agentic AI Lab must still emit local facts from Scheme and
 prove them in Lean.
 
 ** 10.06.56.52 Flue And Pi-Style Harnesses
@@ -308,9 +308,9 @@ prove them in Lean.
 sessions, tools, skills, filesystem access, sandbox runtime, database,
 deployment harness, and recovery after interruption.
 
-This gives POO Flow a concrete checklist for runtime proof pressure:
+This gives Agentic AI Lab a concrete checklist for runtime proof pressure:
 
-| Harness feature | POO Flow obligation |
+| Harness feature | Agentic AI Lab obligation |
 |-----------------+---------------------|
 | Durable session | resume facts are still valid under the current policy version |
 | Tool list | every tool call is allowed by sandbox scope |
@@ -344,12 +344,12 @@ realistic enough to deserve proof obligations.
 The support evidence above points to concrete failure modes.  These are not
 abstract safety slogans; they are proof targets.
 
-| Failure mode | Typical source | Required POO Flow obligation |
+| Failure mode | Typical source | Required Agentic AI Lab obligation |
 |--------------+----------------+------------------------------|
 | Session lineage collapse | OpenRATH-style multi-session branching | child session has exactly one declared parent or an explicit merge proof |
 | Sandbox scope widening | ToolEmu, Flue sandbox/tool surfaces | child sandbox scope is a subset or justified refinement of parent scope |
 | Tool observation becomes instruction | AgentDojo prompt injection | untrusted observation cannot become policy instruction without Scheme owner projection |
-| Loop starts without readiness | POO Flow workflow/session cases | transition preconditions are satisfied before start |
+| Loop starts without readiness | Agentic AI Lab workflow/session cases | transition preconditions are satisfied before start |
 | Retry loses invariant | Reflexion-style feedback loops | retry transition preserves invariant or emits rejected obligation |
 | Profile override broadens policy | POO/C4 composition | linearized override cannot expand forbidden parent capability |
 | Selector chooses unsafe branch | OpenRATH selector/runtime routing | selected branch must satisfy policy guard and dependency facts |
@@ -360,7 +360,7 @@ abstract safety slogans; they are proof targets.
 flowchart TD
   Research["Research evidence"]
   Frameworks["Framework evidence"]
-  Cases["Candidate POO Flow cases"]
+  Cases["Candidate Agentic AI Lab cases"]
   Scheme["Scheme typed facts"]
   Lean["Lean obligations"]
   Gate["Runtime accept/reject gate"]
@@ -509,7 +509,7 @@ See [[file:57-user-interface-profile-library.org][10.06.57 User Interface Profil
 When a paper or framework exposes a useful idea, the implementation path is:
 
 1. Record the external observation as support evidence.
-2. Convert it into a POO Flow candidate case.
+2. Convert it into a Agentic AI Lab candidate case.
 3. Identify the Scheme owner that can emit the required facts.
 4. Add or refine the Lean obligation.
 5. Gate runtime projection on the discharged obligation.
@@ -526,7 +526,7 @@ $
 $
 op("AdoptedFact")(r,f)
   =>
-    op("OwnedByPOOFlow")(f)
+    op("OwnedByAgenticAILab")(f)
     and op("MappedToObligation")(f)
 $
 #+end_src

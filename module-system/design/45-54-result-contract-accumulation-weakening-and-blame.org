@@ -179,7 +179,7 @@ Two or more contracts have one of three composition classifications:
 - Proven incompatible :: A declared contract algebra proves that no common valid value exists.
 - Compatibility unknown :: No proof of incompatibility exists; retain all contracts and validate a concrete value later.
 
-General predicate intersection is not decidable. POO Flow must not claim that arbitrary Scheme predicates have or lack a common solution.
+General predicate intersection is not decidable. Agentic AI Lab must not claim that arbitrary Scheme predicates have or lack a common solution.
 
 Only verified incompatibility evidence from a declared contract algebra may produce =ContractCompositionConflict= before a value exists.
 

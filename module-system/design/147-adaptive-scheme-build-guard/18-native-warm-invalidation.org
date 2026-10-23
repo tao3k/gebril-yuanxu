@@ -7,18 +7,18 @@
 ** Decision
 
 The current performance blocker is not a missing Bazel cache and must not be
-worked around in POO Flow with a second scheduler, a shared global
+worked around in Agentic AI Lab with a second scheduler, a shared global
 =build-deps= directory, or project-local compiler flags.  The same package
 graph exceeds the time gate under the native =build.ss= entry point.
 
 The repair owner is the Gerbil =std/make= and compiler scheduling boundary.
 Its outer dependency workers and deferred native compiler jobs must preserve a
-completed dependency generation before a dependent is admitted.  POO Flow
+completed dependency generation before a dependent is admitted.  Agentic AI Lab
 remains a declarative consumer of the ASP package profile.
 
 #+begin_src mermaid
 flowchart TD
-  P[POO Flow package spec] --> M[Gerbil std/make dependency workers]
+  P[Agentic AI Lab package spec] --> M[Gerbil std/make dependency workers]
   M --> C[compile-module with parallel native jobs]
   C --> Q[Deferred native compile queue]
   M --> D[Dependent module admitted]
@@ -35,13 +35,13 @@ flowchart TD
 
 ** 2026-09-02 downstream identity
 
-- POO Flow host: Darwin arm64, 12 logical CPUs, 32 GiB physical memory.
+- Agentic AI Lab host: Darwin arm64, 12 logical CPUs, 32 GiB physical memory.
 - Gerbil: 0.18.2, source revision =07c84815=.
 - ASP Gerbil Scheme candidate revision:
   =ce21733fa91d6a0236aefb824953b7eae53f7524=.
 - ASP source archive SHA-256:
   =d694ec22b879404ddb719b0bba7e92983ee9ba1758ab0703c802279481b7f094=.
-- Build profile declared by POO Flow: =development=.
+- Build profile declared by Agentic AI Lab: =development=.
 - Parallelism source: =GERBIL_BUILD_CORES=12=, derived before compiler import
   from the host CPU count.  No fixed core count is present in project source.
 
@@ -54,11 +54,11 @@ not successful baselines.
 |-
 | Bazel ASP dependency cold materialization | completed | 691.323 s | independent =gerbil-utils=, =gerbil-poo=, and ASP package actions |
 | Immediate Bazel ASP dependency warm replay | completed | 1.615 s | critical path 0.01 s; no Gerbil or GCC action |
-| Bazel POO Flow development-profile cold action | stopped at gate | 624.704 s | root owner still running |
-| Bazel POO Flow production-profile comparison | stopped at gate | 631.849 s | optimized multi-unit profile did not repair package topology |
+| Bazel Agentic AI Lab development-profile cold action | stopped at gate | 624.704 s | root owner still running |
+| Bazel Agentic AI Lab production-profile comparison | stopped at gate | 631.849 s | optimized multi-unit profile did not repair package topology |
 | First native no-op candidate after completing interrupted work | stopped as regression | 121.10 s | emitted both module compile and native compile jobs |
 
-The native dependency bootstrap exposed two costs that are not POO Flow
+The native dependency bootstrap exposed two costs that are not Agentic AI Lab
 compile time:
 
 1. A plain =gxpkg deps --install= inherited the Nix Darwin =SDKROOT= before
@@ -109,7 +109,7 @@ newer dependency timestamp and rebuild another wave.
 
 ** Promotion gates
 
-The ASP revision pin and POO Flow profile declaration remain a candidate until
+The ASP revision pin and Agentic AI Lab profile declaration remain a candidate until
 the scheduling owner is repaired.  Promotion requires all of the following:
 
 1. one completed native cold build under the 10-minute gate;

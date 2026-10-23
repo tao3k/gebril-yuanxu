@@ -20,7 +20,7 @@ the =14/14= enterprise final-source target is complete.
 
 | Owner | Responsibility |
 |-------+----------------|
-| =packages/proofs/python/src/poo_flow_proof/independent_bundle.py= | Immutable manifest identities, validation, canonicalization, and digest |
+| =packages/proofs/python/src/agentic_ai_lab_proof/independent_bundle.py= | Immutable manifest identities, validation, canonicalization, and digest |
 | =packages/proofs/python/tests/test_independent_bundle.py= | Determinism and fail-closed counterexamples |
 
 The existing =axle_verify.py= owner was not modified.  Its parser-owned Python
@@ -41,7 +41,7 @@ The pure Python module defines:
 - =BundleValidationError=: stable fail-closed error code plus detail.
 
 The schema identity is
-=poo-flow.independent-declaration-bundle.v1=.
+=agentic-ai-lab.independent-declaration-bundle.v1=.
 
 * Enforced invariants
 
@@ -118,7 +118,7 @@ uv run pytest -q tests/test_axle_verify.py tests/test_independent_bundle.py
 # 11 passed in 0.04s
 
 uv run ruff check \
-  src/poo_flow_proof/independent_bundle.py \
+  src/agentic_ai_lab_proof/independent_bundle.py \
   tests/test_independent_bundle.py
 # All checks passed!
 

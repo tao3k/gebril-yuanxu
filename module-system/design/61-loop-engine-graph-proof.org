@@ -9,7 +9,7 @@
 
 This proof note is the core direction after the LangChain/LangGraph profile
 exercise. LangChain and LangGraph are useful as small user-interface examples,
-but they are not the center of the formal model. The proof target is POO Flow's
+but they are not the center of the formal model. The proof target is Agentic AI Lab's
 own loop engine and graph: when a policy starts, which scopes are allowed, which
 dependencies are ready, which guarded edge can advance, and why a loop step must
 consume budget or terminate.
@@ -40,7 +40,7 @@ by downstream gates.
 
 * Guarded Graph
 
-The graph proof is not a framework proof for LangGraph. It is the POO Flow
+The graph proof is not a framework proof for LangGraph. It is the Agentic AI Lab
 invariant that a runnable edge must be guarded and must advance in the ranked
 control graph.
 

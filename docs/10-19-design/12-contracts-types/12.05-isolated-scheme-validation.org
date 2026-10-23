@@ -13,10 +13,10 @@ This is the historical isolated-proposal record. See
 and the qualification's switch from copied generic definitions to its public API.
 
 gerbil-poo is a public library. Its Type, object contracts, diagnostics, checked
-invocation and reuse mechanisms must work without POO Flow. In these documents
+invocation and reuse mechanisms must work without Agentic AI Lab. In these documents
 "Core consumer" means the yuanxu repository, not Gerbil's compiler,
 runtime or standard library. Gerbil's own core/contract APIs are language tools,
-not the owner of POO Flow module/source admission policy.
+not the owner of Agentic AI Lab module/source admission policy.
 
 The public structural contract proposal is tested independently. Schema
 adaptation is a consumer/library layered on that protocol. A separate existing

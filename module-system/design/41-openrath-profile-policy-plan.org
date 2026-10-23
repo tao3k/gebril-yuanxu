@@ -18,7 +18,7 @@ Latest local revision after fetch:
 ab884ab532e5139835c098213f3433016fb28deb 2026-06-24T17:12:54+08:00 ci(opensandbox): restore --reruns lost in v1.2.0 prep
 #+end_src
 
-This checkout is research input only. =poo-flow= should not copy
+This checkout is research input only. =agentic-ai-lab= should not copy
 OpenRath's Python class model. The useful parts are the interface boundaries
 around agent params, workflow registration, session-loop execution, backend
 capabilities, sandbox specs, memory-policy injection, and structured tool
@@ -54,11 +54,11 @@ profile/spec intent -> capability check -> executor/backend dispatch -> structur
 #+end_src
 
 The part to avoid is making Python-style classes or attribute assignment the
-=poo-flow= user model. Our surface should remain POO-native and functional.
+=agentic-ai-lab= user model. Our surface should remain POO-native and functional.
 
-** 10.06.41.30 Current =poo-flow= Baseline
+** 10.06.41.30 Current =agentic-ai-lab= Baseline
 
-=poo-flow= already has the right lower-level profile pieces:
+=agentic-ai-lab= already has the right lower-level profile pieces:
 
 - =modules/sandbox-core/profile-support/authoring.ss= owns row slots, row
   operators, row merge shape, and authoring diagnostics.
@@ -125,7 +125,7 @@ Validation output should be structured diagnostics, not ad hoc error strings:
 #+end_src
 
 This mirrors OpenRath's structured =ToolExecutionFailure= idea while keeping
-=poo-flow= on the Scheme control-plane side.
+=agentic-ai-lab= on the Scheme control-plane side.
 
 ** 10.06.41.60 Capability Registry Plan
 
@@ -148,7 +148,7 @@ backends should publish capability objects. Profiles then require capabilities
 rather than naming backend behavior implicitly.
 
 The registry must not perform runtime work. Availability checks should remain
-cheap and diagnostic. Real execution still belongs outside =poo-flow=.
+cheap and diagnostic. Real execution still belongs outside =agentic-ai-lab=.
 
 ** 10.06.41.70 Milestone Plan
 
@@ -171,12 +171,12 @@ ab884ab532e5139835c098213f3433016fb28deb 2026-06-24T17:12:54+08:00 ci(opensandbo
 
 The additional evidence reinforces the same architecture boundary:
 - =Agent.forward= performs memory injection, calls =run_session_loop=, then optionally commits memory. Recall and commit failures are deliberately non-fatal.
-- =BackendSandboxSpec= is only an optional sandbox request shape. =BackendSandbox= is the runtime handle with refcounting. =poo-flow= should model the request and policy, not the handle lifecycle.
-- =Capabilities= is class-level static backend data. It is not runtime probing. This maps directly to =poo-flow='s POO backend capability registry.
+- =BackendSandboxSpec= is only an optional sandbox request shape. =BackendSandbox= is the runtime handle with refcounting. =agentic-ai-lab= should model the request and policy, not the handle lifecycle.
+- =Capabilities= is class-level static backend data. It is not runtime probing. This maps directly to =agentic-ai-lab='s POO backend capability registry.
 - =_arun_session_loop= groups tool calls by =FlowToolCall.resource_key=. Calls with the same key remain serial; different keys can fan out in parallel; transcript rows are written back in original tool-call order. Scheme should project =resource-policy= and =dispatch-groups= as handoff data, not schedule tool execution.
-- Tool failures are structured values such as =ToolExecutionFailure= and are summarized into tool feedback JSON. =poo-flow= should continue producing structured diagnostics and failure-policy receipts rather than ad hoc error strings.
+- Tool failures are structured values such as =ToolExecutionFailure= and are summarized into tool feedback JSON. =agentic-ai-lab= should continue producing structured diagnostics and failure-policy receipts rather than ad hoc error strings.
 
-The concrete =poo-flow= adjustment from this pass is that loop-engine capability receipts no longer use a hard-coded supported backend list. They now derive =supported-backends= from the selected module-system backend capability registry and use canonical backend-kind values such as =sandbox=, =nono=, =cube=, and =docker=. Marlin remains the runtime owner; it is not a backend capability value.
+The concrete =agentic-ai-lab= adjustment from this pass is that loop-engine capability receipts no longer use a hard-coded supported backend list. They now derive =supported-backends= from the selected module-system backend capability registry and use canonical backend-kind values such as =sandbox=, =nono=, =cube=, and =docker=. Marlin remains the runtime owner; it is not a backend capability value.
 
 Next implementation pressure:
 1. strengthen =resource-policy= validation around resource-key shape, collision classes, and dispatch groups;
@@ -203,7 +203,7 @@ Current landing:
   diagnostics, resolution hard gates, and projection receipts.
 - =t/agent-sandbox-profile-user-interface-test.ss= covers the user-facing
   presentation receipt shape.
-- =build.ss= now includes the =poo-flow= executable entrypoint in the default
+- =build.ss= now includes the =agentic-ai-lab= executable entrypoint in the default
   package spec so focused agent gates have a package-owned CLI target.
 
 Milestone 3: Structured Diagnostics
@@ -349,7 +349,7 @@ specific test harness internals:
   extensions, illegal profile inheritance, missing concrete paths, and forbidden
   runtime provisioning.
 
-For =poo-flow= this means P1-P4 should be driven by scenario fixtures that prove
+For =agentic-ai-lab= this means P1-P4 should be driven by scenario fixtures that prove
 the object boundary:
 #+begin_src text
 compact user shape -> composed POO objects -> validation receipt -> projection receipt
@@ -451,7 +451,7 @@ P2: Capability Registry Object
     keep working while module-system aggregation can move to registry merge.
 - Remaining P2 work:
   - pass the merged registry into profile-policy projection instead of relying
-    only on =poo-flow-sandbox-backend-capability-registry/default= at older call
+    only on =agentic-ai-lab-sandbox-backend-capability-registry/default= at older call
     sites.
 
 P3: Session/Profile Handoff
@@ -492,7 +492,7 @@ The likely owners are:
 
 ** 10.06.41.90 Non-Goals
 
-- Do not make OpenRath a dependency of =poo-flow=.
+- Do not make OpenRath a dependency of =agentic-ai-lab=.
 - Do not move backend execution into Scheme.
 - Do not invent a second raw patch DSL beside POO object extension and existing
   row operators.

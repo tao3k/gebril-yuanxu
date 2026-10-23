@@ -20,7 +20,7 @@ The standalone tool had two independent defects:
    idempotent =gerbil-load-expander!= before importing test source.
 
 The retained source patch is
-=poo-flow/tools/ci/patches/gerbil-gxtest-runtime-init.patch=. It changes
+=agentic-ai-lab/tools/ci/patches/gerbil-gxtest-runtime-init.patch=. It changes
 =gxtest= to ordinary =exe:= and initializes the expander in its =main=.
 No replacement evaluator, runtime binding shim or compatibility runtime is used.
 The installed =env= tool dependency also had to be compiled because its static
@@ -43,7 +43,7 @@ uninstallation. Originals are preserved as local artifacts, not committed logs.
 heap limit to that executable before import. The process-group timeout also
 avoids leaving a tool child behind after a parent launcher times out.
 
-=poo-flow/t/gerbil-runtime-import-test.ss= deliberately imports only =std/test=
+=agentic-ai-lab/t/gerbil-runtime-import-test.ss= deliberately imports only =std/test=
 and exercises dynamic =eval import=. It does not depend on Core or POO and
 therefore distinguishes a broken host tool from a failing domain test.
 
@@ -56,8 +56,8 @@ The native binary installed at the existing default location has SHA-256
 The original broken binary has SHA-256
 =559d3d6970001ebd24dabc55bb56da7861c3036d23e72b1a142e90972dcb1a47=.
 Backups/build intermediates are local under
-=/private/tmp/pooflow-gxtest-gcc16-repair-20261016= and
-=/private/tmp/pooflow-gxtest-repair-20261016=.
+=/private/tmp/agenticailab-gxtest-gcc16-repair-20261016= and
+=/private/tmp/agenticailab-gxtest-repair-20261016=.
 This is a locally rebuilt host tool, not a newly published Homebrew release.
 
 * Evidence boundary
@@ -72,7 +72,7 @@ have been removed. POO's native build and the full Core native build also
 completed successfully. This does not assert the full product suite or remote CI.
 
 The release-compiler wrapper correction is retained separately in
-=poo-flow/tools/ci/patches/gerbil-homebrew-release-compiler.patch=. It is specific
+=agentic-ai-lab/tools/ci/patches/gerbil-homebrew-release-compiler.patch=. It is specific
 to this GCC-16 release and must not be applied blindly to another release.
 A Homebrew reinstall from the original uncorrected bottle would replace the local
 repair; the retained source patches/build gate are needed when publishing its

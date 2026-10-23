@@ -51,7 +51,7 @@ bounded dependency demand must be designed in the owners, not just the syntax.
 
 * Shared object abstraction and ownership of Check composition
 
-Maintained local POO Flow Modules, third-party Modules and User Interface
+Maintained local Agentic AI Lab Modules, third-party Modules and User Interface
 Modules use the same authoring abstraction: admitted native Module scopes,
 POO Profile/Check/Pipeline objects, prototype inheritance and effective slot
 refinement. Upstream owners create and publish defaults through that scope;
@@ -841,7 +841,7 @@ assertions, is:
 
 #+name: native-pipeline-receiver-minimal
 #+begin_src scheme
-(import "/tmp/pooflow-pipeline-receiver-pin/object")
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
 (.def (Profile @ [])
   build: (.o value: 'parent-build)
@@ -1056,7 +1056,7 @@ The existing native .def already preserves syntax context through .def/ctx and
 Contract supplies/associates the applicable shared prototype, selected Profile
 rules and module responsibilities; the adapter validates that relationship.
 It must not lower the user Scenario into a public Case definition or replay the
-old poo-flow-funflow-configs collector to discover its declarations.
+old agentic-ai-lab-funflow-configs collector to discover its declarations.
 
 The bounded use-module body is a necessary lexical/hygienic projection onto an
 ordinary let and native POO expressions, not a new configuration interpreter.

@@ -23,13 +23,13 @@ symbol alias, deprecated wrapper, dual route, or Python binding exception.
 
 The public pre-v1 surface uses:
 
-- symbol prefix =poo_flow_runtime_v0_=;
+- symbol prefix =agentic_ai_lab_runtime_v0_=;
 - ABI major/minor =0.1=;
-- installed header =poo_flow/runtime_v0.h=;
-- installed library =libpoo_flow_runtime_v0=.
+- installed header =agentic_ai_lab/runtime_v0.h=;
+- installed library =libagentic_ai_lab_runtime_v0=.
 
 Runtime v0.1 negotiates the current
-=poo-flow.organization-bundle.draft.3= schema explicitly.  It does not imply
+=agentic-ai-lab.organization-bundle.draft.3= schema explicitly.  It does not imply
 Bundle v1 or ABI v1 stability.  The final v1 names are reserved until Bundle,
 Kernel, shadow qualification, control/hot/bulk lanes, Python CFFI, Cedar,
 Lean/Evidence, fault, performance, and complete conformance gates pass.
@@ -50,7 +50,7 @@ AC-05 uses a schema-derived contract plus a C handle/lifecycle engine.
 
 #+begin_src mermaid
 flowchart TD
-  Schema["POO Flow control schema"] --> Header["Installed runtime_v0.h"]
+  Schema["Agentic AI Lab control schema"] --> Header["Installed runtime_v0.h"]
   Schema --> Projection["Gerbil Bundle control-packet projection"]
   Schema --> Vectors["Canonical conformance vectors"]
   Header --> Engine["C handle and lifecycle engine"]
@@ -58,7 +58,7 @@ flowchart TD
   Packet --> Engine
   Header --> Harness["Pure C harness"]
   Vectors --> Harness
-  Engine --> Library["libpoo_flow_runtime_v0"]
+  Engine --> Library["libagentic_ai_lab_runtime_v0"]
   Library --> Harness
 #+end_src
 
@@ -69,14 +69,14 @@ rejects any diff.
 
 The control lane contains:
 
-- =poo_flow_runtime_v0_instance_create/release=;
-- =poo_flow_runtime_v0_negotiate=;
-- =poo_flow_runtime_v0_bundle_open/release=;
-- =poo_flow_runtime_v0_session_open/cancel/close/release=;
-- =poo_flow_runtime_v0_session_checkpoint=;
-- =poo_flow_runtime_v0_session_restore=;
-- =poo_flow_runtime_v0_owned_bytes_release=;
-- =poo_flow_runtime_v0_error_message=.
+- =agentic_ai_lab_runtime_v0_instance_create/release=;
+- =agentic_ai_lab_runtime_v0_negotiate=;
+- =agentic_ai_lab_runtime_v0_bundle_open/release=;
+- =agentic_ai_lab_runtime_v0_session_open/cancel/close/release=;
+- =agentic_ai_lab_runtime_v0_session_checkpoint=;
+- =agentic_ai_lab_runtime_v0_session_restore=;
+- =agentic_ai_lab_runtime_v0_owned_bytes_release=;
+- =agentic_ai_lab_runtime_v0_error_message=.
 
 #+begin_src mermaid
 stateDiagram-v2
@@ -190,7 +190,7 @@ closed.  C engine failures never strengthen Bundle semantics.
 
 The same complete feature removes:
 
-- =bindings/runtime-c/include/poo_flow_runtime_abi.h=;
+- =bindings/runtime-c/include/agentic_ai_lab_runtime_abi.h=;
 - the old standalone ABI probe;
 - old ABI build, install, package, and release-manifest routes;
 - Python old-ABI/CFFI bindings and tests that exist only for that ABI;

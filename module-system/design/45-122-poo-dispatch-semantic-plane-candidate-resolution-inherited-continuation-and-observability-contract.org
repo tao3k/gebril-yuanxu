@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: POO Dispatch Semantic Plane, Candidate Resolution, Inherited Continuation, and Observability Contract
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -11,7 +11,7 @@
 This RFC is an accepted semantic contract.
 
 It defines dispatch as a first-class POO semantic plane.  It does not admit a
-POO Flow dispatch implementation, replace upstream =gerbil-poo= dispatch, or add
+Agentic AI Lab dispatch implementation, replace upstream =gerbil-poo= dispatch, or add
 a public dispatch DSL.
 
 RFC 45-120 now admits the direct native generic, computed-slot, inherited-
@@ -23,7 +23,7 @@ items in this RFC.
 
 This RFC owns:
 
-- the semantic inputs and phases of POO Flow dispatch;
+- the semantic inputs and phases of Agentic AI Lab dispatch;
 - instance, type, and prototype dispatch sources;
 - candidate identity and C4 precedence boundaries;
 - inherited computation, =super=, and next-method continuation;
@@ -59,7 +59,7 @@ Pinned source evidence establishes:
   instance-sourced generic dispatch, and type-sourced generic dispatch;
 - upstream use of =c4-linearize= for prototype precedence (exported from the historical =:gerbil/runtime/c3= module path).
 
-These are upstream semantics.  POO Flow may project Module responsibilities,
+These are upstream semantics.  Agentic AI Lab may project Module responsibilities,
 structured conditions, and observation values around them, but it must not
 reimplement their dispatch algorithms.
 
@@ -131,7 +131,7 @@ Dispatch sources are distinct:
 =.defgeneric= may select instance or type as its method source.  Prototype slot
 dispatch follows upstream object and slot semantics.
 
-POO Flow must preserve source identity in every explanation.  It must not
+Agentic AI Lab must preserve source identity in every explanation.  It must not
 flatten the three sources into a hidden registry or unordered map.
 
 * Candidate identity and precedence
@@ -148,7 +148,7 @@ Each candidate is identified by:
 Candidate enumeration does not choose a winner.
 
 For a valid prototype graph, upstream C4 precedence determines the dispatch
-order.  POO Flow must not add a second priority number, linearization pass, or
+order.  Agentic AI Lab must not add a second priority number, linearization pass, or
 last-writer-wins rule.
 
 Invalid or circular precedence is a structured dispatch condition.  It is not a
@@ -239,7 +239,7 @@ semantics must be proven before names become part of the project interface.
 Dispatch may enter recursively imported Modules or lazily computed
 responsibilities.  It does not itself own a global fixed-point engine.
 
-POO Flow supplies the explicit evaluation context around upstream dispatch:
+Agentic AI Lab supplies the explicit evaluation context around upstream dispatch:
 
 - active receiver/responsibility path;
 - execution lineage;
@@ -536,7 +536,7 @@ Dispatch is not written inside =use-composition=.
 
 * Successor contract
 
-The next RFC may define the first concrete POO Flow dispatch semantic values:
+The next RFC may define the first concrete Agentic AI Lab dispatch semantic values:
 
 - dispatch demand;
 - candidate identity;

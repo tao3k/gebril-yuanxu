@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 * 10.06.56 Type Facts Validation And Lean Plan
-This document defines the first implementation slice for the =poo-flow= type validation layer.
+This document defines the first implementation slice for the =agentic-ai-lab= type validation layer.
 
 Correction: "not user-facing" means "not a required first concept for ordinary workflow authors." It does not mean users cannot write Scheme. Scheme/POO is the programmable authoring surface; ordinary users may start from a natural-language graph, while advanced users and agents may work directly with Scheme/POO, type facts, Lean facts, and projections.
 
@@ -84,8 +84,8 @@ The new structures are:
 - =yuanxu-type-fact-contract=;
 - =yuanxu-lean-fact-contract=.
 
-The original generic =poo-flow-type-validation-receipt= and ASP Harness
-adapter were superseded. =poo-flow-sandbox-resources-prototype-contract-validation=
+The original generic =agentic-ai-lab-type-validation-receipt= and ASP Harness
+adapter were superseded. =agentic-ai-lab-sandbox-resources-prototype-contract-validation=
 now returns a native POO receipt with local typed diagnostics. Alists exist
 only at its explicit final report projection.
 ** 10.06.56.40 Why defstruct Here

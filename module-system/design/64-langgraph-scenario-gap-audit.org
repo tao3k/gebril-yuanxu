@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: LangGraph Scenario Gap Audit for POO Flow
+#+title: LangGraph Scenario Gap Audit for Agentic AI Lab
 #+date: 2026-07-05
 
 * Purpose
@@ -19,7 +19,7 @@ Flow's own =src= capabilities are complete enough:
 - runtime handoff contracts;
 - Lean proof projection.
 
-If the scenario is hard to express, that is evidence of a missing POO Flow
+If the scenario is hard to express, that is evidence of a missing Agentic AI Lab
 platform primitive.  The fix belongs under =src=, then the scenario should be
 rewritten as ordinary =user-interface= composition.
 
@@ -29,7 +29,7 @@ The direction of dependency is:
 
 #+begin_src typst
 $
-op("POOFlowSrc")
+op("AgenticAILabSrc")
   =>
   op("Composition")
   =>
@@ -45,18 +45,18 @@ not:
 $
 op("LangGraph")
   =>
-  op("POOFlowPolicy")
+  op("AgenticAILabPolicy")
 $
 #+end_src
 
-LangGraph-like behavior should be an instance of POO Flow's Graph, Loop,
+LangGraph-like behavior should be an instance of Agentic AI Lab's Graph, Loop,
 Durable, Checkpoint, Policy, and Composition system.
 
 * Reference Pressure Points
 
 The scenario pressures are taken from LangGraph's public documentation and the
 checked-out reference repository under =.data/langgraph=.  The important point
-is not to copy those APIs.  The important point is to ensure POO Flow's own
+is not to copy those APIs.  The important point is to ensure Agentic AI Lab's own
 platform primitives can express the same class of agent/workflow problems.
 
 - Graph API pressure: sequences, branches, loops, =Send= for map-reduce style
@@ -79,7 +79,7 @@ platform primitives can express the same class of agent/workflow problems.
 
 Status terms:
 
-- =supported= means the primitive exists as a general POO Flow capability.
+- =supported= means the primitive exists as a general Agentic AI Lab capability.
 - =partial= means the scenario can be approximated, but the contract is not yet
   first-class enough for reuse and proof.
 - =missing= means the capability must be added under =src= before the scenario
@@ -87,7 +87,7 @@ Status terms:
 - =runtime-owned / scheme-declared= means Scheme must declare and prove the
   intent, but Marlin/runtime performs the actual execution.
 
-| LangGraph scenario pressure | POO Flow src owner | Required general primitive | Status | Gap priority | Next implementation target |
+| LangGraph scenario pressure | Agentic AI Lab src owner | Required general primitive | Status | Gap priority | Next implementation target |
 |-----------------------------+--------------------+----------------------------+--------+--------------+----------------------------|
 | StateGraph node/edge topology | =src/graph= | graph node, edge, entry, finish, branch target facts | supported | P0 maintain | keep as platform graph core |
 | Conditional routing | =src/graph= | declared branch target contract and router facts | partial | P0 | strengthen branch target proof projection |
@@ -169,7 +169,7 @@ composition less than ordinary composition:
 4. Add runtime stream/retry/timeout declarations as handoff intent, not runtime.
 5. Extend generated Lean facts so the scenario proves these contracts.
 
-These are not LangGraph-specific features.  They are POO Flow platform
+These are not LangGraph-specific features.  They are Agentic AI Lab platform
 capabilities that make many future scenarios easier to express.
 
 * Verification Target
@@ -204,7 +204,7 @@ The first P0-P2 pass added a general =src= intent surface:
 - =t/scenarios/langgraph-scenario-gap-intent-test.ss= proves these primitives
   can be collected into one ordinary scenario gap plan without adding
   LangGraph-specific runtime code to =user-interface=.
-- =packages/proofs/lean/PooFlowProof/PooC4/ScenarioGap.lean= gives the Lean-side
+- =packages/proofs/lean/AgenticAILabProof/PooC4/ScenarioGap.lean= gives the Lean-side
   fact shape and boundary theorems:
   - P0 belongs to Scheme =src= platform capabilities.
   - P1 is runtime-owned but Scheme-declared.
@@ -218,7 +218,7 @@ runtime receipts.
 The next pass started the receipt-checking layer by adding a stable
 missing-kind diagnostic:
 
-- =poo-flow-scenario-gap-receipt-missing-kinds= compares a scenario plan against
+- =agentic-ai-lab-scenario-gap-receipt-missing-kinds= compares a scenario plan against
   runtime-accepted intent kinds.
 - The scenario gate now proves that a complete accepted-kind set has no missing
   contract and that removing =runtime.error-route= reports exactly that missing
@@ -240,7 +240,7 @@ check stable:
   - all required intent kinds are present in =accepted-kinds=.
 - Lean models this as =ScenarioRuntimeRowFacts= and proves that
   =planOk ∧ rejectionsOk ∧ acceptedOk= implies the row matches the plan.
-- =packages/proofs/lean/PooFlowProof/Generated/ScenarioGapRuntimeRow.lean= is a
+- =packages/proofs/lean/AgenticAILabProof/Generated/ScenarioGapRuntimeRow.lean= is a
   checked-in generated module for the valid row case, so the receipt boundary is
   part of the regular Lean build instead of only a Scheme string rendering
   smoke test.

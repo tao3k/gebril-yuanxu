@@ -16,7 +16,7 @@ The invariant is:
 - =src/module-system= owns the upstream module system implementation.
 - =src/modules= owns concrete workflow and sandbox modules.
 - =user-interface= owns the downstream practice template.
-- =poo-flow= emits Scheme-side contracts, projections, receipts, and manifests.
+- =agentic-ai-lab= emits Scheme-side contracts, projections, receipts, and manifests.
 - =marlin-agent-core= owns backend execution, LLM/API integration, and runtime
   handler lifecycle.
 
@@ -105,7 +105,7 @@ surfaces.
 
 Handoff shape:
 
-- POO Flow emits module selections, option receipts, loader receipts, merged
+- Agentic AI Lab emits module selections, option receipts, loader receipts, merged
   options, diagnostics, and runtime manifests.
 - Marlin consumes those data products at the runtime boundary.
 - Any C binding execution proof remains Marlin-owned even if the descriptor is

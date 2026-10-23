@@ -6,11 +6,11 @@
 
 * Research basis
 
-This note records the current performance direction for POO Flow after comparing
+This note records the current performance direction for Agentic AI Lab after comparing
 three evidence streams:
 
 - upstream gerbil-scheme-language-project-harness POO scenarios;
-- local POO Flow benchmark receipts;
+- local Agentic AI Lab benchmark receipts;
 - Gerbil compiler and ~std/make~ behavior under incremental builds.
 
 * Gerbil compile model implications
@@ -20,7 +20,7 @@ then invokes ~gxc~ through ~compile-module~.  A single module can generate
 runtime, loader, meta, phi, static, and optional ssxi outputs, and gsc work can be
 queued as compile jobs.
 
-The practical rule for POO Flow scenarios is:
+The practical rule for Agentic AI Lab scenarios is:
 
 - keep scenario-specific cases in small owner modules;
 - keep shared fixture registration narrow;

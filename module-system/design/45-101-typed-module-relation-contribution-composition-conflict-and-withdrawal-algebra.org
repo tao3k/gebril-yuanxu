@@ -45,7 +45,7 @@ of:
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-POO Flow owns the domain algebra. =gerbil-poo= owns object identity, prototype
+Agentic AI Lab owns the domain algebra. =gerbil-poo= owns object identity, prototype
 ancestry, extension, composition, delegation, super, and precedence.
 
 * Evidence state
@@ -415,7 +415,7 @@ Only direct import contributions belong to the direct import relation.
 Recursive imports are derived through selected Profiles and responsibility
 reachability.
 
-Cycles are evaluated through POO Flow fixed-point semantics with budgets,
+Cycles are evaluated through Agentic AI Lab fixed-point semantics with budgets,
 observability, and continuable conditions. They are not rejected merely because
 the direct relation graph is cyclic.
 
@@ -426,7 +426,7 @@ in place.
 
 ** Numeric control-priority semantics
 
-POO Flow adopts a commutative merge-priority ordering for authorized control
+Agentic AI Lab adopts a commutative merge-priority ordering for authorized control
 decisions:
 
 - an unannotated contribution has numeric priority =0=;

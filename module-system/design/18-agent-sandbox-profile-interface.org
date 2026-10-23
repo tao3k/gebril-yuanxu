@@ -4,14 +4,14 @@
 
 * 10.06.18 Agent Sandbox Profile Interface
 ** 10.06.18.10 Bass-Derived User Interface Rule
-Bass keeps user work visible as small, inspectable recipes before a runtime executes them. The important lesson for =poo-flow= sandbox work is not the Bass language implementation. The lesson is the user-facing shape:
+Bass keeps user work visible as small, inspectable recipes before a runtime executes them. The important lesson for =agentic-ai-lab= sandbox work is not the Bass language implementation. The lesson is the user-facing shape:
 
 - users write short scenario rows;
 - rows are ordinary data before execution;
 - runtime images, cache, mounts, and host access remain explicit;
 - backends do the heavy execution outside the small user interface.
 
-For =poo-flow=, agent sandbox profiles should follow the same rule. A profile is an inert POO recipe that names the backend, network policy, capabilities, resource policy, and metadata. Projection to backend descriptors is a later step. Runtime execution remains owned by =marlin-agent-core= or the selected backend adapter.
+For =agentic-ai-lab=, agent sandbox profiles should follow the same rule. A profile is an inert POO recipe that names the backend, network policy, capabilities, resource policy, and metadata. Projection to backend descriptors is a later step. Runtime execution remains owned by =marlin-agent-core= or the selected backend adapter.
 
 ** 10.06.18.20 User Surface
 Root =init.ss= keeps module selection separate from sandbox profile recipes. The public user surface is concrete module loading; the facade builds the canonical =users= profile from those rows. Built-in sandbox profile recipes live upstream in =modules/agent-sandbox/config.ss=, and downstream user files load those defaults instead of spelling out backend policy rows.
@@ -20,8 +20,8 @@ Root =init.ss= keeps module selection separate from sandbox profile recipes. The
 (use-module nono-sandbox +nono +doctor)
 (use-module cubeSandbox +cube +doctor)
 
-poo-flow-default-sandbox-profiles
-(poo-flow-default-sandbox-profile-presentation)
+agentic-ai-lab-default-sandbox-profiles
+(agentic-ai-lab-default-sandbox-profile-presentation)
 #+end_src
 
 The public user row is module-level: =(use-module nono-sandbox ...)=. The full profile construction layer remains upstream so agents or higher profiles can generate one =users= profile without making the user understand descriptor catalogs, C4 slot resolution internals, or Marlin runtime manifests.
@@ -30,10 +30,10 @@ The public user row is module-level: =(use-module nono-sandbox ...)=. The full p
 The boundary is:
 
 - concrete =(use-module ...)= rows select sandbox modules such as =nono-sandbox= and =cubeSandbox=;
-- =poo-flow-default-sandbox-profiles= declares upstream profile recipes consumed by those modules or their runtime bridges;
+- =agentic-ai-lab-default-sandbox-profiles= declares upstream profile recipes consumed by those modules or their runtime bridges;
 - downstream user config may select or override profile names, but it should not own built-in backend policy rows;
-- =pooFlowSandboxProfilesPresentation= gives tools a shallow receipt with names, backend refs, runtime handoff intent, runtime summaries, and handoff summaries;
-- =poo-flow-sandbox-profile->profile= projects one recipe into the existing validated sandbox profile contract;
+- =agenticAiLabSandboxProfilesPresentation= gives tools a shallow receipt with names, backend refs, runtime handoff intent, runtime summaries, and handoff summaries;
+- =agentic-ai-lab-sandbox-profile->profile= projects one recipe into the existing validated sandbox profile contract;
 - =agent-sandbox-profile-runtime-summary= and =agent-sandbox-profile-handoff-summary= live under =modules/agent-sandbox/profile.ss= so workflow and loop code consume sandbox-owned projection data instead of reparsing resource policy rows;
 - no package installation, descriptor realization, or runtime command execution happens in the user interface layer.
 
@@ -310,7 +310,7 @@ flowchart LR
 #+end_src
 
 - [X] The built-in =agent/nono= recipe contains no concrete mount target.
-- [X] =poo-flow-sandbox-profile-recipe-portable?= rejects POSIX, Windows
+- [X] =agentic-ai-lab-sandbox-profile-recipe-portable?= rejects POSIX, Windows
   drive/rooted/UNC, and =file:= absolute path data.
 - [X] Any Recipe =target= field is rejected even when its value is relative.
 - [X] Logical =source= accepts =.= and canonical relative segments but rejects
@@ -371,7 +371,7 @@ replay generation remain distinct obligations connected by explicit equations.
 - [X] Subject projection, lifecycle freshness, and completion =providerIdentity=
   remain separate typed obligations.
 
-=PooFlowProof.Enterprise.SandboxProfileRecipePortabilityClosure= makes the
+=AgenticAILabProof.Enterprise.SandboxProfileRecipePortabilityClosure= makes the
 former design error explicit.  If the runtime target participates in recipe
 identity, two backend layouts for one logical resource role produce different
 recipe identities.  The portable model removes the target from

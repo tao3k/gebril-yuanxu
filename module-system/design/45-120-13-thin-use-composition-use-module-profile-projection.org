@@ -137,7 +137,7 @@ flowchart LR
   A["Advanced native POO profile values"] -->|"participate without new syntax"| C
   C -->|"returns one pure composed POO value"| V["Composition value"]
   B["use-composition source syntax"] -->|"hygienically binds the ordinary expression result"| V
-  V -->|"is evaluated later by Module, authority, and observability semantics"| E["POO Flow evaluator"]
+  V -->|"is evaluated later by Module, authority, and observability semantics"| E["Agentic AI Lab evaluator"]
 #+end_src
 
 Macro expansion ends before the evaluator begins.  The evaluator

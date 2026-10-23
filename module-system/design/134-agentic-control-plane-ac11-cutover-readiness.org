@@ -4,7 +4,7 @@
 
 #+title: AC-11 Cutover Readiness Preflight
 #+subtitle: Revision-bound evidence aggregation without release authorization
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+date: 2026-07-12
 #+status: Pure verifier implemented; build evidence is upstream-owned; release decision pending
 #+options: toc:3 num:t
@@ -80,7 +80,7 @@ flowchart LR
     C["Bazel runtime-C symbol action"] --> E["Typed action evidence"]
     P["Bazel Python no-ctypes action"] --> E
     A["AC-10 identity + authoring audit"] --> I["Readiness input"]
-    E --> I --> V["Pure cutover verifier"] --> R["poo-flow.cutover-readiness.v1"]
+    E --> I --> V["Pure cutover verifier"] --> R["agentic-ai-lab.cutover-readiness.v1"]
 #+end_src
 
 The resulting artifact remains preflight evidence, not the P6 release decision.

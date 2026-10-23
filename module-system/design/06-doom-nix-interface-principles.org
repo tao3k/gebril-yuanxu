@@ -6,9 +6,9 @@
 
 * 10.06.06 Doom And Nix Interface Principles
 ** 10.06.06.10 Purpose
-This note defines how =poo-flow= should learn from Doom Emacs and Nix modules without copying either system blindly.
+This note defines how =agentic-ai-lab= should learn from Doom Emacs and Nix modules without copying either system blindly.
 
-Doom is useful because it is Lisp-family software. Its user interface shows how a large modular system can feel concise through macros, dynamic predicates, conditional forms, and high-level commands. Nix is useful because it makes module composition, options, defaults, and merge behavior explicit. =poo-flow= needs both lessons:
+Doom is useful because it is Lisp-family software. Its user interface shows how a large modular system can feel concise through macros, dynamic predicates, conditional forms, and high-level commands. Nix is useful because it makes module composition, options, defaults, and merge behavior explicit. =agentic-ai-lab= needs both lessons:
 
 - Doom gives the authoring experience target.
 - Nix gives the configuration semantics target.
@@ -18,22 +18,22 @@ Doom is useful because it is Lisp-family software. Its user interface shows how 
 *** Declarative Entry Macro
 Doom's =doom!= shape is valuable because users declare grouped modules in one compact form. The important idea is not Emacs Lisp loading. The important idea is that the user sees a small Gerbil module authoring surface with groups, flags, conditional inclusion, and predictable order.
 
-For =poo-flow=, the equivalent should eventually be a module-set macro that expands into Gerbil bindings which construct POO descriptor values and catalog values. The macro may organize syntax, but it must not load files, evaluate runtime tasks, query registries, or mutate global runtime state.
+For =agentic-ai-lab=, the equivalent should eventually be a module-set macro that expands into Gerbil bindings which construct POO descriptor values and catalog values. The macro may organize syntax, but it must not load files, evaluate runtime tasks, query registries, or mutate global runtime state.
 
 *** Active Module Predicate
 Doom's =modulep!= pattern is useful because users can ask whether a module or flag is active at the point where conditional configuration is written.
 
-=poo-flow= already absorbs this as explicit data checks:
+=agentic-ai-lab= already absorbs this as explicit data checks:
 
 - =poo-module-active?= checks a descriptor and flag requirements.
-- =poo-flow-module-value-catalog-active?= checks a catalog by module id.
+- =agentic-ai-lab-module-value-catalog-active?= checks a catalog by module id.
 
 This is intentionally less magical than Doom. The active predicate receives data explicitly instead of guessing the current module from the source file.
 
 *** Domain-Specific Macros
 Doom's macros such as keybinding and package helpers are effective because each macro owns one domain and compiles compact user syntax into the host language's own extension points.
 
-=poo-flow= should use the same rule: a macro is allowed only when it has one clear domain owner and expands to inspectable Gerbil/POO values. Good future candidates:
+=agentic-ai-lab= should use the same rule: a macro is allowed only when it has one clear domain owner and expands to inspectable Gerbil/POO values. Good future candidates:
 
 - module-set declaration;
 - option schema declaration;
@@ -50,7 +50,7 @@ Bad candidates:
 For loop engineering this means Doom-style authoring forms may eventually declare a named loop bundle, but the expansion target must remain Gerbil values such as =loop-pattern-descriptor= or =loop-strategy-plan=. The macro should never wake a loop, allocate a worktree, call a connector, or bypass the Marlin handoff boundary.
 
 *** High-Order Authoring Helpers
-Doom's high-order helpers make small transformations concise. =poo-flow= should borrow the spirit, not the exact names. In Gerbil, this means hygienic higher-order macros, macro factories, small typed helpers, and expression-level composition around:
+Doom's high-order helpers make small transformations concise. =agentic-ai-lab= should borrow the spirit, not the exact names. In Gerbil, this means hygienic higher-order macros, macro factories, small typed helpers, and expression-level composition around:
 
 - descriptor projection;
 - option receipt projection;
@@ -62,7 +62,7 @@ When high-order style makes evidence harder to inspect, prefer a named helper wi
 
 ** 10.06.06.30 Nix Lessons To Borrow
 *** Options Are Declared Separately From Values
-Nix modules separate option declarations from option values. That maps directly to the current =poo-flow= split:
+Nix modules separate option declarations from option values. That maps directly to the current =agentic-ai-lab= split:
 
 - =poo-module-interface= declares schemas;
 - module config carries values;
@@ -71,7 +71,7 @@ Nix modules separate option declarations from option values. That maps directly 
 This is the right foundation. Future work should add richer merge semantics without moving validation into runtime execution.
 
 *** Modules Compose Into A Result
-Nix modules compose into a final configuration value. They do not rely on the user remembering hidden side effects. =poo-flow= should keep this shape:
+Nix modules compose into a final configuration value. They do not rely on the user remembering hidden side effects. =agentic-ai-lab= should keep this shape:
 
 - module descriptors compose into activation;
 - activation lowers into =run-config=;
@@ -86,7 +86,7 @@ design, C4 owns Module inheritance; Core's
 such as override, append, prepend, and remove without becoming a second Module
 merge evaluator. Core's =module-system/projection/option-objects.ss= owns option
 POO values and =option-validation.ss= owns pure validation findings, including
-missing schemas and constant mismatches. POO Flow's
+missing schemas and constant mismatches. Agentic AI Lab's
 =src/authoring/module-option-projection.ss= projects product descriptors into
 those Core values before runtime execution.
 
@@ -99,7 +99,7 @@ The design rule is:
 - use C4 composition for role and prototype inheritance;
 - expose stable accessors for user-facing inspection;
 - keep leaf owners split under =src/module-system=;
-- keep =:poo-flow/src/module-system= as the only normal user import.
+- keep =:agentic-ai-lab/src/module-system= as the only normal user import.
 
 Macros should expand into Gerbil bindings and POO values in this system. They should not become an alternate runtime or a separate alist/record DSL.
 
@@ -114,15 +114,15 @@ Every user-facing macro must satisfy all of these rules:
 - Expansion does not activate modules.
 - Expansion does not run tasks or flows.
 - Expansion does not depend on hidden current-file module context.
-- Expansion has a focused test that imports only =:poo-flow/src/module-system=.
+- Expansion has a focused test that imports only =:agentic-ai-lab/src/module-system=.
 
-This contract lets =poo-flow= borrow Doom's friendly Lisp surface while staying a Gerbil-hosted POO module system.
+This contract lets =agentic-ai-lab= borrow Doom's friendly Lisp surface while staying a Gerbil-hosted POO module system.
 
 ** 10.06.06.60 Proposed User Interface Layers
 *** Layer 1: Explicit POO API
 Status: implemented.
 
-Users can already declare interfaces, modules, imports, catalogs, active checks, eval receipts, and presentation receipts through =:poo-flow/src/module-system=.
+Users can already declare interfaces, modules, imports, catalogs, active checks, eval receipts, and presentation receipts through =:agentic-ai-lab/src/module-system=.
 
 *** Layer 2: Focused Hygienic Authoring Forms
 Status: partially implemented.
@@ -138,7 +138,7 @@ The =*-block= names avoid colliding with existing public accessors such as =poo-
 
 *** Layer 3: Nix-Style Merge Policy
 Status: implemented for first-pass projection semantics.
-Schema vocabulary and receipts now cover default, override, append, and conflict semantics. Macro authoring remains constrained to POO behavior that is tested through =:poo-flow/src/module-system=.
+Schema vocabulary and receipts now cover default, override, append, and conflict semantics. Macro authoring remains constrained to POO behavior that is tested through =:agentic-ai-lab/src/module-system=.
 *** Layer 4: Loader Integration
 Status: future.
 
@@ -149,7 +149,7 @@ Every new user-facing interface must add or update tests in =t/module-system-use
 
 The required test shape is:
 
-- import =:poo-flow/src/module-system=;
+- import =:agentic-ai-lab/src/module-system=;
 - avoid importing leaf owners;
 - construct values as a module author would;
 - assert descriptor shape through public accessors;
@@ -160,7 +160,7 @@ The required test shape is:
 This test file is the guardrail that keeps implementation modular while allowing a Doom-like authoring experience.
 ** 10.06.06.80 Current Option Policy And Validation
 The earlier general merge-receipt API is retired. Core owns named Slot value
-policies, option POO values, and validation findings; POO Flow's
+policies, option POO values, and validation findings; Agentic AI Lab's
 =src/authoring/module-option-projection.ss= owns descriptor-specific projection.
 The former =projection/interface.ss= aggregate is also retired. Native POO C4
 remains the Module inheritance owner.
@@ -174,7 +174,7 @@ The implemented Doctor projection belongs to =src/user-interface/doctor-presenta
 ** 10.06.06.100 Maintained User Interface
 Status: implemented.
 =user-interface/= is the root-level downstream configuration surface. It is intentionally thin: users choose modules in =init.ss= and put custom module bodies under =custom/*/config.ss=.
-This is the POO Flow equivalent of a small user configuration shape:
+This is the Agentic AI Lab equivalent of a small user configuration shape:
 - downstream owns module enablement and flags;
 - downstream owns flow, loop, strategy, and sandbox option values;
 - upstream =src/module-system= owns descriptor schemas, import realization, loader manifests, catalogs, doctors, and merge semantics.

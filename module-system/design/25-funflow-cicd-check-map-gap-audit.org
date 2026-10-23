@@ -126,9 +126,9 @@ The next implementation contract should connect this readiness data to the broad
 ** 10.06.25.66 Runtime Command Manifest Bridge Update
 The workflow-owned bridge now projects CI/CD readiness into the generic runtime
 command manifest substrate:
-- =poo-flow-cicd-check->runtime-command-manifest= builds one command manifest
+- =agentic-ai-lab-cicd-check->runtime-command-manifest= builds one command manifest
   from a check and embeds the readiness row as the runtime request payload.
-- =poo-flow-cicd-check-map->runtime-command-manifests= preserves check-map order
+- =agentic-ai-lab-cicd-check-map->runtime-command-manifests= preserves check-map order
   and returns one manifest per check.
 - The bridge uses =runtime-command-descriptor->manifest= from
   =src/core/runtime-adapter.ss=, so workflow code does not copy runtime schema
@@ -141,17 +141,17 @@ should be able to obtain the check-map and project these manifests without
 directly calling fixture-specific test helpers.
 ** 10.06.25.67 Configured Registry Presentation Bridge Update
 The configured registry path now exposes the same runtime-command manifest map:
-- =poo-flow-user-config-workflow-cicd-runtime-command-manifests= discovers
+- =agentic-ai-lab-user-config-workflow-cicd-runtime-command-manifests= discovers
   check maps from selected modules and uses the configured sandbox profile
   catalog, including project overrides and upstream defaults.
-- =pooFlowUserConfigPresentation= adds
+- =agenticAiLabUserConfigPresentation= adds
   =workflow-cicd-runtime-command-manifest-map-count= and
   =workflow-cicd-runtime-command-manifests= so downstream tools can inspect
   CLI handoff data from the user-facing config surface.
-- =pooFlowUserProfilePresentation= carries the same report-only fields as the
+- =agenticAiLabUserProfilePresentation= carries the same report-only fields as the
   base user-config presentation.  Profile admission is independently owned by
-  the POO Flow Testing Policy rather than a duplicate doctor presentation.
-- =poo-flow-funflow-pipeline-runtime-command-manifests= gives the Funflow
+  the Agentic AI Lab Testing Policy rather than a duplicate doctor presentation.
+- =agentic-ai-lab-funflow-pipeline-runtime-command-manifests= gives the Funflow
   module owner a thin, named public projection without duplicating the
   workflow-owned CI/CD manifest implementation.
 - Runtime-command manifest summaries expose =status= and =handoff-ready= from

@@ -47,7 +47,7 @@ merge metadata, while Jsonnet already supports effective-object inheritance and
 Dhall provides a different typed/total trade-off. Those capabilities prevent us
 from claiming that POO alone introduces safe composition or late binding.
 
-POO Flow has a useful demonstrated continuity between configuration objects,
+Agentic AI Lab has a useful demonstrated continuity between configuration objects,
 inheritance and Pipeline consumption. Current weaknesses include incomplete
 public-attribute admission/discovery, ambiguous front-door terminology, source-role
 alignment, fixed Check membership and missing effective-value explanations.

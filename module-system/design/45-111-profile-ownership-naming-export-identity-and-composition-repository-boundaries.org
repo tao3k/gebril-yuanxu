@@ -199,9 +199,9 @@ identity.
 
 | Owner | Owns | Does not own |
 |-------+------+--------------|
-| upstream =gerbil-poo= | POO primitives, prototype and object operations | POO Flow domain profiles or application policy |
+| upstream =gerbil-poo= | POO primitives, prototype and object operations | Agentic AI Lab domain profiles or application policy |
 | =yuanxu= | generic composition protocols, typed facet prototypes, admission/debug contracts, runtime adapter contracts, canonical neutral values | Wendao domain profiles, application deployment choices, child package release paths |
-| =wendao-episteme= | Wendao domain POO modules, domain responsibilities, domain profile exports, its package build/test/publication | POO Flow core protocols, final application's environment policy |
+| =wendao-episteme= | Wendao domain POO modules, domain responsibilities, domain profile exports, its package build/test/publication | Agentic AI Lab core protocols, final application's environment policy |
 | final application composition repository | deployment-specific profile values, concrete budgets and restrictions, final =use-composition= binding | upstream package or module identity |
 | parent Git repository | child source pin and parent integration boundary | child package ownership, child semantic exports, child release process |
 | GSLPH | development policy harness and build/test framework behavior | production profile semantics or runtime capability provision |
@@ -211,7 +211,7 @@ identity.
 Dependency, build, test, and environment tools do not become profile owners
 merely because they consume or verify a package.
 
-* POO Flow core ownership
+* Agentic AI Lab core ownership
 
 =yuanxu= owns the general semantic vocabulary:
 
@@ -250,7 +250,7 @@ It may own profiles such as:
 
 Those profile names are scoped to the exporting Wendao POO module.
 
-The POO Flow parent may pin or consume the package.  It does not acquire
+The Agentic AI Lab parent may pin or consume the package.  It does not acquire
 ownership of these exports.
 
 * Application composition ownership
@@ -560,7 +560,7 @@ flowchart LR
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module Profile Selection, Bundle, and Imports Closure Algebra]]
 - [[file:45-94-user-interface-case-projection-and-reachable-imports-validation.org][45-94 - User-Interface Case Projection and Reachable Imports Validation]]
 - [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][45-98 - Gerbil POO Native Boundary and POO Flow Adapter Minimization]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - Gerbil POO Native Boundary and Agentic AI Lab Adapter Minimization]]
 - [[file:45-100-canonical-typed-empty-poo-values-shared-prototype-copy-on-extension-and-cache-safety.org][45-100 - Canonical Typed Empty POO Values, Shared Prototype, Copy-on-Extension, and Cache Safety]]
 - [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
 - [[file:45-110-recovery-observability-profile-projection-and-minimal-use-composition-surface.org][45-110 - Recovery and Observability Profile Projection with a Minimal Use-Composition Surface]]

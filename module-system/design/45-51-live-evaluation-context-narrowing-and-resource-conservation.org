@@ -150,7 +150,7 @@ It is:
 flowchart LR
     P["PureEvaluationContextPolicy POO object"] -->|"validate against available runtime resources"| L["Live root evaluation context"]
     A["Live capability, budget, clock, worker, and adapters"] -->|"realize policy for one execution"| L
-    D["PureSlotDemand"] -->|"supply semantic target and execution-policy identity"| E["POO Flow evaluator"]
+    D["PureSlotDemand"] -->|"supply semantic target and execution-policy identity"| E["Agentic AI Lab evaluator"]
     L -->|"supply live operational resources explicitly"| E
     E -->|"produce semantic value"| S["Semantic result"]
     E -->|"consume resources and record operations"| R["Execution receipt"]

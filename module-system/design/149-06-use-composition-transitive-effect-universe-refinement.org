@@ -241,13 +241,13 @@ and trace validity relations.
 The proof owner is:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/Enterprise/
+packages/proofs/lean/AgenticAILabProof/Enterprise/
   CompositionalEffectUniverse.lean
   SourceBoundCompositionalEffectClosure.lean
 #+end_src
 
-The top-level =PooFlowProof.Enterprise= namespace owns enterprise
-semantics.  It may import generic =PooFlowProof.PooC4= theorems without
+The top-level =AgenticAILabProof.Enterprise= namespace owns enterprise
+semantics.  It may import generic =AgenticAILabProof.PooC4= theorems without
 making the enterprise model a child of =PooC4=.
 
 * Mathematical model
@@ -511,7 +511,7 @@ inside the profile-composition/runtime handoff.
   owner validates its local effect contract.
 - The runtime validates transaction- and fence-bound trace receipts.
 - Lean owns the countermodels and abstract closure.
-- POO Flow composes these first-class evidence objects without
+- Agentic AI Lab composes these first-class evidence objects without
   duplicating the runtime implementation.
 
 * Implementation checklist
@@ -560,16 +560,16 @@ warnings:
 
 #+begin_src text
 lake env lean \
-  PooFlowProof/Enterprise/CompositionalEffectUniverse.lean
+  AgenticAILabProof/Enterprise/CompositionalEffectUniverse.lean
 
 lake build \
-  PooFlowProof.Enterprise.CompositionalEffectUniverse
+  AgenticAILabProof.Enterprise.CompositionalEffectUniverse
 
 lake env lean \
-  PooFlowProof/Enterprise/SourceBoundCompositionalEffectClosure.lean
+  AgenticAILabProof/Enterprise/SourceBoundCompositionalEffectClosure.lean
 
 lake build \
-  PooFlowProof.Enterprise.SourceBoundCompositionalEffectClosure
+  AgenticAILabProof.Enterprise.SourceBoundCompositionalEffectClosure
 #+end_src
 
 The final Lean-owned and AXLE v1 receipts are:

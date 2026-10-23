@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.33 Human Source Change And Recovery Interleavings
 :PROPERTIES:
-:ID: poo-flow-context-source-recovery-interleavings
+:ID: agentic-ai-lab-context-source-recovery-interleavings
 :STATUS: module-protocol-local-verification
 :END:
 

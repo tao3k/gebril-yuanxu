@@ -155,7 +155,7 @@ The closure retains independent =TransactionRegistryValid=,
 The proof owner is:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/Enterprise/
+packages/proofs/lean/AgenticAILabProof/Enterprise/
   PromotionTransactionRecovery.lean
 #+end_src
 
@@ -222,7 +222,7 @@ $ "RecoveryClosed"(R, D, K, Z) =
 - uncompensated application count for this transaction.
 
 The digest is meaningful only if the Marlin owner defines and validates
-the covered external effect domain.  POO Flow must not claim rollback
+the covered external effect domain.  Agentic AI Lab must not claim rollback
 closure for effects excluded from that domain.  RFC 149-05 provides the
 normative coverage and compensation proof.
 
@@ -349,7 +349,7 @@ Every edge label states the evidence required for the transition.
 - Cedar, Lean, and Human Audit continue to own the admission evidence
   carried by the canonical request.
 - Lean owns the abstract countermodels and proof obligations.
-- POO Flow composes the resulting first-class evidence objects and fails
+- Agentic AI Lab composes the resulting first-class evidence objects and fails
   closed when an owner validity relation is missing.
 
 * Implementation checklist
@@ -385,10 +385,10 @@ warnings:
 
 #+begin_src text
 lake env lean \
-  PooFlowProof/Enterprise/PromotionTransactionRecovery.lean
+  AgenticAILabProof/Enterprise/PromotionTransactionRecovery.lean
 
 lake build \
-  PooFlowProof.Enterprise.PromotionTransactionRecovery
+  AgenticAILabProof.Enterprise.PromotionTransactionRecovery
 #+end_src
 
 The Typst block must compile through the project =devenv.nix= toolchain.

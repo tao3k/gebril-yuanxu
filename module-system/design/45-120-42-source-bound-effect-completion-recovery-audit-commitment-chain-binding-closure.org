@@ -9,7 +9,7 @@
 
 - RFC state: Lean countermodel and bridge closure implemented.
 - Language: English only.
-- Scope: Enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: Enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof: [[file:45-120-41-source-bound-effect-completion-recovery-audit-witness-continuity-closure.org][45-120-41 audit witness continuity closure]].
 - Semantic generation: one v1 definition.
 

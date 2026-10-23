@@ -132,7 +132,7 @@ deprecation policy.
 * Lean declaration map
 
 The implementation owner is
-=PooFlowProof.Enterprise.SourceBoundFingerprintContentAddressClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundFingerprintContentAddressClosure=.
 
 - =CanonicalFingerprintCheckpointPayload= wraps the complete existing
   checkpoint.
@@ -168,7 +168,7 @@ The implementation owner is
 The external provider may be implemented by
 =agent-semantic-content-identity= or another registered provider, but the core
 proof names only the provider contract.  No provider implementation becomes a
-POO Flow semantic owner.
+Agentic AI Lab semantic owner.
 
 * Related restore authorization refinement
 
@@ -194,7 +194,7 @@ The concrete proof fixture closes:
 The focused Lean target is:
 
 #+begin_src sh
-lake build PooFlowProof.Enterprise.SourceBoundFingerprintContentAddressClosure
+lake build AgenticAILabProof.Enterprise.SourceBoundFingerprintContentAddressClosure
 #+end_src
 
 AXLE must verify the same v1 declaration roots after the Lean build.  AXLE is

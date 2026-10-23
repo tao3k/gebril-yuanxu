@@ -9,7 +9,7 @@
 
 - RFC state: proof model and completion gates closed.
 - Language: English only.
-- Scope: Enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: Enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous proof:
   [[file:45-120-32-source-bound-effect-completion-recovery-owner-evidence-binding-closure.org][45-120-32 owner evidence binding closure]].
 - Compatibility policy: none.  This is a new architecture and no legacy

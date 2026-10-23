@@ -1,4 +1,4 @@
-(import "/tmp/pooflow-pipeline-receiver-pin/object")
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
 (def count 0)
 (def (check label condition)
   (unless condition (error "FAIL" label))

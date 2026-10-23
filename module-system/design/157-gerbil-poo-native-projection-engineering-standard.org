@@ -8,13 +8,13 @@
 * Status
 
 - Status :: Normative V1 engineering standard
-- Scope :: POO Flow object construction, presentation, projection, conversion, and persistence boundaries
+- Scope :: Agentic AI Lab object construction, presentation, projection, conversion, and persistence boundaries
 - Source evidence :: Gerbil =:clan/poo= implementations in =.data/gerbil-poo/object.ss=, =mop.ss=, =io.ss=, =proto.ss=, and =.data/gerbil-persist/persist.ss=, =content-addressing.ss=
 - Lean model :: =YuanxuProof.ModuleSystem.Workflow= using LeanPoo =Object=, =Codec= and =ContextSlot= APIs (conditional model, not interpreter refinement)
 
 * Decision
 
-POO Flow SHALL compose the public object model from Gerbil =:clan/poo=
+Agentic AI Lab SHALL compose the public object model from Gerbil =:clan/poo=
 primitives. Business modules SHALL NOT wrap =$constant-slot-spec= or
 =$computed-slot-spec=, manufacture a parallel slot protocol, or maintain an
 eager summary beside a lazy presentation with the same responsibility.
@@ -33,7 +33,7 @@ The =:clan/poo= layers are:
 ** Native object cache
 
 =object<-fun= converts a key projection into the =:clan/poo= internal =$thunk-slot-spec=
-entries. =.ref= stores the result in the object's instance hash. A POO Flow
+entries. =.ref= stores the result in the object's instance hash. A Agentic AI Lab
 presentation therefore needs neither a custom computed-slot wrapper nor a
 second per-slot cache.
 
@@ -68,7 +68,7 @@ boundary; they are not substitutes for native POO values inside the runtime.
 * Lessons from gerbil-persist
 
 =Persistent.=, =PersistentData=, and =PersistentActivity= keep Type methods,
-transaction state, restoration, and storage conversion separate. POO Flow
+transaction state, restoration, and storage conversion separate. Agentic AI Lab
 adopts the same ownership rules:
 
 - a presentation projects inspectable semantic data and performs no storage;

@@ -36,7 +36,7 @@ changed by these documents. Existing Core mechanism owners remain where they are
 | JSON/Scheme input to domain objects | [[file:../../docs/10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Data-first Guestbook, Contract sources, functions and placeholders]] |
 | Internal construction and its research rationale | [[file:../../docs/10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Native design code]] and [[file:../../docs/10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][ecosystem evidence, reflection and controls]] |
 
-Core remains independent of POO Flow, current product-specific adapters, ASP build
+Core remains independent of Agentic AI Lab, current product-specific adapters, ASP build
 policy and deployment providers. The shared JSON Schema bridge is implemented in
 Core modules/json-schema. Optional-extension and
 build protocols may be implemented by consumers; Core must not import product
@@ -47,7 +47,7 @@ migration or proof that an adapter has been implemented.
 
 Core owns init selection semantics, directory/source-role Contracts, publication,
 Core/Feature integration and selected build graph design, including their research
-and validation material. POO Flow retains actual module implementations, source
+and validation material. Agentic AI Lab retains actual module implementations, source
 policy adapters, concrete Profiles/Scenarios and end-to-end resource qualification.
 Examples from those consumers do not create a Core runtime dependency.
 

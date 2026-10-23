@@ -4,7 +4,7 @@
 
 * 10.06.07 Loop Engineering With Native C4
 ** 10.06.07.10 Purpose
-This note records the local research pass over =cobusgreyling/loop-engineering= and maps it onto =poo-flow='s Gerbil POO design.
+This note records the local research pass over =cobusgreyling/loop-engineering= and maps it onto =agentic-ai-lab='s Gerbil POO design.
 
 The main design conclusion is narrow:
 
@@ -54,7 +54,7 @@ The old C3/POO baseline belongs to the v0.18 period. Native C4 is the current v0
 - =src/gerbil/runtime/c3.ss:356-383= computes class slots from the precedence list, then applies direct slots.
 - =src/gerbil/runtime/mop.ss:591-605= shows the MOP computing class precedence via =c4-linearize=.
 
-The important property for =poo-flow= is that independently authored roles merge into one deterministic, monotonic native C4 precedence list before a run starts.
+The important property for =agentic-ai-lab= is that independently authored roles merge into one deterministic, monotonic native C4 precedence list before a run starts.
 ** 10.06.07.50 Boundary Rule
 Use POO/C4 where the question is:
 
@@ -70,7 +70,7 @@ Which loop should wake up next?
 Which external action should be retried?
 #+end_src
 
-Those are runtime state and scheduling questions. In current =poo-flow=:
+Those are runtime state and scheduling questions. In current =agentic-ai-lab=:
 
 - =src/core/roles.ss= already owns POO role composition and safe slot probing.
 - =src/core/plan.ss= owns flow lowering, dependency edges, root/terminal frontiers, and ready-node selection.
@@ -182,7 +182,7 @@ POO role graph -> C4 precedence -> validator hard gate -> Marlin runtime request
 
 ** 10.06.07.65 POO Object Graph Fact Layer
 The loop layer should be understood as a configurable engineering surface over
-the =poo-flow= POO object graph, not as a scheduler, not as a source-text
+the =agentic-ai-lab= POO object graph, not as a scheduler, not as a source-text
 editing protocol, and not as a replacement for the configuration layer.
 
 The fact graph is composed from several POO object families:
@@ -210,7 +210,7 @@ facts such as:
 - budget and denylist constraints;
 - runtime handoff target and contract schema.
 
-This gives =poo-flow= a stronger design than a fixed loop runner. A loop can be
+This gives =agentic-ai-lab= a stronger design than a fixed loop runner. A loop can be
 configured by composing POO roles, then projected into a handoff contract. The
 runtime may allocate timers, worktrees, connectors, and processes, but Scheme
 owns the policy object graph and its audit-friendly receipts.
@@ -249,7 +249,7 @@ The loop run protocol should be explicit data that can be described and validate
 7. Accept, reject, retry, or escalate based on checker output and max attempts.
 8. Write state, receipt, and run log before returning.
 
-This run protocol is a loop envelope around flows. If the maker executes a =poo-flow= flow, that flow is still lowered by =src/core/plan.ss= and interpreted by =src/core/runner.ss=.
+This run protocol is a loop envelope around flows. If the maker executes a =agentic-ai-lab= flow, that flow is still lowered by =src/core/plan.ss= and interpreted by =src/core/runner.ss=.
 ** 10.06.07.80 Multi-Loop Governor
 The multi-loop problem should be a first-class descriptor bundle:
 
@@ -366,7 +366,7 @@ Scheme builds the envelope.
 Marlin consumes the envelope.
 Neither side is simulated by the Scheme projection.
 #+end_src
-This gives the Rust execution layer a stable shape to bind through the Scheme ABI while keeping =poo-flow= focused on policy composition.
+This gives the Rust execution layer a stable shape to bind through the Scheme ABI while keeping =agentic-ai-lab= focused on policy composition.
 ** 10.06.07.150 Marlin ABI Manifest Landing
 The request projection now publishes a separate ABI discovery manifest:
 - =+loop-governor-marlin-abi-schema+= names the manifest itself.

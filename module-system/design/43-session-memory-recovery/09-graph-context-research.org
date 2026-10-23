@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.09 Graph Context Composition and Falsification
 :PROPERTIES:
-:ID: poo-flow-graph-context-composition-research
+:ID: agentic-ai-lab-graph-context-composition-research
 :STATUS: research-design-new-models-and-measurements-open
 :DATE: 2026-10-14
 :END:
@@ -149,7 +149,7 @@ residency, eviction, prefill/TTFT, end-to-end latency and composition/review
 cost. Count cold runs, refusals, failed quality gates and incomplete runs.
 Do not report a reused semantic receipt as a KV hit or a hit as a net saving.
 
-Executable consumer sources now exist in [[file:../../../../packages/proofs/lean-poo/PooFlowContextLifecycleProof/GraphContext.lean][GraphContext.lean]] and
+Executable consumer sources now exist in [[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean][GraphContext.lean]] and
 [[file:../../../../packages/proofs/context-lifecycle/GraphContext.qnt][GraphContext.qnt]]. The Lean consumer uses the upstream C3/C4 algorithms and
 object evaluator directly; the finite Quint model does not duplicate them.
 Results belong to a separate receipt, not this research statement. Real

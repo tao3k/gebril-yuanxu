@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 * Decision and status
 
 The new =ai-agentic-context= Module is the architectural owner of the Agentic AI
-Content and Context System in POO Flow. Org-mode documents and their Orgize
+Content and Context System in Agentic AI Lab. Org-mode documents and their Orgize
 Element graphs are its core content model. Session is an independent Module
 composed as a dependency by Context. Memory is a Feature owned by Context.
 Session governs scoped interaction with content over time. Memory governs
@@ -25,7 +25,7 @@ lifecycle details remain proposed contracts. Core and source ownership have
 already migrated; the next protocols are specified in
 [[file:ai-agentic-context-session-memory-contracts.org][Module roles, Session and Memory contracts]].
 
-The delivered ownership baseline is POO Flow
+The delivered ownership baseline is Agentic AI Lab
 =22c4b24c3872daac782d3c836fb17369c0fe51c7=. Existing native Context Use checks
 are a partial Library implementation, not qualification of this whole system.
 All newly authored design documents and examples use English.
@@ -118,7 +118,7 @@ the declared Protocol has completed cancellation, handoff, or closure.
 ** Source and structure
 
 Orgize owns Org syntax, parsing, Elements, document-local structural selectors,
-and their maintained execution projections. POO Flow consumes that model;
+and their maintained execution projections. Agentic AI Lab consumes that model;
 it must not add a Context-specific Org parser or a parallel Memory grammar.
 
 Headings and sections provide structural scope. Properties, tags, TODO states,
@@ -418,7 +418,7 @@ proposed implementation slices, not covered by existing headline replay tests.
 
 * Joint Context, Temporal and lifecycle policy refinement
 
-[[file:context-temporal-lifecycle-policy-system-design.org][The POO Flow joint policy system design]] defines orthogonal lifecycle states,
+[[file:context-temporal-lifecycle-policy-system-design.org][The Agentic AI Lab joint policy system design]] defines orthogonal lifecycle states,
 explicit Temporal applicability and clock domains, admitted strategy composition,
 and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure native window
 policy and separates its local qualification from the prospective joint protocol

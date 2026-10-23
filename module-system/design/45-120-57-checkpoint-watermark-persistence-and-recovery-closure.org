@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: RFC 57 — Checkpoint Watermark Persistence and Recovery Closure
-#+author: POO Flow Contributors
+#+author: Agentic AI Lab Contributors
 #+language: en
 
 * Status
@@ -281,7 +281,7 @@ stateDiagram-v2
 
 The model is implemented in:
 
-- =PooFlowProof.Enterprise.CheckpointWatermarkRecoveryClosure=
+- =AgenticAILabProof.Enterprise.CheckpointWatermarkRecoveryClosure=
 
 The proof surface contains:
 

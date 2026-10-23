@@ -29,7 +29,7 @@ Zerolang states its agent boundary directly:
 - projection import/export is not the normal agent edit path;
 - checked graph patches validate shape before the package store changes.
 
-This is the important lesson for =poo-flow=. The strongest design idea is not a
+This is the important lesson for =agentic-ai-lab=. The strongest design idea is not a
 new syntax. The design idea is ownership:
 - semantic state has one authority;
 - human-readable text is a projection;
@@ -38,7 +38,7 @@ new syntax. The design idea is ownership:
 - text and JSON outputs are separate reading modes.
 
 ** 10.06.21.30 Translation Boundary
-Zerolang is not a template for =poo-flow=. Its CLI, projection format, compiler
+Zerolang is not a template for =agentic-ai-lab=. Its CLI, projection format, compiler
 model, and language ownership are different from ours. The useful reference is
 the agent-facing engineering boundary: semantic facts have an authority,
 human review is a first-class loop concern, and runtime effects are gated by
@@ -68,15 +68,15 @@ The rule is precise in Zerolang: export projections when a human asks for
 source-like review, or when CI needs a drift gate. Do not export as an
 automatic agent step.
 
-=poo-flow= should not copy this command shape. It should translate the same
+=agentic-ai-lab= should not copy this command shape. It should translate the same
 engineering boundary into POO terms. The equivalent user/agent surface is a
 configured loop strategy over a POO object graph fact layer:
 
 #+begin_src sh
-poo-flow loop inspect
-poo-flow loop doctor
-poo-flow loop plan
-poo-flow loop handoff
+agentic-ai-lab loop inspect
+agentic-ai-lab loop doctor
+agentic-ai-lab loop plan
+agentic-ai-lab loop handoff
 #+end_src
 
 The exact CLI names can still change. The semantic contract should not:
@@ -88,11 +88,11 @@ The exact CLI names can still change. The semantic contract should not:
   backend without Scheme owning timers, worktrees, connector IO, or process
   execution.
 
-** 10.06.21.40 Mapping To POO Flow
-Zerolang's graph only partially maps to =poo-flow='s POO object layer. The
+** 10.06.21.40 Mapping To Agentic AI Lab
+Zerolang's graph only partially maps to =agentic-ai-lab='s POO object layer. The
 important mapping is about authority and review boundaries, not surface syntax.
 
-| Zerolang | POO Flow |
+| Zerolang | Agentic AI Lab |
 | graph is the program database | POO objects are the profile/module/workflow fact layer |
 | =.0= projection | human audit loop and review receipts |
 | =zero query= | profile/config/presentation inspection |
@@ -101,7 +101,7 @@ important mapping is about authority and review boundaries, not surface syntax.
 | diagnostics as repair contracts | doctor diagnostics and fix plans |
 | build/run owned by compiler/runtime | heavy workflow runtime owned by =marlin-agent-core= |
 
-The current =poo-flow= direction is mostly aligned:
+The current =agentic-ai-lab= direction is mostly aligned:
 - =user-interface/init.ss= is already a small validated configuration surface.
 - =yuanxu!= short form keeps profile construction out of root init.
 - =src/module-system/user-profile.ss= owns the maintained =users= profile.
@@ -117,7 +117,7 @@ and Marlin handoff metadata. The next design step is to make that loop strategy
 object the primary configurable agent engineering surface.
 
 ** 10.06.21.45 POO Object Graph Fact Layer
-For =poo-flow=, the fact layer is not a Zero-style compiler graph. It is a
+For =agentic-ai-lab=, the fact layer is not a Zero-style compiler graph. It is a
 Gerbil POO object graph:
 - root/user config declares validated configuration rows that agents may modify
   through checked interfaces;
@@ -176,8 +176,8 @@ alist fields:
 - =agent-judge-nodes= projects machine governance nodes for Marlin and doctors;
 - =audit-node= projects the human audit object through the same node contract.
 
-This is where =poo-flow= differs from Zero. Zero uses graph patches to make
-program edits safer. =poo-flow= uses POO/C4-composed loop and policy objects to
+This is where =agentic-ai-lab= differs from Zero. Zero uses graph patches to make
+program edits safer. =agentic-ai-lab= uses POO/C4-composed loop and policy objects to
 make agent operation safer and more reusable.
 
 ** 10.06.21.46 Config Layer And Human Loop
@@ -208,34 +208,34 @@ the governor chain, but it marks =governance-node-kind = human= and
 =human-intervention = #t=.
 
 ** 10.06.21.47 Three-Layer Zerolang Re-Audit
-The three-layer audit shows why =poo-flow= should not copy Zero directly.
+The three-layer audit shows why =agentic-ai-lab= should not copy Zero directly.
 
 Layer 1, configuration:
 - Zero uses project/package/compiler commands and graph patch operations around
   a new language.
-- =poo-flow= uses Scheme files and POO macros as a validated configuration
+- =agentic-ai-lab= uses Scheme files and POO macros as a validated configuration
   surface.
-- The =poo-flow= config layer is intentionally agent-editable through checked
+- The =agentic-ai-lab= config layer is intentionally agent-editable through checked
   interfaces; it is not just a human-only projection.
 
 Layer 2, fact graph:
 - Zero's compiler graph is the program authority for a new DSL/language.
-- =poo-flow='s authority is a Gerbil POO object graph composed from config,
+- =agentic-ai-lab='s authority is a Gerbil POO object graph composed from config,
   profile, module, workflow, sandbox, strategy, governor, and audit objects.
 - This keeps us inside Scheme+POO instead of inventing a separate language.
 
 Layer 3, governance and human loop:
 - Zero exposes human review through projection review, diagnostics, and docs
   assistant guardrails.
-- =poo-flow= should expose agent governance as =loop-governor= facts, including
+- =agentic-ai-lab= should expose agent governance as =loop-governor= facts, including
   multi-agent auditor/verifier/governor judgement.
-- =poo-flow= should expose human review as a separate human audit loop over
+- =agentic-ai-lab= should expose human review as a separate human audit loop over
   composed facts, manifests, validation results, and receipts.
 - Human decisions belong in loop state and audit receipts, not as comments or
   hidden edits in =init.ss=.
 
 This audit reframes Zero as contrast evidence. Zero proves the value of
-agent-oriented fact authority and review boundaries. =poo-flow= implements that
+agent-oriented fact authority and review boundaries. =agentic-ai-lab= implements that
 value with Gerbil POO/C4 roles, validated Scheme configuration, and explicit
 human audit loop objects.
 
@@ -266,7 +266,7 @@ Zerolang docs do not start with compiler architecture. They start with:
 - run only the validation needed;
 - review projections only when useful.
 
-=poo-flow= documentation should keep the same split:
+=agentic-ai-lab= documentation should keep the same split:
 - a task-first guide for users and agents;
 - a concept reference for POO, C4 roles, profile sets, descriptors, receipts,
   runtime manifests, and adapters;
@@ -317,7 +317,7 @@ Zerolang's docs chat route is intentionally constrained:
 - it uses tool steps with a fixed maximum step count;
 - it rate-limits the public chat surface.
 
-=poo-flow= can translate this boundary for an agent configuration assistant:
+=agentic-ai-lab= can translate this boundary for an agent configuration assistant:
 - mount only project docs, =user-interface=, and selected profile receipts;
 - give the agent read-only inspect tools by default;
 - expose write operations only as checked POO patch plans;
@@ -383,18 +383,18 @@ syntax and not a source-text patch system.
 The next concrete milestone should be:
 
 #+begin_src sh
-poo-flow loop inspect user-interface/init.ss
-poo-flow loop doctor user-interface/init.ss
-poo-flow loop resolve user-interface/init.ss --profile users
-poo-flow loop manifest user-interface/init.ss --profile users
+agentic-ai-lab loop inspect user-interface/init.ss
+agentic-ai-lab loop doctor user-interface/init.ss
+agentic-ai-lab loop resolve user-interface/init.ss --profile users
+agentic-ai-lab loop manifest user-interface/init.ss --profile users
 #+end_src
 
 If the CLI is not ready, the same milestone can be delivered first as Scheme
 entrypoints and tests:
-- =pooFlowUserInterfaceLoopInspect=
-- =pooFlowUserInterfaceLoopDoctor=
-- =pooFlowUserInterfaceLoopResolve=
-- =pooFlowUserInterfaceLoopRuntimeManifest=
+- =agenticAiLabUserInterfaceLoopInspect=
+- =agenticAiLabUserInterfaceLoopDoctor=
+- =agenticAiLabUserInterfaceLoopResolve=
+- =agenticAiLabUserInterfaceLoopRuntimeManifest=
 
 Success criteria:
 - agents can inspect without dumping raw source;
@@ -405,7 +405,7 @@ Success criteria:
 
 ** 10.06.21.90 Decision
 Do not copy Zerolang's language, CLI, or compiler graph. Extract the
-agent-facing engineering boundary and implement it in =poo-flow='s own design:
+agent-facing engineering boundary and implement it in =agentic-ai-lab='s own design:
 
 The POO object graph is the semantic authority. =init.ss= is the validated
 configuration surface, not the human projection layer. Loop strategy objects

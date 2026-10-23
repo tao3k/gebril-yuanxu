@@ -920,7 +920,7 @@ weakened merely by overriding a boolean or changing a handoff label.
 The user model is reusable Profiles composed into Scenarios. Users select,
 extend or create Scenarios and compatible CompositionContracts. Do not require
 an additional public Case declaration to repeat that assembly. Existing
-user-composition already produces poo-flow.scenario-case.v1: Case is the current
+user-composition already produces agentic-ai-lab.scenario-case.v1: Case is the current
 internal closed plan/admission/execution representation, with fresh Session
 behavior. It is not a second public Scenario hierarchy. Existing custom Case
 files also contain workflow config payloads; those stay owned Scenario/Module

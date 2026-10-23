@@ -27,7 +27,7 @@ Lean proof generation, or downstream Rust/TypeScript runtime adapters.
 * Accepted invariants
 
 - The digest is computed by Scheme from the normalized payload.
-- Canonical form is =poo-flow.organization-bundle/v1= S-expression data.
+- Canonical form is =agentic-ai-lab.organization-bundle/v1= S-expression data.
 - Normalization is deterministic, order-invariant, and idempotent.
 - The digest provider boundary is replaceable; AC-01 supplies SHA-256 only.
 - Exactly one root agent and one child agent are accepted by this slice.

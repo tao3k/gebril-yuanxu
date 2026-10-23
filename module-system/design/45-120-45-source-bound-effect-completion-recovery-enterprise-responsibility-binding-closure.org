@@ -306,7 +306,7 @@ contains:
 
 ** Complete Lean
 
-- =lake build PooFlowProof.Enterprise=: passed, 436 jobs.
+- =lake build AgenticAILabProof.Enterprise=: passed, 436 jobs.
 - =lake build=: passed, 508 jobs.
 - Both builds report only the pre-existing
   =AgentRedTeamProofRegressionClosure.lean:194:2= suggestion to use =simp=
@@ -314,10 +314,10 @@ contains:
 
 ** AXLE
 
-The packaged =poo-flow-axle-verify= CLI exported the independent-model
+The packaged =agentic-ai-lab-axle-verify= CLI exported the independent-model
 declaration closure:
 
-- schema: =poo-flow.lean-declaration-closure.v1=;
+- schema: =agentic-ai-lab.lean-declaration-closure.v1=;
 - roots: 5;
 - declarations: 42;
 - owner modules: 1;

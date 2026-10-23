@@ -30,7 +30,7 @@ Python backend is available only through explicit reference constructors.
 * Native lifecycle receipt
 
 - Dynamic library loading: bundled path and explicit
-  =POO_FLOW_RUNTIME_V0_LIBRARY= override pass.
+  =AGENTIC_AI_LAB_RUNTIME_V0_LIBRARY= override pass.
 - ABI v0.1/schema/capability negotiation: pass.
 - Instance, profile, Bundle, session, arena, and lease ownership: pass.
 - Partial construction cleanup, context manager, and idempotent close: pass.

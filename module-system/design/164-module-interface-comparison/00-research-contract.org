@@ -7,7 +7,7 @@
 
 * Purpose and questions
 
-This study asks whether POO Flow is becoming a usable configuration language
+This study asks whether Agentic AI Lab is becoming a usable configuration language
 interface, rather than merely exposing an extensible object kernel. The unit of
 comparison is a configuration authoring task. General implementation languages
 are outside the comparison set.
@@ -30,8 +30,8 @@ Nickel's contracts/merge metadata, Dhall's typed functions and NixOS's options?
 | Level | Compared systems | Question |
 |-------+------------------+----------|
 | Language | Nix, Nickel, Jsonnet, Dhall, Gerbil Scheme + native POO | What are the evaluation, typing, merge and abstraction rules? |
-| Framework | NixOS modules, HiveBus/POP consumers, Omnibus NCL interfaces, POO Flow | What conventions and schemas turn those rules into a usable interface? |
-| Product case | Omnibus sandbox/matrix; HiveBus host/export; POO Flow Funflow | What does the actual author write, and which output consumer exists? |
+| Framework | NixOS modules, HiveBus/POP consumers, Omnibus NCL interfaces, Agentic AI Lab | What conventions and schemas turn those rules into a usable interface? |
+| Product case | Omnibus sandbox/matrix; HiveBus host/export; Agentic AI Lab Funflow | What does the actual author write, and which output consumer exists? |
 
 An actual Omnibus sandbox is not a performance-equivalent Funflow build. We
 compare shared authoring operations across these cases and use separate small

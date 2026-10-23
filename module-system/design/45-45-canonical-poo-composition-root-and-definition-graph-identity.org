@@ -23,7 +23,7 @@ The canonical active POO composition root is a lazy Merkle graph whose nodes hav
 
 * Three identity domains
 
-POO Flow distinguishes:
+Agentic AI Lab distinguishes:
 
 #+begin_src text
 RuntimeObjectIdentity
@@ -160,7 +160,7 @@ It is an identity projection over the definition graph, not a replacement fixed-
 
 * Definition SCC and demand SCC separation
 
-POO Flow distinguishes:
+Agentic AI Lab distinguishes:
 
 - Definition SCC :: A cyclic region in the canonical POO definition graph. It may participate in the composition-root projection.
 - Demand SCC :: The dependency topology actually discovered while evaluating demanded slots in a particular semantic generation. It is derived evaluation evidence.
@@ -261,4 +261,4 @@ Evidence may disclose opaque identities under redaction, but it must preserve en
 - Do not use source paths or line numbers as semantic identity.
 - Do not hash runtime addresses, capabilities, continuations, or mutable cells.
 - Do not evaluate a value fixed point to identify a cyclic definition graph.
-- Do not replace =gerbil-poo= object semantics or POO Flow fixed-point evaluation.
+- Do not replace =gerbil-poo= object semantics or Agentic AI Lab fixed-point evaluation.

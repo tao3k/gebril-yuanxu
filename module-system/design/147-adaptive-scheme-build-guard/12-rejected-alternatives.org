@@ -7,7 +7,7 @@
 ** Replacing the upstream session with an adaptive downstream controller
 
 Rejected.  Worker scheduling, dependency completion, and incremental validity
-are =std/make= responsibilities.  POO Flow observes a single upstream session
+are =std/make= responsibilities.  Agentic AI Lab observes a single upstream session
 and may stop an actual RSS-rate anomaly; it does not pre-limit ordinary worker
 capacity or create a second scheduler.
 

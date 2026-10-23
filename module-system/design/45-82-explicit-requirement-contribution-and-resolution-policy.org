@@ -400,7 +400,7 @@ Requirements may form cycles.
 Structural closure establishes identity-stable semantic edges before
 value-level evaluation.
 
-The resulting cycle becomes a POO SCC and is evaluated jointly by POO Flow.
+The resulting cycle becomes a POO SCC and is evaluated jointly by Agentic AI Lab.
 
 The evaluator must not:
 

@@ -73,7 +73,7 @@ does not discover state by recursively realizing the object graph.
 
 Before the POO capability is ready, a bounded Gerbil-native buffer retains the
 fixed event schema.  After activation, events are projected into the existing
-POO Flow observability boundary.
+Agentic AI Lab observability boundary.
 
 - Sequence is strictly increasing within one runtime context.
 - Cross-context events have no implicit total order.
@@ -169,7 +169,7 @@ cycle:
   and no decision-produced
 #+end_src
 
-POO Flow commits or detects the runtime transition, assigns the next local
+Agentic AI Lab commits or detects the runtime transition, assigns the next local
 sequence, records the local event, and only then delivers the condition or wakes
 waiters.  External export may batch later without changing local order.
 

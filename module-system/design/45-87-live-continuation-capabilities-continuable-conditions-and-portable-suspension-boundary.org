@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -126,7 +126,7 @@ implementation admission checklist.
 | Local Lean module | =accepted= | =lake build YuanxuProof.Modules.Funflow.Continuation=: 29/29 jobs |
 | Local Lean closure | =accepted= | =lake build=: 102/102 jobs |
 | AXLE independent declaration check | =accepted= | Request =e3ec35cb-f554-44d3-a154-e8eb028f763d=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =530d20b4-afe6-4d06-b56f-a489ca259147= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =530d20b4-afe6-4d06-b56f-a489ca259147= cannot resolve local module prefix =AgenticAILabProof= |
 | Gerbil/Gambit runtime correspondence | =pending-owner-verification= | RFC 45-88 retains exact API and executable-probe ownership |
 | Continuation implementation witnesses | =pending= | The 21 implementation admission obligations remain open |
 
@@ -147,7 +147,7 @@ diagnostic API correspondence is owned by
 This document owns the control semantics; 45-88 owns the verified runtime
 projection and its executable admission probes.
 
-POO Flow distinguishes live control capture from portable semantic suspension.
+Agentic AI Lab distinguishes live control capture from portable semantic suspension.
 
 A Scheme continuation may support efficient same-process suspension and
 resumption.  It is not a portable representation of a POO semantic demand.
@@ -338,7 +338,7 @@ Default one-shot behavior prevents:
 - concurrent completion of one demand through the same authority.
 
 Although an underlying Scheme continuation may support multiple invocation,
-that implementation property does not grant multi-shot POO Flow authority.
+that implementation property does not grant multi-shot Agentic AI Lab authority.
 
 Pure branching requires an explicit operation that creates distinct demand
 branches with distinct identities and budgets.  It does not reuse one

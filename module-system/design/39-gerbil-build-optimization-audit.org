@@ -6,7 +6,7 @@
 :PROPERTIES:
 ** 10.06.39.05 Authority Boundary: Optimize At The Owner
 :PROPERTIES:
-POO Flow must improve build performance without replacing Gerbil's build
+Agentic AI Lab must improve build performance without replacing Gerbil's build
 semantics.  The ownership split is:
 
 1. Gerbil and Gambit own expansion, import semantics, dependency completion,
@@ -17,18 +17,18 @@ semantics.  The ownership split is:
    current.
 3. =gerbil-bazel= owns the reusable mapping from the same upstream package
    entry to Bazel toolchains, actions, and content-addressed dependency caches.
-   It does not know POO Flow modules or scenarios.
-4. POO Flow owns its module roots, roles, exceptional native specs, scenario
+   It does not know Agentic AI Lab modules or scenarios.
+4. Agentic AI Lab owns its module roots, roles, exceptional native specs, scenario
    selection, and project performance gates.
 
 #+begin_src mermaid
 flowchart TD
-  P["POO Flow package declarations<br/>roots, roles, native specs, scenarios"]
+  P["Agentic AI Lab package declarations<br/>roots, roles, native specs, scenarios"]
   A["ASP Build API<br/>declarative profile, validation, typed receipts"]
   M["Gerbil std/make and expander<br/>dependency truth, currentness, scheduling"]
   G["Gambit and host C compiler<br/>native compilation"]
   B["gerbil-bazel<br/>toolchain and atomic dependency cache mapping"]
-  C["POO Flow performance scenarios<br/>cold, warm, CPU, RSS, compiler jobs"]
+  C["Agentic AI Lab performance scenarios<br/>cold, warm, CPU, RSS, compiler jobs"]
 
   P --> A
   A --> M
@@ -43,10 +43,10 @@ flowchart TD
 
 This boundary does not prohibit optimization.  It determines where a proven
 fix belongs.  A Gerbil expansion or scheduling defect is reproduced through
-the native package entry and reported as an upstream limitation; POO Flow and
+the native package entry and reported as an upstream limitation; Agentic AI Lab and
 ASP do not patch or replace the upstream executor.  An ASP declaration,
 platform capability, or receipt defect is fixed in ASP Build API.  A Bazel
-cache-key or action defect is fixed in =gerbil-bazel=.  A POO Flow module graph,
+cache-key or action defect is fixed in =gerbil-bazel=.  A Agentic AI Lab module graph,
 macro hot path, scenario, or project budget is fixed here.
 
 The acceptance rule is executable: a performance change must name the owner,
@@ -60,10 +60,10 @@ Gerbil =std/make= computes =settings-parallelize= through =gerbil-build-cores=. 
 
 The worker model still has an important limit: =make-build= first normalizes the build spec, creates completion/timestamp tables, imports spec modules under a mutex, checks dependency timestamps, then pushes buildable specs to a work channel. The worker count only helps after that import/dependency phase.
 
-For =poo-flow=, the expensive section is not only =gsc= compilation. The heavy module-system and POO macro modules make the pre-worker expander/import phase large enough to look like a single-threaded stall.
+For =agentic-ai-lab=, the expensive section is not only =gsc= compilation. The heavy module-system and POO macro modules make the pre-worker expander/import phase large enough to look like a single-threaded stall.
 ** 10.06.39.20 Finding: Thin Package Builds Depend On Public Native Ownership
 :PROPERTIES:
-=poo-flow/build.ss= consumes only the public
+=agentic-ai-lab/build.ss= consumes only the public
 =:asp-gerbil-scheme/building-api=.  Its PackageSpec declares stable public
 entry modules and exceptional native options; ASP projects the native import
 closure, while =std/build-script= and =std/make= retain command, dependency,
@@ -79,7 +79,7 @@ an explicit complete target declaration.  Consequently, target-count
 reduction against a full source catalog must never be reported as an
 improvement to the native graph algorithm.
 
-Neither POO Flow nor ASP imports =clan/building=, initializes a parallel build
+Neither Agentic AI Lab nor ASP imports =clan/building=, initializes a parallel build
 environment, or maintains a second source graph.  The package root may contain
 research checkouts, generated state, user examples, docs, and fixtures, but
 those are excluded from the declared production closure rather than recovered
@@ -94,7 +94,7 @@ This means build-file simplicity and build speed must be analyzed separately.
 The public ASP PackageSpec keeps the declaration small while =std/make= reads
 =GERBIL_BUILD_CORES= and owns execution. It does not make a cold or
 timestamp-invalid Gerbil compilation free. The durable engineering improvement
-for =poo-flow= is therefore:
+for =agentic-ai-lab= is therefore:
 1. keep =build.ss= thin and package-manager-owned;
 2. declare the intended public package surface positively and let ASP project
    only the target set required by that declaration;
@@ -105,7 +105,7 @@ for =poo-flow= is therefore:
 Gerbil bootstrap is a different path. =src/build/build1.ss= imports =:gerbil/compiler=, defines explicit module groups, calls =compile-module= for each module with =parallel: #t=, then flushes =gsc= work once with =execute-pending-compile-jobs!=. =src/build/build-bach.ss= and =src/build/build-libgerbil.ss= go further by creating explicit Scheme/C/object tasks and using wait groups or pending compile jobs.
 
 That strategy avoids =std/make='s package dependency tables, but it recompiles the selected modules. It is suitable for bootstrap or a deliberate full rebuild mode, not as the default =gxpkg build= path for normal package iteration.
-** 10.06.39.40 POO Flow Build Direction
+** 10.06.39.40 Agentic AI Lab Build Direction
 :PROPERTIES:
 The current implementation contract is:
 1. Keep default =gxpkg build= on =std/make= so package clean/build semantics and incremental checks stay intact.
@@ -131,15 +131,15 @@ installation uses provider locators in =gerbil.pkg=; Gerbil 0.18.2 =pkg-fetch=
 accepts =github.com/=, =gitlab.com/=, and =bitbucket.org/= providers and rejects
 an unfetched logical name with =Unknown package provider=.
 
-POO Flow may import =:clan/poo/...= as its object system, but build ownership
+Agentic AI Lab may import =:clan/poo/...= as its object system, but build ownership
 comes only through =:asp-gerbil-scheme/building-api=. GitHub commit identities
 remain confined to =gerbil.pkg= and the Gerbil-Bazel source lock, where they
 provide immutable acquisition and integrity. They must not appear in the
 user-facing Build API macro.
 
-POO Flow's direct =gerbil.pkg= dependency is ASP only.  ASP owns the pinned
+Agentic AI Lab's direct =gerbil.pkg= dependency is ASP only.  ASP owns the pinned
 =gerbil-poo= dependency, and =gerbil-poo= owns =gerbil-utils=; repeating those
-GitHub locators in POO Flow would create competing direct version authority.
+GitHub locators in Agentic AI Lab would create competing direct version authority.
 The Bazel graph still materializes all three immutable source repositories
 because hermetic actions cannot perform =gxpkg= network fetches, but the POO
 Flow compile target depends directly only on =asp_gerbil_scheme_package=; the
@@ -170,7 +170,7 @@ For package modules that produce large mostly-data POO values, prefer a smaller 
 5. Keep POO extension semantics intact. The optimization target is macro expansion and construction shape, not replacing POO with raw alists in public APIs.
 
 This fits the existing POO rules: public extension surfaces remain POO-native, but implementation modules should choose the POO construction form with the smallest compile-time footprint that still preserves object/prototype semantics.
-** 10.06.39.60 Implementation Step: Thin =poo-flow= Build Entry
+** 10.06.39.60 Implementation Step: Thin =agentic-ai-lab= Build Entry
 :PROPERTIES:
 The current build implementation has been corrected toward the =gerbil-poo= / =gerbil-utils= pattern:
 - =build.ss= imports the clan filesystem/building helpers, but ordinary source discovery is project-owned and positive: scan only the include dirs that define the package surface;
@@ -180,7 +180,7 @@ The current build implementation has been corrected toward the =gerbil-poo= / =g
   compiler/linker options; no raw Gambit source or hand-maintained interface
   target duplicates Gerbil's generated outputs;
 - =GERBIL_BUILD_CORES= remains the normal parallelism knob, matching the reference packages and avoiding custom thread logic in =build.ss=.
-- dependency ordering must remain a single =std/make= concern.  A POO Flow
+- dependency ordering must remain a single =std/make= concern.  A Agentic AI Lab
   declaration may expose exceptional native entries, but it must not introduce
   a bootstrap scheduler or a second coordinator to repair an inferred graph.
 - focused CLI compiler/test gates use the project package-local =.gerbil/lib= loadpath and never depend on a user's =~/.gerbil/lib= cache. This is fixed as benchmark scenario =GERBIL-SCHEME-AGENT-R039= under =t/scenarios/performance/focused-build-loadpath/benchmark.ss=: the optimization is not raw speed alone, but moving the focused build surface toward Gerbil/gxpkg's package-local build model while preventing stale user-cache artifacts from entering the compiler path.
@@ -226,7 +226,7 @@ these receipts separately:
 - =gxpkg build -g= for package-manager and CI parity.
 
 Currentness, generated-unit ownership, and dependency completion belong to
-upstream =std/make=.  POO Flow may retain benchmark observations and project
+upstream =std/make=.  Agentic AI Lab may retain benchmark observations and project
 budgets; it must not use a receipt, mtime retouch, source-header parser, local
 output enumerator, or compiled CLI status command as a competing freshness
 oracle.  Future package modules stay under explicit include surfaces so the
@@ -265,7 +265,7 @@ The durable pattern is therefore:
 ** 10.06.39.72 Downstream ASP Ownership-Cleanup Receipt (2026-09-03)
 :PROPERTIES:
 
-POO Flow pinned ASP commit
+Agentic AI Lab pinned ASP commit
 =a77fee1c5061f5d748ba65b4399b888a84fc4d1a= after its Linux and macOS CI
 matrix passed.  The corresponding archive SHA-256, independently reproduced
 after the downstream fetch gate rejected the stale value, is
@@ -283,8 +283,8 @@ to both =GERBIL_BUILD_CORES= and Gerbil 0.18.2's captured
 The first downstream =.devenv/devenv-profile-exec just build= after the pin
 completed successfully in =280.607 seconds=.  Bazel reported a =271.40-second=
 critical path and four Darwin-sandbox processes.  The ASP package action
-completed in approximately one minute before POO Flow compilation began; the
-POO Flow compile action crossed approximately =101 seconds= before completion.
+completed in approximately one minute before Agentic AI Lab compilation began; the
+Agentic AI Lab compile action crossed approximately =101 seconds= before completion.
 These are cold invalidated dependency/action observations, not portable
 performance gates.
 
@@ -293,7 +293,7 @@ seconds= for the predecessor pin and =228.082 seconds= for this pin.  All
 =9/9= Bazel test targets passed.  The dependency package action
 was reused rather than rebuilt; =contract_tests= was the longest test at
 =130.5 seconds= in the current receipt.  This confirms that removing ASP's downstream topology,
-freshness, and adaptive execution-window APIs did not remove a POO Flow runtime
+freshness, and adaptive execution-window APIs did not remove a Agentic AI Lab runtime
 consumer.
 
 An immediately repeated =just build= completed in =0.190 seconds= with a
@@ -331,7 +331,7 @@ Local package-gate receipts on 2026-06-29 with =GERBIL_BUILD_CORES=8=:
 - second package build after that still compiled remaining downstream targets and measured =real 41.77s=;
 - third package build still compiled a broad downstream group but returned to =real 24.82s=.
 
-The conclusion is deliberately split. The policy dependency chain improved enough to justify the indexed POO implementation change, but the full package aggregate gate is not a stable no-op: repeated receipts in this pass ranged from =24.82s= to =41.77s= while still recompiling broad downstream groups. The next speedup owner is therefore not more sandbox-policy micro-optimization. It is either the focused =poo-flow= CLI gate returning to the package workspace, or the build-spec/cache owner that decides why the aggregate package gate keeps recompiling broad downstream groups.
+The conclusion is deliberately split. The policy dependency chain improved enough to justify the indexed POO implementation change, but the full package aggregate gate is not a stable no-op: repeated receipts in this pass ranged from =24.82s= to =41.77s= while still recompiling broad downstream groups. The next speedup owner is therefore not more sandbox-policy micro-optimization. It is either the focused =agentic-ai-lab= CLI gate returning to the package workspace, or the build-spec/cache owner that decides why the aggregate package gate keeps recompiling broad downstream groups.
 
 This is the boundary that keeps POO-native design and performance work aligned. Public APIs remain object/prototype oriented, while implementation hot paths choose the construction and traversal form that keeps macro expansion, allocation, and validation costs bounded.
 ** 10.06.39.80 Field Receipt: Generated Receipt Struct Boundary

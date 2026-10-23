@@ -34,7 +34,7 @@ POO values would not form a redaction boundary.
 
 * Decision
 
-POO Flow adds a distinct guarded receiver rather than patching global =.ref=
+Agentic AI Lab adds a distinct guarded receiver rather than patching global =.ref=
 behavior.  Every inherited slot is replaced by an upstream
 =$computed-slot-spec= whose resolver first performs a pure, typed admission
 decision.  The public surface remains native POO: policies and receipts are

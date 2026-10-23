@@ -340,8 +340,8 @@ and recovery availability without weakening the v1 registry semantics.
 - [X] Focused model build.
 - [X] Focused core build.
 - [X] Focused closure build.
-- [ ] Aggregate =PooFlowProof.Enterprise= build.
-- [ ] Full =PooFlowProof= build.
+- [ ] Aggregate =AgenticAILabProof.Enterprise= build.
+- [ ] Full =AgenticAILabProof= build.
 - [ ] Orgize parses every Typst and Mermaid block.
 - [ ] Typst renders all mathematical blocks.
 - [ ] AXLE independently closes the model declaration bundle.
@@ -462,7 +462,7 @@ All paths are repository-relative.  No host installation path or temporary
 output base is part of this receipt.
 
 - Focused Lean:
-  =cd packages/proofs/lean && direnv exec . lake env lean PooFlowProof/Enterprise/SourceBoundEffectCompletionRecoveryCedarAuthorizationResponsibilityHandoffBindingClosure.lean=
+  =cd packages/proofs/lean && direnv exec . lake env lean AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryCedarAuthorizationResponsibilityHandoffBindingClosure.lean=
   returned exit =0= with no Lean diagnostic.
 - AXLE closure mode verified seven root declarations and returned exit =0=,
   =status: accepted=, and zero failed declarations.
@@ -474,7 +474,7 @@ output base is part of this receipt.
   =sha256:0298cd2aef8a53d43e4e8a9d3edf21c0352f48467c3349a0f73400a4456045f3=.
 - AXLE canonical source digest:
   =sha256:9d973768dadb1e238cbcb9fafc4bd02c81a3ff22b22a6775445146a5bb6cb8fc=.
-- Enterprise aggregate: =lake build PooFlowProof.Enterprise= returned exit =0=
+- Enterprise aggregate: =lake build AgenticAILabProof.Enterprise= returned exit =0=
   for =485= jobs.
 - Full aggregate: =lake build= returned exit =0= for =557= jobs.
 - Both aggregates reported only the pre-existing =unnecessarySimpa= warning

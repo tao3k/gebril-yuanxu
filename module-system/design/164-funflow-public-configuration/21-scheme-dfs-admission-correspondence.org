@@ -213,7 +213,7 @@ Prepare a temporary source scope with core/types.ss matching the receipt, canoni
 clan/poo source at the verified dependency pin and a fresh home. Then run:
 
 #+begin_src sh
-GERBIL_PATH=/tmp/pooflow-dfs-admit-20261015/home GERBIL_LOADPATH=/tmp/pooflow-dfs-admit-20261015 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/probe.ss > /tmp/profile-native.log
+GERBIL_PATH=/tmp/agenticailab-dfs-admit-20261015/home GERBIL_LOADPATH=/tmp/agenticailab-dfs-admit-20261015 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/probe.ss > /tmp/profile-native.log
 python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/generate-native-fixtures.py /tmp/profile-native.log /tmp/NativeFixtures.lean
 cmp /tmp/NativeFixtures.lean core/dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean
 cd packages/proofs/lean-poo

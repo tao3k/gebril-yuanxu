@@ -9,7 +9,7 @@
 
 Proof-backed declaration-closure v1 refinement.
 
-This document stabilizes =poo-flow.lean-declaration-closure.v1=.  It does not
+This document stabilizes =agentic-ai-lab.lean-declaration-closure.v1=.  It does not
 authorize a v2 schema, a second closure identity, or a competing proof path.
 
 * Context
@@ -43,7 +43,7 @@ Progress classification closure has two independent levels.
    under an explicit, injectively ranked policy and requires the receipt class
    to be maximal.
 
-The policy is a first-class proof object.  POO Flow supplies a risk-first
+The policy is a first-class proof object.  Agentic AI Lab supplies a risk-first
 default, but the ordering is explicit rather than hidden inside an evaluator:
 
 | Rank | Classification |
@@ -131,7 +131,7 @@ stateDiagram-v2
 
 Owner:
 
-- =PooFlowProof.Enterprise.SourceBoundProgressClassificationCoherenceClosure=
+- =AgenticAILabProof.Enterprise.SourceBoundProgressClassificationCoherenceClosure=
 
 Core declarations:
 
@@ -168,8 +168,8 @@ Selection proofs:
 | =zeroRemainingForcesBudgetExhaustedSelection= | 71 | 29 | 7812 ms | 6931 ms | =verification.okay=true= |
 | =independentlyClosedProgressAndClassificationOwnersCompose= | 1 | 1 | 518 ms | 388 ms | =verification.okay=true= |
 
-All roots use =poo-flow.axle-closure-preflight.v1= and
-=poo-flow.axle-exact-declaration-closure.v1=, with no failed declarations.
+All roots use =agentic-ai-lab.axle-closure-preflight.v1= and
+=agentic-ai-lab.axle-exact-declaration-closure.v1=, with no failed declarations.
 AXLE's =Mathlib.Tactic= header recommendation is tool-level guidance; the final
 proof declarations verify successfully.
 

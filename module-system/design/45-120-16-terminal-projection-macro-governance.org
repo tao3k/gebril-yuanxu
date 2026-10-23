@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Terminal Projection Macro Governance
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -12,7 +12,7 @@ Accepted.
 
 * Context
 
-POO Flow uses native =gerbil-poo= objects, prototype refinement, slot
+Agentic AI Lab uses native =gerbil-poo= objects, prototype refinement, slot
 operators, and pure functions as its semantic foundation.  Some terminal
 receipts and presentation surfaces repeat a small fixed pattern: evaluate
 explicit local bindings once, construct ordered rows with fixed keys, and

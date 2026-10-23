@@ -370,7 +370,7 @@ amplify it.
 - [X] ~imports~ records revision, generation, and cycles.
 - [X] ~use-module~ does not evaluate cycles.
 - [X] Module algebra introduces no second fixed-point evaluator.
-- [X] Cycles delegate to the POO Flow fixed-point boundary.
+- [X] Cycles delegate to the Agentic AI Lab fixed-point boundary.
 - [X] Fixed-point control observes identity, budgets, and continuable control.
 - [X] Backend projection occurs after semantic admission.
 - [X] Backend projection is deterministic and reachability-bounded.
@@ -398,7 +398,7 @@ projection checklists as implemented.
 | Local Lean module | =accepted= | =lake build YuanxuProof.ModuleSystem.Imports=: 35/35 jobs |
 | Local Lean closure | =accepted= | =lake build=: 108/108 jobs |
 | AXLE independent declaration check | =accepted= | Request =c738e2fa-88b0-47c1-9d13-27373ce4eec2=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
-| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =24ec2383-397e-4ff0-935c-9fadc471be09= cannot resolve local module prefix =PooFlowProof= |
+| AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =24ec2383-397e-4ff0-935c-9fadc471be09= cannot resolve local module prefix =AgenticAILabProof= |
 | Module/ProfileBundle value layer | =partial-qualified= | Native package build: 261 targets; root suite: 243 files; indexed selection plus idempotent composition: 1,000 Profiles 24 ms, 5,000 Profiles 180 ms |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
@@ -408,7 +408,7 @@ request records the separate project-module visibility blocker.
 The formal result proves the selection-union laws without adding Mathlib to the
 local Lean project, establishes capability attenuation and the separation of
 Module definition identity from instance identity, and fixes recursive cycle
-ownership at the existing POO Flow fixed-point boundary.  The executable value
+ownership at the existing Agentic AI Lab fixed-point boundary.  The executable value
 layer now owns typed Profile exports, one Module-owned export index, selection
 proofs, ProfileBundle fusion, the first-class =profiles= strategy, pure
 =compose=, and an explicit root projection.  Focused syntax tests also verify
@@ -538,7 +538,7 @@ Recursive imports may contain cycles.
 ~use-module~ does not reject a graph merely because a cycle exists and does not
 evaluate the cycle in macro expansion.
 
-The POO Flow fixed-point boundary owns:
+The Agentic AI Lab fixed-point boundary owns:
 
 - lazy recursive evaluation;
 - cycle identity;
@@ -763,7 +763,7 @@ Implementation may begin only when:
 
 - [[file:44-current-project-programming-style.org][44: current project programming style]]
 - [[file:45-84-profile-object-and-prototype-extension-correspondence.org][45-84: Profile object and prototype extension correspondence]]
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85: POOF proof adoption and POO Flow correspondence]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85: POOF proof adoption and Agentic AI Lab correspondence]]
 - [[file:45-91-control-policy-profile-projection-and-user-composition-interface.org][45-91: user-composition interface]]
 - [[file:45-92-user-composition-current-gap-and-thin-macro-contract.org][45-92: user-composition thin macro contract]]
 - [[file:../../../src/module-system/profile-composition/use-syntax.ss][current use-composition owner]]

@@ -9,9 +9,9 @@
 * 10.06.85 JSON Schema Contract Bridge
 
 This RFC defines the P0 bridge from JSON Schema documents to Gerbil Scheme
-contracts in =poo-flow=. The design is inspired by
+contracts in =agentic-ai-lab=. The design is inspired by
 =.data/json-schema-to-nickel=, but the target is not a Nickel-like syntax
-emitter. The target is the existing POO Flow contract spine:
+emitter. The target is the existing Agentic AI Lab contract spine:
 
 #+begin_src text
 JSON-like schema value
@@ -47,7 +47,7 @@ JSON-like schema value
 3. emit inspectable lazy record contracts when possible and fall back to eager
    predicate checks only when structure is not representable.
 
-POO Flow should adopt the same structure-first rule. The emitted Gerbil object
+Agentic AI Lab should adopt the same structure-first rule. The emitted Gerbil object
 contract must remain inspectable by the harness, type-fact projection, doctor
 reports, and future proof tooling.
 
@@ -87,10 +87,10 @@ src/contract/json-schema-normalize.ss
 src/contract/json-schema-emit.ss
 src/contract/json-schema-receipt.ss
 src/contract/json-schema-validate.ss
-POO Flow modules/workflow/profiles/github-ci-contract.ss
+Agentic AI Lab modules/workflow/profiles/github-ci-contract.ss
 t/support/json-schema-contract-performance.ss
 t/performance/json-schema-contract-performance-test.ss
-packages/python-runtime/src/poo_flow_runtime/json_schema_contract.py
+packages/python-runtime/src/agentic_ai_lab_runtime/json_schema_contract.py
 schemas/json/github-workflow.json
 #+end_src
 
@@ -98,7 +98,7 @@ schemas/json/github-workflow.json
 pinned JSON files into symbol-key walists without owning schema semantics.
 =json-schema-normalize.ss= lowers
 JSON-like alists into normalized IR and diagnostic rows. =json-schema-emit.ss=
-converts normalized IR into existing POO Flow object/slot contract records.
+converts normalized IR into existing Agentic AI Lab object/slot contract records.
 =json-schema-receipt.ss= packages diagnostics, type facts, Lean fact contracts,
 and final alist projection. =json-schema-validate.ss= applies generated object
 contracts to POO objects or bounded alists and returns a fixed validation
@@ -147,7 +147,7 @@ The first public shape is intentionally small:
  schema
  '((source-ref . github-workflow-schema)
    (owner . workflow)
-   (object-kind . PooFlowGithubWorkflow)))
+   (object-kind . AgenticAILabGithubWorkflow)))
 #+end_src
 
 The artifact contains the generated object contract, normalized schema,
@@ -158,7 +158,7 @@ not the semantic owner.
 The first module-level profile integration is:
 
 #+begin_src scheme
-(poo-flow-funflow-github-ci-validate-workflow->alist
+(agentic-ai-lab-funflow-github-ci-validate-workflow->alist
  '((on . ("push" "pull_request"))
    (jobs . ((build . ((runs-on . "macos-latest")
                       (steps . (((run . "gxpkg build -g"))))))))))
@@ -175,14 +175,14 @@ The bridge also validates non-GitHub recursive maps such as
 =stages.<stage_id>.tasks.<task_id>.command= through =patternProperties= and
 =profiles.<profile>.limits.<resource>.value= through =additionalProperties=.
 This is the important contract: users can provide a JSON Schema for a custom
-Funflow stage or profile, and POO Flow normalizes that schema into one
+Funflow stage or profile, and Agentic AI Lab normalizes that schema into one
 recursive contract artifact rather than adding business-specific validation
 code.
 
 Python users can generate a Scheme contract artifact from a JSON Schema file:
 
 #+begin_src sh
-uv run --project packages/python-runtime poo-flow-jsonschema-contract \
+uv run --project packages/python-runtime agentic-ai-lab-jsonschema-contract \
   schemas/json/custom-stage.json \
   --name custom-stage \
   --object-key funflow/custom-stage \
@@ -191,7 +191,7 @@ uv run --project packages/python-runtime poo-flow-jsonschema-contract \
 
 The generated Scheme still calls =yuanxu-json-schema->contract-artifact=.
 Python does not own contract semantics; it only projects user-provided JSON
-Schema into Scheme source that the normal POO Flow contract bridge can
+Schema into Scheme source that the normal Agentic AI Lab contract bridge can
 normalize, validate, and inspect.
 
 ** 10.06.85.60 Verification
@@ -213,7 +213,7 @@ The P0 gate is:
   gates for the boolean hot path and receipt path. The current gate keeps the
   small recursive hot path under =50us= and the receipt/projection path under
   =90us= on the best-of-five focused run;
-- confirm the Python =poo-flow-jsonschema-contract= CLI emits Scheme source
+- confirm the Python =agentic-ai-lab-jsonschema-contract= CLI emits Scheme source
   that =gxc= can compile;
 - confirm unsupported keywords and external references appear as diagnostics.
 

@@ -10,7 +10,7 @@ Current roots compose prepared Profiles and Standards; they do not declare a
 stage DSL.
 
 * Scope
-This document defines the POO Flow artifact control-plane direction.
+This document defines the Agentic AI Lab artifact control-plane direction.
 
 Artifacts are not a Turso concern. Turso is one possible database/backend
 profile. The artifact model must stay backend-agnostic and describe
@@ -57,7 +57,7 @@ trace logs, memory stores, JSONL/session stores, output accumulators, file
 mutation queues, Redis/event streams, memory adapters, and publish tooling.
 
 * Artifact Model
-POO Flow models artifacts as policy-managed objects.
+Agentic AI Lab models artifacts as policy-managed objects.
 
 #+begin_src text
 Artifact =
@@ -365,7 +365,7 @@ module-level profile file.
 
 The same profile can later be promoted into a reusable module-level profile and
 consumed by downstream compositions. This keeps the local-problem path compact
-while preserving POO Flow's main reuse model.
+while preserving Agentic AI Lab's main reuse model.
 
 * Policy Scope
 Artifact policy must explicitly scope every artifact.
@@ -421,16 +421,16 @@ This document is implemented by =modules/memory-core/durable/artifact-policy.ss=
 - =database-profile= defines backend capability profiles. Turso belongs here,
   not in the artifact model itself.
 - =durable-artifact= creates the actual policy-managed artifact object.
-- =poo-flow-durable-artifact-visible?= implements the scope formula: actor
+- =agentic-ai-lab-durable-artifact-visible?= implements the scope formula: actor
   scope must be contained by artifact scope unless an explicit artifact grant
   exists.
-- =poo-flow-durable-artifact-transition= advances lifecycle state only along
+- =agentic-ai-lab-durable-artifact-transition= advances lifecycle state only along
   the documented lifecycle edges.
-- =poo-flow-durable-artifact-validate= validates a real artifact against an
+- =agentic-ai-lab-durable-artifact-validate= validates a real artifact against an
   artifact profile and a database profile, then emits a POO policy receipt.
-- =poo-flow-durable-artifact-policy-receipt?= checks that the receipt is owned
+- =agentic-ai-lab-durable-artifact-policy-receipt?= checks that the receipt is owned
   by this artifact policy surface.
-- =poo-flow-durable-artifact-policy-receipt-valid?= is the scenario and runtime
+- =agentic-ai-lab-durable-artifact-policy-receipt-valid?= is the scenario and runtime
   handoff gate.
 - =t/scenarios/durable-artifact-policy-test.ss= is the scenario gate for this
   document.

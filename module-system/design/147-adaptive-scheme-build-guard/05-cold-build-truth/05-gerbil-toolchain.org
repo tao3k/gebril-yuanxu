@@ -29,11 +29,11 @@ topology, scheduling, compilation policy, guards, and receipts.
 
 ** Checked GSLPH component closure
 
-POO Flow must not stage the entire GSLPH repository when its build-time
+Agentic AI Lab must not stage the entire GSLPH repository when its build-time
 integration uses only a checked subset.  GSLPH now owns a deterministic
-import/include closure for the =poo-flow= component and publishes that closure
-as both the JSON receipt =components/poo-flow.json= and the Bazel target
-=@gslph_sources//:poo_flow_component_sources=.  POO Flow consumes the named
+import/include closure for the =agentic-ai-lab= component and publishes that closure
+as both the JSON receipt =components/agentic-ai-lab.json= and the Bazel target
+=@gslph_sources//:agentic_ai_lab_component_sources=.  Agentic AI Lab consumes the named
 target directly; it does not duplicate the list or replace the upstream
 repository's =BUILD.bazel=.
 
@@ -52,7 +52,7 @@ GSLPH action, that directly comparable action decreased by 132 seconds, or
 
 #+begin_src mermaid
 flowchart LR
-  Roots["POO Flow GSLPH entry roots"] --> Closure["Checked import/include closure O(V + E)"]
+  Roots["Agentic AI Lab GSLPH entry roots"] --> Closure["Checked import/include closure O(V + E)"]
   Closure --> Manifest["JSON manifest: 120 of 227 Scheme files"]
   Manifest --> Filegroup["Upstream Bazel filegroup: 121 direct inputs"]
   Filegroup --> Stage["Sandbox-staged component source tree"]
@@ -72,7 +72,7 @@ baseline; GSLPH now treats =../building/facade= and wrapped relative imports as
 parser-owned module facts, and the checked manifest includes the resulting
 =building/facade=, =building/model=, and =building/native-toolchain= closure.
 Revision =49a4cac696855fb129fba321813996ba840abb98= additionally declares
-=src/testing/build.ss= as an external-facing component root, so POO Flow's
+=src/testing/build.ss= as an external-facing component root, so Agentic AI Lab's
 =src/testing/project.ss= resolves the complete GSLPH testing/build closure
 without staging the unrelated remainder of the upstream repository.
 Revision =dd4b1aa6c0c379435af69ed8bf9d0d848383c9c0= also declares

@@ -24,12 +24,12 @@ public compatibility API.  No external effect is executed for comparison.
 The Bundle and facet schemas remain pre-release until the complete agentic
 control-plane chain is stable.  AC-04 performs a direct schema cutover:
 
-- =poo-flow.organization-bundle.v2= becomes
-  =poo-flow.organization-bundle.draft.3=;
-- =poo-flow.organization-facet.v1= becomes
-  =poo-flow.organization-facet.draft.3=;
+- =agentic-ai-lab.organization-bundle.v2= becomes
+  =agentic-ai-lab.organization-bundle.draft.3=;
+- =agentic-ai-lab.organization-facet.v1= becomes
+  =agentic-ai-lab.organization-facet.draft.3=;
 - each incompatible pre-release change increments =draft.N=;
-- =poo-flow.organization-bundle.v1= is reserved for the final suite freeze.
+- =agentic-ai-lab.organization-bundle.v1= is reserved for the final suite freeze.
 
 The final freeze requires stable Bundle and Kernel semantics, shadow
 qualification, C ABI control/hot/bulk lanes, the production-capable Python CFFI

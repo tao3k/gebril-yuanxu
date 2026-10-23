@@ -162,7 +162,7 @@ rebuilds remain a separate Building Framework action-granularity concern.
 
 The first owner-gate invocation after a Bazel daemon restart completed in
 1,018.271 seconds with a 989.38-second critical path.  The dependency chain
-materialized =gerbil_utils=, =gerbil_poo=, =asp_gerbil_scheme=, and the POO Flow
+materialized =gerbil_utils=, =gerbil_poo=, =asp_gerbil_scheme=, and the Agentic AI Lab
 package before the 44.4-second test action.  The immediately repeated identical
 owner gate completed in 1.206 seconds with one action-cache hit and zero tests
 executed.  This separates the package-level cold path from native profile
@@ -184,12 +184,12 @@ action-cache hits and zero tests executed.
 
 After routing derived-parent validation through the same native Contract, the
 final source-changing owner/integration run completed in 559.975 seconds with a
-518.95-second critical path.  Only the POO Flow package rebuilt; the three
+518.95-second critical path.  Only the Agentic AI Lab package rebuilt; the three
 dependency packages remained cached.  The owner and integration tests passed
 in 37.9 and 155.5 seconds.  The immediately repeated identical invocation
 completed in 0.760 seconds with two action-cache hits and zero tests executed.
 
-The remaining cold-build hotspot is therefore POO Flow package action
+The remaining cold-build hotspot is therefore Agentic AI Lab package action
 granularity: a single Scheme owner change invalidates the whole project compile
 action.  Before input isolation, every Scheme test also declared
 =docs/**/*.org= as an input, so receipt-only documentation edits invalidated
@@ -200,7 +200,7 @@ concerns, not reasons to weaken native Contract admission.
 
 No Scheme test reads =README.org= or any file under =docs/=.  Documentation
 paths present in tests are expected command strings, not runtime file inputs.
-POO Flow therefore removed those globs from the shared
+Agentic AI Lab therefore removed those globs from the shared
 =scheme_test_sources= filegroup while retaining actual test sources, the
 compiled project, and the explicit JSON Schema fixture.
 
@@ -237,14 +237,14 @@ completed in 0.933 seconds with two action-cache hits and zero tests executed.
 
 ** 10.06.82.51 ASP Policy Scan Concurrency Receipt, 2026-09-04
 
-POO Flow continues to declare the complete =src + t + user-interface= source
+Agentic AI Lab continues to declare the complete =src + t + user-interface= source
 universe to the ASP Build API.  Coverage was not reduced.  One policy
 invocation parses every selected owner once into a shared =ProjectIndex=, then
 all rule families reuse those parser-owned facts.
 
 #+begin_src mermaid
 flowchart LR
-  Build["POO Flow build.ss\n805 declared Scheme owners"]
+  Build["Agentic AI Lab build.ss\n805 declared Scheme owners"]
   Pool["ASP parser pool\nmin(files, available CPUs)"]
   Index["one shared ProjectIndex"]
   Policy["all policy families"]
@@ -253,7 +253,7 @@ flowchart LR
 #+end_src
 
 The ASP upstream parser still had a fixed default ceiling of four workers even
-on a 12-core host.  A controlled POO Flow full-coverage A/B used the existing
+on a 12-core host.  A controlled Agentic AI Lab full-coverage A/B used the existing
 override without changing any source set:
 
 | ASP parser configuration | policy-collect | policy-checks | policy-json | Total measured phases |
@@ -274,7 +274,7 @@ focused suite passed 98 checks under the existing 512 MiB managed-heap profile.
 Memory protection remains anomaly detection; it no longer pre-emptively hides
 available parser parallelism with a fixed worker ceiling.
 
-The separate POO Flow native =std/make= warm receipt completed in 61.263 seconds
+The separate Agentic AI Lab native =std/make= warm receipt completed in 61.263 seconds
 with zero native compiler jobs while host load average remained approximately
 59--64.  That result concerns upstream dependency/frontend checking and is not
 attributed to the ASP parser phase.

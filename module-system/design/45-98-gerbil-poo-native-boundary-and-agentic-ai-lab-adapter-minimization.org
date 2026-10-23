@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: gerbil-poo Native Boundary and POO Flow Adapter Minimization
+#+title: gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization
 
 * Status
 
 Accepted architecture RFC.
 
 This document fixes the boundary between the native =gerbil-poo= operation
-surface and POO Flow domain adapters. It does not authorize implementation
+surface and Agentic AI Lab domain adapters. It does not authorize implementation
 work.
 
 * Scope
@@ -17,7 +17,7 @@ work.
 This RFC defines:
 
 - which object operations remain owned by upstream =gerbil-poo=;
-- which POO Flow constructs may remain public domain abstractions;
+- which Agentic AI Lab constructs may remain public domain abstractions;
 - which convenience and diagnostic adapters must remain internal;
 - which generic aliases are rejected from the future public API;
 - the evidence required for any new adapter;
@@ -46,7 +46,7 @@ This is the durable upstream pin.
 
 The local =.data/gerbil-poo= checkout is an evidence location only.
 
-POO Flow does not own =object-ref=, =object-extend=, =object-compose=,
+Agentic AI Lab does not own =object-ref=, =object-extend=, =object-compose=,
 =object-mix=, slot mutation, delegation, super, or precedence. Those operations
 belong to the pinned upstream implementation.
 
@@ -69,7 +69,7 @@ The exact public identifiers are recorded in
 
 ** Current project exports
 
-The current POO Flow interface exports:
+The current Agentic AI Lab interface exports:
 
 - =yuanxu-module-interface-prototype=;
 - =yuanxu-module-object-ref/default=;
@@ -80,7 +80,7 @@ they belong in the future public architecture.
 
 ** Exact owner evidence
 
-The removed =poo-flow-module-object-has-slot?= owner showed a generic
+The removed =agentic-ai-lab-module-object-has-slot?= owner showed a generic
 combination of native object recognition, slot enumeration, and membership
 testing. It had no Module-specific invariant; callers now use upstream
 =.slot?= directly.
@@ -100,19 +100,19 @@ The architecture can still classify their roles:
 
 * Central decision
 
-POO Flow exposes domain meaning, not renamed generic object mechanics.
+Agentic AI Lab exposes domain meaning, not renamed generic object mechanics.
 
 The target public boundary is:
 
 #+begin_example
 gerbil-poo native operations
-  + POO Flow domain prototypes and invariant-bearing helpers
+  + Agentic AI Lab domain prototypes and invariant-bearing helpers
   - generic aliases
   - representation-conversion APIs
   - legacy clause and registry adapters
 #+end_example
 
-An adapter is public only when it adds an independently testable POO Flow
+An adapter is public only when it adds an independently testable Agentic AI Lab
 domain contract while preserving the native object representation.
 
 A helper that merely renames, partially applies, or supplies a default to an
@@ -136,24 +136,24 @@ Examples include:
 - =object-delegate=;
 - =object-precedence-list=.
 
-POO Flow documentation may explain how a native operation participates in
+Agentic AI Lab documentation may explain how a native operation participates in
 Module semantics. It must not clone the operation under a project-prefixed
 name merely to hide the dependency.
 
 ** KEEP-DOMAIN
 
-A POO Flow abstraction may be public when it introduces domain meaning such as:
+A Agentic AI Lab abstraction may be public when it introduces domain meaning such as:
 
 - the semantic Module prototype;
 - the Profile or ProfileBundle contract;
 - a capability requirement prototype;
 - a responsibility prototype;
 - an invariant-bearing pure constructor;
-- a validator that proves a POO Flow contract and emits actionable evidence;
+- a validator that proves a Agentic AI Lab contract and emits actionable evidence;
 - a semantic projection whose result remains a POO object.
 
 The current =yuanxu-module-interface-prototype= is a KEEP-DOMAIN candidate
-because the concept of a POO Flow Module prototype is domain-owned.
+because the concept of a Agentic AI Lab Module prototype is domain-owned.
 
 Its existing implementation is admitted only after exact owner evidence proves
 that it carries the approved Module contract. The concept is retained; the
@@ -192,7 +192,7 @@ A project adapter is rejected from the public API when it:
 - converts a POO object into another authoritative representation;
 - exists only to support a rejected clause parser.
 
-=poo-flow-module-object-has-slot?= was removed because its exact owner showed
+=agentic-ai-lab-module-object-has-slot?= was removed because its exact owner showed
 generic slot mechanics rather than Module semantics.
 
 The current public export does not create a compatibility obligation. This is a
@@ -214,12 +214,12 @@ The Module prototype may own or require:
 - evidence projection behavior;
 - admitted prototype ancestry.
 
-The prototype remains a =gerbil-poo= object. POO Flow owns the Module meaning;
+The prototype remains a =gerbil-poo= object. Agentic AI Lab owns the Module meaning;
 =gerbil-poo= owns the object mechanics.
 
 #+begin_src mermaid
 flowchart LR
-  Upstream["gerbil-poo native operations"] -->|"construct and inspect native objects"| Prototype["POO Flow Module prototype"]
+  Upstream["gerbil-poo native operations"] -->|"construct and inspect native objects"| Prototype["Agentic AI Lab Module prototype"]
   Prototype -->|"adds domain invariants"| Module["semantic Module object"]
   Module -->|"projects stable identity"| Export["ProfileBundle export"]
   Module -->|"projects direct relation"| Imports["imports object"]
@@ -238,7 +238,7 @@ The diagnostic edge is one-way. Serialized data cannot redefine the object.
 
 Native slot and object projection remains upstream-owned.
 
-POO Flow may define a domain projection only when the projection:
+Agentic AI Lab may define a domain projection only when the projection:
 
 - names a semantic concept;
 - validates the owning prototype or object kind;
@@ -250,7 +250,7 @@ POO Flow may define a domain projection only when the projection:
 
 Advanced extension uses verified upstream prototype operations directly.
 
-POO Flow may provide named functional combinators when they enforce a Module,
+Agentic AI Lab may provide named functional combinators when they enforce a Module,
 Profile, capability, proof, or handoff law. Such a combinator must return a
 native POO object and expose the invariant it proves.
 
@@ -281,9 +281,9 @@ The public advanced surface contains:
 
 - native =gerbil-poo= objects;
 - native prototype operations;
-- POO Flow domain prototypes;
-- POO Flow invariant-bearing pure combinators;
-- POO Flow domain validators and evidence projections.
+- Agentic AI Lab domain prototypes;
+- Agentic AI Lab invariant-bearing pure combinators;
+- Agentic AI Lab domain validators and evidence projections.
 
 The public surface does not contain:
 
@@ -299,7 +299,7 @@ The public surface does not contain:
 
 Every proposed public adapter must answer all of these questions:
 
-1. What POO Flow domain invariant does it add?
+1. What Agentic AI Lab domain invariant does it add?
 2. Why is the upstream operation insufficient as the public advanced surface?
 3. Does its input remain a native POO object?
 4. Does its output remain a native POO object or bounded evidence projection?
@@ -319,7 +319,7 @@ meaning, it is not public.
 flowchart TD
   Candidate["candidate adapter"] -->|"identify owner and exact body"| Evidence{"owner evidence complete?"}
   Evidence -->|"no; keep unadmitted"| Missing["MISSING evidence"]
-  Evidence -->|"yes; inspect semantic delta"| Invariant{"adds POO Flow invariant?"}
+  Evidence -->|"yes; inspect semantic delta"| Invariant{"adds Agentic AI Lab invariant?"}
   Invariant -->|"yes; preserves native object"| Domain["KEEP-DOMAIN"]
   Invariant -->|"no; upstream owns operation"| Alias{"diagnostic or temporary?"}
   Alias -->|"yes; bounded and non-authoritative"| Internal["INTERNAL"]
@@ -336,11 +336,11 @@ Every decision edge records why the adapter has or lacks semantic ownership.
 | Identifier | Current owner | Target class | Reason |
 |------------+---------------+--------------+--------|
 | =object-ref= and native object operations | =gerbil-poo= | KEEP-NATIVE | Upstream owns generic object mechanics. |
-| =yuanxu-module-interface-prototype= | POO Flow | KEEP-DOMAIN candidate | Module semantics are domain-owned; current body still requires exact proof. |
-| =poo-flow-module-object-has-slot?= | removed | REMOVED | Upstream =.slot?= owns generic slot presence. |
-| =yuanxu-module-object-ref/default= | POO Flow | INTERNAL | Exact body is generic defaulting convenience. |
-| =yuanxu-module-object->alist= | POO Flow | INTERNAL diagnostic | Representation conversion cannot own semantics. |
-| profile-composition stage and clause helpers | POO Flow | legacy INTERNAL | They support the rejected parallel clause architecture. |
+| =yuanxu-module-interface-prototype= | Agentic AI Lab | KEEP-DOMAIN candidate | Module semantics are domain-owned; current body still requires exact proof. |
+| =agentic-ai-lab-module-object-has-slot?= | removed | REMOVED | Upstream =.slot?= owns generic slot presence. |
+| =yuanxu-module-object-ref/default= | Agentic AI Lab | INTERNAL | Exact body is generic defaulting convenience. |
+| =yuanxu-module-object->alist= | Agentic AI Lab | INTERNAL diagnostic | Representation conversion cannot own semantics. |
+| profile-composition stage and clause helpers | Agentic AI Lab | legacy INTERNAL | They support the rejected parallel clause architecture. |
 
 This table records the target architecture and completed native-operation
 removal.
@@ -353,7 +353,7 @@ Generic POO object mechanics retain their upstream =gerbil-poo= identities.
 
 ** Domain delta law
 
-A public POO Flow adapter adds an explicit, testable domain invariant.
+A public Agentic AI Lab adapter adds an explicit, testable domain invariant.
 
 ** Native representation law
 
@@ -410,7 +410,7 @@ Failure identifies:
 
 The following alternatives are rejected:
 
-- wrapping every =gerbil-poo= operation with a =poo-flow-= prefix;
+- wrapping every =gerbil-poo= operation with a =agentic-ai-lab-= prefix;
 - keeping generic wrappers public because they are already exported;
 - treating =object->alist= as a stable Module schema;
 - rebuilding an object after editing its alist projection;
@@ -426,7 +426,7 @@ The following alternatives are rejected:
 
 - [ ] The pinned =gerbil-poo= identity is recorded.
 - [ ] Native operations retain upstream ownership.
-- [ ] POO Flow adapters declare their semantic delta.
+- [ ] Agentic AI Lab adapters declare their semantic delta.
 - [ ] Current export status is not treated as architectural approval.
 - [ ] Legacy helpers remain distinct from domain prototypes.
 - [ ] No second object API is introduced.
@@ -439,11 +439,11 @@ The following alternatives are rejected:
 - [ ] Native mix uses upstream identities.
 - [ ] Native delegation and super remain upstream-owned.
 - [ ] Native precedence remains upstream-owned.
-- [ ] POO Flow does not clone generic names.
+- [ ] Agentic AI Lab does not clone generic names.
 
 ** KEEP-DOMAIN
 
-- [ ] A public adapter names a POO Flow invariant.
+- [ ] A public adapter names a Agentic AI Lab invariant.
 - [ ] The invariant has a focused test.
 - [ ] Inputs remain native POO values.
 - [ ] Outputs remain native POO values or bounded evidence.
@@ -501,7 +501,7 @@ Implementation work is not admitted until:
 
 * Consequences
 
-POO Flow remains visibly built on =gerbil-poo= instead of gradually obscuring
+Agentic AI Lab remains visibly built on =gerbil-poo= instead of gradually obscuring
 it behind a cloned adapter vocabulary.
 
 Domain prototypes remain valuable because they add Module, Profile,

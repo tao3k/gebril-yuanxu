@@ -21,7 +21,7 @@ This RFC defines:
 - the object-level representation of exports and recursive imports;
 - the attachment of ProfileBundles and responsibility objects;
 - the pure functional public authoring route;
-- the boundary between upstream =gerbil-poo= primitives and POO Flow adapters;
+- the boundary between upstream =gerbil-poo= primitives and Agentic AI Lab adapters;
 - conflict, reachability, evidence, and admission laws.
 
 This RFC does not define:
@@ -55,7 +55,7 @@ The conceptual prototype reference remains:
 github.com/metareflection/poof@a07a6841d3fde46159f990065cde55b811f1f680
 #+end_example
 
-POO Flow adopts and extends this implementation and theory. It does not create
+Agentic AI Lab adopts and extends this implementation and theory. It does not create
 another POO library.
 
 * Evidence state
@@ -107,10 +107,10 @@ The identifiers listed in the evidence state are owned by the pinned
 =gerbil-poo= implementation.
 
 They provide the native object, slot, prototype, delegation, extension,
-composition, mix, and precedence vocabulary from which the POO Flow Module
+composition, mix, and precedence vocabulary from which the Agentic AI Lab Module
 model must be built.
 
-** POO Flow adapters
+** Agentic AI Lab adapters
 
 The following are current project adapters, not upstream primitives:
 
@@ -171,7 +171,7 @@ selectors and procedure contracts.
 =object=, =instantiate-object!=, and related lifecycle procedures establish the
 upstream object representation.
 
-POO Flow must not expose manual lifecycle mutation as the ordinary Module
+Agentic AI Lab must not expose manual lifecycle mutation as the ordinary Module
 authoring surface. The public route constructs a complete value through named
 POO-native or pure functional helpers.
 
@@ -200,7 +200,7 @@ identity, isolation, and purity boundary is explicit.
 This RFC does not collapse them into one generic operation and does not infer
 their exact argument order or conflict semantics from their names.
 
-POO Flow must verify each upstream contract before selecting which operation
+Agentic AI Lab must verify each upstream contract before selecting which operation
 implements a particular Module composition law.
 
 ** Delegation, super, and precedence
@@ -209,7 +209,7 @@ implements a particular Module composition law.
 precedence computation family provide the native ancestry and resolution
 surface.
 
-POO Flow does not introduce a second super chain or precedence list.
+Agentic AI Lab does not introduce a second super chain or precedence list.
 
 Any project-level conflict policy must project through the native object
 ancestry and must produce evidence identifying the selected and shadowed
@@ -362,7 +362,7 @@ layer.
 When Module objects or their prototypes are composed, native =gerbil-poo=
 ancestry and precedence remain the base resolution mechanism.
 
-POO Flow may constrain admissible compositions, but it does not replace the
+Agentic AI Lab may constrain admissible compositions, but it does not replace the
 upstream precedence model with a macro-owned merge algorithm.
 
 ** No silent export overwrite
@@ -402,7 +402,7 @@ remain distinct semantic dimensions.
 sequenceDiagram
   participant Author as "Module author"
   participant Upstream as "gerbil-poo operations"
-  participant Adapter as "POO Flow semantic adapter"
+  participant Adapter as "Agentic AI Lab semantic adapter"
   participant Module as "complete Module object"
   participant Bind as "thin binding macro"
   participant Select as "use-module"
@@ -476,7 +476,7 @@ A Module construction receipt must identify:
 
 - durable =gerbil-poo= dependency identity;
 - verified upstream primitive identities used;
-- POO Flow adapter identity;
+- Agentic AI Lab adapter identity;
 - Module object identity and prototype ancestry;
 - direct super and delegation relations where applicable;
 - export object identity;
@@ -538,7 +538,7 @@ The following alternatives are rejected:
 
 - [ ] The durable =gerbil-poo= Git identity is fixed.
 - [ ] Local evidence paths are not dependency identities.
-- [ ] Upstream primitives and POO Flow adapters remain distinct.
+- [ ] Upstream primitives and Agentic AI Lab adapters remain distinct.
 - [ ] Legacy composition helpers remain internal.
 - [ ] No second POO implementation is introduced.
 - [ ] Exact upstream call forms are not invented.
@@ -592,7 +592,7 @@ The following alternatives are rejected:
 ** Evidence
 
 - [ ] Construction receipts identify upstream primitive identities.
-- [ ] Receipts identify POO Flow adapters.
+- [ ] Receipts identify Agentic AI Lab adapters.
 - [ ] Receipts identify Module and export identities.
 - [ ] Receipts identify prototype ancestry.
 - [ ] Receipts identify ProfileBundle and responsibility roots.
@@ -624,7 +624,7 @@ Implementation work is not admitted until:
 
 * Consequences
 
-POO Flow uses the full native POO vocabulary rather than reducing the design to
+Agentic AI Lab uses the full native POO vocabulary rather than reducing the design to
 =mix=.
 
 Module construction remains POO-native and extensible, while the ordinary
@@ -636,11 +636,11 @@ they cannot become its semantic owner.
 
 * References
 
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and POO Flow Adapter Minimization]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]
 
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
 - [[file:45-84-profile-object-and-prototype-extension-correspondence.org][45-84 - Profile Object and Prototype Extension Correspondence]]
-- [[file:45-85-poof-proof-adoption-and-poo-flow-correspondence-obligations.org][45-85 - POOF Proof Adoption and POO Flow Correspondence Obligations]]
+- [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85 - POOF Proof Adoption and Agentic AI Lab Correspondence Obligations]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90 - POO Control Policy Composition, Priority, Conflict, and Veto Resolution]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module, Profile Selection, Bundle, and imports Closure Algebra]]
 - [[file:45-95-aggregate-profile-responsibility-projection-and-bounded-macro-boundary.org][45-95 - Aggregate Profile Responsibility Projection and Bounded Macro Boundary]]

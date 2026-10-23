@@ -281,7 +281,7 @@ explicitly compiled before the reader. No traversal behavior or timeout is
 changed to accommodate that mismatch.
 
 The rebuilt reader then exposed a mixed runtime/interface preparation artifact:
-native test run 05 warned that =poo-flow-prepare-module-publication__%= was
+native test run 05 warned that =agentic-ai-lab-prepare-module-publication__%= was
 undefined and exited 139. It has no success status. The current =preparation.ss=
 is now included in the same owned compiler closure before the reader. The
 shared installed library is not rewritten to hide this mismatch. Initial passing

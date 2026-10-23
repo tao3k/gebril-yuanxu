@@ -81,7 +81,7 @@ The research agenda gives five implementation pressures. Each pressure becomes a
 5. Recovery and workflow literature: ARIES, sagas, and workflow patterns separate logging, compensation, resources, and exception behavior.
    Delivery line: P7 workflow/task/artifact receipts must declare action class, artifact provenance, sandbox refs, and compensation refs.
 
-This mapping is the guardrail against copying a reference project. =poo-flow= should absorb the durable invariant, then express it as POO-native policy plus functional flow values.
+This mapping is the guardrail against copying a reference project. =agentic-ai-lab= should absorb the durable invariant, then express it as POO-native policy plus functional flow values.
 ** 10.06.46.40 Phase Map
 *** 10.06.46.40.10 P0: Contract Closure
 Purpose:
@@ -256,7 +256,7 @@ Exit criteria:
 
 *** 10.06.46.40.80 P7: Workflow, CI/CD, And Artifact Integration
 Purpose:
-Extend durable from agent loops into the broader =poo-flow= domain.
+Extend durable from agent loops into the broader =agentic-ai-lab= domain.
 
 Implementation scope:
 - task policy declares action class:
@@ -527,13 +527,13 @@ Initial slice status: landed.
 Delivered:
 - shared durable POO capability owner: =modules/memory-core/durable/policy.ss=;
 - session policy composition helper:
-  =poo-flow-session-policy-attach-durable=;
+  =agentic-ai-lab-session-policy-attach-durable=;
 - session durable receipt bridge:
-  =poo-flow-session-policy-durable-receipt=;
+  =agentic-ai-lab-session-policy-durable-receipt=;
 - =defstruct= runtime receipt:
-  =poo-flow-durable-policy-receipt=;
+  =agentic-ai-lab-durable-policy-receipt=;
 - bounded ABI projection:
-  =poo-flow-durable-policy-receipt->alist=;
+  =agentic-ai-lab-durable-policy-receipt->alist=;
 - structured validation diagnostics for missing journal owner, missing checkpoint store, missing resume identity, unsupported repair mode, unsupported action class, and invalid runtime owner;
 - session policy presentation rows:
   =durable-policy=, =durable-policy-ref=, =durable-valid?=, and =durable-diagnostic-count=;
@@ -557,11 +557,11 @@ Second slice status: landed.
 
 Delivered:
 - durable batch projection helpers:
-  =poo-flow-durable-policies->receipts= and
-  =poo-flow-durable-policy-receipts->alists=;
+  =agentic-ai-lab-durable-policies->receipts= and
+  =agentic-ai-lab-durable-policy-receipts->alists=;
 - multi-agent session topology now carries explicit durable refs through
-  =poo-flow-session-agent-node= and
-  =poo-flow-session-agent-node-durable-policy-ref=;
+  =agentic-ai-lab-session-agent-node= and
+  =agentic-ai-lab-session-agent-node-durable-policy-ref=;
 - session agent graph receipts expose =durable-policy-refs=;
 - session registry entries expose =durable-policy-summary= and
   =durable-policy-ref=;
@@ -658,13 +658,13 @@ Delivered:
 - runtime store contract owner:
   =modules/memory-core/durable/store.ss=;
 - POO-native runtime store contract object:
-  =poo-flow-durable-runtime-store-contract=;
+  =agentic-ai-lab-durable-runtime-store-contract=;
 - shared default runtime store contract:
-  =poo-flow-durable-runtime-store-contract/default=;
+  =agentic-ai-lab-durable-runtime-store-contract/default=;
 - =defstruct= runtime store receipt:
-  =poo-flow-durable-runtime-store-contract-receipt=;
+  =agentic-ai-lab-durable-runtime-store-contract-receipt=;
 - bounded ABI projection:
-  =poo-flow-durable-runtime-store-contract-receipt->alist=;
+  =agentic-ai-lab-durable-runtime-store-contract-receipt->alist=;
 - runtime store contract fields for fact log, checkpoint store, derived index, job store, repair journal, artifact store, communication ledger, and sandbox ledger;
 - capability flags for append fact, checkpoint write, index rebuild, job lease claim, repair event append, artifact retention, communication event append, and sandbox handle attach;
 - structured validation diagnostics for missing store owner, missing ledger refs, invalid schema version, invalid durable policy receipt, unsupported ledger kind, and unsupported capability flag;
@@ -690,10 +690,10 @@ Still out of scope for this slice:
 Sixth slice status: landed.
 Delivered:
 - session communication receipt owner: =modules/session/communication.ss=;
-- public constructor remains =poo-flow-session-communication-receipt= for concise user/module code;
-- internal fixed receipt representation: =poo-flow-session-communication-receipt-record=;
-- bounded ABI projection: =poo-flow-session-communication-receipt->alist=;
-- batch ABI projection: =poo-flow-session-communication-receipts->alists=;
+- public constructor remains =agentic-ai-lab-session-communication-receipt= for concise user/module code;
+- internal fixed receipt representation: =agentic-ai-lab-session-communication-receipt-record=;
+- bounded ABI projection: =agentic-ai-lab-session-communication-receipt->alist=;
+- batch ABI projection: =agentic-ai-lab-session-communication-receipts->alists=;
 - communication ledger ref field, defaulting to =runtime/communication-ledger=;
 - durable policy ref field for connecting session communication events to shared durable policy;
 - relation coverage for parent-child, child-parent, sibling, and cross-root routing edges;
@@ -716,9 +716,9 @@ Seventh slice status: landed.
 Delivered:
 - memory durable job owner: =modules/memory-core/objects.ss=;
 - public memory-core facade: =modules/memory-core/config.ss=;
-- fixed receipt representation: =poo-flow-memory-durable-job-receipt=;
-- bounded ABI projection: =poo-flow-memory-durable-job-receipt->alist=;
-- batch ABI projection: =poo-flow-memory-durable-job-receipts->alists=;
+- fixed receipt representation: =agentic-ai-lab-memory-durable-job-receipt=;
+- bounded ABI projection: =agentic-ai-lab-memory-durable-job-receipt->alist=;
+- batch ABI projection: =agentic-ai-lab-memory-durable-job-receipts->alists=;
 - job constructors for recall, write, consolidation, stale-source, and repair jobs;
 - job identity fields for project id, root session id, session id, optional agent id, store ref, durable policy ref, job store ref, checkpoint store ref, source ref, source watermark, target watermark, retry policy, retention policy, and usage counter;
 - structured diagnostics for non-durable stores, missing durable policy ref, missing runtime store refs, unsupported job kinds/states, unsupported scopes, denied commit policy, and recall-disabled stores;
@@ -815,10 +815,10 @@ Next implementation pressure:
 ** 10.06.46.79.50 Tenth Slice Delivery Notes
 Tenth slice status: landed. Delivered:
 - =modules/memory-core/durable/store-operation.ss= adds runtime-store operation receipts for =append-fact=, =write-checkpoint=, =rebuild-index=, =claim-job-lease=, =append-repair-event=, =retain-artifact=, =append-communication-event=, and =attach-sandbox-handle=.
-- Operation kinds are declared once in =+poo-flow-durable-runtime-store-operation-specs+=; the implementation uses a named functional helper, =poo-flow-durable-runtime-store-operation-receipts=, rather than per-operation wrapper functions or a new user DSL.
+- Operation kinds are declared once in =+agentic-ai-lab-durable-runtime-store-operation-specs+=; the implementation uses a named functional helper, =agentic-ai-lab-durable-runtime-store-operation-receipts=, rather than per-operation wrapper functions or a new user DSL.
 - Internal operation receipts use =defstruct= and a bounded projection table before final alist handoff.
 - Validation rejects missing operation ids, unsupported operation kinds, negotiation rows that are not handoff-ready, unsupported backend operation kinds, missing target refs, and invalid causal refs.
-- =poo-flow-durable-runtime-store-operations->marlin-handoff= projects one runtime command manifest for the operation batch while keeping =runtime-executed= false.
+- =agentic-ai-lab-durable-runtime-store-operations->marlin-handoff= projects one runtime command manifest for the operation batch while keeping =runtime-executed= false.
 - =user-interface/custom/my-module/cases/durable-runtime-store-operations.ss= demonstrates a downstream custom module case that consumes the negotiated runtime store and emits operation receipts without traversing POO object graphs at runtime.
 
 Verified:
@@ -840,7 +840,7 @@ Eleventh slice status: landed. Delivered:
 - The bridge maps session graph rows to =append-fact=, session communication rows to =append-communication-event=, memory durable job rows to =claim-job-lease=, workflow task rows to =append-fact=, workflow artifact refs to =retain-artifact=, and sandbox refs to =attach-sandbox-handle=.
 - The implementation keeps the conversion in the module-system runtime-store owner instead of scattering operation construction into session, memory, workflow, and sandbox modules.
 - =user-interface/custom/my-module/cases/durable-operation-bridge.ss= demonstrates the downstream shape with a real communication receipt, memory durable job receipt, workflow task row, artifact refs, and sandbox refs.
-- The bridge produces the same operation batch handoff used by =poo-flow-durable-runtime-store-operations->marlin-handoff=, keeping Scheme report-only.
+- The bridge produces the same operation batch handoff used by =agentic-ai-lab-durable-runtime-store-operations->marlin-handoff=, keeping Scheme report-only.
 
 Verified:
 - =gxpkg env gxtest t/durable-runtime-store-operation-bridge-test.ss=

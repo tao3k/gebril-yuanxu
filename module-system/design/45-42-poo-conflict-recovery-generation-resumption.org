@@ -10,10 +10,10 @@
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: =gerbil-poo= objects and POO Flow evaluation
+- Semantic core :: =gerbil-poo= objects and Agentic AI Lab evaluation
 - Related module :: =45-41-poo-profile-slot-contribution-priority.org=
 
-This module defines how POO Flow reports and recovers from semantic composition conflicts. It uses the advantages of Scheme first-class continuations and continuable conditions without placing a live continuation, capability, or mutable handle inside a pure POO evidence object.
+This module defines how Agentic AI Lab reports and recovers from semantic composition conflicts. It uses the advantages of Scheme first-class continuations and continuable conditions without placing a live continuation, capability, or mutable handle inside a pure POO evidence object.
 
 * Core decision
 

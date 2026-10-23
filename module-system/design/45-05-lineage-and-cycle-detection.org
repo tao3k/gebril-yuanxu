@@ -46,7 +46,7 @@ Spawning concurrent work requires an explicit fork operation that preserves the
 root identity and allocates a new =branchId=.  User syntax cannot provide or
 override lineage, frame, branch, or request identities.
 
-POO Flow dynamically binds the current lineage around its own composition and
+Agentic AI Lab dynamically binds the current lineage around its own composition and
 capability-resolution combinators.  A missing lineage or a lineage from another
 runtime context is an =IllegalRuntimeTransitionCondition= owned by 45-03.
 
@@ -57,11 +57,11 @@ Resumption never restores an earlier wait graph.
 * Productive recursion
 
 Structural POO recursion through =self=, =super=, Mix, Profile, or a descendant
-is allowed.  A cycle condition is raised only when POO Flow-owned
+is allowed.  A cycle condition is raised only when Agentic AI Lab-owned
 module-capability demands form a strict cycle in which no participant can
 publish a value.
 
-POO Flow does not inspect or replace arbitrary POO slot recursion.
+Agentic AI Lab does not inspect or replace arbitrary POO slot recursion.
 
 The following are not cycles:
 
@@ -70,7 +70,7 @@ The following are not cycles:
 - observation of an already =failed= target;
 - two branches sharing an evaluating target when the wait graph stays acyclic;
 - equal module/capability identity in two different runtime contexts;
-- arbitrary nested =.ref= activity that never crosses the POO Flow capability
+- arbitrary nested =.ref= activity that never crosses the Agentic AI Lab capability
   boundary.
 
 The following are cycles:
@@ -83,11 +83,11 @@ The following are cycles:
 
 Prototype lineage, demand ancestry, recursive-object progress, fixed-point
 cycle detection, and generic convergence evidence belong to =gerbil-poo=.
-This module specifies the evidence that POO Flow requires from that sole POO
-library and the POO Flow conditions, traces, receipts, limits, and governance
+This module specifies the evidence that Agentic AI Lab requires from that sole POO
+library and the Agentic AI Lab conditions, traces, receipts, limits, and governance
 decisions projected from it.
 
-POO Flow MUST NOT construct a second wait graph by independently evaluating
+Agentic AI Lab MUST NOT construct a second wait graph by independently evaluating
 prototype slots, infer cycles from a parallel memoization table, or implement a
 local fixed-point evaluator.  When the pinned library does not expose required
 lineage or progress evidence, the missing facility is recorded as a
@@ -200,7 +200,7 @@ evaluation --owns--> module-capability-cell
 evaluation --waits-for--> module-capability-cell
 #+end_src
 
-Before installing a wait edge, POO Flow atomically verifies that the graph
+Before installing a wait edge, Agentic AI Lab atomically verifies that the graph
 remains acyclic.
 
 The graph is a private POO runtime object.  Its mutation and synchronization are
@@ -247,7 +247,7 @@ publishes operational failure and wakes dependents.
 
 * Atomic wait-edge algorithm
 
-Before waiting on an =evaluating= capability cell, POO Flow performs one atomic
+Before waiting on an =evaluating= capability cell, Agentic AI Lab performs one atomic
 registry operation:
 
 #+begin_src text
@@ -266,7 +266,7 @@ Steps 2 through 7 are serialized with cell ownership publication.  Two
 simultaneous proposed edges therefore cannot both pass against an obsolete
 graph snapshot.
 
-When more than one path could close the cycle, POO Flow chooses:
+When more than one path could close the cycle, Agentic AI Lab chooses:
 
 1. the path with the fewest alternating edges;
 2. then the path with the earliest edge event sequence;
@@ -304,7 +304,7 @@ waiters observe the same immutable target outcome.
 
 Wait-graph traversal is bounded by the 45-04
 =maxActiveEvaluationCells= limit and by the lineage-depth limit.  If analysis
-cannot complete within a configured hard limit, POO Flow raises
+cannot complete within a configured hard limit, Agentic AI Lab raises
 =EvaluationResourceLimitCondition= for the affected operation.  It MUST NOT
 guess that a cycle exists.
 
@@ -337,12 +337,12 @@ Direct G0 re-entry and a G0 cross-branch wait cycle both produce
 produce =CompositionDemandCycleCondition=.
 
 The cycle breaker unwinds only its owning phase.  Dependent waiters wake from
-the published operational failure.  POO Flow does not force unrelated cells to
+the published operational failure.  Agentic AI Lab does not force unrelated cells to
 failed and does not reset the runtime context.
 
 * Recursive submodule propagation
 
-A-to-B-to-C nesting derives one frame per POO Flow-owned capability boundary:
+A-to-B-to-C nesting derives one frame per Agentic AI Lab-owned capability boundary:
 
 #+begin_mermaid
 flowchart LR
@@ -372,7 +372,7 @@ the breaker, or issue conditions.
 
 #+begin_src text
 LINEAGE_IDENTITY=runtime-operational-only
-WAIT_GRAPH_SCOPE=one-poo-flow-runtime-context
+WAIT_GRAPH_SCOPE=one-agentic-ai-lab-runtime-context
 DIFFERENT_LINEAGE_WAIT=allowed-only-when-acyclic
 CLOSING_EDGE_INSTALLATION=forbidden
 CYCLE_BREAKER=proposing-evaluation

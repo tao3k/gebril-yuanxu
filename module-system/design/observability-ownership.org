@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO Flow Observability
+#+title: Agentic AI Lab Observability
 
 * Scope
 
@@ -12,7 +12,7 @@ Contract-admission observation family is native POO, not an alist facade or a
 second tracer.
 
 Generic observation Contracts, objects, debug tracing, and slot inspection
-belong to the =core/observability/= package.  The POO Flow source-admission
+belong to the =core/observability/= package.  The Agentic AI Lab source-admission
 observer and ASP PackageSpec build observer are integration adapters: they
 consume ASP-owned testing/build APIs and must not make Core depend on ASP.
 The product adapters remain with their actual owners under =src/user-interface/=,
@@ -30,7 +30,7 @@ authorized recovery, Profile policy, or production telemetry.
 | =core/observability/types.ss= | Native responsibility Contracts. |
 | =core/observability/funcs.ss= | Pure bounded admission explanation and aggregate projections. |
 | =core/observability/objects.ss= | Native observation construction and slot-dispatched =.explain= / =.summary=. |
-| =src/authoring/source-authoring.ss= and =src/testing/source-admission.ss= | POO Flow source authoring and test-time admission adapters. |
+| =src/authoring/source-authoring.ss= and =src/testing/source-admission.ss= | Agentic AI Lab source authoring and test-time admission adapters. |
 | =core/module-system/observability/diagnostics.ss= | Native POO Diagnostic and DoctorReport values plus source-neutral status aggregation. |
 | =src/user-interface/module-diagnostics.ss= | Product Task/Flow/Option findings, Doctor decision, and final alist projections. |
 | =src/user-interface/doctor-presentation.ss= | Doctor projection over diagnostic and loader receipts. |
@@ -188,13 +188,13 @@ slots.
 * Build projection admission
 
 The POO Build Observability extension validates the PackageSpec boundary before
-calling its projector.  POO Flow's ordinary package leaves =modules= and
+calling its projector.  Agentic AI Lab's ordinary package leaves =modules= and
 =public-entry-modules= bound to precise owner modules. The =gerbil.pkg=-pinned
 ASP Scheme Build API projects that native source catalog to =std/make=. There
 is no package-local aggregate Module System API to expand first.
 
 ASP Scheme owns the reusable PackageSpec versus native =defbuild-script= A/B
-evidence through the same =std/make= executor.  POO Flow additionally guards
+evidence through the same =std/make= executor.  Agentic AI Lab additionally guards
 its package declaration against reintroducing an aggregate public-entry
 closure; its observability qualification checks
 the catalog handoff and projected target count.
@@ -253,7 +253,7 @@ hand identifier as a self slot.  It does not capture a same-named constructor
 parameter.  The generated getters recurse and allocate until heap exhaustion.
 Constructors must first bind differently named lexical values, for example
 =policy-value=, and use =policy: policy-value=.  The reader-native
-=poo-flow-poo-slot-authoring-{datum,port,file}-observations= APIs inspect both
+=agentic-ai-lab-poo-slot-authoring-{datum,port,file}-observations= APIs inspect both
 =slot: initializer= and =(slot initializer)= spellings without expansion or
 evaluation. They reject the same slot identifier anywhere in its unquoted
 initializer, including nested forms such as =(reverse diagnostics)=. The
@@ -264,7 +264,7 @@ performance root is included because a cyclic fixture can otherwise turn a
 bounded scale gate into unbounded heap growth before its first receipt.
 
 Ordinary lexical bindings have a separate reader-native gate.  The
-=poo-flow-scheme-lexical-call-shadow-{datum,port,file}-observations= APIs find
+=agentic-ai-lab-scheme-lexical-call-shadow-{datum,port,file}-observations= APIs find
 function formals named =values= whose body later uses =(values ...)= as a call
 head.  This catches the argument-shadowing defect that replaced Scheme's
 multiple-value procedure with accumulator data, while leaving an ordinary
@@ -274,9 +274,9 @@ evaluates the inspected source.  The same module-system test applies this gate
 to every =src/**/*.ss= file.
 
 The killed =gxtest= investigation found the same defect in the parenthesized
-POO form used by =poo-flow-session-registry-receipt=: =(project-id project-id)=
+POO form used by =agentic-ai-lab-session-registry-receipt=: =(project-id project-id)=
 created a lazy self lookup.  Receipt construction appeared successful; reading
-=project-id= during =poo-flow-session-agent-graph->alist= recursed through POO's
+=project-id= during =agentic-ai-lab-session-agent-graph->alist= recursed through POO's
 slot hash until =hash-ensure-ref= or =make-vector= exhausted the heap.  The
 constructor now captures every input under a distinct =*-value= binding.
 
@@ -314,6 +314,6 @@ observation
 
 Additional JSON Schema bridge and Funflow integration tests could not run in
 the current cached environment: importing =json-schema-emit.ss= failed to
-resolve =:poo-flow/src/contract/json-schema-emit-runtime=. The source exists,
-but its =.gerbil/lib/poo-flow/src/contract/json-schema-emit-runtime.ssi= was
+resolve =:agentic-ai-lab/src/contract/json-schema-emit-runtime=. The source exists,
+but its =.gerbil/lib/agentic-ai-lab/src/contract/json-schema-emit-runtime.ssi= was
 absent. Those two suites exited 42 during import and are not counted as passes.

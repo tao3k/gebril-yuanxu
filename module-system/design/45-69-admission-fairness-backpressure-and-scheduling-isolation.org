@@ -14,7 +14,7 @@ not current implementation verification. See [[file:../../dev/proofs/lean/README
 * Status
 
 This RFC records the accepted resource admission, fairness, and backpressure
-semantics for local and distributed POO Flow evaluation.
+semantics for local and distributed Agentic AI Lab evaluation.
 
 It extends distributed evaluator delegation. It does not change POO slot
 contribution priority.

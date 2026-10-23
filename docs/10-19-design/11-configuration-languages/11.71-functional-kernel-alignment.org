@@ -103,7 +103,7 @@ implemented merely because existing native suites now belong to Core.
 Focused qualification on the declared Core dependency environment:
 
 - =t/functional-flow-kernel-test.ss=: passed; existing Category/Arrow and strand
-  controls run after relocation and POO Flow/task-family construction.
+  controls run after relocation and Agentic AI Lab/task-family construction.
 - =t/functional-flow-kleisli-test.ss=: passed; value-dependent composition controls.
 - =t/funflow-tutorial-test.ss=: passed; relocated user-visible tutorial results.
 - =t/funflow-job-test.ss=: passed; selected Core publication, lazy closure, final

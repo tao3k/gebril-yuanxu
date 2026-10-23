@@ -79,7 +79,7 @@ stateDiagram-v2
 - The batch receipt binds leaf count, previous root, Merkle root, next execution
   root, crash window, and durable evidence reference.
 - The next execution root is canonical
-  =SHA-256("poo-flow.batched-execution-root.draft.1|" += framed previous root
+  =SHA-256("agentic-ai-lab.batched-execution-root.draft.1|" += framed previous root
   += framed batch root)=.  Both roots use lowercase hexadecimal inside the
   decimal byte-length UTF-8 framing defined above.
 - Missing leaves, duplicate indices/nonces, reordered leaves, wrong sibling

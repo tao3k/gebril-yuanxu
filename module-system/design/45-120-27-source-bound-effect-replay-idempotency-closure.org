@@ -189,7 +189,7 @@ focused receipt in this document is retained only as historical evidence; it
 does not define a new schema or a v2 architecture.
 
 - Lean owner source:
-  =PooFlowProof/Enterprise/SourceBoundEffectReplayIdempotencyClosure.lean=
+  =AgenticAILabProof/Enterprise/SourceBoundEffectReplayIdempotencyClosure.lean=
 - owner source digest:
   =sha256:fa9de044bc78271d34988b25db197b1695b731993c4b3d6e46fd361f05fc990e=
 - focused Lean build: =199 jobs=
@@ -212,7 +212,7 @@ does not define a new schema or a v2 architecture.
 | =independentlyClosedReplayOwnersCompose= | 1 | 0.424 s |
 
 All six roots produced
-=poo-flow.axle-exact-declaration-closure.v1= with =okay=true= against
+=agentic-ai-lab.axle-exact-declaration-closure.v1= with =okay=true= against
 the current owner source.  The larger typed roots
 =restoreIntegrityAndRetryAuthorityRemainIndependent= and
 =closedReplayPlanBindsCurrentFenceToken= remain full-Lean theorems; their
@@ -223,7 +223,7 @@ raised.
 * Lean declaration map
 
 The implementation owner is
-=PooFlowProof.Enterprise.SourceBoundEffectReplayIdempotencyClosure=.
+=AgenticAILabProof.Enterprise.SourceBoundEffectReplayIdempotencyClosure=.
 
 - =SourceBoundEffectReplayObservation= adds trace ordering to the existing
   source-bound event.
@@ -304,7 +304,7 @@ replay-safe observation with:
 The focused Lean target is:
 
 #+begin_src sh
-lake build PooFlowProof.Enterprise.SourceBoundEffectReplayIdempotencyClosure
+lake build AgenticAILabProof.Enterprise.SourceBoundEffectReplayIdempotencyClosure
 #+end_src
 
 Final Lean, AXLE, Org, Typst, Python, and diff receipts are published after the

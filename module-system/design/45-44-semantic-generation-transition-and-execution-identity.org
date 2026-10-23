@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: =gerbil-poo= objects and POO Flow evaluation
+- Semantic core :: =gerbil-poo= objects and Agentic AI Lab evaluation
 - Related modules :: =45-42-poo-conflict-recovery-generation-resumption.org= and =45-43-canonical-poo-resolver-proposal-and-recovery-authority.org=
 
 This module separates the identity of a pure semantic composition state from the identities of the transitions, authorization events, and runtime executions that reach or evaluate that state.
@@ -21,7 +21,7 @@ This module separates the identity of a pure semantic composition state from the
 A semantic generation is a content-addressed pure POO composition state. Transition, authorization, and execution identities explain how that state was reached and evaluated, but they do not contaminate its semantic identity.
 #+end_quote
 
-POO Flow distinguishes at least:
+Agentic AI Lab distinguishes at least:
 
 #+begin_src text
 SemanticGenerationIdentity

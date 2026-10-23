@@ -13,7 +13,7 @@ Status: *Accepted; implementation planning*
 This RFC defines claim boundaries and assurance semantics. It does not claim that every listed proof, token, receipt, mediator, signer, or external anchor is implemented.
 
 * Purpose
-POO Flow must not use “provable” as a blanket claim.
+Agentic AI Lab must not use “provable” as a blanket claim.
 
 A Lean theorem, Cedar allow decision, runtime receipt, or valid hash chain proves a different proposition under a different trusted boundary. Treating any one artifact as proof of total system safety creates a circular and untestable assurance story.
 
@@ -27,7 +27,7 @@ This RFC defines a digest-linked chain from the Canonical Organization Bundle to
 - a cumulative assurance level.
 
 * RFC Suite Dependencies
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][RFC 90]] is the contract owner for suite vocabulary and the system boundary.
 - [[file:91-canonical-organization-bundle-rfc.org][RFC 91]] defines the semantic Bundle and facet obligations bound by this RFC.
 - [[file:92-c-runtime-interface-and-python-validation-runtime-rfc.org][RFC 92]] transports tokens, runtime results, and receipts across the public runtime boundary.
 - [[file:94-agentic-control-plane-migration-rfc.org][RFC 94]] is the contract owner for proof/evidence phase order and activation gates.

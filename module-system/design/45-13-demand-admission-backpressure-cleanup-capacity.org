@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns POO Flow policy and evidence semantics for:
+This module owns Agentic AI Lab policy and evidence semantics for:
 
 - admitting demanded realization work to a runtime;
 - suspending work under backpressure;
@@ -18,12 +18,12 @@ This module owns POO Flow policy and evidence semantics for:
 It does not implement a scheduler.  Runtime or Marlin providers own execution
 queues, threads, processes, event loops, and host-specific scheduling.
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= owns lazy demand, memoization, fixed-point evaluation, suspension,
 lineage, and continuation-aware control.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - admission classes and policy;
 - boundary budget identity and containment allocation;
@@ -43,7 +43,7 @@ Admission answers whether a demanded unit of work has policy, budget, and
 provider capacity authority to execute.  Scheduling answers when and where an
 admitted unit runs.
 
-POO Flow defines the first question and records its evidence.  It MUST NOT:
+Agentic AI Lab defines the first question and records its evidence.  It MUST NOT:
 
 - implement a private task scheduler;
 - select operating-system threads or processes;
@@ -205,7 +205,7 @@ Flow MUST NOT implement busy polling.
 
 * Starvation and progress evidence
 
-POO Flow does not prescribe a scheduler algorithm, but it requires evidence
+Agentic AI Lab does not prescribe a scheduler algorithm, but it requires evidence
 that an admitted or backpressured demand is making, awaiting, or denied
 progress.
 
@@ -307,7 +307,7 @@ host-capacity guesser.
 
 This RFC does not authorize:
 
-- a POO Flow private scheduler;
+- a Agentic AI Lab private scheduler;
 - eager admission caused by graph traversal;
 - busy polling under backpressure;
 - capacity permits serialized across contexts;

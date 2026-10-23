@@ -155,7 +155,7 @@ stateDiagram-v2
 * Lean closure
 
 The proof module is
-=PooFlowProof.Enterprise.PublicationDomainRegistryLineageClosure=.
+=AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure=.
 
 It establishes:
 

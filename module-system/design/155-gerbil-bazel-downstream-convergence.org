@@ -7,7 +7,7 @@
 
 * Status
 
-Implemented for the shared capability and the POO Flow consumer.  The final
+Implemented for the shared capability and the Agentic AI Lab consumer.  The final
 cold-build timing gate remains evidence-driven: it must run only when the
 Scheme admission guard reports host pressure below the CPU-adaptive runnable
 limit.
@@ -24,7 +24,7 @@ limit.
 - reusable =GerbilProjectInfo=, complete logs, and JSON receipts;
 - the workspace-aware =install_dependencies= capability.
 
-Downstream repositories retain only domain rules and build truth.  POO Flow
+Downstream repositories retain only domain rules and build truth.  Agentic AI Lab
 retains =build.ss=, its Scheme-owned semantic receipt, Scheme project
 projection, runtime-C rules, and POO-specific policy.  =gerbil-scheme-rust=
 retains Rust/FFI and Cargo domain rules.  Neither downstream owns a second
@@ -57,7 +57,7 @@ flowchart TB
   JSONVAL --> INFO["GerbilProjectInfo<br/>project tree + log + JSON receipt"]
   INFO -->|"compiled project first"| TEST["Shared gerbil_project_test matrix<br/>one compile, many tests"]
   TESTROOT["Declared test source-root marker"] -->|"source-only fallback"| TEST
-  INFO --> PF["poo-flow<br/>projection + POO/runtime-C rules"]
+  INFO --> PF["agentic-ai-lab<br/>projection + POO/runtime-C rules"]
   INFO --> SR["gerbil-scheme-rust<br/>Rust/FFI + Cargo rules"]
 #+end_src
 
@@ -82,9 +82,9 @@ the package manifest, strips revisions only to locate =.gerbil/lib= package
 directories, and records =dependencyPolicy=project-package-manifest= with
 per-package =ready= or =missing= state.
 
-* Removed POO Flow legacy surface
+* Removed Agentic AI Lab legacy surface
 
-The POO Flow consumer no longer carries compatibility implementations for:
+The Agentic AI Lab consumer no longer carries compatibility implementations for:
 
 - local Gerbil repository discovery;
 - a local Gerbil toolchain provider or toolchain type;
@@ -122,7 +122,7 @@ projection from shared =GerbilProjectInfo=.
 - generic and prefixed receipts are declared action outputs and are validated
   by Gerbil's native JSON reader as exactly one JSON value.
 
-** POO Flow consumer
+** Agentic AI Lab consumer
 
 - =//scheme:deps= resolves to
   =@dependency_gerbil//:install_dependencies=;
@@ -177,14 +177,14 @@ flowchart LR
 
 The ordered load path is part of the contract:
 
-1. the compiled POO Flow project =.gerbil/lib=;
+1. the compiled Agentic AI Lab project =.gerbil/lib=;
 2. each transitive project dependency =.gerbil/lib=;
 3. the toolchain dependency-library root.
 
 The target emits
-=poo-flow.gerbil-project-environment-declaration.v1= as a JSON Bazel output.
+=agentic-ai-lab.gerbil-project-environment-declaration.v1= as a JSON Bazel output.
 At execution time it also exports a
-=poo-flow.gerbil-project-environment-runtime.v1= JSON receipt together with
+=agentic-ai-lab.gerbil-project-environment-runtime.v1= JSON receipt together with
 the canonical Gerbil project receipt path.  The Python loader consumes the
 inherited =GERBIL_PATH=, =GERBIL_LOADPATH=, and toolchain-selected =gxi= path;
 it does not reconstruct Bazel output paths.
@@ -199,7 +199,7 @@ it does not reconstruct Bazel output paths.
   =5.72 s= after the declared project action was cached; Bazel completed the
   cached target action in =0.332 s=.
 - An isolated CPython 3.13 environment installed the built wheel and ran
-  =python -m poo_flow_benchmarks --list= outside the source tree. The wheel
+  =python -m agentic_ai_lab_benchmarks --list= outside the source tree. The wheel
   contained all =13= benchmark package modules and the module entry point
   listed all =14= registered benchmark cases.
 - A clean local target build produced both the executable launcher and
@@ -218,7 +218,7 @@ it does not reconstruct Bazel output paths.
 - the only remaining local Scheme Bazel rule is the POO-specific projection
   from shared =GerbilProjectInfo=.
 
-The local clean POO Flow compile entered the shared Darwin sandbox action but
+The local clean Agentic AI Lab compile entered the shared Darwin sandbox action but
 was correctly stopped by the Scheme admission guard before compilation because
 the host reported 92 runnable processes on 12 logical CPUs.  This receipt is
 guard evidence, not a cold-time result.  The macOS and Linux GitHub runners own

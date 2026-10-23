@@ -44,11 +44,11 @@ A complete claim must also establish that:
 
 The objective is therefore not merely “Cedar engine A equals Cedar engine B”.
 The objective is an end-to-end assurance argument for concrete operations
-performed by =wendao-episteme= and POO Flow.
+performed by =wendao-episteme= and Agentic AI Lab.
 
 * Architectural thesis
 
-=wendao-episteme= and POO Flow together may form infrastructure for safe,
+=wendao-episteme= and Agentic AI Lab together may form infrastructure for safe,
 reliable, and trustworthy enterprise and personal AI, but they retain
 different semantic ownership.
 
@@ -57,17 +57,17 @@ different semantic ownership.
 - =wendao-episteme= consumes the =yuanxu= parent contract and owns only
   its domain-specific governance projection and downstream embedding
   qualification; it does not become a parent owner of =yuanxu=.
-- POO Flow owns POO-native module/profile composition, capability flow,
+- Agentic AI Lab owns POO-native module/profile composition, capability flow,
   agent/tool execution, runtime handoff, recovery, and operational receipts.
 - =CedarAdapter= owns the canonical authorization projection and the
   dual-engine arbitration boundary.
 - Cedar upstream owns Cedar language semantics, the definitional engine, the
   production engine, and DRT conformance assets.
 - =gerbil-poo= remains the unique Scheme POO library and the physical object
-  substrate used by POO Flow.
+  substrate used by Agentic AI Lab.
 
-Neither a Git submodule nor an upstream checkout becomes a POO Flow runtime
-owner merely because POO Flow pins or consumes it.
+Neither a Git submodule nor an upstream checkout becomes a Agentic AI Lab runtime
+owner merely because Agentic AI Lab pins or consumes it.
 
 The concrete Wendao owner evidence remains:
 
@@ -174,7 +174,7 @@ flowchart LR
     CA -->|"deny, disagree, or unavailable"| RT
 #+end_src
 
-The diagram does not make =wendao-episteme= a runtime engine or make POO Flow
+The diagram does not make =wendao-episteme= a runtime engine or make Agentic AI Lab
 the semantic owner of contributed industry knowledge.  It makes the boundary
 between contribution/qualification and composition/execution explicit.
 
@@ -217,7 +217,7 @@ The five conjuncts are deliberately independent:
 #+begin_src mermaid
 flowchart LR
     W["wendao-episteme<br/>source, claim, evidence, citation"]
-    P["POO Flow<br/>ProfileBundle, capability, agent action"]
+    P["Agentic AI Lab<br/>ProfileBundle, capability, agent action"]
     I["Canonical authorization input<br/>principal, action, resource, context, entities"]
     A["CedarAdapter<br/>risk projection and arbitration"]
     L["Definitional engine<br/>Cedar Lean semantics"]
@@ -307,7 +307,7 @@ Every assurance scenario MUST define the following fields.
 | Fail-closed events | Missing, stale, malformed, inconsistent, unavailable, timeout, or disagreement states |
 | Receipt | Evidence sufficient to bind input, decision, engines, policy, and runtime handoff |
 | Proof obligation | The Lean theorem and AXLE validation target |
-| Executable obligation | DRT case and POO Flow integration/admission test |
+| Executable obligation | DRT case and Agentic AI Lab integration/admission test |
 
 * Scenario catalog
 
@@ -554,7 +554,7 @@ become allow merely because control resumes through a continuation.
 The contributor-layer definitions and theorems live in:
 
 #+begin_quote
-=packages/proofs/lean/PooFlowProof/PooC4/ContributorRepositoryQualification.lean=
+=packages/proofs/lean/AgenticAILabProof/PooC4/ContributorRepositoryQualification.lean=
 #+end_quote
 
 The Lean surface mirrors the Typst model:
@@ -602,7 +602,7 @@ The Lean core does not enumerate enterprise asset categories.  It quantifies
 over =FacetIdentity= and permits every asset to declare a predicate over any
 number of facets.  Policy, authorization, security, evidence, ownership,
 responsibility, and accountability can therefore be qualified together without
-turning POO Flow into the global owner of an enterprise ontology.
+turning Agentic AI Lab into the global owner of an enterprise ontology.
 
 This is a semantic proof layer only.  It does not authorize the Wendao child
 implementation or discharge executable qualification, AXLE, Cedar DRT, or
@@ -622,7 +622,7 @@ aggregate interface, and module-specific remaining obligations are owned by:
   cases, and correspondence claims; it does not replace local Lean builds.
 - Cedar DRT compares executable behavior over generated and curated Cedar
   cases; it is finite conformance evidence, not universal proof.
-- POO Flow tests bind canonical input, adapter outcome, ProfileBundle identity,
+- Agentic AI Lab tests bind canonical input, adapter outcome, ProfileBundle identity,
   and actual runtime behavior.
 - Scenario receipts connect the four surfaces without claiming that any one of
   them subsumes the others.
@@ -638,7 +638,7 @@ Every admitted or denied scenario result records:
 - scenario identifier and semantic version;
 - principal, action, resource, context, and entity-closure identities;
 - Wendao source/claim/evidence identities when applicable;
-- POO Flow ProfileBundle, capability, delegation, and action identities when
+- Agentic AI Lab ProfileBundle, capability, delegation, and action identities when
   applicable;
 - Cedar policy-set identity and semantic version;
 - definitional and production engine executable identities;
@@ -685,7 +685,7 @@ $ "AdmitAssuranceClaim"(s)
 ** RFC closure
 
 - [X] Separate scenario governance from the general =45-114= engine boundary.
-- [X] Preserve Wendao, POO Flow, CedarAdapter, Cedar upstream, and =gerbil-poo=
+- [X] Preserve Wendao, Agentic AI Lab, CedarAdapter, Cedar upstream, and =gerbil-poo=
   ownership boundaries.
 - [X] Define enterprise and personal AI as Profiles over one semantic core.
 - [X] Keep the public interface at =use-composition=.
@@ -715,7 +715,7 @@ $ "AdmitAssuranceClaim"(s)
   and responsibility evidence.
 - [X] Prove ownership without explicit authorization cannot admit an action.
 - [ ] Define Wendao epistemic projection obligations without moving Wendao
-  semantics into POO Flow.
+  semantics into Agentic AI Lab.
 - [ ] Prove tool-action/runtime-handoff identity refinement.
 - [ ] Prove delegation attenuation and revocation closure.
 - [ ] Prove tenant/cache non-interference obligations.
@@ -750,7 +750,7 @@ $ "AdmitAssuranceClaim"(s)
 - It does not make Cedar a knowledge-reasoning engine.
 - It does not move epistemic truth evaluation from =wendao-episteme= into POO
   Flow.
-- It does not make POO Flow own Cedar upstream implementations or DRT.
+- It does not make Agentic AI Lab own Cedar upstream implementations or DRT.
 - It does not create separate enterprise and personal engine forks.
 - It does not treat finite differential testing as universal equivalence.
 - It does not authorize runtime implementation before the scenario and
@@ -776,7 +776,7 @@ The proposed first slice is:
 
 #+begin_quote
 A =wendao-episteme= source is retrieved for a tenant-scoped AI context; the
-source has explicit provenance and classification; POO Flow projects the exact
+source has explicit provenance and classification; Agentic AI Lab projects the exact
 retrieval/context action; CedarAdapter performs strict lockstep authorization;
 the assembled context identity is derived from the authorized evidence set;
 and the runtime receipt proves that no different source, tenant, provider, or

@@ -9,7 +9,7 @@
 
 - State :: Accepted proof and runtime closure.
 - Schema family :: v1 only.
-- Owner :: =poo-flow-axle-verify= owns acceptance; the audit transport owns representation only.
+- Owner :: =agentic-ai-lab-axle-verify= owns acceptance; the audit transport owns representation only.
 - Runtime closure :: audit JSON cannot construct accepted evidence without live owner validation.
 
 * Problem
@@ -102,18 +102,18 @@ $
 
 * Real AXLE artifact
 
-The current standard =poo-flow-axle-verify= closure artifact provides:
+The current standard =agentic-ai-lab-axle-verify= closure artifact provides:
 
-- =closure.schema_id = poo-flow.lean-declaration-closure.v1=
-- =preflight.schema_id = poo-flow.axle-closure-preflight.v1=
-- =exact_bundle.schema_id = poo-flow.axle-exact-declaration-closure.v1=
-- =exact_bundle.verification.schema_id = poo-flow.axle-root-declaration-validation.v1=
+- =closure.schema_id = agentic-ai-lab.lean-declaration-closure.v1=
+- =preflight.schema_id = agentic-ai-lab.axle-closure-preflight.v1=
+- =exact_bundle.schema_id = agentic-ai-lab.axle-exact-declaration-closure.v1=
+- =exact_bundle.verification.schema_id = agentic-ai-lab.axle-root-declaration-validation.v1=
 - =exact_bundle.verification.status = accepted=
 - zero failed declarations
 - complete root declarations
 - canonical source digest
 - exact bundle digest
-- =independent_declaration_bundle.schema_id = poo-flow.independent-declaration-bundle.v1=
+- =independent_declaration_bundle.schema_id = agentic-ai-lab.independent-declaration-bundle.v1=
 - independent declaration bundle digest
 
 The authority adapter must validate this chain as typed owner output.  It must
@@ -161,13 +161,13 @@ stateDiagram-v2
 
 * Current proof receipt
 
-- Lean module :: =PooFlowProof.Enterprise.ReceiptAuthorityBindingClosure=
+- Lean module :: =AgenticAILabProof.Enterprise.ReceiptAuthorityBindingClosure=
 - Focused elaboration :: accepted.
 - Runtime conclusion :: canonical transport closure is necessary but insufficient for acceptance.
 - Python focused authority/graph/audit suites :: 30 passed, 0 failed.
 - Python complete proof suite :: 117 passed, 0 failed, 20.79 seconds.
 - Lean complete build :: 531 jobs completed.
-- Standard graph CLI :: =poo-flow-proof verify-receipt-graph-audit --input --output --lean-root=.
+- Standard graph CLI :: =agentic-ai-lab-proof verify-receipt-graph-audit --input --output --lean-root=.
 - Successful live-owner CLI stdout :: 0 bytes.
 - Successful live-owner CLI stderr :: 0 bytes.
 - Live owner graph input/output comparison :: =cmp= exit code 0.
@@ -188,7 +188,7 @@ stateDiagram-v2
 
 * Independent AXLE proof receipt
 
-- AXLE entry point :: =poo-flow-axle-verify=.
+- AXLE entry point :: =agentic-ai-lab-axle-verify=.
 - Root declarations ::
   - =authorityValidatedNodeIsAccepted=
   - =selfReportedCanonicalRoundTripStillDoesNotEstablishAuthority=

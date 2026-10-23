@@ -620,7 +620,7 @@ contribution syntax.  It is a bounded compile-time lowering plan, not a runtime
 configuration AST, object system, registry, or merge engine.
 
 Every boundary is lowered to one =gerbil-poo= composition operation whose exact
-public symbol and behavior must reach =behavior-proven=.  The POO Flow expander
+public symbol and behavior must reach =behavior-proven=.  The Agentic AI Lab expander
 does not resolve slots or implement prototype linearization.
 
 If one case contributes several refinements to the same boundary, their case
@@ -795,7 +795,7 @@ The public composition remains:
     (profiles local wendao-episteme another-mix production)))
 #+end_src
 
-The POO Flow role combinator distinguishes an ordinary Profile contribution
+The Agentic AI Lab role combinator distinguishes an ordinary Profile contribution
 from a higher-order Mix contribution without adding a Profile runtime tag.
 Ordinary contributions join the Profile lineage.  A Mix contribution enters
 the internal Mix space under its identity boundary.
@@ -1423,7 +1423,7 @@ possible under that weaker model:
    the RFC requires at least one profile operand.
 
 The dedicated Lean owner
-=PooFlowProof.Enterprise.UseCompositionSyntaxClosure= constructs both
+=AgenticAILabProof.Enterprise.UseCompositionSyntaxClosure= constructs both
 counterexamples.  It then models the fail-closed parser and proves that parser
 acceptance implies a single canonical =use-composition= outer form.
 
@@ -1519,10 +1519,10 @@ identities and logical module/declaration identities; it does not record host
 installation paths or temporary output bases.
 
 - Focused Lean:
-  =cd packages/proofs/lean && direnv exec . lake env lean PooFlowProof/Enterprise/UseCompositionSyntaxClosure.lean=
+  =cd packages/proofs/lean && direnv exec . lake env lean AgenticAILabProof/Enterprise/UseCompositionSyntaxClosure.lean=
   returned exit =0= with zero diagnostics.
 - Enterprise aggregate:
-  =cd packages/proofs/lean && direnv exec . lake build PooFlowProof.Enterprise=
+  =cd packages/proofs/lean && direnv exec . lake build AgenticAILabProof.Enterprise=
   returned exit =0= for =483= jobs.
 - Full Lean aggregate:
   =cd packages/proofs/lean && direnv exec . lake build= returned exit =0= for
@@ -1534,9 +1534,9 @@ installation paths or temporary output bases.
   =//t/qualification/module-system:owner_map_tests=; it must be executed anew
   for current acceptance.
 - AXLE closure mode:
-  =cd packages/proofs/python && uv run --extra axle poo-flow-axle-verify=
+  =cd packages/proofs/python && uv run --extra axle agentic-ai-lab-axle-verify=
   with the repository-relative Lean root, module
-  =PooFlowProof.Enterprise.UseCompositionSyntaxClosure=, and the five root
+  =AgenticAILabProof.Enterprise.UseCompositionSyntaxClosure=, and the five root
   declarations named above returned exit =0= and =status: accepted=.
 - AXLE declaration closure: =72= declarations; source declarations =35=;
   environment declarations =35=; failed declarations =0=.
@@ -1715,10 +1715,10 @@ flowchart LR
 *** Cedar grant Lean and AXLE receipt
 
 - Pure mathematical model Lean:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarCapabilityGrantModel=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarCapabilityGrantModel=
   returned exit =0= for =2= jobs with zero warnings.
 - Real Cedar bridge Lean:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarCapabilityGrantClosure=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarCapabilityGrantClosure=
   returned exit =0= for =117= jobs with zero warnings.
 - Enterprise aggregate returned exit =0= for =498= jobs.  Full Lean returned
   exit =0= for =570= jobs.  Both emitted only the pre-existing
@@ -1874,10 +1874,10 @@ flowchart LR
 *** Input-identity Lean and AXLE receipt
 
 - Pure content-identity model:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarInputIdentityRefinementModel=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityRefinementModel=
   returned exit =0= for =2= jobs with zero warnings.
 - Real Cedar input refinement:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarInputIdentityRefinementClosure=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityRefinementClosure=
   returned exit =0= for =404= jobs with zero warnings.
 - AXLE verified all seven public roots in
   =UseCompositionCedarInputIdentityRefinementModel.lean=: =40= declarations,
@@ -1995,10 +1995,10 @@ The machine-owned transition contract is split deliberately:
 *** Generation-transition Lean and AXLE receipt
 
 - Pure counterexample/contract model:
-  =lake build PooFlowProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionModel=
+  =lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionModel=
   exited 0 for 2 jobs with no warning or error.
 - Real Cedar authority/refinement closure:
-  =lake build PooFlowProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionClosure=
+  =lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionClosure=
   exited 0 for 406 jobs with no warning or error.
 - AXLE standard CLI verified all 6 public theorem roots: 28 declarations
   (14 source, 14 environment, 0 proof-base), no failed declaration and no Lean
@@ -2010,7 +2010,7 @@ The machine-owned transition contract is split deliberately:
   =sha256:ab6b04d839283b831b8cdb5164aabffcb74436d981352151145fd6074810eb66=;
   independent bundle digest:
   =sha256:4348becc96cde0d28beddd5469a1c4957798d44d05758f07513dd712d415ce55=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 507 jobs.  =lake build=
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 507 jobs.  =lake build=
   exited 0 for 579 jobs.  Both emitted only the pre-existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint
@@ -2171,16 +2171,16 @@ by the exact authority validator and meet the authority-issued current head.
 *** Transition-evidence Lean and AXLE receipt
 
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceModel=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceModel=
   exited 0 for 3 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceClosure=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceClosure=
   exited 0 for 410 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionCommitmentModel=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionCommitmentModel=
   exited 0 for 4 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.AuthorityValidatedSnapshotProjectionClosure= exited 0
+  AgenticAILabProof.Enterprise.AuthorityValidatedSnapshotProjectionClosure= exited 0
   for 3 jobs with no warning or error.
 - Commitment AXLE first rejected an extra unused issuance-model source with
   =axle-source-set-mismatch=.  With the exact generation-transition and
@@ -2208,7 +2208,7 @@ by the exact authority validator and meet the authority-issued current head.
   =sha256:c3b9230053d1b50a98d0830af92a6a04556815d717def1f8a0b56bf2169fa3ff=;
   independent bundle digest:
   =sha256:6f3a2948d8d397afc0c29a157a5e7a8bc35668ad90bf7be8254dc73665791c72=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 511 jobs and =lake build=
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 511 jobs and =lake build=
   exited 0 for 583 jobs.  Both emitted only the pre-existing
   =AgentRedTeamProofRegressionClosure.lean:194 unnecessarySimpa= warning.
 - Focused RFC45-07 Orgize Org/Typst/Mermaid lint returned =[ok] orgize lint=
@@ -2344,12 +2344,12 @@ itself.
 *** Predecessor-lineage Lean and AXLE receipt
 
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionPredecessorModel=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionPredecessorModel=
   exited 0 for 3 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionLineageClosure=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionLineageClosure=
   exited 0 for 413 jobs with no warning or error.
-- =lake build PooFlowProof.Enterprise.ReceiptContextLineagePrefixClosure= exited
+- =lake build AgenticAILabProof.Enterprise.ReceiptContextLineagePrefixClosure= exited
   0 for 5 jobs with no warning or error.
 - AXLE verified all 4 predecessor-model roots: 18 declarations, 11 source
   declarations, 11 environment declarations, 0 proof-base
@@ -2362,7 +2362,7 @@ itself.
   =sha256:c2baf2ab43ea281516ebd33d9d4125e4987e2aaa901f517e25df8db5e4fcaa49=;
   independent bundle digest:
   =sha256:a0ede22c09a1986025a4de255b6d4acfcfa63e4b55d85879700510dbdf95259f=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 514 jobs and =lake build=
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 514 jobs and =lake build=
   exited 0 for 586 jobs.  Both emitted only the pre-existing
   =AgentRedTeamProofRegressionClosure.lean:194 unnecessarySimpa= warning.
 - Focused RFC45-07 Orgize Org/Typst/Mermaid lint returned =[ok] orgize lint=
@@ -2422,7 +2422,7 @@ for domain identity.
 *** Cross-domain Lean and AXLE receipt
 
 - =lake build
-  PooFlowProof.Enterprise.UseCompositionCedarInputIdentityTransitionDomainMixModel=
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionDomainMixModel=
   exited 0 for 2 jobs with no warning or error.
 - Refined =UseCompositionCedarInputIdentityTransitionLineageClosure= exited 0
   for 413 jobs with no warning or error.
@@ -2436,7 +2436,7 @@ for domain identity.
   =sha256:ef72478e9700dfee9c235479a32fb7261e0fc0dc5437d21f21a7ed578a563cec=;
   independent bundle digest:
   =sha256:64ed704b468810370b1eddfb145a817696ca6975757a905f644e7146172a69b1=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs; =lake build=
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs; =lake build=
   exited 0 for 587 jobs.  Both reported only the already-known
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -2530,9 +2530,9 @@ flowchart LR
 *** Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.CheckpointWatermarkRecoveryClosure= exited 0 for 6
+  AgenticAILabProof.Enterprise.CheckpointWatermarkRecoveryClosure= exited 0 for 6
   jobs with no warning or error.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI rejected a
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected a
   single-source request with =axle-source-set-mismatch= and exit 2.  With the
   exact four-source transitive envelope and 18 explicit root declarations it
   accepted 92 declarations: 38 source declarations, 38 environment
@@ -2545,7 +2545,7 @@ flowchart LR
   =sha256:7dec04a1cb6f91b6af7fedefbb58855726de0b95d0a7f1d308f8d417340e97ba=;
   independent bundle digest:
   =sha256:6dd40c6616a099bc4c71c36a12bab5eb596abae2783bb57f3ba83190ca7fedf6=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - After assigning unique document-local heading targets, =asp org lint=
@@ -2646,9 +2646,9 @@ flowchart LR
 *** Registry trust-claim Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryTrustClosure= exited 0 for 7
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryTrustClosure= exited 0 for 7
   jobs with no warning or error.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI rejected the
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected the
   caller-supplied six-source envelope with exit 2 and required the exact
   three-source envelope owned by AXLE.  That envelope accepted all 7 theorem
   roots and 47 declarations: 17 source declarations, 17 environment
@@ -2661,7 +2661,7 @@ flowchart LR
   =sha256:3347b2291a3dfd51be9d81376ceb46813909bac2b24d425b38e7cb905c59da6d=;
   independent bundle digest:
   =sha256:16d365caf72be26d7b6ec6bfff7d73e8c42ae97eb336722ada669fc07a475d35=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -2768,9 +2768,9 @@ flowchart LR
 *** Registry content-transition Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
   8 jobs with no warning or error.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI rejected the
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected the
   single-source request with =axle-source-set-mismatch= and exit 2.  Its exact
   three-source envelope accepted all 11 theorem roots and 56 declarations: 28
   source declarations, 28 environment declarations, 0 proof-base
@@ -2783,7 +2783,7 @@ flowchart LR
   =sha256:8bf9f8feb0c503c06e91c306dca7f13b5a5775c2cb66d609dd0e702e6216eec8=;
   independent bundle digest:
   =sha256:3210b6e9fb3d105716aad3bd4fecabb816d0d5f8e0be38f6c61df89f3e4ab5da=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs, including the
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs, including the
   registry lineage, replica-join, and recovery downstream; =lake build= exited
   0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
@@ -2903,16 +2903,16 @@ flowchart LR
 *** Successor admission Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
   8 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs; =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs.  The first run propagated one unused-binder warning from the new
   counterexample; renaming that existential binder to =_transition= removed it,
   and the focused lineage rerun is warning-free.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI accepted the
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the
   parser-required three-source lineage envelope with 26 roots and 100
   declarations: 49 source and 49 environment declarations, no proof-base
   declaration, failed declaration, or Lean diagnostic.  Closure digest:
@@ -2939,7 +2939,7 @@ flowchart LR
   =sha256:c64f92df1e466bf73a6cdcaaf5ea0279706a85a155b6cf21f08d542b6078787b=,
   and
   =sha256:9a3ef05d42fa90e72af067b7a44139fe4793083c6759c3ddbda4107f6cd6760c=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs in 6.0 seconds;
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 6.0 seconds;
   =lake build= exited 0 for 587 jobs in 3.7 seconds.  Both reported only the
   existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
   warning and no error.
@@ -3052,10 +3052,10 @@ flowchart LR
 *** Content-aware recovery and join Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs with no warning or error.
 - The standard AXLE CLI rejected each single-source request with
   =axle-source-set-mismatch= and exit 2.  The exact four-source recovery envelope
@@ -3080,7 +3080,7 @@ flowchart LR
   =sha256:e854fea81822b6d0fd172dd84801f7e380f3b0a0a5749458b19d468b9f46c7df=;
   independent bundle digest:
   =sha256:3e25c0c53f59612d5d8a7881988da73374814934a3b63450352e47543465f207=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -3190,10 +3190,10 @@ flowchart LR
 *** N-way summary Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs with no warning or error.
 - AXLE accepted all 13 recovery roots and 76 declarations through the exact
   four-source envelope: 38 source declarations, 38 environment declarations, 0
@@ -3217,7 +3217,7 @@ flowchart LR
   =sha256:6943dc728ae75eb1ea8dc3bddc905b18bb6ec7b372ea4595bb98736133a8c708=;
   independent bundle digest:
   =sha256:ee9b0ecf20c5c28dc25d04ff295a32ab065953c35d5aa7fc51caef45582d7aae=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -3324,7 +3324,7 @@ flowchart LR
 *** Authority-provenance Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs with no warning or error.
 - The first standard AXLE invocation ended during owner-source extraction with
   =ContentLengthError= after receiving 605882 of 1445999 expected bytes; it did
@@ -3340,7 +3340,7 @@ flowchart LR
   =sha256:1bcc303a26206efea0e235879848f1ebef679134880cde175613c1b0d1a37032=;
   independent bundle digest:
   =sha256:9341d4eda8cca57c465086f3fe683eb0ee92461db24eb4beaa2c2bba4454945c=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -3449,13 +3449,13 @@ flowchart LR
 *** Interval admission Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs in 2.2 seconds with no warning or error after the counterexample
   addition.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI accepted the exact
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the exact
   four-source recovery envelope with 20 roots and 103 declarations: 52 source
   and 52 environment declarations, no proof-base declaration/import, failed
   declaration, or Lean diagnostic.  Closure digest:
@@ -3476,7 +3476,7 @@ flowchart LR
   =sha256:b342cd3e7e2406ee8892121c74f53a6ad12aa39c68fde16bfede678aac11361c=;
   independent bundle digest:
   =sha256:db9071f721e51f0742a878186bb687d37f8ea1040db4de1b5a5d798cf91264a7=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs in 2.8 seconds;
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 2.8 seconds;
   =lake build= exited 0 for 587 jobs in 1.8 seconds.  Both reported only the
   existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
   warning and no error.
@@ -3584,9 +3584,9 @@ flowchart LR
 *** Recovered-head floor Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs in 2.3 seconds with no warning or error.
-- The standard =uv run --extra axle poo-flow-axle-verify= CLI accepted the exact
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the exact
   five-source replica-join envelope with 45 roots and 164 declarations: 95
   source and 95 environment declarations, no proof-base declaration/import,
   failed declaration, or Lean diagnostic.  Closure digest:
@@ -3597,7 +3597,7 @@ flowchart LR
   =sha256:3b3c06db36db4700e534da0d1012e3a43dd7a4c610e8efce4b90781a530a423f=;
   independent bundle digest:
   =sha256:7121ce67b4b2d7a08233eacfd5fba8ab3c02edbf072c46eff68d9611f4cd1e5f=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs in 7.8 seconds;
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 7.8 seconds;
   =lake build= exited 0 for 587 jobs in 6.2 seconds.  Both reported only the
   existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
   warning and no error.
@@ -3711,10 +3711,10 @@ flowchart LR
 *** Temporal rotation Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs in 0.771 seconds with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs in 1.5 seconds with no warning or error.
 - AXLE, aggregate Lean, Orgize, and diff receipts are pending this tranche's
   final gates.
@@ -3811,10 +3811,10 @@ flowchart LR
 *** Recovery-authority claim Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs with no warning or error.
 - AXLE accepted all 18 recovery roots and 90 declarations through the exact
   recovery source envelope: 44 source declarations, 44 environment
@@ -3838,7 +3838,7 @@ flowchart LR
   =sha256:3eba58127e7d95cf3740da8d34ec091c068420dc72b85f425801acdbf3bb7ca3=;
   independent bundle digest:
   =sha256:2585ca0e6835bb69b2d699309fc7dd1c5f71a5c26b6a766a02065186ef6a5e38=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -3938,13 +3938,13 @@ flowchart LR
 *** Retirement issuance Lean receipt
 
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
   8 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
   9 jobs with no warning or error.
 - =lake build
-  PooFlowProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
   for 10 jobs with no warning or error.
 - AXLE accepted all 17 lineage roots and 73 declarations: 36 source
   declarations, 36 environment declarations, 0 proof-base
@@ -3979,7 +3979,7 @@ flowchart LR
   =sha256:ea0b87d999cd4f37d1e8478ed85cedcd41d587dfc1d2a3c6d06e91530c169bf6=;
   independent bundle digest:
   =sha256:12fe39b0c6581a2ba5518fedd5868cbfa832c8031ccf5ddee2a5db1819586195=.
-- =lake build PooFlowProof.Enterprise= exited 0 for 515 jobs and =lake
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
   build= exited 0 for 587 jobs.  Both reported only the existing
   =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
 - =asp org lint= accepted this RFC with =[ok] orgize lint=.
@@ -4081,10 +4081,10 @@ flowchart LR
 *** Full-registry Lean and AXLE receipt
 
 - Pure registry-join model:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarLifecycleRegistryJoinModel=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleRegistryJoinModel=
   returned exit =0= for =2= jobs with zero warnings.
 - Real full lifecycle registry join:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarFullLifecycleRegistryJoinClosure=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarFullLifecycleRegistryJoinClosure=
   returned exit =0= for =402= jobs with zero warnings.
 - AXLE verified all four public roots in
   =UseCompositionCedarLifecycleRegistryJoinModel.lean=: =43= declarations,
@@ -4208,10 +4208,10 @@ flowchart LR
 *** Lifecycle join Lean and AXLE receipt
 
 - Pure lifecycle-join model:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarLifecycleJoinModel=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleJoinModel=
   returned exit =0= for =2= jobs with zero warnings.
 - Real lifecycle join:
-  =cd packages/proofs/lean && lake build PooFlowProof.Enterprise.UseCompositionCedarLifecycleJoinClosure=
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleJoinClosure=
   returned exit =0= for =120= jobs with zero warnings.
 - AXLE verified all seven public roots in
   =UseCompositionCedarLifecycleJoinModel.lean=: =55= declarations, =16=

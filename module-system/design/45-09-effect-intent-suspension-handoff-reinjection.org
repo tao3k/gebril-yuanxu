@@ -20,12 +20,12 @@ It does not define a second effect evidence state machine.  Commit, failure,
 cancellation, indeterminacy, and reconciliation remain owned by
 [[file:45-08-effect-boundary-commit-reconciliation.org][Effect Boundary Commit And Reconciliation]].
 
-* Ownership boundary: gerbil-poo mechanism and POO Flow governance
+* Ownership boundary: gerbil-poo mechanism and Agentic AI Lab governance
 
 =gerbil-poo= owns POO identity, prototype composition, lazy demand realization,
 generic suspension, memoization, lineage, and continuation-aware control.
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - the POO-native effect-intent semantic contract;
 - capability and policy qualification before handoff;
@@ -173,7 +173,7 @@ automatic retry.
 
 * Receipt validation and reinjection
 
-A terminal provider response does not directly mutate the POO object.  POO Flow
+A terminal provider response does not directly mutate the POO object.  Agentic AI Lab
 first validates the receipt against:
 
 - the suspended context and demand coordinate;
@@ -225,7 +225,7 @@ prototype cycle.  The diagnosis records separately:
 - the authority capable of producing progress.
 
 If the provider waits on a descendant demand that ultimately waits on the same
-suspended effect boundary, POO Flow reports structured cross-boundary deadlock
+suspended effect boundary, Agentic AI Lab reports structured cross-boundary deadlock
 evidence.  Diagnosis does not force the effect or resume the continuation.
 
 * Observability contract

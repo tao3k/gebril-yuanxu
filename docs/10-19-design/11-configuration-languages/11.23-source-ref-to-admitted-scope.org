@@ -152,9 +152,9 @@ Schema or mutate a registry. Runtime linking consumes the normalized publication
 yuanxu-load-modules is the single facade over these phases, not permission to
 collapse them into macro-time I/O.
 
-Do not treat the existing poo-flow-module constructor as a Type value. A type slot
+Do not treat the existing agentic-ai-lab-module constructor as a Type value. A type slot
 would need an actual admitted Type/Contract and a defined consumer; spelling
-/type: poo-flow-module/ does not provide that. ModulePublicationContract below
+/type: agentic-ai-lab-module/ does not provide that. ModulePublicationContract below
 checks the proposed normalized publication. Existing SemanticModuleContract has a
 different shape and cannot silently substitute for it.
 

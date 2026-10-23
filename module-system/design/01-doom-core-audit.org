@@ -11,15 +11,15 @@ Primary references:
 - [[https://docs.doomemacs.org/latest/][Doom Emacs documentation]]
 
 This audit treats Doom as a user-interface and operations reference. It does
-not treat Doom as an implementation source for =poo-flow=.
+not treat Doom as an implementation source for =agentic-ai-lab=.
 
 ** 10.06.01.20 Useful Ideas To Borrow
 *** Modular Organization
 Doom presents modules as opt-in units that bundle packages, configuration, and
-commands. The useful idea for =poo-flow= is not the exact directory layout; it
+commands. The useful idea for =agentic-ai-lab= is not the exact directory layout; it
 is the user-facing promise that a module is one named unit with clear effects.
 
-For =poo-flow=, a module should mean:
+For =agentic-ai-lab=, a module should mean:
 - a named Gerbil POO descriptor bundle;
 - explicit imports;
 - task-family descriptors;
@@ -30,7 +30,7 @@ For =poo-flow=, a module should mean:
 Doom emphasizes commands such as =doom sync= and =doom doctor=. The useful
 lesson is that module systems need an operations surface, not only a loader.
 
-For =poo-flow=, the equivalent should eventually be:
+For =agentic-ai-lab=, the equivalent should eventually be:
 - list activated modules;
 - explain which descriptors each module contributes;
 - report missing imports;
@@ -38,10 +38,10 @@ For =poo-flow=, the equivalent should eventually be:
 - show which config options came from modules.
 
 *** Declarative Package Management
-Doom's package layer is declarative and reproducible. =poo-flow= should borrow
+Doom's package layer is declarative and reproducible. =agentic-ai-lab= should borrow
 the reproducibility principle, not the Emacs package machinery.
 
-For =poo-flow=, module activation should stay data-first:
+For =agentic-ai-lab=, module activation should stay data-first:
 - module metadata is inspectable;
 - activation returns an object;
 - the object can lower into =run-config=;
@@ -51,7 +51,7 @@ For =poo-flow=, module activation should stay data-first:
 Doom's popup manager is a rule system for temporary windows. The useful pattern
 is a rule table with named policies, not the window-management details.
 
-For =poo-flow=, later user modules can expose rule-like descriptors for:
+For =agentic-ai-lab=, later user modules can expose rule-like descriptors for:
 - adapter routing;
 - output capture;
 - retry policy;
@@ -63,7 +63,7 @@ For =poo-flow=, later user modules can expose rule-like descriptors for:
 Doom uses many macros to make Emacs Lisp configuration concise. That is useful
 for expert users but risky as the first implementation layer.
 
-=poo-flow= should delay macro sugar until the plain descriptor model has:
+=agentic-ai-lab= should delay macro sugar until the plain descriptor model has:
 - activation tests;
 - failure diagnostics;
 - import validation;
@@ -71,17 +71,17 @@ for expert users but risky as the first implementation layer.
 - a stable data projection for agents.
 
 *** Hidden Runtime Effects
-Doom can mutate editor state as part of module loading. =poo-flow= should not
+Doom can mutate editor state as part of module loading. =agentic-ai-lab= should not
 do this during activation. Activation installs descriptor data only. Runtime
 effects belong to runner, strategy, and adapter modules.
 
 *** Direct Package Loading Semantics
-Doom modules load files and packages. =poo-flow= modules in this first slice do
+Doom modules load files and packages. =agentic-ai-lab= modules in this first slice do
 not load files. A future loader may discover module descriptors, but the core
 activation API should remain independent of filesystem discovery.
 
 ** 10.06.01.40 Design Consequence
-The first =poo-flow= module API is intentionally narrower than Doom:
+The first =agentic-ai-lab= module API is intentionally narrower than Doom:
 - no module filesystem scanner;
 - no macro DSL;
 - no dynamic package install;
@@ -100,10 +100,10 @@ The useful Doom interfaces observed in the checkout are:
 - depth ordering that can differ between init and config phases;
 - fast =modulep!= style predicates over cached module context.
 
-=poo-flow= absorbs these ideas as explicit descriptor data, not as hidden macro context:
+=agentic-ai-lab= absorbs these ideas as explicit descriptor data, not as hidden macro context:
 - =group= and =name= are descriptor slots;
 - =flags= and =features= are inspectable values;
 - =depth= drives phase-order projections;
 - =phase-files= records candidate entrypoint names without loading files;
 - =hooks= records runtime-owned payloads without running them;
-- =poo-module-active?= and =poo-flow-module-value-catalog-active?= replace Doom's implicit =modulep!= macro.
+- =poo-module-active?= and =agentic-ai-lab-module-value-catalog-active?= replace Doom's implicit =modulep!= macro.

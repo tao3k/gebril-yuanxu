@@ -77,7 +77,7 @@ Sweeper and PR Babysitter both fixed the same PR branch, producing two
 conflicting commits and roughly five times the expected token spend. The root
 cause was no =acting_on= collision check.
 
-* Implication For POO Flow
+* Implication For Agentic AI Lab
 We should keep the current =memory-policies= implementation as the state shape
 for each use case, then add a POO-native policy extension surface around it.
 The runtime core should not grow one bespoke function per policy family.

@@ -101,7 +101,7 @@ conversion are allowed only at a named receipt or runtime-projection boundary.
 
 The target P1 owner graph is concrete:
 
-- =objects-spec= owns =poo-flow-tool-spec=, its checked construction,
+- =objects-spec= owns =agentic-ai-lab-tool-spec=, its checked construction,
   predicates, accessors, and projection;
 - =objects-handoff= owns the handoff manifest and its runtime-boundary
   projection;

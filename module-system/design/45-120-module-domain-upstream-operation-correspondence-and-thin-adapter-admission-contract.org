@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Module-Domain Upstream Operation Correspondence and Native Foundation Admission Contract
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -37,7 +37,7 @@ This RFC owns:
   upstream =gerbil-poo= operations;
 - the distinction among source-visible candidates, public-export proof, and
   admitted use;
-- the minimum justification required for a thin POO Flow adapter;
+- the minimum justification required for a thin Agentic AI Lab adapter;
 - the rejection of duplicated upstream object, slot, prototype, composition,
   delegation, =super=, and precedence semantics.
 
@@ -188,7 +188,7 @@ algorithm.
 A thin adapter is justified only for a project-owned semantic mismatch:
 
 - naming a Module-domain responsibility;
-- projecting an upstream POO value into a generic POO Flow contract;
+- projecting an upstream POO value into a generic Agentic AI Lab contract;
 - attaching structured condition, provenance, or receipt information;
 - preserving phase boundaries required by a small hygienic macro;
 - handing an admitted semantic value to an explicit runtime boundary.
@@ -397,7 +397,7 @@ The project foundation must satisfy all of these boundaries:
 
 * References
 
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][RFC 45-98: upstream gerbil-poo operations and adapter boundary]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][RFC 45-98: upstream gerbil-poo operations and adapter boundary]]
 - [[file:45-99-module-domain-prototype-minimal-projection-and-derived-closure-contract.org][RFC 45-99: Module-domain prototype contract]]
 - [[file:45-110-recovery-observability-profile-projection-and-minimal-use-composition-surface.org][RFC 45-110: minimal composition surface]]
 - [[file:45-111-profile-ownership-naming-export-identity-and-composition-repository-boundaries.org][RFC 45-111: ownership and repository boundaries]]

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.31 Controlled Human Decision Source Replacement
 :PROPERTIES:
-:ID: poo-flow-context-controlled-human-source-change
+:ID: agentic-ai-lab-context-controlled-human-source-change
 :STATUS: module-protocol-local-joint-pass-remote-durable-open
 :DATE: 2026-10-15
 :END:

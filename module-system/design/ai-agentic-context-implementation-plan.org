@@ -15,7 +15,7 @@ and executable gates. Ownership migration is delivered at =22c4b24c=; new
 Session and Memory lifecycle contracts remain proposed. Their exact roles and
 transitions are specified in [[file:ai-agentic-context-session-memory-contracts.org][the protocol contract]].
 
-Implementation starts from POO Flow =2f7172b59fd088f687a3a8cfea143612c6cccc5f=.
+Implementation starts from Agentic AI Lab =2f7172b59fd088f687a3a8cfea143612c6cccc5f=.
 The existing Feature system supplies descriptor construction, dependency
 resolution, manifests and qualification. Session remains one independent Module
 at =modules/session/=. Context composes its native descriptor through Module
@@ -319,7 +319,7 @@ not close the complete scheduling system.
 
 * Joint Context, Temporal and lifecycle policy refinement
 
-[[file:context-temporal-lifecycle-policy-system-design.org][The POO Flow joint policy system design]] defines orthogonal lifecycle states,
+[[file:context-temporal-lifecycle-policy-system-design.org][The Agentic AI Lab joint policy system design]] defines orthogonal lifecycle states,
 explicit Temporal applicability and clock domains, admitted strategy composition,
 and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure native window
 policy and separates its local qualification from the prospective joint protocol

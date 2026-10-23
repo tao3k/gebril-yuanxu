@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: POO Profile-Only Fixed-Point and Recovery User Interface
-#+author: POO Flow
+#+author: Agentic AI Lab
 #+language: en
 
 * Status
@@ -12,7 +12,7 @@ Accepted.
 
 * Context
 
-POO Flow provides fixed-point progress evidence, recovery policy, continuable
+Agentic AI Lab provides fixed-point progress evidence, recovery policy, continuable
 resumption, capability-bounded coordination, receipt-backed idempotency, and
 observability projection.  Exposing each responsibility as another public
 configuration clause would create a large macro DSL and duplicate the semantic
@@ -54,7 +54,7 @@ flowchart LR
   Select["use-module"]
   Compose["compose profiles"]
   Bind["use-composition"]
-  Runtime["POO Flow evaluator and coordinator"]
+  Runtime["Agentic AI Lab evaluator and coordinator"]
   Doctor["Doctor / CLI projection"]
 
   Wendao -->|"exports an already Gerbil-visible Module binding"| Select

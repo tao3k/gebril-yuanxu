@@ -10,17 +10,17 @@
 This document records the typed proof surface for POO policy object composition
 in PooC4. It is not a work plan. The implementation lives in:
 
-- =packages/proofs/lean/PooFlowProof/PooC4/StartGate.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyComposition.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyBundle.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyStartContract.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyRefinement.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyProgression.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/PolicyTrace.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/ControlPlane.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/ReferenceBoundary.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/ReferenceAudit.lean=
-- =packages/proofs/lean/PooFlowProof/PooC4/SessionControlLink.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/StartGate.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyComposition.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyBundle.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyStartContract.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyRefinement.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyProgression.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/PolicyTrace.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/ControlPlane.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/ReferenceBoundary.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/ReferenceAudit.lean=
+- =packages/proofs/lean/AgenticAILabProof/PooC4/SessionControlLink.lean=
 
 The proof carrier is Lean code. JSON is not used as the proof manifest here.
 
@@ -51,16 +51,16 @@ policy object itself.
 * Lean Surface
 
 #+begin_src lean
-#check PooFlowProof.PooC4.StartFrame
-#check PooFlowProof.PooC4.canStart_iff_startFrame_and_policy
-#check PooFlowProof.PooC4.PolicyComposition.PolicyObject
-#check PooFlowProof.PooC4.PolicyComposition.PolicyObject.on
-#check PooFlowProof.PooC4.PolicyComposition.allOf_allows_iff
-#check PooFlowProof.PooC4.PolicyComposition.anyOf_denies_iff
-#check PooFlowProof.PooC4.PolicyComposition.override_when_overridden_iff
-#check PooFlowProof.PooC4.PolicyComposition.can_start_with_policy_object_iff_startFrame_and_policy
-#check PooFlowProof.PooC4.PolicyComposition.can_start_allOf_iff_startFrame_and_policies
-#check PooFlowProof.PooC4.PolicyComposition.can_start_override_iff_startFrame_and_policy_branch
+#check AgenticAILabProof.PooC4.StartFrame
+#check AgenticAILabProof.PooC4.canStart_iff_startFrame_and_policy
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyObject
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyObject.on
+#check AgenticAILabProof.PooC4.PolicyComposition.allOf_allows_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.anyOf_denies_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.override_when_overridden_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_with_policy_object_iff_startFrame_and_policy
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_allOf_iff_startFrame_and_policies
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_override_iff_startFrame_and_policy_branch
 #+end_src
 
 The =PolicyObject.on= projection is the formal reuse point: one common POO
@@ -93,13 +93,13 @@ $
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.PolicyBundle
-#check PooFlowProof.PooC4.PolicyComposition.PolicyBundle.requiresAt
-#check PooFlowProof.PooC4.PolicyComposition.PolicyBundle.requirementsPolicy
-#check PooFlowProof.PooC4.PolicyComposition.bundle_allOf_requirements_iff
-#check PooFlowProof.PooC4.PolicyComposition.overrideFacet_target_allows_iff
-#check PooFlowProof.PooC4.PolicyComposition.overrideFacet_preserves_other
-#check PooFlowProof.PooC4.PolicyComposition.can_start_with_bundle_iff_startFrame_and_facets
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyBundle
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyBundle.requiresAt
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyBundle.requirementsPolicy
+#check AgenticAILabProof.PooC4.PolicyComposition.bundle_allOf_requirements_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.overrideFacet_target_allows_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.overrideFacet_preserves_other
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_with_bundle_iff_startFrame_and_facets
 #+end_src
 
 This is the POO reuse layer: a parent bundle can provide the common policy
@@ -161,15 +161,15 @@ $
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.UiStrategyPlanStartContract
-#check PooFlowProof.PooC4.PolicyComposition.UiRuntimeManifestStartContract
-#check PooFlowProof.PooC4.PolicyComposition.UiBenchmarkStartContract
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_plan_start_contract_of_can_start
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_manifest_start_contract_of_can_start
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_start_contract_of_can_start
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_plan_blocks_without_selector_facet
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_manifest_blocks_without_memory_facet
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_blocks_without_fixture_facet
+#check AgenticAILabProof.PooC4.PolicyComposition.UiStrategyPlanStartContract
+#check AgenticAILabProof.PooC4.PolicyComposition.UiRuntimeManifestStartContract
+#check AgenticAILabProof.PooC4.PolicyComposition.UiBenchmarkStartContract
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_plan_start_contract_of_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_manifest_start_contract_of_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_start_contract_of_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_plan_blocks_without_selector_facet
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_manifest_blocks_without_memory_facet
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_blocks_without_fixture_facet
 #+end_src
 
 * Override Contracts
@@ -192,10 +192,10 @@ $
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.UiStrategySelectorOverrideContract
-#check PooFlowProof.PooC4.PolicyComposition.UiRuntimeSelectorOverrideContract
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_selector_override_contract_of_can_start
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_selector_override_contract_of_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.UiStrategySelectorOverrideContract
+#check AgenticAILabProof.PooC4.PolicyComposition.UiRuntimeSelectorOverrideContract
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_selector_override_contract_of_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_selector_override_contract_of_can_start
 #+end_src
 
 * Refinement
@@ -232,15 +232,15 @@ $
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.PolicyObject.refines
-#check PooFlowProof.PooC4.PolicyComposition.PolicyBundle.refines
-#check PooFlowProof.PooC4.PolicyComposition.can_start_policy_refines
-#check PooFlowProof.PooC4.PolicyComposition.can_start_bundle_refines
-#check PooFlowProof.PooC4.PolicyComposition.ui_can_start_bundle_refines
-#check PooFlowProof.PooC4.PolicyComposition.overrideFacet_refines_parent_when_local_refines_target
-#check PooFlowProof.PooC4.PolicyComposition.ui_selector_override_can_start_refines_parent
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_selector_override_parent_contract_of_safe_can_start
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_selector_override_parent_contract_of_safe_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyObject.refines
+#check AgenticAILabProof.PooC4.PolicyComposition.PolicyBundle.refines
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_policy_refines
+#check AgenticAILabProof.PooC4.PolicyComposition.can_start_bundle_refines
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_can_start_bundle_refines
+#check AgenticAILabProof.PooC4.PolicyComposition.overrideFacet_refines_parent_when_local_refines_target
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_selector_override_can_start_refines_parent
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_selector_override_parent_contract_of_safe_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_selector_override_parent_contract_of_safe_can_start
 #+end_src
 
 * State Progression
@@ -292,18 +292,18 @@ $
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.UiStateExtends
-#check PooFlowProof.PooC4.PolicyComposition.ui_state_extends_refl
-#check PooFlowProof.PooC4.PolicyComposition.ui_state_extends_trans
-#check PooFlowProof.PooC4.PolicyComposition.ui_completed_preserved
-#check PooFlowProof.PooC4.PolicyComposition.ui_precondition_preserved
-#check PooFlowProof.PooC4.PolicyComposition.ui_guard_preserved
-#check PooFlowProof.PooC4.PolicyComposition.UiFacetStableAt
-#check PooFlowProof.PooC4.PolicyComposition.ui_can_start_preserved_by_extension
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_contract_preserved_by_extension
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_contract_preserved_by_extension
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_contract_preserved_by_extension
-#check PooFlowProof.PooC4.PolicyComposition.ui_safe_selector_override_can_start_preserved_as_parent
+#check AgenticAILabProof.PooC4.PolicyComposition.UiStateExtends
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_state_extends_refl
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_state_extends_trans
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_completed_preserved
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_precondition_preserved
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_guard_preserved
+#check AgenticAILabProof.PooC4.PolicyComposition.UiFacetStableAt
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_can_start_preserved_by_extension
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_contract_preserved_by_extension
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_contract_preserved_by_extension
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_contract_preserved_by_extension
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_safe_selector_override_can_start_preserved_as_parent
 #+end_src
 
 * Completion Trace
@@ -352,16 +352,16 @@ Safe selector override also lifts across completion steps: an override step can
 be viewed as a parent step when the local selector refines the parent selector.
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.UiCompletionStep
-#check PooFlowProof.PooC4.PolicyComposition.ui_completion_step_records_completed
-#check PooFlowProof.PooC4.PolicyComposition.ui_completion_step_preserves_prior_completed
-#check PooFlowProof.PooC4.PolicyComposition.ui_completion_step_preserves_can_start
-#check PooFlowProof.PooC4.PolicyComposition.UiRuntimeReadyAfterStrategyStep
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_can_start_after_strategy_step
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_blocked_after_strategy_without_matrix
-#check PooFlowProof.PooC4.PolicyComposition.UiBenchmarkReadyAfterReportAndMatrix
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_can_start_when_report_matrix_and_fixture_ready
-#check PooFlowProof.PooC4.PolicyComposition.ui_safe_selector_override_step_preserved_as_parent_step
+#check AgenticAILabProof.PooC4.PolicyComposition.UiCompletionStep
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_completion_step_records_completed
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_completion_step_preserves_prior_completed
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_completion_step_preserves_can_start
+#check AgenticAILabProof.PooC4.PolicyComposition.UiRuntimeReadyAfterStrategyStep
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_can_start_after_strategy_step
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_blocked_after_strategy_without_matrix
+#check AgenticAILabProof.PooC4.PolicyComposition.UiBenchmarkReadyAfterReportAndMatrix
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_can_start_when_report_matrix_and_fixture_ready
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_safe_selector_override_step_preserved_as_parent_step
 #+end_src
 
 * Control Plane
@@ -392,21 +392,21 @@ denied tools, out-of-scope files, and subagent capability escalation cannot
 produce a valid trace.
 
 #+begin_src lean
-#check PooFlowProof.PooC4.ControlPlane.SandboxProfile
-#check PooFlowProof.PooC4.ControlPlane.SessionProfile
-#check PooFlowProof.PooC4.ControlPlane.AgentProfile
-#check PooFlowProof.PooC4.ControlPlane.SessionEvent
-#check PooFlowProof.PooC4.ControlPlane.SessionTrace
-#check PooFlowProof.PooC4.ControlPlane.tool_event_requires_sandbox_permission
-#check PooFlowProof.PooC4.ControlPlane.read_file_event_requires_sandbox_scope
-#check PooFlowProof.PooC4.ControlPlane.write_file_event_requires_sandbox_scope
-#check PooFlowProof.PooC4.ControlPlane.start_subagent_requires_capability_subset
-#check PooFlowProof.PooC4.ControlPlane.start_subagent_requires_sandbox_refinement
-#check PooFlowProof.PooC4.ControlPlane.session_trace_enforces_invariant
-#check PooFlowProof.PooC4.ControlPlane.denied_tool_event_cannot_trace
-#check PooFlowProof.PooC4.ControlPlane.out_of_scope_file_read_cannot_trace
-#check PooFlowProof.PooC4.ControlPlane.out_of_scope_file_write_cannot_trace
-#check PooFlowProof.PooC4.ControlPlane.subagent_capability_escalation_cannot_trace
+#check AgenticAILabProof.PooC4.ControlPlane.SandboxProfile
+#check AgenticAILabProof.PooC4.ControlPlane.SessionProfile
+#check AgenticAILabProof.PooC4.ControlPlane.AgentProfile
+#check AgenticAILabProof.PooC4.ControlPlane.SessionEvent
+#check AgenticAILabProof.PooC4.ControlPlane.SessionTrace
+#check AgenticAILabProof.PooC4.ControlPlane.tool_event_requires_sandbox_permission
+#check AgenticAILabProof.PooC4.ControlPlane.read_file_event_requires_sandbox_scope
+#check AgenticAILabProof.PooC4.ControlPlane.write_file_event_requires_sandbox_scope
+#check AgenticAILabProof.PooC4.ControlPlane.start_subagent_requires_capability_subset
+#check AgenticAILabProof.PooC4.ControlPlane.start_subagent_requires_sandbox_refinement
+#check AgenticAILabProof.PooC4.ControlPlane.session_trace_enforces_invariant
+#check AgenticAILabProof.PooC4.ControlPlane.denied_tool_event_cannot_trace
+#check AgenticAILabProof.PooC4.ControlPlane.out_of_scope_file_read_cannot_trace
+#check AgenticAILabProof.PooC4.ControlPlane.out_of_scope_file_write_cannot_trace
+#check AgenticAILabProof.PooC4.ControlPlane.subagent_capability_escalation_cannot_trace
 #+end_src
 
 The production-reference direction is to compare this control-plane proof
@@ -423,7 +423,7 @@ flow claim by itself.
 
 #+begin_src typst
 $
-"PooFlowOwnedFact"(C) & => C \
+"AgenticAILabOwnedFact"(C) & => C \
 "ReferenceObservation"("OpenRATH",C) & arrow.r.double.not C \
 "VerifiedFromReference"(r) & => "AdoptionCertificate"(r) \
 "AdoptionCertificate"(r) & => C
@@ -431,7 +431,7 @@ $
 #+end_src
 
 For control-plane traces, this means a production reference trace must be
-adopted by the POO flow proof boundary before it can discharge tool, file, or
+adopted by the Agentic AI Lab proof boundary before it can discharge tool, file, or
 subagent capability obligations.
 
 #+begin_src typst
@@ -447,26 +447,26 @@ $
 $
 #+end_src
 
-Negative reflection is explicit: if the POO flow sandbox denies the tool, file,
+Negative reflection is explicit: if the Agentic AI Lab sandbox denies the tool, file,
 or child capability, an OpenRATH reference cannot be adopted as a verified POO
 trace for that event.
 
 #+begin_src lean
-#check PooFlowProof.PooC4.ReferenceBoundary.ProductionReference
-#check PooFlowProof.PooC4.ReferenceBoundary.PooFlowOwnedFact
-#check PooFlowProof.PooC4.ReferenceBoundary.ReferenceObservation
-#check PooFlowProof.PooC4.ReferenceBoundary.AdoptionCertificate
-#check PooFlowProof.PooC4.ReferenceBoundary.VerifiedFromReference
-#check PooFlowProof.PooC4.ReferenceBoundary.reference_without_certificate_cannot_verify
-#check PooFlowProof.PooC4.ReferenceBoundary.openRATH_without_certificate_cannot_verify
-#check PooFlowProof.PooC4.ReferenceBoundary.ReferenceControlTrace
-#check PooFlowProof.PooC4.ReferenceBoundary.verified_reference_trace_is_poo_trace
-#check PooFlowProof.PooC4.ReferenceBoundary.verified_reference_tool_trace_requires_sandbox_permission
-#check PooFlowProof.PooC4.ReferenceBoundary.verified_reference_read_trace_requires_sandbox_scope
-#check PooFlowProof.PooC4.ReferenceBoundary.verified_reference_subagent_trace_requires_capability_subset
-#check PooFlowProof.PooC4.ReferenceBoundary.openRATH_reference_denied_tool_cannot_verify_trace
-#check PooFlowProof.PooC4.ReferenceBoundary.openRATH_reference_out_of_scope_read_cannot_verify_trace
-#check PooFlowProof.PooC4.ReferenceBoundary.openRATH_reference_subagent_escalation_cannot_verify_trace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.ProductionReference
+#check AgenticAILabProof.PooC4.ReferenceBoundary.AgenticAILabOwnedFact
+#check AgenticAILabProof.PooC4.ReferenceBoundary.ReferenceObservation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.AdoptionCertificate
+#check AgenticAILabProof.PooC4.ReferenceBoundary.VerifiedFromReference
+#check AgenticAILabProof.PooC4.ReferenceBoundary.reference_without_certificate_cannot_verify
+#check AgenticAILabProof.PooC4.ReferenceBoundary.openRATH_without_certificate_cannot_verify
+#check AgenticAILabProof.PooC4.ReferenceBoundary.ReferenceControlTrace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.verified_reference_trace_is_poo_trace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.verified_reference_tool_trace_requires_sandbox_permission
+#check AgenticAILabProof.PooC4.ReferenceBoundary.verified_reference_read_trace_requires_sandbox_scope
+#check AgenticAILabProof.PooC4.ReferenceBoundary.verified_reference_subagent_trace_requires_capability_subset
+#check AgenticAILabProof.PooC4.ReferenceBoundary.openRATH_reference_denied_tool_cannot_verify_trace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.openRATH_reference_out_of_scope_read_cannot_verify_trace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.openRATH_reference_subagent_escalation_cannot_verify_trace
 #+end_src
 
 * Reference Audit
@@ -475,7 +475,7 @@ Reference systems can create candidate obligations. They do not close the proof.
 $
 "CandidateObligation"(S,C) & = "ReferenceObservation"(S,C) \
 "ObligationDischarge"(o) & ::=
-  "PooFlowOwnedFact"(C) | "VerifiedFromReference"(o."reference") \
+  "AgenticAILabOwnedFact"(C) | "VerifiedFromReference"(o."reference") \
 "RejectionCertificate"(o) & => not "ObligationDischarge"(o) \
 "AuditResult"(o) & ::= "discharged"(o) | "rejected"(o)
 $
@@ -509,29 +509,29 @@ flowchart LR
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.ReferenceBoundary.CandidateObligation
-#check PooFlowProof.PooC4.ReferenceBoundary.ObligationDischarge
-#check PooFlowProof.PooC4.ReferenceBoundary.RejectionCertificate
-#check PooFlowProof.PooC4.ReferenceBoundary.AuditResult
-#check PooFlowProof.PooC4.ReferenceBoundary.obligation_discharge_claim_holds
-#check PooFlowProof.PooC4.ReferenceBoundary.obligation_cannot_discharge_without_owned_or_adoption
-#check PooFlowProof.PooC4.ReferenceBoundary.rejected_obligation_cannot_discharge
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_audit_result_claim_holds
-#check PooFlowProof.PooC4.ReferenceBoundary.ControlTraceObligation
-#check PooFlowProof.PooC4.ReferenceBoundary.controlTraceObligationOfReference
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_control_trace_obligation_is_trace
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_tool_obligation_requires_sandbox_permission
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_read_obligation_requires_sandbox_scope
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_write_obligation_requires_sandbox_scope
-#check PooFlowProof.PooC4.ReferenceBoundary.discharged_subagent_obligation_requires_capability_subset
-#check PooFlowProof.PooC4.ReferenceBoundary.denied_tool_obligation_cannot_discharge
-#check PooFlowProof.PooC4.ReferenceBoundary.out_of_scope_read_obligation_cannot_discharge
-#check PooFlowProof.PooC4.ReferenceBoundary.out_of_scope_write_obligation_cannot_discharge
-#check PooFlowProof.PooC4.ReferenceBoundary.subagent_escalation_obligation_cannot_discharge
-#check PooFlowProof.PooC4.ReferenceBoundary.rejectedDeniedToolObligation
-#check PooFlowProof.PooC4.ReferenceBoundary.rejectedOutOfScopeReadObligation
-#check PooFlowProof.PooC4.ReferenceBoundary.rejectedOutOfScopeWriteObligation
-#check PooFlowProof.PooC4.ReferenceBoundary.rejectedSubagentEscalationObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.CandidateObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.ObligationDischarge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.RejectionCertificate
+#check AgenticAILabProof.PooC4.ReferenceBoundary.AuditResult
+#check AgenticAILabProof.PooC4.ReferenceBoundary.obligation_discharge_claim_holds
+#check AgenticAILabProof.PooC4.ReferenceBoundary.obligation_cannot_discharge_without_owned_or_adoption
+#check AgenticAILabProof.PooC4.ReferenceBoundary.rejected_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_audit_result_claim_holds
+#check AgenticAILabProof.PooC4.ReferenceBoundary.ControlTraceObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.controlTraceObligationOfReference
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_control_trace_obligation_is_trace
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_tool_obligation_requires_sandbox_permission
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_read_obligation_requires_sandbox_scope
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_write_obligation_requires_sandbox_scope
+#check AgenticAILabProof.PooC4.ReferenceBoundary.discharged_subagent_obligation_requires_capability_subset
+#check AgenticAILabProof.PooC4.ReferenceBoundary.denied_tool_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.out_of_scope_read_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.out_of_scope_write_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.subagent_escalation_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.ReferenceBoundary.rejectedDeniedToolObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.rejectedOutOfScopeReadObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.rejectedOutOfScopeWriteObligation
+#check AgenticAILabProof.PooC4.ReferenceBoundary.rejectedSubagentEscalationObligation
 #+end_src
 
 * Session Control Link
@@ -580,25 +580,25 @@ flowchart LR
 #+end_src
 
 #+begin_src lean
-#check PooFlowProof.PooC4.SessionControlLink.SessionControlState
-#check PooFlowProof.PooC4.SessionControlLink.lifecycleSendAllowed
-#check PooFlowProof.PooC4.SessionControlLink.LifecycleTrace
-#check PooFlowProof.PooC4.SessionControlLink.base_control_plane_send_to_subagent_unconstrained
-#check PooFlowProof.PooC4.SessionControlLink.lifecycle_trace_refines_base_control_plane
-#check PooFlowProof.PooC4.SessionControlLink.lifecycle_send_requires_active_subagent
-#check PooFlowProof.PooC4.SessionControlLink.lifecycle_send_requires_channel_authorization
-#check PooFlowProof.PooC4.SessionControlLink.lifecycle_send_requires_policy
-#check PooFlowProof.PooC4.SessionControlLink.inactive_subagent_cannot_receive_lifecycle_message
-#check PooFlowProof.PooC4.SessionControlLink.unauthorized_channel_cannot_receive_lifecycle_message
-#check PooFlowProof.PooC4.SessionControlLink.policy_denied_subagent_cannot_receive_lifecycle_message
-#check PooFlowProof.PooC4.SessionControlLink.base_send_trace_does_not_discharge_lifecycle_send
-#check PooFlowProof.PooC4.SessionControlLink.LifecycleTraceObligation
-#check PooFlowProof.PooC4.SessionControlLink.discharged_lifecycle_send_obligation_requires_active_subagent
-#check PooFlowProof.PooC4.SessionControlLink.discharged_lifecycle_send_obligation_requires_channel_authorization
-#check PooFlowProof.PooC4.SessionControlLink.inactive_lifecycle_send_obligation_cannot_discharge
-#check PooFlowProof.PooC4.SessionControlLink.unauthorized_lifecycle_send_obligation_cannot_discharge
-#check PooFlowProof.PooC4.SessionControlLink.rejectedInactiveLifecycleSendObligation
-#check PooFlowProof.PooC4.SessionControlLink.rejectedUnauthorizedLifecycleSendObligation
+#check AgenticAILabProof.PooC4.SessionControlLink.SessionControlState
+#check AgenticAILabProof.PooC4.SessionControlLink.lifecycleSendAllowed
+#check AgenticAILabProof.PooC4.SessionControlLink.LifecycleTrace
+#check AgenticAILabProof.PooC4.SessionControlLink.base_control_plane_send_to_subagent_unconstrained
+#check AgenticAILabProof.PooC4.SessionControlLink.lifecycle_trace_refines_base_control_plane
+#check AgenticAILabProof.PooC4.SessionControlLink.lifecycle_send_requires_active_subagent
+#check AgenticAILabProof.PooC4.SessionControlLink.lifecycle_send_requires_channel_authorization
+#check AgenticAILabProof.PooC4.SessionControlLink.lifecycle_send_requires_policy
+#check AgenticAILabProof.PooC4.SessionControlLink.inactive_subagent_cannot_receive_lifecycle_message
+#check AgenticAILabProof.PooC4.SessionControlLink.unauthorized_channel_cannot_receive_lifecycle_message
+#check AgenticAILabProof.PooC4.SessionControlLink.policy_denied_subagent_cannot_receive_lifecycle_message
+#check AgenticAILabProof.PooC4.SessionControlLink.base_send_trace_does_not_discharge_lifecycle_send
+#check AgenticAILabProof.PooC4.SessionControlLink.LifecycleTraceObligation
+#check AgenticAILabProof.PooC4.SessionControlLink.discharged_lifecycle_send_obligation_requires_active_subagent
+#check AgenticAILabProof.PooC4.SessionControlLink.discharged_lifecycle_send_obligation_requires_channel_authorization
+#check AgenticAILabProof.PooC4.SessionControlLink.inactive_lifecycle_send_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.SessionControlLink.unauthorized_lifecycle_send_obligation_cannot_discharge
+#check AgenticAILabProof.PooC4.SessionControlLink.rejectedInactiveLifecycleSendObligation
+#check AgenticAILabProof.PooC4.SessionControlLink.rejectedUnauthorizedLifecycleSendObligation
 #+end_src
 
 * User Interface Case
@@ -607,18 +607,18 @@ The UI case now has a typed bridge from =uiPolicyAllows= into a reusable POO
 policy object:
 
 #+begin_src lean
-#check PooFlowProof.PooC4.PolicyComposition.uiPolicyObject
-#check PooFlowProof.PooC4.PolicyComposition.ui_can_start_with_policy_object_iff_startFrame_and_policy
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_policy_object_start_iff
-#check PooFlowProof.PooC4.PolicyComposition.ui_allOf_policy_can_start_requires_extra_policy
-#check PooFlowProof.PooC4.PolicyComposition.ui_override_policy_local_denial_blocks_start
-#check PooFlowProof.PooC4.PolicyComposition.UiPolicyFacet
-#check PooFlowProof.PooC4.PolicyComposition.uiBundleSpec
-#check PooFlowProof.PooC4.PolicyComposition.ui_strategy_plan_bundle_requires_facets
-#check PooFlowProof.PooC4.PolicyComposition.ui_runtime_manifest_bundle_requires_facets
-#check PooFlowProof.PooC4.PolicyComposition.ui_benchmark_bundle_requires_performance_fixture
-#check PooFlowProof.PooC4.PolicyComposition.ui_override_selector_local_denial_blocks_strategy
-#check PooFlowProof.PooC4.PolicyComposition.ui_override_selector_preserves_runtime_memory_requirement
+#check AgenticAILabProof.PooC4.PolicyComposition.uiPolicyObject
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_can_start_with_policy_object_iff_startFrame_and_policy
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_policy_object_start_iff
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_allOf_policy_can_start_requires_extra_policy
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_override_policy_local_denial_blocks_start
+#check AgenticAILabProof.PooC4.PolicyComposition.UiPolicyFacet
+#check AgenticAILabProof.PooC4.PolicyComposition.uiBundleSpec
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_strategy_plan_bundle_requires_facets
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_runtime_manifest_bundle_requires_facets
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_benchmark_bundle_requires_performance_fixture
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_override_selector_local_denial_blocks_strategy
+#check AgenticAILabProof.PooC4.PolicyComposition.ui_override_selector_preserves_runtime_memory_requirement
 #+end_src
 
 For =scenarioBenchmark=, the proof now states that startup requires both the
@@ -672,7 +672,7 @@ that field. Lean can therefore prove that changing =branchSibling= does not
 change startup eligibility:
 
 #+begin_src lean
-#check PooFlowProof.PooC4.can_start_ignores_branch_sibling
+#check AgenticAILabProof.PooC4.can_start_ignores_branch_sibling
 #+end_src
 
 This is a real semantic finding. If branch exclusion is expected to constrain

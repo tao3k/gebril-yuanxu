@@ -9,7 +9,7 @@ prebuilt provider is one immutable identity tuple: install digest
 =ee5a236818e1b8fd9cc6e886b510795495e95402e790892961e6a1059a5c3208=,
 archive SHA-256
 =741d67f1d1a37e057181bfe8b3348ce2a9cfce06ac3b9c4e914400978f9d5fe7=,
-and the digest-suffixed release asset URL.  POO Flow declares that tuple once
+and the digest-suffixed release asset URL.  Agentic AI Lab declares that tuple once
 in =MODULE.bazel= and passes the values through =gerbil.auto=; a commit-only
 pin change is not a valid provider update.
 
@@ -24,7 +24,7 @@ and never enter the refresh chain.
 #+begin_src mermaid
 flowchart LR
   Merge["Historical gerbil-bazel squash merge 7c5f595"] --> Tuple["Install digest + archive SHA-256 + immutable URL"]
-  Tuple --> Module["POO Flow MODULE.bazel"]
+  Tuple --> Module["Agentic AI Lab MODULE.bazel"]
   Module --> Seed["Manual Linux lock seed"]
   Seed --> Darwin["Darwin evaluation merge"]
   Darwin --> Verify["Linux fail-closed verification"]
@@ -53,7 +53,7 @@ then obtained without weakening the guard:
 | Gate | Authoritative receipt |
 |------+-----------------------|
 | Cross-platform lock run | GitHub Actions =29767719602=: Linux seed 29 s; Darwin merge 31 s; Linux merged verification 15 s; lock SHA-256 =6331a93aeb3aaee6ea3de08e764adcde19d8ab1e8c3ecaa875465f30c974e25b= |
-| Final POO Flow head | =87fad150b3d671a30e26d09f987fd99ff90caf55= |
+| Final Agentic AI Lab head | =87fad150b3d671a30e26d09f987fd99ff90caf55= |
 | Linux native job | =10m14s=; all dependency, Scheme, receipt, runtime-C, Bundle, and producer-handoff gates passed |
 | Linux Scheme phase | 237 s; receipt =status=ok= and =durationSeconds=233=; workers 4; runnable count 1; peak RSS 3,091,714,048 bytes; 3 compiled stages, 0 skipped |
 | macOS native job | =1m49s=; all applicable gates passed |

@@ -86,9 +86,9 @@ runtime capabilities visible as mathematical facts, not only test failures.
 
 * Current Generated Modules
 
-- =PooFlowProof.Generated.ScenarioGapRuntimeRow= is the positive accepted-row
+- =AgenticAILabProof.Generated.ScenarioGapRuntimeRow= is the positive accepted-row
   artifact.
-- =PooFlowProof.Generated.ScenarioGapRuntimeRowRejections= is the negative
+- =AgenticAILabProof.Generated.ScenarioGapRuntimeRowRejections= is the negative
   rejected-row artifact covering missing accepted kind, wrong plan, and non-empty
   rejection cases.
 
@@ -100,7 +100,7 @@ The facts are FFI-ready data that a proof bridge can translate into the Lean
 side:
 
 #+begin_src scheme
-(poo-flow-scenario-gap-runtime-contract->proof-facts
+(agentic-ai-lab-scenario-gap-runtime-contract->proof-facts
  'generated-scenario-gap-missing-kind-runtime-row
  #t
  #t

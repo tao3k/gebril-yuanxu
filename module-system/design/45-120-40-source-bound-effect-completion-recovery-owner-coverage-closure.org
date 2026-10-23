@@ -10,7 +10,7 @@
 - RFC state: proof model and actual Lean closure implemented and independently
   qualified.
 - Language: English only.
-- Scope: enterprise recovery proof under =PooFlowProof.Enterprise=.
+- Scope: enterprise recovery proof under =AgenticAILabProof.Enterprise=.
 - Previous recovery proof:
   [[file:45-120-34-source-bound-effect-completion-recovery-scheduling-deferral-owner-closure.org][45-120-34 scheduling deferral owner closure]].
 - This RFC defines one proof meaning.  It does not add a runtime API, wire
@@ -272,7 +272,7 @@ Actual closure:
 * Verification receipt
 
 - Focused Lean module: 137 jobs passed.
-- Lean declaration closure: schema =poo-flow.lean-declaration-closure.v1=, 31 declarations, one owner module.
+- Lean declaration closure: schema =agentic-ai-lab.lean-declaration-closure.v1=, 31 declarations, one owner module.
 - Local Python verification: two deadline tests passed; safe local suite passed 70 tests with eight external gates deselected.
 - Whitespace validation: tracked diff and all four new owner-coverage artifacts passed =git diff --check=.
 - Bounded AXLE execution: owner-source extraction was cancelled at 39,999 ms and rejected with =axle-operation-deadline-exceeded=.

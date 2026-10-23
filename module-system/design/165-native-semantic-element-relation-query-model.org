@@ -8,7 +8,7 @@
 
 * Decision
 
-POO Flow has one semantic model across Scheme, Lean and Quint.  Native POO
+Agentic AI Lab has one semantic model across Scheme, Lean and Quint.  Native POO
 Objects carry slots and inheritance.  Entity and Element are roles of those
 Objects, not alternate representations.  Relations reference their stable
 identities.  Queries are bounded read-only POO values.  The current graph-read
@@ -70,7 +70,7 @@ Raw GQL strings, query alists and anonymous evaluator lambdas are not Query
 objects.  The core pure projector deterministically renders the admitted AST;
 a named Provider may execute the resulting GQL source.  The syntax prototypes,
 structural validator and pure source projector are owned together by the
-declared =gerbil-parser= revision.  POO Flow extends the parser-owned Program
+declared =gerbil-parser= revision.  Agentic AI Lab extends the parser-owned Program
 prototype only with governance metadata and admission; it does not copy the
 GQL syntax graph or renderer.
 
@@ -133,18 +133,18 @@ flowchart LR
 
 Gerbil-parser owns the POO-native GQL syntax graph and pure projection, then
 proves source parsing, syntax contract and byte-exact roundtrip.
-The GQL runtime proves only its execution receipt.  POO Flow admits that
+The GQL runtime proves only its execution receipt.  Agentic AI Lab admits that
 receipt against the original Query and Contract identities.  Graph witnesses
 do not by themselves prove causality, temporal safety, authorization or
 completeness.
 
 The executable boundary is =modules/query/contracts.ss=.  Runtime output
-first enters Scheme as a typed =PooFlowQueryExecutionCandidate=; it is not yet
+first enters Scheme as a typed =AgenticAILabQueryExecutionCandidate=; it is not yet
 admitted evidence.  The =QueryReceiptBindingExecutor x Provider x Query=
 crossing uses the POO CLOS generic and an MRR-owned method bundle.  Binding
 checks the prior Query admission, Provider and parser identities, semantic
 revision, byte-derived GQL source identity, result bounds, completeness and
-required evidence before producing =PooFlowSourceQueryReceipt=.  Neither the
+required evidence before producing =AgenticAILabSourceQueryReceipt=.  Neither the
 candidate nor the admitted receipt carries mutation or action authority, and
 the binding path never starts MRR or another runtime.
 

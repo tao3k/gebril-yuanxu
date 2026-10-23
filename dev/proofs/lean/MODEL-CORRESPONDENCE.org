@@ -125,7 +125,7 @@ build roots, so their public imports no longer depend on a source-load fallback.
 
 * Local validation, 2026-10-18
 
-The checked working trees are POO Flow =a74fc2fd= on
+The checked working trees are Agentic AI Lab =a74fc2fd= on
 =research/ascent-poo-flow= and Core =80e2e74= on
 =refactor/module-feature-ownership=, including their uncommitted changes.
 These are local receipts, not remote CI results.
@@ -134,7 +134,7 @@ These are local receipts, not remote CI results.
 |------+--------|
 | Model inventory | All 54 files explicitly imported and mapped above |
 | Core Lean, Lean 4.34.0 / LeanPoo =6e6a706e14fa6f8199e4f36711440355b42ef335= | 149 jobs; 4185 declarations; standard axioms only; no arbitrary Prop fields |
-| Product Lean | =lake build PooFlowProof=; 455 jobs |
+| Product Lean | =lake build AgenticAILabProof=; 455 jobs |
 | Shape negative control | Arbitrary Prop shell rejected with the expected diagnostic |
 | Core package | Native =gxpkg build github.com/tao3k/gebril-yuanxu=; natural exit 0 |
 | Root package | Native =gerbil build=; 269 targets; natural exit 0 |

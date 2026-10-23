@@ -29,7 +29,7 @@ No module production code, Loader or dependency pins were changed.
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/draft-incomplete.log][Initial probe draft syntax failure]] | Incomplete form; corrected before successful qualification |
 
 The program uses /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc,
-and direct isolated source import from /tmp/pooflow-pipeline-receiver-pin.
+and direct isolated source import from /tmp/agenticailab-pipeline-receiver-pin.
 object.ss and support/base.ss SHA-256 match the historical pinned-source receipt
 in [[file:../164-pipeline-receiver-cache-validation.org][receiver/cache validation]]. The package pin in gerbil.pkg is
 099b381588360a8a49fd772f666a1a00351366f5. Module 18's earlier source audit used
@@ -167,7 +167,7 @@ After preparing and verifying the pinned files as described in the historical
 receiver/cache document, run the archived probe directly:
 
 #+begin_src sh
-GERBIL_LOADPATH=/tmp/pooflow-pipeline-receiver-pin /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/19-native-parent-validation/probe.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/19-native-parent-validation/probe.ss
 #+end_src
 
 Lean source checks used ELAN_TOOLCHAIN=leanprover/lean4:v4.34.0 and LEAN_PATH set

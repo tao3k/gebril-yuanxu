@@ -11,7 +11,7 @@ The architecture in this RFC is accepted.
 
 This acceptance freezes ownership boundaries.  It does not turn any
 source checkout into a Gerbil package, admit a registry, or assign child
-build, test, or distribution ownership to POO Flow.
+build, test, or distribution ownership to Agentic AI Lab.
 
 * Scope
 
@@ -191,16 +191,16 @@ It does not:
 A missing or phase-invalid binding produces the structured,
 source-mapped expansion diagnostic defined by the macro evidence RFC.
 
-* wendao-episteme and poo-flow ownership
+* wendao-episteme and agentic-ai-lab ownership
 
 =wendao-episteme= owns its domain Module identity, profiles, Contracts,
 exports, source integration instructions, tests, and publication
 choices.
 
-=yuanxu= owns generic POO Flow Module, composition, authority,
+=yuanxu= owns generic Agentic AI Lab Module, composition, authority,
 observability, and runtime boundary contracts.
 
-The POO Flow parent may pin source and consume the generic core
+The Agentic AI Lab parent may pin source and consume the generic core
 interface.  It does not become the owner of
 =wendao-episteme= build, test, integration, distribution, or release
 policy.

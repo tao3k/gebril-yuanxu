@@ -104,7 +104,7 @@ flowchart LR
 - [X] Compensation preserves the original committed-history fact.
 - [X] An atomicity claim requires a whole-group runtime guarantee.
 - [X] Lean witness:
-  =PooFlowProof.PooC4.EffectDagAtomicity=.
+  =AgenticAILabProof.PooC4.EffectDagAtomicity=.
 - [ ] A later implementation-refinement proof must bind the POO effect plan,
   observed predecessor receipts, conflict scopes, runtime scheduler, and
   compensation receipts to this abstract model.
@@ -240,7 +240,7 @@ fails closed with cycle and budget evidence.
 
 * Atomicity boundary
 
-POO Flow reports atomic commit only when:
+Agentic AI Lab reports atomic commit only when:
 
 - one adapter exposes an explicit transaction protocol;
 - every included effect belongs to the adapter's transaction scope;

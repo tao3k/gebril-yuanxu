@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the common POO Flow semantics for:
+This module owns the common Agentic AI Lab semantics for:
 
 - an in-process POO-native receipt object;
 - canonical causal projection across runtime boundaries;
@@ -24,7 +24,7 @@ evidence closure, or a new package/dependency declaration language.
 object identity, prototype composition, slots, refinement, and generic
 continuation-aware realization.
 
-POO Flow owns receipt semantics, causal identity, projection gates, verifier
+Agentic AI Lab owns receipt semantics, causal identity, projection gates, verifier
 relationships, and condition behavior.
 
 The runtime or Marlin boundary owns the concrete transport of a canonical
@@ -166,7 +166,7 @@ requires order.
 
 The DAG need contain only predecessors selected for the current artifact or
 verification frontier.  A receipt identity can reference evidence stored
-elsewhere.  POO Flow does not require a globally materialized closure.
+elsewhere.  Agentic AI Lab does not require a globally materialized closure.
 
 * Immutability, correction, and contradiction
 
@@ -260,7 +260,7 @@ This does not:
 
 - project a new dependency declaration;
 - replace or extend =gerbil.pkg=;
-- make package resolution a POO Flow receipt service;
+- make package resolution a Agentic AI Lab receipt service;
 - turn Bazel, Nix, GSLPH, or a build tool into runtime semantic authority.
 
 The package manager remains Gerbil's package manager.  The receipt only records
@@ -268,7 +268,7 @@ already resolved evidence needed by its owning qualification contract.
 
 * Storage and retention boundary
 
-POO Flow defines no mandatory global receipt database, registry, or retention
+Agentic AI Lab defines no mandatory global receipt database, registry, or retention
 period.
 
 External policy decides:
@@ -309,7 +309,7 @@ helpers, canonical encoding, digest algorithm, verifier ABI, and C runtime
 representation remain =semantic-required= until they are symbol-located,
 behavior-proven, and flow-qualified.
 
-POO Flow MUST extend =gerbil-poo= when a generally reusable POO receipt
+Agentic AI Lab MUST extend =gerbil-poo= when a generally reusable POO receipt
 mechanism is missing.  It MUST NOT ship a shadow POO runtime or make a raw
 serialized record the ordinary Scheme interface.
 

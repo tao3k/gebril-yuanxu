@@ -278,7 +278,7 @@ returns.  Constructors bind a distinct lexical identifier such as
 
 This applies to both colon and parenthesized POO clauses.  The killed =gxtest=
 root cause was =(project-id project-id)= in
-=poo-flow-session-registry-receipt=.  Object construction remained lazy and
+=agentic-ai-lab-session-registry-receipt=.  Object construction remained lazy and
 appeared to succeed; the first =.ref project-id= during session graph
 serialization recursively dispatched the same slot until Gambit failed in
 =hash-ensure-ref= or =make-vector=.  The constructor now captures every input
@@ -463,7 +463,7 @@ POO slot and inheritance trace projection belongs to the pinned
 =gerbil-poo/debug.ss= for native POO trace projection rather than
 implementing a parallel object tracer.
 
-POO Flow owns the domain semantics above that projection:
+Agentic AI Lab owns the domain semantics above that projection:
 
 - immutable semantic observation events derived from evaluation
   generations;

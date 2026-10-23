@@ -53,7 +53,7 @@ does not introduce a separate Memory Query engine.
 
 This RFC pauses implementation and defines the architecture we should agree on
 before adding more Scheme code. The target is not "copy Codex" or "copy
-OpenRath". The target is a POO Flow design that uses their good evidence while
+OpenRath". The target is a Agentic AI Lab design that uses their good evidence while
 correcting their weak spots for a stronger agent-flow system.
 
 ** 10.06.43.20 Evidence
@@ -65,7 +65,7 @@ OpenRath's useful idea is session-first composition:
 - Parent and child agent history is represented as lineage, not as anonymous
   hidden message arrays.
 
-The useful part for POO Flow is not OpenRath's Python API. The useful part is
+The useful part for Agentic AI Lab is not OpenRath's Python API. The useful part is
 the shape:
 #+begin_src text
 Session -> Agent/Workflow -> Session
@@ -77,7 +77,7 @@ POO object with C4 inheritance and native extension.
 
 OpenRath's weak point is that it does not go far enough on policy. A child
 agent can be session-addressable, but the authorization surface needs to be
-more precise than "the process has a tool". POO Flow should treat session ids
+more precise than "the process has a tool". Agentic AI Lab should treat session ids
 as policy anchors.
 
 *** 10.06.43.20.20 Codex Evidence
@@ -110,7 +110,7 @@ agent systems need a fact log, derived indexes, resumable jobs, and explicit
 recovery policy.
 
 ** 10.06.43.30 Design Thesis
-POO Flow should treat durable recovery as a shared checkpoint capability, not
+Agentic AI Lab should treat durable recovery as a shared checkpoint capability, not
 as a standalone user-facing recovery object.
 
 The user-facing object is a =durable-policy= or =checkpoint-policy=. Session,
@@ -118,7 +118,7 @@ memory, loop, and workflow policies can inherit or reference it. Recovery is the
 runtime procedure that consumes durable facts, checkpoints, journals, and
 derived indexes.
 
-POO Flow should split this durable capability into three layers.
+Agentic AI Lab should split this durable capability into three layers.
 
 1. User authoring layer:
    Native POO objects declare session, memory, lineage, durable checkpoint,
@@ -222,7 +222,7 @@ Parent/child and peer routing rules:
 - write-back to parent is a receipt/message, not direct parent mutation.
 
 ** 10.06.43.60 Persistence Model
-POO Flow should adopt Codex's layered persistence shape, but as a policy and
+Agentic AI Lab should adopt Codex's layered persistence shape, but as a policy and
 handoff architecture.
 
 Proposed durable layers:

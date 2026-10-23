@@ -16,7 +16,7 @@ The POO controller stores:
 - named =.observe-run!= and =.next-state= methods.
 
 The initial window size is the worker count.  The caller supplies the hard RSS
-cap.  =POO_FLOW_BUILD_RSS_HEADROOM_BYTES= is optional and nonnegative; its
+cap.  =AGENTIC_AI_LAB_BUILD_RSS_HEADROOM_BYTES= is optional and nonnegative; its
 default is exactly 0.  There is no percentage-derived default and no fixed
 global spec cap.
 

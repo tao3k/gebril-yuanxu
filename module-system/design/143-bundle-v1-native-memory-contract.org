@@ -8,7 +8,7 @@
 
 * 结论
 
-Bundle v1 是 POO Flow 控制面向 runtime handoff 的正式 native memory
+Bundle v1 是 Agentic AI Lab 控制面向 runtime handoff 的正式 native memory
 contract。它不是 JSON schema，也不是把旧 =runtime_v0= 改名后的兼容层。
 
 本 RFC 固定以下边界：
@@ -174,8 +174,8 @@ Python 继续是生产级 runtime adapter 验证，不是第二个 runtime owner
 - missing key 返回稳定 status；
 - 全路径不使用 =ctypes=，也不编码/解析 JSON。
 
-现有 runtime-v0 wheel 仍把 =POO_FLOW_RUNTIME_V0_LIBRARY=、
-=_runtime_v0_cffi= 和 =libpoo_flow_runtime_v0= 固化在安装面。Runtime v1 迁移必须
+现有 runtime-v0 wheel 仍把 =AGENTIC_AI_LAB_RUNTIME_V0_LIBRARY=、
+=_runtime_v0_cffi= 和 =libagentic_ai_lab_runtime_v0= 固化在安装面。Runtime v1 迁移必须
 一次性重写并移除这些名字，不能保留 alias。
 
 * Fail-closed 条件
@@ -195,7 +195,7 @@ Python 继续是生产级 runtime adapter 验证，不是第二个 runtime owner
 
 Phase 3H 已落地：
 
-- =poo_flow/bundle_v1.h= 的正式 native layout；
+- =agentic_ai_lab/bundle_v1.h= 的正式 native layout；
 - descriptor validator；
 - =O(log n)= component lookup；
 - C harness、benchmark 与 Python CFFI validation；

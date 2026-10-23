@@ -4,11 +4,11 @@
 
 * 10.06.03 Gerbil Scheme C4 Foundation
 ** 10.06.03.10 Why Gerbil Scheme Matters
-=poo-flow= uses Gerbil Scheme because the control plane benefits from a Lisp where executable configuration, inspectable data, and object composition are available in the same language.
+=agentic-ai-lab= uses Gerbil Scheme because the control plane benefits from a Lisp where executable configuration, inspectable data, and object composition are available in the same language.
 
 This is not accidental. The module system should be designed around Gerbil POO rather than treating Scheme as a thin syntax layer over a Rust runtime.
 ** 10.06.03.20 C4 As A Core Design Tool
-The current =poo-flow= control plane uses native C4 role composition. Descriptors can inherit behavior from multiple roles without reimplementing linearization in local code.
+The current =agentic-ai-lab= control plane uses native C4 role composition. Descriptors can inherit behavior from multiple roles without reimplementing linearization in local code.
 
 The module system follows that rule:
 - =poo-module-role= extends the control-plane role family;
@@ -17,7 +17,7 @@ The module system follows that rule:
 
 =core/module-system/schema/interface.ss= exposes =yuanxu-module-object= as a Gerbil POO object with inherited objects passed as =supers:=. The =fields= slot is computed through gerbil-poo =superfun=, so object field resolution uses native POO/C4 precedence rather than a local recursive inheritance merge.
 ** 10.06.03.25 v0.19 Source Evidence
-=poo-flow= now targets Gerbil v0.19. The earlier staging checkout below is historical research; the active =gerbil-poo/object.ss= delegates =compute-precedence-list!= to =c4-linearize= in the installed v0.19 runtime.
+=agentic-ai-lab= now targets Gerbil v0.19. The earlier staging checkout below is historical research; the active =gerbil-poo/object.ss= delegates =compute-precedence-list!= to =c4-linearize= in the installed v0.19 runtime.
 
 The Gerbil upstream research checkout is local at:
 #+begin_src text
@@ -43,7 +43,7 @@ In =runtime/mop.ss=, class creation calls =compute-precedence-list=, which calls
               get-name: ##type-name)
 #+end_src
 
-That means Gerbil's v0.19 class MRO is not an ad hoc local merge. It is the runtime class precedence list used by the MOP and by current =poo-flow= through =gerbil-poo=.
+That means Gerbil's v0.19 class MRO is not an ad hoc local merge. It is the runtime class precedence list used by the MOP and by current =agentic-ai-lab= through =gerbil-poo=.
 ** 10.06.03.27 What C3 And C4 Mean Here
 C3 is an inheritance linearization algorithm. It turns a multiple-inheritance DAG into one deterministic precedence list while preserving:
 - local precedence order;
@@ -65,7 +65,7 @@ The legacy MRO algorithm produced:
 
 The test marks that as bad because =B A C= violates the intended precedence. The same test also checks that slot computation follows the C4/MRO order.
 ** 10.06.03.28 Impact On Flow Design
-POO/C4 helps =poo-flow= most where we compose behavior or metadata from multiple roles. It is the current v0.19 implementation, not a future compatibility target; it does not replace the workflow execution plan.
+POO/C4 helps =agentic-ai-lab= most where we compose behavior or metadata from multiple roles. It is the current v0.19 implementation, not a future compatibility target; it does not replace the workflow execution plan.
 
 Use POO/C4 now for:
 - role composition in POO descriptors;
@@ -89,7 +89,7 @@ Native Gerbil v0.19 C4 remains the sole precedence owner.
 Explicit DAG/topological planning for workflow execution, implemented outside this project.
 #+end_src
 
-Amendment: "outside this project" means heavy runtime execution and parallel scheduling, not all graph analysis. =poo-flow= may implement pure graph algorithms over composed POO facts for validation, diagnostics, dependency-cone explanations, cycle detection, and runtime handoff receipts.
+Amendment: "outside this project" means heavy runtime execution and parallel scheduling, not all graph analysis. =agentic-ai-lab= may implement pure graph algorithms over composed POO facts for validation, diagnostics, dependency-cone explanations, cycle detection, and runtime handoff receipts.
 
 The boundary remains:
 #+begin_src text
@@ -102,7 +102,7 @@ This division is important for the Rust boundary too. =marlin-agent-core= remain
 C4 only decides precedence. It answers "which parent or slot wins first" and
 does not understand whether the winning policy is safe.
 
-That distinction is a hard design boundary for =poo-flow=. If a task policy is
+That distinction is a hard design boundary for =agentic-ai-lab=. If a task policy is
 ordered before a security policy and ordinary =override= is allowed to close or
 weaken security slots, C4 will deterministically produce the wrong result. The
 linearization is stable, but stability is not safety.
@@ -151,4 +151,4 @@ The stable order is:
 5. Diagnostic commands.
 6. Hygienic Gerbil authoring forms over the stable API.
 
-This order keeps agent-facing output explicit. A macro must expand to Gerbil bindings and POO values that tests can construct by hand through =:poo-flow/src/module-system=. It must not introduce an alist/record DSL as the semantic core.
+This order keeps agent-facing output explicit. A macro must expand to Gerbil bindings and POO values that tests can construct by hand through =:agentic-ai-lab/src/module-system=. It must not introduce an alist/record DSL as the semantic core.

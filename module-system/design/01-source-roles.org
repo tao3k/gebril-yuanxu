@@ -15,7 +15,7 @@ built-ins and uniform contextual role injection remain proposed integration.
 
 The target shell for an independently published reusable Module has four required
 roles, an optional algorithm role and an optional build-publication role. This is a shared Module System design,
-not a POO Flow-specific configuration language rule.
+not a Agentic AI Lab-specific configuration language rule.
 
 #+begin_example
 <namespace>/<module>/

@@ -6,9 +6,9 @@
 
 * 10.06.11.01 Boundary
 
-POO Flow owns the Scheme-side control plane.  Marlin owns runtime execution.
+Agentic AI Lab owns the Scheme-side control plane.  Marlin owns runtime execution.
 
-POO Flow may produce:
+Agentic AI Lab may produce:
 
 - module descriptors;
 - user config presentations;
@@ -17,7 +17,7 @@ POO Flow may produce:
 - option validation and merge receipts;
 - runtime manifests and handoff data.
 
-POO Flow must not own:
+Agentic AI Lab must not own:
 
 - LLM invocation;
 - API/R backend execution;
@@ -33,7 +33,7 @@ Marlin without moving heavy runtime work into Scheme.
 
 #+begin_src mermaid
 sequenceDiagram
-  participant Scheme as poo-flow Scheme control plane
+  participant Scheme as agentic-ai-lab Scheme control plane
   participant Audit as Human Audit Loop
   participant Manifest as Control-plane runtime manifest
   participant Marlin as Marlin/Rust runtime
@@ -64,5 +64,5 @@ Every doctor or presentation helper must keep:
 The descriptor side can live in this repository because it is Scheme-side
 contract data.  Runtime execution and native binding lifecycle stay Marlin-owned.
 
-This allows =poo-flow= to test nono/C binding shape without pretending it owns
+This allows =agentic-ai-lab= to test nono/C binding shape without pretending it owns
 the backend that will execute it.

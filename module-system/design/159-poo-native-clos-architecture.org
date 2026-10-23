@@ -12,7 +12,7 @@ POO-native CLOS extension.  It is not a delivery plan.  Implementation order,
 temporary slices, and historical test-run identifiers are deliberately absent.
 
 This extension is governed by
-[[file:164-capability-gradient-and-default-expression-surface.org][POO Flow Capability Gradient and Default Expression Surface]].
+[[file:164-capability-gradient-and-default-expression-surface.org][Agentic AI Lab Capability Gradient and Default Expression Surface]].
 Its declarations belong to the opt-in extension surface.  They are not the
 default Profile, Scenario, Case, Policy or Flow authoring language.
 

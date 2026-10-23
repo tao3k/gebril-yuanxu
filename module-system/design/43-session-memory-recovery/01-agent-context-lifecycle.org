@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.01 AI Agentic Context Lifecycle
 :PROPERTIES:
-:ID: poo-flow-agent-context-lifecycle
+:ID: agentic-ai-lab-agent-context-lifecycle
 :STATUS: consumer-evidence-admission-verified-storage-open
 :DATE: 2026-10-14
 :AUTHORITY_DESIGN: open-not-implemented
@@ -76,7 +76,7 @@ registry/multi-process ownership and unified Query/GQL result adaptation are ope
 [[file:17-registry-verification.org][10.06.43.17]] records the final source-stable joint verification.
 
 This chapter refines [[file:../43-session-memory-recovery-rfc.org][Session Memory Durable Policy]] with the shared AI Agentic
-Context lifecycle. POO Flow owns the generic composition and policy design;
+Context lifecycle. Agentic AI Lab owns the generic composition and policy design;
 ORG Elements and Contract are its source/structure core, with temporal
 interpretation and domain admission above them. Applications supply domain
 interpretation. This is not Aitia's SDLC model or an ABI memory-layout contract.

@@ -44,12 +44,12 @@ flowchart TD
 ** Verified GSLPH development-harness artifact closure
 
 This closure qualifies only the external development policy harness and
-building/testing framework used by POO Flow.  It does not make GSLPH a runtime
+building/testing framework used by Agentic AI Lab.  It does not make GSLPH a runtime
 dependency, semantic owner, receipt authority, or parent completion gate.
 
 - [X] Source owner fixed in the GSLPH checkout at revision
   =a0ba60a15dd05d95ea89c0506f530f426d3dca1e=.
-- [X] =components/poo-flow.json= and its generated Bazel projection include
+- [X] =components/agentic-ai-lab.json= and its generated Bazel projection include
   =src/building/persistent-worker.ss=; the checked counts are
   =sourceCount=122= and =fullSourceCount=230=.
 - [X] =project-test-file-target= preserves its declared =(List Path)= value
@@ -104,7 +104,7 @@ create files.
 |-
 | Mix-module expansion and predicates | 45-07 self-reference: =profile-composition-declaration-syntax.ss=; inherited 88/101 candidates: =profile-composition-use-syntax.ss=, =profile-composition-accessors.ss=, =profile-composition.ss= | inherited 88/101 candidates: composition syntax smoke; profile composition tests | no |
 | G0 semantic values | =Requirement=, =Observation=, =Policy=, =DecisionReceipt=, =:clan/poo/proto= | canonicalization, decision-reason, and qualification cases | no |
-| runtime context and recovery | =PooFlowRuntimeContext=, =QualificationKey=, =DependencyQualificationCell=, =RecoverySet= | lifecycle, stale-continuation, replacement, and recovery cases | no |
+| runtime context and recovery | =AgenticAILabRuntimeContext=, =QualificationKey=, =DependencyQualificationCell=, =RecoverySet= | lifecycle, stale-continuation, replacement, and recovery cases | no |
 | observability | =QualificationDiagnosticSnapshot=, =inspect-qualification-failure=, =decisionReceiptDigest= | event ordering, correlation, buffer overflow, and detached snapshot cases | no |
 | lineage and cycles | =EvaluationLineage=, =RuntimeContinuationGuard=, =resolve-module-capability= | productive recursion, deterministic cycle, unwind, and resource-limit cases | no |
 | pinned POO API | =:clan/poo/proto=, =compose-proto*=, =instantiate-proto=, =instantiate-protos= | import/binding/shape qualification | no |
@@ -139,25 +139,25 @@ per-row source targets from it, while the validator parses its assignment AST
 without executing it.  JSON, Scheme, Lean, and prose MUST NOT carry parallel
 copies of the concrete owner identities.
 
-- Schema ID :: =poo-flow.module-system-qualification-ownership.v1=
+- Schema ID :: =agentic-ai-lab.module-system-qualification-ownership.v1=
 - Manifest :: =t/qualification/module-system/ownership.bzl=
 - Validator :: =t/qualification/module-system/validate_owner_map.py=
 - Direct behavior test :: =t/qualification/module-system/owner-contract-test.ss=
 - Stable qualification target :: =//t/qualification/module-system:owner_map_tests=
 
-The POO Flow rows identify the exact current Gerbil source symbol, direct test
+The Agentic AI Lab rows identify the exact current Gerbil source symbol, direct test
 symbol, and generated source target.  RFC45-05's pure lineage kernel is owned
-and directly tested by Foundation; the POO Flow test remains a consumer gate.
+and directly tested by Foundation; the Agentic AI Lab test remains a consumer gate.
 RFC45-08 is the qualification gate over these owners, not a self-owning row.
 
 | Row identity | RFC | Exact Gerbil source owner | Direct test owner | Stable parent build target | State |
 |-
 | =rfc45-01-mix-module-expansion= | 45-01 | =src/module-system/profile-composition/use-syntax.ss#use-composition= | =t/profile-composition-test.ss#profile-composition-test= | =//t/qualification/module-system:rfc45_01_mix_sources= | implemented |
-| =rfc45-02-g0-decision= | 45-02 | =src/qualification/module-system/g0.ss#poo-flow-g0-resolve= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_02_sources= | implemented |
-| =rfc45-03-runtime-context-recovery= | 45-03 | =modules/session/runtime-context-recovery.ss#poo-flow-runtime-context= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_03_sources= | implemented |
+| =rfc45-02-g0-decision= | 45-02 | =src/qualification/module-system/g0.ss#agentic-ai-lab-g0-resolve= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_02_sources= | implemented |
+| =rfc45-03-runtime-context-recovery= | 45-03 | =modules/session/runtime-context-recovery.ss#agentic-ai-lab-runtime-context= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_03_sources= | implemented |
 | =rfc45-04-observability-snapshot= | 45-04 | =src/user-interface/module-presentation.ss#yuanxu-module-presentation-trace= | =t/module-system-observability-test.ss#module-system-observability-test= | =//t/qualification/module-system:rfc45_04_sources= | implemented |
-| =rfc45-05-lineage-cycle= | 45-05 | =core/composition/lineage.ss#yuanxu-lineage-analysis= | =core/t/core-test.ss#core-test=; POO Flow consumer: =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | Core =just test= plus POO Flow =//t/qualification/module-system:owner_contract_test= | implemented |
-| =rfc45-06-gerbil-poo-consumption= | 45-06 | =src/qualification/module-system/gerbil-poo-consumption.ss#poo-flow-gerbil-poo-consumption-manifest= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_06_sources= | implemented |
+| =rfc45-05-lineage-cycle= | 45-05 | =core/composition/lineage.ss#yuanxu-lineage-analysis= | =core/t/core-test.ss#core-test=; Agentic AI Lab consumer: =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | Core =just test= plus Agentic AI Lab =//t/qualification/module-system:owner_contract_test= | implemented |
+| =rfc45-06-gerbil-poo-consumption= | 45-06 | =src/qualification/module-system/gerbil-poo-consumption.ss#agentic-ai-lab-gerbil-poo-consumption-manifest= | =t/qualification/module-system/owner-contract-test.ss#owner-contract-test= | =//t/qualification/module-system:rfc45_06_sources= | implemented |
 | =rfc45-07-public-composition= | 45-07 | =src/module-system/profile-composition/use-syntax.ss#use-composition= | =t/profile-composition-test.ss#profile-composition-test= | =//t/qualification/module-system:rfc45_07_composition_sources= | implemented |
 
 #+begin_src typst
@@ -169,7 +169,7 @@ $ "RowClosed"(R, A) =
   and R_"parent-owned" $
 
 $ "OwnerMapClosed"(M, A) =
-  (M_"schema-id" = "poo-flow.module-system-qualification-ownership.v1")
+  (M_"schema-id" = "agentic-ai-lab.module-system-qualification-ownership.v1")
   and (M_"row-identities" = "RequiredSourceOwnerIdentities")
   and forall R in M_"rows": "RowClosed"(R, A) $
 
@@ -202,7 +202,7 @@ and =@gerbil_poo_sources//:source_resolution_receipt=.  It does not introduce a
 package manager or another POO library.
 
 The formal countermodels and closure theorems are owned by
-=PooFlowProof.Enterprise.ModuleSystemOwnerMapClosure=.  They prove that an
+=AgenticAILabProof.Enterprise.ModuleSystemOwnerMapClosure=.  They prove that an
 =implemented= flag alone admits stale selectors and descendant lifecycle edges,
 that schema/version alone admits missing rows, and that authority-bound closed
 rows replay the same source, test, and build binding.
@@ -278,7 +278,7 @@ vertical slice, without creating another performance roadmap.
 |-----------+--------------------------+----------------|
 | M0 proof substrate | Generation batching already exists; cache publication now follows receipt identity validation.  Current build/performance admission must still be measured independently of historical numbers. | [[file:45-120-63-lean-declaration-closure-generation-performance.org][45-120-63]] |
 | M1 user composition | Contextual parser/refinement acceptance is distinct from the historical surface delivery. | [[file:101-canonical-composition-surface-closure-design.org][101]] and =profile-composition-use-syntax.ss= |
-| M1 G0 | =poo-flow-g0-resolve= currently consumes observed/authorized booleans.  This is not the four-root canonical contract or runtime-internal import observation transaction. | [[file:45-02-g0-qualification-contract.org][45-02]] and =g0-qualification.ss= |
+| M1 G0 | =agentic-ai-lab-g0-resolve= currently consumes observed/authorized booleans.  This is not the four-root canonical contract or runtime-internal import observation transaction. | [[file:45-02-g0-qualification-contract.org][45-02]] and =g0-qualification.ss= |
 | M1 Cedar subject | =cedar/decision.ss= projects a supplied outcome.  =agentic-control-plane-fixture.ss= supplies fixed permit, true obligations, and a fixture signature; this does not establish an authority-issued dual-engine decision. | [[file:45-07-user-composition-and-mix-module-interface.org][45-07]] and =modules/authorization/providers/cedar/decision.ss= |
 | M1 runtime handoff/reflection | Plan projection and fixture/vector consumers do not demonstrate the same live generation, subject, authority context, and runtime-produced receipt through the complete slice. | [[file:11-marlin-runtime-handoff.org][11]] and [[file:142-feature-runtime-handoff-plan.org][142]] |
 | M2 recovery/integration | =runtime-context-recovery.ss= models context and transitions as values; it does not itself supply live context sharing, replacement, close, or stale-resume evidence. | 45-03 and the required test groups above |

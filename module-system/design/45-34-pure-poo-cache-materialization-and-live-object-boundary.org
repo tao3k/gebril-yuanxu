@@ -25,7 +25,7 @@ live authority.
 * Native POO boundary
 
 =gerbil-poo= remains the sole implementation of POO objects, prototypes, slots
-and open recursion.  POO Flow does not serialize the implementation object and
+and open recursion.  Agentic AI Lab does not serialize the implementation object and
 later pretend that it is the same live object.
 
 The cache boundary MUST NOT introduce:
@@ -222,7 +222,7 @@ not the old object revived.
 Every cache artifact is untrusted until validated, including artifacts read
 from a local process cache.
 
-POO Flow MUST distinguish:
+Agentic AI Lab MUST distinguish:
 
 - byte integrity;
 - canonical encoding;

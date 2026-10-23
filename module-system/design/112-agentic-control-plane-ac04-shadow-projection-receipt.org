@@ -11,8 +11,8 @@ does not publish or imply Canonical Organization Bundle v1.
 
 * Delivered
 
-- Bundle schema =poo-flow.organization-bundle.draft.3=.
-- Facet schema =poo-flow.organization-facet.draft.3=.
+- Bundle schema =agentic-ai-lab.organization-bundle.draft.3=.
+- Facet schema =agentic-ai-lab.organization-facet.draft.3=.
 - Internal semantic owner
   =src/semantic/organization-bundle-shadow.ss=.
 - POO-native shadow facts, explicit comparison profiles, typed diagnostics, and

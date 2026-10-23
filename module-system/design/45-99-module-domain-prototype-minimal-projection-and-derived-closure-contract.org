@@ -8,7 +8,7 @@
 
 Accepted architecture RFC.
 
-This document fixes the minimal semantic contract of the POO Flow Module
+This document fixes the minimal semantic contract of the Agentic AI Lab Module
 prototype. It does not authorize implementation work and does not approve the
 current prototype body without exact owner evidence.
 
@@ -44,7 +44,7 @@ The prototype and every conforming Module remain native objects of:
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-POO Flow owns the Module domain contract. =gerbil-poo= owns object identity,
+Agentic AI Lab owns the Module domain contract. =gerbil-poo= owns object identity,
 slots, prototype ancestry, extension, composition, delegation, super, and
 precedence.
 
@@ -660,4 +660,4 @@ implementation completion, not owner selection.
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module, Profile Selection, Bundle, and imports Closure Algebra]]
 - [[file:45-95-aggregate-profile-responsibility-projection-and-bounded-macro-boundary.org][45-95 - Aggregate Profile Responsibility Projection and Bounded Macro Boundary]]
 - [[file:45-97-poo-module-object-construction-export-projection-and-responsibility-attachment-algebra.org][45-97 - POO Module Object Construction, Export Projection, and Responsibility Attachment Algebra]]
-- [[file:45-98-gerbil-poo-native-boundary-and-poo-flow-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and POO Flow Adapter Minimization]]
+- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]

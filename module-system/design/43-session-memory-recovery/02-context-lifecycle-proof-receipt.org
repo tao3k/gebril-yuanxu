@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.02 Context Lifecycle Proof Receipt
 :PROPERTIES:
-:ID: poo-flow-context-lifecycle-proof-receipt-20261014
+:ID: agentic-ai-lab-context-lifecycle-proof-receipt-20261014
 :STATUS: historical-local-proof-case-pass-runtime-open
 :DATE: 2026-10-14
-:DESIGN: poo-flow-agent-context-lifecycle
+:DESIGN: agentic-ai-lab-agent-context-lifecycle
 :END:
 
 * Qualification boundary
@@ -19,7 +19,7 @@ consumer. These checks execute a new parent-owned proof Case, not the previous
 =MemoryReuse= slice. No runtime implementation, installed dependency pin,
 provider, binding, old Rust Memory or automation is changed or enabled.
 
-The worktree baseline is POO Flow =main@7ab549d060c98b9a0997f6f1879da3d0eec4b07d=.
+The worktree baseline is Agentic AI Lab =main@7ab549d060c98b9a0997f6f1879da3d0eec4b07d=.
 The tested proof additions are uncommitted working-tree content identified
 below, not evidence that this baseline commit contains the new model.
 
@@ -107,7 +107,7 @@ all identities were unchanged during the successful execution.
 | packages/proofs/context-lifecycle/check_quint.py | 0e052031212264579f0cc70029a2435903ed06b5ff4556c418291ac1d36e47d3 |
 | packages/proofs/context-lifecycle/verify.py | 77e9dac69db3eaa8344c1895ce9de71af3b3b030b50f392a3b4ea81a00fb8e01 |
 | packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
-| packages/proofs/lean-poo/PooFlowContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
 | packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
 | packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
 | packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |

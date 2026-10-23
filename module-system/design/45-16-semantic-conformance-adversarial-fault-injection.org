@@ -6,7 +6,7 @@
 
 * Normative responsibility
 
-This module owns the evidence contract for moving POO Flow semantics from
+This module owns the evidence contract for moving Agentic AI Lab semantics from
 =semantic-required= through =behavior-proven= and =flow-qualified=.
 
 It defines:
@@ -23,7 +23,7 @@ downstream distribution-test mandate.
 
 * Ownership boundary
 
-POO Flow owns:
+Agentic AI Lab owns:
 
 - normative scenario semantics;
 - expected POO values, conditions, transitions, and receipts;
@@ -41,7 +41,7 @@ become:
 - a provider;
 - the semantic oracle;
 - receipt authority;
-- the owner of POO Flow policy.
+- the owner of Agentic AI Lab policy.
 
 Gerbil-Bazel is a build system.  Stable declared test targets may use it without
 creating a frequently changing semantic adapter contract.
@@ -54,7 +54,7 @@ projection or provider-resolution service.
 The parent project owns conformance of =yuanxu=.
 
 It does not own =wendao-episteme= distribution or integration testing merely
-because that package is composed through POO Flow.  Downstream packages own
+because that package is composed through Agentic AI Lab.  Downstream packages own
 their own Profile, Mix, provider, packaging, and distribution qualification.
 
 The parent may provide reusable semantic fixtures and receipt verifiers.
@@ -82,7 +82,7 @@ Exact scenario prototypes, helpers, and macros remain API-evidence-gated.
 flowchart LR
   S["State: normative Org scenario"] -->|"lower to POO-native fixture"| F["State: Gerbil conformance fixture"]
   F -->|"exercise yuanxu semantics"| R["State: runtime receipts and conditions"]
-  R -->|"POO Flow-owned semantic oracle"| O["State: conformance result"]
+  R -->|"Agentic AI Lab-owned semantic oracle"| O["State: conformance result"]
   G["State: GSLPH dev harness"] -.->|"orchestrates build, fault injection, and reporting"| F
   B["State: Gerbil-Bazel build system"] -.->|"builds stable declared targets"| F
   P["State: gerbil.pkg"] -.->|"provides package dependency management only"| F
@@ -179,7 +179,7 @@ Required fault families include:
 - productive and non-productive recursive provider imports;
 - missing, redacted, or contradictory replay predecessors.
 
-Fault injection controls harness behavior.  It does not bypass the real POO Flow
+Fault injection controls harness behavior.  It does not bypass the real Agentic AI Lab
 condition, receipt, or verifier path.
 
 * Transition outcome matrix
@@ -262,7 +262,7 @@ that no longer reproduces the receipt/condition mismatch is not evidence.
 
 * Semantic oracle
 
-The oracle belongs to POO Flow and evaluates semantic receipts, not harness exit
+The oracle belongs to Agentic AI Lab and evaluates semantic receipts, not harness exit
 status alone.
 
 A passing command is insufficient unless its qualification receipt identifies:
@@ -289,7 +289,7 @@ GSLPH may:
 
 GSLPH MUST NOT:
 
-- fabricate a POO Flow receipt;
+- fabricate a Agentic AI Lab receipt;
 - translate a missing receipt into success;
 - become a runtime provider;
 - supply production policy implicitly;
@@ -305,7 +305,7 @@ A public or internal API element advances only with matching evidence:
 #+begin_src mermaid
 stateDiagram-v2
   [*] --> SemanticRequired: normative semantic obligation exists
-  SemanticRequired --> SymbolLocated: exact gerbil-poo or POO Flow identifier located
+  SemanticRequired --> SymbolLocated: exact gerbil-poo or Agentic AI Lab identifier located
   SymbolLocated --> BehaviorProven: focused conformance scenarios pass with semantic receipts
   BehaviorProven --> FlowQualified: integration inside yuanxu passes owned boundary scenarios
   FlowQualified --> BehaviorProven: later contradiction or regression invalidates flow qualification

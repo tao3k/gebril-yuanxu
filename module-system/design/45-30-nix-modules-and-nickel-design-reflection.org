@@ -158,7 +158,7 @@ The distinction above is intentional and complete only when the unresolved
 items have an explicit owner.  They are not merely limitations recorded
 against Nickel:
 
-| Unresolved reference problem | Native substrate | POO Flow responsibility |
+| Unresolved reference problem | Native substrate | Agentic AI Lab responsibility |
 |------------------------------+------------------+-------------------------|
 | Infinite recursion and fixed-point debugging | =gerbil-poo= prototypes, slots and open recursion | Observable demand graph, cycle witness, convergence budget, continuable exception and authorized resumption |
 | Incremental evaluation | POO identity, lineage and slot demand | Contribution generations, dependency footprints, invalidation and bounded re-evaluation |
@@ -166,23 +166,23 @@ against Nickel:
 | Performance | Native POO composition without a parallel evaluator | Demand budgets, incremental work accounting, hot-path evidence and explicit realization boundaries |
 
 =gerbil-poo= remains the sole POO implementation and the native semantic
-substrate.  POO Flow MUST NOT reimplement its object model, prototype
-composition, slot evaluation or open recursion.  POO Flow owns the higher
+substrate.  Agentic AI Lab MUST NOT reimplement its object model, prototype
+composition, slot evaluation or open recursion.  Agentic AI Lab owns the higher
 module-system semantics that make those native operations observable,
 recoverable, incremental and evidence-bearing.
 
 #+begin_src mermaid
 flowchart LR
-  GP["gerbil-poo"] -->|"provides native objects, prototypes, slots and open recursion"| PF["POO Flow module semantics"]
+  GP["gerbil-poo"] -->|"provides native objects, prototypes, slots and open recursion"| PF["Agentic AI Lab module semantics"]
   NX["Nix Modules experience"] -->|"identifies fixed-point recursion and module-evaluation failure modes"| PF
   NK["Nickel improvements"] -->|"supplies merge, priority, recursive override and contract lessons"| PF
-  NK -->|"leaves incremental evaluation, caching and performance as open roadmap work"| PG["Explicit POO Flow gap"]
+  NK -->|"leaves incremental evaluation, caching and performance as open roadmap work"| PG["Explicit Agentic AI Lab gap"]
   NX -->|"leaves recursion diagnosis dependent on evaluation structure"| PG
   GP -->|"makes the gap solvable without inventing a second evaluator"| PG
   PG -->|"implemented as demand observation, generations, budgets, receipts and resumptions"| PF
 #+end_src
 
-Thus POO Flow does not wait for Nickel to provide these capabilities and does
+Thus Agentic AI Lab does not wait for Nickel to provide these capabilities and does
 not copy a future Nickel implementation.  It closes the gap in the Gerbil POO
 semantic domain, where first-class continuations, continuable exceptions and
 native prototype identities can participate directly.

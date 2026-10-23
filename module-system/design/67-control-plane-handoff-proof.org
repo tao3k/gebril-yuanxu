@@ -6,7 +6,7 @@
 
 * Boundary
 
-POO Flow owns policy, profile composition, graph/control-plane contracts, and
+Agentic AI Lab owns policy, profile composition, graph/control-plane contracts, and
 formal proof facts. It does not own the runtime executor. Runtime execution is
 performed by a downstream runtime such as Marlin or another language runtime.
 
@@ -50,7 +50,7 @@ $
 * Why This Matters
 
 LangChain and LangGraph compatibility should be demonstrated as control-plane
-expressiveness, not by embedding a runtime. A valid POO Flow scenario proves:
+expressiveness, not by embedding a runtime. A valid Agentic AI Lab scenario proves:
 
 - the policy is complete enough to hand off;
 - the composition has passed its own proof gate;
@@ -80,7 +80,7 @@ The two highest-risk rejections are:
 - =controlPlaneHandoffRejectedByRuntimeOwner=
 - =controlPlaneHandoffRejectedByExecution=
 
-They prevent POO Flow code from drifting into runtime ownership or local
+They prevent Agentic AI Lab code from drifting into runtime ownership or local
 execution semantics.
 
 * Scheme Facts
@@ -90,7 +90,7 @@ handoff contract bits into structured proof facts. It does not concatenate Lean
 source strings.
 
 #+begin_src scheme
-(poo-flow-control-plane-handoff-contract->proof-facts
+(agentic-ai-lab-control-plane-handoff-contract->proof-facts
  'generated-langgraph-control-plane-handoff
  #t #t #t #t #t #t #f)
 #+end_src
@@ -104,13 +104,13 @@ Structured facts are wrapped by =src/proof/proof-fact-wire.ss= before crossing
 the FFI boundary:
 
 #+begin_src scheme
-(poo-flow-proof-facts->ffi-wire facts)
+(agentic-ai-lab-proof-facts->ffi-wire facts)
 #+end_src
 
 The wire envelope is intentionally small:
 
 #+begin_src scheme
-((schema . poo-flow.proof.ffi-wire)
+((schema . agentic-ai-lab.proof.ffi-wire)
  (version . 1)
  (fact-schema . ...)
  (fact-id . ...)
@@ -125,7 +125,7 @@ owners.
 
 The wire layer is schema-aware. Before a fact crosses the bridge, it checks that
 the =fact-schema= is known and that all required fields for that schema are
-present. For example, =poo-flow.proof.control-plane.handoff= must include:
+present. For example, =agentic-ai-lab.proof.control-plane.handoff= must include:
 
 #+begin_src scheme
 (policy-ready

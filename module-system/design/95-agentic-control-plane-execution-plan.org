@@ -36,7 +36,7 @@ It does not authorize a monolithic rewrite. Each package must leave a reviewable
 * Normative Inputs
 The plan implements:
 
-- [[file:90-poo-flow-agentic-control-plane-architecture-rfc.org][RFC 90 — architecture and ownership roles]];
+- [[file:90-agentic-ai-lab-agentic-control-plane-architecture-rfc.org][RFC 90 — architecture and ownership roles]];
 - [[file:91-canonical-organization-bundle-rfc.org][RFC 91 — Canonical Organization Bundle]];
 - [[file:92-c-runtime-interface-and-python-validation-runtime-rfc.org][RFC 92 — C Runtime Interface and Python runtime]];
 - [[file:93-assurance-proof-and-evidence-chain-rfc.org][RFC 93 — proof, evidence, and assurance]];
@@ -201,8 +201,8 @@ git status --short
 gxpkg env gxi build.ss compile --optimized --release
 gxpkg build -R -O
 uv run --project packages/python-runtime pytest packages/python-runtime/tests
-uv run --project packages/python-runtime poo-flow-runtime-probe
-uv run --project packages/python-runtime poo-flow-runtime-validate
+uv run --project packages/python-runtime agentic-ai-lab-runtime-probe
+uv run --project packages/python-runtime agentic-ai-lab-runtime-validate
 #+end_src
 
 ** Exit Criteria
@@ -477,9 +477,9 @@ gxtest <focused-test-file>
 ** Python Runtime
 #+begin_src sh
 uv run --project packages/python-runtime pytest packages/python-runtime/tests
-uv run --project packages/python-runtime poo-flow-runtime-probe
-uv run --project packages/python-runtime poo-flow-runtime-validate
-uv run --project packages/python-runtime poo-flow-runtime-program-probe
+uv run --project packages/python-runtime agentic-ai-lab-runtime-probe
+uv run --project packages/python-runtime agentic-ai-lab-runtime-validate
+uv run --project packages/python-runtime agentic-ai-lab-runtime-program-probe
 #+end_src
 
 ** Lean

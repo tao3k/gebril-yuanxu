@@ -445,7 +445,7 @@ substitute a newer contract with a similar name.
 =gerbil-poo= owns native slot definition, inheritance, combination invocation,
 and lazy fixed-point evaluation.
 
-POO Flow owns the higher-order POO contract objects and their module-level
+Agentic AI Lab owns the higher-order POO contract objects and their module-level
 identity, Capability, authority, condition, evidence, and receipt semantics.
 
 The runtime validates concrete transitions and preserves receipts.  It does not

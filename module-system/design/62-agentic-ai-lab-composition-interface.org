@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO Flow Composition Interface
+#+title: Agentic AI Lab Composition Interface
 #+property: header-args :mkdirp yes
 
 * Status
@@ -21,7 +21,7 @@ into one staged strategy composition. It lives under `src/module-system`; the
 user-interface layer should call it rather than owning the composer. It is not a
 production-only profile, and it is not an SDLC DSL. Develop, staging, and
 production are stage names inside the composition, while the main concept stays
-POO Flow strategy composition.
+Agentic AI Lab strategy composition.
 
 The key design rule is POO-native profile selection:
 
@@ -139,7 +139,7 @@ case fragment.
 
 * Profile Reuse Modes
 
-POO Flow should prefer reusable user-module profiles whenever a profile has a
+Agentic AI Lab should prefer reusable user-module profiles whenever a profile has a
 stable meaning beyond one local case. This is one of the core strengths of the
 project: downstream users can contribute a profile once, and later modules,
 cases, and compositions can reuse it through ordinary POO object extension.
@@ -199,7 +199,7 @@ composition can then be reused by other modules as well.
 (load! "cases/langgraph-state")
 
 (def langgraph-state-composition
-  poo-flow-custom-module-langgraph-state-case)
+  agentic-ai-lab-custom-module-langgraph-state-case)
 #+end_src
 
 The profile fragments own stable profile contracts:
@@ -274,7 +274,7 @@ The graph layer has one topology boundary and one control-analysis boundary:
   edge filtering, and id-set operations.
 
 This boundary intentionally avoids a second POO fact object family for the
-graph-control path. A separate `PooFlowGraphControlFacts` module and object made
+graph-control path. A separate `AgenticAILabGraphControlFacts` module and object made
 small graph edits recompile too much Gerbil code without improving the
 user-facing API. The semantic boundary is still real: control facts are named
 receipt metadata fields, but the compile-time shape is lighter. The public
@@ -354,10 +354,10 @@ mathematical interpretation of that graph.
 The macro expands to ordinary POO objects:
 
 #+begin_src text
-PooFlowComposition
-PooFlowCompositionModuleBinding
-PooFlowCompositionStage
-PooFlowCompositionClause
+AgenticAILabComposition
+AgenticAILabCompositionModuleBinding
+AgenticAILabCompositionStage
+AgenticAILabCompositionClause
 #+end_src
 
 The composition object keeps module bindings and stages. A stage keeps clauses
@@ -409,7 +409,7 @@ The loop engine and graph engine remain the core semantics.
 
 * Proof Bridge
 
-The Lean proof surface should reason about POO Flow facts after projection:
+The Lean proof surface should reason about Agentic AI Lab facts after projection:
 
 #+begin_src typst
 $

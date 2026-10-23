@@ -5,7 +5,7 @@
 * 10.06.38 OpenRath Session Core Next Plan
 ** 10.06.38.10 Purpose
 This plan uses OpenRath's session-first user ladder as design evidence for the
-next POO Flow delivery slices after =session-core=.
+next Agentic AI Lab delivery slices after =session-core=.
 
 The goal is not API alignment and not copying OpenRath's Python interface. The
 goal is to identify what OpenRath gets right, identify where its model remains
@@ -25,7 +25,7 @@ Local OpenRath evidence:
   =src/rath/flow/selector.py=, =src/rath/flow/tool/*=,
   =src/rath/memory/*=, and backend/sandbox files.
 
-Current POO Flow evidence:
+Current Agentic AI Lab evidence:
 - =modules/session-core/config.ss= enables the upstream session module row.
 - =modules/session-core/presentation.ss= projects =session-core-intents=.
 - =modules/session/config.ss= owns POO session values, chunks, lineage,
@@ -47,8 +47,8 @@ These are worth adopting because they make agent systems debuggable. They give
 users an answer to the questions: what is flowing, where did it come from, where
 will it run, what tools may it use, what memory can it touch, and which strategy
 selects the next step.
-** 10.06.38.40 What POO Flow Should Improve
-OpenRath is useful evidence, but it is not the endpoint for POO Flow.
+** 10.06.38.40 What Agentic AI Lab Should Improve
+OpenRath is useful evidence, but it is not the endpoint for Agentic AI Lab.
 
 Problems we should avoid:
 - Python method chaining can blur declaration, mutation, and runtime behavior.
@@ -57,10 +57,10 @@ Problems we should avoid:
 - Runtime objects and user-facing objects can become the same object graph. That
   makes examples easy, but it weakens static validation and makes dry-run
   planning harder.
-- The example ladder is clear, but many steps depend on live providers. POO Flow
+- The example ladder is clear, but many steps depend on live providers. Agentic AI Lab
   should make the no-runtime receipt path the ordinary first-class path.
 - Tool, memory, provider, and selector concepts can drift into independent API
-  islands. POO Flow should keep them as module-system objects that merge through
+  islands. Agentic AI Lab should keep them as module-system objects that merge through
   one POO extension model.
 - OpenRath does not have Gerbil POO's C4 inheritance, slot operators, fixed
   point object extension, or harness-backed object contracts. We should use
@@ -69,8 +69,8 @@ Problems we should avoid:
 The result should be stricter than OpenRath: every agent-flow layer should be
 inspectable before runtime, validated before handoff, and extensible through POO
 objects rather than ad hoc runtime hooks.
-** 10.06.38.50 POO Flow Agent-Flow Model
-POO Flow should model an agent flow as a typed, inspectable value pipeline:
+** 10.06.38.50 Agentic AI Lab Agent-Flow Model
+Agentic AI Lab should model an agent flow as a typed, inspectable value pipeline:
 
 #+begin_src text
 Session
@@ -120,7 +120,7 @@ more suitable for reliable multi-agent work than a method-chain runtime API.
 ** 10.06.38.80 Milestone 1: Session Transform Core
 OpenRath rung: =01_hello_agent.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Introduce a pure =session-transform= object family.
 - Model =Agent= as a functional arrow: =Session -> SessionReceipt=.
 - Keep provider/model execution out of Scheme and express it as an explicit
@@ -139,15 +139,15 @@ Acceptance:
   =runtime-executed: #f=.
 ** 10.06.38.85 Milestone 1A: Memory Intent Receipts
 OpenRath rung: memory-aware agent/session examples.
-POO Flow target:
+Agentic AI Lab target:
 - Keep memory as a POO intent attached to a =session-transform=.
 - Do not let Scheme recall, mutate, or commit a memory backend.
 - Emit runtime-facing memory handoff rows as plain data inside the transform handoff intent.
 - Emit POO memory receipts so the derived session can be audited without runtime execution.
 Implemented surface:
-- =poo-flow-session-memory-intent= declares store, scope, recall keys, and commit policy.
-- =poo-flow-session-transform= accepts a list of memory intent objects as an extension slot.
-- =poo-flow-session-transform-apply= records =memory-receipts= and =memory-receipt-count= on the transform receipt.
+- =agentic-ai-lab-session-memory-intent= declares store, scope, recall keys, and commit policy.
+- =agentic-ai-lab-session-transform= accepts a list of memory intent objects as an extension slot.
+- =agentic-ai-lab-session-transform-apply= records =memory-receipts= and =memory-receipt-count= on the transform receipt.
 - =session-memory-intent= and =session-transform ... (memory-intents ...)= expose the compact user interface.
 Acceptance:
 - A test can create a memory intent, attach it to a transform, derive a session, inspect the memory receipt, and verify every runtime flag remains =#f=.
@@ -155,7 +155,7 @@ Acceptance:
 ** 10.06.38.90 Milestone 2: Session Lineage Ladder
 OpenRath rung: =02_session_lineage.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Expand the existing session graph presentation into a user-facing ladder case.
 - Add JSONL/export-ready receipt projection without writing files by default.
 - Keep lineage as POO composition data, not a graph runtime.
@@ -172,7 +172,7 @@ Acceptance:
 ** 10.06.38.100 Milestone 3: Sandbox Placement Handoff
 OpenRath rung: =03_sandbox_backend.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Treat =session.to(backend)= as POO placement inheritance plus sandbox profile
   catalog resolution.
 - Produce a placement handoff ABI row, not a running sandbox.
@@ -191,7 +191,7 @@ Acceptance:
 ** 10.06.38.110 Milestone 4: Tool Core
 OpenRath rungs: =04_tools_builtin.py=, =05_custom_tool.py=, =06_mcp_tool.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Add a =tool-core= module row under the workflow/session family.
 - Model tools as POO object specs with schema, runtime owner, sandbox
   requirements, and handoff operation.
@@ -221,7 +221,7 @@ Implemented checkpoint:
 ** 10.06.38.120 Milestone 5: Memory Core
 OpenRath rung: =09_memory.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Add a =memory-core= module row.
 - Model memory as POO object specs: store, namespace, recall policy, commit
   policy, and runtime owner.
@@ -248,7 +248,7 @@ Implemented checkpoint:
 ** 10.06.38.130 Milestone 6: Selector Core
 OpenRath rung: =11_dynamic_selector.py=.
 
-POO Flow target:
+Agentic AI Lab target:
 - Add =selector-core= after session transform, tool, and memory specs exist.
 - Model selection as a POO strategy object over named session transforms or
   workflows.

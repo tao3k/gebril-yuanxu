@@ -13,7 +13,7 @@ models were retired; see [[file:../../dev/proofs/lean/README.org][the current Le
 
 * Status
 
-This RFC records the accepted temporal semantics for POO Flow evaluation,
+This RFC records the accepted temporal semantics for Agentic AI Lab evaluation,
 admission, leases, deadlines, freshness, and replay.
 
 It extends resource admission, distributed evaluation, compatibility evidence,

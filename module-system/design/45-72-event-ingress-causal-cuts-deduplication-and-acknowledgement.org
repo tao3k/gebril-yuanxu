@@ -14,7 +14,7 @@ not current implementation verification. See [[file:../../dev/proofs/lean/README
 * Status
 
 This RFC records the accepted semantics for external event and message ingress
-into POO Flow.
+into Agentic AI Lab.
 
 It extends explicit time, entropy, compatibility, effect, backpressure, and
 distributed evaluation contracts. Transport arrival order does not become POO

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 10.06.43.06 AI Agentic Context Authority and Disclosure
 :PROPERTIES:
-:ID: poo-flow-agentic-context-authority-and-disclosure
+:ID: agentic-ai-lab-agentic-context-authority-and-disclosure
 :STATUS: design-open-not-implemented-not-model-checked
 :OWNER: 10.06.43.01
 :END:

@@ -22,7 +22,7 @@ CPU and memory pressure have different safety semantics.  The Scheme guard
 records an instantaneous runnable-process saturation observation as an
 =admission-advisories= value, but it does not treat that noisy system-wide
 sample as a hard failure or override the detected/configured worker capability.
-Exact physical memory is not a semantic compiled-tree input.  The POO Flow
+Exact physical memory is not a semantic compiled-tree input.  The Agentic AI Lab
 guard probes it only when an action executes.  The pinned external
 =gerbil-bazel= toolchain, however, still copies
 =GERBIL_BAZEL_MEMORY_BYTES=, =GERBIL_BAZEL_CPU_COUNT=, and
@@ -81,7 +81,7 @@ Linux action had the same 3,236 configured targets and dependency cache as its
 producer.  The remaining key difference was the exact host physical-memory
 string injected into the action environment.  Because physical memory affects
 only Scheme scheduling and RSS admission, not compiled output semantics, the
-POO Flow-owned compile path no longer injects that value.  Scheme performs the
+Agentic AI Lab-owned compile path no longer injects that value.  Scheme performs the
 live probe only when an actual action miss executes.  The separate
 host-capacity fields in the pinned external toolchain environment remain
 subject to the upstream correction described below.
@@ -140,7 +140,7 @@ may reuse the compiled action while advancing the immutable CI cache generation.
 ** Downstream CI package ownership correction
 
 Pull-request run =33673613151= exposed a downstream ownership violation after
-the ASP dependency revision changed.  POO Flow CI invoked
+the ASP dependency revision changed.  Agentic AI Lab CI invoked
 =@local_gerbil//:install_dependencies= and then built
 =//scheme:dependency_packages=.  The first command is the explicit developer
 =gxpkg deps --install= side effect; the second is the declared Bazel artifact
@@ -154,7 +154,7 @@ step limit while executing the same redundant developer action; its ASP guard
 receipt reported =146925 ms= for that package build, =3= configured workers,
 =1496350720 B= peak RSS, and no memory-based worker reduction.
 
-POO Flow CI now uses only =//scheme:dependency_packages=.  Bazel owns the
+Agentic AI Lab CI now uses only =//scheme:dependency_packages=.  Bazel owns the
 isolated dependency artifacts and reverse invalidation closure, while
 =@local_gerbil//:install_dependencies= remains available solely as an explicit
 developer workspace operation.  The correction removes duplicate compilation;
@@ -167,7 +167,7 @@ flowchart LR
   PINS --> UTILS["gerbil_utils_package"]
   UTILS --> POO["gerbil_poo_package"]
   POO --> ASP["asp_gerbil_scheme_package"]
-  ASP --> FLOW["poo_flow compile"]
+  ASP --> FLOW["agentic_ai_lab compile"]
   DEV -. "never a CI prerequisite" .-> FLOW
 #+end_src
 
@@ -227,7 +227,7 @@ flowchart LR
   Ready --> Revision{"status ok and exact revisions"}
   Revision --> Memory{"peak RSS below 5 GiB"}
   Memory --> Gate
-  Gate --> Flow["POO Flow build and tests"]
+  Gate --> Flow["Agentic AI Lab build and tests"]
   Install["gxpkg deps --install"] -. "developer-only side effect" .-> Toolchain
 #+end_src
 
@@ -247,8 +247,8 @@ materializes absolute paths derived from that root as =GERBIL_GCC=,
 =GerbilProjectCompile= copies those values into its action environment, so the
 changing absolute paths changed the action key for all four compile actions.
 
-POO Flow now accepts an optional, validated absolute
-=POO_FLOW_EXTERNAL_BAZEL_OUTPUT_BASE=.  The dedicated full external-module job
+Agentic AI Lab now accepts an optional, validated absolute
+=AGENTIC_AI_LAB_EXTERNAL_BAZEL_OUTPUT_BASE=.  The dedicated full external-module job
 binds it to a stable =runner.temp= path; the missing-root-override probe and the
 native analysis lanes retain their isolated random user roots.  This is a
 fixture-level cache mitigation, not the durable rule fix.  The upstream

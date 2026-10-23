@@ -66,15 +66,15 @@ Implemented in this slice:
 - stable mathematical obligation identifiers =PP-M01= through =PP-M07=;
 - Typst presentation of the promotion equations;
 - the initial Lean definitions and safety theorems in
-  =packages/proofs/lean/PooFlowProof/PooC4/ProtocolPersonPromotion.lean=;
-- root-module import through =PooFlowProof.lean=.
+  =packages/proofs/lean/AgenticAILabProof/PooC4/ProtocolPersonPromotion.lean=;
+- root-module import through =AgenticAILabProof.lean=.
 
 Scheme/POO candidate implemented in the current working tree:
 
 - POO-native =ProtocolSubject=, =Commitment=, =PromotionIntent=, current-world,
   provenance, and decision-fact values in
   =src/policy/protocol-person-promotion.ss=;
-- a closed transparent =poo-flow-promotion-validation-receipt= with distinct
+- a closed transparent =agentic-ai-lab-promotion-validation-receipt= with distinct
   approval and activation results;
 - pure fail-closed checks for Cedar Permit, Lean verification, Bundle,
   Authority, proof, and evaluator epochs, evaluator applicability, evidence
@@ -122,7 +122,7 @@ No organizational effect without
   + durable materialization evidence.
 #+end_src
 
-=poo-flow= is the semantic compiler and promotion transaction coordinator.
+=agentic-ai-lab= is the semantic compiler and promotion transaction coordinator.
 Cedar and Lean are the dual decision engines:
 
 - Cedar answers whether the current principal may request the role transition;
@@ -292,13 +292,13 @@ definition/theorem and the proof receipt binds the RFC and theorem-set identitie
 The initial theorem owner is:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof/PooC4/ProtocolPersonPromotion.lean
+packages/proofs/lean/AgenticAILabProof/PooC4/ProtocolPersonPromotion.lean
 #+end_src
 
 The root proof package imports that owner through:
 
 #+begin_src text
-packages/proofs/lean/PooFlowProof.lean
+packages/proofs/lean/AgenticAILabProof.lean
 #+end_src
 
 The current proof is deliberately narrow.  It proves the stated transition

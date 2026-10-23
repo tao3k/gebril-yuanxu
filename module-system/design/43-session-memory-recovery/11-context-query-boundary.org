@@ -3,7 +3,7 @@
 
 #+title: 10.06.43.11 Graph Context Query Boundary
 :PROPERTIES:
-:ID: poo-flow-graph-context-query-boundary
+:ID: agentic-ai-lab-graph-context-query-boundary
 :STATUS: design-existing-query-core-context-adapter-open
 :DATE: 2026-10-14
 :END:

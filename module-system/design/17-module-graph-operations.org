@@ -53,7 +53,7 @@ NixOS is useful as an interface reference because many modules can contribute
 to one final =config= graph. Its =options= layer is also partly a workaround
 for a DSL without native Scheme objects, contracts, and POO inheritance.
 
-=poo-flow= should keep the good part and avoid copying the hack:
+=agentic-ai-lab= should keep the good part and avoid copying the hack:
 - modules export shared POO module objects, not ad-hoc option alists;
 - module objects carry identity, inherited objects, field contracts, and
   metadata;
