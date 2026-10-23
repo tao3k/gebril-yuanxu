@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object (only-in "../init.ss" yuanxu.init.exports)
+(import :std/test :clan/poo/object (only-in :yuanxu/ops/interface Ops)
         (only-in :yuanxu/ops/func run-script)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case
@@ -11,9 +11,9 @@
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/misc/ports read-all-as-string))
-(export ops-process-script-test)
+(import (only-in :yuanxu/ops/tests/atomic-test ops-watchdog-test))
+(export ops-process-script-test ops-watchdog-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
-(def Ops (.get yuanxu.init.exports Modules ops scope))
 (def ProcessScript. (.get Ops prototypes Script))
 (def (process-gone? pid)
   (with-catch

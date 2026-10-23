@@ -1,8 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object (only-in :yuanxu/types yuanxu-predicate-contract))
-(import (only-in :yuanxu/ops/types OpsScopeContract))
-(export FunflowScopeContract OpsScopeContract)
+(export FunflowScopeContract)
 (def FunflowScopeContract
   (yuanxu-predicate-contract 'funflow/scope
     (lambda (value)

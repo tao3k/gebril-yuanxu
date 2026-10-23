@@ -34,7 +34,7 @@
   (def core-build-entry-test
     (if root
     (test-suite "Actual Core entry delegates to Module System Building"
-      (test-case "cold source entry selects JsonSchema and Ops and rechecks input bytes"
+      (test-case "cold source entry selects JsonSchema and rechecks input bytes"
         (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
         (def run (script-main (path-expand "build.ss" root)))
@@ -50,8 +50,7 @@
             (check-equal? (length (filter (cut equal? <> name) names)) 1))
           '("modules/json-schema/types" "modules/json-schema/config"
             "modules/json-schema/func" "modules/json-schema/objects"
-            "modules/json-schema/interface" "ops/types" "ops/config"
-            "ops/func" "ops/objects" "ops/interface" "ops/selected-packages" "types" "utilities/algorithms"
+            "modules/json-schema/interface" "types" "utilities/algorithms"
             "module-system/building/interface" "core-spec"))
         (check-equal?
           (filter (lambda (name)

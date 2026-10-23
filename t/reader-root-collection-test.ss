@@ -1,8 +1,10 @@
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :yuanxu/t/module-publication-test module-publication-test)
-        (only-in :yuanxu/t/qualification/service-publication/selection selected-publication-suite))
+;;; Source preparation shared by publication suites; no test suite is imported.
+(import (only-in :std/test test-suite)
+        (only-in :yuanxu/t/qualification/module-publication/controls
+                 register-reader-root-collection-cases!))
 (export reader-root-collection-test)
 (def reader-root-collection-test
-  (selected-publication-suite module-publication-test
-    '("publication keeps unique original reads and refuses changed provenance"
-      "reader warm inputs preserve the original graph without a weak projection claim")))
+  (test-suite "Selected publication controls"
+    (register-reader-root-collection-cases!)))

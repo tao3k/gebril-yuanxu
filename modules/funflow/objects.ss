@@ -1,6 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
+        (only-in "control-plane/agent-harness-vocabulary.ss"
+                 +yuanxu-agent-operation-kinds+ +yuanxu-runtime-snapshot-statuses+)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         ;; This role publishes these combinators, not the aggregate control
         ;; plane (including Agent harnesses and unrelated syntax facades).
@@ -20,6 +22,9 @@
   graph: (job-graph job)
   .run: (lambda (workspace) (run-job job workspace)))
 (.def FunflowModule.
+  runtime-vocabulary:
+  (.o operation-kinds: +yuanxu-agent-operation-kinds+
+      snapshot-statuses: +yuanxu-runtime-snapshot-statuses+)
   store: (.o (put-dir-flow) (get-dir-flow) (store-flow))
   flow: (.o (flow-arr) (flow-then) (flow-fanout) (flow-map) (flow-bind)
             (flow-first) (flow-second) (conditional-flow) (try-flow)

@@ -1,341 +1,103 @@
-# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
-# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-#+title: Core Ops Module
+#+title: Core Ops Library
+#+language: en
+#+SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-* Progress-aware execution
+* Ownership
 
-The existing =ProcessScript.= retains =timeout= as a finite total budget.
-=idle-timeout= independently limits time without completed work; =progress=
-is a named reader factory supplied by the framework at the execution boundary.
-It is not a shell-expression language or a second runner. Scripts that do not
-request an idle policy preserve their existing execution semantics.
+Ops is a built-in Yuanxu library at =:yuanxu/ops/interface=. Neither Yuanxu nor
+Agentic AI Lab selects Ops in =init.ss=. Module selection concerns optional
+publications; the process primitive used by the Module System, TestingScript
+and Funflow is part of the Core implementation itself. Funflow imports that
+library normally and does not declare a selectable =ops= requirement.
 
-The shared execution policy in =progress.ss= supplies 60 seconds of inactivity
-and 600 seconds total for testing and Nix operations. Case memory/growth guards
-remain unchanged. TestingScript derives both budgets from its Case Profile;
-the focused Just recipe reads the same total from this ordinary Scheme module
-for its outer hard ceiling. No environment-variable probe or log heartbeat
-extends the total budget.
+=core-spec.ss= owns the library compilation roots. =ops/= has no nested Module
+package or second source-selection entry. The existing SDK compiler and package
+namespace remain authoritative. This change introduces no alternate Loader,
+Builder, process runner, or cache protocol.
 
-The pure policy import is itself heap-fenced with a separate 60-second startup
-ceiling. It does not select modules or start external effects. This protects
-policy resolution before the test's declared total can be read.
+* Functional first, objects when useful
 
-The Nix reader consumes native =internal-json= activity events. Increasing
-=resProgress.done=, a new native build phase, and completion of a tracked
-activity count as progress. Merely starting an activity, changing an expected
-amount, build-log lines, diagnostic messages, repeated counters and replayed
-completion messages do not. Unknown activity/event formats do not renew time.
-Unsupported builder-internal progress is not inferred from arbitrary text.
-
-Nested Ops and Case spans receive the same advancing events. Bounded,
-monotonic progress records relay genuine child work to the supervising
-TestingScript independently of =emit?=; emission is coalesced to at most one
-record per second and never occurs from a timer alone. Bookkeeping is bounded
-to 4096 scalar keys per span and does not retain source or candidate objects.
-An expired span cannot be revived by a late event.
-
-Ops continues to use =std/run-process= and its existing owned timeout process
-group. Idle/Case interruption kills that group before std/run-process waits;
-fixture cleanup and source guards remain active. The outer total watchdog is
-an emergency ceiling, including native import time; it is not an inactivity
-detector and cannot be renewed by child output. Pre-Case imports currently
-have that finite total ceiling rather than a separate inactivity detector.
+=func.ss= implements pure validation, argument preparation, environment merging
+and preview. Only =run-script= samples the host environment and starts a process.
+=interface.ss= binds those same functions to the =Ops= object; Script's native
+=.run= delegates to =run-script=. The public object retains receiver-local
+configuration and the existing =OpsScopeContract=.
 
 #+begin_src scheme
-;; Module authors keep declaring fixtures and assertions. init supplies this.
-(.def (Observed @ (.get init.Scenarios aws tests qualification))
-  execution.profile.emit?: #t)
-(.call Observed .run)
+(import (only-in :yuanxu/ops/interface Ops)
+        (only-in :clan/poo/object .cc .get .call with-slots))
+(with-slots (preview run) Ops
+  (def Script (.cc (.get Ops prototypes Script)
+                  'command '("printf" "ready") 'timeout 5))
+  (preview Script)                 ; pure value; no process
+  (run Script)                    ; explicit process boundary
+  (.call Script .run))            ; same executor, another explicit invocation
 #+end_src
 
-Qualification: =just test-file t/execution-progress-test.ss= exercises native
-counter decoding, replay rejection, inherited parent/child liveness, idle
-failure with emission disabled, a non-renewable total, and descendant cleanup.
-Synthetic Nix records in these narrow tests are explicit protocol probes;
-the AWS integration consumes actual Nix activity and real provider packages.
-
-* One selected publication
-
-Ops is a Core Module maintained at core/ops. The existing explicit source
-binding selects this directory without copying it into modules/. This uses the
-same SourceRef tree, role admission, dependency linking and scope Contract as
-other Core Modules. The sole public publication is interface.ss; it no longer
-re-exports implementation bindings as an unrelated library API.
-
-#+begin_src scheme
-;; core/init.ss
-(import :yuanxu/module-system/selection/init-syntax)
-(yuanxu! mode: explicit source: "./modules" (json-schema)
-  (ops @ "./ops"))
-
-;; core/build.ss is unchanged.
-(import (only-in :std/build-script defbuild-script)
-        (only-in "./init.ss" init.build-spec)
-        (only-in "./core-spec.ss" core-spec))
-(defbuild-script (init.build-spec core-spec))
-#+end_src
-
-There is no separate ops/interface root in core-spec.ss. The selected Module
-projects its admitted role sources and their actual source dependencies. Core's
-ordinary infrastructure roots and the selected Module projection are combined
-by the existing build entry. Ops itself never reloads root init.ss while running
-an operation or while a Module build phase is active.
-
-* Source roles
+The two execution calls above are alternatives in ordinary use. Importing the
+library, constructing Script, reading its =.run= slot and previewing it do not
+execute commands. The default Script's empty command cannot pass execution
+admission until its caller supplies a command.
 
 | File | Responsibility |
 |------+----------------|
-| types.ss | ProcessScriptContract, OpsConfigContract and OpsScopeContract |
-| gerbil.pkg | The existing Module prelude for the external Core-owned source directory |
-| config.ss | Inert defaults for directory, environment, timeout, log and status handling |
-| func.ss | Named native process execution and output adaptation |
-| objects.ss | ProcessScript. using receiver-local config; imports SelectedPackages. |
-| selected-packages.ss | Implementation helper for selected external-package execution |
-| interface.ss | One declarative Ops Module publication |
+| types.ss | Command, environment, configuration and scope Contracts |
+| config.ss | Inert execution defaults |
+| func.ss | Pure preparation and the one explicit execution function |
+| objects.ss | Existing Script and SelectedPackages prototypes |
+| interface.ss | Built-in Ops object and functional slot bindings |
+| process-script.ss | Receiver-local defaults and native .run delegation |
+| progress.ss | Existing process progress, cancellation and watchdog boundary |
+| selected-packages.ss | Selected external-package execution helper |
 
-#+begin_src scheme
-;; config.ss
-(def Config
-  (.o directory: #f environment: (.o) timeout: #f log: #f check-status: #t))
+* Inheritance and execution
 
-;; interface.ss: existing role wrapping supplies imports and the publication export.
-(.def Ops
-  identity: 'ops
-  core:
-  (.o requires: (.o)
-      scope-contract: OpsScopeContract
-      exports:
-      (.o config: Config
-          types: (.o ProcessScript: ProcessScriptContract Config: OpsConfigContract)
-          prototypes:
-          (.o Script: (.cc ProcessScript. 'config config)
-              SelectedPackages: SelectedPackages.)))
-  features: (.o))
-#+end_src
+A derived Ops object's Script reads the derived lexical =config= even after the
+parent Script has been cached. Parent defaults remain unchanged. Contracts
+validate the final command and options immediately before execution; a preview
+is not authorization or an execution receipt.
 
-OpsScopeContract checks the actual execution-default shape, published Contract
-identities and the native execution prototypes. Resolving .run only checks that
-it is a procedure; admission never invokes it. The default Script has no command
-and cannot execute until a caller supplies one. ProcessScriptContract admits the
-final effective command and options immediately before execution.
+Literal argv goes to =std/misc/process#run-process= without implicit shell
+interpretation. Environment overrides are POO string fields. Timeout uses the
+existing owned process group and retains GNU timeout's signal diagnostic.
+Cancellation terminates owned descendants; it never signals a PID merely read
+from an arbitrary file. A configured log streams output to that operation's
+file. Otherwise the result retains captured output, including partial output
+when cancellation raises the original error.
 
-The Script prototype reads directory/environment/timeout/log/check-status through
-its config slot. The published prototype binds the enclosing scope's lexical
-config. A derived scope therefore obtains its own defaults even if the parent's
-prototype has already been demanded; parent defaults remain unchanged.
+* Build and test boundary
 
-* Resolve once, bind once, execute explicitly
+=defbuild-script= and =std/make= own compilation. Ops only executes explicit
+commands. TestingScript retains its current source checks, artifact issuance,
+120-second preparation cap, 60-second idle cap and 600-second test cap. Loading
+Ops does not load the test executor or run a build.
 
-The project catalog in t/qualification/opentofu/objects.ss is the one integration
-point. It uses the actual maintained Core init; it has no second Ops selection
-file or direct import of the old execution-object export surface.
+The Core tests cover pure preview, function/native method equivalence, explicit
+execution, parent/child defaults, deadline diagnostics, cancellation and fixture
+cleanup. =ops/tests/atomic-test.ss= remains an ordinary native suite; its location
+does not make Ops a selectable Module. Services have separate lifecycle design
+in [[file:services.org][services.org]] and are not implemented by one-shot Script.
 
-#+begin_src scheme
-(def OpsScope
-  (.get (yuanxu-load-modules
-          (path-expand "../../../init.ss" (path-directory (this-source-file))))
-        modules ops))
+* Built-in ownership qualification (2026-10-23)
 
-(def Ops
-  (use-module OpsScope as ops
-    (with-slots (Script) (.get ops prototypes)
-      (.o prototypes: (.get ops prototypes)
-          types: (.get ops types)
-          tests:
-          (.o SelectedFlake:
-              (.o (:: @ Script)
-                command: '("/usr/bin/time" "-p" "just" "test-opentofu-selected-flake")
-                timeout: 145 check-status: #f))))))
-#+end_src
+Ops belongs to the ordinary Core library closure, not to an =init.ss= selection.
+Both the Core and product declarations omit Ops; Funflow has no selectable Ops
+requirement. The interface exposes the same functional operations and Script
+prototype without executing a command during import or binding.
 
-The catalog also defines the other selected-graph/flake test and sampling
-commands. It contains no process invocation. Native with-slots binds the existing
-Script prototype; bounded use-module binds an admitted scope without reloading
-it or adding another module DSL. Its alias stays inside the compound body.
+The clean qualification used the installed Gerbil runtime, Core base
+=10a075938f8820547acca8e915671a5e69dbea73= and its declared gerbil-poo
+=80b590b15c6d4bde7717f5fd85d5b98dbf230bd8=. It ran in an isolated source tree
+because another session was upgrading the working-tree dependency. This receipt
+does not qualify that concurrent dependency upgrade.
 
-#+begin_src scheme
-;; Coordinator: specialize the existing declaration for one round.
-(def script (.cc base 'directory root 'environment env 'log log))
-;; Only this explicit call starts the operation.
-(apply (.get script .run) arguments)
-#+end_src
+The complete Core build compiled 235 entries and finished in 152.638 seconds.
+The built-in scope, Functional API, process Script, authoring, candidate,
+reader-root collection, test preparation, build process, test publication,
+publication isolation and real Gitea/PostgreSQL focused suites passed with
+=MODULE-OK=, =HARNESS-OK= and final =OK=. Scope tests cover loading without
+execution, explicit execution, cached parent defaults and child receiver
+isolation. Existing watchdog limits and negative checks remain enabled.
 
-Loading sources, admitting the scope, constructing a script and resolving .run
-start no operational process. Loading may read/evaluate admitted source; it is
-not a promise of zero source preparation work. A .run closure remains a procedure
-until explicitly called; Ops does not auto-run it through init or scope demand.
-
-* Process behavior and build boundary
-
-run-script calls std/misc/process#run-process with literal argv. There is no
-implicit shell interpretation. Environment is a native POO object of string
-overrides over the inherited environment. Directory, log and timeout are
-ordinary configuration values. A supplied log streams merged stdout/stderr to
-a fresh/truncated per-operation file; otherwise output is captured in the result.
-Native results contain normalized status, raw Gambit wait-status, seconds,
-output and log.
-
-Timeout currently uses GNU timeout: TERM at the declared deadline, then KILL
-five seconds later if necessary. This is an explicit runtime tool dependency,
-not a new Scheme scheduler. check-status defaults to true and raises on nonzero
-exit. Qualification declarations use false so the coordinator can retain logs
-and host observations before rejecting the round.
-
-Ops is distinct from defbuild-script. Core/std/make owns source compilation and
-native dependency scheduling. SelectedPackages. is an explicit operational
-consumer of selected external contributions: it writes admitted package inputs,
-performs native package handoffs and requires final configuration admission
-before returning success. It emits a normal guard.ss, never a defbuild-script.
-Unsupported projections, edited guards, stale inputs and failed admission reject.
-Source checks before and after external effects use fresh validation scopes.
-
-* One qualification entry
-
-#+begin_src sh
-just ops-help
-just test-file t/ops-module-publication-test.ss
-just test-file t/ops-process-script-test.ss
-just test-file t/ops-selected-packages-test.ss
-just test-file t/ops-rounds-test.ss
-just test-opentofu-selected-flake-rounds /private/tmp/fresh-results /private/tmp/locked-flake 3
-#+end_src
-
-The Scheme coordinator runs serial Just children and retains the original
-60-second Case, 120-second outer test and 145-second operational envelope. It
-checks exit zero, MODULE-OK, HARNESS-OK, final OK and absence of error/overflow
-markers. std/test remains the assertion authority; Ops is not another test runner.
-Source digests are checked before every round and at completion. Each round
-retains its log, metrics, trace and host observations. A failure writes a failed
-summary with the last control log and currentness result, then rethrows.
-Raw logs remain outside source control; JSON receipts are output projections.
-
-The Module control covers real Core init selection, inert declaration/method
-resolution followed by marker creation only on invocation, receiver-local
-configured defaults after parent demand, disabled selection and stale init
-rejection. Other focused controls cover literal arguments, failed status,
-timeout 124, streamed logs, tampered guard rejection and failed final admission.
-Historical failed attempts remain local artifacts rather than rewritten passes.
-The old direct-export and separate compilation-root controls are historical;
-current qualification uses the selected Ops Module end to end.
-
-* Core test ownership
-
-Provider fixtures and structured receipts belong to t/fixtures/opentofu inside
-Core. All OpenTofu, Nix flake and Ops controls and their qualification catalog
-also belong to Core/t; they run through Core/Justfile. The parent Agentic AI Lab tree
-holds neither a second fixture tree nor these specialized recipes. A caller may
-supply an installed Gerbil dependency environment without making Core depend on
-the product's source tree.
-
-Historical receipts are preserved byte-for-byte, including their original source
-paths and failed outcomes. They are historical observations, not claims about
-the relocated checkout. Executable fixtures use Core-relative paths. The package
-fixture preparation command accepts an explicit pinned package-set reference;
-it no longer reads the product's devenv.lock. The three-round Scheme entry owns
-only Core source/fixture hashes and the explicitly supplied locked test flake.
-
-Because the selected directory is outside modules/, ops/gerbil.pkg declares the
-same existing Module prelude explicitly. This lets native gxc expand the one
-interface publication and adjacent role imports without adding compilation roots
-or custom script syntax. The Loader observes this package declaration too.
-
-Scope-session currentness, executable configuration admission and process launch
-are distinct checks. Generic Script.run admits the effective command/options;
-it does not manufacture a fresh Loader session for a retained closure. The
-Loader view owns its session check, the rounds coordinator checks its retained
-source set before each round and after completion, and SelectedPackages. checks
-the supplied graph around effects. This migration does not claim automatic
-per-method source leases for arbitrary retained scope values.
-
-* Recorded acceptance
-
-The selected-Module implementation compiled with the existing native Module
-prelude; the generated interface export contains Ops only. Six focused native
-controls passed (publication, process execution, selected packages, round
-validation, bootstrap selection and provider Schema conversion). The final
-three-round AWS-to-Null control passed 82 assertions per round and immediate
-publication matched 130 source hashes. Its structured record is
-[[file:../t/fixtures/opentofu/currentness-ops-control.json][the Core currentness receipt]]. The 60/120/145-second bounds are unchanged.
-Prior concurrent-source refusal, the timed-out cohort and the passed-but-later-
-stale cohort remain historical records. This qualifies the recorded source
-epoch; arbitrary later edits require a fresh currentness decision.
-
-* Functional First API and the two publication responsibilities
-
-func.ss owns named functions and exports compiler bindings needed by the other
-roles. Those exports do not make every helper a public Module API. The existing
-role wrapper imports the file once; it does not execute its functions or invent
-a second registry. Private process adaptation helpers remain unexported.
-
-interface.ss owns the second boundary: it explicitly binds the chosen functions
-to the admitted Module scope. OpsScopeContract checks their presence and procedure
-shape without calling them. Consumers resolve that one scope through the Loader
-and bind only the functions needed with native use-module and with-slots. No
-funcs container, task macro or independent public library facade is introduced.
-
-| Module slot | Implementation in func.ss | Result and effect boundary |
-|-------------+---------------------------+----------------------------|
-| validate | validate-script | Returns the same valid Script; rejects invalid input without ambient IO |
-| prepare-command | prepare-script-command | Literal argv, including declared timeout wrapper; no executable lookup |
-| merge-environment | merge-script-environment | Native POO overlay of explicit inherited values and overrides; neither input mutated |
-| preview | preview-script | Native inspection value with argv, directory, explicit environment, timeout and output policy |
-| run | run-script | Validates/prepares once, samples the inherited environment, then explicitly executes |
-
-Native Contract admission remains available through types.ProcessScript and
-its .admit method for callers that need detailed admission results. The ordinary
-validate function does not require the user to inspect or maintain evidence.
-
-Preview defaults to an empty explicit inherited environment. It does not read
-getenv, create a log, start a process, sample a clock or guess currentness. Supply
-an inherited environment object when a concrete environment preview is needed.
-Its argv field distinguishes the inspection value from a runnable declaration;
-it cannot silently become a second executable API or receive a double timeout
-wrapper. Pure behavior assumes inert input values, as elsewhere in native POO.
-
-#+begin_src scheme
-;; One Loader-resolved scope; the alias and function bindings stay in this body.
-(use-module OpsScope as ops
-  (with-slots (validate prepare-command merge-environment preview run) ops
-    (with-slots (Script) (.get ops prototypes)
-      (.def (Check @ Script)
-        command: '("printf" "%s")
-        timeout: 5)
-      (def checked (validate Check))
-      (def environment
-        (merge-environment (.o PATH: "/usr/bin:/bin") (.o CI: "true")))
-      (def inspection (preview checked '("ready") environment))
-      ;; Inspection and command preparation above are inert.
-      (run checked '("ready")))))
-#+end_src
-
-The native Script .run delegates to the same run-script function. Arguments are
-an explicit list in the functional API, while the bound .run method collects
-its positional arguments into that list. Both paths retain timeout behavior,
-normalized exit status, streamed failure output and native exceptions. Process
-elapsed time is captured before constructing the lazy POO result, so delayed
-inspection cannot extend the recorded runtime.
-
-The Core qualification catalog now inherits the admitted scope rather than
-re-exporting each function and prototype. Its coordinator binds run through
-use-module/with-slots. Thus real three-round qualification exercises the function
-entry, while focused controls cover equivalence with the bound native method.
-Source-currentness checks remain at the existing Loader, graph and qualification
-boundaries. Pure preview is not admission of a source epoch or execution authority.
-
-Services lifecycle is a separate design-only concern, described in
-[[file:services.org][Services lifecycle boundaries]]. No Service prototype or supervisor is implemented.
-
-These functions are independent entrypoints, not mandatory manual stages.
-Ordinary execution needs only (run Script arguments): it validates and prepares
-internally. Calling validate or preview first is optional inspection; it neither
-starts a process nor authorizes later execution. run samples its own runtime
-environment and rechecks its input, rather than silently executing a preview.
-
-Functional First acceptance: the native publication compiled, all six focused
-regressions (including ops-functional-test.ss) passed, and three serial real
-AWS-to-Null rounds passed 82 assertions each through the public run function.
-Immediate publication matched all 131 retained source digests. The original
-Case/outer/process budgets and failure-log checks were unchanged. The structured
-currentness receipt records this function API and preserves the previous Module
-control as historical evidence. Services remain design only.
+These are local build and focused-test results, not a complete remote CI pass.

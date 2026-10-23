@@ -952,6 +952,9 @@ def main():
                   core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean",
                   core / "ops/func.ss", core / "ops/process-script.ss",
                   core / "ops/tests/atomic-test.ss", core / "t/module-publication-test.ss"])
+    bound.extend([core / "t/qualification/module-publication/fixtures.ss",
+                  core / "t/qualification/module-publication/controls.ss",
+                  core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
     bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve()])
     sources = digests()
     args.receipt.parent.mkdir(parents=True, exist_ok=True)

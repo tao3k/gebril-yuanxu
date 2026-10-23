@@ -46,7 +46,7 @@
       (check-equal? (eq? modules (.get ModuleNamespace Modules)) #t)
       (check-equal? (let ((init-modules-getter 'caller-binding))
                       (eq? modules (.get ModuleNamespace Modules))) #t)
-      (check-equal? (.all-slots/sort modules) '(funflow json-schema ops))
+      (check-equal? (.all-slots/sort modules) '(funflow json-schema))
       (check-equal? (.slot? modules 'json-schema) #t)
       (check-equal? (.slot? modules 'missing) #f)
       (check-equal? (.slot? modules '.fallback-handler) #f)
@@ -69,7 +69,7 @@
       ;; Empty selection must never become gxtest's implicit directory scan.
       (check-exception (.call (.call (.get yuanxu.init.exports tests) .select '()) .run) error?)
       (check-exception (.get (.call (.get yuanxu.init.exports tests) .select '(unselected)) spec) error?)
-      (check-equal? (.get yuanxu.init.exports tests spec) (append json flow (.get (.call (.get yuanxu.init.exports tests) .select '(ops)) spec)))
+      (check-equal? (.get yuanxu.init.exports tests spec) (append json flow))
       (check-equal? (eq? json (.get (.call (.get yuanxu.init.exports tests) .select '(json-schema)) spec)) #t)
       (def selected (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
       (check-equal? (.slot? selected '.run) #t)

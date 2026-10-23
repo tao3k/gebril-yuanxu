@@ -33,12 +33,14 @@
                  module-publication-contract-current?)
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/interface)
-(export module-publication-test with-publication-source write-file)
+(import (only-in "qualification/module-publication/fixtures.ss" write-file remove-tree with-publication-source domain-entry-count native-import-value exception-message PublicLibraryFixture core-source-root)
+        (only-in "qualification/module-publication/controls.ss" register-reader-root-collection-cases! register-build-support-control-cases!))
+(export module-publication-test)
 (def ScopeContract
   (yuanxu-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
 (def factory-calls 0)
 (def dependencies 'author-value)
-(def core-source-root (path-expand ".." (path-directory (this-source-file))))
+
 (def native-.ref 'author-shadow)
 (publication-definition Published
   identity: 'custom/published
@@ -48,79 +50,7 @@
                             (.o value: label provider: Provider author: dependencies
                                 unused: (error "unused export must remain lazy"))))
   features: (.o unused: (error "unused feature must remain lazy")))
-(def (write-file path text)
-  (create-directory* (path-directory path))
-  (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
-(def (remove-tree path)
-  (if (eq? (module-source-type path) 'directory)
-    (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
-           (delete-directory path))
-    (delete-file path)))
-(def (with-publication-source test)
-  (let* ((root (make-temporary-file-name "module-publication-"))
-         (module-root (path-expand "modules/custom/example" root)))
-    (dynamic-wind
-     (lambda ()
-       (write-file (path-expand "gerbil.pkg" root)
-                   (string-append "(package: " (symbol->string (gensym 'publication-fixture-)) ")"))
-       (write-file (path-expand "types.ss" module-root)
-         "(import (only-in :yuanxu/types yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
-       (write-file (path-expand "objects.ss" module-root)
-         "(import (only-in :clan/poo/object .o)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope)")
-       (write-file (path-expand "config.ss" module-root)
-         "(def Greeting \"hello\") (export Greeting)")
-       (write-file (path-expand "interface.ss" module-root)
-         "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting)) features: (.o))"))
-     (lambda ()
-       (let* ((view (yuanxu-load-modules (path-expand "modules" root)))
-              (source ((.get view context locate) 'custom/example)))
-         (test root module-root source view)))
-     (lambda () (remove-tree root)))))
-(def (domain-entry-count graph root)
-  ;; Compiler-tool inputs now accompany domain roots. Keep the source-role
-  ;; assertion exact without pretending tools are application Module roles.
-  (let (prefix (string-append (path-strip-trailing-directory-separator (path-normalize root)) "/"))
-    (length (filter (lambda (entry) (string-prefix? prefix (path-normalize (.get entry path))))
-                    (.get graph entries)))))
-(def (native-import-value path name)
-  ;; Test-only native compiler/interpreter control, not a runtime Loader backend.
-  (parameterize ((current-expander-context (make-top-context)))
-    (eval-syntax `(import ,path))
-    (eval-syntax name)))
-(def (exception-message thunk)
-  (with-catch (lambda (exception)
-                (call-with-output-string (lambda (port) (display-exception exception port))))
-              (lambda () (thunk) "unexpected success")))
-(.def PublicLibraryFixture
-  .acquire:
-  (lambda ()
-    (def fixture-root (make-temporary-file-name "publication-public-library-"))
-    (def original-paths (load-path))
-    (def package-name (symbol->string (gensym 'publication-library-)))
-    (def first-root (path-expand "first" fixture-root))
-    (def shadow-root (path-expand "shadow" fixture-root))
-    (def relative (string-append package-name "/helper.ss"))
-    (with-catch
-      (lambda (failure)
-        (set-load-path! original-paths)
-        (when (file-exists? fixture-root) (remove-tree fixture-root))
-        (raise failure))
-      (lambda ()
-        (for-each
-          (lambda (root)
-            (write-file (path-expand (string-append package-name "/gerbil.pkg") root)
-              (call-with-output-string (cut write (list package: package-name) <>)))
-            (write-file (path-expand relative root)
-              "(def ExternalValue \"original\") (export ExternalValue)"))
-          (list first-root shadow-root))
-        (set-load-path! (cons first-root original-paths))
-        (.o root: fixture-root path: (path-expand relative first-root)
-            shadow: shadow-root paths: original-paths))))
-  .release:
-  (lambda (resource)
-    (set-load-path! (.get resource paths))
-    (remove-tree (.get resource root))
-    (check-equal? (file-exists? (.get resource root)) #f)))
+
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
     (yuanxu-test-case "Graph consumes the exact normalized publication from its single producer"
@@ -428,94 +358,9 @@
               (check-equal? (hash-key? (expander-context-table context) '.o) #f)
               (check-equal? (hash-key? (expander-context-table context) '.def) #t))
             interfaces))))
-    (yuanxu-test-case "publication keeps unique original reads and refuses changed provenance"
-      (with-publication-source
-        (lambda (_root _module-root source _view)
-          (def reader (module-publication-reader))
-          (def counts #f)
-          (def (observe key _amount)
-            (when (and (pair? key) (eq? (car key) 'reader-read-roots))
-              (set! counts (cdr key))))
-          (defvalues (_publication reads)
-            (parameterize ((current-module-source-observer observe))
-              (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t)))
-          (def bundle (find (lambda (read) (eq? (slot-read-key read) 'publication-reads)) reads))
-          ;; The former synthetic bundle is not an authority or a dependency.
-          (check-equal? bundle #f)
-          (def roots reads)
-          (def seen (make-hash-table-eq))
-          (for-each (lambda (read)
-                      (check-equal? (hash-key? seen read) #f)
-                      (hash-put! seen read #t)) roots)
-          (check-equal? (andmap object-read-issued? roots) #t)
-          (check-equal? (> (cdr (assq 'identities counts)) 0) #t)
-          ;; The outer frame also observes acquisition of the reader function.
-          (check-equal? (>= (length roots) (cdr (assq 'identities counts))) #t)
-          ;; Root storage is now compact at collection time. Slot observers
-          ;; still receive every delivery; this counter measures stored roots.
-          (check-equal? (cdr (assq 'stored-roots counts)) (cdr (assq 'identities counts)))
-          (replay-slot-reads! roots (lambda (_receiver _key) (void)))
-          ;; Mutation is a negative injection, not a different source fixture.
-          ;; No token is rebuilt and no callback's dependencies are filtered.
-          (.put! source 'value "changed-after-publication")
-          (check-exception
-            (replay-slot-reads! roots (lambda (_receiver _key) (void))) error?))))
-    (yuanxu-test-case "reader warm inputs preserve the original graph without a weak projection claim"
-      (with-publication-source
-        (lambda (_root _module-root source view)
-          (def reader (module-publication-reader))
-          (defvalues (_publication roots)
-            (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t))
-          (let ()
-            (def first (.call reader inputs source))
-            (check-equal? (pair? first) #t)
-            (.call reader read source)
-            (def second (.call reader inputs source))
-            ;; The same guarded native inputs are projected again, not cloned
-            ;; sources or reused success. Existing currentness controls remain.
-            (check-equal? (length second) (length first))
-            (for-each (lambda (input) (check-equal? (if (memq input first) #t #f) #t)) second)
-            (check-equal? (andmap object-read-issued? roots) #t)
-            ;; Full graph retention is intentional. Do not resurrect the old
-            ;; zero-closure telemetry as a passing memory optimization.
-            (check-equal? (any (lambda (read) (pair? (slot-read-dependencies read))) roots) #t)
-            (replay-slot-reads! roots (lambda (_receiver _key) (void))))
-          ;; The real paired reader publishes its native support guard. No
-          ;; synthetic reads, hand-maintained requirements or purity labels.
-          (def candidate-reader (module-publication-reader))
-          (def result
-            (parameterize ((current-module-source-observer #f))
-              (.call candidate-reader read-candidate (lambda () source)
-                'custom/example (.get view context))))
-          (def current! (list-ref result 4))
-          (defvalues (_checked times)
-            (parameterize ((current-module-source-observer #f))
-              (call-with-module-source-operation-measurement current!)))
-          (check-equal? (hash-ref times '(calls metadata-replay)) 2)
-          (check-equal? (> (hash-ref times '(visits metadata-replay)) 0) #t)
-          (check-equal? (number? (hash-ref times '(collections metadata-replay))) #t)
-          (def replays 0)
-          (parameterize ((current-module-source-observer
-                          (lambda (key amount)
-                            (when (equal? key '(metadata-replay-end native))
-                              (set! replays (+ replays amount))))))
-            (current!))
-          (check-equal? replays 3)
-          ;; A callback can edit a preparation-only dependency and remove its
-          ;; own observer after admission replay. The pinned open tail remains.
-          (set! replays 0)
-          (parameterize ((current-module-source-observer
-                          (lambda (key amount)
-                            (when (equal? key '(metadata-replay-end native))
-                              (set! replays (+ replays amount))
-                              (when (= replays 2)
-                                (.put! source 'value "changed-after-admission-replay")
-                                (current-module-source-observer #f))))))
-            (check-exception (current!)
-              (lambda (failure)
-                (and (Error? failure)
-                     (equal? (Error-message failure) "stale slot dependency")))))
-          (check-equal? replays 2))))
+
+
+    (register-reader-root-collection-cases!)
     (yuanxu-test-fixture "public source preparation is unique but admission remains fresh"
       (library PublicLibraryFixture)
       (with-publication-source
@@ -575,60 +420,8 @@
               (and (Error? exception)
                    (string=? (Error-message exception)
                      "public dependency source or native identity changed")))))))
-    (yuanxu-test-case "tool eligibility does not enlarge the declaration dependency closure"
-      (with-publication-source
-       (lambda (_root module-root source _view)
-         (def projection
-           (path-normalize (yuanxu-bootstrap-source-path
-             (core-import-module ':yuanxu/module-system/building/build-projection) core-source-root)))
-         (def dependencies (make-hash-table))
-         (for-each-build-module
-           (core-import-module ':yuanxu/module-system/building/build-projection)
-           (lambda (context)
-             (let (path (yuanxu-bootstrap-source-path context core-source-root))
-               (when path (hash-put! dependencies (path-normalize path) #t)))))
-         (def (observed-paths reader)
-           (def paths (make-hash-table))
-           (parameterize ((current-module-source-observer
-                           (lambda (key _amount)
-                             (when (and (pair? key) (eq? (car key) 'file-read))
-                               (hash-put! paths (path-normalize (caddr key)) #t)))))
-             (.call reader admit-current))
-           paths)
-         (def reader (module-publication-reader))
-         ;; The import eligibility catalog is not the consumer dependency set.
-         (check-equal? (hash-key? (observed-paths reader) projection) #f)
-         (.call reader read source)
-         (check-equal? (hash-key? (observed-paths reader) projection) #f)
-         ;; Changing a role requires a fresh reader. Its actual import must
-         ;; register the entire native transitive closure, not only the root.
-         (write-file (path-expand "build.ss" module-root)
-           "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
-         (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
-         (def demanded (module-publication-reader))
-         (def published (.call demanded read source))
-         (check-equal? (hash-key? (observed-paths demanded) projection) #f)
-         ;; The deferred Build evaluator must enroll its support in the same
-         ;; publication reader before returning a callable/object to the Graph.
-         (check-equal?
-           (parameterize ((current-module-build-phase? #t))
-             (procedure? (.get published core configuration-build function))) #t)
-         (def paths (observed-paths demanded))
-         (check-equal? (hash-key? paths projection) #t)
-         ;; Compare the entire real native dependency closure, rather than a
-         ;; former compiler-bootstrap helper no longer imported by this owner.
-         (for-each (lambda (entry) (check-equal? (hash-key? paths (car entry)) #t))
-                   (hash->list dependencies))
-         ;; A topology hit still requires fresh byte reads on a later check.
-         (check-equal? (hash-key? (observed-paths demanded) projection) #t)
-         (write-file (path-expand "config.ss" module-root)
-           "(def Greeting \"changed after demand\") (export Greeting)")
-         (check-exception (.call demanded admit-current)
-           (lambda (exception)
-             (and (Error? exception)
-                  (string=? (Error-message exception)
-                    "compiler tool source changed; use a fresh reader")))))))
+
+    (register-build-support-control-cases!)
     (yuanxu-test-case "completed reader bodies release without discarding macro bindings"
       (with-publication-source
        (lambda (_root module-root source _view)

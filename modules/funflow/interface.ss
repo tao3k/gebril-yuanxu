@@ -4,7 +4,7 @@
 (.def Funflow
   identity: 'funflow
   core:
-  (.o requires: (.o Ops: (.o module-id: 'ops contract: OpsScopeContract))
+  (.o requires: (.o)
       scope-contract: FunflowScopeContract
       exports: (.o (:: @ FunflowModule.) config: Config))
   features: (.o))

@@ -1,9 +1,10 @@
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Run the SAME existing assertion against baseline and candidate artifacts.
-;;; Failure is recorded as failure; this is not a passing negative assertion.
-(import (only-in :yuanxu/t/module-publication-test module-publication-test)
-        (only-in :yuanxu/t/qualification/service-publication/selection selected-publication-suite))
+;;; Source preparation shared by publication suites; no test suite is imported.
+(import (only-in :std/test test-suite)
+        (only-in :yuanxu/t/qualification/module-publication/controls
+                 register-build-support-control-cases!))
 (export build-support-control-test)
 (def build-support-control-test
-  (selected-publication-suite module-publication-test
-    '("tool eligibility does not enlarge the declaration dependency closure")))
+  (test-suite "Selected publication controls"
+    (register-build-support-control-cases!)))

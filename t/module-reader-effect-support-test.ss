@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; An import closure describes code use, not all effects of native Scheme.
 (import :std/test :clan/poo/object
-        (only-in "./module-publication-test.ss" with-publication-source write-file)
+        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/admission module-source-read)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)

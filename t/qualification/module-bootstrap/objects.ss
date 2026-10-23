@@ -1,13 +1,12 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import "../../../init.ss" :clan/poo/object "./fixtures.ss"
+(import (only-in :yuanxu/ops/interface Ops) :clan/poo/object "./fixtures.ss"
         (only-in :yuanxu/observability/testing-script make-compiler-progress-reader)
         (only-in :std/source this-source-file))
 (export Build InputChecks Fixture)
 (def owner (path-expand "../../.." (path-directory (this-source-file))))
 (def host-state (path-expand (gerbil-path)))
-(def Ops (.get yuanxu.init.exports Modules ops scope))
 ;; Lazy fixture data; declaring this object creates no fixture or process.
 (.def Fixture
   value: (source-build-fixture owner)

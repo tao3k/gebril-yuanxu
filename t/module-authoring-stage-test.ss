@@ -6,7 +6,7 @@
                  %call-with-recorded-slot-reads slot-read-key slot-read-dependencies
                  slot-read-receiver call-with-slot-read-observer)
         (only-in "./module-candidate-stage-test" with-other-source)
-        (only-in "./module-publication-test" write-file)
+        (only-in "./qualification/module-publication/fixtures.ss" write-file)
         (only-in :yuanxu/module-system/source/admission yuanxu-module-style-policy-prototype)
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract)

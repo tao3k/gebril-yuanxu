@@ -1,16 +1,15 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object (only-in "../init.ss" yuanxu.init.exports)
+(import :std/test :clan/poo/object (only-in :yuanxu/ops/interface Ops)
         (only-in :yuanxu/profile-composition/selection-syntax use-module)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export ops-functional-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
-(def Ops (.get yuanxu.init.exports Modules ops scope))
 (def ops-functional-test
-  (test-suite "Ops Functional First uses the admitted Module scope"
+  (test-suite "Ops Functional First uses the built-in Core scope"
     (yuanxu-test-case "pure validation, command preparation and preview create no effects"
       (use-module Ops as ops
         (with-slots (validate prepare-command preview) ops

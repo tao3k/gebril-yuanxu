@@ -478,7 +478,7 @@ is required in =interface.ss=. The two initial real suites live at
 #+begin_src scheme
 ;; init.ss remains the single selection declaration.
 (yuanxu! mode: explicit source: "./modules"
-  (json-schema) (funflow) (ops @ "./ops"))
+  (json-schema) (funflow))
 
 ;; Ordinary file lists, usable by the existing std/test harness.
 (init.test-spec)                 ; selected init roots, where suites exist

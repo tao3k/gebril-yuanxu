@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in "./module-candidate-stage-test" with-other-source)
-        (only-in "./module-publication-test" write-file)
+        (only-in "./qualification/module-publication/fixtures.ss" write-file)
         (only-in :yuanxu/module-system/source/publication ModulePublicationContract)
         (only-in :yuanxu/module-system/source/admission yuanxu-default-module-style-policy)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))

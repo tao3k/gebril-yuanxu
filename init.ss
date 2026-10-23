@@ -8,5 +8,4 @@
 (yuanxu!
   :load-modules "./modules" mode: explicit rename: Modules
   (json-schema)
-  (funflow)
-  (ops @ "./ops"))
+  (funflow))

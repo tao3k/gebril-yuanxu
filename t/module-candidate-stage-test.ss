@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in "./module-publication-test" with-publication-source write-file)
+        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/directory module-directory-context)

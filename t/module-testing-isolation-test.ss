@@ -34,7 +34,7 @@
       (yuanxu-test-checkpoint 'selection-start)
       (def json (.get yuanxu.init.exports Modules json-schema))
       (def flow (.get yuanxu.init.exports Modules funflow))
-      (def unused (.get yuanxu.init.exports Modules ops))
+      (def unused (.get flow tests))
       (def reads 0)
       (def funflow-read? #f)
       (def previous-observer (current-module-source-observer))
@@ -65,14 +65,13 @@
         (append (.get json-tests spec) (.get flow-tests spec)))
       (check-equal? (eq? (.get json-tests selected-graph) (.get selected selected-graph)) #t)
       (check-equal? (eq? (.get flow-tests selected-graph) (.get selected selected-graph)) #t)
-      (check-equal? (.ref/cached (.get unused tests) 'qualification) #f)
-      (let (dependencies (memq 'ops (.get selected selected-graph module-order)))
-        (check-equal? (and dependencies (memq 'funflow (cdr dependencies)) #t) #t))
+      (check-equal? (.ref/cached unused 'integration) #f)
+      (check-equal? (.get selected selected-graph module-order) '(json-schema funflow))
       (check-equal? (.ref/cached selected 'execution) #f)
       (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)
       (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-        (list json flow unused))
+        (list json flow))
       (check-equal?
         (eq? selected (.call all .select '(json-schema funflow))) #t)
       (def source (.get selected source))
@@ -94,12 +93,11 @@
         (inexact->exact (round (* 1000 (.get receipt seconds)))))
       (yuanxu-test-checkpoint 'qualification-complete)
       (check-equal? (directory-files workspace) '("harness.log"))
-      ;; Shared child runtime imports are dependencies, not sibling suite runs.
-      (check-equal? (.ref/cached (.get yuanxu.init.exports Modules ops tests) 'qualification) #f)
+      ;; The unselected integration branch stays cold during qualification.
+      (check-equal? (.ref/cached (.get flow tests) 'integration) #f)
       (check-equal? (.ref/cached all 'spec) #f)
       (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-        (list (.get yuanxu.init.exports Modules json-schema) (.get yuanxu.init.exports Modules funflow)
-              (.get yuanxu.init.exports Modules ops))))
+        (list (.get yuanxu.init.exports Modules json-schema) (.get yuanxu.init.exports Modules funflow))))
     (test-case "Ops failure unwinds the existing fixture"
       (def acquired #f)
       (check-exception

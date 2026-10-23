@@ -31,3 +31,17 @@ Avoid repeated list scans and repeated closure/index construction.  Reuse
 stable prototypes and derived indexes.  Do not lower concurrency to hide a
 regression.  Performance changes require an A/B scenario with the same source
 and semantic result; an optimization without a receipt is not project style.
+
+** Built-in library ownership
+
+Ops is an ordinary Core library, not an optional Module selected through root
+init. Import its published Ops object from =:yuanxu/ops/interface=; functions
+and native Script methods share one executor. Core owns compilation through
+its ordinary library roots. Module =core.requires= lists selectable Module
+publications, not built-in library imports. No bootstrap selection or second
+interface registry is required to execute an explicitly declared Script.
+
+A Module must publish the inert vocabulary that its public consumers need.
+Funflow's runtime vocabulary is part of its default object facade; consumers
+need not import an implementation file that is absent from the compiled public
+closure. Scope acquisition and vocabulary reads never start a runtime.

@@ -10,7 +10,7 @@
         (only-in :yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current? module-publication-dependency-projection)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in "./module-publication-test" with-publication-source write-file))
+        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file))
 (export module-dependency-continuation-test)
 (def module-dependency-continuation-test
   (test-suite "Native dependency continuation with the maintained publication producer"

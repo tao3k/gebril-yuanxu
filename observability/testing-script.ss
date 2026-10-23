@@ -180,8 +180,7 @@
                   (if times
                     '("-e" "(displayln \"test-prepare phase=make-import seconds=\" (- (real-time) test-make-started))")
                     '())
-                  (list "-e" (object->string expression)))))
-            output-port: (current-error-port)))
+                  (list "-e" (object->string expression)))))))
           ;; Report the actual compiler before completion admission: a refused
           ;; new generation must not erase the producer's diagnostic counts.
           (when times

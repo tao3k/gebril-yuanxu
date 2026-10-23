@@ -107,12 +107,12 @@ Final three-round measurements and the source-bound receipt are added below.
 
 * Operational ownership
 
-Ops is now selected by the maintained Core init through the existing explicit
-source binding =(ops @ "./ops")=. The Loader admits its publication and
-OpsScopeContract, and the project catalog uses bounded use-module to obtain the
-execution prototypes. There is no independent ops/interface compilation root or
-old direct-export consumer. [[file:../../../ops/README.org][The Ops Module design]] records the current
-roles, native lexical config binding and explicit execution boundary.
+Ops is a built-in Core library published by =:yuanxu/ops/interface=. Neither
+Core nor the product root selects it in =init.ss=. Its functional APIs and
+Script prototypes are the same inert native values; only an explicit =run= or
+=.run= starts a process. Native package compilation owns its library sources.
+[[file:../../../ops/README.org][The Ops library design]] records configuration,
+Contract and runtime boundaries.
 
 The implementation remains at core/ops. Project-specific test commands and
 measurement coordination remain in Core/t/qualification/opentofu. Importing the catalog,

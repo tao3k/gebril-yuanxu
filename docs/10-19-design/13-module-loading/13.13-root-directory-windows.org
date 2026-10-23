@@ -10,12 +10,16 @@ The maintained [[file:../../../init.ss][root init]] owns its actual selection. T
 separate scenarios/init.ss and no repeated Module selection in that directory.
 
 #+begin_src scheme
-(import "./module-system/selection/init-syntax.ss")
+(import :yuanxu/module-system/selection/init-syntax)
 (yuanxu!
-  :load-modules "./modules" mode: explicit rename: Modules
-  (json-schema) (funflow) (nix) (opentofu) (ops @ "./ops")
-  :load-modules "./scenarios" mode: explicit rename: Scenarios
-  (null) (aws-validation) (aws))
+  :load-modules "./core/modules" mode: explicit rename: Core
+  (json-schema)
+  (funflow)
+  :load-modules "./modules" mode: auto
+  :load-modules "./scenarios" mode: explicit rename: scenarios
+  (null)
+  (aws-validation)
+  (aws))
 #+end_src
 
 Window names route namespace access; publication identities remain json-schema,
