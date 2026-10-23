@@ -3,12 +3,20 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Declarative Ops scripts; each child establishes its own source context.
 (import :std/test :clan/poo/object
+        (only-in :yuanxu/ops/func run-script)
         (only-in :gerbil/expander core-read-module/sexp)
         "./qualification/module-bootstrap/objects.ss")
 (export module-build-process-test)
 (def (build-command script action)
   (displayln "BUILD-PROCESS " action) (force-output)
-  (def result (.call script .run action))
+  ;; Forward actual compiler output while retaining the captured result for
+  ;; assertions. The outer Harness must observe child progress as it occurs.
+  (def execution
+    (if (equal? action "compile")
+      (.cc script 'environment
+        (.+ (.get script environment) (.o GERBIL_BUILD_VERBOSE: "1")))
+      script))
+  (def result (run-script execution (list action) output-port: (current-error-port)))
   (displayln "BUILD-PROCESS-DONE " action " seconds=" (.get result seconds))
   (force-output)
   (def output (.get result output))
@@ -79,7 +87,7 @@
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))
     (test-case "same fixture rejects package mismatch and changed admission inputs"
-      (def result (.call InputChecks .run))
+      (def result (run-script InputChecks output-port: (current-error-port)))
       (def output (.get result output))
       (display output)
       (check-equal? (.get result status) 0)
