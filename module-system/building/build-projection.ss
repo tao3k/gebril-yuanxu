@@ -19,6 +19,31 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
 (export yuanxu-project-source-spec)
+(def (project-native-make-specs entries package-prefix)
+  ;; std/make names products using prefix + target, while gxc uses the
+  ;; declared module identity. Keep those names identical for every target.
+  (def groups (make-hash-table))
+  (def order '())
+  (for-each
+    (lambda (entry)
+      (def id (.get entry compiler-identity))
+      (def name (build-target-name id package-prefix))
+      (def full (symbol->string id))
+      (def prefix
+        (if (equal? full (if (string-empty? package-prefix) name
+                            (string-append package-prefix "/" name)))
+          #f
+          (substring full 0 (- (string-length full) (string-length name) 1))))
+      (unless (hash-key? groups prefix)
+        (hash-put! groups prefix '())
+        (set! order (cons prefix order)))
+      (hash-update! groups prefix
+        (cut cons `(gxc: ,name ,@(.get entry options)) <>) '())) entries)
+  ;; The admitted cross-package prelude bootstraps independently of Core.
+  (map (lambda (native-prefix)
+         (.o prefix: native-prefix spec: (reverse (hash-ref groups native-prefix))))
+       (append (filter identity (reverse order))
+               (if (hash-key? groups #f) '(#f) '()))))
 (def (build-target-name identity package-prefix)
   ;; One root-owned language file has an explicit native package identity.
   ;; Both call sites still verify its actual source path and prepared identity.
@@ -267,6 +292,7 @@
           (module-source-admit-current! observed))))
     (current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
+        native-make-specs: (project-native-make-specs entries package-prefix)
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
         source-inputs: observed
         ;; Ordinary package Make and issued compilation share role lowering,

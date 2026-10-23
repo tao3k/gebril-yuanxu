@@ -64,6 +64,22 @@
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (build-command Build "compile")
       (def first-identities (output-identities root lib names))
+      ;; The language's declared identity is not the root package prefix.
+      ;; A fresh process must reuse its real products, without alias outputs.
+      (def prelude-products
+        (list (path-expand "tao3k/yuanxu/prelude.ssi" lib)
+              (path-expand "static/tao3k__yuanxu__prelude.scm" lib)))
+      (def (product-times)
+        (map (lambda (path)
+               (time->seconds (file-info-last-modification-time (file-info path))))
+             prelude-products))
+      (def first-times (product-times))
+      (def hot-output (build-command Build "compile"))
+      (check-equal? (string-contains hot-output "... compile ") #f)
+      (check-equal? (string-contains hot-output "... execute compile job ") #f)
+      (check-equal? (product-times) first-times)
+      (check-equal? (file-exists? (path-expand "yuanxu/prelude.ssi" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/yuanxu__prelude.scm" lib)) #f)
       ;; Core clean owns selected generated .scm files too. Keep a separate,
       ;; unselected sentinel so cleanup isolation is checked independently.
       (def unselected (path-expand "yuanxu/object-family/unselected-output.scm" lib))
