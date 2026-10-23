@@ -6,13 +6,27 @@
         (only-in :yuanxu/graph/types-core yuanxu-graph yuanxu-graph-node yuanxu-graph-edge)
         (only-in :yuanxu/graph/algorithms yuanxu-graph-topological-order/acyclic)
         (only-in :yuanxu/ops/func validate-script)
+        (only-in "control-plane/runtime-command-descriptor.ss"
+                 runtime-command-fields->manifest make-stdout-runtime-command-descriptor)
+        (only-in "control-plane/agent-harness.ss"
+                 make-yuanxu-agent-operation make-yuanxu-dispatch-receipt make-yuanxu-workflow-run
+                 yuanxu-agent-operation->alist yuanxu-dispatch-receipt->alist yuanxu-workflow-run->alist
+                 make-yuanxu-agent-session yuanxu-agent-session->alist
+                 make-yuanxu-agent-harness make-yuanxu-agent-profile
+                 yuanxu-agent-harness->alist yuanxu-agent-profile->alist)
         (only-in "control-plane/flow.ss" flow-compose external-flow flow-map)
         (only-in "control-plane/task.ss" execution-request-name execution-request-request execution-request-input)
         (only-in "control-plane/runtime-adapter.ss" make-runtime-adapter)
         (only-in "control-plane/runtime-protocol.ss" make-adapter-result adapter-result-value)
         (only-in "control-plane/strategy.ss" make-local-eager-strategy)
         (only-in "control-plane/runner.ss" make-runner runner-run run-result-value run-result-receipt))
-(export job-graph job-flow run-job)
+(export job-graph job-flow run-job
+        runtime-command-fields->manifest make-stdout-runtime-command-descriptor
+        make-yuanxu-agent-operation make-yuanxu-dispatch-receipt make-yuanxu-workflow-run
+        yuanxu-agent-operation->alist yuanxu-dispatch-receipt->alist yuanxu-workflow-run->alist
+        make-yuanxu-agent-session yuanxu-agent-session->alist
+        make-yuanxu-agent-harness make-yuanxu-agent-profile
+        yuanxu-agent-harness->alist yuanxu-agent-profile->alist)
 
 (def (symbol-set? values)
   (and (list? values) (every symbol? values)

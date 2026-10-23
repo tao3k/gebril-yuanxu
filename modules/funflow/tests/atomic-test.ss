@@ -5,6 +5,7 @@
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :yuanxu/modules/funflow/objects Job. Task.)
+        (only-in :yuanxu/modules/funflow/func runtime-command-fields->manifest)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export funflow-atomic-test)
 (.def Workspace
@@ -17,6 +18,19 @@
   selected: '(build))
 (def funflow-atomic-test
   (test-suite "Funflow module atomic Job"
+    (test-case "functional command publication projects data without running it"
+      (def calls 0)
+      (def envelope '((request-id . "public-function")))
+      (def manifest
+        (runtime-command-fields->manifest 'inspect "never-run"
+          (lambda (actual)
+            (set! calls (+ calls 1))
+            (check-equal? (eq? actual envelope) #t)
+            '("--preview"))
+          'stdout-s-expression '() envelope))
+      (check-equal? calls 1)
+      (check-equal? (cdr (assq 'argv manifest)) '("never-run" "--preview"))
+      (check-equal? (cdr (assq 'request-id manifest)) "public-function"))
     (yuanxu-test-fixture "cached parent graph keeps child values and unused tasks lazy" (workspace Workspace)
       (def parent (.get Build graph))
       (.def (Release @ Build)

@@ -808,3 +808,13 @@ build-path correspondence is not established by the focused window result.
 The complete baseline run retained failures in both declaration scale suites,
 compiled namespace execution and the isolated source gateway. No timeout,
 memory budget, source confinement or unissued-output rejection was relaxed.
+
+The product's native build also demanded command-manifest and Agent data
+constructors from unpublished implementation paths. Funflow now re-exports
+these existing pure functions through its maintained =func.ss= role. Its
+existing publication closure therefore includes their native libraries without
+adding a separate retained build list. The two-case atomic suite passed through
+=just test-file ... true=: manifest projection is inert, and a cached parent Job
+still reads a child's command while its unused task remains cold. An earlier
+unobserved invocation hit the unchanged idle gate; it remains a failed receipt,
+so this focused pass does not establish cold-path timing or full CI closure.
