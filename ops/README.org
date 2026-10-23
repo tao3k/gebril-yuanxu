@@ -113,3 +113,12 @@ cohort used by the installed qualification runtime, with per-platform immutable
 release tags, SHA-256 checks and manifest revision checks. This changes the
 selected toolchain artifact, not Gerbil compiler sources or admission policy.
 Linux editor-tagging and scale outcomes remain subject to the new CI run.
+
+** Clean CI test-support correction
+
+The Linux scenarios group at =a5fe884= exposed a source/compiled distinction:
+=ops/tests/atomic-test.ss= is test support and is deliberately absent from the
+production library. Its facade now imports it by relative source path, letting
+the existing test preparation closure compile it. A library-name import could
+succeed with a warm local library yet fail in the clean CI artifact. The three
+watchdog controls remain part of the facade; no test support enters =core-spec=.

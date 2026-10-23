@@ -11,7 +11,7 @@
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/misc/ports read-all-as-string))
-(import (only-in :yuanxu/ops/tests/atomic-test ops-watchdog-test))
+(import (only-in "../ops/tests/atomic-test.ss" ops-watchdog-test))
 (export ops-process-script-test ops-watchdog-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
 (def ProcessScript. (.get Ops prototypes Script))
