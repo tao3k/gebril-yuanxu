@@ -6,7 +6,9 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/observability/testing-script TestingScript. admit-testing-result
-                 admit-testing-process-result))
+                 admit-testing-process-result make-compiler-progress-reader)
+        (only-in :yuanxu/ops/progress call-with-execution-progress
+                 execution-progress-idle-milliseconds))
 (export testing-script-test)
 ;; Synthetic wire receipts exercise policy, not native-harness qualification.
 (def files '("fixture-test.ss"))
@@ -15,6 +17,22 @@
 (def (synthetic-source (guard void)) (.o spec: files admit-current: guard))
 (def testing-script-test
   (test-suite "Testing policy over Ops"
+    (test-case "successive compilers advance one enclosing idle window independently"
+      (def now 0)
+      (call-with-execution-progress 60000 600000
+        (lambda (state)
+          (def first (make-compiler-progress-reader))
+          (first "... compile prelude\n")
+          (first "... execute compile job (compile-file prelude.scm)\n")
+          (set! now 10000)
+          (def next (make-compiler-progress-reader))
+          ;; A rebuild's count=1 is real new work even after count=2 above.
+          (next "... compile prelude\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 0)
+          (set! now 10001)
+          (next "ordinary diagnostic output\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 1))
+        clock: (lambda () now)))
     (test-case "child VM follows the default two-GiB Case policy"
       (check-equal? (.get TestingScript. runtime-options)
                     '("-:max-heap=2097152K,debug=q")))

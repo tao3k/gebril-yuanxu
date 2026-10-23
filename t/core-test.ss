@@ -6,6 +6,11 @@
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :clan/poo/object .o .ref .call)
         (only-in :clan/poo/mop define-type element?)
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
+        (only-in :yuanxu/observability/memory
+                 call-with-yuanxu-debug-memory-case-watchdog
+                 yuanxu-debug-memory-policy YuanxuDebugDurationAnomaly?
+                 YuanxuDebugMemoryAnomaly-receipt YuanxuDebugDurationAnomaly-receipt)
         (only-in :yuanxu/types
                  YuanxuObjectContract.
                  yuanxu-predicate-contract
@@ -71,6 +76,55 @@
       (let (sample (yuanxu-debug-memory-snapshot 'core/qualification))
         (check-equal? (.ref sample 'phase) 'core/qualification)
         (check-equal? (exact-integer? (.ref sample 'heap-size-bytes)) #t)))
+    (test-case "watchdog diagnostics wait for the interrupted read scope to unwind"
+      (def reads 0)
+      (def seen #f)
+      (def swallow? #f)
+      (def (interrupted-body)
+        (with-catch
+          (lambda (failure)
+            (set! seen failure)
+            (if swallow? 'ignored (raise failure)))
+          (lambda ()
+            (call-with-slot-read-observer
+              (lambda (_read)
+                (set! reads (1+ reads))
+                (error "diagnostic reentered interrupted read scope"))
+              (lambda () (thread-sleep! 0.05))))))
+      (def (stopped policy duration)
+        (set! seen #f)
+        (def failure (with-catch values
+          (lambda ()
+            (call-with-yuanxu-debug-memory-case-watchdog policy 'read-scope
+              interrupted-body max-duration-milliseconds: duration))))
+        (check-equal? (eq? failure seen) #t)
+        (def receipt
+          (if (YuanxuDebugMemoryAnomaly? failure)
+            (YuanxuDebugMemoryAnomaly-receipt failure)
+            (YuanxuDebugDurationAnomaly-receipt failure)))
+        (check-equal? (.ref receipt 'accepted?) #f)
+        (check-equal? (.ref receipt 'phase) 'read-scope)
+        (check-equal? (.ref receipt 'reason)
+          (if (YuanxuDebugMemoryAnomaly? failure) 'heap-limit-exceeded 'duration-exceeded))
+        failure)
+      (check-equal?
+        (YuanxuDebugMemoryAnomaly?
+          (stopped (yuanxu-debug-memory-policy 'test/memory
+                     heap-limit-bytes: 0 live-growth-limit-bytes: 0
+                     sample-interval-milliseconds: 1) 1000)) #t)
+      (check-equal?
+        (YuanxuDebugDurationAnomaly?
+          (stopped (yuanxu-debug-memory-policy 'test/duration
+                     heap-limit-bytes: (.ref +core-case-profile+ 'heap-limit-bytes)
+                     live-growth-limit-bytes: (.ref +core-case-profile+ 'live-growth-limit-bytes)
+                     sample-interval-milliseconds: 1) 5)) #t)
+      (set! swallow? #t)
+      (check-equal?
+        (YuanxuDebugMemoryAnomaly?
+          (stopped (yuanxu-debug-memory-policy 'test/swallowed
+                     heap-limit-bytes: 0 live-growth-limit-bytes: 0
+                     sample-interval-milliseconds: 1) 1000)) #t)
+      (check-equal? reads 0))
     (yuanxu-test-case/with +core-case-profile+
       "Case profile extends Core memory and duration slots"
       (check-equal? (yuanxu-testing-case-profile?

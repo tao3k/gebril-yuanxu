@@ -3,7 +3,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .get object?)
+        (only-in :clan/poo/object .o .get .put! object? replay-slot-reads!)
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+                 slot-read-receiver slot-read-key)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/types yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
         :yuanxu/module-system/source/collection
@@ -138,6 +140,22 @@
               authoring:
               (.o (:: @ (.get yuanxu-default-module-style-policy authoring)) config: #f)))
           (check-exception (.get invalid %authoring-interface) error?)
+          (def local (.o (:: @ yuanxu-default-module-style-policy)))
+          (def reads '())
+          (def checked
+            (call-with-slot-read-observer
+              (lambda (read)
+                (when (and (eq? (slot-read-receiver read) local)
+                           (eq? (slot-read-key read) '%authoring-interface))
+                  (set! reads (cons read reads))))
+              (lambda () (.get local %authoring-interface))))
+          (check-equal? (pair? reads) #t)
+          (replay-slot-reads! reads (lambda (_owner _key) (void)))
+          ;; Mutating a checked output must not borrow the constructor's input
+          ;; support. This private receiver cannot poison the maintained policy.
+          (.put! (.get checked authoring) 'config #f)
+          (check-exception
+            (replay-slot-reads! reads (lambda (_owner _key) (void))) error?)
           (check-equal? (eq? template
                          (.get yuanxu-default-module-style-policy %authoring-interface)) #t))))
     (yuanxu-test-case "source guards require exact Unicode content and EOF"

@@ -453,3 +453,44 @@ second-receipt predicate. Gitea/PostgreSQL then passes in 47.67 seconds and sour
 admission in 16.68 seconds. The Lean target builds successfully (31 jobs); the
 existing IssuedRootForwarding Quint subset passes all seven matched cases.
 These qualify the stated narrow changes, not the unresolved complete CI run.
+
+
+** Exact-head CI follow-up: progress ownership and observable dispatch
+
+The d6dd2fb CI run passed Linux build/bootstrap, contracts, runtime, objects,
+scenarios, test bootstrap, Lean and all Quint shards. It failed macOS lifecycle,
+module dispatch-work, and the ten-thousand declaration gate. These are separate
+failures; successful proof jobs do not qualify the complete build.
+
+The macOS lifecycle failure was an idle-progress ownership bug: each compiler
+process restarted its completed counter while retaining the previous process's
+progress key. The enclosing build/clean/rebuild frame ignored real work until
+that counter exceeded its old value. Each compiler reader now owns a fresh
+process identity. Only actual compiler output advances progress; ordinary
+messages do not. The existing test uses a deterministic clock to check both
+cases. The full lifecycle passed locally in 146.44 seconds, including zero hot
+compilation, without changing either deadline.
+
+The batch constructor-elision experiment above is WITHDRAWN. Exact-head CI
+showed that applicability and metadata revisions alone do not preserve the
+observable carrier-policy reads of ordinary invocation. Batch admission again
+calls the original public Generic per datum, including its carrier Contracts,
+qualifiers, and observer deliveries. The existing dispatch-work regression now
+passes. The ordered-flattening Lean result remains conditional on pointwise
+execution equivalence; it did not prove equivalence of that elision.
+
+The default policy's cached checked Interface now records the actual normalized
+Profile and its Contract-declared child receivers. This uses the responsibilities
+map, not a duplicate field list. Replacing a normalized output child invalidates
+the original constructor token, while the parent template remains unchanged.
+The focused source regression passed in 32.48 seconds.
+
+A watchdog must not construct a typed POO diagnostic inside the interrupted
+source-read frame. It now raises the original public anomaly immediately with
+scalar stop data, then fills that SAME condition's typed receipt after unwinding.
+Nested cleanup wrappers retain that original condition. Swallowing a claimed
+stop cannot produce success. The existing tests check identity, typed rejection,
+no diagnostic reads inside the interrupted frame, and swallowed-stop refusal;
+they passed in 47.41 seconds. Gitea/PostgreSQL passed in 117.46 seconds under
+concurrent host load. No memory limit, timeout, currentness check or source
+boundary was relaxed. Ten-thousand-module capacity is still unqualified.

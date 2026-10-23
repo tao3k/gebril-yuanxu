@@ -29,6 +29,9 @@
         call-with-yuanxu-debug-memory-monitor call-with-yuanxu-debug-memory-case-watchdog)
 (deferror-class YuanxuDebugMemoryAnomaly (receipt))
 (deferror-class YuanxuDebugDurationAnomaly (receipt))
+;; Scalar stop data is private. Raise the original public condition immediately;
+;; populate its typed receipt only after the interrupted read scopes unwind.
+(defstruct case-stop (failure kind data) final: #t)
 (def DebugDurationReceipt. (.ref YuanxuDebugDurationReceiptContract 'proto))
 (def (yuanxu-debug-cpu-microseconds)
   ;; Process CPU is distinct from elapsed wall time and from last-GC memory.
@@ -43,13 +46,15 @@
   (parameterize ((current-output-port (current-error-port)))
     (yuanxu-write-observation-line! "debug-memory %s"
       (yuanxu-debug-memory-receipt-sexp receipt))))
-(def (yuanxu-debug-raise-memory-anomaly receipt)
+(def (memory-anomaly receipt)
   (let (failure
         (YuanxuDebugMemoryAnomaly
          "Yuanxu debug memory policy rejected the observed phase"
          irritants: '()))
     (set! (YuanxuDebugMemoryAnomaly-receipt failure) receipt)
-    (raise failure)))
+    failure))
+(def (yuanxu-debug-raise-memory-anomaly receipt)
+  (raise (memory-anomaly receipt)))
 
 
 ;; Counter 7 is VM-reported allocation. Counter 16 describes only the latest
@@ -89,14 +94,7 @@
     (or (> heap-size heap-limit)
         (> (- live (list-ref baseline-counters 2)) live-growth-limit))))
 
-(def (yuanxu-debug-raise-duration-anomaly phase policy-label limit elapsed
-        reason: (reason 'duration-exceeded))
-  (let* ((phase-value phase)
-         (policy-label-value policy-label)
-         (limit-value limit)
-         (elapsed-value elapsed)
-         (reason-value reason)
-         (receipt
+(def (duration-receipt phase-value policy-label-value limit-value elapsed-value reason-value)
           (validate YuanxuDebugDurationReceiptContract
             (.o (:: @ DebugDurationReceipt.)
                 phase: phase-value
@@ -105,12 +103,18 @@
                 elapsed-milliseconds: elapsed-value
                 accepted?: #f
                 reason: reason-value)))
-         (failure
+(def (duration-anomaly receipt limit elapsed reason)
+  (let (failure
           (YuanxuDebugDurationAnomaly
            "Yuanxu testing Case duration budget exceeded"
-           irritants: (list reason-value limit-value elapsed-value))))
+           irritants: (list reason limit elapsed)))
     (set! (YuanxuDebugDurationAnomaly-receipt failure) receipt)
-    (raise failure)))
+    failure))
+(def (yuanxu-debug-raise-duration-anomaly phase policy-label limit elapsed
+        reason: (reason 'duration-exceeded))
+  (raise (duration-anomaly
+           (duration-receipt phase policy-label limit elapsed reason)
+           limit elapsed reason)))
 
 ;; : (-> YuanxuDebugMemoryPolicy YuanxuDebugMemorySample Symbol port: OutputPort emit?: Boolean YuanxuDebugMemoryReceipt)
 ;; yuanxu-debug-memory-checkpoint
@@ -326,7 +330,16 @@
          (heap-limit (.ref policy 'heap-limit-bytes))
          (live-growth-limit (.ref policy 'live-growth-limit-bytes))
          (collect-before-sample? (.ref policy 'collect-before-sample?))
+         (policy-label (.ref policy 'label))
          (fail-closed? (.ref policy 'fail-closed?)))
+    (def stopped #f)
+    (def rendered? #f)
+    (def (stop! kind data)
+      (def failure
+        (if (eq? kind 'memory) (memory-anomaly #f)
+          (duration-anomaly #f (car data) (cadr data) (caddr data))))
+      (set! stopped (make-case-stop failure kind data))
+      (raise failure))
     (def (claim-stop!)
       (mutex-lock! gate)
       (let (claimed? (not done?))
@@ -352,20 +365,7 @@
             (when (claim-stop!)
               (thread-interrupt!
                owner
-               (lambda ()
-                 (let* ((after
-                         (yuanxu-debug-memory-sample-from-counters
-                          phase counters))
-                        (receipt
-                         (yuanxu-debug-memory-receipt
-                          policy
-                          (yuanxu-debug-memory-sample-from-counters
-                           phase baseline-counters)
-                          after)))
-                   (when emit?
-                     (parameterize ((current-error-port port))
-                       (emit-memory-receipt receipt)))
-                   (yuanxu-debug-raise-memory-anomaly receipt))))))
+               (lambda () (stop! 'memory counters)))))
            ((or (>= elapsed max-duration-milliseconds) progress-status)
             (when (claim-stop!)
               ;; The interrupted owner may currently be inside a different,
@@ -378,16 +378,47 @@
                                    elapsed)))
                 (thread-interrupt! owner
                   (lambda ()
-                    (yuanxu-debug-raise-duration-anomaly
-                      phase (.ref policy 'label) limit observed
-                      reason: (if idle? 'idle-exceeded 'duration-exceeded))))))))
+                    (stop! 'duration
+                      (list limit observed
+                            (if idle? 'idle-exceeded 'duration-exceeded)))))))))
           (unless done? (watch)))))
+    (def (render-stop!)
+      (when (and stopped (not rendered?))
+        (set! rendered? #t)
+        (with-catch
+          (lambda (diagnostic-failure)
+            (error "Case rejection and diagnostic construction failed"
+              (case-stop-failure stopped) diagnostic-failure))
+          (lambda ()
+            (case (case-stop-kind stopped)
+              ((memory)
+               (let (receipt
+                      (yuanxu-debug-memory-receipt policy
+                        (yuanxu-debug-memory-sample-from-counters phase baseline-counters)
+                        (yuanxu-debug-memory-sample-from-counters
+                          phase (case-stop-data stopped))))
+                 (when emit?
+                   (parameterize ((current-error-port port)) (emit-memory-receipt receipt)))
+                 (set! (YuanxuDebugMemoryAnomaly-receipt (case-stop-failure stopped)) receipt)))
+              ((duration)
+               (let (data (case-stop-data stopped))
+                 (set! (YuanxuDebugDurationAnomaly-receipt (case-stop-failure stopped))
+                   (duration-receipt phase policy-label (car data) (cadr data) (caddr data))))))))))
+    (def (run-operation)
+      (with-catch
+        (lambda (failure) (render-stop!) (raise failure))
+        (lambda ()
+          (def value (thunk))
+          ;; A body cannot turn a claimed fail-closed stop into acceptance by
+          ;; swallowing its exception. Keep that same condition and origin.
+          (when stopped (render-stop!) (raise (case-stop-failure stopped)))
+          value)))
     (let (watchdog (make-thread watch))
       (thread-start! watchdog)
       (dynamic-wind
         void
         (lambda ()
-          (let (value (thunk))
+          (let (value (run-operation))
             (finish!)
             (let (after-counters
                   (yuanxu-debug-memory-counters

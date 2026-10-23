@@ -16,13 +16,17 @@
 ;; Relay only real std/make work through the existing Ops progress frame.
 (def (make-compiler-progress-reader)
   (def completed 0)
+  ;; Counts restart for each actual compiler process. Its identity must restart
+  ;; too, or an enclosing build/clean/rebuild frame ignores all later work
+  ;; until the new child happens to exceed the previous child's count.
+  (def compiler (gensym 'compiler))
   (make-test-progress-reader
     (lambda (line)
       (when (or (string-prefix? "... compile " line)
                 (string-prefix? "... invoke " line)
                 (string-prefix? "... execute compile job " line))
         (set! completed (+ completed 1))
-        (execution-progress! 'compiler completed)))))
+        (execution-progress! compiler completed)))))
 
 ;; Use the original harness's feature channel, not an environment probe or a
 ;; second launcher. Only observation booleans cross this process boundary;

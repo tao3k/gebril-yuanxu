@@ -21,7 +21,8 @@
                  yuanxu-module-authoring-admit-datums
                  yuanxu-module-authoring-admission-accepted?
                  yuanxu-module-authoring-admission-diagnostics)
-        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile))
+        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile
+                 ModuleAuthoringProfileContract))
 (export yuanxu-module-required-role-files yuanxu-module-allowed-entrypoint-roles
         yuanxu-module-style-policy-prototype yuanxu-default-module-style-policy
         module-source-type module-source-read module-source-name? module-source-admit-current!
@@ -473,7 +474,20 @@
       ;; obligation result is cached. Native reads retain the constructor's
       ;; complete Type/metadata support, including inherited-policy invalidation.
       (%authoring-interface
-        (yuanxu-module-interface "source-policy" (.o) '() authoring: authoring))
+        (let* ((value (yuanxu-module-interface "source-policy" (.o) '() authoring: authoring))
+               (profile (.ref value 'authoring))
+               (fields (.ref ModuleAuthoringProfileContract 'responsibilities)))
+          ;; Bind the checked OUTPUT as well as the constructor's input reads.
+          ;; Native names/preparation records reject later mutations of a
+          ;; normalized receiver. Use the actual Contract's declared fields;
+          ;; do not inspect unrelated optional extension values.
+          (.all-slots profile)
+          (for-each
+            (lambda (name)
+              (let (child (.ref profile name))
+                (when (object? child) (.all-slots child))))
+            (.all-slots fields))
+          value))
       source-policy: SourceInspectionPolicy.
       validate: yuanxu-module-source-admit!))
 (def yuanxu-default-module-style-policy
