@@ -110,3 +110,17 @@ receipt and a native Gerbil =HARNESS-OK= are different kinds of evidence.
 Keep exact old deadlines, failure diagnostics and input-currentness controls
 when migrating a shell entrypoint.  Test the gate and its failure controls
 before treating its underlying domain qualification as passed.
+
+* Source-only bootstrap progress
+
+The Module bootstrap fixture forwards the actual child transcript through
+=run-script= while retaining the same captured output for assertions. Its
+progress reader relays only native =std/make= compilation and scheduling rows,
+and existing worker progress records. A 60-second idle frame owns that relay;
+forwarding arbitrary text alone does not advance the Harness progress protocol.
+The 60-second child deadline and the outer test budgets remain unchanged.
+
+The nested Harness result must name the exact normalized absolute source file,
+in addition to its =HARNESS-OK= and final =OK=. A relative-path substring is not
+a valid substitute for the native module identity. Compiler progress is not a
+successful test result, and a completed compilation cannot waive Harness failure.

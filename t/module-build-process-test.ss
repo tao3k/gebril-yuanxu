@@ -91,7 +91,12 @@
       (def output (.get result output))
       (display output)
       (check-equal? (.get result status) 0)
-      (check-equal? (and (string-contains output "MODULE-OK t/module-build-source-package-test.ss") #t) #t)
+      (check-equal?
+        (and (member
+               (string-append "MODULE-OK "
+                 (path-normalize
+                   (path-expand "t/module-build-source-package-test.ss" (.get InputChecks directory))))
+               (string-split output #\newline)) #t) #t)
       (check-equal? (and (string-contains output "HARNESS-OK") #t) #t)
       (check-equal? (and (member "OK" (string-split output #\newline)) #t) #t)
       (check-equal? (ormap (cut string-contains output <>)
