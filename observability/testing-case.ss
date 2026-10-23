@@ -80,7 +80,7 @@
               (def allocation-current? #t)
               (def (observe key amount)
                 (unless (and (symbol? key) (exact-integer? amount) (>= amount 0))
-                  (error "test work observation requires a symbol and natural count"))
+                  (error "test work observation requires a symbol and natural count" key amount))
                 (when (and (not (hash-key? counts key)) (>= (hash-length counts) 64))
                   (error "test work observation exceeded its bounded categories" key (hash-keys counts)))
                 (let (next (+ (or (hash-get counts key) 0) amount))

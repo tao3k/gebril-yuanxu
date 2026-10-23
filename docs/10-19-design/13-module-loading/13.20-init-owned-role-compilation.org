@@ -389,3 +389,67 @@ Local follow-up under concurrent host compiler load reached the unchanged
 limit. Those runs are failures, not passes. No timeout, admission predicate or
 negative assertion is relaxed. The ten-thousand-declaration memory failure also
 remains open; optional trace removal is not evidence that capacity has passed.
+
+** Reader preparation qualification, not admission-result caching
+
+An empty test-support Make specification has no compiler authority. Preparation
+still checks its actual source epoch, but leaves the complete selected Graph
+cold; the worker that requests that Graph owns its evaluation. Nonempty compiler
+support still requires exact selected-Graph identity and the existing issuance
+boundary. The scale fixture asserts the parent's Graph remains cold before and
+after execution; it retains all worker counts and negative controls.
+
+The maintained default source policy owns one native cached, checked Interface
+value. Per-module identity/location is derived from it; its actual issued reads
+are authenticated again on every use. Modified or contributed policies retain
+the ordinary constructor. This caches a constructed value, never source admission.
+
+Batch role checking uses the same named diagnostic functions as the public
+Generic methods, then validates the finished batch receipt once. Every datum
+still undergoes public applicability selection. Constructor elision is restricted
+to the original method set, protocol, combination, descriptor Types and receipt
+Types, including their ancestor revisions. Altered metadata takes ordinary
+per-datum invocation; mutation during the diagnostic operation is refused.
+The public direct Generic API and contributor qualifiers remain unchanged.
+Its private native POO slot retains issued metadata observations; every demand
+reauthenticates the original graph rather than caching a currentness answer.
+
+The extended existing batch test checks both a failing second receipt predicate
+and a contributed =before= method. The former must not disappear into a final
+batch receipt; the latter must execute for every datum. The Lean correspondence
+proves ordered flattening under pointwise diagnostic equivalence, not completeness
+of the Scheme metadata extractor. The seven issued-root Quint qualification
+cases, including negative controls, pass separately; that is not a proof of the
+new extractor.
+
+Focused receipts: source admission 18.51 seconds; thousand-module worker 134.81
+seconds with 649,906,792 retained bytes; Gitea/PostgreSQL 48.52 seconds;
+source-loader authority 73.65 seconds. All passed the native Harness markers and
+failure-marker scan. The build lifecycle passed cold compilation (28.36 seconds),
+new-process hot zero compilation (11.22 seconds), clean (10.29 seconds), cold
+rebuild (28.22 seconds) and final clean (10.33 seconds), under the unchanged
+60-second per-child limit. A separate default hot build compiled zero targets
+but took 89.48 seconds wall / 25.58 seconds CPU under concurrent host load; this
+is not a latency improvement claim.
+
+The compiled-import regression subsequently reached its unchanged 60-second
+nested Harness deadline while running its selected tests. That receipt remains
+a failure; do not label the local complete regression green. The optional census
+on the existing 256-module fixture passed with 48,406 distinct records and
+144,940 dependency edges; retained live bytes were 300,084,960. The census is
+off in normal capacity runs. This does not establish ten-thousand-module capacity.
+
+The authority compiler pipe now reports only actual child output lines to the
+existing progress frame, retaining its complete issuance transcript. Waiting for
+EOF hid real compiler work from the outer idle guard. Neither a timer heartbeat
+nor an increased deadline is introduced. CI cache paths now select dependency
+libraries directly (=lib/clan=), because excluding a child path from a top-level
+glob does not remove it from an archived parent directory.
+
+The subsequent Type-owner guard includes the actual CLOS descriptor Types and
+both authoring receipt Types; a Type with no =proto= is not treated as a domain
+prototype. Its final authoring regression passes, including refusal by a changed
+second-receipt predicate. Gitea/PostgreSQL then passes in 47.67 seconds and source
+admission in 16.68 seconds. The Lean target builds successfully (31 jobs); the
+existing IssuedRootForwarding Quint subset passes all seven matched cases.
+These qualify the stated narrow changes, not the unresolved complete CI run.

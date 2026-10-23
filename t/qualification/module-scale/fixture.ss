@@ -83,8 +83,14 @@
      (def tests (.get module tests))
      (.def (Observed @ tests)
        execution.profile.emit?: #t
-       execution.profile.trace-enabled?: #t
+       ;; Capacity is checked with the normal policy, not the optional full
+       ;; read-token/SDK-context census. Worker assertions and source-event
+       ;; counters stay active; all memory/currentness guards are unchanged.
        execution.log: (.get fixture log))
      (check-equal? (eq? (.get Observed source) (.get tests source)) #t)
+     ;; This worker has no package-local support to compile. Its own Case
+     ;; explicitly demands the complete Graph; parent preparation must not.
+     (check-equal? (.ref/cached (.get tests source) 'selected-graph) #f)
      (.call Observed .run)
+     (check-equal? (.ref/cached (.get tests source) 'selected-graph) #f)
      (check-equal? (.ref/cached module 'scope) #f))))

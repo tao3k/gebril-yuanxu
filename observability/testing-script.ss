@@ -138,7 +138,10 @@
 (def (prepare-testing-script script files build)
   (when build
     (unless (and (eq? (.get build demand-source) (.get script source))
-                 (eq? (.get build selected-graph) (.get script source selected-graph)))
+                 ;; An empty support spec grants no compilation authority.
+                 ;; Keep Graph demand lazy until there are products to issue.
+                 (or (null? (.get build spec))
+                     (eq? (.get build selected-graph) (.get script source selected-graph))))
       (error "test compiler projection belongs to another demand")))
   (if (or (not build) (null? (.get build spec))) script
     (let ((started (real-time))

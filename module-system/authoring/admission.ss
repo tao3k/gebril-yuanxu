@@ -6,7 +6,10 @@
 ;;; Boundary: shared role-aware source admission for one loaded Module Interface.
 ;;; Invariant: source is read as inert data; this owner never expands or runs it.
 
-(import (only-in :clan/poo/object .def .o .ref .slot? object?)
+(import (only-in :clan/poo/object .def .o .ref .slot? .all-slots object?
+                 object-revision object-supers object-protocol replay-slot-reads!)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+                 slot-read-receiver slot-read-revision)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :std/list/list any filter-map find)
         (only-in :yuanxu/utilities/algorithms
@@ -26,9 +29,12 @@
                  poo-clos-generic-protocol
                  poo-clos-generic-binding-current poo-clos-compose-method-bundle
                  clos-call-carrier-policy-guard)
+        (only-in :yuanxu/poo-clos/types
+                 ClosGenericFunction ClosMethod ClosSpecializer ClosLambdaList
+                 ClosGenericProtocol ClosMethodCombination ClosMethodBundle)
         (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection)
         (only-in :yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
-        (only-in :yuanxu/poo-clos/dispatch poo-clos-call)
+        (only-in :yuanxu/poo-clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
         (only-in :yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
         (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
@@ -333,20 +339,16 @@
         accepted?: (null? diagnostic-values)
         diagnostics: diagnostic-values)))
 
-(def (yuanxu-module-authoring-admit/common interface role datum)
+(def (yuanxu-module-authoring-diagnostics/common interface role datum)
   (let (bindings (yuanxu-poo-slot-authoring-datum-bindings datum))
-    (yuanxu-module-authoring-admission
-     interface role
      (append
       (yuanxu-module-authoring-slot-diagnostics interface role bindings)
       (yuanxu-module-authoring-self-reference-diagnostics
        interface role bindings)
-      (yuanxu-module-authoring-query-diagnostics interface role bindings)))))
+      (yuanxu-module-authoring-query-diagnostics interface role bindings))))
 
-(def (yuanxu-module-authoring-admit/config interface role datum)
+(def (yuanxu-module-authoring-diagnostics/config interface role datum)
   (let (bindings (yuanxu-poo-slot-authoring-datum-bindings datum))
-    (yuanxu-module-authoring-admission
-     interface role
      (append
       (yuanxu-module-authoring-slot-diagnostics interface role bindings)
       (yuanxu-module-authoring-self-reference-diagnostics
@@ -354,7 +356,15 @@
       (yuanxu-module-authoring-query-diagnostics interface role bindings)
       (yuanxu-module-authoring-root-diagnostics interface role datum)
       (yuanxu-module-authoring-default-surface-diagnostics
-       interface role datum)))))
+       interface role datum))))
+
+(def (yuanxu-module-authoring-admit/common interface role datum)
+  (yuanxu-module-authoring-admission interface role
+    (yuanxu-module-authoring-diagnostics/common interface role datum)))
+
+(def (yuanxu-module-authoring-admit/config interface role datum)
+  (yuanxu-module-authoring-admission interface role
+    (yuanxu-module-authoring-diagnostics/config interface role datum)))
 
 ;;; Executor strategy and SourceRole are independently extensible. Module
 ;;; packages can contribute a method bundle for a refined executor/role pair
@@ -394,8 +404,101 @@
 ;; domain arguments only. Neither wrapper exposes its lexical CLOS frame or
 ;; next-method closure. Keep exact procedure identities, not mutable method
 ;; names, contributor flags, or a second dispatch registry.
+(def authoring-core-methods (map values (.ref ModuleAuthoringCoreMethods 'methods)))
 (def authoring-closed-bodies
-  (map (cut .ref <> 'body) (.ref ModuleAuthoringCoreMethods 'methods)))
+  (map (cut .ref <> 'body) authoring-core-methods))
+
+;; The batch API needs diagnostics, not a separate public receipt and two
+;; invocation carriers for every datum. Recognize ONLY our original metadata;
+;; applicability still runs through the public Generic for EVERY datum. Changed
+;; methods/protocols/combination retain ordinary invocation, including qualifiers
+;; and call-next-method. This stores no applicability or admission conclusion.
+(def authoring-kernel-support
+  (let ((seen (make-hash-table-eq)) (entries '()))
+    (def (visit value)
+      (when (and (object? value) (not (hash-key? seen value)))
+        (hash-put! seen value #t)
+        (set! entries (cons (cons value (object-revision value)) entries))
+        (for-each visit (object-supers value))))
+    ;; Only the already constructed declaration metadata, never domain fields
+    ;; or arbitrary descendants. Native applicability owns target inspection.
+    (for-each visit
+      (list ModuleAuthoringAdmissionGeneric ModuleAuthoringCoreMethods
+            ModuleAuthoringAdmissionProtocol
+            (.ref ModuleAuthoringAdmissionGeneric 'lambda-list)
+            (.ref ModuleAuthoringAdmissionGeneric 'method-combination)))
+    ;; The constructor-elision proof also depends on the original Type
+    ;; predicates. Replacing a Type predicate must keep ordinary invocation,
+    ;; even if neither the Generic nor its method descriptors was edited.
+    (for-each
+      (lambda (type)
+        (visit type)
+        (when (.slot? type 'proto) (visit (.ref type 'proto))))
+      (list ClosGenericFunction ClosMethod ClosSpecializer ClosLambdaList
+            ClosGenericProtocol ClosMethodCombination ClosMethodBundle
+            YuanxuModuleAuthoringAdmission YuanxuModuleAuthoringDiagnostic))
+    (for-each
+      (lambda (method)
+        (visit method)
+        (visit (.ref method 'lambda-list))
+        (for-each visit (.ref method 'specializers)))
+      (.ref ModuleAuthoringCoreMethods 'methods))
+    entries))
+(def authoring-carriers-current? (clos-call-carrier-policy-guard))
+;; Cache the native observations, not the answer to currentness. The same root
+;; list lets POO own the traversal projection; every use reauthenticates it.
+(def AuthoringKernel
+  (.o (reads
+        (let ()
+          (defvalues (closed? roots)
+            (%call-with-recorded-slot-reads
+              (lambda ()
+                (and (authoring-carriers-current?)
+                     (begin (for-each (lambda (entry) (.all-slots (car entry)))
+                                      authoring-kernel-support)
+                            #t)))
+              unique-roots?: #t))
+          (and closed? roots)))))
+(def (authoring-kernel-current?)
+  (def (declarations-current?)
+    (andmap
+    (lambda (entry)
+      (let (owner (car entry))
+        (and (= (cdr entry) (object-revision owner))
+             (not (object-protocol owner)))))
+    authoring-kernel-support))
+  (and (declarations-current?)
+       (let (roots (.ref AuthoringKernel 'reads))
+         (and roots
+              (andmap (lambda (read)
+                        (= (slot-read-revision read)
+                           (object-revision (slot-read-receiver read)))) roots)
+              (begin (replay-slot-reads! roots (lambda (_owner _key) (void))) #t)
+              (declarations-current?)))))
+
+(def (authoring-datum-diagnostics interface role-name datum)
+  (def (ordinary)
+    (.ref (yuanxu-module-authoring-admit-datum interface role-name datum) 'diagnostics))
+  (if (not (authoring-kernel-current?)) (ordinary)
+    (let* ((profile (yuanxu-module-interface-authoring interface))
+           (role (yuanxu-module-authoring-role interface role-name))
+           (methods (poo-clos-compute-applicable-methods
+                      ModuleAuthoringAdmissionGeneric
+                      (.ref profile 'executor) role interface datum))
+           (method (and (pair? methods) (car methods)))
+           (declared authoring-core-methods)
+           (diagnostics
+             (cond ((not (andmap (cut memq <> declared) methods)) #f)
+                   ((eq? method (car declared)) yuanxu-module-authoring-diagnostics/common)
+                   ((eq? method (cadr declared)) yuanxu-module-authoring-diagnostics/config)
+                   (else #f))))
+      (if (not (and diagnostics (authoring-kernel-current?))) (ordinary)
+        (let (result (diagnostics interface role datum))
+          ;; An observer cannot replace metadata during the pure computation
+          ;; and have its result returned under the previous method identity.
+          (unless (authoring-kernel-current?)
+            (error "module authoring metadata changed during batch admission"))
+          result)))))
 
 (def (call-with-module-authoring-read-scope action)
   (call-with-owned-read-projection authoring-closed-bodies
@@ -429,9 +532,8 @@
    interface
    (yuanxu-module-authoring-role interface role-name)
    (foldr append '()
-     (map (lambda (datum)
-            (.ref (yuanxu-module-authoring-admit-datum interface role-name datum)
-                  'diagnostics))
+          (map (lambda (datum)
+            (authoring-datum-diagnostics interface role-name datum))
           datums))))
 
 ;; The public port API keeps its original streaming reader semantics.

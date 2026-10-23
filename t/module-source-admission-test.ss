@@ -118,6 +118,7 @@
       (with-module
         (lambda (root)
           (def parses 0)
+          (def template (.get yuanxu-default-module-style-policy %authoring-interface))
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
                             (when (eq? key 'role-parses)
@@ -128,7 +129,17 @@
             (check-equal? parses 8)
             (write-role root "config" "(stage provider runtime)")
             (check-exception (collection-source root) error?)
-            (check-equal? parses 12)))))
+            (check-equal? parses 12))
+          (check-equal? (eq? template
+                         (.get yuanxu-default-module-style-policy %authoring-interface)) #t)
+          ;; A derived receiver cannot borrow a parent's normalized Profile.
+          (def invalid
+            (.o (:: @ yuanxu-default-module-style-policy)
+              authoring:
+              (.o (:: @ (.get yuanxu-default-module-style-policy authoring)) config: #f)))
+          (check-exception (.get invalid %authoring-interface) error?)
+          (check-equal? (eq? template
+                         (.get yuanxu-default-module-style-policy %authoring-interface)) #t))))
     (yuanxu-test-case "source guards require exact Unicode content and EOF"
       (with-module
         (lambda (root)

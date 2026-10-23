@@ -54,4 +54,20 @@ theorem named_query_allowed (name reference : String) :
 #guard !rawInitializer (.vector [.symbol "select"])
 #guard !(checkBindings true [("query", .text "SELECT *")]).toOption.isSome
 #guard (checkBindings true [("gql-source", .text "SELECT *")]).toOption.isSome
+
+/-- Batch diagnostics preserve datum order and each datum's diagnostic order.
+The Scheme metadata guard must establish the pointwise premise; this theorem
+does not certify that extraction or cache an admission result. -/
+theorem batch_diagnostics_preserved {Datum Diagnostic : Type}
+    (generic direct : Datum → List Diagnostic) (datums : List Datum)
+    (same : ∀ datum ∈ datums, generic datum = direct datum) :
+    (datums.map generic).flatten = (datums.map direct).flatten := by
+  congr 1
+  exact List.map_congr_left same
+
+/-- On a changed/extended method set the batch must use ordinary invocation.
+There is no stale specialized result available through this branch. -/
+theorem changed_metadata_uses_generic {Result : Type}
+    (generic direct : Result) :
+    (if false then direct else generic) = generic := by rfl
 end YuanxuProof.ModuleSystem.Authoring.Queries

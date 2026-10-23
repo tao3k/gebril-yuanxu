@@ -6,6 +6,7 @@
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path! __find-library-module list-modules)
         "./artifact-closure")
 (export compile-authority install-authority! prepare-source-authority! deactivate-authority!
@@ -47,7 +48,17 @@
     (list "timeout" "--signal=TERM" "--kill-after=5s" "240s"
           "just" "compile-mop-store-boundary" artifact-root)
     coprocess: (lambda (process)
-      (def text (read-all-as-string process))
+      ;; Forward only actual child output progress while retaining the complete
+      ;; issuance pipe. Buffering to EOF hid native compiler work from the
+      ;; outer Harness idle guard; a timer would merely hide a real stall.
+      (def text
+        (call-with-output-string
+          (lambda (port)
+            (let loop ((line (read-line process)) (count 0))
+              (unless (eof-object? line)
+                (display line port) (newline port)
+                (execution-progress! '(authority-compiler-output) (1+ count))
+                (loop (read-line process) (1+ count)))))))
       ;; Preserve failed child output outside rollback-owned fixture storage.
       (call-with-output-file (list path: (path-expand "authority-compiler.log" (path-directory owned-root)) truncate: #t)
         (cut display text <>))

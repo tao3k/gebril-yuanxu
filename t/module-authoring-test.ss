@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/object .o .ref .cc)
+(import (only-in :clan/poo/object .o .ref .cc .put!)
         (only-in :clan/poo/mop element?)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -15,7 +15,7 @@
         (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.)
         (only-in :yuanxu/poo-clos/objects
                  poo-clos-generic-protocol poo-clos-generic-function
-                 poo-clos-compose-method-bundle)
+                 poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
         (only-in :yuanxu/poo-clos/dispatch poo-clos-call)
         :yuanxu/module-system/authoring/import-policy
         :yuanxu/module-system/authoring/projection)
@@ -83,7 +83,42 @@
              (yuanxu-module-authoring-admission-diagnostics result)))
       (check-equal? (yuanxu-module-authoring-admission-accepted? from-port) #f)
       (check-equal? (yuanxu-module-authoring-admission-accepted? from-datums) #f)
-      (check-equal? (codes from-datums) (codes from-port)))
+      (check-equal? (codes from-datums) (codes from-port))
+      ;; Receipt validation is extensible too. A replaced predicate must be
+      ;; invoked through the ordinary per-datum producer, before any final
+      ;; batch receipt can hide its refusal.
+      (def predicate (.ref YuanxuModuleAuthoringAdmission '.element?))
+      (def validations 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringAdmission '.element?
+            (lambda (value)
+              (set! validations (1+ validations))
+              (and (not (= validations 2)) (predicate value)))))
+        (lambda ()
+          (check-exception
+            (yuanxu-module-authoring-admit-datums interface 'objects
+              '((def First 1) (def Second 2))) error?)
+          (check-equal? validations 2))
+        (lambda () (.put! YuanxuModuleAuthoringAdmission '.element? predicate)))
+      ;; A contributed qualifier must run for every datum. The batch path must
+      ;; retain full invocation after native Generic metadata changes, rather
+      ;; than treat the original declarations as an acceptance cache.
+      (def calls 0)
+      (def before
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/authoring-before
+          'qualifier 'before
+          'body (lambda (_frame . _arguments) (set! calls (1+ calls)) #t)))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAdmissionGeneric before)
+        (lambda ()
+          (def augmented
+            (yuanxu-module-authoring-admit-datums interface 'objects
+              (call-with-input-string text read-all)))
+          (check-equal? calls 3)
+          (check-equal? (codes augmented) (codes from-port)))
+        (cut poo-clos-remove-method ModuleAuthoringAdmissionGeneric before)))
     (yuanxu-test-case "native Interface and final role admission"
       (let (interface (yuanxu-module-interface "example" (.o) '()))
         (check-equal? (yuanxu-module-interface? interface) #t)

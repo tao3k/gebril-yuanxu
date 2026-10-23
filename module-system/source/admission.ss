@@ -5,7 +5,8 @@
 (import (only-in :clan/poo/object .o .cc .ref .slot? .all-slots .ref/cached object? object-%instance object-protocol
                  object-revision object-supers replay-slot-reads!)
         (only-in :clan/poo/mop Type element? validate)
-        (only-in :clan/poo/slot-observation %slot-read-active?)
+        (only-in :clan/poo/slot-observation %slot-read-active?
+                 call-with-slot-read-observer slot-read-receiver slot-read-key)
         (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles)
         (only-in :std/list/list any)
         (only-in :std/misc/ports read-all-as-string)
@@ -374,12 +375,31 @@
   ;; Their temporary evidence belongs to the SAME region as datum dispatch.
   (call-with-module-authoring-read-scope
     (lambda ()
-      (let* ((authoring (.ref policy 'authoring))
+      (let* ((prototype
+               (if (and (eq? policy yuanxu-default-module-style-policy)
+                        (module-source-style-policy-current?))
+                 (let ((reads '()))
+                   (def value
+                     (call-with-slot-read-observer
+                       (lambda (read)
+                         (when (and (eq? (slot-read-receiver read) policy)
+                                    (eq? (slot-read-key read) '%authoring-interface))
+                           (set! reads (cons read reads))))
+                       (lambda () (.ref policy '%authoring-interface))))
+                   ;; This is the actual native cached constructor token. Its
+                   ;; edges retain every Type/field check, including temporary
+                   ;; normalization receivers. Authenticate/recheck them on
+                   ;; every use, even when this public function has no Reader.
+                   (unless (pair? reads) (error "unissued source authoring Interface"))
+                   (replay-slot-reads! (reverse reads) (lambda (_receiver _key) (void)))
+                   value)
+                 ;; Custom policies keep their ordinary constructor/Type calls.
+                 (yuanxu-module-interface "source-policy" (.o) '()
+                   authoring: (.ref policy 'authoring))))
              (interface
-              (yuanxu-module-interface
-                (if (symbol? module-name) (symbol->string module-name) module-name) (.o)
-                (list (cons 'module-root module-root))
-                authoring: authoring)))
+              (.cc prototype
+                'id (if (symbol? module-name) (symbol->string module-name) module-name)
+                'metadata (list (cons 'module-root module-root)))))
         (for-each
           (lambda (role)
             (let* ((path
@@ -444,11 +464,16 @@
 
 (def yuanxu-module-style-policy-prototype
   (.o (module-style-policy? #t)
-      ;; Construct here, validate at make-module-interface. Validation inside
-      ;; this computed default would retain its constructor receipts in every
-      ;; later replay of the shared policy slot. Derived receivers still get
-      ;; fresh defaults; this is not a shared accepted-Profile cache.
+      ;; Keep raw construction separate from the checked Interface value below.
+      ;; Derived policy receivers still get their own Profile/defaults.
       (authoring (make-default-module-authoring-profile))
+      ;; Normalize the policy-owned Profile through the public constructor once
+      ;; per native receiver. Owners derive only their id/location. Every datum
+      ;; still goes through fresh Generic admission below; no accepted source or
+      ;; obligation result is cached. Native reads retain the constructor's
+      ;; complete Type/metadata support, including inherited-policy invalidation.
+      (%authoring-interface
+        (yuanxu-module-interface "source-policy" (.o) '() authoring: authoring))
       source-policy: SourceInspectionPolicy.
       validate: yuanxu-module-source-admit!))
 (def yuanxu-default-module-style-policy

@@ -19,12 +19,14 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/setup-gerbil
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        # Only the pinned POO dependency namespace crosses CI runs. Archiving
+        # lib itself would recursively include test approvals; a negative
+        # top-level glob does not remove descendants of an archived directory.
         with:
           path: |
             .gerbil/pkg
-            .gerbil/lib
+            .gerbil/lib/clan
             .gerbil/bin
-            !.gerbil/lib/.yuanxu-test-publications
           key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-1cfb032-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
         run: |

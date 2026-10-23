@@ -222,9 +222,11 @@
                   (set! observations (cons (cons path (module-source-read path)) observations)))))))
           seen)) files))
   (def inputs (unique-build-inputs observations))
-  (def selected (.ref view 'selected-graph))
-  (unless (eq? selected (.ref demand 'selected-graph))
-    (error "test demand belongs to another selected graph"))
+  (def (selected-graph!)
+    (def selected (.ref view 'selected-graph))
+    (unless (eq? selected (.ref demand 'selected-graph))
+      (error "test demand belongs to another selected graph"))
+    selected)
   (def (current!)
     ;; This source-only guard does not acquire the production build graph.
     ((.ref demand 'admit-current))
@@ -235,12 +237,12 @@
   (current!)
   (def publication (delay (test-build-publication projection)))
   (def endpoint
-    (.o selected-graph: selected generation: (.ref selected 'generation)
+    (.o selected-graph: (selected-graph!) generation: (.ref (selected-graph!) 'generation)
         build-publication: (force publication)
         compiler-current: (lambda () (current!) (.call (force publication) .current))))
   (def projection
    (.o (:: projection)
-      selected-graph: selected build-graph: endpoint demand-source: demand
+      selected-graph: (selected-graph!) build-graph: endpoint demand-source: demand
       compiler-identities: (map car (reverse entries)) source-inputs: inputs
       source-root: root spec: (map (lambda (entry) `(gxc: ,(cdr entry))) (reverse entries))
       output-directory:

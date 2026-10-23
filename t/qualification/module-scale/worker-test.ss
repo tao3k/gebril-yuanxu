@@ -39,7 +39,16 @@
         ;; Do not construct typed checkpoint receipts inside an active reader.
         (when (eq? category 'publication-end)
           (set! completed-declarations (+ completed-declarations amount))
-          (execution-progress! '(declaration-completed) completed-declarations))
+          (execution-progress! '(declaration-completed) completed-declarations)
+          ;; Scalar snapshots follow real completed publications, not a timer.
+          ;; Do not force GC or construct POO diagnostics inside this observer.
+          (when (zero? (modulo completed-declarations 100))
+            (let (stats (##process-statistics))
+              (displayln "DECLARATION-MEMORY completed=" completed-declarations
+                         " heap=" (f64vector-ref stats 15)
+                         " live=" (f64vector-ref stats 17)
+                         " allocated=" (f64vector-ref stats 7))
+              (force-output))))
         (when (eq? category 'candidate-open-boundary)
           ;; Scalar-only failure attribution: constructing a typed receipt here
           ;; would reenter the admission whose refusal we are diagnosing.
