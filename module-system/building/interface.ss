@@ -7,7 +7,28 @@
         (only-in "./test-projection.ss" module-test-projection module-test-file-source module-test-execution)
         (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-read-cache
                  module-source-measure-operation))
-(export yuanxu-init-build)
+(export yuanxu-init-build call-with-init-build-spec)
+
+;; A dynamic association for this SDK invocation only, not a spec registry or
+;; cached approval. The producer retains its projection and all source checks.
+(def current-build-spec-consumer (make-parameter #f))
+(def (call-with-init-build-spec prepare dispatch args libdir)
+  (def produced #f)
+  (def consume #f)
+  (def spec
+    (parameterize ((current-build-spec-consumer
+                    (lambda (value owner)
+                      (when (and produced (not (eq? produced value)))
+                        (error "native build must consume one init-owned specification"))
+                      (set! produced value)
+                      (set! consume owner))))
+      (prepare)))
+  (if consume
+    (begin
+      (unless (eq? spec produced)
+        (error "native build specification lost its init owner"))
+      (consume dispatch args libdir))
+    (dispatch spec args)))
 
 ;; Like testing-executor, these promises retain native bindings, never a Graph,
 ;; source check or approval. Importing init must not import the Reader/compiler
@@ -148,7 +169,12 @@
           ((force build-projector) (selected!) roots root (path-expand "build.ss" root)))
         (set! retained roots)))
     (current!)
-    (.get prepared spec))
+    (def value (.get prepared spec))
+    (when (current-build-spec-consumer)
+      ((current-build-spec-consumer) value
+        (lambda (dispatch args libdir)
+          (build-run roots dispatch args libdir publication: #f))))
+    value)
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace) (.get (selected!) modules))

@@ -17,7 +17,8 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
+        (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
+        (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
 (def Scope (yuanxu-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
@@ -83,6 +84,14 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "library inventory does not compile the init selection owner"
+      (check-equal? (member "init" core-spec) #f)
+      (check-equal? (member "build" core-spec) #f)
+      ;; These are ordinary library APIs, not linked Module interfaces.
+      (check-equal? (and (member "module-system/selection/init-syntax" core-spec) #t) #t)
+      (check-equal? (and (member "ops/interface" core-spec) #t) #t)
+      (check-equal? (member "modules/json-schema/interface" core-spec) #f)
+      (check-equal? (member "modules/funflow/interface" core-spec) #f))
     (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
       (with-source
        (lambda (root _prefix)
@@ -104,6 +113,17 @@
            'forwarded)
          (check-equal? (dispatch '() receive '("spec")) 'forwarded)
          (check-equal? calls 1)
+         ;; The declarative SDK adapter obtains the same owner from the spec
+         ;; expression, with no user-maintained dispatcher or public registry.
+         (check-equal?
+           (call-with-init-build-spec (cut spec '()) receive '("spec") (path-expand "lib" root))
+           'forwarded)
+         (check-equal? calls 2)
+         (check-exception
+           (call-with-init-build-spec
+             (lambda () (map identity (spec '()))) receive '("spec") (path-expand "lib" root))
+           error?)
+         (check-equal? calls 2)
          ;; A native package callback returns no publication authority. The
          ;; original default path must still reject its missing compiler outputs.
          (def compile-calls 0)
@@ -122,7 +142,7 @@
          (def config (path-expand "modules/core/schema/config.ss" root))
          (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
          (check-exception (dispatch '() receive '("spec")) error?)
-         (check-equal? calls 1))))
+         (check-equal? calls 2))))
     (yuanxu-test-case "configuration admission precedes publication binding"
       (with-source
        (lambda (root _prefix)

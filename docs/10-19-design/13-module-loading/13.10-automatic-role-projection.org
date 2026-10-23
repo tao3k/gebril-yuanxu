@@ -9,13 +9,16 @@ discovery, import association and the compiler environment. Requiring the author
 to repeat types/config/func/objects imports was the wrong solution. The manual
 import control in [[file:13.09-user-owned-build-script.org][08]] is superseded by this Core implementation.
 
-The consumer stays exactly:
+The consumer imports init exports at the build entry, never in the library
+inventory. The Core adapter preserves SDK macro syntax and encloses native compilation:
 
 #+begin_src scheme
-(import (only-in :std/build-script defbuild-script)
-        (only-in "./init.ss" init.build-spec)
+(import (only-in "./module-system/building/script.ss" defbuild-script)
+        (only-in :clan/poo/object .get)
+        (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./core-spec.ss" core-spec))
-(defbuild-script (init.build-spec core-spec))
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
 #+end_src
 
 There is no consumer source alias, replacement main, SDK patch or additional
@@ -36,8 +39,9 @@ native identities and original syntax, and cleans its temporary frames. An
 explicit custom prelude remains authoritative. Native Make still owns source
 and product timestamps; plain package compilation grants no publication approval.
 
-Maintained build scripts consume =std-make-run=, rather than taking an inert
-=std-make-spec= and compiling bare role sources outside the prepared callback.
+Maintained build scripts consume =std-make-spec= through the Core
+=defbuild-script= adapter. It retains the prepared callback; importing the SDK
+macro directly and compiling bare role sources does not supply that boundary.
 Explicit =.compile= reuses the same callback inside its existing issuance guard.
 No per-directory metadata, compiler patch or new Builder is needed.
 

@@ -12,22 +12,13 @@
 
 (import (only-in :clan/poo/object .get)
         (only-in "./prelude.ss")
-        (only-in :std/build-script defbuild-script)
+        (only-in "./module-system/building/script.ss" defbuild-script)
         (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./module-system/building/artifacts.ss" current-build-output-directory)
         (only-in "./core-spec.ss" core-spec))
 
-;; init owns Module projection; top-level core-spec.ss owns ordinary Core roots.
-;; The SDK owns package compilation and its ordinary incremental outputs.
-(def (package-main spec args)
-  (let ()
-    (defbuild-script spec libdir: (current-build-output-directory))
-    (apply main args)))
-;; Report actual dispatcher boundaries; completion still requires process exit.
-(def (main . args)
-  (when (getenv "GERBIL_BUILD_VERBOSE" #f)
-    (displayln "BUILD-START Core " args " at=" (real-time)) (force-output))
-  (begin0
-    ((.get yuanxu.init.exports std-make-run) core-spec package-main args publication: #f)
-    (when (getenv "GERBIL_BUILD_VERBOSE" #f)
-      (displayln "BUILD-FINISH Core " args " at=" (real-time)) (force-output))))
+;; init.exports owns selected Module targets; core-spec owns library targets.
+;; Only this entry consumes both. core-spec must never compile init itself.
+;; The adapter keeps role/currentness boundaries inside the SDK consumer.
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec) libdir: (current-build-output-directory))

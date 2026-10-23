@@ -86,6 +86,8 @@
 ;; Closed Core tools: build projection and ordinary data construction. Published
 ;; Modules remain selected dependencies, never implicit bootstrap capabilities.
 (def bootstrap-roots '(:yuanxu/module-system/building/build-projection
+                      ;; The SDK consumer is part of the compiler trust closure.
+                      :yuanxu/module-system/building/script
                       :yuanxu/module-system/building/configuration-source
                       ;; Shared graph values/algorithms are kernel data APIs.
                       ;; Selected Ops/Funflow sources use this same closure;

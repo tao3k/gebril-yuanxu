@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (export core-spec)
 
-;; Ordinary Core roots only. Published Module implementations belong to init.ss.
+;; Ordinary library roots only. init.ss is consumed by build.ss, not compiled
+;; as a library target. Selected Module targets come from init.exports.
 (def core-spec
   '("prelude"
-    "init"
     "core-spec"
     "ops/config"
     "ops/types"
@@ -164,6 +164,7 @@
     "module-system/building/test-projection"
     "module-system/building/test-observation"
     "module-system/building/interface"
+    "module-system/building/script"
     "module-system/building/source-package"
     "module-system/source/imports"
     "module-system/selection/flags"

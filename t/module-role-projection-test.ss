@@ -6,6 +6,7 @@
         (only-in :std/make make)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :clan/poo/object .get .ref .o)
+        (only-in :yuanxu/module-system/building/script defbuild-script)
         (only-in :yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
         (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
@@ -34,6 +35,20 @@
       (test root prefix))))
 (def module-role-projection-test
   (test-suite "One role inventory for declaration and compiler"
+    (test-case "SDK spec syntax evaluates its value and options once"
+      (let ()
+        (def specifications 0)
+        (def options 0)
+        (defbuild-script
+          (begin (set! specifications (1+ specifications)) '("library"))
+          libdir: (begin (set! options (1+ options)) (gerbil-path)))
+        (def printed
+          (call-with-output-string
+            (lambda (out)
+              (parameterize ((current-output-port out)) (main "spec")))))
+        (check-equal? (call-with-input-string printed read) '("library"))
+        (check-equal? specifications 1)
+        (check-equal? options 1)))
     (test-case "publication frames and standard source expansion agree"
       (with-module
         (lambda (root _prefix)

@@ -87,7 +87,7 @@
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))
     (test-case "same fixture rejects package mismatch and changed admission inputs"
-      (def result (run-script InputChecks output-port: (current-error-port)))
+      (def result (.call InputChecks .run))
       (def output (.get result output))
       (display output)
       (check-equal? (.get result status) 0)

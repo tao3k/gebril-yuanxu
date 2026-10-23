@@ -105,11 +105,12 @@ relabel those failures as successes.
 
 * Native compiler integration
 
-=std-make-run= and explicit =.compile= share one internal role-lowering
+The SDK spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
 callback on the prepared projection. The existing =std-make-run= default still
-uses issued compilation. The maintained package build scripts explicitly pass
-=publication: #f= to retain ordinary SDK incrementality without granting
-publication approval. No existing caller silently loses the issuance check;
+uses issued compilation. Maintained package entries consume =std-make-spec=
+through the Core SDK macro adapter. Internally this retains ordinary SDK
+incrementality (=publication: #f=), without granting publication approval.
+No existing caller silently loses the issuance check;
 explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
 binds the SDK's public =current-expander-module-import= only for that action.
 Both the Make coordinator and compiler driver consult this parameter. Original
@@ -195,3 +196,94 @@ projecting sources. Compiled SDK contexts retain their existing native runtime
 trust boundary. No current-directory fallback, substitute source root or relaxed
 source check is introduced. Selected Module/configuration inputs retain their
 own complete currentness checks independently of the compiler's build directory.
+
+* Declarative SDK consumer
+
+The maintained build entry has no user dispatcher:
+
+#+begin_src scheme
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
+#+end_src
+
+=defbuild-script= is imported from =module-system/building/script.ss=. It is a
+thin hygienic adapter over the installed =std/build-script= macro, not a copy
+of the SDK command parser or Make scheduler. The unmodified SDK macro has no
+around-command hook, so importing it directly would lose selected role guards.
+The adapter evaluates the spec and keyword values once, retains the caller's
+source location, and delegates spec/compile/clean/meta/options to that macro.
+
+During spec evaluation, the existing init producer supplies its retained
+projection owner through a dynamically scoped observer. The consumer verifies
+that the returned list is the exact produced spec, then delegates to the existing
+checked dispatch. This association ends with the synchronous invocation. There
+is no registry, persistent cache, new Builder, approval cache or cloned issuer.
+Ordinary SDK-only specs retain ordinary dispatch. Compilation uses the existing
+role callback and before/after currentness; explicit =.compile= keeps issuance.
+The adapter itself is included in the existing compiler-tool source closure.
+
+
+* Library inventory versus init consumption
+
+=build.ss= continues to import and consume =yuanxu.init.exports=. The correction
+is in =core-spec.ss=: it must not list =init= as a compiled library target.
+Selection syntax is an ordinary library API and stays in that inventory; the
+particular init declaration is a source-bound build input with its own owner.
+Module interfaces are supplied by the init-selected graph, not repeated in the
+library inventory. This preserves lazy selection, shared role preparation,
+currentness and the existing explicit issuance boundary without a second build
+protocol. The adapter retains ordinary package compilation internally; the default
+issued path and explicit =.compile= remain guarded.
+
+The earlier attempt to remove init consumption from the entry was withdrawn.
+It is not the accepted separation and its intermediate native-library-only run
+is not a qualification of the corrected entry. The build-graph regression checks
+that init/build are absent from the library inventory while init-syntax and
+built-in Ops remain available as library APIs.
+
+* Spec-consumer qualification
+
+The installed Gerbil/Gambit and pinned POO =80b590b= are unchanged. The following
+focused files passed via the default heap-fenced =just test-file= entry, serially:
+
+- =module-role-projection-test=: four cases, including single evaluation of the
+  spec/options and native Make role compilation without directory package files.
+- =module-build-graph-test=: nineteen cases, including the library/init inventory
+  boundary and refusal when a returned spec loses its producer identity. The
+  pre-existing default issued-dispatch negative control remains in place.
+- =module-publication-test=: the existing publication, source-change, hygiene,
+  lazy scope and inherited effective-value controls.
+- =gitea-postgresql-publication-test=: all eleven domain cases, including cached
+  parent plans, child final ports, both contribution requirements and source drift.
+
+The default =just test-bootstrap= also passed. It runs spec, cold compile,
+clean, a fresh-process rebuild, clean and source/package refusal checks. The two
+compile commands took 43.62 and 46.90 seconds under their unchanged 60-second
+limits; the outer run took 195.95 seconds. These are local receipts, not a CI
+pass or a speedup claim. Completion required MODULE-OK, HARNESS-OK, final OK and
+absence of error/heap/stack markers, rather than exit status alone.
+
+Two failed bootstrap attempts were retained locally. A nested =just test-file=
+repeated host selection and preparation and reached the existing idle fence
+after the build commands had succeeded. The existing fixture now uses
+=TestingScript.= directly for that one independent Harness process, with real
+before/after test-file currentness and the SAME 60-second total/idle limits.
+The next attempt correctly failed because its noncanonical test path did not
+match the required MODULE-OK identity; canonicalizing the actual input path
+fixed that mismatch without weakening the receipt assertion. Raw logs remain
+local artifacts, not repository content.
+
+Final-source cold qualification used a newly created prefix containing only the
+fixed POO dependency and its native package manifest, with no Yuanxu artifacts.
+Default =just build= completed all 237 targets in 213.12 seconds under the
+unchanged 600-second bound, using two native workers. Both selected JsonSchema
+and Funflow interface products and the Core SDK adapter product were present;
+=lib/yuanxu/init.ssi= and =init~0.o1= were absent. No directory-level
+=modules/gerbil.pkg= or =scenarios/gerbil.pkg= was restored. The earlier
+native-library-only attempt is not counted in this final qualification.
+
+A fresh-process repeat using that same prefix succeeded in 21.03 seconds. It
+recompiled only =prelude= (one native compile job); the other targets reused
+native Make outputs. This is not a zero-compilation receipt. The separate
+=tao3k/yuanxu/prelude= output identity and its native Make target treatment remain
+a follow-up to investigate; no cache shortcut or source check was disabled.
