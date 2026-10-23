@@ -24,7 +24,7 @@ jobs:
             .gerbil/pkg
             .gerbil/lib
             .gerbil/bin
-          key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-2591dcd-${{ hashFiles('gerbil.pkg') }}
+          key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-1cfb032-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"

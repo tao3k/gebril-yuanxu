@@ -101,3 +101,15 @@ execution, explicit execution, cached parent defaults and child receiver
 isolation. Existing watchdog limits and negative checks remain enabled.
 
 These are local build and focused-test results, not a complete remote CI pass.
+
+** CI compiler cohort alignment
+
+The previous CI release =2591dcd= exports an executor with only =submit= and
+=close= fields. Inspecting the pinned release's actual =compiler/base.ssi= and
+=base.ss= confirmed that it has no =add-compile-output-job!= or output producer
+registry. Ascent's Darwin build requires that producer registry; a platform
+name cannot establish API availability. CI now uses the published =1cfb032=
+cohort used by the installed qualification runtime, with per-platform immutable
+release tags, SHA-256 checks and manifest revision checks. This changes the
+selected toolchain artifact, not Gerbil compiler sources or admission policy.
+Linux editor-tagging and scale outcomes remain subject to the new CI run.
