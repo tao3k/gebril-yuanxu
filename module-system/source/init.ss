@@ -5,7 +5,22 @@
 (import (only-in :clan/poo/object .o .+ .ref)
         (only-in :std/list/list any)
         (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
-(export module-init-intent)
+(export module-init-intent module-init-export-name)
+
+;; A declaration belongs to its native module identity, not its prelude, Git
+;; remote or the caller's filesystem spelling. init.ss is a convention, not a
+;; restriction on where yuanxu! may declare a directory window.
+(def (module-init-export-name identity)
+  (unless (symbol? identity) (error "init requires a native module identity" identity))
+  (let (name (symbol->string identity))
+    (let (separator (string-rindex name #\/))
+      (string->symbol
+        (string-append
+          (if separator
+            (string-append (substring name 0 separator) "."
+                           (substring name (+ separator 1) (string-length name)))
+            name)
+          ".exports")))))
 (def (init-name? name)
   (and (symbol? name)
        (let (text (symbol->string name))

@@ -6,6 +6,7 @@
 ;; Ordinary Core roots only. Published Module implementations belong to init.ss.
 (def core-spec
   '("prelude"
+    "init"
     "core-spec"
     "feature-system/adapter-projection-binding"
     "feature-system/bundle-v1-domain-case-projection"

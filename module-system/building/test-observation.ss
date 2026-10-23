@@ -147,8 +147,8 @@
           reader-admission-microseconds reader-admission-cpu-microseconds)
         (reader-projection-start reader-projection-end
           reader-projection-microseconds reader-projection-cpu-microseconds)
-        (nix-process-start nix-process-end
-          nix-microseconds nix-cpu-microseconds))))
+        (package-process-start package-process-end
+          package-microseconds package-cpu-microseconds))))
   (def (observe-span category)
     (for-each
       (lambda (span)
@@ -170,7 +170,7 @@
                  ;; Internal diagnostic spans must not consume the Case's
                  ;; unchanged 64 DOMAIN-category allowance.
                  (when (memq (car keys) '(native-source-import-start publication-start
-                                         publication-guard-start nix-process-start))
+                                         publication-guard-start package-process-start))
                    (yuanxu-test-observe (caddr keys) wall)
                    (yuanxu-test-observe (cadddr keys) cpu))))))))
       spans))
@@ -225,12 +225,12 @@
         ;; summing overlapping spans. Names are producer-owned scalar labels.
         (when trace?
           (case category
-            ((package-stage-start admission-stage-start nix-process-start native-source-import-start)
+            ((package-stage-start admission-stage-start package-process-start native-source-import-start)
              (set! effects
                (cons (cons category
                        (if (eq? category 'native-source-import-start)
                          (read-owner (cadr key)) (cadr key))) effects)))
-            ((package-stage-end admission-stage-end nix-process-end native-source-import-end)
+            ((package-stage-end admission-stage-end package-process-end native-source-import-end)
              (when (pair? effects) (set! effects (cdr effects))))))
         (when (memq category '(native-source-import-start native-source-import-end
                               publication-start publication-end
@@ -243,7 +243,7 @@
                               reader-interface-start reader-interface-end
                               reader-admission-start reader-admission-end
                               reader-projection-start reader-projection-end
-                              nix-process-start nix-process-end))
+                              package-process-start package-process-end))
           (observe-span category))
         (case category
           ((file-read)
@@ -262,13 +262,13 @@
              (path-strip-directory
                (path-strip-trailing-directory-separator (path-directory (cadr key))))))
           ((package-stage-start package-stage-end admission-stage-start admission-stage-end
-            nix-process-start nix-process-end)
+            package-process-start package-process-end)
            (stage category (cadr key)))
-          ((nix-store-validity)
+          ((package-store-validity)
            (stage category (cadr key)))
           ((native-source-import-start native-source-import-end)
            (stage category (source-label (cadr key))))
-          ((reader-retention reader-binding-roots reader-read-roots reader-lifetime reader-declaration nix-process-observation)
+          ((reader-retention reader-binding-roots reader-read-roots reader-lifetime reader-declaration package-process-observation)
            ;; Producers own these closed scalar rows; reject unexpected payloads
            ;; rather than print syntax or accidentally root a runtime object.
            (unless (and (list? (cdr key))
@@ -278,7 +278,7 @@
                                 (cdr key)))
              (error "module test observation requires scalar fields" category))
            (when trace? (yuanxu-write-observation-line! "%s %s" category (cdr key)))
-           (when (eq? category 'nix-process-observation)
+           (when (eq? category 'package-process-observation)
              (for-each (lambda (row) (yuanxu-test-observe (car row) (cdr row))) (cdr key)))
            (when (eq? category 'reader-declaration)
              (stage category 'body)))))

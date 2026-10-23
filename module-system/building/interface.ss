@@ -4,8 +4,9 @@
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :clan/poo/object .get .o .cc .+ .call)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in "./test-projection.ss" module-test-projection module-test-execution)
-        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-read-cache))
+        (only-in "./test-projection.ss" module-test-projection module-test-file-source module-test-execution)
+        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-read-cache
+                 module-source-measure-operation))
 (export yuanxu-init-build)
 
 ;; Like testing-executor, these promises retain native bindings, never a Graph,
@@ -30,6 +31,7 @@
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
 (def (yuanxu-init-build source declaration)
+  (def init-file (path-expand source))
   (def prepared #f)
   (def retained #f)
   (def selection #f)
@@ -40,15 +42,24 @@
     (def executable
       (.+ source-value
         (.o (:: tests) source: source-value
-            execution: (module-test-execution source-value)
+            build:
+            ((force build-projector) (selected!) '()
+              (path-directory init-file) init-file
+              demand: source-value)
+            std-make-spec: (lambda ()
+                             ((.get build admit-current))
+                             (.get build spec))
+            execution: (module-test-execution source-value
+                         (lambda () (.get tests build)))
             .run: (lambda () (.call (.get tests execution) .run))
+            .for-files: file-tests
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))
     (if suite executable
       (.o (:: @ executable)
         integration: (test-source owners 'integration)
         qualification:
         (if owners (test-source owners 'qualification)
-          ;; Keep the aggregate facade inert, like init.tests itself. A narrow
+          ;; Keep the aggregate facade inert, like the init export tests slot itself. A narrow
           ;; .select must not first discover every eligible owner's sources.
           (executable-tests
             (.o source-root: (path-directory (path-expand source))
@@ -68,11 +79,13 @@
              (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms)))
         (unless (equal? declared (list declaration))
           (error "imported init declaration differs from its source; use a fresh source context"))
-        (set! selection ((force module-linker) init module-view: module-view))))
-    ((.get selection admit-current))
+        (def linker (module-source-measure-operation 'linker-import (cut force module-linker)))
+        (set! selection (module-source-measure-operation 'context
+                          (cut linker init module-view: module-view)))))
+    (module-source-measure-operation 'selection-current (.get selection admit-current))
     selection)
   (def (test-current!)
-    (unless selection (error "init.test-spec must select its source context first"))
+    (unless selection (error "init tests must select their source context first"))
     (call-with-module-source-read-cache
       (lambda ()
         ((.get selection admit-current))
@@ -94,6 +107,20 @@
         ;; there is no import, caller handoff or execution requiring a recheck.
         (hash-put! tests key projection)
         projection)))
+  (def (file-tests files)
+    (def file-source (module-test-file-source files))
+    (executable-tests
+      (.cc file-source
+        'source-root (path-directory init-file)
+        'selected-graph
+        (let (view (selected!))
+          (module-source-measure-operation 'selected-graph (lambda () (.get view selected-graph))))
+        'admit-current
+        (lambda ()
+          ;; selected! already admits the current selection, including the
+          ;; package boundary when realized. Do not invoke that guard twice.
+          (selected!)
+          ((.get file-source admit-current))))))
   (def (test-spec (owners #f))
     (def projection (test-source owners))
     ;; test-source already admits this projection. A narrow request must not
@@ -110,7 +137,7 @@
         admit-current: test-current!
         .select: test-source)))
   (def (current!)
-    (unless prepared (error "init.build-spec must prepare the source context first"))
+    (unless prepared (error "init std-make-spec must prepare the source context first"))
     ((.get prepared admit-current)))
   (def (build-spec roots)
     (if prepared
@@ -127,15 +154,25 @@
   (def (module-namespace) (.get (selected!) modules))
   ;; Execute the installed SDK's dispatcher unchanged. Core only owns the
   ;; before/after boundary and the retained result of a successful compile.
-  (def (build-run roots native-main args (libdir (path-expand "lib" (gerbil-path))))
-    (build-spec roots)
+  (def (build-run roots package-main args (libdir (path-expand "lib" (gerbil-path))))
+    ;; Pass the admitted value to the SDK dispatcher. The compile boundary
+    ;; below owns fresh checks before and after its callback; the callback
+    ;; must not re-enter source preparation to obtain the same specification.
+    (def spec (build-spec roots))
+    (def (dispatch) (package-main spec args))
     (cond
       ((or (null? args) (equal? (car args) "compile"))
-       (.call prepared .compile libdir (cut apply native-main args)))
+       (.call prepared .compile libdir dispatch))
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))
-         (begin0 (apply native-main args)
+         ;; Loading cleaners and invalidating issuance precede SDK cleanup.
+         ;; Retain the freshness check at that exact boundary.
+         (current!)
+         (begin0 (dispatch)
            ((cdr cleaners) (.get prepared compiler-identities) libdir))))
-      (else (apply native-main args))))
-  (values build-spec current! test-spec test-current! test-source-value module-namespace build-run))
+      (else (dispatch))))
+  (values
+    (.o std-make-spec: build-spec std-make-run: build-run
+        admit-current: current! tests: test-source-value)
+    module-namespace))

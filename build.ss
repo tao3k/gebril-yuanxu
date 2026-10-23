@@ -6,18 +6,35 @@
           (only-in :std/source this-source-file)
           (only-in "./module-system/building/source-package.ss" register-yuanxu-build-source!)))
 (begin-syntax
+  (when (getenv "GERBIL_BUILD_VERBOSE" #f)
+    (displayln "BUILD-BOOTSTRAP Core at=" (real-time)) (force-output))
   (register-yuanxu-build-source! (path-directory (this-source-file))))
 
-(import (only-in "./prelude.ss")
+(import (only-in :clan/poo/object .get)
+        (only-in "./prelude.ss")
         (only-in :std/build-script defbuild-script)
-        (only-in "./init.ss" init.build-spec init.build-run)
+        (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./module-system/building/artifacts.ss" current-build-output-directory)
         (only-in "./core-spec.ss" core-spec))
 
 ;; init owns Module projection; top-level core-spec.ss owns ordinary Core roots.
-(def native-main
+;; The SDK owns package compilation and its ordinary incremental outputs.
+(def (package-main spec args)
   (let ()
-    (defbuild-script (init.build-spec core-spec) libdir: (current-build-output-directory))
-    main))
+    (defbuild-script spec libdir: (current-build-output-directory))
+    (apply main args)))
+;; Report actual dispatcher boundaries; completion still requires process exit.
 (def (main . args)
-  (init.build-run core-spec native-main args))
+  (when (getenv "GERBIL_BUILD_VERBOSE" #f)
+    (displayln "BUILD-START Core " args " at=" (real-time)) (force-output))
+  (begin0
+    (if (and (pair? args) (equal? (car args) "clean"))
+      ;; Module cleanup also owns identities outside the package prefix.
+      ((.get yuanxu.init.exports std-make-run) core-spec package-main args)
+      (let (spec ((.get yuanxu.init.exports std-make-spec) core-spec))
+        (when (getenv "GERBIL_BUILD_VERBOSE" #f)
+          (displayln "BUILD-SPEC Core targets=" (length spec) " at=" (real-time)) (force-output))
+        (begin0 (package-main spec args)
+          ((.get yuanxu.init.exports admit-current)))))
+    (when (getenv "GERBIL_BUILD_VERBOSE" #f)
+      (displayln "BUILD-FINISH Core " args " at=" (real-time)) (force-output))))

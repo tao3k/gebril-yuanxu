@@ -45,7 +45,9 @@ Nested feature declarations, external =@= roots, named Profile init forms and
 arbitrary source computation are not supported by this filesystem adapter yet;
 the legacy short compiler form retains its existing surface. The =mode:/source:=
 compiler form and filesystem reader share the same pure lowering and produce
-native intent. The compiler form exports =yuanxu-module-init= hygienically;
+native intent. The compiler form exports only the source-qualified =<owner>.init.exports=
+binding. Native module identity determines =owner=; the compiler no longer
+publishes a separate =yuanxu-module-init= value;
 it performs no filesystem discovery during expansion or declaration evaluation.
 
 * Demand and source lifetime

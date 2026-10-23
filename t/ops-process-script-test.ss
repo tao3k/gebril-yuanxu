@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object "./qualification/opentofu/objects.ss"
+(import :std/test :clan/poo/object (only-in "../init.ss" yuanxu.init.exports)
         (only-in :yuanxu/ops/func run-script)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case
@@ -12,6 +12,8 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/misc/ports read-all-as-string))
 (export ops-process-script-test)
+;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
+(def Ops (.get yuanxu.init.exports Modules ops scope))
 (def ProcessScript. (.get Ops prototypes Script))
 (def (process-gone? pid)
   (with-catch
@@ -31,15 +33,21 @@
                               stdin-redirection: #f stdout-redirection: #f))))
                (call-with-output-file ,child-pid
                  (lambda (port) (write (process-pid child) port)))
+               (displayln "READY") (force-output)
                (thread-sleep! 10)))
-          (.def (Waiting @ ProcessScript.)
-            command: (list "gxi" "-:max-heap=2G,debug=q" "-e" (object->string program))
-            timeout: 10)
           (def policy (.cc yuanxu-default-testing-case-profile
                          'max-duration-milliseconds 1000))
-          (check-exception
-            (.call policy .run policy "controlled Ops cancellation"
-                   (lambda () (.call Waiting .run))) YuanxuDebugDurationAnomaly?)
+          (.def (Waiting @ ProcessScript.)
+            command: (list "gxi" "-:max-heap=2G,debug=q" "-e" (object->string program))
+            timeout: 10
+            ;; Start the SAME one-second cancellation window only after the
+            ;; real descendant exists. Slow interpreter startup is not cleanup.
+            progress: (lambda ()
+                        (lambda (line)
+                          (when (string=? line "READY\n")
+                            (.call policy .run policy "controlled Ops cancellation"
+                              (lambda () (thread-sleep! 10)))))))
+          (check-exception (.call Waiting .run) YuanxuDebugDurationAnomaly?)
           (check-equal? (file-exists? child-pid) #t)
           (def pid (call-with-input-file child-pid read))
           ;; Permit launchd to reap the killed orphan; never signal a PID read
@@ -75,7 +83,7 @@
       (check-equal? (.get (.call Original .run "$(not-a-shell); spaced") output) "$(not-a-shell); spaced")
       (check-equal? (.get (.call Derived .run "value") output) "[value]")
       (check-equal? (.get (.call Original .run "value") output) "value")
-      (check-equal? (.get Ops tests SelectedFlake timeout) 145))
+      (check-equal? (.get Original timeout) (.get Ops config timeout)))
     (yuanxu-test-case "declaring and resolving an operation is inert; only invocation starts it"
       (call-with-temporary-directory "ops-inert"
         (lambda (root)

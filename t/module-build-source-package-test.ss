@@ -17,6 +17,7 @@
       (test-case "wrong package refuses registration without changing search order"
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
+          (eval-syntax '(import (only-in :clan/poo/object .get)))
           (eval-syntax `(import
                          (only-in ,(path-expand "module-system/building/source-package.ss" root)
                                   register-module-build-source!)))
@@ -30,19 +31,20 @@
       (test-case "build registration precedes init imports and guards tool drift"
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
+          (eval-syntax '(import (only-in :clan/poo/object .get)))
           (eval-syntax `(import
                          (only-in ,(path-expand "module-system/building/source-package.ss" root)
                                   register-yuanxu-build-source!)))
           ((eval-syntax 'register-yuanxu-build-source!) root)
           (eval-syntax `(import
-                         (only-in ,(path-expand "init.ss" root) init.build-spec init.build-current!)))
+                         (only-in ,(path-expand "init.ss" root) yuanxu.init.exports )))
           (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
                         (path-normalize (path-expand "object-family/syntax.ss" root)))
           ;; The Core package prefix must not capture public dependency imports.
           (check-equal? (string-prefix? (path-normalize root)
                            (core-resolve-library-module-path ':clan/poo/object)) #f)
-          (def spec (eval-syntax 'init.build-spec))
-          (def current! (eval-syntax 'init.build-current!))
+          (def spec (eval-syntax '(.get yuanxu.init.exports std-make-spec)))
+          (def current! (eval-syntax '(.get yuanxu.init.exports admit-current)))
           (def retained '("utilities/algorithms" "types" "core-spec"))
           (def targets (spec retained))
           (check-equal? (eq? targets (spec retained)) #t)

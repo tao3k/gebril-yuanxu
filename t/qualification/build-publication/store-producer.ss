@@ -5,7 +5,9 @@
         (only-in :yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
                  run-build-artifact-process)
         "./projection")
-(def producer-root (caddr (command-line)))
+(export main)
+;; Standard SDK launchers share this argument surface; issuance stays process-local.
+(def (main producer-root)
 (def services (.call ServicesFixture .prepare (.o root: producer-root)))
 (def prefix (cadr (call-with-input-file (path-expand "gerbil.pkg" producer-root) read)))
 (def probe-identity (string->symbol (string-append (symbol->string prefix) "/probe")))
@@ -18,4 +20,4 @@
   (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
         (directory-files (list path: lib ignore-hidden: #f))) lib))
 (display (run-build-artifact-process projection lib
-  (list "just" "build-publication-worker" producer-root lib (symbol->string probe-identity) "persist" record)))
+  (list "just" "build-publication-worker" producer-root lib (symbol->string probe-identity) "persist" record))))

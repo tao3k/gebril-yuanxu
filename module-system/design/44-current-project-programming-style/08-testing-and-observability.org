@@ -11,6 +11,12 @@ the ASP Testing Policy through native POO slots; it does not create a second
 test runner.  Per-test memory, performance, debug and trace Profiles are
 declarative values selected by the Testing Interface.
 
+ASP is optional development tooling. Its product pin and policy composition
+belong to =dev/gerbil.pkg= and =dev/testing-api.ss=. The product library build
+uses Core's native source closure and build projection; neither Core nor the
+production testing facade imports the ASP policy interface. Development policy
+trigger/repair tests opt into that dependency explicitly.
+
 Default =just= tests retain a bounded heap so an agent-authored infinite loop
 or leak fails locally.  Build memory and test-runtime memory are different
 concerns: parallel compilation may use available machine resources, while each
@@ -53,6 +59,23 @@ Core imports these macros from =:yuanxu/observability/testing-case= and
 =:yuanxu/observability/testing-fixture=, without depending on a product facade.
 There is no parallel module test runner or repeated implementation test list.
 
+Shared Fixtures own preparation, cleanup and reusable fault injection. Atomic
+Cases own distinct public behavior; they must not each rebuild the same support
+library or repeat the native compiler's cold/hot/currentness tests. Native
+=std/make= owns incremental support compilation in the test build phase,
+through the existing root build entry, separate from production targets.
+Testing owns execution and reporting, not a parallel Builder. A test build
+must not initialize unrequested production selection or activate its scopes.
+Reuse existing consumer Cases to qualify
+that wiring rather than introducing another compiler qualification suite.
+
+A cached support library does not cache a test verdict. Report support discovery
+and preparation, harness startup, and Case execution separately. A hot atomic
+Case should exercise its behavior with minimal setup; a source-relocation or
+multi-module publication qualification must be identified as integration work,
+not used to justify slow atomic tests. Investigate repeated source expansion or
+dependency discovery before adding more independent test processes.
+
 * Observability
 
 Observability reports first-event latency, active phase, elapsed time, memory
@@ -72,3 +95,18 @@ Compile changed modules directly, run atomic tests, then affected scenarios and
 public consumers.  Keep build wall time, macro-expansion time and runtime test
 time distinct.  A focused green result does not qualify independent closure;
 the completion report names exactly which gate ran and which remains blocked.
+
+* Specialized qualifications
+
+Use =TestingScript.= for native harnesses and refine its ordinary receipt slots
+(=case-count=, =required-lines=, and, for an existing custom aggregator, an exact
+=harness= line).  Keep domain assertions in the suite or its named receipt
+function.  The inherited =.run= owns Ops execution and the source Fixture;
+a specialized =.admit-result= cannot suppress its common failure gate.
+
+Non-Gerbil executable qualifications use Ops and the same Fixture ownership
+rules; they must retain their own result protocol.  A Rust summary, a build
+receipt and a native Gerbil =HARNESS-OK= are different kinds of evidence.
+Keep exact old deadlines, failure diagnostics and input-currentness controls
+when migrating a shell entrypoint.  Test the gate and its failure controls
+before treating its underlying domain qualification as passed.

@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object
+(import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/list/list any)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
@@ -25,8 +25,8 @@
      :load-modules "./modules" mode: explicit rename: Modules (engine)
      :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release)))
 (def (fixture! root)
-  (write-forms (path-expand "gerbil.pkg" root)
-               `((package: ,(string->symbol (symbol->string (gensym 'windows-))))))
+  (def package (string->symbol (symbol->string (gensym 'windows-))))
+  (write-forms (path-expand "gerbil.pkg" root) `((package: ,package)))
   (for-each
     (lambda (row)
       (def directory (path-expand (car row) root))
@@ -52,9 +52,11 @@
   (write-forms (path-expand "scenarios/bomb/interface.ss" root) '((error "unselected Scenario loaded")))
   (write-forms (path-expand "init.ss" root)
     `((import :yuanxu/module-system/selection/init-syntax) ,declaration))
-  (write-forms (path-expand "build.ss" root)
-    '((import (only-in :std/build-script defbuild-script) (only-in "./init.ss" init.build-spec))
-      (defbuild-script (init.build-spec '())))))
+  (let (binding (string->symbol (string-append (symbol->string package) ".init.exports")))
+    (write-forms (path-expand "build.ss" root)
+      `((import (only-in :clan/poo/object .get) (only-in :std/build-script defbuild-script)
+                (only-in "./init.ss" ,binding))
+        (defbuild-script ((.get ,binding std-make-spec) '()))))))
 (def module-windows-test
   (test-suite "One init, mounted directories and one selected Graph"
     (yuanxu-test-case "header and identity collisions reject without evaluation"
@@ -95,23 +97,25 @@
       (fixture! root)
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
-        (eval-syntax `(import :clan/poo/object
-                       (only-in ,(path-expand "init.ss" root)
-                         init.Modules init.Scenarios init.tests init.test-spec init.build-spec)))
-        (check-equal? (eval-syntax '(.ref/cached init.tests 'selected-graph)) #f)
-        (check-equal? (eval-syntax '(eq? init.Modules init.Modules)) #t)
-        (check-equal? (eval-syntax '(.ref/cached (.get init.Modules engine) 'scope)) #f)
+        (eval-syntax '(import (only-in :clan/poo/object .get)))
+        (eval-syntax '(import :clan/poo/object))
+        (import-fixture-init! (path-expand "init.ss" root))
+        (check-equal? (eval-syntax '(.ref/cached (.get FixtureExports tests) 'selected-graph)) #f)
+        (check-equal? (eval-syntax '(eq? (.get FixtureExports Modules) (.get FixtureExports Modules))) #t)
+        (check-equal? (eval-syntax '(eq? (.get FixtureExports Modules) (.get FixtureExports Modules))) #t)
+        (check-equal? (eval-syntax '(eq? (.get FixtureExports Scenarios) (.get FixtureExports Scenarios))) #t)
+        (check-equal? (eval-syntax '(.ref/cached (.get FixtureExports Modules engine) 'scope)) #f)
         (check-equal? (eval-syntax
-          '(eq? (.get init.Modules engine tests selected-graph)
-                (.get init.Scenarios release tests selected-graph))) #t)
-        (check-equal? (length (eval-syntax '(init.test-spec))) 2)
-        (check-equal? (pair? (eval-syntax '(init.build-spec '()))) #t)
-        (eval-syntax '(.call (.get init.Scenarios release tests) .run))
-        (eval-syntax '(def CapturedTests (.get init.Scenarios release tests)))
-        (check-equal? (eval-syntax '(.ref/cached (.get init.Scenarios release) 'scope)) #f)
+          '(eq? (.get FixtureExports Modules engine tests selected-graph)
+                (.get FixtureExports Scenarios release tests selected-graph))) #t)
+        (check-equal? (length (eval-syntax '(.get FixtureExports tests spec))) 2)
+        (check-equal? (pair? (eval-syntax '((.get FixtureExports std-make-spec) '()))) #t)
+        (eval-syntax '(.call (.get FixtureExports Scenarios release tests) .run))
+        (eval-syntax '(def CapturedTests (.get FixtureExports Scenarios release tests)))
+        (check-equal? (eval-syntax '(.ref/cached (.get FixtureExports Scenarios release) 'scope)) #f)
         (write-forms (path-expand "init.ss" root)
           '((yuanxu! :load-modules "./modules" mode: explicit rename: Changed (engine))))
-        (check-exception (eval-syntax '(.all-slots init.Modules)) error?)
+        (check-exception (eval-syntax '(.all-slots (.get FixtureExports Modules))) error?)
         (check-exception (eval-syntax '(.call CapturedTests .run)) error?)))
     (yuanxu-test-fixture "auto mounts locate on demand and reject a shared publication identity"
       (root Workspace)

@@ -462,7 +462,7 @@
             (replay-slot-reads! roots (lambda (_receiver _key) (void))) error?))))
     (yuanxu-test-case "reader warm inputs preserve the original graph without a weak projection claim"
       (with-publication-source
-        (lambda (_root _module-root source _view)
+        (lambda (_root _module-root source view)
           (def reader (module-publication-reader))
           (defvalues (_publication roots)
             (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t))
@@ -479,7 +479,43 @@
             ;; Full graph retention is intentional. Do not resurrect the old
             ;; zero-closure telemetry as a passing memory optimization.
             (check-equal? (any (lambda (read) (pair? (slot-read-dependencies read))) roots) #t)
-            (replay-slot-reads! roots (lambda (_receiver _key) (void)))))))
+            (replay-slot-reads! roots (lambda (_receiver _key) (void))))
+          ;; The real paired reader publishes its native support guard. No
+          ;; synthetic reads, hand-maintained requirements or purity labels.
+          (def candidate-reader (module-publication-reader))
+          (def result
+            (parameterize ((current-module-source-observer #f))
+              (.call candidate-reader read-candidate (lambda () source)
+                'custom/example (.get view context))))
+          (def current! (list-ref result 4))
+          (defvalues (_checked times)
+            (parameterize ((current-module-source-observer #f))
+              (call-with-module-source-operation-measurement current!)))
+          (check-equal? (hash-ref times '(calls metadata-replay)) 2)
+          (check-equal? (> (hash-ref times '(visits metadata-replay)) 0) #t)
+          (check-equal? (number? (hash-ref times '(collections metadata-replay))) #t)
+          (def replays 0)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (equal? key '(metadata-replay-end native))
+                              (set! replays (+ replays amount))))))
+            (current!))
+          (check-equal? replays 3)
+          ;; A callback can edit a preparation-only dependency and remove its
+          ;; own observer after admission replay. The pinned open tail remains.
+          (set! replays 0)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (equal? key '(metadata-replay-end native))
+                              (set! replays (+ replays amount))
+                              (when (= replays 2)
+                                (.put! source 'value "changed-after-admission-replay")
+                                (current-module-source-observer #f))))))
+            (check-exception (current!)
+              (lambda (failure)
+                (and (Error? failure)
+                     (equal? (Error-message failure) "stale slot dependency")))))
+          (check-equal? replays 2))))
     (yuanxu-test-fixture "public source preparation is unique but admission remains fresh"
       (library PublicLibraryFixture)
       (with-publication-source

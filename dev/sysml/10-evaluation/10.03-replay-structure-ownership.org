@@ -1,0 +1,169 @@
+#+title: 10.03 Replay Structure Ownership and Reuse Boundary
+#+language: en
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Question
+
+Can replay reuse identity tables and preorder lists without caching admission,
+discarding signed dependency edges or changing the first diagnostic?
+
+The owning architecture remains [[file:10.01-efficient-caching.sysml][10.01]].
+[[file:10.02-runtime-accounting.org][10.02]] records the allocation-accounting limits.
+This study does not change the compiler, add a Core graph cache or relax a gate.
+
+* Actual native owners
+
+The measured dependency is gerbil-poo =096da65e0dfb57df397ee16c78f71643847ec46b=,
+=object.ss= SHA256
+=c28abad72240d848b98a8cf062af1aa727064eb44b97046d1c7a2327f68fb2bb=.
+It is the existing compiled test overlay, not a clean qualification of Core's
+declared =ecaa8a6f51c746f974b2db4c220838647a82af3b= dependency. No dependency
+revision changes are part of this study.
+
+| Structure | Actual owner | Reuse decision |
+|-----------+--------------+----------------|
+| Receiver value and original read records | =object-%instance / object-%reads= | Already native-cached; cleared together by invalidation |
+| Root record sequence | Publication closure | Retained original signed identities; already deduplicated at collection |
+| DFS =seen= table | One =call-with-issued-reads= invocation | Never retain populated mutable state across invocations |
+| Protected receiver set | One dynamic replay frame | Reinstall per invocation; immutable sharing would require native ownership |
+| Ordered DFS list | One native replay | Candidate derived structure only; no public native cached projection exists |
+| Successful issuance/currentness/admission | Current check | Never retain as a reusable verdict |
+
+=object-record-read= captures a copied dependency sequence in its private birth
+closure. =object-read-issued?= authenticates registry/closure identity AND sequence
+contents, not merely the list-spine pointer. Replacing the spine with the same
+record sequence remains authentic; adding a dependency to the same root does not.
+The same receiver/key pair is insufficient: transient misses can have distinct
+signed identities and need not be stored in the receiver's read table.
+
+Supported prototype, default, protocol, parent and instance changes invalidate
+native derived state and advance revision through the existing dependency graph.
+Parent and child are different receivers, never interchangeable cache keys.
+Raw reflection of a read payload is not a supported invalidation operation;
+therefore revision equality alone cannot certify cached topology.
+
+* What a future native structural hit must establish
+
+1. Identical ORDERED root record identities, not a root set or receiver/key index.
+2. Authentic dependency sequences for every retained reachable record, including
+   preparation records and transient misses. A hit still authenticates them.
+3. The same preorder, record identity deduplication and receiver protection set.
+4. No shared mutable visitation state, and fresh nested dynamic frame ownership.
+5. Original preflight ordering, per-record route/current checks before delivery,
+   unchanged observer delivery order, and full final checks after the consumer.
+
+The existing entry unconditionally constructs two tables and two list spines.
+Core cannot implement this optimization merely by caching a list in a POO slot:
+passing it to =replay-slot-reads!= rebuilds these structures; bypassing that entry
+loses native authentication and protection. A native issuer-owned derived value
+could reuse the STRUCTURE under these conditions, but current public APIs do not
+expose that capability. This is a concrete ownership gap, not permission to add
+a second Core cache protocol. No production traversal cache is introduced here.
+
+Fresh work includes registry/payload authentication, metadata route validation,
+revision/instance/value checks and external-source certification. Callback
+effects require independent post-callback validation; the existing pure source
+window cannot span effects or separate admissions. Never fuse preparation and
+admission preflights: doing so can change the first error.
+
+* Formal correspondence
+
+[[file:../../proofs/lean/YuanxuProof/Admission/SelectionReplay.lean][SelectionReplay]]
+adds a fuel-bounded identity preorder and proves:
+
+- =topology_reuse_keeps_identity_order=: identical dependency functions and roots
+  produce identical ordered output. This is a conditional refinement law;
+  native snapshot extraction is NOT proved by function extensionality.
+- =same_root_does_not_certify_edges= and =roots_are_ordered_not_a_set= reject
+  weaker cache keys.
+- =sharing_seen_suppresses_delivery= demonstrates why visited state is per run.
+- =topology_is_not_authentication / topology_is_not_final_currentness= keep
+  current authentication independent of structural reuse.
+
+[[file:../../proofs/lean/YuanxuProof/Admission/IdentityDFS.lean][IdentityDFS]] retains
+the existing graph closure/termination and reachable final-check theorems.
+Those require a finite closed graph and complete discovery; they do not certify
+a new native cache extractor. A bounded preorder alone proves neither termination
+of arbitrary native cyclic payload corruption nor compiler correspondence.
+
+[[file:../../proofs/quint/SelectionReplayTopology.qnt][SelectionReplayTopology]]
+checks a bounded certificate policy and three negative controls: reusing a
+passing verdict, ignoring root order, and sharing a populated seen table.
+Parent identity, both requirements and untouched unused branches remain explicit.
+They are modeled invariants, not measurements of Scheme effects. SysML remains
+an architectural allocation without a qualified SysML parser/solver.
+
+* Runtime controls
+
+The existing =t/mop-checker-origin-test.ss= raw-record Case now checks equal
+dependency-spine replacement, added-edge refusal before any visitor, restoration,
+duplicate-root identity deduplication and delivery on each subsequent replay.
+Reflection is destructive fault injection used only in this test. All validation
+is performed by the real native issuance/currentness/replay entry, not an alleged
+Core authenticity table. The existing service Case retains both requirements,
+child obligation evidence, stale parent-plan refusal and source-error ordering.
+
+Cold/warm timing uses the existing =just test-file= entry and trace mode with
+20 same-VM demands followed by the original Harness once. A new Just process
+starts with cold POO receiver state even when compiled support is reusable.
+Counts are construction work, not physical allocation: six successful replays
+with 5647 visited records imply 12 table construction sites and 11294 list-pair
+construction sites. This is NOT a measured saving; no production path changed.
+Timing probes allocate and GC placement can dominate individual samples.
+
+Results are recorded below after serial verification. Preserve source-change
+refusal, parent isolation, both requirements, child obligations and unused-branch
+laziness. No timeout, heap budget, runtime source or admission guard is changed.
+
+* Serial results, 2026-10-22
+
+Installed Gerbil is unchanged. The existing dependency overlay and Core source
+paths are identical between rounds; no formal verifier or local compilation was
+run concurrently with the timing demands. Both independent Just processes used
+the original =test-file scenarios/gitea-postgresql/tests/config-test.ss trace=
+entrypoint, original budgets and 20 same-VM warm demands. Compiled support was
+already available: both rounds compiled zero targets. Cold below means cold POO
+selection in each new process, not an empty compiler/store/filesystem cache.
+
+| Dimension | Round 1 | Round 2 |
+|-----------+---------+---------|
+| First selected graph | 4.356 s | 3.465 s |
+| Warm native graph lookup, median | 0.0031 ms | 0.0029 ms |
+| Warm currentness, min / median / max | 19.408 / 20.072 / 65.110 ms | 18.899 / 19.714 / 61.943 ms |
+| Warm replay, min / median / max | 11.122 / 11.703 / 56.352 ms | 10.713 / 11.000 / 53.326 ms |
+| Warm source IO, median | 5.184 ms | 5.183 ms |
+| Warm replay calls / visits | 6 / 5647 | 6 / 5647 |
+| GC wall inside slow replay sample | 44.223 ms (sample 11) | 42.336 ms (sample 10) |
+| Native Harness | 3.806 s | 3.884 s |
+| Observed runner total | 17.529 s | 16.778 s |
+
+The median is the upper middle observation of 20 samples. Spans are inclusive;
+do not add them or attribute GC garbage production to the span collecting it.
+The cached graph lookup is already microseconds; it is not the replay allocator.
+There is no before/after production change in these rounds and no speedup claim.
+An ordered native structural projection could avoid construction work, but fresh
+authentication is still O(V+E) because issuance checks each dependency sequence.
+Neither these timings nor the VM account establish physical bytes saved.
+
+=SelectionReplay=, =IdentityDFS= and =SourceWindows= Lean targets passed (83 jobs).
+The scoped Quint source/typecheck/TLC qualification passed 10 catalogued cases,
+including expected counterexamples. The first sandboxed backend start could not
+bind its loopback port; the unchanged existing local backend then passed with
+that permission. This was an environment failure, not a model pass or violation.
+The augmented native checker-origin owner passed its existing 10 Cases. Each
+Scenario round passed its original three Cases. Receipts have =MODULE-OK=,
+=HARNESS-OK= and final =OK=, with no harness/error/heap/stack failure marker.
+The real service-publication owner passed 11 Cases, retaining both contributed
+requirements, explicit-port disagreement and source-change rejection. The
+field-read/replay owner passed 16 Cases, retaining parent-cache isolation,
+child obligations, read-route coverage and untouched unselected getters.
+
+Raw local evidence stays outside Git in
+=/private/tmp/yuanxu-cross-just-20261022/topology-{lean,quint,native-controls,trace-1,trace-2}.*=.
+The service and read-route logs are =topology-service-controls.log= and
+=topology-read-replay-controls.log= in the same directory.
+The dependency overlay/declared pin distinction above remains a qualification
+limit. These results do not qualify a clean install of a newer dependency or a
+new production topology cache. The next native change, if pursued, must expose
+issuer-owned structural reuse through the existing replay boundary; Core should
+remain its consumer rather than create a competing traversal validator.

@@ -18,8 +18,8 @@
     (parameterize ((current-expander-context (make-top-context)))
       (eval-syntax '(import :yuanxu/observability/testing-script))
       (eval-syntax 'testing-script-for-source))))
-(def (module-test-execution source)
-  ((force testing-executor) source))
+(def (module-test-execution source (build #f))
+  ((force testing-executor) source build))
 
 ;; Explicit native qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.

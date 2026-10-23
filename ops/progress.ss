@@ -12,7 +12,7 @@
         execution-progress! execution-progress-status execution-progress-idle-milliseconds
         execution-progress-limit
         call-with-execution-watchdog call-with-execution-cancellation
-        make-nix-progress-reader make-test-progress-reader)
+        progress-record make-test-progress-reader copy-process-output)
 
 ;; A TERM from the enclosing process budget must unwind the resource owner,
 ;; not just stop its child. Register lazily around effects/fixtures. Nested
@@ -153,7 +153,7 @@
         ;; joining it here would deadlock unwinding. Match the Case watchdog.
         (lambda () (set! done? #t) (thread-terminate! sampler))))))
 
-(def (json-record line prefix)
+(def (progress-record line prefix)
   (and (<= (string-length line) 65536) (string-prefix? prefix line)
        (with-catch (lambda (_) #f)
          (lambda ()
@@ -164,47 +164,22 @@
                (substring line (string-length prefix) (string-length line)) read-json))))))
 (def (field record name)
   (and (hash-table? record) (hash-get record name)))
-(def (make-nix-progress-reader observe: (observe #f))
-  (unless (or (not observe) (procedure? observe))
-    (error "Nix observation must be a procedure or false"))
-  (def activities (make-hash-table))
+(def (make-test-progress-reader . readers)
   (lambda (line)
-    (let* (;; Native diagnostic messages cannot advance liveness. A parent
-           ;; test already receives the child's progress relay; do not decode
-           ;; thousands of diagnostic JSON records there a second time. Keep
-           ;; the general decoder for other serializations and activity events.
-           (record (and (or observe
-                            (not (string-prefix? "@nix {\"action\":\"msg\"," line)))
-                        (json-record line "@nix ")))
-           (action (field record 'action)) (id (field record 'id))
-           (kind (field record 'type)) (fields (field record 'fields)))
-      ;; Reuse THIS decode for observation; observers cannot grant progress.
-      (when (and observe (hash-table? record)) (observe record))
-      (when (and (exact-integer? id) (>= id 0))
-        (cond
-         ((and (equal? action "start") (memv kind '(100 101 102 103 104 105 108 109 110 112))
-               (< (hash-length activities) 4096))
-          ;; Starting an activity is not evidence of completed work.
-          (unless (hash-key? activities id) (hash-put! activities id #t)))
-         ((and (eq? (hash-get activities id) #t) (equal? action "result")
-               (eqv? kind 105) (vector? fields) (> (vector-length fields) 0)
-               (exact-integer? (vector-ref fields 0)) (>= (vector-ref fields 0) 0))
-          ;; Nix resProgress: done, expected, running, failed. Only done advances.
-          (execution-progress! (list 'nix id 'done) (vector-ref fields 0)))
-         ((and (eq? (hash-get activities id) #t) (equal? action "result")
-               (eqv? kind 104) (vector? fields) (> (vector-length fields) 0)
-               (string? (vector-ref fields 0)) (<= (string-length (vector-ref fields 0)) 128))
-          (execution-progress! (list 'nix id 'phase (vector-ref fields 0)) 1))
-         ((and (eq? (hash-get activities id) #t) (equal? action "stop"))
-          (execution-progress! (list 'nix id 'completed) 1)
-          ;; Keep the tombstone bounded: replayed starts/stops cannot renew.
-          (hash-put! activities id 'completed)))))))
-(def (make-test-progress-reader)
-  (def nix (make-nix-progress-reader))
-  (lambda (line)
-    (nix line)
-    (let (record (json-record line "@yuanxu-progress "))
+    (for-each (lambda (reader) (reader line)) readers)
+    (let (record (progress-record line "@yuanxu-progress "))
       (when (and (vector? record) (= (vector-length record) 2)
                  (string? (vector-ref record 0)) (<= (string-length (vector-ref record 0)) 128)
                  (exact-integer? (vector-ref record 1)) (>= (vector-ref record 1) 0))
         (execution-progress! (list 'worker (vector-ref record 0)) (vector-ref record 1))))))
+
+;; Shared duplex-effect output pump. The caller owns any stdin payload; after
+;; it has been sent, close that direction and observe real child rows in order.
+(def (copy-process-output process port progress forward)
+  (close-output-port process)
+  (let loop ((line (read-line process #\newline #t)))
+    (unless (eof-object? line)
+      (when progress (progress line))
+      (display line port) (force-output port)
+      (when forward (display line forward) (force-output forward))
+      (loop (read-line process #\newline #t)))))

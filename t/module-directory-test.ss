@@ -9,11 +9,14 @@
         :yuanxu/feature-system/model
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/init
+        "./qualification/module-directory/init.ss"
         :yuanxu/module-system/selection/init-syntax
         :yuanxu/module-system/interface)
 (export module-directory-test)
 ;; Compiler declaration and filesystem preparation share the same pure lowering.
-(yuanxu! mode: explicit source: "./modules" :custom (guestbook -smoke))
+(def Intent
+  (module-init-intent
+    '((yuanxu! mode: explicit source: "./modules" :custom (guestbook -smoke))) #f))
 (def DirectoryScope
   (yuanxu-predicate-contract 'test/directory-scope (lambda (_value) #t) (lambda (_v _c) '())))
 (def (write-source path text)
@@ -49,11 +52,11 @@
 (def module-directory-test
   (test-suite "Directory and init source preparation without a runtime Loader"
     (yuanxu-test-case "hygienic init declaration lowers without filesystem access"
-      (check-equal? (procedure? init.build-spec) #t)
-      (check-equal? (procedure? init.build-current!) #t)
-      (check-equal? (.get yuanxu-module-init mode) 'explicit)
-      (check-equal? (.get yuanxu-module-init root) "./modules")
-      (check-equal? (.get (.ref (car (.get yuanxu-module-init decisions)) 'selection) selection-flags) '(-smoke)))
+      (check-equal? (procedure? (.get yuanxu/t/qualification/module-directory.init.exports std-make-spec)) #t)
+      (check-equal? (procedure? (.get yuanxu/t/qualification/module-directory.init.exports admit-current)) #t)
+      (check-equal? (.get Intent mode) 'explicit)
+      (check-equal? (.get Intent root) "./modules")
+      (check-equal? (.get (.ref (car (.get Intent decisions)) 'selection) selection-flags) '(-smoke)))
     (yuanxu-test-case "filesystem init feeds the same Core and Feature selected Graph"
       (with-sources
        (lambda (root)

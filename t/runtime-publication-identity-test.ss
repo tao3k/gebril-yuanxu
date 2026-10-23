@@ -22,9 +22,10 @@
       (def paths (load-path))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
-        (eval-syntax `(import (only-in ,(path-expand "init.ss" root) init.build-spec)))
+    (eval-syntax '(import (only-in :clan/poo/object .get)))
+        (eval-syntax `(import (only-in ,(path-expand "init.ss" root) yuanxu.init.exports)))
         (check-equal? (load-path) paths)
-        (check-equal? (pair? ((eval-syntax 'init.build-spec) '())) #t))
+        (check-equal? (pair? ((eval-syntax '(.get yuanxu.init.exports std-make-spec)) '())) #t))
       ;; Projection returns build data; only the actual build entry may
       ;; prioritize source packages in its own compiler process.
       (check-equal? (load-path) paths)

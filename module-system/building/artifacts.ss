@@ -5,14 +5,114 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/io/tempfile make-temporary-file-name call-with-temporary-directory)
-        (only-in :std/misc/ports read-all-as-u8vector read-all-as-string)
+        (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/misc/process run-process)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current!))
+        (only-in :std/os/flock open-output-file/lock)
+        (only-in :std/os/device device-close)
+        (only-in :yuanxu/ops/progress copy-process-output make-test-progress-reader)
+        (prefix-in :clan/poo/component-publication publication.)
+        (prefix-in :clan/poo/component-revision revision.)
+        (prefix-in :clan/poo/generalized-graph native-graph.)
+        (prefix-in :clan/poo/dependency-analysis computation.)
+        (only-in :clan/poo/support/option some)
+        (only-in :clan/poo/mop lens-of-get-set .lens)
+        (only-in :clan/poo/lens-laws lens-check)
+        (only-in :clan/poo/component-closure component-group-builder)
+        (only-in :clan/poo/feedback-graph publish-feedback-graph graph-cache-ref)
+        (only-in :clan/poo/feedback-cache group-closed)
+        (only-in :clan/poo/generalized-closure closed-raw)
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read module-source-admit-current!))
 (export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts! clean-build-artifacts!
         current-build-output-directory run-build-artifact-process
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
-        build-artifact-handoff)
+        build-artifact-handoff require-build-artifacts! test-build-publication
+        current-build-phase-times)
+
+;; Execution-local diagnostic totals, never approval or currentness results.
+;; No callback runs inside a guard; disabled instrumentation allocates no table.
+(def current-build-phase-times (make-parameter #f))
+(def (measure-build-phase name action)
+  (let (times (current-build-phase-times))
+    (if (not times) (action)
+      (let (started (real-time))
+        (dynamic-wind void action
+          (lambda ()
+            (hash-update! times name (cut + <> (- (real-time) started)) 0)))))))
+
+;; The installed package library is already a trusted import source. Retain
+;; approved handoffs THERE, separately from test products. No candidate output
+;; or sidecar can choose the approval root, packet, or expected hashes.
+(def (canonical-build-inputs inputs)
+  (list-sort (lambda (left right) (string<? (car left) (car right))) inputs))
+(def (test-build-publication projection)
+  (def key
+    (hex-encode (sha256 (string->utf8 (object->string
+      (list 'tests (gerbil-version-string) (gerbil-home)
+        (map (lambda (name) (cons name (getenv name #f)))
+          '("GERBIL_BUILD_DEBUG" "GERBIL_BUILD_PREFIX" "GERBIL_GXC" "GERBIL_GSC"))
+        (.get projection spec) (.get projection compiler-identities)
+        (canonical-build-inputs (.get projection source-inputs))))))))
+  (def directory (path-expand key (path-expand "test-lib" (gerbil-path))))
+  (def approval-root (path-expand ".yuanxu-test-publications" (path-expand "lib" (gerbil-path))))
+  (def approval-directory (path-expand key approval-root))
+  (def approved (path-expand "issuance.ss" approval-directory))
+  (def approved-input #f)
+  (def approved-packet #f)
+  (def (regular-or-absent! path kind)
+    (let (actual (module-source-type path))
+      (when (and actual (not (eq? actual kind)))
+        (error "test publication path is not owned regular storage" path))))
+  (def (storage-current!)
+    (regular-or-absent! approval-root 'directory)
+    (regular-or-absent! approval-directory 'directory)
+    (regular-or-absent! approved 'regular))
+  (def (bind-approval!)
+    (unless approved-input
+      (storage-current!)
+      (let (input (cons approved (module-source-read approved)))
+        (def packet (call-with-input-string (cdr input)
+          (lambda (port) (parameterize ((current-input-port port)) (read-build-artifact-handoff)))))
+        (set! approved-input input)
+        (set! approved-packet packet))))
+  (.o (:: source)
+    artifact: (string-copy directory)
+    reference: (string-copy approved)
+    .current:
+    (lambda ()
+      (storage-current!)
+      (when approved-input
+          (module-source-admit-current! (list approved-input) "test approval source changed")
+          (unless (equal? (digest-file (list-ref approved-packet 5)) (list-ref approved-packet 6))
+            (error "test approved issuance record changed"))))
+    .available?: (lambda () (storage-current!) (eq? (module-source-type approved) 'regular))
+    .restore-build:
+    (lambda (graph)
+      (bind-approval!)
+      (.call source .current)
+      ;; bind-approval! has decoded this exact retained input with the same
+      ;; public codec. Reuse its private syntax value, never its admission.
+      (accept-build-artifact-handoff/read! projection directory
+        (lambda () approved-packet) (cut .call source .current) void)
+      (.call source .current))
+    .retain-build:
+    (lambda (graph)
+      ;; Only the existing issuer can create this packet. Preserve a restored
+      ;; approval on warm Make; it is not rewritten from mutable output files.
+      (unless (.call source .available?)
+        (let (packet (build-artifact-handoff graph directory))
+          (call-with-output-file (list path: approved truncate: #f)
+            (lambda (port) (write packet port) (newline port)))))
+      (bind-approval!)
+      (.call source .current))
+    .with-lock:
+    (lambda (action)
+      (storage-current!)
+      (create-directory* approval-directory)
+      (def lock-path (path-expand "compile.lock" approval-directory))
+      (regular-or-absent! lock-path 'regular)
+      (let (lock (open-output-file/lock lock-path 120))
+        (dynamic-wind void action (lambda () (device-close lock)))))))
 
 ;; Retained job results are authoritative; the exported record is not an issuer.
 ;; Keys are exact build Graph receivers, not names or mutable disk labels.
@@ -20,6 +120,55 @@
 ;; Approval guards retain the selected external Source, not this Graph. A saved
 ;; publication keeps its own receiver alive; guards must not capture that key.
 (def issued (make-hash-table-eq weak-keys: #t))
+;; Each existing issuer key owns an independent NATIVE publication head. Its
+;; single immutable completion cell uses upstream construction/cache/closure.
+;; No Core revision counter, product token registry or installation lock exists.
+(def completion-constructor
+  (component-group-builder '(completion)
+    (let (focus (lens-of-get-set identity (lambda (value _) value)))
+      (lambda (_) focus)) #f #f 2))
+(def (completion-value head)
+  (closed-raw (group-closed (graph-cache-ref head 'completion))))
+(def (issued-state graph)
+  (let (times (current-build-phase-times))
+    (if (not times)
+      (let (owner (hash-get issued graph))
+        (and owner (completion-value (publication.current owner))))
+      (measure-build-phase 'publication-lookup
+        (lambda ()
+          (hash-update! times 'publication-lookups (cut + <> 1) 0)
+          (let (owner (hash-get issued graph))
+            (and owner (completion-value (publication.current owner)))))))))
+(def (issuance-owner graph)
+  (or (hash-get issued graph)
+      (let-values (((initial failure)
+                    (publish-feedback-graph #f
+                      (native-graph.declaration '(completion) '()
+                        (list (cons 'completion (some (computation.make-success 'build-required)))))
+                      completion-constructor (lambda (_ __) #t))))
+        (when failure (raise failure))
+        (let (owner (publication.publication initial))
+          (hash-put! issued graph owner)
+          owner))))
+(def (retain-issued-state! graph state (expected #f))
+  (def owner (issuance-owner graph))
+  ;; A compiler callback is outside the native transaction. Bind its result to
+  ;; the head it started from before staging; submit! closes stage/install races.
+  (when (and expected (not (eq? expected (publication.current owner))))
+    (error "Core build was superseded during compilation"))
+  (def request
+    (publication.stage owner
+      (list (revision.fragment '() '() '()
+        (list (cons 'completion (some (computation.make-success state))))))
+      completion-constructor
+      (lambda (_ candidate)
+        (let (value (completion-value candidate))
+          (when (issued-build? value) (admit-issued-build! graph value))
+          #t))
+      guards: (list (lens-check (.lens) (list graph) sources: (list graph)))))
+  (defvalues (head failure) (publication.submit! owner request))
+  (when failure (raise failure))
+  head)
 (def restoring (make-parameter '()))
 ;; Native make consumes an output DIRECTORY, not an asserted trust flag. Fresh
 ;; ownership makes missing outputs trigger the installed compiler naturally.
@@ -31,7 +180,7 @@
 (def (numeric? text)
   (and (not (string-empty? text)) (andmap char-numeric? (string->list text))))
 (def (output-stem file)
-  (let (suffix (find (cut string-suffix? <> file) '(".ssxi.ss" ".ssi" ".scm" ".c")))
+  (let (suffix (find (cut string-suffix? <> file) '(".gxc-complete" ".ssxi.ss" ".ssi" ".scm" ".c")))
     (if suffix (substring file 0 (- (string-length file) (string-length suffix)))
       (let (dot (string-rindex file #\.))
         (and dot (string-prefix? ".o" (substring file dot (string-length file)))
@@ -95,7 +244,7 @@
 (def (observed-files identities libdir)
   (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
 (def (invalidate-build-artifacts! graph)
-  (hash-put! issued graph 'build-required))
+  (retain-issued-state! graph 'build-required))
 (def (retain-inputs inputs)
   (map (lambda (entry)
     (cons (string-copy (car entry)) (and (cdr entry) (string-copy (cdr entry))))) inputs))
@@ -107,6 +256,9 @@
   (map (lambda (row)
     (def source (car row))
     (unless (string-prefix? prefix source) (error "compiler output escaped its build directory" source))
+    ;; Preserve ordinary compiler-output metadata during publication. SDK
+    ;; completion files are opaque outputs; only std/make interprets them.
+    (def info (file-info source #f))
     (def data (call-with-input-file source read-all-as-u8vector))
     (unless (equal? (hex-encode (sha256 data)) (cdr row))
       (error "compiler output changed during publication" source))
@@ -116,12 +268,14 @@
       (error "compiler output target is not a regular file" target))
     (call-with-output-file (list path: target truncate: #t)
       (lambda (port) (write-subu8vector data 0 (u8vector-length data) port)))
+    (file-last-access-and-modification-times-set! target
+      (file-info-last-access-time info) (file-info-last-modification-time info))
     (cons target (cdr row))) files))
 (def (admit-build-artifacts! graph)
   ;; Only an explicitly selected upstream publication can recover this receiver.
   ;; Normal source-only graphs have no recovery effect. Recursive recovery is
   ;; refused before demanding the Source, not handled by an implicit fallback.
-  (unless (hash-get issued graph)
+  (unless (issued-state graph)
     (when (.slot? graph 'build-publication)
       (when (memq graph (restoring)) (error "recursive Core build recovery"))
       (parameterize ((restoring (cons graph (restoring))))
@@ -129,11 +283,21 @@
           (lambda (failure) (invalidate-build-artifacts! graph) (raise failure))
           (lambda ()
             (let (source (.get graph build-publication))
-              (when source
+              (when (and source (or (not (.slot? source '.available?)) (.call source .available?)))
                 (.call source .restore-build graph)
-                (unless (issued-build? (hash-get issued graph))
+                (unless (issued-build? (issued-state graph))
                   (error "selected build publication did not restore issuance")))))))))
-  (let (state (hash-get issued graph))
+  (let (state (issued-state graph))
+    (when state (admit-issued-build! graph state))))
+
+(def (require-build-artifacts! graph)
+  (admit-build-artifacts! graph)
+  (unless (issued-build? (issued-state graph))
+    (error "build-required: compiled test support has no issuance")))
+
+(def (admit-issued-build! graph state)
+  (measure-build-phase 'currentness
+   (lambda ()
     ;; No issued build means ordinary source publication. Native loader cache
     ;; state does not grant Core publication authority and is not inspected.
     (when state
@@ -150,12 +314,12 @@
         (error "Core compiled artifacts changed"))
       (module-source-admit-current! (issued-build-inputs state) "Core compiled source changed")
       ((.get graph compiler-current))
-      ((issued-build-approval-current state)))))
+      ((issued-build-approval-current state))))))
 
 ;; Effectful package checks belong to root publication boundaries, never to
 ;; the source-read cache used by nested Contract analysis.
 (def (build-artifact-publication-current graph)
-  (def state (hash-get issued graph))
+  (def state (issued-state graph))
   (and (issued-build? state)
        (not (eq? (issued-build-package-current state) void))
        (issued-build-package-current state)))
@@ -170,7 +334,7 @@
 ;; expectations. Both executables and the host/process channel remain trusted.
 (def (build-artifact-handoff graph libdir)
   (admit-build-artifacts! graph)
-  (def state (hash-get issued graph))
+  (def state (issued-state graph))
   (unless (and (issued-build? state)
                (equal? libdir (issued-build-libdir state)))
     (error "build-required: no completed build for process handoff"))
@@ -190,12 +354,15 @@
   (def transcript #f)
   (def result
     (run-process command
+      stderr-redirection: #t
       check-status: (lambda (status _settings)
         (unless (zero? status) (error "Core build worker failed" status transcript)))
       coprocess: (lambda (process)
         (write packet process) (newline process) (force-output process)
-        (close-output-port process)
-        (set! transcript (read-all-as-string process))
+        (set! transcript
+          (call-with-output-string
+            (lambda (out)
+              (copy-process-output process out (make-test-progress-reader) (current-error-port)))))
         transcript)))
   ;; Child execution is an effect boundary; never reuse its entry check here.
   (admit-build-artifact-publication! graph)
@@ -215,24 +382,28 @@
     (error "invalid Core build handoff"))
   packet)
 (def (accept-build-artifact-handoff! projection libdir (approval-current! void) (package-current! void))
+  (accept-build-artifact-handoff/read! projection libdir
+    read-build-artifact-handoff approval-current! package-current!))
+(def (accept-build-artifact-handoff/read! projection libdir read-packet approval-current! package-current!)
   (def graph (.get projection build-graph))
-  (when (hash-get issued graph)
+  (when (issued-state graph)
     (error "build handoff cannot replace an existing graph issuance"))
   ;; Refusal must not turn the same graph back into source-only publication.
   (invalidate-build-artifacts! graph)
-  (def packet (read-build-artifact-handoff))
+  (def packet (read-packet))
   ((.get projection admit-current))
   (unless (and (equal? (list-ref packet 1) (.get projection compiler-identities))
-               (equal? (list-ref packet 2) (.get projection source-inputs))
+               (equal? (canonical-build-inputs (list-ref packet 2))
+                       (canonical-build-inputs (.get projection source-inputs)))
                (equal? (list-ref packet 3) libdir))
     (error "Core build handoff does not match selected projection"))
   ;; Graph generations are process-local. Rebind only after matching the exact
   ;; selected compiler identities, source observations and output directory.
   (def generation (.get graph generation))
-  (hash-put! issued graph
+  (retain-issued-state! graph
     (make-issued-build
       (if (string? generation) (string-copy generation) generation)
-      (list-ref packet 1) (list-ref packet 2) libdir
+      (list-ref packet 1) (retain-inputs (.get projection source-inputs)) libdir
       (list-ref packet 4) (list-ref packet 5) (list-ref packet 6) approval-current! package-current!))
   (with-catch
     (lambda (failure) (invalidate-build-artifacts! graph) (raise failure))
@@ -241,8 +412,15 @@
       ((.get projection admit-current)))))
 (def (call-with-build-artifact-issuance projection libdir action)
   (def graph (.get projection build-graph))
+  (def source (and (.slot? graph 'build-publication) (.get graph build-publication)))
+  (def (compile!) (call-with-build-artifact-issuance/locked projection libdir action source))
+  (if (and source (.slot? source '.with-lock)) (.call source .with-lock compile!) (compile!)))
+(def (call-with-build-artifact-issuance/locked projection libdir action source)
+  (def graph (.get projection build-graph))
   ((.get projection admit-current))
-  (def previous (hash-get issued graph))
+  (when (and source (not (issued-state graph)))
+    (measure-build-phase 'recovery (cut admit-build-artifacts! graph)))
+  (def previous (issued-state graph))
   ;; Recompilation is not permission to discard a restored release's approval.
   (def approval-current! (if (issued-build? previous)
                           (issued-build-approval-current previous) void))
@@ -250,10 +428,13 @@
                          (issued-build-package-current previous) void))
   (package-current!)
   (def reusable?
-    (and (issued-build? (hash-get issued graph))
+    (and (issued-build? previous)
+         (equal? libdir (issued-build-libdir previous))
+         (equal? (.get projection compiler-identities) (issued-build-identities previous))
+         (equal? (.get projection source-inputs) (issued-build-inputs previous))
          (with-catch (lambda (_failure) #f)
            (lambda () (admit-build-artifacts! graph) #t))))
-  (invalidate-build-artifacts! graph)
+  (def expected (invalidate-build-artifacts! graph))
   (def (complete output)
    (parameterize ((current-build-output-directory output))
     (call-with-values action
@@ -266,7 +447,8 @@
       ;; Preserve it and require an explicit clean/rebuild; never delete another
       ;; job's output or infer producer identity from a writable record.
       (unless (andmap (lambda (row) (ordinary-object-generation? (car row))) produced)
-        (error "build-required: unissued native object generation; clean selected outputs"))
+        (error "build-required: unissued native object generation; clean selected outputs"
+          (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) produced))))
       (def files (if reusable? produced (publish-products produced output libdir)))
       (def published (observed-files identities libdir))
       (unless (equal? files published)
@@ -291,10 +473,13 @@
                     (if (string? generation) (string-copy generation) generation)
                     (append identities '()) (retain-inputs (.get projection source-inputs))
                     libdir files record (digest-file record) approval-current! package-current!))
-      (hash-put! issued graph state)
+      (retain-issued-state! graph state expected)
       (with-catch
         (lambda (failure) (invalidate-build-artifacts! graph) (raise failure))
         (lambda () (admit-build-artifact-publication! graph)))
+      (when (and source (.slot? source '.retain-build))
+        (.call source .retain-build graph)
+        (admit-build-artifact-publication! graph))
       (apply values results)))))
   (if reusable? (complete libdir)
     (call-with-temporary-directory "core-build-output-" complete)))

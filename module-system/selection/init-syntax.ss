@@ -8,9 +8,11 @@
 
 (import (for-syntax (only-in :clan/poo/object .ref .slot?)))
 
-(import (for-syntax (only-in :yuanxu/module-system/source/init module-init-intent)))
-(import (only-in :yuanxu/module-system/source/init module-init-intent)
-        (only-in :clan/poo/object .ref)
+(import (for-syntax
+          (only-in :gerbil/expander current-expander-context core-context-top
+                   module-context? expander-context-id)
+          (only-in :yuanxu/module-system/source/init module-init-intent module-init-export-name)))
+(import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
         :yuanxu/module-system/selection/syntax
@@ -21,23 +23,6 @@
                  yuanxuDefaultUserSettings
                  yuanxu-default-user-setting-keys))
 (export yuanxu!)
-
-;; One hygienic projection rule for every mount; no generated getter catalogue.
-(defrules define-init-namespace ()
-  ((_ binding getter)
-   (begin
-     (defsyntax binding
-       (identifier-rules ()
-         (id (identifier? #'id)
-             (getter))))
-     (export binding)))
-  ((_ binding getter mount)
-   (begin
-     (defsyntax binding
-       (identifier-rules ()
-         (id (identifier? #'id)
-             (.ref (getter) 'mount))))
-     (export binding))))
 
 ;;; The short form is the normal user entry. The two explicit binding forms
 ;;; remain available for profile registries without importing the full UI
@@ -55,48 +40,42 @@
              (if (.slot? intent 'windows)
                (map (cut .ref <> 'mount) (.ref intent 'windows))
                '(#f)))
-            (getter (genident 'init-modules-getter)))
-       ;; Public names use the declaration site's context. The accessor keeps
-       ;; its fresh private identity, including through only-in and rename-in.
-       (def (namespace-binding mount)
-         (with-syntax
-           ((binding
-             (datum->syntax (syntax ctx)
-               (string->symbol
-                 (string-append "init."
-                   (if mount (symbol->string mount) "modules")))))
-            (get getter)
-            (key (datum->syntax (syntax ctx) mount)))
+            (owner (core-context-top (current-expander-context) module-context?))
+            (getter (genident 'init-modules-getter))
+            (base-exports (genident 'init-exports))
+            (exports-value-id (genident 'init-exports-value)))
+       (unless owner
+         (raise-syntax-error #f "init declaration requires a module context" stx))
+       (def (namespace-slot mount)
+         (with-syntax ((key (datum->syntax (syntax ctx) (or mount 'modules)))
+                       (get getter))
            (if mount
-             (syntax (define-init-namespace binding get key))
-             (syntax (define-init-namespace binding get)))))
+             (syntax (key (.ref (get) 'key)))
+             (syntax (key (get))))))
+       (when (ormap (lambda (mount)
+                      (memq mount '(tests std-make-spec std-make-run admit-current))) mounts)
+         (raise-syntax-error #f "mount conflicts with an init export" stx))
        (with-syntax
-         ((init-binding (datum->syntax (syntax ctx) 'yuanxu-module-init))
-          (build-spec-binding (datum->syntax (syntax ctx) 'init.build-spec))
-          (build-current-binding (datum->syntax (syntax ctx) 'init.build-current!))
-          (build-run-binding (datum->syntax (syntax ctx) 'init.build-run))
-          (test-spec-binding (datum->syntax (syntax ctx) 'init.test-spec))
-          (test-current-binding (datum->syntax (syntax ctx) 'init.test-current!))
-          (test-source-binding (datum->syntax (syntax ctx) 'init.tests))
-          ((namespace-definition ...) (map namespace-binding mounts))
+         ((exports-binding
+            (datum->syntax (syntax ctx)
+              (module-init-export-name (expander-context-id owner))))
+          (exports-base base-exports)
+          (exports-value exports-value-id)
+          ((mount-slot ...) (map namespace-slot mounts))
           (module-source-getter getter))
          (syntax
            (begin
-             (def init-binding
-               (module-init-intent
-                 '((yuanxu! option value init-clause ...)) #f))
              ;; All projections close over this one init-owned selection.
-             (defvalues (build-spec-binding build-current-binding
-                         test-spec-binding test-current-binding
-                         test-source-binding module-source-getter build-run-binding)
+             (defvalues (exports-base module-source-getter)
                (yuanxu-init-build
                  (this-source-file ctx)
                  '(yuanxu! option value init-clause ...)))
-             namespace-definition ...
-             (export init-binding build-spec-binding build-current-binding build-run-binding
-                     test-spec-binding test-current-binding test-source-binding)
-             ;; A source module's native runtime promise has one result. Do not
-             ;; leave defvalues' seven projection values as its last expression.
+             (def exports-value (.+ exports-base (.o mount-slot ...)))
+             (defsyntax exports-binding
+               (identifier-rules ()
+                 (id (identifier? #'id) exports-value)))
+             (export exports-binding)
+             ;; Native runtime modules have one result, not projection values.
              (void))))))
     ((_ profile-binding
         profile-set-binding

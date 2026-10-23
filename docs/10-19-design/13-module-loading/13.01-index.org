@@ -71,3 +71,17 @@ integration. They include no runtime Loader implementation.
 - [[file:13.16-yuanxu-package-and-prelude.org][Yuanxu package identity and language prelude]] separates the one library
   namespace from its optional consumer language entry and documents source-only
   bootstrap, native dependency ownership and direct consumer migration.
+
+- [[file:13.17-init-exports-and-sdk-consumers.org][Init exports and SDK consumers]] proposes one lazy POO publication for
+  native Make specifications and tests, reusing the current selection and
+  execution owners instead of adding a separate test Builder. Current naming
+  and qualification boundaries are recorded in 13.19.
+
+- [[file:13.18-guarded-test-precompilation.org][Guarded test precompilation and Harness execution]] specifies the existing
+  issuance boundary, separate product authority under one graph, bounded SDK
+  compilation and final source/artifact checks. No bare-Make path is admitted;
+  completed focused gates are distinguished from full CI in 13.19.
+
+- [[file:13.19-source-qualified-init-exports.org][Source-qualified init exports]] derives the single public entry from the
+  native package/module Context, removes unqualified aliases and keeps existing
+  lazy graph, build and test consumers under their original ownership.

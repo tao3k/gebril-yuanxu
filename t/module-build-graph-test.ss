@@ -6,7 +6,9 @@
         (only-in :std/make make)
         (only-in :std/list/list find)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
-        (only-in :clan/poo/object .o .+ .ref .get .call object?)
+        (only-in :clan/poo/object .o .+ .cc .ref .get .call object?)
+        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/type String)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/types yuanxu-predicate-contract)
         (only-in :yuanxu/feature-system/model feature-descriptor)
@@ -15,6 +17,7 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
 (def Scope (yuanxu-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
@@ -80,6 +83,118 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
+      (with-source
+       (lambda (root _prefix)
+         (def declaration '(yuanxu! :load-modules "./modules" mode: explicit :core (schema)))
+         (write-file (path-expand "init.ss" root)
+           (call-with-output-string (cut write declaration <>)))
+         (write-file (path-expand "build.ss" root) "(export #t)")
+         (defvalues (exports _modules)
+           (yuanxu-init-build (path-expand "init.ss" root) declaration))
+         (def spec (.get exports std-make-spec))
+         (def dispatch (.get exports std-make-run))
+         (def expected (spec '()))
+         (def calls 0)
+         ;; Observe the ordinary SDK callback without compiling fixture files.
+         (def (receive admitted arguments)
+           (set! calls (1+ calls))
+           (check-equal? (eq? admitted expected) #t)
+           (check-equal? arguments '("spec"))
+           'forwarded)
+         (check-equal? (dispatch '() receive '("spec")) 'forwarded)
+         (check-equal? calls 1)
+         (def config (path-expand "modules/core/schema/config.ss" root))
+         (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
+         (check-exception (dispatch '() receive '("spec")) error?)
+         (check-equal? calls 1))))
+    (yuanxu-test-case "configuration admission precedes publication binding"
+      (with-source
+       (lambda (root _prefix)
+         (write-file (path-expand "init.ss" root)
+           "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web))")
+         (def settings-type (.cc ObjectContract. 'responsibilities (.o message: String)))
+         (def bindings 0)
+         ;; The hook is an effect probe: a rejected configuration must never
+         ;; reach it, even when the scope's outer shape Contract accepts.
+         (def export-value
+           (.o .bind-publication:
+             (lambda (_selection owner-id admission-name guard)
+               (set! bindings (1+ bindings))
+               (.o owner: owner-id admission: admission-name package-current: guard))))
+         ;; Each request has its own ordinary selection and refused epoch.
+         (def (select candidate-value)
+           (yuanxu-load-modules (path-expand "init.ss" root)
+             read-publication:
+             (lambda (_source)
+               (.o identity: 'app/web features: (.o)
+                 core:
+                 (.o requires: (.o) scope-contract: Scope
+                   admissions:
+                   (.o Config: (.o export-path: '(config) contract-path: '(types Config))
+                       Value: (.o export-path: '(value) contract-path: '(types Value)))
+                   link:
+                   (lambda (_dependencies)
+                     (.o config: candidate-value value: export-value
+                         types: (.o Config: settings-type Value: Scope))))))))
+         (check-exception (.get (select (.o message: 123)) modules modules app web) error?)
+         (check-equal? bindings 0)
+         (check-exception (.get (select (.o message: "ok" typo: #t)) modules modules app web) error?)
+         (check-equal? bindings 0)
+         (def accepted (.get (select (.o message: "ok")) modules modules app web))
+         (check-equal? (.get accepted config message) "ok")
+         (check-equal? (.get accepted value owner) 'app/web)
+         (check-equal? (.get accepted value admission) 'Value)
+         (check-equal? (.get accepted value package-current) #f)
+         (check-equal? bindings 1))))
+    (yuanxu-test-case "direct package scope is confined to its selected publication"
+      (with-source
+       (lambda (root _prefix)
+         (write-file (path-expand "init.ss" root)
+           "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web) :core (schema))")
+         ;; Probe the handoff, not Nix realization. The product service gate
+         ;; separately verifies actual Provider/Schema/engine outputs.
+         (def (projection name)
+           (.o kind: 'module/external-package identity: name
+             .prepare:
+             (lambda (_root current! _publication)
+               (.o identity: name source-inputs: '() input-files: '()
+                 admit-current: current!
+                 .realize: (lambda (_directory _guard) (error "unexpected realization"))))))
+         (def (select projection-values)
+           (yuanxu-load-modules (path-expand "init.ss" root)
+             read-publication:
+             (lambda (source)
+               (let (id (cdr (assq 'module-id (yuanxu-module-source-ref-metadata source))))
+                 (.o identity: id features: (.o)
+                   core: (.o requires: (.o) scope-contract: Scope
+                           projections: (if (eq? id 'app/web) projection-values '())
+                           link: (lambda (_dependencies) (.o greeting: 'source retained: #t))))))))
+         (def view (select (list (projection 'web-package))))
+         (def graph (.get view build-graph))
+         (check-equal? (.get (car (.get graph external-packages)) scope-owner) 'app/web)
+         (def current? #t)
+         (def (current!) (unless current? (error "stale package probe")))
+         (def package-parent (.o greeting: 'package-parent retained: #f))
+         (def packages
+           (.o build-graph: graph
+             packages:
+             (.o web-package:
+               (.o scope: (.o (:: @ package-parent) greeting: 'realized)))
+             sources-current: current! admit-current: current!))
+         (def ready (.call view .with-packages packages))
+         (check-equal? (.get ready modules modules app web greeting) 'realized)
+         (check-equal? (.get ready modules modules app web retained) #t)
+         (check-equal? (.get ready modules modules core schema greeting) 'source)
+         (check-exception (.call (select '()) .with-packages packages) error?)
+         (set! current? #f)
+         (check-exception ((.get ready admit-current)) error?)
+         (def ambiguous (select (list (projection 'first) (projection 'second))))
+         (def conflicting
+           (.o build-graph: (.get ambiguous build-graph)
+             packages: (.o first: (.o scope: (.o)) second: (.o scope: (.o)))
+             sources-current: void admit-current: void))
+         (check-exception (.get (.call ambiguous .with-packages conflicting) modules modules app web) error?))))
     (yuanxu-test-case "package handoff retains the selected source Graph without linking scopes"
       (with-source
        (lambda (root _prefix)
@@ -241,6 +356,34 @@
            (check-equal? (file-exists? (path-expand ".gerbil" root)) #f)
            (write-file (path-expand "modules/app/web/config.ss" root) ";; changed")
            (check-exception ((.get artifact admit-current)) error?)))))
+    (yuanxu-test-case "retained headers share pure Graph checks without retaining freshness"
+      (with-source
+       (lambda (root _prefix)
+         (write-file (path-expand "build.ss" root) "(export #t)")
+         (def view (fixture-view root))
+         (.get view build-graph)
+         (def retained '("retained/a" "retained/b" "retained/c" "retained/d"))
+         (for-each
+           (lambda (name)
+             (write-file (path-expand (string-append name ".ss") root) "(export #t)"))
+           retained)
+         ;; Count actual filesystem observation windows, not guard requests.
+         ;; Every retained source must still be checked on independent reuse.
+         (def (project names)
+           (def windows 0)
+           (def artifact
+             (parameterize ((current-module-source-observer
+                             (lambda (key amount)
+                               (when (eq? key 'read-windows)
+                                 (set! windows (+ windows amount))))))
+               (yuanxu-project-source-spec view names root (path-expand "build.ss" root))))
+           (values artifact windows))
+         (defvalues (_single single-windows) (project (list (car retained))))
+         (defvalues (many many-windows) (project retained))
+         (check-equal? many-windows single-windows)
+         (check-equal? (length (.get many spec)) 14)
+         (write-file (path-expand "retained/d.ss" root) ";; changed after preparation")
+         (check-exception ((.get many admit-current)) error?))))
     (yuanxu-test-case "unconsumed generated contributions cannot silently disappear from spec"
       (with-source
        (lambda (root _prefix)

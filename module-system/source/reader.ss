@@ -44,7 +44,7 @@
   (lambda ()
     (let (observer (current-module-source-observer))
       (if (not observer)
-        (replay-slot-reads! reads (lambda (_receiver _key) (void)))
+        (module-source-measure-replay reads)
         (let (visits 0)
           ;; Count actual native DFS visits, not the width of the root list.
           ;; No read token or receiver is retained by this diagnostic counter.
@@ -66,16 +66,20 @@
   (lambda ()
     (location-current!)
     (require-publication-policy! policy-current?)
-    (preparation-current!)
-    ;; The candidate's preparation-only guard has a fixed primitive void
-    ;; continuation. A second replay across just raw revision comparisons is
-    ;; identical work. A real producer guard keeps BOTH sides of admission.
-    (if (eq? admission-current! void)
-      (require-publication-policy! policy-current?)
-      (begin
-        (admission-current!)
+    ;; Both replay procedures come ONLY from publication-read-current below.
+    ;; With no source observer they execute the fixed native issued-read
+    ;; checker and a void visitor; policy inspection reads native revisions.
+    ;; Keep their order. Never batch their preflight authentication, which can
+    ;; change the first diagnostic. Observers keep the full original tail even
+    ;; if a callback later removes itself.
+    (let (observed? (current-module-source-observer))
+      (preparation-current!)
+      (if (eq? admission-current! void)
         (require-publication-policy! policy-current?)
-        (preparation-current!)))))
+        (begin
+          (admission-current!)
+          (require-publication-policy! policy-current?)
+          (when observed? (preparation-current!)))))))
 (def (call-with-publication-reads action (finish #f))
   (def failed? #f)
   (def failure #f)
@@ -161,12 +165,14 @@
 ;; Closed event labels extend the existing test observer, not an execution
 ;; wrapper or a profiler-owned object graph. Preserve all values and failures.
 (def (observe-reader-work start end action)
-  (let (observer (current-module-source-observer))
-    (if (not observer) (action)
-      (dynamic-wind
-        (lambda () (observer (list start 'body) 1))
-        action
-        (lambda () (observer (list end 'body) 1))))))
+  (module-source-measure-operation start
+    (lambda ()
+      (let (observer (current-module-source-observer))
+        (if (not observer) (action)
+          (dynamic-wind
+            (lambda () (observer (list start 'body) 1))
+            action
+            (lambda () (observer (list end 'body) 1))))))))
 (def (release-reader-expansions! completed)
   ;; Only Core-generated interpreter wrappers occur in this completed set.
   ;; They are never compiler inputs: building projects the guarded originals.
@@ -480,7 +486,7 @@
             (lambda () (observer (list 'publication-guard-start origin) 1))
             check!
             (lambda () (observer (list 'publication-guard-end origin) 1)))
-          (check!))))
+          (module-source-measure-operation 'reader-current check!))))
     (def (full-current!)
       (parameterize ((candidate #f) (current-owned-read-open-guard #f)) (current!)))
     (def (open-boundary! (reason (current-module-source-phase)))

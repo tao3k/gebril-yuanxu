@@ -1,0 +1,725 @@
+#+title: Efficient Caching — Ownership, Effects and Measured Work
+
+* Scope and evidence
+
+[[file:10.01-efficient-caching.sysml][SysML v2 model]] describes native cache ownership and effect
+boundaries. It is a development model, not a production module, user API,
+Builder or replacement cache format. Structural constraints express obligations;
+they are not proofs that Scheme implements them. No SysML parser/solver run is
+claimed. The action declarations express required ordering, not timing bounds.
+
+The model uses the official [[https://github.com/Systems-Modeling/SysML-v2-Release/blob/master/sysml/src/examples/Vehicle%20Example/SysML%20v2%20Spec%20Annex%20A%20SimpleVehicleModel.sysml][SysML v2 example]]
+as syntax reference. It does not copy domain behavior from that example.
+
+Core currently pins gerbil-poo =ecaa8a6f51c746f974b2db4c220838647a82af3b=.
+PR 13 was checked on 2026-10-22 at
+=0f90ee636bb2551eca6f572366e87b796bbb670e=. The intervening runtime change
+is in =table.ss=: =with-table-sources= reuses exact list identity or the empty
+outer protection scope, while retaining every instantiation check. Partial
+overlap still uses the full original protection. This is a useful optimization
+law, not permission to infer purity or drop dependencies. This task does not
+silently change Core's dependency pin or claim a latest-head runtime qualification.
+
+* Cache ownership matrix
+
+The installed-runtime follow-up is [[file:10.02-runtime-accounting.org][10.02 Runtime Accounting and Source-Window Work]].
+It replaces new raw field-7 instrumentation with native =##exec-stats= while
+retaining the historical receipts below. Corrected VM accounts still do not
+qualify physical allocation; actual visits, characters and lookup work are
+reported independently. The bounded single-lookup change retains open-observer
+order and all source/admission boundaries.
+
+| Result | Existing owner | Reuse identity | What must still run |
+|--------+----------------+----------------+---------------------|
+| Lazy slot result | POO receiver/MOP | receiver, slot, issued revision and dependency graph | native invalidation and dependency replay |
+| Shared graph computation | feedback-cache / generalized graph | native graph and retained closed result | guards and authoritative publication-head check |
+| Compiled test products | Core .compile + component-publication | exact selected sources, compiler context, identities and output directory | source, approval, record and product checks |
+| File bytes during pure validation | existing source-read window | exact path within the same bounded pure check | a fresh window after every effect |
+| Test verdict | native Harness | none across explicit runs | every selected Case and final Harness admission |
+
+There is no global cache of successful currentness, no inherited passing verdict,
+and no all-modules scan to obtain a hit. Recovery is internal to demanding the
+selected publication. A public =init.exports.restore*= family would expose
+implementation sequencing without establishing stronger atomicity. Do not add
+it merely to name the internal cache. If an independent recovery use case later
+exists, first define its effect, ownership and failure contract.
+
+An internal name or prefix is a discoverability convention, not an access-control
+proof. Authority stays with the actual native publication owner and retained
+issuance. Ordinary users configure values and invoke the selected execution;
+they do not sequence restore, invalidation, source checks and Harness startup.
+
+* State and effect fences
+
+| Transition | Gate | Reuse allowed |
+|------------+------+---------------|
+| unbound -> selected | selected init graph and demanded files | lazy metadata only |
+| selected -> recovered | selected package approval matches current projection | retained native issuance, not a verdict |
+| selected -> building | no approved completion | owned fresh staging |
+| recovered -> admitted | current sources, record and product digests | current receiver's admitted publication |
+| admitted -> running | currentness immediately around explicit Make / Harness effects | no previous effect's currentness result |
+| running -> admitted | successful Harness and fresh return checks | receipt for this explicit execution |
+| any checked state -> rejected | stale source/head, missing or replaced record/product | no fallback that blesses altered outputs |
+
+Atomicity is the native =component-publication.stage/submit!= installation of a
+receiver-owned result. It does not make external filesystem edits, arbitrary
+callbacks or the whole Harness atomic. Source freshness and conditional external
+effects remain separate requirements. A directory lock coordinates cooperating
+builders; it does not authenticate the package installation.
+
+* Derivation and sharing
+
+A child receiver gets its own effective computation. It may reuse verified
+products only when the selected build identity matches; a parent's cached plan
+cannot substitute for the child's final configuration. Object identity can
+deduplicate shared dependency nodes, while all dependency edges, both independent
+requirements and the first-diagnostic/observer ordering must survive.
+
+Do not replace native protection with membership scans on every hot access.
+The latest Table optimization reuses exact structural sharing and still checks
+instantiation. Any analogous Core optimization needs measured repeated work,
+an unchanged semantic boundary and a negative control before adoption.
+
+* Cost model and acceptance
+
+Measure distinct intervals: context setup; init import; selection delta; support
+projection; recovery; full artifact/currentness admission; Make process startup;
+=std/make= import; Make scheduling/compilation; Harness startup; Case bodies;
+return checks. Recovery includes nested admission: its time must not be added
+again to inclusive currentness totals. Report actual compile actions, not spec size.
+
+Warm acceptance requires a new Just process, unchanged selected inputs, approved
+products, zero compiler actions, a fresh Harness verdict and unchanged stale-source,
+joint-replacement and parent/child refusal controls. It does not require zero
+filesystem reads or zero process launches. Optimize only an identified redundant
+operation; preserve checks separated by effects. A faster run with different
+Case ownership is not an A/B improvement.
+
+The current Scenario public suite has three Cases. The earlier eleven-Case
+receipt predates their migration into =core/t/=; do not compare its total directly.
+The atomic bodies and the multi-module relocation/publication integration cost
+must be reported separately.
+
+* Formal correspondence still required
+
+Existing proof owners remain [[file:../../proofs/README.org][dev/proofs]].
+=Admission/IssuedRead.lean=, =ReplayOwnership.lean= and =ArtifactClosure.lean=
+are candidate correspondences, not a claim that this SysML model is proved.
+Before changing replay or publication: map receiver identity/revision and every
+source observation to those models; retain matched Quint counterexamples for
+parent-plan substitution, missing requirements, stale approval and effects between
+checks. Neither a SysML constraint nor a finite-model pass proves external
+filesystem atomicity or package trust.
+
+** Property allocation, not a blanket verification claim
+
+| Requirement | Existing QNT owner | Existing Lean owner | Runtime owner / remaining correspondence |
+|-------------+--------------------+---------------------+------------------------------------------|
+| Producer-issued dependencies | =OwnedReads.qnt= / =IssuerProjection_cacheMiss.qnt= | =Admission/IssuedRead.lean= | MOP read issuance + =t/slot-read-replay-test.ss=; no new theorem run here |
+| Receiver/parent isolation | =ReplayBoundary_omit.qnt= | =Admission/ReplayOwnership.lean= | =t/gitea-postgresql-publication-test.ss=; current integration run required |
+| Recovery is not self-attestation | =CoreBuildHandoff.qnt= / =CoreBuildHandoff_disk.qnt= | =Admission/ArtifactClosure.lean= | =t/module-test-preparation-test.ss= / artifact-publication controls |
+| Effects require fresh checks | =ReplayBoundary_effects.qnt= | =Admission/ReplayBoundary.lean= | Existing source guards around Make/Harness; timing must not bypass them |
+| Warm compile count is zero | No semantic model establishes compiler cost | No existing theorem establishes elapsed time | New-process Just measurement only |
+
+These are allocation links to actual files, not a statement that their premises
+already prove the complete cross-process test pipeline. Missing native-to-model
+projection and SysML semantic validation stay explicit follow-up obligations.
+
+* Current measurement and negative result, 2026-10-22
+
+The current three-Case Scenario passed a cold run through the default Core
+=just test-file= recipe with the existing compiled dependency context. Explicit
+=GERBIL_GXC= names the same installed compiler, selecting a fresh owned product
+location without removing or adopting earlier outputs. VM/idle/total limits
+were unchanged. This is not a clean installation qualification.
+
+| Interval | Observed seconds | Interpretation |
+|----------+------------------+----------------|
+| Init import | 1.348 | Explicit entry timer |
+| Selection delta | 4.800 | Selection timestamp 6.148 minus init timestamp |
+| Test projection | 0.422 | Two selected support roots |
+| Compile boundary | 7.964 | Includes Make process and issuance/admission |
+| Make process | 5.827 | Existing Ops receipt |
+| std/make import | 0.267 | Measured inside the process |
+| Native Make | 4.910 | Two actual compiler actions; cold, not warm |
+| Recovery | 0.000044 | Missing approval lookup; not a successful warm restore |
+| Full issued-artifact/currentness checks | 1.993 | Inclusive diagnostic total; overlaps compile boundary |
+| Harness process | 4.809 | Includes imports/setup, monitoring and execution |
+| Case bodies | 0.039 | 15 + 12 + 12 ms; remainder is not attributed solely to startup |
+
+The next Just process did NOT establish zero compilation: a new native object
+generation caused =build-required: unissued native object generation; clean
+selected outputs=. The gate remains unchanged. The earlier accepted eleven-Case
+zero-compile receipt does not certify this changed workload/context.
+
+A diagnostic experiment prepending the output directory to the Make process
+load path did not remove the failure and was removed. A direct native Make
+diagnostic over the failed owned directory did not reproduce compilation.
+The remaining obligation is to identify the actual compiler request/context
+difference, not add a result cache, bless the new generation, or weaken refusal.
+Raw cold, hot and failed experiment logs remain local artifacts.
+
+The existing =t/module-test-preparation-test.ss= subsequently passed its two
+Cases (including fresh-receiver recovery, joint replacement refusal, source
+change and compilation failure before Harness). The current
+=t/gitea-postgresql-publication-test.ss= passed all eleven integration controls,
+including both requirements, parent-plan/child-port isolation and source-change
+refusal. Both runs had =MODULE-OK=, =HARNESS-OK= and final =OK= without Harness,
+heap or stack failure markers. Those passes do not turn the failed new-process
+Scenario warm run into a pass. No full-suite, SysML solver, new Lean proof or
+new QNT result is claimed by this measurement update.
+
+* Root-cause repair and native correspondence, 2026-10-22
+
+MakeLayout below concerns compiler target/product correspondence only. It is
+not the architecture of POO caching and must not become that architecture's
+proof owner. The publication-cache investigation is recorded separately below.
+
+The preceding failed warm measurements remain historical evidence. The actual
+producer transcript confirmed two compiler actions; the generation refusal was
+not used as a substitute for observing those actions.
+
+** Actual call chain
+
+1. =init.exports.tests.for-files= binds the selected files and source epoch.
+2. =project-test-source-spec= observes package headers and compiler identities.
+   A requested Scenario test has a nested =scenarios/gerbil.pkg= with namespace
+   =yuanxu/scenarios=, inside the root Make package =yuanxu=.
+3. The old projection used the nested package to identify the right source,
+   but emitted an absolute =gxc:= target for every non-root package.
+4. =prepare-testing-script= handed that ordinary spec to =.compile=, which
+   recovered and checked the selected issuance before calling native Make.
+5. Installed Gerbil =std/make= predicts outputs through =spec-outputs= /
+   =gxc-outputs= / =library-path= / =static-path=. Compilation uses the actual
+   module identity. An absolute target therefore predicted outputs at different
+   paths from the compiler's =libdir/yuanxu/scenarios/...= products.
+6. Native Make found its predicted products absent and compiled both roots
+   again. Core then correctly refused the unissued =.o2= generation.
+
+The earlier direct native-Make probe used relative targets, explaining its
+failure to reproduce the defect. It was not the same compiler request.
+
+#+begin_src scheme
+;; Old selected spec -- source lookup works, predicted output lookup does not:
+(gxc: "/checkout/core/scenarios/gitea-postgresql/objects")
+
+;; Correct spec in source-root=/checkout/core, package-prefix=yuanxu:
+(gxc: "scenarios/gitea-postgresql/objects")
+#+end_src
+
+The repair uses existing =build-target-name= with the root package prefix and
+verifies that joining that target to the root resolves to the already admitted
+source. The nested package still supplies the source identity. No dependency
+edge, source observation or independent requirement is removed. A source whose
+namespace or physical location cannot be represented under that native Make
+root now refuses before execution; no absolute fallback remains. Arbitrary
+foreign-package builds still require their own package-owned native Make context;
+this repair does not implement a multi-package scheduler.
+
+The existing spec participates in the artifact-location identity. Correcting
+the spec naturally selects the corrected publication without deleting old failed
+products, modifying approvals or adding a new cache key/record format.
+
+** SysML, QNT and Lean allocation
+
+| Layer | Exact owner | Responsibility |
+|-------+-------------+----------------|
+| SysML | =MakeLayout= and =MakeOutputCorrespondence= in the companion model | Bind source root, namespace, relative target and expected/actual output agreement before recovery |
+| Scheme | =module-system/building/build-projection.ss= | Derive and validate that mapping from actual identity and source observations |
+| QNT | =TestMakeLayout.qnt= and two matched defect variants | Stable restored warm work is zero; absolute targets expose wasted work even when final admission refuses; skipping final source checks remains unsafe |
+| Lean | =Admission/TestMakeLayout.lean= | Relative output agreement, absolute-root discard, missing-output work, and preservation of source/both-requirement admission predicates |
+| Runtime | Existing =t/module-test-preparation-test.ss= Fixture | Nested package, relative spec, cold/hot/fresh-receiver behavior, unchanged output mtime, source change and joint replacement refusal |
+
+The existing Fixture now writes an aligned nested package header beside its
+requested test. Its existing exact spec assertion would reject the old absolute
+projection before compilation. The two existing Cases remain two; no duplicate
+Harness or compiler qualification suite was introduced.
+
+The finite QNT model starts with restored valid products and stable native
+source/dependency timestamps. Byte-identical source alone does not guarantee
+Make freshness: timestamp-only edits and compiler dependencies remain native
+Make concerns. Lean proves its path/work projection, not the installed compiler
+or the complete filesystem. Scheme's sanitized identity/path extraction and
+native timestamp behavior remain correspondence premises, supported by actual
+runtime controls. The admission predicates are reused from
+=CoreApprovedRecovery= rather than weakened to obtain zero work.
+
+The scoped =TestMakeLayout= receipt binds the actual native source/test owners,
+SysML and the complete local Lean source tree. The full-catalogue binding list
+is unchanged. The first unscoped-source attempt encountered an independently
+deleted =t/execution-progress-test.ss=; that failure is retained and does not
+authorize restoring another session's file or ignoring missing inputs in the
+full gate. No complete-catalogue proof result is claimed here.
+
+** Matched default-entry measurements
+
+Both successful runs used the default Core =just test-file= recipe, installed
+Gerbil, the same compiled dependency context and the same three-Case Scenario.
+No explicit =GERBIL_GXC= override, deadline change or weakened check was used.
+The observation argument only enables timings; it does not choose another runner.
+
+| Interval | Cold | Independent new-process hot |
+|----------+------+-----------------------------|
+| Actual compiler actions | 2 | 0 |
+| Init import, seconds | 1.483 | 1.403 |
+| Selection delta, seconds | 4.686 | 4.250 |
+| Projection, seconds | 0.794 | 0.350 |
+| Make process, seconds | 5.912 | 3.275 |
+| std/make import, seconds | 0.282 | 0.272 |
+| Native Make, seconds | 4.952 | 2.354 |
+| Compile/recovery/issuance boundary, seconds | 7.845 | 6.589 |
+| Recovery, seconds | 0.000060 | 1.268 |
+| Inclusive issued-artifact/currentness checks, seconds | 1.779 | 3.056 |
+| Harness, seconds | 4.786 | 3.972 |
+| Owner total, seconds | 21.016 | 17.969 |
+
+Recovery includes nested admission; inclusive checks overlap the compile boundary.
+Do not sum these rows. This proves avoidance of the two spurious compiler actions,
+not a stable end-to-end speedup. Init/selection, native dependency expansion,
+digest/currentness checks and Harness startup still cost time. Future work must
+identify their repeated pure work without caching a successful approval across
+Make, callbacks or Harness execution.
+
+** Final focused verification
+
+- =lake build YuanxuProof.Admission.TestMakeLayout=: passed; the new file has
+  no =axiom= or =sorry= declarations. The work law quantifies over an arbitrary selected-root
+  count; QNT explores one/two-root finite instances.
+- =TestMakeLayout= selected QNT gate: four qualified checks (positive safety,
+  absolute-target work counterexample, skipped-source counterexample and
+  non-vacuous acceptance). These are finite results, not a proof of native Make.
+- Default =just test-file t/module-test-preparation-test.ss=: two existing Cases
+  passed after the Fixture gained the nested package header. Existing source-edit,
+  joint product/record replacement and compile-failure controls remain active.
+- Default =just test-file t/gitea-postgresql-publication-test.ss=: all eleven
+  real integration controls passed, including both requirements, parent/child
+  plan isolation and edited role-source refusal.
+- A further independent Scenario process again reported =compile-count=0= and
+  all three public Cases passed. Make process 3.307 s; native Make 2.381 s;
+  recovery 1.278 s; inclusive artifact/currentness admission 3.202 s; Harness
+  3.916 s. Owner total 18.616 s is descriptive, not a stable capacity claim.
+
+All accepted native runs required =MODULE-OK=, =HARNESS-OK= and final =OK=;
+Harness, heap and stack failure markers were checked separately. Failed
+pre-repair warm runs, the failed load-path experiment and initial proof setup
+failures remain local artifacts. No timeout was enlarged. This is focused
+qualification with the existing dependency context, not full CI or a clean
+package-installation proof. SysML parsing/semantic validation remains unqualified.
+
+* POO publication reuse after zero compilation, 2026-10-22
+
+** Actual owner and the expensive work around a hit
+
+The primary cache path is =issued-state= in =building/artifacts.ss=:
+
+#+begin_src scheme
+;; Existing native owners; not a second Core cache protocol.
+(let (owner (hash-get issued graph))
+  (and owner
+    (closed-raw
+      (group-closed
+        (graph-cache-ref (publication.current owner) 'completion)))))
+#+end_src
+
+The weak table associates the exact Graph receiver with its native publication
+owner. The actual completed result lives in the native graph/closure machinery.
+The slot/MOP cache and dependency replay are a separate existing owner: neither
+should be replaced by a Make layout model or a global currentness cache.
+In-process completion lookup, cross-process recovery and validation of mutable
+external sources are three different operations. A new process cannot inherit
+another VM's object identities; recovery establishes its own publication.
+
+The current =.compile= boundary deliberately stages =build-required= before the
+opaque Make action. It then installs a checked completion using native
+=stage/submit!= and the expected head. Removing that invalidation solely because
+the preceding lookup hit would leave the previous completion publishable during
+the action. Likewise, retaining a completion does not authorize skipping source,
+product, approval or post-Harness checks. Those are not failed POO cache hits.
+
+Diagnostic mode now measures native =issued-state= lookups and their count
+separately from inclusive artifact/currentness checks. Disabled diagnostic mode
+does not allocate a timing table or a per-lookup timing closure. No user-facing
+=restore*= API, persistent cache format or alternative publication owner is added.
+
+** Narrow reductions actually made
+
+- =file-tests.admit-current= calls =selected!= once. That accessor already runs
+  the complete selection guard, including the realized-package before/after
+  boundary. Its former immediate second invocation repeated that entire call.
+  No guard inside the selection or across Make/Harness was removed. The existing
+  preparation Case observes exactly one selection read window for this request.
+- =bind-approval!= decodes the exact approved input once with the existing
+  public handoff codec. The private decoded value is passed into the same
+  restore implementation. Currentness, projection matching, native issuance and
+  product checks still run. Public stream callers still decode independently;
+  malformed input still invalidates before refusal. This shares data, not a
+  successful admission result.
+
+Neither change optimizes MOP replay or changes native publication semantics.
+The accessor contract, not an assumed purity flag on arbitrary callbacks,
+justifies avoiding the duplicate wrapper call. An observer inside the retained
+guard still executes normally; its invocation count is not a freshness oracle.
+
+** Formal allocation and remaining premises
+
+=TestMakeLayout= retains only layout/work properties. =TestPublicationReuse=
+owns the decode-sharing and fresh-admission projection. Its Lean laws are
+=retained_decode=, =repeated_selection_predicate= and
+=packet_reuse_rechecks_after_effect=. The predicate law alone is not a proof
+that an arbitrary effectful checker is idempotent. Existing
+=CoreBuildHandoff.accept_requires_exact_projection= and
+=parent_receiver_isolation= describe receiver association; the native runtime
+tests remain necessary extraction evidence. Existing =SourceWindows= laws
+permit byte sharing only in a stable bounded pure window, never across effects.
+
+The matched QNT controls show that memoizing successful admission across an
+effect admits changed sources/approval, and that ignoring projection matching
+admits a foreign packet. Acceptance is also witnessed. These finite states do
+not prove filesystem atomicity, native cache cost, or an arbitrary callback's
+purity. SysML =LookupReceiverCompletion= and =RecoverSelectedTests= allocate
+the owners and ordering; no SysML solver qualification is claimed.
+
+** Default-entry measurements and interpretation
+
+Same installed Gerbil and dependency context, same three-Case public Scenario,
+independent Just processes; compiler actions were zero in every measured row.
+The context probe is separate. Selection below is the delta after init; recovery
+and currentness overlap the inclusive compile boundary and must not be summed.
+
+| Phase / counter | Before reduction | Instrumented warm process | Next independent warm process |
+|-----------------+------------------+---------------------------+-------------------------------|
+| Init import, s | 1.668 | 1.404 | 1.374 |
+| Selection delta, s | 6.148 | 4.270 | 4.448 |
+| Support projection, s | 0.414 | 0.304 | 0.311 |
+| Make process, s | 4.207 | 3.358 | 3.361 |
+| std/make import, included above, s | 0.335 | 0.283 | 0.275 |
+| Native Make work, included above, s | 3.099 | 2.414 | 2.430 |
+| Compile/recovery/admission inclusive, s | 8.136 | 5.947 | 5.974 |
+| Recovery inclusive, s | 1.508 | 0.959 | 0.949 |
+| Artifact currentness inclusive, s | 3.617 | 2.474 | 2.492 |
+| Native completion lookup count | unmeasured | 23 | 23 |
+| Native completion lookup total, milliseconds | unmeasured | 0.179 | 0.194 |
+| Harness process, s | 4.549 | 3.905 | 3.927 |
+| Owner total, s | 22.894 | 18.169 | 17.116 |
+| Separate context probe, s | 2 | 2 | 3 |
+
+The pre-instrumentation modified run was 20.811 s, also with zero compilation.
+All samples remain local evidence. Shared host load, import/OS cache state and
+the limited sample count preclude a stable end-to-end speedup claim. The exact
+reduction established by code and the preparation assertion is one redundant
+selection admission per explicit file guard and one redundant packet decode per
+recovery. The native result-lookup observations are diagnostic wall timings,
+including timer/counter overhead, not a microbenchmark of the upstream engine.
+
+Most importantly, a zero-compile new process is not a warm in-memory object
+graph. It must reconstruct the selected source context and its own receivers.
+The measured native *completion lookup* is inexpensive; this does not establish
+that all MOP construction, replay or selection work is inexpensive. The next
+POO-focused investigation is receiver construction and dependency replay during
+the 4.3--4.4 s selection, separated from external currentness and role expansion.
+Use native receiver/closure identity to reuse only unchanged computations.
+Do not infer that a passing source check may become a retained slot value, or
+that a parent's effective configuration can stand in for a child.
+
+Make startup, dependency scheduling and the fresh Harness verdict remain.
+No new scheduler, Builder or cache protocol was introduced to bypass them.
+The existing preparation suite passed its two Cases, including the new
+one-window assertion, approved-product joint replacement, source edit,
+fresh-receiver recovery, unselected poison and compilation-failure refusal.
+The real Gitea/PostgreSQL publication suite passed all eleven Cases: both port
+requirements, parent cached plan/child effective configuration, source changes
+and plan/publication identity remain checked. The Lean target built 118 jobs;
+the publication-reuse QNT gate qualified all four positive/counterexample checks.
+The existing sixteen-Case =slot-read-replay-test= also passed, including native
+issued reads, parent/child replay, nested obligations, source edits and the
+unselected/unknown getter controls. Every accepted Scheme run had =MODULE-OK=,
+=HARNESS-OK= and final =OK= with no error or heap/stack overflow markers.
+This is local qualification with explicit dependency load paths, not a clean
+installation, complete repository suite or remote CI result. Failed early model
+file lookup and sandbox socket attempts remain local records.
+
+* Selection construction, cached Graph and replay, 2026-10-22
+
+** Instrument the actual owner without changing observation semantics
+
+=call-with-module-source-operation-measurement= owns an invocation-local
+scalar table behind a private parameter, returning the result and report only
+after the action. Callers cannot substitute a hash/ref callback in the closed
+replay interval. It does not enable source or slot observers, retain a read
+token, or cache currentness. =just test-file
+... true= reports the first demand; =trace= additionally probes a second
+=.for-files= demand in the SAME VM and requires identical selected Graph
+receivers. This explicit diagnostic probe does not run another Harness.
+Independent Just processes each still have a cold in-memory selection, even
+when approved compiled support is warm. Inert selected metadata is reused by
+the existing POO slot cache and native selection index, not a serialized Graph.
+
+The detailed pre-change trace observed:
+
+| First demand / nested interval | Seconds | Calls |
+|-------------------------------+---------+-------|
+| Linker import | 2.227 | 1 |
+| Directory context construction | 0.000568 | 1 |
+| Selection entry currentness | 0.000063 | 1 |
+| selected-graph | 4.006 | 1 |
+| Reader bootstrap | 0.302 | 1 |
+| Candidate reading | 3.928 | 3 |
+| Link currentness | 1.564 | 94 |
+| Reader currentness | 0.904 | 104 |
+| Role preparation | 0.183 | 3 |
+| Interface import/expansion/evaluation | 3.263 | 3 |
+| Native interpreted-body compilation | 0.031 | 53 |
+| Interpreted-body evaluation | 0.577 | 53 |
+| Publication admission | 0.00104 | 3 |
+| Native metadata dependency replay | 1.189 | 402 |
+
+Intervals are nested, not additive. Interpreted-body compilation is the SDK
+expander/compiler hook, distinct from native Make's gxc action count of zero.
+The warm same-VM demand constructed no reader, roles or candidates. It returned
+the same Graph in 3.8 microseconds while fresh selection currentness took
+29.7 ms, including nine native replays taking 21.7 ms. Thus Graph reuse is
+already working; neither the first-import cost nor every dependency replay is
+evidence of an object-cache miss.
+
+** Bounded replay reduction, not a cache of passing checks
+
+=publication-metadata-current= is private to the reader. Its two non-void
+replay closures are made only by =publication-read-current=; contributors do
+not supply them. With no source observer, they call the existing native
+=replay-slot-reads!= with a void visitor. The native path authenticates records,
+checks metadata routes before dispatch, and reads revisions/instance identity;
+it does not invoke a cold getter or a contributor MOP hook. The intervening
+policy guard is =source-object-policy= over captured native revisions.
+
+Consequently the same serial call retains ordered preparation replay, admission
+replay and policy checks, but omits the third preparation replay. There is no
+stored successful check and no reuse across calls. When a source observer is
+present before replay, the original third replay remains, even if its callback
+removes itself. Location/file validation, reader/source tails, package callbacks,
+final .admit and Harness boundaries remain independent and unchanged.
+
+Do NOT concatenate both root graphs into one preflight merely to reduce DFS
+work: authenticating an unissued admission record before checking a stale
+preparation record can change the first diagnostic. Retain original record
+identity, both traversals and their order. No dependency edge or delivery event
+is removed by the tail reduction. This is not a general law for opaque checkers.
+
+** Assurance allocation
+
+- SysML: =CompletedPublicationReplay= and =CheckCompletedPublication= allocate
+  the native replay and observer-tail boundaries; no solver run is claimed.
+- Lean: =SelectionReplay.cached_graph_keeps_value= applies the existing LeanPoo
+  =ConstructionCache.ensureLookup_hit= law. =stable_tail_redundant= preserves
+  the first error under a stable serial interval; =observer_tail_cannot_be_dropped=
+  and =preflight_reordering_changes_diagnostic= retain negative laws.
+- QNT: =SelectionReplay= and matched observer-tail / reordered-diagnostic
+  variants explore the same boundary and an accepting witness. The scoped
+  receipt binds current reader, linker, source admission, publication and tests.
+- Runtime correspondence: the existing reader warm-input Case now obtains the
+  actual paired reader's guard and tests two unobserved versus three observed
+  replays. Its observer edits SourceRef after admission replay and removes
+  itself; the original tail must still refuse the stale dependency.
+
+The native read-route baseline, trusted private issuance, supported serial
+runtime and absence of raw reflection/FFI/concurrent metadata writes remain
+explicit premises. Lean/QNT do not prove those machine properties. External
+file writers are still handled by source/currentness and conditional-commit
+boundaries; this reduction grants no filesystem atomicity.
+
+** Qualified work counts and non-claims
+
+The existing two root-collection Cases remain in their owner suite; the warm
+input Case now includes the actual paired-reader guard controls. No duplicate
+business suite or alternate Builder was added. Final default-entry results:
+
+| Property | Before | Final process 1 | Final process 2 |
+|----------+--------+-----------------+-----------------|
+| First selected-graph force, s | 4.006 | 3.556 | 3.477 |
+| First native replay calls | 402 | 303 | 303 |
+| First native replay time, s | 1.189 | 0.756 | 0.748 |
+| Link currentness calls | 94 | 94 | 94 |
+| Reader currentness calls | 104 | 104 | 104 |
+| Interpreted bodies compiled/evaluated | 53 / 53 | 53 / 53 | 53 / 53 |
+| Same-VM warm Graph force, microseconds | 3.8 | 4.8 | 5.0 |
+| Same-VM warm replay calls | 9 | 6 | 6 |
+| Same-VM warm currentness, milliseconds | 29.7 | 57.1 | 57.7 |
+| Same-VM warm replay time, milliseconds | 21.7 | 49.1 | 49.1 |
+| Native Make compilation actions | 2 | 2 | 0 |
+| Owner total, s | 21.498 | 19.896 | 21.893 |
+
+The definite reduction is 99 replay invocations on this first construction and
+three on the warm three-publication demand. The same-VM cached Graph retains
+identity, with no second reader/role initialization. Passing currentness is
+never retained between calls. The first final process used the changed source
+epoch and compiled two support roots; the second recovered them with zero
+compilation. Do not compare those two total times as matched warm latencies.
+Process 2 overlapped local QNT qualification, and another host compiler was
+also observed separately. Neither observation establishes the cause of a
+particular delay. The warm scalar timings did NOT improve despite fewer
+replays. Allocation/GC and native visited-node cost remain unmeasured in this
+comparison; a stable latency improvement is not established. Two earlier
+zero-compile post-change samples were 15.544 / 15.807 s, but are not substituted
+for the slower final pair. All intervals and negative runs are retained locally.
+
+The final no-observation =just test-file
+scenarios/gitea-postgresql/tests/config-test.ss= passed. The final
+=t/module-publication-test.ss= passed 35 Cases, including two versus three
+replays and observer mutation/self-removal refusal. The real
+=t/gitea-postgresql-publication-test.ss= passed eleven Cases, retaining both
+requirements, cached-parent/final-child plan identity, explicit mismatch and
+changed-source refusal. The existing =t/slot-read-replay-test.ss= passed sixteen
+Cases, including unselected getters staying cold. Accepted Scheme receipts
+require MODULE-OK, HARNESS-OK and final OK, with failure/overflow markers checked
+independently. Lean =Admission.SelectionReplay= built 32 jobs without new
+axiom/sorry declarations; the final source-bound QNT gate qualified four cases.
+
+One narrower importer, =t/reader-root-collection-test.ss=, did NOT pass: its
+Make support subprocess reached the unchanged 60 s idle limit before Harness.
+The recorded support count was two; the partial child transcript was not
+retained by that failure path, so no exact compiler-stage attribution is
+claimed. Running the defining publication suite directly through the same
+Just entry passed all 35 Cases; this does not discharge the narrow importer's
+support-compilation gate. That failure remains an explicit separate limitation,
+not a pass obtained by widening timeouts. The initial diagnostic-import syntax
+error, trace-local binding error and Quint reserved-name error also remain local
+failed receipts. No raw logs are committed. This is focused qualification with
+the stated installed-runtime/load-path context, not clean-install or full CI.
+
+** Remaining opportunities
+
+Native Graph caching already eliminates reconstruction on the second demand.
+New-process import/bootstrap and role evaluation are separate costs, not cache
+misses to repair by storing successful admission. Source checks around role
+initializers, callbacks and final return remain mandatory. Further native
+replay work needs measured visited nodes/allocation/GC and the same authentic
+record, first-diagnostic and observer-order controls; work-count algebra alone
+does not establish a capacity or latency improvement. Do not broaden a pure
+source window across those effects or add a persistent worker/cache protocol
+merely to hide independent-process startup.
+
+** Explaining the warm-currentness reversal (2026-10-22)
+
+The next qualification separates actual native DFS visits, physical source IO,
+CPU, GC and wall time. It does not infer work from replay-call counts alone.
+The existing =trace= option now makes twenty bounded same-VM demands before
+running the original Harness once. Ordinary =just test-file= makes no extra
+demand, allocates no diagnostic report and does not force GC. Every demand
+retains its independent currentness check and the original Graph identity.
+
+The private measurement factory owns its scalar table throughout the action.
+=module-source-measure-replay= uses a fixed scalar visitor, not a source/slot
+observer: enabling those observers changes the required tail from two replays
+back to three. No read token, receiver or traversal is stored in the report.
+The =source-read= span surrounds the actual port read; source counters reuse
+the existing observation sites without enabling their callback. Statistics
+spans are inclusive; nested spans must not be added together. These are
+instrumented attribution results, not corrected uninstrumented benchmarks.
+The native visitor reports one visit per current record in each successful
+replay. Totals sum those per-replay identity-deduplicated visits; they are not
+distinct receivers across all calls or dependency-edge counts. Early native
+authentication failure can precede any visitor call. Preflight authentication
+and final native checks still run; a zero visitor count does not certify that
+a rejected graph did no work.
+
+The unchanged installed runtime and explicit dependency overlay are the same
+qualification context as above. No compiler source, heap, idle/total budget,
+Fixture, Builder or cache protocol changed. Two final fresh Just processes
+each recovered test support with zero native Make compilations:
+
+| Measurement | Final process 1 | Final process 2 |
+|-------------+-----------------+-----------------|
+| First selected Graph force, s | 8.693 | 3.508 |
+| First replay calls / visited records | 303 / 360646 | 303 / 360646 |
+| First replay wall, s | 1.955 | 0.757 |
+| Same-VM warm samples | 20 | 20 |
+| Warm currentness min / max, ms | 25.803 / 382.136 | 18.680 / 63.973 |
+| Warm replay calls / visited records, every sample | 6 / 5647 | 6 / 5647 |
+| Warm physical reads / read windows, every sample | 128 / 1 | 128 / 1 |
+| Warm sample 14 GC CPU, ms | 94.522 | 43.937 |
+| Owner total including twenty probes, s | 28.590 | 16.745 |
+
+Process 2 sample 1 took 19.258 ms, including 11.086 ms in replay and
+5.038 ms in physical port reads. Sample 14 took 63.973 ms, with the SAME
+5647 visits, 143 read requests, 128 physical reads, 159 file-kind queries and
+91 expected-source comparisons. The port-read span grew to 49.535 ms; its
+43.937 ms of GC CPU accounts for almost all of that increase. Replay itself
+remained 11.156 ms with no collection. CPU and wall time are almost equal in
+these two samples. A prior twenty-sample run likewise took 18.1--19.9 ms on
+non-GC demands and 65.471 ms on a demand containing 45.382 ms of GC CPU.
+
+This reproduces a mechanism for an apparent warm regression without increasing
+dependency work or physical reads. It does NOT retrospectively prove that GC
+caused the preceding turn's 57 ms samples: those receipts did not record it.
+Process 1 also has substantial wall/CPU differences, including a 382 ms sample
+with only 94.5 ms of GC CPU. The remaining delay is un-attributed runtime/wait
+cost, not proof of a particular competing host process. Neither the slower run
+nor its diagnostic overhead is discarded.
+
+*** Allocation qualification and the optimization decision
+
+The VM's raw statistics field 7 is NOT qualified as an allocation counter for
+this workload. It goes backwards across collections and, in the earlier
+twenty-sample run, jumped from approximately 13.4 million to 530.7 million on
+a non-GC demand with unchanged work. Keep =allocation-counter= deltas as raw
+diagnostics; =allocation-invalid= flags negative/GC-crossing spans but zero
+does not certify the stream. Do not interpret positive deltas as allocated
+bytes, retained memory or per-node ownership. No GC is forced to manufacture a
+clean result. A reliable allocation measurement remains an explicit gap.
+
+There is no evidence here of renewed POO Graph construction on warm demand:
+the receiver is identical, role evaluation stays cold and native Make remains
+at zero. The source-read counts already reflect one existing pure window;
+they do not establish that all 128 reads are redundant. Saving the window or
+its successful verdict for the next demand would break changed-source refusal.
+No additional runtime check was removed on the strength of these timings.
+The earlier ordered-tail reduction remains, including its observer fallback.
+Further optimization must account for native traversal construction and a
+qualified allocation stream before proposing reuse of structure. It must not
+cache authentication/currentness success, omit dependency edges, skip native
+checkers or broaden a read window across a callback.
+
+*** SysML, QNT and Lean correspondence
+
+=SelectionCostSample= adds separate work, IO, CPU, collection and raw-counter
+dimensions to the existing SysML owner model. It is a development model, not
+a solver-qualified timing prediction. =SelectionReplay= retains its ordered
+diagnostic, two-requirement, parent-isolation and unused-branch invariants.
+The =FewerMeansFaster= control deliberately fails when independent collection
+cost is introduced: six replay units plus 45 collection units can cost more
+than nine replay units. These are illustrative units, not fitted measurements.
+
+Lean =matched_work_bound= requires identical source, collection and wait terms;
+=fewer_replays_can_be_slower= rejects the invalid count-to-latency inference.
+=remove_collection_for_matched_comparison= is arithmetic accounting, not a
+claim that subtracting CPU GC time yields uncontaminated wall performance.
+The existing LeanPoo cache-hit law and =SourceWindows= source/competing-demand
+laws remain the semantic basis. Native issuance, supported serial checker
+routes and stable bytes within each pure window remain correspondence premises.
+
+*** Qualification result
+
+The final default =just test-file scenarios/gitea-postgresql/tests/config-test.ss=
+passed without a measurement scope or extra warm probes. Both final =trace=
+runs passed the same Scenario Harness, recovered with zero native compilations
+and retained all twenty samples. Serial defining-suite runs passed eleven real
+service-publication Cases, sixteen read/replay Cases and thirty-five publication
+Cases. They retain the child-contract obligations, both independent port
+requirements, changed-source refusal, parent/child plan identity and unselected
+getter controls. The existing paired-reader Case also checks that measurement
+counts actual visits while preserving the two-replay native path and the
+three-replay effectful-observer path. No duplicate Case was added.
+
+An initial publication-suite run failed before Harness because the two added
+metric assertions used =check-true=, which that owner does not import. They now
+use its existing =check-equal?=; the unchanged Just route passed on retry. That
+failed receipt remains local. All accepted logs contain MODULE-OK, HARNESS-OK
+and final OK and were separately checked for error/overflow markers. The old
+narrow-importer idle failure above is not relabeled as resolved by these runs.
+
+Lean =Admission.SelectionReplay= rebuilt successfully (32 jobs). The scoped,
+source-bound QNT gate qualified all five checks, including the expected
+=FewerMeansFaster= counterexample, using Quint 0.33.0 and Apalache 0.62.1.
+Formal qualification ran after the timing samples, with no local proof worker
+overlapping them. SysML remains a reviewed architectural model. This is local
+focused qualification through the stated dependency overlay, not full CI or a
+clean package installation. Raw logs/receipts stay outside Git.

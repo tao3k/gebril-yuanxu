@@ -2,6 +2,22 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: Core Quint Models
 
+* Native Make layout correspondence
+
+[[file:../../sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] allocates =TestMakeLayout= to the actual
+=init.exports.tests -> .compile -> std/make= path. The positive finite model
+checks zero warm compiler actions and retained source/both-requirement admission.
+The absolute-target variant exposes work even when final admission refuses;
+=skipSource= exposes an invalid acceptance. =RejectAll= supplies the accepting
+witness. Native timestamp freshness is an explicit premise, not a cached verdict.
+
+The existing runner supports this scope with =--case-prefix TestMakeLayout
+--typecheck-scope selected=. Its receipt binds actual layout/admission consumers,
+SysML, package/dependency pins and local Lean sources, and rejects changes before
+return. Full-catalogue bindings remain unchanged. The general path/work statements
+live in =Admission/TestMakeLayout.lean=; installed compiler and filesystem behavior
+remain runtime correspondence obligations.
+
 * Demanded read graph retention
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.52-demanded-read-graph-retention.org][32.52]] adds seven =ReadRetention= controls for shared/cyclic records,

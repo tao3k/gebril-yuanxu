@@ -5,7 +5,8 @@
 
 * One repository selection
 
-The maintained [[file:../../../init.ss][root init]] selects Modules and Scenarios together. There is no
+The following declaration illustrates selecting Modules and Scenarios together.
+The maintained [[file:../../../init.ss][root init]] owns its actual selection. There is no
 separate scenarios/init.ss and no repeated Module selection in that directory.
 
 #+begin_src scheme
@@ -24,18 +25,18 @@ build projection and test discovery retain their existing owners.
 
 #+begin_src scheme
 (import :clan/poo/object
-        (only-in "./init.ss" init.Modules init.Scenarios))
-(.all-slots init.Modules)
-(.all-slots init.Scenarios)
-(.call (.get init.Scenarios aws tests) .run)
-(.call (.get init.Scenarios aws tests integration) .run)
+        (only-in "./init.ss" yuanxu.init.exports))
+(.all-slots (.get yuanxu.init.exports Modules))
+(.all-slots (.get yuanxu.init.exports Scenarios))
+(.call (.get yuanxu.init.exports Scenarios aws tests) .run)
+(.call (.get yuanxu.init.exports Scenarios aws tests integration) .run)
 #+end_src
 
 There is one directory namespace, not a separately populated Scenario tree.
 Its mounted branches return the existing module views: identity, lazy scope and
 independently lazy tests. Selecting tests does not link the business scope.
-The existing single-directory declaration still exports init.modules; a named
-multi-window declaration exports init.<mount> instead of an additional flat alias.
+Single-directory and multi-window declarations expose only their native
+source-qualified init export object. Mounts are slots on that object.
 
 * Macro ownership and expansion
 
@@ -44,41 +45,28 @@ the literal declaration through module-init-intent; this same pure parser is use
 by source admission. Window splitting uses match and delegates row/header parsing
 to the existing single-window parser. It does not evaluate author expressions.
 
-An internal defrules frame emits the repeated namespace bindings. This is a
-maintainer implementation, not another user configuration language:
+The macro derives its sole public name from the enclosing native module
+Context; package identity, prelude identity and window names remain distinct.
+See [[file:13.19-source-qualified-init-exports.org][13.19]] for the exact naming and consumer migration.
 
 #+begin_src scheme
-(defrules define-init-namespace ()
-  ((_ binding getter mount)
-   (begin
-     (defsyntax binding
-       (identifier-rules ()
-         (id (identifier? #'id) (.ref (getter) 'mount))))
-     (export binding))))
+(defvalues (private-base private-namespace)
+  (yuanxu-init-build init-source init-declaration))
+(def private-value
+  (.+ private-base
+    (.o Modules: (.ref (private-namespace) 'Modules)
+        Scenarios: (.ref (private-namespace) 'Scenarios))))
+(defsyntax yuanxu.init.exports
+  (identifier-rules ()
+    (id (identifier? #'id) private-value)))
+(export yuanxu.init.exports)
 #+end_src
 
-The public macro generates one fresh private accessor binding, shared by every
-mount. The relevant result is equivalent to the following; %namespace is a
-private generated identifier, never a caller-maintained name:
-
-#+begin_src scheme
-(defvalues (init.build-spec init.build-current!
-            init.test-spec init.test-current! init.tests %namespace)
-  (yuanxu-init-build (this-source-file)
-    '(yuanxu!
-       :load-modules "./modules" mode: explicit rename: Modules
-       (json-schema) (funflow) (nix) (opentofu) (ops @ "./ops")
-       :load-modules "./scenarios" mode: explicit rename: Scenarios
-       (null) (aws-validation) (aws))))
-(define-init-namespace init.Modules %namespace Modules)
-(define-init-namespace init.Scenarios %namespace Scenarios)
-#+end_src
-
-Each identifier read re-enters the associated source guard and returns a branch
-of the same namespace object. An ordinary def would acquire that object during
-initialization; identifier-rules preserves direct object syntax with delayed
-acquisition. A captured ordinary object remains a snapshot, not a live filesystem
-view. Native only-in and rename-in preserve the binding's lexical context.
+Private identifiers are fresh in the real expansion. Window slots remain lazy
+on the same object; no public mount aliases are retained. Source guards remain
+owned by the selected namespace and the existing explicit build/test operations.
+A captured ordinary object remains a snapshot, not a live filesystem view.
+Native only-in and rename-in preserve the binding's lexical context.
 
 * Selection, conflicts and source bounds
 

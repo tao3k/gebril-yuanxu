@@ -3,7 +3,7 @@
 ;;; Real module qualifications share init selection, guards and Ops execution.
 (import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
-        (only-in "../init.ss" init.Modules init.Scenarios init.tests)
+        (only-in "../init.ss" yuanxu.init.exports)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
@@ -32,10 +32,10 @@
     (yuanxu-test-fixture "multi-owner selection and publication share one bounded Case"
       (workspace Workspace)
       (yuanxu-test-checkpoint 'selection-start)
-      (def json (.get init.Modules json-schema))
-      (def flow (.get init.Modules funflow))
-      (def aws (.get init.Scenarios aws))
-      (def unused (.get init.Scenarios null))
+      (def json (.get yuanxu.init.exports Modules json-schema))
+      (def flow (.get yuanxu.init.exports Modules funflow))
+      (def aws (.get yuanxu.init.exports Scenarios aws))
+      (def unused (.get yuanxu.init.exports Scenarios null))
       (def reads 0)
       (def funflow-read? #f)
       (def aws-read? #f)
@@ -49,7 +49,7 @@
         (when previous-observer (previous-observer key amount)))
       (def all
         (parameterize ((current-module-source-observer observe))
-          (.get init.tests qualification)))
+          (.get yuanxu.init.exports tests qualification)))
       (check-equal? reads 0)
       (check-equal? (.ref/cached all 'selected-graph) #f)
       (check-equal? (.ref/cached all 'execution) #f)
@@ -103,17 +103,17 @@
       (yuanxu-test-checkpoint 'qualification-complete)
       (check-equal? (directory-files workspace) '("harness.log"))
       ;; Shared child runtime imports are dependencies, not sibling suite runs.
-      (check-equal? (.ref/cached (.get init.Scenarios null tests) 'qualification) #f)
+      (check-equal? (.ref/cached (.get yuanxu.init.exports Scenarios null tests) 'qualification) #f)
       (check-equal? (.ref/cached all 'spec) #f)
       (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-        (list (.get init.Modules json-schema) (.get init.Modules funflow)
-              (.get init.Scenarios aws) (.get init.Scenarios null))))
+        (list (.get yuanxu.init.exports Modules json-schema) (.get yuanxu.init.exports Modules funflow)
+              (.get yuanxu.init.exports Scenarios aws) (.get yuanxu.init.exports Scenarios null))))
     (test-case "Ops failure unwinds the existing fixture"
       (def acquired #f)
       (check-exception
         (with-yuanxu-fixture (workspace Workspace)
           (set! acquired workspace)
-          (.def (Failed @ (.get init.Modules funflow tests qualification))
+          (.def (Failed @ (.get yuanxu.init.exports Modules funflow tests qualification))
             execution.command: '("false")
             execution.environment.TMPDIR: workspace)
           (.call Failed .run)) error?)

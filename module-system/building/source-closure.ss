@@ -87,12 +87,23 @@
 ;; Modules remain selected dependencies, never implicit bootstrap capabilities.
 (def bootstrap-roots '(:yuanxu/module-system/building/build-projection
                       :yuanxu/module-system/building/configuration-source
+                      ;; Shared graph values/algorithms are kernel data APIs.
+                      ;; Selected Ops/Funflow sources use this same closure;
+                      ;; no Module scope or runtime activation is granted here.
+                      :yuanxu/graph/types-core
+                      :yuanxu/graph/algorithms
+                      ;; Bounded declaration syntax constructs ordinary POO
+                      ;; defaults; it does not import selection or activation.
+                      :yuanxu/profile-composition/module-prototype-syntax
                       ;; Public artifact/IR identity is shared with Core admission.
                       ;; These are library definitions, not a linked Module scope.
                       :yuanxu/modules/json-schema/json-schema-receipt
                       ;; Source-bound contracts are ordinary Core definitions
                       ;; used by relocated publications, not a Module scope.
                       :yuanxu/admission/source
+                      ;; Export binding consumes this platform-owned protocol;
+                      ;; importing it neither selects a scope nor publishes one.
+                      :yuanxu/admission/publication
                       :yuanxu/configuration/diagnostics
                       :yuanxu/object-family/role-syntax
                       :yuanxu/configuration/json))

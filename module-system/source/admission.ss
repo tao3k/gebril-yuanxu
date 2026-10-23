@@ -2,8 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Shared source-role and publication admission. No expansion or activation.
-(import (only-in :clan/poo/object .o .ref .ref/cached object? object-%instance object-protocol
-                 object-revision object-supers)
+(import (only-in :clan/poo/object .o .cc .ref .slot? .all-slots .ref/cached object? object-%instance object-protocol
+                 object-revision object-supers replay-slot-reads!)
+        (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation %slot-read-active?)
         (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles)
         (only-in :std/list/list any)
@@ -27,9 +28,10 @@
         call-with-collected-module-sources
         module-source-observe current-module-source-observer current-module-source-phase
         current-module-process-trace-budget
+        call-with-module-source-operation-measurement module-source-measure-operation module-source-measure-replay
         module-source-checked-operation module-source-operation-procedure
         module-source-operation-resume module-source-object-policy
-        admit-module-value! admit-module-publication! module-source-style-policy-current?
+        admit-module-value! admit-module-publication! admit-module-configuration! module-source-style-policy-current?
         module-source-publication-policy)
 
 ;; Read-only native identity/revision support for parser-owned metadata. This
@@ -88,6 +90,67 @@
        (andmap (lambda (c) (not (memv c '(#\/ #\\ #\:)))) (string->list name))))
 
 (def current-module-source-observer (make-parameter #f))
+;; Invocation-local diagnostics only. Unlike a source observer, enabling this
+;; timer does not turn on read observation or alter its native fast paths.
+(def current-module-source-operation-times (make-parameter #f))
+(def (call-with-module-source-operation-measurement action)
+  ;; The native scalar table is private for the entire action. Report it only
+  ;; afterwards: callers cannot install a custom hash/ref callback in the
+  ;; middle of the reader's otherwise closed native replay segment.
+  (let (times (make-hash-table))
+    (def value (parameterize ((current-module-source-operation-times times)) (action)))
+    (values value times)))
+(def (module-source-measure-operation name action)
+  (let (times (current-module-source-operation-times))
+    (if (not times) (action)
+      (begin
+        (hash-update! times (list 'calls name) (cut + <> 1) 0)
+        (if (memq name '(metadata-replay selection-current selected-graph reader-current source-read))
+          (measure-source-accounting times name action)
+          (let (started (real-time))
+            (dynamic-wind void action
+              (lambda ()
+                (hash-update! times name (cut + <> (- (real-time) started)) 0)))))))))
+(def (measure-source-accounting times name action)
+  ;; Use installed Gambit's own sample/frame correction, not duplicated vector
+  ;; indices. The signed VM account is NOT physical constructor allocation.
+  (def failed? #f)
+  (def failure #f)
+  (def stats
+    (##exec-stats
+      (lambda ()
+        (with-catch
+          (lambda (exception) (set! failed? #t) (set! failure exception) '())
+          (lambda () (call-with-values action list))))))
+  (def (metric key) (cdr (assq key stats)))
+  (hash-update! times name (cut + <> (metric 'real-time)) 0)
+  (for-each
+    (lambda (entry)
+      (hash-update! times (list (car entry) name) (cut + <> (metric (cdr entry))) 0))
+    '((cpu-user . user-time) (cpu-system . sys-time)
+      (gc-user . gc-user-time) (gc-system . gc-sys-time) (gc-wall . gc-real-time)
+      (collections . nb-gcs) (minor-faults . minflt) (major-faults . majflt)
+      (vm-account . bytes-allocated)))
+  (hash-update! times (list 'wall-cpu-gap name)
+    (cut + <> (- (metric 'real-time) (+ (metric 'user-time) (metric 'sys-time)))) 0)
+  (when (< (metric 'bytes-allocated) 0)
+    (hash-update! times (list 'accounting-invalid name) (cut + <> 1) 0))
+  (if failed? (raise failure) (apply values (metric 'result))))
+;; Fixed diagnostic visitor: no caller callback, retained read graph or observer
+;; installation. Ordinary execution keeps the original void visitor fast path.
+(def (module-source-measure-replay reads)
+  (let (times (current-module-source-operation-times))
+    (module-source-measure-operation 'metadata-replay
+      (lambda ()
+        (if (not times)
+          (replay-slot-reads! reads (lambda (_receiver _key) (void)))
+          (let (visits 0)
+            (dynamic-wind void
+              (lambda ()
+                (replay-slot-reads! reads
+                  (lambda (_receiver _key) (set! visits (+ visits 1)))))
+              (lambda ()
+                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0)))))))))
 ;; A Case-owned logging allowance, never a query/currentness cache. The testing
 ;; adapter binds a fresh box only for detailed observation; execution consumes
 ;; it solely to add the provider's diagnostic flags to a bounded set of calls.
@@ -96,6 +159,9 @@
 ;; (file-request/file-read phase path) for attribution. No observer, no path keys.
 (def current-module-source-phase (make-parameter 'source))
 (def (observe-source kind (amount 1))
+  (when (and (symbol? kind) (current-module-source-operation-times))
+    (hash-update! (current-module-source-operation-times) (list 'source kind)
+      (cut + <> amount) 0))
   (when (current-module-source-observer)
     ((current-module-source-observer) kind amount)))
 (def (module-source-type path)
@@ -108,6 +174,9 @@
 ;; observations only inside that boundary; every read requires regular-file
 ;; status. No cache survives an effect or an independent currentness call.
 (def source-read-cache (make-parameter #f))
+;; A private absence identity; #f is a valid cached observation. This is only
+;; the existing native table's default value, not another cache or verdict.
+(def missing-source-query (gensym 'missing-source-query))
 ;; Pure-query reuse must also preserve enrollment in an enclosing admission.
 ;; Each nested collector is a distinct demand even when bytes are unchanged.
 (def source-collectors (make-parameter '()))
@@ -140,11 +209,20 @@
       ;; arbitrary queries still rerun for each collector and enroll normally.
       (let (key (cons query (cons (if (eq? query read-module-source-type)
                                    '() (source-collectors)) arguments)))
-        (if (hash-key? cache key)
-          (begin (observe-source 'query-hits) (hash-ref cache key))
-          (let (value (apply query arguments))
-            (observe-source 'query-misses)
-            (hash-put! cache key value) value)))
+        (if (current-module-source-observer)
+          ;; Open observers retain the original lookup/callback order. They
+          ;; may mutate an argument or exit while reporting a cache hit.
+          (if (hash-key? cache key)
+            (begin (observe-source 'query-hits) (hash-ref cache key))
+            (let (value (apply query arguments))
+              (observe-source 'query-misses)
+              (hash-put! cache key value) value))
+          (let (value (hash-ref cache key missing-source-query))
+            (if (eq? value missing-source-query)
+              (let (value (apply query arguments))
+                (observe-source 'query-misses)
+                (hash-put! cache key value) value)
+              (begin (observe-source 'query-hits) value)))))
       (apply query arguments))))
 (def (observe-read-request path)
   (observe-source 'read-requests)
@@ -161,7 +239,11 @@
   (let (cache (source-read-cache))
     (if (and cache (hash-key? cache path)) (hash-ref cache path)
       (let (text (begin (observe-read path)
-                       (call-with-input-file path read-all-as-string)))
+                       (module-source-measure-operation 'source-read
+                         (lambda () (call-with-input-file path read-all-as-string)))))
+        (when (current-module-source-operation-times)
+          (hash-update! (current-module-source-operation-times) '(characters source-read)
+            (cut + <> (string-length text)) 0))
         (when cache (hash-put! cache path text))
         text))))
 
@@ -395,6 +477,52 @@
     (unless (yuanxu-validation-evidence-accepted? evidence)
       (error "module scope admission refused" (.ref contract 'identity) evidence))
     evidence))
+
+;; Resolve an existing declaration path. Missing associations are programmer
+;; errors and must not turn into a permissive user configuration Type.
+(def (configuration-path scope path owner)
+  (let loop ((value scope) (remaining path))
+    (if (null? remaining) value
+      (begin
+        (unless (and (object? value) (.slot? value (car remaining)))
+          (error "module configuration Contract path is missing" owner path))
+        (loop (.ref value (car remaining)) (cdr remaining))))))
+
+;; A public config is checked against its declared Type before scope admission.
+;; core.admissions owns the association. Type validation owns recursive
+;; wrapping and closed-field rules; an internal config slot alone is no grant.
+;; Check only final linked receivers, not incomplete source-role fragments.
+(def (admit-module-configuration! scope core owner context)
+  (unless (and (object? scope) (.slot? scope 'config))
+    (error "module configuration value is missing" owner))
+  (let* ((declarations (if (.slot? core 'admissions) (.ref core 'admissions) (.o)))
+         (paths
+           (filter-map
+             (lambda (name)
+               (let (entry (.ref declarations name))
+                 (and (equal? (.ref entry 'export-path) '(config))
+                      (.ref entry 'contract-path))))
+             (.all-slots declarations))))
+    (unless (pair? paths)
+      (error "module configuration declaration is missing" owner))
+    (when (pair? (cdr paths))
+      (error "multiple module configuration Contract declarations" owner))
+    (let* ((descriptor (configuration-path scope (car paths) owner))
+           (_type (unless (element? Type descriptor)
+                    (error "module configuration declaration is not a Type" owner descriptor)))
+           (candidate (.ref scope 'config))
+           (checked
+             (if (.slot? descriptor '.admit)
+               (begin
+                 (unless (procedure? (.ref descriptor '.admit))
+                   (error "module configuration admission is not a procedure" owner))
+                 (let (evidence (yuanxu-contract-admit descriptor candidate context))
+                   (unless (yuanxu-validation-evidence-accepted? evidence)
+                     (error "module configuration admission refused" owner
+                            (.ref descriptor 'identity) (.ref evidence 'diagnostics) evidence))
+                   (.ref evidence 'candidate)))
+               (validate descriptor candidate))))
+      (if (eq? candidate checked) scope (.cc scope 'config checked)))))
 (def (admit-module-publication! source expected-id publication context-value)
   (unless (yuanxu-module-source-ref? source)
     (error "module publication requires a SourceRef" expected-id source))

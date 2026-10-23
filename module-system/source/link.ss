@@ -4,7 +4,8 @@
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :clan/poo/object .o .+ .cc .ref .slot? .all-slots object? object<-alist object<-fun)
+        (only-in :clan/poo/object .o .+ .cc .mix .ref .slot? .all-slots object?
+                 object-slots object-defaults object<-alist object<-fun)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/publication
         :yuanxu/module-system/source/admission
@@ -18,6 +19,13 @@
 ;; Private admission carrier, not another namespace or semantic Graph. The
 ;; dependency list is the final receiver's already demanded symbol projection.
 (defstruct linked-publication (source value evidence dependencies metadata-current) final: #t)
+;; A realized scope remains inspectable as a complete package value. Bind its
+;; direct POO overrides onto the selected source scope, retaining that source's
+;; prototypes and exact Contract declarations instead of importing another
+;; evaluation context's ancestors. Ordinary scope admission still runs after it.
+(def (bind-package-scope source-scope package-scope)
+  (.mix slots: (object-slots package-scope)
+        defaults: (object-defaults package-scope) source-scope))
 ;; Attribute effect boundaries without retaining their results or source reads.
 (def (observe-link-stage stage thunk)
   (let (observer (current-module-source-observer))
@@ -60,16 +68,18 @@
          (unless reader
            (unless (original-current? (.ref context 'generation))
              (error "stale module scope generation" (.ref context 'generation)))
-           (set! reader (module-publication-reader))
+           (set! reader (module-source-measure-operation 'reader-bootstrap module-publication-reader))
            ;; Native SDK bootstrap may initialize code. No directory approval
            ;; crosses that boundary, even before the first candidate is read.
            (unless (original-current? (.ref context 'generation))
              (error "stale module scope generation" (.ref context 'generation))))
          (.ref reader slot))
        (def context
-         (module-directory-context source
-           (lambda args (apply (reader-ref 'read) args))
-           publication-prepares-source?: #t))
+         (module-source-measure-operation 'directory-context
+           (lambda ()
+             (module-directory-context source
+               (lambda args (apply (reader-ref 'read) args))
+               publication-prepares-source?: #t))))
        (def original-current? (.ref context 'current?))
        (link-module-context
         (.+ context (.o publication-inputs:
@@ -131,9 +141,11 @@
             (when guard (guard)))) publications))
     (def (current! (origin 'link-current))
       (when failed? (error "module scope session was refused" generation-value))
-      (parameterize ((current-module-source-phase origin))
-        (call-with-module-source-read-cache
-          (lambda () (module-source-observe check-current!))))
+      (module-source-measure-operation 'link-current
+        (lambda ()
+          (parameterize ((current-module-source-phase origin))
+            (call-with-module-source-read-cache
+              (lambda () (module-source-observe check-current!))))))
       (when (selection-tail) (set-box! (selection-tail) #f)))
     (def (dependency-scope owner alias provider-id baseline)
       (if (not realization) baseline
@@ -152,11 +164,34 @@
                         (key (.ref request 'identity)))
                    (unless (.slot? packages key)
                      (error "missing realized dependency" owner alias key))
-                   (.ref (.ref packages key) 'scope)))))))
+                   (bind-package-scope baseline (.ref (.ref packages key) 'scope))))))))
+    ;; A direct package projection may specialize its owner's scope. Select
+    ;; only this owner's results; never borrow a consumer's dependency scope.
+    ;; A package contributes POO overrides to the source-owned scope. It must
+    ;; not replace the source declaration merely to inject realized values.
+    (def (realized-scope owner baseline)
+      (if (not realization) baseline
+        (let (scopes
+               (filter-map
+                (lambda (request)
+                  (and (.slot? request 'scope-owner)
+                       (eq? owner (.ref request 'scope-owner))
+                       (let (value (.ref (.ref realization 'packages) (.ref request 'identity)))
+                         (and (.slot? value 'scope) (.ref value 'scope)))))
+                (.ref original-graph 'external-packages)))
+          (cond ((null? scopes) baseline)
+                ((null? (cdr scopes)) (bind-package-scope baseline (car scopes)))
+                (else (error "multiple realized scopes for one publication" owner))))))
     (def (bind-exports scope baseline owner selection-value)
       (if (not (.slot? baseline 'admissions)) scope
         (let* ((declarations (.ref baseline 'admissions))
                (names (.all-slots declarations))
+               ;; A config-shaped internal value is not a declared public
+               ;; configuration interface. core.admissions owns that association.
+               (scope (if (any (lambda (name)
+                                 (equal? (.ref (.ref declarations name) 'export-path) '(config))) names)
+                        (admit-module-configuration! scope baseline owner context-value)
+                        scope))
                (bindings
                 (filter-map
                  (lambda (name)
@@ -204,7 +239,8 @@
                (yuanxu-module-source-ref-construction-current?)
                (not (hash-key? publications id)))
         (let* ((result
-                (candidate-read
+                (module-source-measure-operation 'candidate-read
+                 (lambda () (candidate-read
                   (lambda ()
                     ;; A preceding OPEN fallback still closes before entering
                     ;; native execution. Closed private candidates have no
@@ -214,7 +250,7 @@
                     (eligible! id '() #t #t)
                     ((.ref context-value 'locate) id))
                   id context-value (lambda () (current! 'candidate-open))
-                  (lambda () (candidate-location-current! id))))
+                  (lambda () (candidate-location-current! id))))))
                (record (apply make-linked-publication result)))
           (unless (paired-context-current?)
             (set! failed? #t)
@@ -245,20 +281,23 @@
                     (unless (yuanxu-module-source-ref? source)
                       (error "module scope requires an admitted SourceRef" id source))
                     source)))
-               (pair (call-with-values
+               (pair (module-source-measure-operation 'publication-read
+                      (lambda () (call-with-values
                        (lambda ()
                          (if prefix (read-located locate)
                            (let (source (locate))
                              (values source ((.ref context-value 'read-publication) source)))))
-                       cons))
+                       cons))))
                (source-value (car pair))
                (publication-value (cdr pair))
                (reads (make-hash-table-eq))
                (evidence-value
-                 (call-with-slot-read-observer
-                   (lambda (read) (hash-put! reads read #t))
+                 (module-source-measure-operation 'publication-admission
                    (lambda ()
-                     (admit-module-publication! source-value id publication-value context-value))))
+                     (call-with-slot-read-observer
+                       (lambda (read) (hash-put! reads read #t))
+                       (lambda ()
+                         (admit-module-publication! source-value id publication-value context-value))))))
                (checked-publication (.ref evidence-value 'candidate))
                (dependency-ids
                  (module-publication-dependency-projection checked-publication
@@ -361,7 +400,9 @@
                                     (.all-slots records))))
                     (scope-value (observe-link-stage (list 'scope-factory id)
                                    (lambda ()
-                                     (bind-exports ((.ref baseline 'link) bindings) baseline id selection-value))))
+                                     (bind-exports
+                                       (realized-scope id ((.ref baseline 'link) bindings))
+                                                   baseline id selection-value))))
                     (scope-evidence-value
                      (observe-link-stage (list 'scope-admission id)
                        (lambda ()

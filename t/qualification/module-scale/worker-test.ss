@@ -5,17 +5,23 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in "../../../init.ss" init.modules init.tests)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
+        (only-in :yuanxu/t/qualification/module-init/fixture import-fixture-init!)
+        (only-in :std/source this-source-file)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-test-case yuanxu-test-checkpoint))
+(def FixtureExports
+  (parameterize ((current-expander-context (make-top-context)))
+    (eval-syntax '(import :gerbil/core))
+    (import-fixture-init! (path-expand "../../../init.ss" (path-directory (this-source-file))))))
 (export worker-test)
 (def worker-test
   (test-suite "Real native declaration expansion through init"
     (yuanxu-test-case "all selected declarations expand without linking business scopes"
-      (def count (length (.all-slots init.modules)))
+      (def count (length (.all-slots (.get FixtureExports modules))))
       (def counts (make-hash-table-eq))
       (def class-construction-reads 0)
       (def completed-declarations 0)
@@ -51,9 +57,9 @@
       (yuanxu-test-checkpoint 'native-graph-start)
       (def graph
         (parameterize ((current-module-source-observer observe))
-          (.get init.tests selected-graph)))
+          (.get FixtureExports tests selected-graph)))
       (yuanxu-test-checkpoint 'native-graph-ready)
-      (check-equal? (eq? graph (.get init.tests selected-graph)) #t)
+      (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
       (check-equal? (length (.get graph module-order)) count)
       (check-equal? (car (.get graph module-order)) 'module-0)
       (check-equal? (hash-ref counts 'publication-start) count)
@@ -68,7 +74,7 @@
       (check-equal? (hash-ref counts 'reader-declaration) (* 3 count))
       (check-equal? (hash-ref counts 'reader-body-expanded) (* 4 count))
       (check-equal? (hash-ref counts 'reader-body-evaluated) (* 4 count))
-      (check-equal? (.ref/cached (.get init.modules module-0) 'scope) #f)
+      (check-equal? (.ref/cached (.get FixtureExports modules module-0) 'scope) #f)
       ;; The delegated observer already recorded these events. Replaying the
       ;; assertion counters would double the published work totals.
       ;; The path is supplied by the actual Graph, never a guessed fixture root.
@@ -80,7 +86,7 @@
       (def held (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))
       (yuanxu-write-observation-line!
         "reader-graph-live modules=%s live-bytes=%s" count (.get held live-bytes))
-      (check-equal? (eq? graph (.get init.tests selected-graph)) #t)
+      (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
       (dynamic-wind
         (lambda ()
           (call-with-output-file (list path: path truncate: #t)

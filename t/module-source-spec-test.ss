@@ -23,11 +23,12 @@
 (def (script-at path)
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
+    (eval-syntax '(import (only-in :clan/poo/object .get)))
     (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
     (eval-syntax `(import (only-in ,(path-expand "init.ss" root)
-                                  init.build-spec init.build-current!)))
-    (values (eval-syntax 'main) (eval-syntax 'init.build-spec)
-            (eval-syntax 'init.build-current!))))
+                                  yuanxu.init.exports)))
+    (values (eval-syntax 'main) (eval-syntax '(.get yuanxu.init.exports std-make-spec))
+            (eval-syntax '(.get yuanxu.init.exports admit-current)) (eval-syntax '(.get yuanxu.init.exports std-make-run)))))
 (def (spec-of run)
   (call-with-input-string
     (call-with-output-string
@@ -55,7 +56,7 @@
         ;; Narrow only this isolated snapshot's retained manifest, not its build.ss.
         (write-source (path-expand "core-spec.ss" root)
           "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"types\" \"core-spec\"))\n")
-        (let-values (((run spec current!) (script-at (path-expand "build.ss" root))))
+        (let-values (((run spec current! dispatch) (script-at (path-expand "build.ss" root))))
           (displayln "SOURCE-SPEC-ROOT-IMPORTED") (force-output)
           (def printed (spec-of run))
           (displayln "SOURCE-SPEC-GRAPH-READY") (force-output)
@@ -63,6 +64,16 @@
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))
           (check-equal? printed targets)
           (check-equal? (eq? targets (spec retained)) #t)
+          ;; The dispatcher receives the admitted value and original arguments,
+          ;; rather than calling source preparation again from its callback.
+          (def dispatched 0)
+          (def (observe-dispatch admitted arguments)
+            (set! dispatched (1+ dispatched))
+            (check-equal? (eq? admitted targets) #t)
+            (check-equal? arguments '("spec"))
+            'forwarded)
+          (check-equal? (dispatch retained observe-dispatch '("spec")) 'forwarded)
+          (check-equal? dispatched 1)
           (check-exception (spec '("types")) error?)
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
@@ -77,6 +88,11 @@
           ;; This acceptance check is explicit, outside the SDK main.
           (current!)
           (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
+          ;; An ordinary SDK package build must not mint a module-publication
+          ;; receipt. Explicit graph compilation is tested by publication cases.
+          (check-equal?
+            (filter (cut string-prefix? ".yuanxu-build-issuance-" <>)
+              (directory-files (list path: lib ignore-hidden: #f))) '())
           (for-each (lambda (name)
                       (check-equal? (file-exists?
                         (compiled-path root lib name)) #t)) names)
@@ -90,7 +106,11 @@
             (lambda (control)
               (change-source (path-expand (car control) root)
                 (lambda ()
-                  (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t))))
+                  (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t)
+                  ;; A stale request must fail before invoking any dispatcher.
+                  (check-equal? (rejects? (cdr control)
+                    (lambda () (dispatch retained observe-dispatch '("spec")))) #t)
+                  (check-equal? dispatched 1))))
             '(("build.ss" . "stale selected build input")
               ("core-spec.ss" . "stale prepared build source")
               ("modules/gerbil.pkg" . "stale")

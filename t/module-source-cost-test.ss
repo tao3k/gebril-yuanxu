@@ -1,16 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Opt-in matched native IO allocation control; not a timing acceptance gate.
+;;; Matched native IO accounting control; not a timing acceptance gate.
 (import :std/test
-        (only-in :clan/poo/object .ref)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/source/admission module-source-read
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-observe
                  current-module-source-observer call-with-module-source-read-cache)
-        (only-in :yuanxu/observability/debug yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-source-cost-test)
 (def module-source-cost-test
-  (test-suite "Source guard allocation"
+  (test-suite "Source guard accounting"
     (yuanxu-test-case "same real source snapshot and independent fresh reads"
       (displayln "SOURCE-RUNTIME max-heap=" (##get-max-heap))
       (check-equal? (> (##get-max-heap) 0) #t)
@@ -29,18 +27,32 @@
                 (loop (- left 1)))))
           (def (measure name work expected-reads)
             (def reads 0)
-            (def before (yuanxu-debug-memory-snapshot name collect?: #t))
-            (def started (real-time))
-            (parameterize ((current-module-source-observer
-                            (lambda (key amount)
-                              (when (eq? key 'reads) (set! reads (+ reads amount))))))
-              (work))
-            (def seconds (- (real-time) started))
-            (def after (yuanxu-debug-memory-snapshot name collect?: #t))
-            (def allocation (- (.ref after 'allocated-bytes) (.ref before 'allocated-bytes)))
+            (def stats
+              (##exec-stats
+                (lambda ()
+                  (parameterize ((current-module-source-observer
+                                  (lambda (key amount)
+                                    (when (eq? key 'reads) (set! reads (+ reads amount))))))
+                    (work)))))
             (check-equal? reads expected-reads)
-            (check-equal? (> allocation 0) #t)
-            (displayln "SOURCE-ALLOCATION " name " reads=" reads " characters=" (string-length expected)
-                       " allocated=" allocation " seconds=" seconds))
+            ;; Exact logical IO work, not an assertion about a non-monotone VM
+            ;; accounting field or an unmeasured physical constructor total.
+            (displayln "SOURCE-ACCOUNTING " name " reads=" reads
+              " characters=" (* reads (string-length expected)) " metrics="
+              (filter (lambda (entry) (not (eq? (car entry) 'result))) stats)))
           (measure 'independent checks 200)
-          (measure 'pure-window (lambda () (call-with-module-source-read-cache checks)) 1))))))
+          (measure 'pure-window (lambda () (call-with-module-source-read-cache checks)) 1)
+          ;; A cached false value is a hit, never a new query. A new pure
+          ;; window must nevertheless execute that query independently.
+          (def queries 0)
+          (def (false-query) (set! queries (+ queries 1)) #f)
+          (parameterize ((current-module-source-observer #f))
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (module-source-observe false-query) #f)
+                (check-equal? (module-source-observe false-query) #f))))
+          (check-equal? queries 1)
+          (parameterize ((current-module-source-observer #f))
+            (call-with-module-source-read-cache
+              (lambda () (check-equal? (module-source-observe false-query) #f))))
+          (check-equal? queries 2))))))

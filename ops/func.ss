@@ -2,7 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
-        (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation)
+        (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation
+                 copy-process-output)
         (only-in :yuanxu/types yuanxu-validation-evidence-accepted?)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
@@ -57,14 +58,6 @@
   (object<-alist
     (map (lambda (entry) (cons (string->symbol (car entry)) (cdr entry)))
          (get-environment-variables))))
-(def (copy-process-output process port progress forward)
-  (close-output-port process)
-  (let loop ((line (read-line process #\newline #t)))
-    (unless (eof-object? line)
-      (when progress (progress line))
-      (display line port) (force-output port)
-      (when forward (display line forward) (force-output forward))
-      (loop (read-line process #\newline #t)))))
 (def (process-exit-code wait-status)
   (if (zero? (bitwise-and wait-status #xff))
     (arithmetic-shift wait-status -8)
@@ -89,8 +82,16 @@
                                       (and (.get prepared progress) ((.get prepared progress))) forward)))
                                 (call-with-output-string
                                   (lambda (port)
-                                    (copy-process-output process port
-                                      (and (.get prepared progress) ((.get prepared progress))) forward))))
+                                    (with-catch
+                                      (lambda (failure)
+                                        ;; Preserve the actual partial child transcript on
+                                        ;; cancellation; rethrow the SAME original cause.
+                                        (display (get-output-string port) (current-error-port))
+                                        (force-output (current-error-port))
+                                        (raise failure))
+                                      (lambda ()
+                                        (copy-process-output process port
+                                          (and (.get prepared progress) ((.get prepared progress))) forward))))))
                               (set! completed? #t)))
                           (lambda ()
                             ;; std/run-process closes and waits on unwind; it

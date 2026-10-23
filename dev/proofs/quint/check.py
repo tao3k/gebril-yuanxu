@@ -27,7 +27,14 @@ CASES = [
     ("SelectionReplayTopology_roots", "Order", True),
     ("SelectionReplayTopology_seen", "Delivery", True),
     ("SelectionReplayTopology_constructor", "Construction", True),
-
+    ("TestMakeLayout", "safety", False),
+    ("TestMakeLayout_absolute", "NoWork", True),
+    ("TestMakeLayout_skipSource", "Current", True),
+    ("TestMakeLayout", "RejectAll", True),
+    ("TestPublicationReuse", "safety", False),
+    ("TestPublicationReuse_memoAdmission", "Fresh", True),
+    ("TestPublicationReuse_packet", "Bound", True),
+    ("TestPublicationReuse", "RejectAll", True),
     ("RootCollection", "safety", False),
     ("RootCollection_suppress", "ObserverOrder", True),
     ("RootCollection_observerOrder", "ObserverOrder", True),
@@ -558,15 +565,28 @@ def main():
                 core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean"])
     def digests():
         current = set(bound) | set(models.glob("*.qnt"))
-        if all(case[0].startswith("SelectionReplay") for case in selected_cases):
-            current = (set(selection_bound) | set(models.glob("*.qnt")) |
+        if all(case[0].startswith(("TestMakeLayout", "TestPublicationReuse", "SelectionReplay")) for case in selected_cases):
+            # A scoped test-publication receipt binds its actual consumers and the
+            # complete local Lean source tree, not deleted tests of unrelated
+            # model owners. The full-catalogue gate keeps its original bindings.
+            current = (set(layout_bound) | set(models.glob("*.qnt")) |
                        set((core / "dev/proofs/lean/YuanxuProof").rglob("*.lean")))
+            if all(case[0].startswith("SelectionReplay") for case in selected_cases):
+                current |= set(selection_bound)
         result = {str(p.relative_to(core)): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in sorted(current)}
         result.update({os.path.relpath(p, core):
                        hashlib.sha256(p.read_bytes()).hexdigest() for p in producer_bound})
         return result
     issued_roots_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean"
+    layout_lean = core / "dev/proofs/lean/YuanxuProof/Admission/TestMakeLayout.lean"
+    layout_digest = "sha256:" + hashlib.sha256((models / "TestMakeLayout.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{layout_digest}"' not in layout_lean.read_text():
+        raise AssertionError("Lean retains a stale TestMakeLayout Quint source binding")
+    reuse_lean = core / "dev/proofs/lean/YuanxuProof/Admission/TestPublicationReuse.lean"
+    reuse_digest = "sha256:" + hashlib.sha256((models / "TestPublicationReuse.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{reuse_digest}"' not in reuse_lean.read_text():
+        raise AssertionError("Lean retains a stale TestPublicationReuse Quint source binding")
     selection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean"
     selection_digest = "sha256:" + hashlib.sha256((models / "SelectionReplay.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{selection_digest}"' not in selection_lean.read_text():
@@ -586,15 +606,23 @@ def main():
                        core / "module-system/source/admission.ss", core / "module-system/source/link.ss",
                        core / "module-system/source/publication.ss", core / "t/module-publication-test.ss",
                        core / "t/reader-root-collection-test.ss", core / "t/slot-read-replay-test.ss",
-                       core / "t/module-source-cost-test.ss"]
+                       core / "t/runtime-statistics-test.ss", core / "t/module-source-cost-test.ss"]
     selection_bound += [core / "t/mop-checker-origin-test.ss"]
-    selection_bound += [core / "admission/source.ss", core / "gerbil.pkg",
-                        core / "dev/proofs/lean/lakefile.lean",
-                        core / "dev/proofs/lean/lake-manifest.json",
-                        core / "dev/proofs/lean/lean-toolchain",
-                        core / "dev/proofs/lean/YuanxuProof.lean",
-                        Path(__file__).resolve(), models / "backend.py"]
-    bound.extend(selection_bound)
+    layout_bound = [layout_lean, core / "module-system/building/build-projection.ss",
+                  core / "module-system/building/artifacts.ss",
+                  core / "observability/testing-script.ss", core / "t/module-test-preparation-test.ss",
+                  core / "module-system/building/interface.ss", core / "module-system/building/test-projection.ss",
+                  core / "module-system/building/source-closure.ss", core / "t/qualification/testing/run.ss",
+                  core / "t/gitea-postgresql-publication-test.ss", core / "admission/source.ss",
+                  core / "scenarios/gitea-postgresql/types.ss",
+                  core / "scenarios/gitea-postgresql/gitea/types.ss",
+                  core / "scenarios/gitea-postgresql/postgresql/types.ss",
+                  core / "dev/proofs/lean/lakefile.lean", core / "dev/proofs/lean/lake-manifest.json",
+                  core / "dev/proofs/lean/YuanxuProof.lean", core / "gerbil.pkg",
+                  Path(__file__).resolve(), models / "backend.py",
+                  core / "dev/proofs/lean/lean-toolchain",
+                  core / "dev/sysml/10-evaluation/10.01-efficient-caching.sysml"]
+    bound.extend(layout_bound)
     retention_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean"
     collection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean"
     collection_digest = "sha256:" + hashlib.sha256((models / "RootCollection.qnt").read_bytes()).hexdigest()
@@ -719,16 +747,12 @@ def main():
     if f'quintSourceDigest : String := "{approved_digest}"' not in approved_lean.read_text():
         raise AssertionError("Lean retains a stale CoreApprovedRecovery Quint source binding")
     bound.extend([approved_lean, core / "dev/proofs/lean/CoreApprovedRecoveryCheck.lean",
-                  core / "t/approved-build-recovery-test.ss",
                   core / "t/build-recovery-boundary-test.ss",
-                  core / "t/qualification/build-publication/approved-producer.ss",
-                  core / "modules/nix/build-publication.ss",
-                  core / "modules/nix/func.ss", core / "modules/nix/objects.ss"])
+                  core / "admission/source.ss", core / "ops/selected-packages.ss"])
     recovery_digest = "sha256:" + hashlib.sha256((models / "CoreStoreRecovery.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{recovery_digest}"' not in recovery_lean.read_text():
         raise AssertionError("Lean retains a stale CoreStoreRecovery Quint source binding")
     bound.extend([recovery_lean, core / "dev/proofs/lean/CoreStoreRecoveryCheck.lean",
-                  core / "t/build-store-recovery-test.ss",
                   core / "t/qualification/build-publication/store.ss",
                   core / "t/qualification/build-publication/store-producer.ss",
                   core / "module-system/source/role-forms.ss",
@@ -923,7 +947,7 @@ def main():
                   core / "poo-clos/syntax.ss",
                   core / "t/poo-clos-method-bundle-test.ss",
                   core / "t/module-scope-link-test.ss",
-                  core / "modules/opentofu/build.ss",
+                  core / "module-system/building/configuration-source.ss",
                   core / "module-system/building/source-closure.ss",
                   core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean",
                   core / "ops/func.ss", core / "ops/process-script.ss",

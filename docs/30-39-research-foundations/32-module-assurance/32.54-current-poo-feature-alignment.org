@@ -127,3 +127,64 @@ The Core and product package declarations now select the qualified upstream
 revision. Parser/Ascent dependency publication, their production build closure
 and complete fresh-build qualification remain separate gates. No new Lean proof
 or global performance improvement is claimed by this constructor refactoring.
+
+** Follow-up integration boundary (2026-10-22)
+
+Fresh Core source expansion exposed a separate lexical-binding defect in the
+linker's selected-scope object: legacy =(:: result)= did not bind the bare
+=build-graph= and =selected-graph= references. The declaration now uses native
+=self: result= with the standard automatic slot bindings. Commit =39ed717=
+contains only that one-line source correction; concurrent =realized-scope=
+working-tree edits were excluded from its staged hunk and remain intact.
+
+After that correction the fresh build compiled 233 distinct roots without the
+unbound-reference error, but reached the unchanged 600-second qualification
+deadline during backend compilation. This is a failed complete-build gate;
+temporary outputs are not a qualified replacement for the complete library.
+The earlier consumer results remain the explicitly described compiled-library
+lane, not a claim that this fresh build passed.
+
+Ascent's existing branch was normally merged with seven remote quality commits;
+its native ObjectContract value-membership controls passed after the merge.
+The merge retains producer-owned constant shapes, mutable Contract fallback and
+the original native build/artifact entry. Only the Core dependency/API names and
+redundant literal empty-obligation adapters were changed by this migration.
+
+Parser's local production projection passed without ASP and retained both native
+FFI link declarations. Its module-local public factory/inheritance/type-refusal
+controls passed. The working checkout and the refreshed PR 13 remote have a large
+history divergence (76 versus 736 unique commits, approximately 1,500 changed
+paths). The maintainer selected the current working tree as the local migration
+baseline and explicitly deferred Parser publication. No remote merge, force push
+or Parser push is authorized for this migration. Its original grammar, Rust,
+FFI and benchmark edits remain in the working tree. Production build-ownership
+tests are separated from optional ASP/Rowan tooling tests, so checking the
+production boundary does not itself import the development dependency.
+
+The separated production ownership test passed through the heap-fenced Core
+=just test-file= entry with =MODULE-OK=, =HARNESS-OK= and final =OK=, using the
+compiled-library lane described above. An earlier run was correctly refused
+because the test source changed during execution; that failed receipt is retained
+locally. The optional ASP/Rowan test remains present but was not qualified in
+this dependency-isolated run. No Parser commit or push was made.
+
+PR 19's observed Linux failure at =e5ccb73= occurred in the pre-existing Nix setup
+step: =jq .outPath= was applied to a JSON string. It did not execute the Scheme
+build. That external gate and the local complete-build timeout remain failures,
+not evidence against or qualification of the focused Type behavior.
+
+** Subsequent complete-library qualification
+
+[[file:32.55-complete-build-costs.org][32.55]] records a subsequent complete
+current-working-tree library build: 469.18 seconds, 233 unique source units and
+504 unique backend jobs, exit zero, under the unchanged 600-second limit with
+four native workers. A same-source two-worker control timed out; variable host
+contention prevents treating that pair as a fixed speedup ratio. The local Just
+default is now CPU-bounded up to four; explicit caller/CI budgets remain intact.
+
+The real Gitea/PostgreSQL eleven-Case publication suite passed against that new
+library after bounded native precompilation of its unchanged shared test
+Fixture. The original cold-test idle failure is retained, and the old framework
+overlay was not used for this consumer pass. Historical build/CI failures above
+remain historical failures; this local result is not an exact-head CI pass.
+Parser remains local and unpushed, with its original concurrent edits preserved.

@@ -12,8 +12,9 @@
           accept-build-artifact-handoff! call-with-build-artifact-issuance admit-build-artifacts!
           build-artifact-handoff)
         (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!)
-        (only-in :yuanxu/modules/nix/func current-nix-process-completion-observer)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         "./projection" "./store")
+(export main)
 (def (report-result prefix value)
   ;; Nix --raw has no trailing newline; keep protocol rows independent of stderr.
   (newline (current-error-port))
@@ -30,17 +31,20 @@
                (directory-files (list path: libdir ignore-hidden: #f))) libdir)))
       (list directory libdir unit-name (cadr raw) record))
     raw))
-(def (main . _argv)
+;; Keep fresh-worker arguments independent of the SDK's interpreter/exe launcher.
+(def (main . raw-arguments)
   (call-with-execution-progress 60000 600000
     (lambda (_frame)
       (def completed-queries 0)
+      (def previous (current-module-source-observer))
       (parameterize
-        ((current-nix-process-completion-observer
-          (lambda (_arguments _seconds succeeded?)
-            (when succeeded?
+        ((current-module-source-observer
+          (lambda (key amount)
+            (when (and (pair? key) (eq? (car key) 'package-process-end))
               (set! completed-queries (+ completed-queries 1))
-              (execution-progress! 'completed-nix-checks completed-queries)))))
-        (def args (worker-arguments (cddr (command-line))))
+              (execution-progress! 'completed-package-checks completed-queries))
+            (when previous (previous key amount)))))
+        (def args (worker-arguments raw-arguments))
         (def root (car args))
         (def lib (cadr args))
         (def probe-identity (string->symbol (caddr args)))
@@ -184,15 +188,12 @@
                                  (list-ref (build-artifact-handoff (.get selection build-graph) lib) 5)
                                  (list-ref args 4)))
            (def (bytes path) (call-with-input-file path read-all-as-u8vector))
-           (def (put path data)
-             (call-with-output-file (list path: path truncate: #t)
-               (lambda (port) (write-subu8vector data 0 (u8vector-length data) port))))
            (def original (bytes binary))
            (def old-record (bytes record))
            (def data (call-with-input-file record read))
            (dynamic-wind
              (lambda ()
-               (put binary #u8(0))
+               (write-artifact-bytes binary #u8(0))
                (call-with-output-file (list path: record truncate: #t)
                  (lambda (port)
                    (write (list (car data) (cadr data)
@@ -210,7 +211,7 @@
                (unless (and (Error? refused)
                             (equal? (Error-message refused) "Core build issuance record changed"))
                  (error "joint replacement accepted by worker export")))
-             (lambda () (put binary original) (put record old-record)))
+             (lambda () (write-artifact-bytes binary original) (write-artifact-bytes record old-record)))
            (publish!)
            (displayln "HANDOFF-JOINT-REFUSED")))
           (else (error "unknown worker control" mode)))

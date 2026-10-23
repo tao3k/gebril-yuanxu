@@ -4,9 +4,15 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
-        (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process)
+        (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process
+                 require-build-artifacts! current-build-output-directory test-build-publication)
+        (only-in "./source-closure.ss" for-each-build-module)
+        (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :gerbil/expander current-expander-context make-top-context
+                 current-expander-module-import core-import-module syntax-e
+                 expander-context-id module-context-path)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :clan/poo/object .o .ref)
+        (only-in :clan/poo/object .o .ref .get .call)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/build unique-build-inputs)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source)
@@ -78,7 +84,149 @@
      (append selected kept))
     (reverse result)))
 
-(def (yuanxu-project-source-spec source retained root entry-source)
+(def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f))
+  (if demand
+    (project-test-source-spec source demand root entry-source)
+    (project-selected-source-spec source retained root entry-source)))
+
+;; Only the demanded test import closure is expanded. In particular this never
+;; reads view.build-graph.entries, evaluates business scopes or scans test peers.
+(def (project-test-source-spec view demand root entry-source)
+  ((.ref demand 'admit-current))
+  (def entry (yuanxu-prepare-module-retained-source entry-source void))
+  (def package-prefix
+    (path-strip-trailing-directory-separator
+      (path-directory (symbol->string (.ref entry 'compiler-identity)))))
+  (def prefix (string-append package-prefix "/"))
+  (def files (map path-normalize (.ref demand 'spec)))
+  (def prepared (make-hash-table))
+  (def observations (.ref entry 'source-inputs))
+  (def entries '())
+  (def (input! path)
+    (def normalized (path-normalize path))
+    (def input
+      (or (hash-get prepared normalized)
+          (let (value (yuanxu-prepare-module-retained-source normalized void))
+            (hash-put! prepared normalized value)
+            (set! observations (append (.ref value 'source-inputs) observations))
+            value)))
+    ((.ref input 'admit-current))
+    input)
+  ;; Derive each demanded package from the native header/package snapshot.
+  ;; External selected owners keep their own identities; no catalog is scanned.
+  (def packages (list (cons root package-prefix)))
+  (for-each
+    (lambda (file)
+      (def input (input! file))
+      (def metadata
+        (find (lambda (row) (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
+          (.ref input 'source-inputs)))
+      (when metadata
+       (let* ((directory (path-directory (car metadata)))
+              (relative (substring file (string-length directory) (- (string-length file) 3)))
+              (id (symbol->string (.ref input 'compiler-identity))))
+        (unless (string-suffix? relative id)
+          (error "test compiler identity has no package-relative source target" file id))
+        (def namespace
+          (path-strip-trailing-directory-separator
+            (substring id 0 (- (string-length id) (string-length relative)))))
+        (unless (assoc directory packages)
+          (set! packages (cons (cons directory namespace) packages)))))) files)
+  (def native-import (current-expander-module-import))
+  (def (source-import path (reload? #f))
+    (def datum (syntax-e path))
+    (def name (and (symbol? datum) (symbol->string datum)))
+    (def local
+      (or
+        (and name
+          (ormap
+            (lambda (package)
+              (def prefix (string-append ":" (cdr package) "/"))
+              (and (string-prefix? prefix name)
+                (path-expand (string-append (substring name (string-length prefix)
+                  (string-length name)) ".ss") (car package)))) packages))
+        (and (equal? package-prefix "yuanxu") (eq? datum ':tao3k/yuanxu/prelude)
+          (path-expand "prelude.ss" root))
+        (and (string? datum) (path-absolute? datum) (string=? (path-extension datum) ".ss")
+          (ormap (lambda (package) (string-prefix? (car package) datum)) packages) datum)))
+    (if (and local (module-source-type local))
+      (begin
+        (when reload? (error "test imports require a fresh source epoch" local))
+        (let* ((input (input! local)) (context (native-import local #f)))
+          ((.ref input 'admit-current))
+          context))
+      (native-import path reload?)))
+  (parameterize ((current-expander-context (make-top-context))
+                 (current-expander-module-import source-import))
+    (def seen (make-hash-table-eq))
+    (for-each
+      (lambda (file)
+        (input! file)
+        (for-each-build-module (core-import-module file)
+          (lambda (context)
+            (def id (expander-context-id context))
+            (def name (and (symbol? id) (symbol->string id)))
+            (def path (module-context-path context))
+            (when (and (string? path) (eq? (module-source-type path) 'regular))
+              (let (package
+                (and name (find (lambda (entry)
+                  (or (string-prefix? (string-append (cdr entry) "/") name)
+                      (and (equal? (cdr entry) "yuanxu") (eq? id 'tao3k/yuanxu/prelude)))) packages)))
+              (if (and package (string=? (path-extension path) ".ss"))
+                (let* ((target (build-target-name id (cdr package)))
+                       (expected (path-expand (string-append target ".ss") (car package)))
+                       (input (input! expected)))
+                  (unless (and (equal? (path-normalize path) (path-normalize expected))
+                               (eq? id (.ref input 'compiler-identity)))
+                    (error "test dependency does not match current package source" id path expected))
+                  (unless (member (path-normalize expected) files)
+                    ;; Native Make resolves BOTH sources and expected products
+                    ;; from this projection's root/prefix. A nested gerbil.pkg
+                    ;; may identify the source without changing that Make root.
+                    ;; Absolute targets discard libdir during path-expand and
+                    ;; make valid outputs appear missing on every warm run.
+                    (let (make-target (build-target-name id package-prefix))
+                      (unless (equal? (path-normalize expected)
+                                      (path-normalize
+                                        (path-expand (string-append make-target ".ss") root)))
+                        (error "test dependency requires its package-owned native Make root" id expected root))
+                      (set! entries
+                        (cons (cons id make-target) entries)))))
+                ;; Observe actual external interfaces, never their entire catalog.
+                (when (member (path-extension path) '(".ss" ".ssi"))
+                  (set! observations (cons (cons path (module-source-read path)) observations)))))))
+          seen)) files))
+  (def inputs (unique-build-inputs observations))
+  (def selected (.ref view 'selected-graph))
+  (unless (eq? selected (.ref demand 'selected-graph))
+    (error "test demand belongs to another selected graph"))
+  (def (current!)
+    ;; This source-only guard does not acquire the production build graph.
+    ((.ref demand 'admit-current))
+    (call-with-module-source-read-cache
+      (lambda ()
+        (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) prepared)
+        (module-source-admit-current! inputs))))
+  (current!)
+  (def publication (delay (test-build-publication projection)))
+  (def endpoint
+    (.o selected-graph: selected generation: (.ref selected 'generation)
+        build-publication: (force publication)
+        compiler-current: (lambda () (current!) (.call (force publication) .current))))
+  (def projection
+   (.o (:: projection)
+      selected-graph: selected build-graph: endpoint demand-source: demand
+      compiler-identities: (map car (reverse entries)) source-inputs: inputs
+      source-root: root spec: (map (lambda (entry) `(gxc: ,(cdr entry))) (reverse entries))
+      output-directory:
+      (.get (force publication) artifact)
+      compile-output: current-build-output-directory
+      .compile: (lambda (libdir action) (call-with-build-artifact-issuance projection libdir action))
+      admit-current: current!
+      admit-artifacts: (lambda () (current!) (require-build-artifacts! endpoint) (current!))))
+  projection)
+
+(def (project-selected-source-spec source retained root entry-source)
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
   (unless (and (string? root) (path-absolute? root)
@@ -90,8 +238,13 @@
       (path-directory (symbol->string (.ref entry-input 'compiler-identity)))))
   (let* ((view (if (string? source) (yuanxu-load-modules source) source))
          (graph (.ref view 'build-graph))
-         (kept (retained-build-entries retained root package-prefix (.ref graph 'entries)
-                   (lambda () ((.ref graph 'compiler-current)))))
+         ;; Preparing retained headers only observes source and package metadata.
+         ;; Share the existing pure read window across their Graph guards; end
+         ;; it before native compilation or any independent freshness boundary.
+         (kept (call-with-module-source-read-cache
+                 (lambda ()
+                   (retained-build-entries retained root package-prefix (.ref graph 'entries)
+                     (lambda () ((.ref graph 'compiler-current)))))))
          (entries (merge-build-entries (.ref graph 'entries) kept))
          (observed (unique-build-inputs
                      (append (.ref entry-input 'source-inputs) (.ref graph 'compiler-inputs)

@@ -47,7 +47,7 @@
       ((current-module-source-observer) 'file-reads 3)
       (check-equal? (yuanxu-test-observe 'file-reads 0) 3)
       ((current-module-source-observer)
-        '(nix-process-observation (nix-gc-root-requests . 4) (nix-store-info-requests . 2)) 1)
+        '(package-process-observation (nix-gc-root-requests . 4) (nix-store-info-requests . 2)) 1)
       (check-equal? (yuanxu-test-observe 'nix-gc-root-requests 0) 4)
       (check-equal? (yuanxu-test-observe 'nix-store-info-requests 0) 2)
         ;; Distinct modules must not collapse to the same role basename.
@@ -229,7 +229,7 @@
         (lambda ()
           ((current-module-source-observer) '(admission-stage-start contract-admit) 1)
           ((current-module-source-observer) '(admission-stage-end contract-admit) 1)
-          ((current-module-source-observer) '(nix-store-validity hit) 1)
+          ((current-module-source-observer) '(package-store-validity hit) 1)
           ((current-module-source-observer) '(native-source-import-start "outer.ss") 1)
           ((current-module-source-observer) '(native-source-import-start "inner.ss") 1)
           ((current-module-source-observer) '(native-source-import-end "inner.ss") 1)

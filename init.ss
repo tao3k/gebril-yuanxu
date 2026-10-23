@@ -9,13 +9,4 @@
   :load-modules "./modules" mode: explicit rename: Modules
   (json-schema)
   (funflow)
-  (nix)
-  (opentofu)
-  (ops @ "./ops")
-
-  ;; Scenario declarations share the Graph and lazy test projection.
-  ;; Selection does not realize providers or link business scopes.
-  :load-modules "./scenarios" mode: explicit rename: Scenarios
-  (null)
-  (aws-validation)
-  (aws))
+  (ops @ "./ops"))

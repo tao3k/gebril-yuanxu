@@ -166,7 +166,7 @@
             (cons (if provider
                     (.cc request 'identity key 'package-identity id
                          'build-owner provider 'configuration-owner owner 'dependency-alias contributor)
-                    request)
+                    (.cc request 'scope-owner owner))
                   package-values)))))
     (def (add-configuration-builds! owner requirements)
       (for-each

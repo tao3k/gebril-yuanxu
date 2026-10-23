@@ -18,9 +18,6 @@
 (def handoff-observations '())
 (def completed 0)
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
-(def (put-bytes path data)
-  (call-with-output-file (list path: path truncate: #t)
-    (lambda (port) (write-subu8vector data 0 (u8vector-length data) port))))
 (.def (CompiledServicesFixture @ ServicesFixture)
   .prepare:
   (lambda (workspace)
@@ -36,8 +33,8 @@
     (def binary (path-expand (string-append (symbol->string identity) "~0.o1") lib))
     ;; A writable native cache without prior Core issuance cannot be adopted.
     (run "compile")
-    (put-bytes binary #u8(0))
-    ;; This is the same production completion function called by init.build-run.
+    (write-artifact-bytes binary #u8(0))
+    ;; This is the same production completion function called by (.get yuanxu.init.exports std-make-run).
     ;; Only the one-unit compiler projection is a fixture; compiler and service
     ;; graph/publication/admission implementations are the installed/real ones.
     (call-with-build-artifact-issuance projection lib (cut run "compile"))
@@ -88,7 +85,7 @@
       (def record-data (call-with-input-file record read))
       (dynamic-wind
         (lambda ()
-          (put-bytes binary #u8(0))
+          (write-artifact-bytes binary #u8(0))
           ;; Coherent record for the changed bytes; neither is authoritative.
           (call-with-output-file (list path: record truncate: #t)
             (lambda (port)
@@ -109,20 +106,20 @@
           (check-equal? (Error? refused) #t)
           (check-equal? (Error-message refused) "Core build issuance record changed")
           (set! observations (cons (vector "for-export-joint-replacement" (not (Error? refused))) observations)))
-        (lambda () (put-bytes binary original-binary) (put-bytes record original-record)))
+        (lambda () (write-artifact-bytes binary original-binary) (write-artifact-bytes record original-record)))
       (accepted "saved-restored")
       ;; Changing only bytes must fail even when the disk record is untouched.
       (dynamic-wind
-        (cut put-bytes binary #u8(0))
+        (cut write-artifact-bytes binary #u8(0))
         (lambda ()
           (def refused (with-catch values (cut admit-build-artifacts! (.get selection build-graph))))
           (check-equal? (Error-message refused) "Core compiled artifacts changed"))
-        (cut put-bytes binary original-binary))
+        (cut write-artifact-bytes binary original-binary))
       ;; Native resolution could select a new .o2; enumerate selected families
       ;; again instead of hashing only the original fixed list.
       (def higher (string-append (substring binary 0 (- (string-length binary) 1)) "2"))
       (dynamic-wind
-        (cut put-bytes higher original-binary)
+        (cut write-artifact-bytes higher original-binary)
         (lambda ()
           (def refused (with-catch values (cut admit-build-artifacts! (.get selection build-graph))))
           (check-equal? (Error-message refused) "Core compiled artifacts changed"))
@@ -152,7 +149,7 @@
           (check-equal? (Error-message refused) "Core compiled source changed")
           (set! handoff-observations
             (cons (vector "source-change" #f) handoff-observations)))
-        (cut put-bytes probe-source original-source))
+        (cut write-artifact-bytes probe-source original-source))
       ;; A failed attempt cannot fall back to the prior successful seal.
       (def failed (with-catch values
         (cut call-with-build-artifact-issuance (.get fixture projection) (.get fixture lib)

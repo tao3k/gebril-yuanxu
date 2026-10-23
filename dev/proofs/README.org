@@ -7,7 +7,24 @@ The Core-owned proof projects live under =core/dev/proofs/=. Runtime module
 discovery and packaging do not treat this development directory as a Module.
 Product proof consumers retain their own package and depend on this location.
 
+Architecture and verification allocation enter through
+[[file:../README.org][Development and Assurance]] and
+[[file:../sysml/README.org][SysML system organization]]. Proof projects keep their
+own source/dependency ownership; SysML links requirements to them rather than
+copying proofs or treating model constraints as checked theorems.
+
 * Proof projects
+
+Replay structure/currentness separation is tracked in
+[[file:../sysml/10-evaluation/10.03-replay-structure-ownership.org][10.03 Replay Structure Ownership]].
+Its Lean order laws and Quint negative controls qualify reuse premises, not a
+production traversal cache or a cached admission verdict.
+[[file:../sysml/10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
+binds the issuer-payload correspondence to Core's declared gerbil-poo revision
+and records rebuilt-dependency native controls separately from model proofs.
+[[file:../sysml/10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
+records selected-closure reuse, native weak-owner eviction and constructor-route
+fallback, with producer source binding and retained A/B disturbances.
 
 | Package | Scope | Dependency boundary |
 |---------+-------+---------------------|
@@ -64,6 +81,30 @@ Publishing this work still requires a coordinated Core commit and product gitlin
 update. Neither is performed by this local migration.
 
 * Current finite-model owner
+
+Test publication reuse is separate from Make target layout. The native cache
+owner remains the receiver-indexed POO publication and closed graph result.
+=TestPublicationReuse.qnt= models private decode reuse with fresh admission;
+its matched variants retain stale-admission and foreign-packet counterexamples.
+=Admission/TestPublicationReuse.lean= binds that model's digest. See
+[[file:../sysml/10-evaluation/10.01-efficient-caching.org][the caching study]] for the actual call chain, measurements and extraction limits.
+
+=SelectionReplay= separately models the private reader's native replay tail.
+Its Lean target reuses LeanPoo's =ConstructionCache.ensureLookup_hit= law:
+retaining a Graph does not retain a source approval. The ordered replay law
+removes only a stable repeated tail; observer effects retain the original tail.
+Matched finite controls reject dropping an observer tail or reordering checks.
+The serial, fixed native checker/metadata-route correspondence is a runtime
+premise; the theorem is not a proof against raw reflection or concurrent writes.
+Its cost extension separates traversal/source work from collector and wait
+cost. =FewerMeansFaster= is a matched expected counterexample, not a runtime
+speed theorem; =matched_work_bound= states the necessary matched-cost premise.
+Raw VM allocation-counter deltas remain unqualified. See the caching study's
+twenty-demand attribution receipts rather than interpreting call counts as time.
+The installed-runtime audit in [[file:../sysml/10-evaluation/10.02-runtime-accounting.org][10.02]] uses native =##exec-stats= corrections
+and signed wall/CPU residuals. The =falseMiss= negative control and cached-false
+Lean law cover the existing source-window lookup reduction; neither claims
+physical allocator correctness or a wall-time speedup.
 
 The historical TLA/CFG pair has been removed. The already-maintained Quint
 NativeSemanticQuery source moved from the product to =core/dev/proofs/quint/=
@@ -152,12 +193,3 @@ The final candidate covers both slot-replay (including cache exit) and
 return-currentness. A return-only gate is retained as an unsafe matched control.
 Only source-observer calls are restricted; arbitrary MOP record/checker ownership
 and external snapshot/commit remain separate premises.
-
-* Issuer-owned traversal projection
-
-[[file:lean/YuanxuProof/Admission/SelectionReplay.lean][SelectionReplay]] binds the declared producer revision, object-source digest and
-ordered replay laws. The selected Quint gate supports =--case-prefix
-SelectionReplay --typecheck-scope selected= and optional =--producer-source=
-to bind the actual producer sources.
-See [[file:../sysml/10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]] for runtime controls, retained failures
-and the distinction between structure reuse and fresh authentication.

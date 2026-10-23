@@ -6,7 +6,7 @@
 (export Build InputChecks Fixture)
 (def owner (path-expand "../../.." (path-directory (this-source-file))))
 (def host-state (path-expand (gerbil-path)))
-(def Ops (.get init.Modules ops scope))
+(def Ops (.get yuanxu.init.exports Modules ops scope))
 ;; Lazy fixture data; declaring this object creates no fixture or process.
 (.def Fixture
   value: (source-build-fixture owner)

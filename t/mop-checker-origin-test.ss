@@ -119,6 +119,32 @@
   (yuanxu-test-case "raw record or ownership-table mutation is outside producer authenticity"
     (.def Root port: 5432)
     (def genuine (port-read (recorded (cut .get Root port))))
+    (def parents (slot-read-dependencies genuine))
+    ;; Topology identity means the signed sequence, not its mutable list spine.
+    (runtime.slot-set! genuine 'dependencies (map values parents))
+    (check-equal? (object-read-current? genuine) #t)
+    (def visits 0)
+    (replay-slot-reads! (list genuine genuine)
+      (lambda (_receiver _key) (set! visits (+ visits 1))))
+    (check-equal? visits (+ 1 (length parents)))
+    ;; The same root identity with an added dependency is not a topology hit.
+    ;; No callback may run before the whole graph's issuance preflight passes.
+    (set! visits 0)
+    (dynamic-wind
+      (lambda () (runtime.slot-set! genuine 'dependencies (cons genuine parents)))
+      (lambda ()
+        (check-equal? (object-read-current? genuine) #f)
+        (refuses "unissued slot dependency"
+          (cut replay-slot-reads! (list genuine)
+            (lambda (_receiver _key) (set! visits (+ visits 1)))))
+        (check-equal? visits 0))
+      (lambda () (runtime.slot-set! genuine 'dependencies parents)))
+    ;; Each invocation needs fresh seen state; neither invocation loses delivery.
+    (for-each (lambda (_round)
+      (set! visits 0)
+      (replay-slot-reads! (list genuine genuine)
+        (lambda (_receiver _key) (set! visits (+ visits 1))))
+      (check-equal? visits (+ 1 (length parents)))) '(first second))
     (def calls 0)
     (runtime.slot-set! genuine 'current? (lambda (_read) (set! calls (+ calls 1)) #t))
     (refuses "foreign slot-read checker" (cut require-owned-reads! (list genuine)))

@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .call)
         (only-in :yuanxu/ops/progress call-with-execution-cancellation)
-        (only-in "./testing-case.ss" yuanxu-test-case yuanxu-test-case/with))
+        (only-in "./testing-case.ss" yuanxu-test-case yuanxu-test-case/with
+                 yuanxu-test-checkpoint))
 (export call-with-yuanxu-fixture with-yuanxu-fixture yuanxu-test-fixture)
 
 ;; Acquisition owns rollback if it fails before returning a resource. Cleanup
@@ -16,14 +17,20 @@
           (lambda ()
             (with-catch
               (lambda (exception) (set! body-failure exception) (raise exception))
-              (lambda () (procedure resource))))
+              (lambda ()
+                ;; The cleanup extent already owns resource before observation.
+                (yuanxu-test-checkpoint 'fixture-acquired)
+                (begin0 (procedure resource)
+                  (yuanxu-test-checkpoint 'fixture-body-returned)))))
           (lambda ()
             (with-catch
               (lambda (cleanup-failure)
                 (if body-failure
                   (error "fixture body and cleanup failed" body-failure cleanup-failure)
                   (raise cleanup-failure)))
-              (lambda () (.call fixture .release resource)))))))))
+              (lambda ()
+                (begin0 (.call fixture .release resource)
+                  (yuanxu-test-checkpoint 'fixture-released))))))))))
 
 (defrules with-yuanxu-fixture ()
   ((_ (binding fixture) body ...)

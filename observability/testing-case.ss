@@ -124,6 +124,7 @@
                       (.ref self 'max-idle-milliseconds)
                       (.ref self 'max-duration-milliseconds)
                       (lambda (_progress)
+                        (yuanxu-test-checkpoint 'case-enter)
                         (call-with-yuanxu-debug-memory-case-watchdog
                           policy (string->symbol description) thunk
                           emit?: (.ref self 'emit?)
@@ -131,6 +132,11 @@
                           (.ref self 'max-duration-milliseconds)))))
                   (lambda ()
                     (when counts
+                      (yuanxu-write-observation-line!
+                        "test-case-timing case=%s elapsed-ms=%s cpu-ms=%s"
+                        description
+                        (quotient (* (- (current-jiffy) started) 1000) (jiffies-per-second))
+                        (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000))
                       (yuanxu-write-observation-line!
                         "test-work case=%s allocation-current?=%s final-counts=%s"
                         description allocation-current? (hash->list counts)))))))))
