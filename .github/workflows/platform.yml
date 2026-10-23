@@ -24,6 +24,7 @@ jobs:
             .gerbil/pkg
             .gerbil/lib
             .gerbil/bin
+            !.gerbil/lib/.yuanxu-test-publications
           key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-1cfb032-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
         run: |
@@ -40,7 +41,13 @@ jobs:
       - name: Check complete disjoint test partition
         run: just check-test-groups
       - name: Preserve dependency and library tree
-        run: tar -czf "$RUNNER_TEMP/yuanxu-package.tar.gz" .gerbil
+        # Test products are local to the checkout whose native Make timestamps
+        # produced them. A shard's fresh checkout must issue its own test build;
+        # do not restore either half of an earlier test product/approval pair.
+        run: >-
+          tar --exclude=.gerbil/test-lib
+          --exclude=.gerbil/lib/.yuanxu-test-publications
+          -czf "$RUNNER_TEMP/yuanxu-package.tar.gz" .gerbil
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}

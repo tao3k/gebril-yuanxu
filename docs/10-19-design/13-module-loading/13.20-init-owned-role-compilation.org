@@ -358,3 +358,34 @@ groups also reported failures. Those results predate this identity fix and are
 not relabeled as successes; publication-generation rejection and all timeout
 assertions are retained. Concurrent, unrelated test edits are not part of this
 change.
+
+* Exact-head CI follow-up: 4369565
+
+Both platform build/bootstrap jobs pass at this revision, including the native
+prelude target. The remaining shard failures are separate qualification failures;
+a green bootstrap is not a complete CI result.
+
+Test products and their approval directory must not be transported from the build
+job to a fresh checkout. Native Make compares source timestamps in that checkout;
+recompilation can legitimately produce a new object generation. The issuer must
+continue to reject that unissued generation. Platform packaging therefore excludes
+both =test-lib= and =lib/.yuanxu-test-publications=; the dependency/library cache
+also excludes approvals. This does not change same-checkout cross-process reuse.
+
+The source-tail gateway now runs its launcher, init and tests against its compiled
+snapshot, with optimized compiler outputs and SSXI matching the native Make
+cohort. The focused gateway passed all seven cases in 169.92 seconds. Earlier
+mixed-snapshot and mismatched-optimization failures are retained as local receipts.
+
+The source-loader tamper control replaces a loaded binary's pathname atomically
+instead of truncating its resident inode. This preserves the tamper assertion and
+avoids an ELF mapping fault before the guard can report the actual refusal.
+The independent compiled-binding control prepares its own native Core cohort
+before compiling init/import consumers; prelude is not compiled a second time by
+its explicit consumer loop.
+
+Local follow-up under concurrent host compiler load reached the unchanged
+60-second fixture build limit and the unchanged 120-second authority preparation
+limit. Those runs are failures, not passes. No timeout, admission predicate or
+negative assertion is relaxed. The ten-thousand-declaration memory failure also
+remains open; optional trace removal is not evidence that capacity has passed.

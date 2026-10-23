@@ -1,6 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Run only with the temporary dispatcher produced by the bounded Just recipe.
 (import :std/test :clan/poo/object
+        ;; Establish the real execution library before taking the reader's
+        ;; immutable compiler-context snapshot. Importing does not execute it.
+        (only-in :yuanxu/observability/testing-script TestingScript.)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)
         (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
         (only-in :yuanxu/module-system/source/admission

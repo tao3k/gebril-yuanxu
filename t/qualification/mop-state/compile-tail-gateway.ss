@@ -69,6 +69,9 @@
        (when (and source (file-exists? source))
          (displayln "SOURCE-TAIL-COMPILE " name) (force-output)
          (compile-module source [output-dir: (path-expand "lib" root)
+                                 ;; Match the installed native Make cohort:
+                                 ;; callers may use its optimized entry names.
+                                 optimize: #t generate-ssxi: #t
                                  invoke-gsc: #t keep-scm: #t parallel: #t]))))))
 (parameterize ((current-expander-context (make-top-context))
                (current-expander-module-import source-import))

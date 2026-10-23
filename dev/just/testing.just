@@ -16,7 +16,9 @@ test-file path observe="false":
     if [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then export PATH="$GERBIL_PATH/bin:$PATH"; fi
     test_lib="$GERBIL_PATH/test-lib"
     if [[ "{{ observe }}" != false ]]; then printf 'test-entry phase=context elapsed-s=%s\n' "$SECONDS"; fi
-    GERBIL_LOADPATH="$test_lib:{{ justfile_directory() }}/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
+    # init and tests belong to the selected working directory, including an
+    # explicitly relocated snapshot; the Justfile's location is not authority.
+    GERBIL_LOADPATH="$test_lib:$PWD/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash

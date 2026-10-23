@@ -4,6 +4,7 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
         (only-in :std/misc/ports read-all-as-u8vector)
+        (only-in :std/io/tempfile call-with-temporary-file-name)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -34,8 +35,14 @@
 (def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
 (def (write-bytes path data)
-  (call-with-output-file (list path: path truncate: #t)
-    (lambda (port) (write-subu8vector data 0 (u8vector-length data) port))))
+  ;; Replace the pathname, not the backing inode of a resident ELF mapping.
+  ;; In-place truncation can crash Linux before the admission is exercised.
+  ;; Bytes/record tampering and restoration still pass through every guard.
+  (call-with-temporary-file-name (string-append path ".replacement-")
+    (lambda (temporary)
+      (call-with-output-file temporary
+        (lambda (port) (write-subu8vector data 0 (u8vector-length data) port)))
+      (rename-file temporary path #t))))
 (def (expect-refusal label invoke)
   (def before (length (.get (authority-status state) consumed)))
   (def events-before (length (.get (authority-status state) events)))

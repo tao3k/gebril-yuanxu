@@ -9,7 +9,9 @@ test-source-tail-gateway directory:
     test ! -e "$CORE_SOURCE_TAIL_ROOT/source"
     mkdir -p "$CORE_SOURCE_TAIL_ROOT"
     GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
-    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" just test-file t/source-admission-gateway-test.ss
+    # The launcher imports ./init.ss. It must select the SAME snapshot whose
+    # libraries were compiled above, not combine live declarations with clones.
+    GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" just --justfile "$PWD/Justfile" --working-directory "$CORE_SOURCE_TAIL_ROOT/source/yuanxu" test-file "$CORE_SOURCE_TAIL_ROOT/source/yuanxu/t/source-admission-gateway-test.ss"
 
 # Matched dispatcher policies in an already compiled, captured Core package.
 test-source-tail-policy directory:

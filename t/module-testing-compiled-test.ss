@@ -6,8 +6,10 @@
         (only-in :std/source this-source-file)
         (only-in :yuanxu/ops/objects ProcessScript.)
         (only-in :yuanxu/observability/testing-script TestingScript.)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
         (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
         (only-in :yuanxu/module-system/building/test-projection module-test-file-source)
+        (only-in "./qualification/module-bootstrap/objects.ss" Build)
         "./qualification/module-testing/fixtures.ss")
 (export module-testing-compiled-test)
 (def repository (path-expand ".." (path-directory (this-source-file))))
@@ -17,11 +19,20 @@
     (lambda (port) (for-each (cut pretty-print <> port) forms))))
 (def module-testing-compiled-test
   (test-suite "Compiled init namespace across module boundaries"
-    (test-case "compiled only-in and rename-in retain identity, laziness and guards"
+    (yuanxu-test-case "compiled only-in and rename-in retain identity, laziness and guards"
       (with-yuanxu-fixture (fixture (selection-fixture repository))
         (prepare-selection! fixture repository 'json-schema)
+        (yuanxu-test-checkpoint 'selection-prepared)
         (def root (.get fixture root))
         (def state (.get fixture state))
+        ;; Compile this fixture's own Core through the maintained source build.
+        ;; Importing another Core epoch into the parent VM would correctly
+        ;; invalidate the reader's captured compiler-tool contexts.
+        (def prepared
+          (.call (.cc Build 'directory root 'environment (.o GERBIL_PATH: state)) .run "compile"))
+        (unless (zero? (.get prepared status))
+          (error "fixture source build failed" (.get prepared status) (.get prepared output)))
+        (yuanxu-test-checkpoint 'fixture-native-build-complete)
         (def lib (path-expand "lib" state))
         (def compiled-init (path-expand "yuanxu/init.ssi" lib))
         (def directory (path-expand "compiled-bindings" root))
@@ -58,13 +69,17 @@
             (unless (and (zero? (.get receipt status))
                          (not (string-contains (.get receipt output) "*** ERROR")))
               (error "focused native compilation failed" source
-                     (.get receipt status) (.get receipt output))))
-          '("prelude.ss" "init.ss" "compiled-bindings/only.ss" "compiled-bindings/renamed.ss"))
+                     (.get receipt status) (.get receipt output)))
+            (yuanxu-test-checkpoint (string->symbol source)))
+          ;; Build already owns the real prelude target. This gate compiles
+          ;; only its explicit init/import consumers, not that language twice.
+          '("init.ss" "compiled-bindings/only.ss" "compiled-bindings/renamed.ss"))
         (def refusal (.call Compiler .run "compiled-bindings/readonly.ss"))
         (check-equal? (zero? (.get refusal status)) #f)
         (check-equal? (and (string-contains (.get refusal output) "Bad syntax")
                           (string-contains (.get refusal output) "set!") #t) #t)
         (check-equal? (file-exists? (path-expand "yuanxu/compiled-bindings/readonly.o1" lib)) #f)
+        (yuanxu-test-checkpoint 'readonly-compilation-refused)
         (for-each
           (lambda (name)
             (for-each
