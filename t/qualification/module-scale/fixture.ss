@@ -9,8 +9,14 @@
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint))
-(export declaration-scale-case)
+        (only-in :yuanxu/observability/testing-case
+                 yuanxu-test-checkpoint yuanxu-selected-testing-case-profile))
+(export declaration-scale-case declaration-scale-profile)
+(def (declaration-scale-profile count)
+  (let (profile (yuanxu-selected-testing-case-profile))
+    (if (= count 10000)
+      (.cc profile live-growth-limit-bytes: 2147483648)
+      profile)))
 (def worker (path-expand "worker-test.ss" (path-directory (this-source-file))))
 (def (write-forms path forms)
   (create-directory* (path-directory path))
@@ -76,7 +82,8 @@
 ;; Internal test declaration: no runner, worker policy or module list is copied.
 (defrules declaration-scale-case ()
   ((_ description count)
-   (yuanxu-test-fixture description (fixture (.cc DeclarationFixture size: count))
+   (yuanxu-test-fixture description profile: (declaration-scale-profile count)
+     (fixture (.cc DeclarationFixture size: count))
      (yuanxu-test-checkpoint 'fixture-ready)
      (def module (.get fixture modules module-0))
      (check-equal? (.ref/cached module 'scope) #f)
@@ -85,7 +92,7 @@
        execution.profile.emit?: #t
        ;; Capacity is checked with the normal policy, not the optional full
        ;; read-token/SDK-context census. Worker assertions and source-event
-       ;; counters stay active; all memory/currentness guards are unchanged.
+       ;; counters stay active; its explicit capacity policy owns the budget.
        execution.log: (.get fixture log))
      (check-equal? (eq? (.get Observed source) (.get tests source)) #t)
      ;; This worker has no package-local support to compile. Its own Case

@@ -116,3 +116,125 @@ source control contains executable controls and this structured summary only.
 The next retention study must account for the remaining graph-owned storage
 without constructor elision, deletion of signed edges, suppressed observers or
 cached admission decisions.
+
+* Remaining storage: private dependency snapshot
+
+The next candidate changes private representation only. Each native record
+keeps its original public dependency list, including repeated occurrences. Its
+issuer previously copied the same sequence into another pair spine. A private
+vector can retain the same identities in order; inspection converts it back to
+a detached list. Empty snapshots use a shared empty vector. No public field,
+dependency edge, observer call or replay-root policy changes.
+
+=private_sequence_authentication= proves that comparison against the dense
+snapshot equals comparison against the original sequence. Inspection recovers
+that complete sequence. =IssuerSequence.qnt= checks the finite representation
+boundary and supplies expected counterexamples for deduplication, reordering and
+aliasing the inspection result. Existing issuer/replay controls still own
+forgery, currentness, parent isolation, both requirements and laziness. These
+models do not prove vector GC layout or private reflection resistance.
+The native loop's bounded index traversal and pointer-to-model identity mapping
+remain source-correspondence assumptions, checked by the native repeated-edge
+controls; there is no extracted compiler-correctness proof.
+
+** Rejected attribution hypotheses
+
+Trace-only probes at 16 and 256 real declarations respectively observe 10500
+and 143636 entries in the actual weak issuer index, with 30723 and 327687 raw
+storage slots. They do not show pathological table expansion. The transitive
+reader-context chains contain 67/1027 contexts and 4970/9770 bindings; private
+global bindings number 64/1024. These counts do not justify deleting issuer
+authority, imports or role contexts. The temporary probes never enumerate weak
+keys/values and were removed after recording the results.
+
+Installed Gambit =ea114fc3d2f120abbe20393c1f9aeafdd3f8c89f= computes post-GC
+live accounting from movable and still space; its movable contribution includes
+both copying spaces and VM stack occupancy. Raw graph-container word counts
+therefore cannot simply be equated with the gate's live-byte statistic. The
+existing statistic, 1 GiB growth policy and 2 GiB VM fence remain unchanged.
+Only source inspection was used; no compiler/runtime source was modified.
+
+** Concurrent CI binding
+
+PR 19 =bf9e6d1= selects producer merge =4d63f36=. Its =object.ss= and
+=slot-observation.ss= are byte-identical to the earlier narrow =badfbfa=
+candidate, but the proof's declared revision must nevertheless match the real
+package. All eight new QNT shards refused that stale revision binding. Updating
+it restores the correspondence check; this is separate from the still-failing
+ten-thousand-module capacity gate. Concurrent build changes remain intact.
+
+** Qualified producer and consumer boundary
+
+The dense-snapshot producer is =fe82518686c21b11f6f1b91e44b35f3dfbab52c8=,
+published on the existing PR 13 branch. It is a child of the selected merge,
+not a downgrade to the earlier narrow history. Native issued-read controls
+complete all seventeen cases, including mutated inspection copies, mutated
+public dependencies and deletion/reordering of actual repeated dependencies.
+Slot-observation regressions also pass. A test initially selected the external
+record by slot name alone; it now selects the actual receiver and slot. That
+failure is retained rather than relabeled as a production defect.
+
+The complete Lean build passes 199 jobs and the 6816-declaration standard-axiom
+audit. QNT qualifies fifteen issuer/sequence cases and eleven selected-replay
+cases. Core's independent Lean decoder agrees with twelve actual native
+observations. Core's full default build and subsequent zero-compilation hot
+build pass. The real Gitea/PostgreSQL publication entry completes eleven cases.
+Further capacity measurements remain separate acceptance requirements.
+
+The pre-=e117f15= Core cohort (producer =fe82518=) 256-declaration trace passes
+with 142878 original records, 12984
+receivers, 324931 ordered edges and widest list 185355. The issuer still retains
+142878 closures / 1143024 captured fields. Observer totals remain exactly
+2592333 deliveries / 4794834 delivered edge occurrences. GC live accounting is
+393107928 bytes, compared with the earlier versioned 401805320-byte receipt.
+This is a measured storage reduction, not a strict timing A/B: the newer
+producer merge and public-facade build changes are also present. It does not
+establish ten-thousand-module capacity.
+
+Latest PR 19's Linux bootstrap failure is also attributable: the narrowed
+build-lifecycle fixture still exported only =core-spec= after production added
+=core-public-roots=. The fixture now declares that interface with an empty
+public-facade selection. Production facade discovery is untouched; cold/hot,
+clean/rebuild, source-mismatch and unselected-output checks remain required.
+
+An initial lifecycle run passes specification (30.63 s), cold compilation
+(59.36 s) and zero-compilation hot reuse (30.80 s), then refuses at the existing
+clean-phase idle deadline. Concurrent host =gsc-boot= processes were observed;
+that observation alone does not prove the failure was caused by contention.
+The refusal is retained. A repeat begins only after the observed host compiler
+process count reaches zero, with the same budgets and assertions. No synthetic
+progress, enlarged deadline or cached currentness result is introduced.
+
+That repeat passes the complete default lifecycle: specification 12.14 s,
+cold compilation 34.10 s, zero-compilation hot reuse 12.92 s, cleanup 11.31 s,
+recompilation 33.32 s and final cleanup 12.27 s. The nested source-package and
+changed-input negative controls pass too. Both runs remain recorded; this does
+not turn the failed attempt into a pass or establish a wall-time speedup.
+
+The final default ten-thousand-declaration run still refuses after 1148 completed
+publications: 1216541568 live bytes and 1076279680 live-growth bytes. It reports
+=live-growth-limit-exceeded=, not an enlarged timeout or a relaxed assertion.
+This remains a capacity failure. The earlier 1127-publication receipt and these
+collection-dependent checkpoints are not an exact throughput bound. No passing
+end-to-end capacity result or all-green PR is claimed.
+
+** User-selected two-GiB capacity boundary
+
+After that refusal, the user explicitly changes the ten-thousand-module budget
+to 2 GiB. The outer fixture and its worker share one native Case-profile function,
+which derives the existing POO Case profile with
+=live-growth-limit-bytes: 2147483648=. The VM's existing 2 GiB hard managed-heap
+cap and the Case's 2 GiB heap-size guard remain in place: the change removes
+the former 1 GiB early growth refusal, not the hard cap. Smaller declaration
+fixtures and the project-wide default policy remain unchanged. Duration,
+idle, source-currentness, issuance and semantic checks are not relaxed.
+The old one-GiB receipts remain failures under their original declared policy;
+new results must name the two-GiB boundary rather than relabel those receipts.
+
+The first two-GiB worker run reaches the 2000-publication checkpoint
+(2146545496 managed-heap bytes; 1857868328 live bytes), then reports
+=Heap overflow=. The Harness correctly rejects the result despite its emitted
+=MODULE-OK= marker. This is a retained capacity failure, not a passing gate.
+The follow-up applies the same selected growth policy to the outer Fixture
+through the existing =yuanxu-test-fixture profile:= form; no new runner or
+cache protocol is introduced.

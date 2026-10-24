@@ -66,6 +66,7 @@
           (write '(yuanxu! mode: explicit source: "./modules" (json-schema)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (write '(export core-spec) port) (newline port)
+          (write '(export core-spec core-public-roots) port) (newline port)
+          (write '(def core-public-roots '()) port) (newline port)
           (write '(def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
