@@ -107,6 +107,9 @@
                       ;; importing it neither selects a scope nor publishes one.
                       :yuanxu/admission/publication
                       :yuanxu/configuration/diagnostics
+                      ;; Shared field Types belong to the same authenticated
+                      ;; library closure as Contracts, including relocated roles.
+                      :yuanxu/object-types/ports
                       :yuanxu/object-family/role-syntax
                       :yuanxu/configuration/json))
 (def (yuanxu-bootstrap-contexts)

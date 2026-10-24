@@ -31,6 +31,15 @@
           (check-equal? (execution-progress-idle-milliseconds state) 0)
           (set! now 10001)
           (next "ordinary diagnostic output\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 1)
+          (set! now 20000)
+          (def cleanup (make-compiler-progress-reader))
+          ;; Native clean removes real products between the hot and rebuild
+          ;; invocations. Its fresh count=1 is work, not an idle heartbeat.
+          (cleanup "... remove lib/yuanxu/core-spec.ssi\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 0)
+          (set! now 20001)
+          (cleanup "clean completed\n")
           (check-equal? (execution-progress-idle-milliseconds state) 1))
         clock: (lambda () now)))
     (test-case "child VM follows the default two-GiB Case policy"

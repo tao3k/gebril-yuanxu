@@ -18,6 +18,7 @@
       (fixture DirectoryFixture)
       (with-slots (root) fixture
         (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'yuanxu/configuration/json) #t)
+        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'yuanxu/object-types/ports) #t)
         (def spec (yuanxu-bootstrap-spec (path-expand ".." (path-directory (this-source-file)))))
         (check-equal? (if (member '(gxc: "configuration/json") spec) #t #f) #t)
         (def path (path-expand "input.json" root))

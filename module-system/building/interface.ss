@@ -173,8 +173,8 @@
     (when (current-build-spec-consumer)
       ((current-build-spec-consumer) value
         (lambda (dispatch args libdir)
-          (build-run roots dispatch args libdir publication: #f
-            native-specs: (.get prepared native-make-specs)))))
+          (run-spec value dispatch args libdir #f
+            (.get prepared native-make-specs)))))
     value)
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
@@ -183,10 +183,11 @@
   ;; before/after boundary and the retained result of a successful compile.
   (def (build-run roots package-main args (libdir (path-expand "lib" (gerbil-path)))
                   publication: (publication? #t) native-specs: (native-specs #f))
-    ;; Pass the admitted value to the SDK dispatcher. The compile boundary
-    ;; below owns fresh checks before and after its callback; the callback
-    ;; must not re-enter source preparation to obtain the same specification.
-    (def spec (build-spec roots))
+    (run-spec (build-spec roots) package-main args libdir publication? native-specs))
+  ;; The init consumer already owns this exact specification. Its preparation
+  ;; is not a second request: preserve the independent compiler-entry/return
+  ;; guards below instead of entering build-spec again during that handoff.
+  (def (run-spec spec package-main args libdir publication? native-specs)
     (def (dispatch (groups #f))
       (if (and groups (ormap (cut .get <> prefix) groups))
         (for-each

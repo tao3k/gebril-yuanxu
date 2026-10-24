@@ -24,6 +24,7 @@
     (lambda (line)
       (when (or (string-prefix? "... compile " line)
                 (string-prefix? "... invoke " line)
+                (string-prefix? "... remove " line)
                 (string-prefix? "... execute compile job " line))
         (set! completed (+ completed 1))
         (execution-progress! compiler completed)))))

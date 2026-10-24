@@ -529,6 +529,61 @@ adding aliases. Prototype ancestry classification is named
 =yuanxu-prototype-classify=; it remains separate from structural field admission.
 Historical frozen experiments retain their own source snapshots and receipts.
 
+*** Follow-up qualification at 9fbc832
+
+The exact-head CI exposed a missing bootstrap-library association after the Port
+move. The temporary source gateway correctly refused a maintained Scenario's
+import of =object-types/ports.ss=: the file was outside the Scenario package and
+absent from the Reader's SDK-observed Core context catalog. Shared scalar Types
+now join the existing =bootstrap-roots= catalog, so their exact native context,
+source identity and transitive observations use the same admission path as Core
+Contracts. This does not admit arbitrary external Yuanxu paths or selected Module
+scopes. The existing JSON Scenario regression also checks catalog membership.
+
+At this source cut, the macOS cold lifecycle and ten-thousand-declaration capacity
+gates also failed. A successful local ownership migration is not an exact-head CI
+pass. Their original deadlines, memory policy and negative controls remain in
+force; each fix requires its own native receipt before qualification is claimed.
+
+The package entry continues to expose the declarative spec consumer:
+
+#+begin_src scheme
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec)
+  libdir: (current-build-output-directory))
+#+end_src
+
+The init-owned consumer now passes the exact prepared spec to its private SDK
+execution function. It no longer calls =build-spec= again during that handoff.
+This is not reuse of an admission verdict: =.with-compiler-inputs= still checks
+currentness before role materialization/SDK execution and again after return;
+redirected imports retain their before/after checks. Explicit =.compile= retains
+the issuance boundary. This change adds no public build entry or Builder;
+=std-make-spec= remains the package author's declarative entry.
+
+Native clean is actual Make work too. The existing per-process progress reader
+now accepts =... remove <product>= as well as compiler work lines. A clock-based
+regression checks that a fresh clean process advances an enclosing lifecycle
+frame while ordinary =clean completed= output does not. No heartbeat or larger
+idle/total budget is introduced. The earlier local cold-child timeout and the
+later outer-idle failure during clean/rebuild remain failed qualification runs;
+a passing cold compile or zero-compile hot invocation alone is not completion.
+
+The default lifecycle subsequently passed all 41 targets: spec 13.54 seconds,
+cold compilation 43.46, zero-compile hot invocation 12.38, clean 14.41, rebuild
+30.89, and final clean 10.66. Native output identity, unselected-output isolation,
+and source-registration refusal controls passed. This used a fresh CI-style
+cohort excluding test products and test approvals; interrupted/recompiled local
+cohorts had correctly refused unissued =.o2= or changed products and were not
+adopted. Native Make plus the existing owned-output cleaner was used for selected
+cleanup, not approval-file editing. Concurrent host work varied substantially,
+so these receipts establish bounded completion, not a causal speedup ratio.
+
+The CI-equivalent source gateway passed all seven cases after Core Type catalog
+repair. The deterministic progress test passed with removal events accepted and
+ordinary diagnostic output ignored. Full remote CI and the physical capacity
+gate remain separate qualification requirements.
+
 
 *** Qualification of the ownership migration
 
