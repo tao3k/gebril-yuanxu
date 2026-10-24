@@ -25,5 +25,6 @@
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
 (def library-spec
   (append core-spec
-    (package-library-spec (path-directory (this-source-file)) 'yuanxu core-public-roots)))
+    (package-library-spec (path-directory (this-source-file)) 'yuanxu core-public-roots
+      exclude: core-spec)))
 (defbuild-script (modules-spec library-spec) libdir: (current-build-output-directory))
