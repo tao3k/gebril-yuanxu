@@ -27,7 +27,7 @@
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
         build-artifact-handoff require-build-artifacts! test-build-publication
-        current-build-phase-times)
+        current-build-phase-times repair-build-products! require-build-products!)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
 ;; No callback runs inside a guard; disabled instrumentation allocates no table.
@@ -179,6 +179,49 @@
   (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector))))
 (def (numeric? text)
   (and (not (string-empty? text)) (andmap char-numeric? (string->list text))))
+(def (static-product-path identity libdir)
+  (path-expand
+    (path-force-extension
+      (string-append "static/" (string-join (string-split (symbol->string identity) #\/) "__")) ".scm")
+    libdir))
+
+;; Ordinary SDK completion is distinct from artifact/publication issuance.
+;; std/make's static marker alone does not cover interrupted dynamic phases.
+(def (missing-build-products identities libdir)
+  (def markers (map (cut static-product-path <> libdir) identities))
+  (def files (artifact-files identities libdir #f))
+  (def (regular? path)
+    (let (type (module-source-type path))
+      (when (and type (not (eq? type 'regular)))
+        (error "build product is non-regular or a symlink" path))
+      (eq? type 'regular)))
+  (append
+    (filter (lambda (file) (not (regular? file)))
+      (foldr append '()
+        (map (lambda (id)
+               (let (base (path-expand (symbol->string id) libdir))
+                 (list (string-append base ".ssi") (string-append base ".o1")))) identities)))
+    (filter (lambda (file) (not (regular? file)))
+      (map (cut path-force-extension <> ".o1")
+        (filter (lambda (file)
+                  (and (string-suffix? ".scm" file) (not (member file markers)))) files)))))
+(def (repair-build-products! identities libdir)
+  ;; Invalidate only the affected unit's owned SDK marker. The installed SDK
+  ;; recompiles it; no compiler replacement, output copying or approval occurs.
+  (def missing (missing-build-products identities libdir))
+  (for-each
+    (lambda (id)
+      (def base (path-expand (symbol->string id) libdir))
+      (when (ormap (lambda (path)
+                     (or (equal? path (string-append base ".ssi"))
+                         (equal? path (string-append base ".o1"))
+                         (string-prefix? (string-append base "~") path))) missing)
+        (let (marker (static-product-path id libdir))
+          (when (file-exists? marker) (delete-file marker))))) identities))
+(def (require-build-products! identities libdir)
+  (let (missing (missing-build-products identities libdir))
+    (unless (null? missing)
+      (error "build-required: selected runtime products are incomplete" missing))))
 (def (output-stem file)
   (let (suffix (find (cut string-suffix? <> file) '(".gxc-complete" ".ssxi.ss" ".ssi" ".scm" ".c")))
     (if suffix (substring file 0 (- (string-length file) (string-length suffix)))
@@ -218,10 +261,7 @@
   (def static-owners (make-hash-table))
   (for-each
     (lambda (identity)
-      (def path (path-expand
-        (path-force-extension
-          (string-append "static/"
-            (string-join (string-split (symbol->string identity) #\/) "__")) ".scm") libdir))
+      (def path (static-product-path identity libdir))
       (when (and (hash-key? static-owners path)
                  (not (eq? (hash-ref static-owners path) identity)))
         (error "selected compiler identities share a static output" identity))

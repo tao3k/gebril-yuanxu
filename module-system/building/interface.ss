@@ -47,7 +47,8 @@
   (delay
     (parameterize ((current-expander-context (make-top-context)))
       (eval-syntax '(import :yuanxu/module-system/building/artifacts))
-      (eval-syntax '(cons invalidate-build-artifacts! clean-build-artifacts!)))))
+      (eval-syntax '(list invalidate-build-artifacts! clean-build-artifacts!
+                         repair-build-products! require-build-products!)))))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
@@ -195,7 +196,13 @@
       ((or (null? args) (equal? (car args) "compile"))
        ;; Ordinary SDK compilation cannot grant publication approval. Explicit
        ;; projection .compile retains the separate artifact issuance boundary.
-       (.call prepared .with-compiler-inputs (cut dispatch native-specs)))
+       (let ((products (force artifact-cleaners))
+             (identities (.get prepared compiler-identities)))
+         (.call prepared .with-compiler-inputs
+           (lambda ()
+             ((list-ref products 2) identities libdir)
+             (begin0 (dispatch native-specs)
+               ((list-ref products 3) identities libdir))))))
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))
@@ -203,7 +210,7 @@
          ;; Retain the freshness check at that exact boundary.
          (current!)
          (begin0 (dispatch native-specs)
-           ((cdr cleaners) (.get prepared compiler-identities) libdir))))
+           ((cadr cleaners) (.get prepared compiler-identities) libdir))))
       (else (dispatch))))
   (values
     (.o std-make-spec: build-spec
