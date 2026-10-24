@@ -238,3 +238,71 @@ The first two-GiB worker run reaches the 2000-publication checkpoint
 The follow-up applies the same selected growth policy to the outer Fixture
 through the existing =yuanxu-test-fixture profile:= form; no new runner or
 cache protocol is introduced.
+
+** Unified two-GiB rerun and remaining ownership
+
+Core =a3736ea381b003c46be3905bc42ccc1e02aebe85=, native producer
+=fe82518686c21b11f6f1b91e44b35f3dfbab52c8=: the default Just ten-thousand
+entry with the shared outer/worker policy exits 70. Its last completed scalar
+checkpoint is 2000 publications, 2147277856 managed-heap bytes and 1862349584
+live bytes, followed by =Heap overflow=. There is no
+=live-growth-limit-exceeded= refusal. Neither the automatic test preparation
+counter nor a worker's =MODULE-OK= marker establishes a completed publication
+count or a passing Harness. The hard two-GiB fence remains unchanged.
+
+The same current source cut passes the existing 256-publication trace. It
+retains 142888 authentic original records, 12989 receiver identities and
+324946 ordered dependency occurrences; its largest =selected-graph= list has
+185365 occurrences. It retains 142888 issuer closures with 1143104 captured
+fields. Final GC live accounting is 393486288 bytes. Actual observer totals
+are 2589668 deliveries and 4792173 delivered edge occurrences. These are the
+new cohort's measurements, not an identity-equality comparison against the
+older Core cohort's different event sequence.
+
+Attribution of already demanded selected-graph roots, without invoking another
+getter, finds:
+
+| Native family | Distinct original reads | Receiver identities |
+|---------------+-------------------------+---------------------|
+| Effective method | 36865 | 2305 |
+| Invocation frame | 23041 | 2305 |
+| Module authoring admission | 39936 | 3328 |
+| Contract validation evidence | 4608 | 256 |
+| Type classification evidence | 3072 | 256 |
+
+This points to retained Generic/authoring object state, not another disposable
+duplicate-root buffer. It does not prove how many VM bytes each family owns:
+payloads, parents and SDK contexts can be shared. The actual role-context
+snapshot still has 256 contexts per interface/types/config/objects role and
+zero retained code bodies, expansions or programs in those rows. Closed
+scalar observation counters do not retain discovery contexts. Erasing an
+invocation frame or an admission because it has the same receiver, result or
+port as another record would violate the existing identity/coverage controls.
+
+Before another production storage change, the existing =ReadRetention= and
+=IssuerProjection= Lean targets pass (108 build jobs); all seven ReadRetention
+QNT controls qualify, including the expected receiver-coalescing, omitted-miss,
+memoized-approval, missing-second-requirement and eager-branch counterexamples.
+These prove the abstract sharing restrictions, not a two-GiB heap bound or a
+new compressed native layout. The existing real Scenario cost entry also
+passes its three matched raw/unique cold/warm rounds. Parent 5432 stays cached;
+each child admits 5433/5433 with exact final Config/plan identity, both contextual
+child obligations, both contributions and fresh physical-source checks. Full
+ordered observer-key sequences are compared, not just event totals.
+
+In this current cohort each matched sample retains 895 original records,
+158 receivers and 1974 edges, performs 236 physical source reads, and delivers
+2396 cold / 2383 warm observer events. Only collector root-reference storage
+changes (1488 raw versus 489 unique); both modes retain 489 root identities.
+The allocation counter is marked non-current, so its deltas are not admitted
+as physical allocation measurements. Separate default Just publication and
+JSON configuration regressions pass all eleven and four cases respectively,
+including their existing source-change, parent-cache and lazy-branch controls.
+
+No further graph pruning, cross-effect approval cache, collector rewrite or
+unqualified producer upgrade is admitted by these results. The next storage
+candidate must account for native Generic/authoring metadata ownership while
+preserving the complete original token and edge sequence; a local vector
+micro-optimization is not evidence of ten-thousand-module capacity. This
+capacity gate remains failed, independently of passing smaller controls and
+the still-running PR checks.
