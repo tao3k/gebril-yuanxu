@@ -9,6 +9,7 @@ import unittest
 spec = importlib.util.spec_from_file_location("core_quint_check", Path(__file__).with_name("check.py"))
 check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check)
+QUINT = check.quint_executable()
 
 
 class TypecheckTests(unittest.TestCase):
@@ -17,7 +18,7 @@ class TypecheckTests(unittest.TestCase):
             source = Path(directory) / "Sample.qnt"
             source.write_text("module Sample { pure val answer: int = 1 }")
             for limits in ({"wall": 0, "idle": 5}, {"wall": 5, "idle": 0}):
-                with self.subTest(limits=limits), check.QuintCLI("quint", "typecheck") as runtime:
+                with self.subTest(limits=limits), check.QuintCLI(QUINT, "typecheck") as runtime:
                     with self.assertRaises(TimeoutError):
                         runtime.request({"input": str(source)}, **limits)
 
@@ -33,14 +34,14 @@ class TypecheckTests(unittest.TestCase):
             for text, accepted in cases:
                 with self.subTest(text=text):
                     source.write_text(text)
-                    cli = subprocess.run(["quint", "typecheck", str(source)],
+                    cli = subprocess.run([QUINT, "typecheck", str(source)],
                                          capture_output=True, timeout=5)
                     self.assertEqual(cli.returncode == 0, accepted)
                     if accepted:
-                        check.typecheck_entries("quint", [source])
+                        check.typecheck_entries(QUINT, [source])
                     else:
                         with self.assertRaisesRegex(RuntimeError, "typecheck failed"):
-                            check.typecheck_entries("quint", [source])
+                            check.typecheck_entries(QUINT, [source])
 
     def test_import_mutation_between_requests_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -56,7 +57,7 @@ class TypecheckTests(unittest.TestCase):
                 yield source
 
             with self.assertRaisesRegex(RuntimeError, "typecheck failed"):
-                check.typecheck_entries("quint", entries())
+                check.typecheck_entries(QUINT, entries())
 
 
 if __name__ == "__main__":

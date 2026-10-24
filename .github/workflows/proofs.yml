@@ -45,6 +45,8 @@ jobs:
         run: npm ci --prefix dev/proofs/quint --no-audit --no-fund
       - name: Prepare pinned backend
         run: python3 dev/proofs/quint/prepare.py
+      - name: Check native CLI isolation and deadlines
+        run: python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py
       - name: Check finite models and matched faults
         run: python3 dev/proofs/quint/check.py --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
