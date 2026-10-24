@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "40c61fe6afc8313f297599da0e511f96e3a23dcf"
+def declaredPooRevision : String := "247a7eb8a40dca0843956da2cf93eb5b36dbdd62"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
