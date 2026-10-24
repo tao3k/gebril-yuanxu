@@ -173,21 +173,16 @@
     (when (current-build-spec-consumer)
       ((current-build-spec-consumer) value
         (lambda (dispatch args libdir)
-          (run-spec value dispatch args libdir #f
+          (run-spec value dispatch args libdir
             (.get prepared native-make-specs)))))
     value)
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace) (.get (selected!) modules))
-  ;; Execute the installed SDK's dispatcher unchanged. Core only owns the
-  ;; before/after boundary and the retained result of a successful compile.
-  (def (build-run roots package-main args (libdir (path-expand "lib" (gerbil-path)))
-                  publication: (publication? #t) native-specs: (native-specs #f))
-    (run-spec (build-spec roots) package-main args libdir publication? native-specs))
   ;; The init consumer already owns this exact specification. Its preparation
   ;; is not a second request: preserve the independent compiler-entry/return
   ;; guards below instead of entering build-spec again during that handoff.
-  (def (run-spec spec package-main args libdir publication? native-specs)
+  (def (run-spec spec package-main args libdir native-specs)
     (def (dispatch (groups #f))
       (if (and groups (ormap (cut .get <> prefix) groups))
         (for-each
@@ -198,11 +193,9 @@
         (package-main spec args)))
     (cond
       ((or (null? args) (equal? (car args) "compile"))
-       ;; Preserve the existing default issuance contract. Maintained package
-       ;; build scripts explicitly request ordinary SDK compilation; that path
-       ;; shares role lowering but cannot grant publication approval.
-       (if publication? (.call prepared .compile libdir (cut dispatch native-specs))
-           (.call prepared .with-compiler-inputs (cut dispatch native-specs))))
+       ;; Ordinary SDK compilation cannot grant publication approval. Explicit
+       ;; projection .compile retains the separate artifact issuance boundary.
+       (.call prepared .with-compiler-inputs (cut dispatch native-specs)))
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))
@@ -213,6 +206,6 @@
            ((cdr cleaners) (.get prepared compiler-identities) libdir))))
       (else (dispatch))))
   (values
-    (.o std-make-spec: build-spec std-make-run: build-run
+    (.o std-make-spec: build-spec
         admit-current: current! tests: test-source-value)
     module-namespace))

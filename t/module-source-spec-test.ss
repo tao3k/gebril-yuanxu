@@ -28,7 +28,7 @@
     (eval-syntax `(import (only-in ,(path-expand "init.ss" root)
                                   yuanxu.init.exports)))
     (values (eval-syntax 'main) (eval-syntax '(.get yuanxu.init.exports std-make-spec))
-            (eval-syntax '(.get yuanxu.init.exports admit-current)) (eval-syntax '(.get yuanxu.init.exports std-make-run)))))
+            (eval-syntax '(.get yuanxu.init.exports admit-current)))))
 (def (spec-of run)
   (call-with-input-string
     (call-with-output-string
@@ -55,8 +55,8 @@
                       (module-source-read (path-expand "modules/json-schema/interface.ss" owner)))
         ;; Narrow only this isolated snapshot's retained manifest, not its build.ss.
         (write-source (path-expand "core-spec.ss" root)
-          "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"types\" \"core-spec\"))\n")
-        (let-values (((run spec current! dispatch) (script-at (path-expand "build.ss" root))))
+          "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"object-types/contracts\" \"object-types/ports\" \"core-spec\"))\n")
+        (let-values (((run spec current!) (script-at (path-expand "build.ss" root))))
           (displayln "SOURCE-SPEC-ROOT-IMPORTED") (force-output)
           (def printed (spec-of run))
           (displayln "SOURCE-SPEC-GRAPH-READY") (force-output)
@@ -64,16 +64,6 @@
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))
           (check-equal? printed targets)
           (check-equal? (eq? targets (spec retained)) #t)
-          ;; The dispatcher receives the admitted value and original arguments,
-          ;; rather than calling source preparation again from its callback.
-          (def dispatched 0)
-          (def (observe-dispatch admitted arguments)
-            (set! dispatched (1+ dispatched))
-            (check-equal? (eq? admitted targets) #t)
-            (check-equal? arguments '("spec"))
-            'forwarded)
-          (check-equal? (dispatch retained observe-dispatch '("spec")) 'forwarded)
-          (check-equal? dispatched 1)
           (check-exception (spec '("object-types/contracts")) error?)
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
@@ -107,10 +97,8 @@
               (change-source (path-expand (car control) root)
                 (lambda ()
                   (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t)
-                  ;; A stale request must fail before invoking any dispatcher.
-                  (check-equal? (rejects? (cdr control)
-                    (lambda () (dispatch retained observe-dispatch '("spec")))) #t)
-                  (check-equal? dispatched 1))))
+                  ;; Guarded SDK invocation rejects before native compilation.
+                  (check-equal? (rejects? (cdr control) (lambda () (run "compile"))) #t))))
             '(("build.ss" . "stale selected build input")
               ("core-spec.ss" . "stale prepared build source")
               ("gerbil.pkg" . "stale")

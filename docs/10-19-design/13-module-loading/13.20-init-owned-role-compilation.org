@@ -106,11 +106,10 @@ relabel those failures as successes.
 * Native compiler integration
 
 The SDK spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
-callback on the prepared projection. The existing =std-make-run= default still
-uses issued compilation. Maintained package entries consume =std-make-spec=
+callback on the prepared projection. Maintained package entries consume =std-make-spec=
 through the Core SDK macro adapter. Internally this retains ordinary SDK
-incrementality (=publication: #f=), without granting publication approval.
-No existing caller silently loses the issuance check;
+incrementality without granting publication approval.
+The removed public dispatch slot is not retained as a compatibility alias;
 explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
 binds the SDK's public =current-expander-module-import= only for that action.
 Both the Make coordinator and compiler driver consult this parameter. Original
@@ -618,3 +617,59 @@ result establishes a capacity theorem for the physical read graph. At bfc2d5c,
 both platforms' build/bootstrap and all non-scale CI shards passed; both scale
 shards still failed the original ten-thousand-module gate. No full-green claim
 is made, and the memory budget/complete read dependencies remain unchanged.
+
+* Spec-only public build entry
+
+The init export contains =std-make-spec=, =admit-current= and the inert =tests=
+facade. It does not publish a second SDK command dispatcher. Package consumers
+keep the existing native build declaration:
+
+#+begin_src scheme
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
+#+end_src
+
+The internal consumer accepts only the exact specification produced during its
+current preparation. Copying the list loses its owner and is refused. Role
+lowering still checks currentness before compiler entry and after return;
+clean still invalidates issued artifacts before SDK cleanup. The adapter does
+not cache an admission verdict or run test targets in the production phase.
+Explicit projection =.compile= remains the artifact-issuance boundary. A native
+package callback that returns without producing compiler outputs cannot satisfy
+that boundary, while ordinary =defbuild-script= compilation grants no publication
+authority. These checks share the original projection, not a replacement Builder.
+
+The graph regression checks absence of the removed slot using POO's native
+=NoApplicableMethod?= exception, exact spec identity, copied-spec rejection,
+missing-output rejection at =.compile= and stale-source rejection before SDK
+handoff. The source-only consumer qualification invokes its generated =main=
+for spec/compile/clean and no longer obtains an execution closure from init.
+
+** Focused spec-only qualification
+
+The installed Gerbil and pinned =80b590b= producer passed the default native
+build and its subsequent warm build with zero module/compiler jobs. The default
+=just test-file t/module-build-process-test.ss= completed its 41-target lifecycle:
+
+| Native command | Wall seconds | Result |
+|----------------+--------------+--------|
+| spec | 17.49 | Selected specification |
+| first compile | 46.90 | Compiler products present |
+| warm compile, new process | 19.84 | Zero compilation; prelude timestamps unchanged |
+| clean | 11.15 | Owned products removed; unselected sentinel retained |
+| rebuild, new process | 47.32 | Same compiler/output identities |
+| final clean | 10.69 | Owned products removed |
+
+All original 60-second child and 600-second Harness limits remain unchanged.
+These are local functional receipts under concurrent host load, not a matched
+performance comparison. The graph, init import and real Gitea/PostgreSQL
+publication regressions also passed with complete Harness markers and no failure
+markers. The first absent-slot assertion used Scheme's =error?= predicate and
+failed on the native =NoApplicableMethod= object; correcting the predicate
+preserves the narrower missing-slot control. Its failed log is retained locally.
+No source-only opt-in result is inferred from these focused gates.
+
+At the preceding exact CI head, both platform builds and both contract shards
+passed. Both ten-thousand-module capacity shards still refused excessive live
+memory growth. Removing an API slot neither closes that retention defect nor
+justifies dropping issued dependency edges, observers or public carrier checks.

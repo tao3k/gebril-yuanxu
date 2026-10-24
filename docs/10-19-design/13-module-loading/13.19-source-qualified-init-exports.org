@@ -85,9 +85,10 @@ retain source currentness and effect ownership.
 
 * Build and test consumers
 
-Package build.ss files import their own qualified entry and continue calling
-=std-make-spec=, =std-make-run= and =admit-current= on that object. No new Builder
-or signing boundary is introduced.
+Package build.ss files import their own qualified entry and pass its
+=std-make-spec= to =defbuild-script=. The guarded dispatch remains internal;
+=admit-current= is an explicit inspection boundary, not another build runner.
+No new Builder or signing boundary is introduced.
 
 The shared test launcher reads the selected init's native identity with
 =core-read-module/sexp= and computes the same export name. It imports that exact

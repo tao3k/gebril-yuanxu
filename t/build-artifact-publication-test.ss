@@ -34,7 +34,7 @@
     ;; A writable native cache without prior Core issuance cannot be adopted.
     (run "compile")
     (write-artifact-bytes binary #u8(0))
-    ;; This is the same production completion function called by (.get yuanxu.init.exports std-make-run).
+    ;; This is the production completion function used by projection .compile.
     ;; Only the one-unit compiler projection is a fixture; compiler and service
     ;; graph/publication/admission implementations are the installed/real ones.
     (call-with-build-artifact-issuance projection lib (cut run "compile"))

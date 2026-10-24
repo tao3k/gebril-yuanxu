@@ -160,8 +160,8 @@ The aggregate =yuanxu.init.exports.tests= is a selection facade over the same ex
 factory. Root-owned =t/= qualifications use its =.for-files= selector; they do
 not need a second Script, compiler or Harness implementation.
 
-The production dispatcher consumes =(.get yuanxu.init.exports std-make-run)= and its
-ordinary =std/build-script= callback. Its =std-make-spec= takes the retained
+The production build entry consumes =(.get yuanxu.init.exports std-make-spec)=
+through =defbuild-script=. Its =std-make-spec= takes the retained
 production roots; the test facade's =std-make-spec= takes no roots and follows
 only that facade's demanded test imports. Both refer to the same selected graph.
 

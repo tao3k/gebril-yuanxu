@@ -6,7 +6,7 @@
         (only-in :std/make make)
         (only-in :std/list/list find)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
-        (only-in :clan/poo/object .o .+ .cc .ref .get .call object?)
+        (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -103,7 +103,7 @@
          (defvalues (exports _modules)
            (yuanxu-init-build (path-expand "init.ss" root) declaration))
          (def spec (.get exports std-make-spec))
-         (def dispatch (.get exports std-make-run))
+         (check-exception (.get exports std-make-run) NoApplicableMethod?)
          (def expected (spec '()))
          (def calls 0)
          ;; Observe the ordinary SDK callback without compiling fixture files.
@@ -112,38 +112,44 @@
            (check-equal? (eq? admitted expected) #t)
            (check-equal? arguments '("spec"))
            'forwarded)
-         (check-equal? (dispatch '() receive '("spec")) 'forwarded)
-         (check-equal? calls 1)
          ;; The declarative SDK adapter obtains the same owner from the spec
          ;; expression, with no user-maintained dispatcher or public registry.
          (check-equal?
            (call-with-init-build-spec (cut spec '()) receive '("spec") (path-expand "lib" root))
            'forwarded)
-         (check-equal? calls 2)
+         (check-equal? calls 1)
          (check-exception
            (call-with-init-build-spec
              (lambda () (map identity (spec '()))) receive '("spec") (path-expand "lib" root))
            error?)
-         (check-equal? calls 2)
+         (check-equal? calls 1)
          ;; A native package callback returns no publication authority. The
-         ;; original default path must still reject its missing compiler outputs.
+         ;; explicit projection .compile must reject missing compiler outputs.
          (def compile-calls 0)
          (def (uncompiled admitted arguments)
            (set! compile-calls (1+ compile-calls))
            (check-equal? (eq? admitted expected) #t)
            (check-equal? arguments '("compile"))
            'package-only)
+         (def projection
+           (yuanxu-project-source-spec
+             (yuanxu-load-modules (path-expand "init.ss" root)) '() root
+             (path-expand "build.ss" root)))
          (check-exception
-           (dispatch '() uncompiled '("compile") (path-expand "lib" root)) error?)
+           (.call projection .compile (path-expand "lib" root)
+             (cut uncompiled expected '("compile"))) error?)
          (check-equal? compile-calls 1)
          (check-equal?
-           (dispatch '() uncompiled '("compile") (path-expand "lib" root) publication: #f)
+           (call-with-init-build-spec (cut spec '()) uncompiled '("compile")
+             (path-expand "lib" root))
            'package-only)
          (check-equal? compile-calls 2)
          (def config (path-expand "modules/core/schema/config.ss" root))
          (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
-         (check-exception (dispatch '() receive '("spec")) error?)
-         (check-equal? calls 2))))
+         (check-exception
+           (call-with-init-build-spec (cut spec '()) receive '("spec")
+             (path-expand "lib" root)) error?)
+         (check-equal? calls 1))))
     (yuanxu-test-case "configuration admission precedes publication binding"
       (with-source
        (lambda (root _prefix)
