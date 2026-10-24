@@ -169,6 +169,10 @@ CASES = [
     ('RouteMutation_parent', 'ChildPlan', True),
     ('RouteMutation_eager', 'LazyBranch', True),
     ('RouteMutation_acceptance', 'RejectAll', True),
+    ('IssuerSequence', 'safety', False),
+    ('IssuerSequence_drop', 'OrderedSnapshot', True),
+    ('IssuerSequence_order', 'OrderedSnapshot', True),
+    ('IssuerSequence_alias', 'OrderedSnapshot', True),
     ('IssuerProjection', 'safety', False),
     ('IssuerProjection_noRegistry', 'AuthenticAtReturn', True),
     ('IssuerProjection_noPayload', 'AuthenticAtReturn', True),
@@ -816,6 +820,9 @@ def main():
     projection_digest = "sha256:" + hashlib.sha256((models / "IssuerProjection.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{projection_digest}"' not in projection_lean.read_text():
         raise AssertionError("Lean retains a stale IssuerProjection Quint source binding")
+    sequence_digest = "sha256:" + hashlib.sha256((models / "IssuerSequence.qnt").read_bytes()).hexdigest()
+    if f'sequenceSourceDigest : String := "{sequence_digest}"' not in projection_lean.read_text():
+        raise AssertionError("Lean retains a stale issuer sequence source binding")
     bound.extend([projection_lean, core / "dev/proofs/lean/IssuerProjectionCheck.lean",
                   core / "t/issuer-projection-test.ss"])
     issued_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean"

@@ -69,6 +69,11 @@ def checkRow (o : Observation) : Except String Unit := do
     throw s!"native/projected issuance mismatch: {o.name}"
   unless authenticateSingle (observedStore o) o.record == actualProjection do
     throw s!"single-closure/projected issuance mismatch: {o.name}"
+  if let some frozen := o.frozen then
+    unless dependencyMatches o.record.payload.dependencies
+        (dependencySnapshot frozen.payload.dependencies) ==
+        (o.record.payload.dependencies == frozen.payload.dependencies) do
+      throw s!"ordered dependency snapshot mismatch: {o.name}"
   unless IssuedRead.issued (project (observedStore o) o.record) == actualProjection do
     throw s!"legacy projection mismatch: {o.name}"
   unless projectedCurrent o == o.nativeCurrent do

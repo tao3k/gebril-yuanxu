@@ -7,12 +7,14 @@
         (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/t/qualification/module-init/fixture import-fixture-init!)
+        (only-in :yuanxu/t/qualification/module-scale/fixture declaration-scale-profile)
         (only-in :std/source this-source-file)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
         (only-in :yuanxu/observability/testing-case
-                 yuanxu-test-case yuanxu-test-checkpoint))
+                 yuanxu-test-case/with
+                 yuanxu-test-checkpoint))
 (def FixtureExports
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
@@ -20,7 +22,9 @@
 (export worker-test)
 (def worker-test
   (test-suite "Real native declaration expansion through init"
-    (yuanxu-test-case "all selected declarations expand without linking business scopes"
+    (yuanxu-test-case/with
+      (declaration-scale-profile (length (.all-slots (.get FixtureExports modules))))
+      "all selected declarations expand without linking business scopes"
       (def count (length (.all-slots (.get FixtureExports modules))))
       (def counts (make-hash-table-eq))
       (def class-construction-reads 0)

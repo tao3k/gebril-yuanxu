@@ -51,7 +51,8 @@
       (when (.get Fixture cold) (check-equal? (file-exists? (path-expand "yuanxu" lib)) #f))
       (check-equal?
         (call-with-input-file (path-expand "core-spec.ss" root) read-all)
-        '((export core-spec)
+        '((export core-spec core-public-roots)
+          (def core-public-roots '())
           (def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
       (def names (map cadr spec))
