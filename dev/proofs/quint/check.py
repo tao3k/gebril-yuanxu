@@ -16,6 +16,17 @@ import tempfile
 import time
 
 CASES = [
+    ("ModuleDemand", "safety", False),
+    ("ModuleDemand_eager", "DeclarationOnly", True),
+    ("ModuleDemand_premature", "AdmissionPhase", True),
+    ("ModuleDemand_edge", "ActualTrace", True),
+    ("ModuleDemand_observer", "ActualTrace", True),
+    ("ModuleDemand_stale", "Fresh", True),
+    ("ModuleDemand_disabled", "Enabled", True),
+    ("ModuleDemand_dropB", "Both", True),
+    ("ModuleDemand_parent", "ParentIsolation", True),
+    ("ModuleDemand_opaque", "OpaqueCoverage", True),
+    ("ModuleDemand", "NoPublication", True),
     ("SelectionReplay", "safety", False),
     ("SelectionReplay_skipObserver", "Current", True),
     ("SelectionReplay_reorder", "Diagnostic", True),

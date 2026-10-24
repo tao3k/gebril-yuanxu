@@ -14,7 +14,7 @@ SysML parsing/semantic validation is not yet qualified in this repository.
 |------+-----------------------+--------------------|
 | 00 | Cross-cutting assurance ownership and traceability | [[file:00-development-assurance.sysml][Development system]] |
 | 10 | Evaluation, receiver identity, dependencies and caching | [[file:10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] |
-| 20 | Module selection, package/build phases and demand boundaries | Reserved classification; current implementation remains module-system |
+| 20 | Module selection, package/build phases and demand boundaries | [[file:20-module-loading/20.01-demanded-module-lifecycle.org][20.01 Demand-Driven Module Loading]] |
 | 30 | Contracts, provenance, admission and publication | Reserved classification; current proofs remain dev/proofs |
 | 40 | Explicit execution, effects and resource lifecycle | Reserved classification; current implementation remains ops/testing |
 

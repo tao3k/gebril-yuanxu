@@ -47,6 +47,7 @@ package YuanxuDevelopment {
     }
 
     part efficientCaching : Workstream;
+    part demandDrivenModuleLoading : Workstream;
 
     requirement def EvidenceBoundary {
         attribute runtimeClaimed : Boolean;
