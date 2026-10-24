@@ -15,10 +15,15 @@
         (only-in "./module-system/building/script.ss" defbuild-script)
         (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./module-system/building/artifacts.ss" current-build-output-directory)
-        (only-in "./core-spec.ss" core-spec))
+        (only-in "./module-system/building/source-closure.ss" package-library-spec)
+        (only-in :std/source this-source-file)
+        (only-in "./core-spec.ss" core-spec core-public-roots))
 
 ;; init.exports owns selected Module targets; core-spec owns library targets.
 ;; Only this entry consumes both. core-spec must never compile init itself.
 ;; The adapter keeps role/currentness boundaries inside the SDK consumer.
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(defbuild-script (modules-spec core-spec) libdir: (current-build-output-directory))
+(def library-spec
+  (append core-spec
+    (package-library-spec (path-directory (this-source-file)) 'yuanxu core-public-roots)))
+(defbuild-script (modules-spec library-spec) libdir: (current-build-output-directory))

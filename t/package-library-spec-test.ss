@@ -1,6 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/source this-source-file)
+        (only-in "../core-spec.ss" core-public-roots)
         (only-in :gerbil/expander expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure package-library-spec))
 (export package-library-spec-test)
@@ -8,6 +10,13 @@
   (call-with-output-file (path-expand name root) (lambda (port) (display text port))))
 (def package-library-spec-test
   (test-suite "Selected package source projection"
+    (test-case "public Funflow facade includes command descriptors without compiling init"
+      (def roots
+        (package-library-spec
+          (path-expand ".." (path-directory (this-source-file))) 'yuanxu core-public-roots))
+      (check-equal? (and (member "modules/funflow/control-plane/api" roots) #t) #t)
+      (check-equal? (and (member "modules/funflow/control-plane/runtime-command-descriptor" roots) #t) #t)
+      (check-equal? (member "init" roots) #f))
     (test-case "shared imports are projected once in dependency order; unused sources stay lazy"
       (call-with-temporary-directory "package-library-"
         (lambda (root)

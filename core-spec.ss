@@ -1,7 +1,11 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(export core-spec)
+(export core-spec core-public-roots)
+
+;; Public facade installation follows its actual import closure, independently
+;; of Module Scope selection and runtime activation.
+(def core-public-roots '("modules/funflow/control-plane/api.ss"))
 
 ;; Ordinary library roots only. init.ss is consumed by build.ss, not compiled
 ;; as a library target. Selected Module targets come from init.exports.
