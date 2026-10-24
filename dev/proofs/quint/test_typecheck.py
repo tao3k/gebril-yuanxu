@@ -21,6 +21,9 @@ class TypecheckTests(unittest.TestCase):
                 with self.subTest(limits=limits), check.QuintCLI(QUINT, "typecheck") as runtime:
                     with self.assertRaises(TimeoutError):
                         runtime.request({"input": str(source)}, **limits)
+                    self.assertIsNotNone(runtime.process.poll())
+                    with self.assertRaisesRegex(RuntimeError, "worker was cancelled"):
+                        runtime.request({"input": str(source)})
 
     def test_native_cli_agreement(self):
         cases = [

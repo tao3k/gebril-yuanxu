@@ -21,6 +21,7 @@ class QuintCLI:
         self.mode, self.cwd = mode, cwd
 
     def __enter__(self):
+        self.cancelled = False
         self.control, writer = os.pipe()
         try:
             self.process = subprocess.Popen(
@@ -38,6 +39,8 @@ class QuintCLI:
         return self
 
     def request(self, args, wall=5, idle=5, emit=False):
+        if self.cancelled:
+            raise RuntimeError("Quint CLI worker was cancelled; start a new worker")
         started = last_output = time.monotonic()
         output, control = bytearray(), bytearray()
         self.process.stdin.write((json.dumps(args) + "\n").encode())
@@ -60,6 +63,11 @@ class QuintCLI:
                 now = time.monotonic()
                 remaining = min(wall - (now - started), idle - (now - last_output))
                 if remaining <= 0:
+                    # A deadline invalidates the in-flight response. Stop this
+                    # owned session now, even if the caller catches TimeoutError
+                    # inside the context; it cannot safely serve another request.
+                    self.cancelled = True
+                    self.stop()
                     raise TimeoutError(f"Quint {self.mode} exceeded {wall}s case or {idle}s real-output deadline: {args['input']}")
                 for key, _ in selector.select(min(remaining, 0.1)):
                     if key.data == "output":
@@ -80,16 +88,22 @@ class QuintCLI:
             raise RuntimeError("Quint CLI result has no native status")
         return result["status"], bytes(output)
 
+    def stop(self):
+        if self.process.poll() is None:
+            try:
+                os.killpg(self.process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        self.process.wait()
+
     def __exit__(self, kind, value, traceback):
         try:
-            if kind is None:
+            if kind is None and not self.cancelled:
                 self.process.stdin.close()
                 if self.process.wait(timeout=1) != 0:
                     raise RuntimeError("Quint CLI worker failed")
         finally:
-            if self.process.poll() is None:
-                os.killpg(self.process.pid, signal.SIGKILL)
-            self.process.wait()
+            self.stop()
             self.process.stdin.close()
             self.process.stdout.close()
             os.close(self.control)
