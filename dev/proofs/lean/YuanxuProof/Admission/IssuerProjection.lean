@@ -41,6 +41,43 @@ def authenticate (s : Store) (r : Record) : Bool :=
     | some frozen => r.token == frozen.owner && r.payload == frozen.payload &&
                      r.keyShape == frozen.keyShape
 
+-- One opaque native closure captures the payload once. A false request is
+-- inspection; actual RTD-checked records use the authentication branch.
+-- The inspector returns copies in Scheme, not a reference to mutable metadata.
+def closureRequest (frozen : Frozen) (candidate : Option Record) : Frozen ⊕ Bool :=
+  match candidate with
+  | none => .inl frozen
+  | some r => .inr (r.token == frozen.owner && r.payload == frozen.payload &&
+                   r.keyShape == frozen.keyShape)
+
+def authenticateSingle (s : Store) (r : Record) : Bool :=
+  match s.registry r.token with
+  | none => false
+  | some closure =>
+    if r.presented != some closure then false else
+    match s.environments closure with
+    | none => false
+    | some frozen =>
+      match closureRequest frozen (some r) with
+      | .inl _ => false
+      | .inr accepted => accepted
+
+theorem single_closure_authentication (s : Store) (r : Record) :
+    authenticateSingle s r = authenticate s r := by
+  unfold authenticateSingle authenticate
+  cases s.registry r.token with
+  | none => rfl
+  | some closure =>
+    split
+    · rfl
+    · cases s.environments closure <;> rfl
+
+theorem inspection_cannot_authenticate (frozen : Frozen) :
+    closureRequest frozen none ≠ .inr true := by simp [closureRequest]
+
+theorem inspection_preserves_ordered_payload (frozen : Frozen) :
+    closureRequest frozen none = .inl frozen := rfl
+
 -- This is the old Birth model's input, now DERIVED from registry lookup,
 -- original closure environment and public record fields.
 def project (s : Store) (r : Record) : IssuedRead.Read :=

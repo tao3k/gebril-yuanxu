@@ -67,6 +67,8 @@ def checkRow (o : Observation) : Except String Unit := do
   let actualProjection := authenticate (observedStore o) o.record
   unless actualProjection == o.nativeIssued do
     throw s!"native/projected issuance mismatch: {o.name}"
+  unless authenticateSingle (observedStore o) o.record == actualProjection do
+    throw s!"single-closure/projected issuance mismatch: {o.name}"
   unless IssuedRead.issued (project (observedStore o) o.record) == actualProjection do
     throw s!"legacy projection mismatch: {o.name}"
   unless projectedCurrent o == o.nativeCurrent do

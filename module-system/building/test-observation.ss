@@ -453,6 +453,27 @@
     (def seen (make-hash-table-eq))
     (def receivers (make-hash-table-eq))
     (def rows (make-hash-table-eq))
+    ;; Inspect only the registered issuer's compiled closure family. Never walk
+    ;; user payloads, execute a checker, or follow SDK/weak-registry internals.
+    (def births (make-hash-table-eq))
+    (def birth-cells 0)
+    (def (birth! read)
+      (defvalues (_presented original _signed _snapshot _shape) (object-read-issuance read))
+      (when (and original (##closure? original))
+        (let (owner (##subprocedure-parent (##closure-ref original 0)))
+          (let walk ((pending (list original)))
+            (unless (null? pending)
+              (let ((head (car pending)) (tail (cdr pending)))
+                (if (and (##closure? head) (not (hash-key? births head))
+                         (eq? owner (##subprocedure-parent (##closure-ref head 0))))
+                  (begin
+                    (hash-put! births head #t)
+                    ;; Index zero is compiled code, not a captured field.
+                    (set! birth-cells (+ birth-cells (1- (##closure-length head))))
+                    (let fields ((index (1- (##closure-length head))) (rest tail))
+                      (if (< index 1) (walk rest)
+                        (fields (1- index) (cons (##closure-ref head index) rest)))))
+                  (walk tail))))))))
     (def edges 0)
     (def widest 0)
     (def widest-key #f)
@@ -465,6 +486,7 @@
                    (key (slot-read-key read))
                    (label (if (symbol? key) key 'structural-query)))
               (hash-put! seen read #t)
+              (birth! read)
               (hash-put! receivers (slot-read-receiver read) #t)
               (hash-update! rows label (cut + <> width) 0)
               (set! edges (+ edges width))
@@ -474,7 +496,10 @@
       "slot-transitive-support tokens=%s receivers=%s edges=%s widest=%s widest-key=%s top-edge-owners=%s"
       (hash-length seen) (hash-length receivers) edges widest widest-key
       (take (list-sort (lambda (left right) (> (cdr left) (cdr right))) (hash->list rows))
-            (min 8 (hash-length rows)))))
+        (min 8 (hash-length rows))))
+    (yuanxu-write-observation-line!
+      "slot-issuer-storage records=%s closures=%s captured-cells=%s"
+      (hash-length seen) (hash-length births) birth-cells))
   (def (observe read)
     (def receiver (slot-read-receiver read))
     (when (object? receiver)

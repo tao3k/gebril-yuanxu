@@ -1,0 +1,118 @@
+#+title: 10.06 Issued Record Storage
+#+language: en
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Responsibility and unchanged boundaries
+
+This follows [[file:10.05-issued-traversal-projection.org][10.05]]. The issuer owns the immutable association between an
+original read identity and its captured payload. Core consumes that association;
+it neither manufactures reads nor maintains another cache protocol. The selected
+read graph, ordered dependency occurrences, observer deliveries and fresh
+currentness checks remain unchanged. No passing admission result is cached.
+
+* Actual retention attribution
+
+PR 19 at =08da1635cc583cf7e69b3809f8ea757b2e0d8e5d= passes both platform builds
+and all non-capacity jobs. Both capacity jobs still refuse the ten-thousand
+declaration workload under the existing live-growth policy. That refusal is not
+a timeout to enlarge or a test to weaken.
+
+The retained graph census at 256 declarations contains 142878 original records,
+12984 receivers and 324931 ordered edge occurrences. At 16 declarations it has
+9918 records and 23971 edges. A separate raw-container census attributes most
+growth to closures and pairs; SDK import metadata is largely a fixed baseline.
+These are trace measurements, not ordinary-path timing results. VM accounting
+field seven is not used as a physical-allocation measurement (see 10.02).
+
+The compiled issuer's =case-lambda= retains two payload closures and a variadic
+dispatcher per record. At 16 declarations the three actual code identities each
+have 10015 live instances, with closure lengths 9, 9 and 3. This identifies
+duplicated representation, not disposable graph edges.
+
+* Producer representation
+
+Use one fixed-arity private closure. A real, RTD-checked record requests the
+unchanged authentication checks; =#f= requests detached inspection copies. The
+public =object-read-issuance= interface still returns five values and invokes
+only the original registry-associated closure. Callers cannot select an alleged
+issuer, register a purity flag or acquire signing authority through inspection.
+
+The weak-key/weak-value registry, original read class, exact payload checks,
+dependency order, key-shape copy and original closure identity stay intact.
+Inspector results copy the payload vector, dependency spine and compound-key
+spine. Mutating these copies must not mutate or authenticate a signed record.
+
+* Formal and native correspondence
+
+[[file:../../proofs/lean/YuanxuProof/Admission/IssuerProjection.lean][IssuerProjection]] proves =single_closure_authentication=,
+=inspection_cannot_authenticate= and =inspection_preserves_ordered_payload=.
+[[file:../../proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck]] compares the alternative predicate with native
+observations instead of assuming that an arbitrary supplied Birth is authentic.
+The existing QNT issuer controls still cover forged/borrowed/replaced closures,
+transient misses, callback restoration, revision changes and parent isolation.
+
+The model assumes the native identity projection, RTD guard, private lexical
+capture and sequential execution boundary. It does not prove Gambit's closure
+layout, GC behavior, arbitrary FFI safety or atomic external-file deployment.
+Compiled closure counts and retained bytes require separate runtime evidence.
+
+Native producer tests pass the existing seventeen issued-read cases and the
+slot-observation regression. The persistent/forged case additionally mutates
+detached inspection copies and checks that original authentication is unchanged.
+Core consumer, matched retention and full capacity qualification must also pass
+before this change can be called an end-to-end capacity repair.
+
+* Acceptance record
+
+** Version and concurrent-work boundary
+
+The first isolated candidate is based on Core's original =80b590b= pin. During
+qualification another session advanced PR 19 to =f3ade216= and its dependency
+to =8c15ba5=. The final candidate is =badfbfaa1c5d889c446e9a8c445dd0d5523c724d=,
+a narrow child of that newer declared dependency. No Table work or upstream
+observation-scope changes were reverted. The existing producer PR 13 branch
+integrates the candidate through merge =4d63f36=, preserving the concurrent
+=e21d285= head. Core pins the narrow candidate, not an unqualified broader
+upgrade. No compiler or SDK source is modified.
+
+** Checked results
+
+| Check | Result |
+|-------+--------|
+| Native issued reads / slot observation | Pass, including detached-copy mutation and transient miss |
+| Core native observations / independent Lean decoder | 4 cases, 12 observations agree |
+| Lean complete audit | 199 jobs; 6807 declarations, standard Lean axioms only |
+| QNT issuer / selected replay controls | 11 + 11 qualified cases, including expected negative counterexamples |
+| Real Gitea/PostgreSQL publication and JSON configuration | Both default Just entries pass |
+| Native build lifecycle | Spec, cold build, zero-compilation hot build, clean, rebuild and cleanup pass |
+| Immediate Core hot build | Zero compiler invocations |
+| 256 real declarations | Pass, including stale-source refusal and unselected-scope/Feature assertions |
+
+The current candidate retains exactly 142878 original records, 12984 receivers,
+324931 ordered edge occurrences and the same widest edge list (185355). Observer
+summary remains 2592333 deliveries and 4794834 delivered dependency occurrences,
+equal to the earlier control. Neither the original graph nor duplicate delivery
+events were pruned. Compiled issuer storage is 142878 closures / 1143024 captured
+fields (the code pointer at closure index zero is excluded).
+
+GC-retained live bytes at 256 declarations are 401805320. The earlier full-census
+control measured 434254536; the first narrow candidate measured 401746584. These
+are explicitly versioned trace receipts with different diagnostic probes, not a
+strict timing A/B or a claim that the full capacity requirement is closed.
+
+The first candidate's unchanged ten-thousand-declaration gate still refuses at
+1143 completed publications with 1074319240 live-growth bytes. The earlier CI
+controls refused near 982/993 publications. The default 1 GiB live-growth policy,
+2 GiB VM heap fence and existing deadlines remain unchanged. A smaller issuer
+representation alone is insufficient for ten thousand modules. The final-current
+candidate also refuses: 1127 completed publications, 1217509728 live bytes and
+1077178416 live-growth bytes. This is an observed refusal, not a pass or a
+new throughput bound; collection placement and the dependency cohort differ.
+Both failures are retained. The passing 256-declaration and domain regressions
+do not establish ten-thousand-module capacity or an all-green PR.
+
+Keep failed source-cut drift, compile and capacity runs as local artifacts;
+source control contains executable controls and this structured summary only.
+The next retention study must account for the remaining graph-owned storage
+without constructor elision, deletion of signed edges, suppressed observers or
+cached admission decisions.

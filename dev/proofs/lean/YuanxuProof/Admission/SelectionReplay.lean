@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "8c15ba5fd142f202909705a8913f94baf28f98b3"
+def declaredPooRevision : String := "badfbfaa1c5d889c446e9a8c445dd0d5523c724d"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
@@ -81,7 +81,7 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
 
 def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
-def projectionObjectDigest : String := "sha256:a4b06c96520a50cf59463524f63e2767f7d2b2b980b7fa55664774357ed86067"
+def projectionObjectDigest : String := "sha256:b7b099e79b85ea48dac18a5a4fcc93818c2d877d61dd2ffe5125acb02443677f"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.
