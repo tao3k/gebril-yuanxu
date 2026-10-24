@@ -165,10 +165,12 @@
            (.call projection .compile (path-expand "lib" root)
              (cut uncompiled expected '("compile"))) error?)
          (check-equal? compile-calls 1)
-         (check-equal?
+         ;; The SDK entry must enforce the same complete-product boundary;
+         ;; a callback return value cannot authorize an absent runtime.
+         (check-exception
            (call-with-init-build-spec (cut spec '()) uncompiled '("compile")
              (path-expand "lib" root))
-           'package-only)
+           error?)
          (check-equal? compile-calls 2)
          (def config (path-expand "modules/core/schema/config.ss" root))
          (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
