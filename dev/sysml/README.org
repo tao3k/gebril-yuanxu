@@ -35,6 +35,10 @@ implements the producer-owned structure and qualifies reuse without caching admi
 [[file:10-evaluation/10.06-issued-record-storage.org][10.06 Issued Record Storage]] separates duplicated issuer closure storage
 from original read identities, dependency edges and mandatory fresh checks.
 
+[[file:20-module-loading/20.02-metadata-projection-correspondence.org][20.02 Metadata Projection Correspondence]]
+qualifies the closed source boundary with LeanPoo, QNT and actual role wrappers
+before production Loader changes.
+
 * Required trace for each workstream
 
 | Question | Required artifact | What it cannot establish alone |

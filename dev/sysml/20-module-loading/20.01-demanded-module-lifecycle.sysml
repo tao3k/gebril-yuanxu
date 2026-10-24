@@ -13,6 +13,13 @@ package YuanxuModuleLoading {
                decisions, role locations and source association. Dependency
                closure is not a list of linked business scopes. */
     }
+    part def PublicationPreflight {
+        ref part declaration : SelectedDeclarations;
+        attribute descriptorsValid : Boolean;
+        doc /* Real publication admission demands native Type descriptors for
+               scope and dependency contracts. Config, Objects, Func and the
+               export body stay cold. This is not domain admission. */
+    }
     part def DemandedScope {
         attribute receiverIdentity : String;
         attribute sourceRevision : String;
@@ -38,10 +45,12 @@ package YuanxuModuleLoading {
     part def Loading {
         part catalogue : SourceCatalogue;
         part declarations : SelectedDeclarations;
+        part preflight : PublicationPreflight;
         part scope : DemandedScope;
         part admission : Admission;
         dependency sourceSelection from catalogue to declarations;
-        dependency actualDemand from declarations to scope;
+        dependency descriptorAdmission from declarations to preflight;
+        dependency actualDemand from preflight to scope;
         dependency explicitAdmission from scope to admission;
     }
     requirement def NoEarlyRoleConstruction {
@@ -64,10 +73,11 @@ package YuanxuModuleLoading {
     }
     requirement def BeforePublication {
         attribute published : Boolean;
+        attribute descriptorsValid : Boolean;
         attribute finalReceiverAdmitted : Boolean;
         attribute sourcesCurrent : Boolean;
         attribute requiredModulesEnabled : Boolean;
         require constraint { not published or
-          (finalReceiverAdmitted and sourcesCurrent and requiredModulesEnabled) }
+          (descriptorsValid and finalReceiverAdmitted and sourcesCurrent and requiredModulesEnabled) }
     }
 }
