@@ -6,7 +6,7 @@
 (export Ops)
 (.def Ops
   config: Config
-  types: (.o ProcessScript: ProcessScriptContract Config: OpsConfigContract
+  types: (.o ProcessScript: ProcessScriptContract ProcessResult: ProcessResultContract Config: OpsConfigContract
              Environment: OpsEnvironmentContract)
   validate: validate-script
   prepare-command: prepare-script-command

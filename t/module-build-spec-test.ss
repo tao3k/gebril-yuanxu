@@ -28,6 +28,7 @@
       (test-case "one selected Graph, retained overlaps, conflicts and stale entry"
         (call-with-temporary-directory "build-spec-boundaries"
           (lambda (temporary)
+            (def installed-core? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))))
             (def view (yuanxu-load-modules (path-expand "init.ss" root)))
             (def selected (.get view build-graph))
             (def entry (path-expand "build.ss" root))
@@ -67,8 +68,26 @@
                    (build (path-expand "build.ss" foreign)))
               (write-source (path-expand "gerbil.pkg" foreign) "(package: other)\n")
               (write-source build "(export #t)")
-              (check-equal? (rejects? "outside the build package prefix"
-                              (lambda () (project '() foreign build))) #t)
+              (write-source (path-expand "owned.ss" foreign) "(export #t)")
+              (def dependency-projection (project '("owned") foreign build))
+              (check-equal? (.get dependency-projection spec) '((gxc: "owned")))
+              (check-equal? (.get dependency-projection compiler-identities) '(other/owned))
+              (check-equal? (eq? (.get dependency-projection build-graph) selected) #t)
+              ((.get dependency-projection admit-current))
+              (def invoked? #f)
+              (check-equal? (rejects? "requires all package owners"
+                              (lambda ()
+                                ((.get dependency-projection .compile) temporary
+                                  (lambda () (set! invoked? #t))))) #t)
+              (check-equal? invoked? #f)
+              ;; A foreign dependency remains observed after target partitioning.
+              (let* ((dependency (.get (car (.get selected entries)) path))
+                     (original (module-source-read dependency)))
+                (dynamic-wind
+                  (lambda () (write-source dependency (string-append original "\n;; stale dependency\n")))
+                  (lambda () (check-equal? (rejects? "stale"
+                                            (.get dependency-projection admit-current)) #t))
+                  (lambda () (write-source dependency original))))
               ;; Same declared compiler identity with different physical bytes is
               ;; not a deduplication opportunity.
               (set! foreign (path-expand "collision" temporary))
@@ -79,7 +98,7 @@
                             (module-source-read (path-expand "object-types/contracts.ss" root)))
               (check-equal? (rejects? "conflicting compiler inputs"
                               (lambda () (project '("object-types/contracts") foreign build))) #t))
-            (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)))))
+            (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) installed-core?)))))
     (begin
       (displayln "SKIP module-build-spec: CORE_QUALIFICATION_ROOT is unset")
       (test-suite "module-build-spec (source-only opt-in)" (void)))))

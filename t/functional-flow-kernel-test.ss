@@ -3,6 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+                 Fun Any Number Integer String Symbol List Pair Null Unit)
+        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Boundary: functional kernel tests cover Category/Arrow composition in Scheme.
 ;;; Invariant: heavy runtime execution still belongs behind runtime adapters.
 
@@ -52,28 +56,29 @@
    (else
     (functional-flow-alist-value key (cdr entries)))))
 
-(defyuanxu-arr macro-inc
+(defyuanxu-arr
   macro-inc
-  (lambda (x) (+ x 1))
-  'number
-  'number)
+  macro-inc
+  (Fun Number <- Number)
+  (lambda (x) (+ x 1)))
 
-(defyuanxu-arr macro-double
+(defyuanxu-arr
   macro-double
-  (lambda (x) (* x 2))
-  'number
-  'number)
+  macro-double
+  (Fun Number <- Number)
+  (lambda (x) (* x 2)))
 
 (defyuanxu-compose macro-pipeline
   macro-pipeline
   macro-inc
   macro-double)
 
-(defyuanxu-map macro-mapped
+(defyuanxu-map
+  macro-mapped
   macro-mapped
   macro-inc
-  (lambda (x) (* x 10))
-  'number)
+  (Fun Number <- (flow-output-contract macro-inc))
+  (lambda (x) (* x 10)))
 
 (defyuanxu-fanout macro-fanout
   macro-fanout
@@ -86,10 +91,10 @@
   macro-double)
 
 (def macro-throw
-  (throw-string-flow 'macro-throw
-                     "macro try failure"
-                     'unit
-                     'unit))
+  (throw-string-flow
+   'macro-throw
+   "macro try failure"
+   (Fun Unit <- Unit)))
 
 (defyuanxu-try macro-try
   macro-try
@@ -103,12 +108,12 @@
 (defyuanxu-first macro-first
   macro-first
   macro-inc
-  'symbol)
+  Symbol)
 
 (defyuanxu-second macro-second
   macro-second
   macro-inc
-  'symbol)
+  Symbol)
 
 ;;; This suite covers pure flow composition as the kernel contract beneath
 ;;; module and runtime adapters.
@@ -117,16 +122,16 @@
   (test-suite "functional flow kernel"
     (yuanxu-test-case "exposes a POO category object for flow arrows"
       (let* ((category default-flow-category)
-             (inc (flow-category-arr category
-                                     'inc
-                                     (lambda (x) (+ x 1))
-                                     'number
-                                     'number)))
+             (inc (flow-category-arr
+		   category
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1)))))
         (check-equal? (flow-category? category) #t)
         (check-equal? (flow-category-name category) 'flow)
         (check-equal? (flow-category-arrow category) 'flow)
-        (check-equal? (flow-category-domain category inc) 'number)
-        (check-equal? (flow-category-codomain category inc) 'number)))
+        (check-equal? (flow-category-domain category inc) Number)
+        (check-equal? (flow-category-codomain category inc) Number)))
     (yuanxu-test-case "exposes Funflow-style required strands as POO metadata"
       (let* ((category default-flow-category)
              (registry (flow-category-strand-registry category))
@@ -195,28 +200,28 @@
                         extension-hook))))
     (yuanxu-test-case "exposes Arrow first and second through the category object"
       (let* ((category default-flow-category)
-             (inc (flow-category-arr category
-                                     'inc
-                                     (lambda (x) (+ x 1))
-                                     'number
-                                     'number))
-             (first (flow-category-first category 'first-inc inc 'symbol))
-             (second (flow-category-second category 'second-inc inc 'symbol)))
+             (inc (flow-category-arr
+		   category
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (first (flow-category-first category 'first-inc inc Symbol))
+             (second (flow-category-second category 'second-inc inc Symbol)))
         (check-equal? (kernel-run first '(3 tag)) '(4 tag))
         (check-equal? (kernel-run second '(tag 3)) '(tag 4))))
     (yuanxu-test-case "composes category arrows and identity without execution side effects"
       (let* ((category default-flow-category)
-             (inc (flow-category-arr category
-                                     'inc
-                                     (lambda (x) (+ x 1))
-                                     'number
-                                     'number))
-             (double (flow-category-arr category
-                                        'double
-                                        (lambda (x) (* x 2))
-                                        'number
-                                        'number))
-             (identity (flow-category-identity category 'same 'number))
+             (inc (flow-category-arr
+		   category
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (double (flow-category-arr
+		      category
+		      'double
+		      (Fun Number <- Number)
+		      (lambda (x) (* x 2))))
+             (identity (flow-category-identity category 'same Number))
              (pipeline (flow-category-compose
                         category
                         'pipeline
@@ -226,22 +231,22 @@
         (check-equal? (kernel-run pipeline 3) 8)))
     (yuanxu-test-case "observes category identity and associativity laws"
       (let* ((category default-flow-category)
-             (inc (flow-category-arr category
-                                     'inc
-                                     (lambda (x) (+ x 1))
-                                     'number
-                                     'number))
-             (double (flow-category-arr category
-                                        'double
-                                        (lambda (x) (* x 2))
-                                        'number
-                                        'number))
-             (dec (flow-category-arr category
-                                     'dec
-                                     (lambda (x) (- x 1))
-                                     'number
-                                     'number))
-             (identity (flow-category-identity category 'same 'number))
+             (inc (flow-category-arr
+		   category
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (double (flow-category-arr
+		      category
+		      'double
+		      (Fun Number <- Number)
+		      (lambda (x) (* x 2))))
+             (dec (flow-category-arr
+		   category
+		   'dec
+		   (Fun Number <- Number)
+		   (lambda (x) (- x 1))))
+             (identity (flow-category-identity category 'same Number))
              (left-identity (flow-category-compose category 'left-id identity inc))
              (right-identity (flow-category-compose category 'right-id inc identity))
              (assoc-left
@@ -261,17 +266,27 @@
         (check-equal? (kernel-run assoc-left 3) (kernel-run assoc-right 3))
         (check-equal? (flow-step-count assoc-left) (flow-step-count assoc-right))))
     (yuanxu-test-case "maps flow output as functional composition"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (mapped (flow-category-map default-flow-category
-                                        'mapped
-                                        inc
-                                        (lambda (x) (* x 10))
-                                        'number)))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (mapped (flow-category-map
+		      default-flow-category
+		      'mapped
+		      inc
+		      (Fun Number <- (flow-output-contract inc))
+		      (lambda (x) (* x 10)))))
         (check-equal? (flow-step-count mapped) 2)
         (check-equal? (kernel-run mapped 4) 50)))
     (yuanxu-test-case "fans out two arrows with branch declaration semantics"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (double (flow-arr
+		      'double
+		      (Fun Number <- Number)
+		      (lambda (x) (* x 2))))
              (fanout (flow-category-fanout default-flow-category
                                            'fanout
                                            inc
@@ -279,8 +294,14 @@
         (check-equal? (flow-branch-declaration? fanout) #t)
         (check-equal? (kernel-run fanout 3) '(4 6))))
     (yuanxu-test-case "projects Arrow fanout into a report-only DAG receipt"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (double (flow-arr
+		      'double
+		      (Fun Number <- Number)
+		      (lambda (x) (* x 2))))
              (fanout (flow-category-fanout default-flow-category
                                            'arrow-dag
                                            inc
@@ -301,8 +322,14 @@
         (check-equal? (functional-flow-alist-value 'runtime-executed receipt) #f)
         (check-equal? plan-receipt receipt)))
     (yuanxu-test-case "publishes Arrow DAG runtime manifest for Marlin discovery"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (double (flow-arr 'double (lambda (x) (* x 2)) 'number 'number))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (double (flow-arr
+		      'double
+		      (Fun Number <- Number)
+		      (lambda (x) (* x 2))))
              (fanout (flow-category-fanout default-flow-category
                                            'arrow-dag
                                            inc
@@ -351,9 +378,12 @@
                                                  macro-dag-manifest)
                     #f))
     (yuanxu-test-case "applies first and second arrows over pair-shaped values"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (first (flow-first 'first-inc inc 'symbol))
-             (second (flow-second 'second-inc inc 'symbol)))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (first (flow-first 'first-inc inc Symbol))
+             (second (flow-second 'second-inc inc Symbol)))
         (check-equal? (kernel-run first '(3 tag)) '(4 tag))
         (check-equal? (kernel-run second '(tag 3)) '(tag 4))))
     (yuanxu-test-case "authors functional flows with hygienic Gerbil macros"

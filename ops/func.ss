@@ -4,7 +4,7 @@
 (import :clan/poo/object "./types.ss"
         (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation
                  copy-process-output)
-        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :clan/poo/mop validate)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
@@ -13,12 +13,10 @@
 
 ;; Pure APIs: explicit inert inputs, no environment lookup, clock, files or spawn.
 (def (validate-script script)
-  (unless (yuanxu-validation-evidence-accepted?
-            (.call ProcessScriptContract .admit script #f))
-    (error "invalid Ops process declaration"))
-  script)
+  (validate ProcessScriptContract script))
 (def (prepare-script-command script (arguments '()))
-  (validate-script script)
+  (script-command (validate-script script) arguments))
+(def (script-command script arguments)
   (unless (and (list? arguments) (every string? arguments))
     (error "Ops arguments must be strings"))
   (let (argv (append (.get script command) arguments))
@@ -32,15 +30,14 @@
 (def (merge-script-environment inherited overrides)
   (for-each
     (lambda (value)
-      (unless (yuanxu-validation-evidence-accepted?
-                (.call OpsEnvironmentContract .admit value #f))
-        (error "invalid Ops environment")))
+      (validate OpsEnvironmentContract value))
     (list inherited overrides))
   (.+ inherited overrides))
 (def (preview-script script (arguments '()) (inherited-environment (.o))
                      stderr-redirection: (stderr-value #t))
   (unless (boolean? stderr-value) (error "Ops stderr-redirection must be boolean"))
-  (let* ((argv-value (prepare-script-command script arguments))
+  (let* ((script (validate-script script))
+         (argv-value (script-command script arguments))
         (environment-value (merge-script-environment inherited-environment (.get script environment))))
     (.o argv: argv-value directory: (.get script directory)
         environment: environment-value timeout: (.get script timeout)

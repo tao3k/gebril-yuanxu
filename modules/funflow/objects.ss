@@ -4,6 +4,8 @@
         (only-in "control-plane/agent-harness-vocabulary.ss"
                  +yuanxu-agent-operation-kinds+ +yuanxu-runtime-snapshot-statuses+)
         (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in "control-plane/signatures.ss" Fun String validate)
+        (only-in "types.ss" JobResultContract)
         ;; This role publishes these combinators, not the aggregate control
         ;; plane (including Agent harnesses and unrelated syntax facades).
         (only-in "control-plane/flow.ss"
@@ -20,7 +22,8 @@
   selected: '()
   finalizers: '()
   graph: (job-graph job)
-  .run: (lambda (workspace) (run-job job workspace)))
+  .run: (validate (Fun JobResultContract <- String)
+          (lambda (workspace) (run-job job workspace))))
 (.def FunflowModule.
   runtime-vocabulary:
   (.o operation-kinds: +yuanxu-agent-operation-kinds+

@@ -3,6 +3,9 @@
 (import :std/test (only-in :clan/poo/object .get .ref/cached .call .slot? .cc)
         :yuanxu/object-syntax/path-slots
         :yuanxu/modules/funflow/objects
+        (only-in :yuanxu/modules/funflow/config Config)
+        (only-in :yuanxu/modules/funflow/types FunflowScopeContract)
+        (only-in :yuanxu/modules/funflow/control-plane/signatures validate)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export funflow-job-test)
@@ -16,6 +19,12 @@
   selected: '(deploy))
 (def funflow-job-test
   (test-suite "Core Funflow declarative Job to Ops"
+    (yuanxu-test-case "public Scope admits its actual Job configuration"
+      (def scope
+        (validate (.get FunflowScopeContract value-contract)
+          (.o (:: @ FunflowModule.) config: Config)))
+      (check-equal? (.get scope config selected) '())
+      (check-equal? (.get scope config finalizers) '()))
     (yuanxu-test-case "Graph projection is inert and orders the selected dependency closure"
       (check-equal? (.get Deployment graph order) '(init validate deploy))
       (check-equal? (.ref/cached (.get Deployment tasks) 'unused) #f))

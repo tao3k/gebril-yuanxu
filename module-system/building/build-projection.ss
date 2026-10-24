@@ -60,7 +60,13 @@
 (def (retained-build-entries specs root package-prefix selected current!)
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
-  (let (seen (make-hash-table-eq))
+  (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table)))
+    ;; Resolve each selected path once. Retained libraries overlap the Module
+    ;; projection; a scan per library repeated both POO reads and normalization.
+    (for-each
+      (lambda (entry)
+        (hash-put! selected-by-path (path-normalize (.ref entry 'path)) entry))
+      selected)
     (map
      (lambda (spec)
        (let* ((parts (if (string? spec) (list spec)
@@ -80,7 +86,7 @@
                (unless (eq? (module-source-type file) (if (pair? (cdr parts)) 'directory 'regular))
                  (error "retained source is missing, non-regular or a symlink" file))
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
-         (def old (find (lambda (entry) (equal? (path-normalize (.ref entry 'path)) path-value)) selected))
+         (def old (hash-get selected-by-path path-value))
          (def prepared-input (if old (.ref old 'input)
                                  (yuanxu-prepare-module-retained-source path-value current!)))
          (def identity (.ref prepared-input 'compiler-identity))
@@ -272,7 +278,18 @@
                  (lambda ()
                    (retained-build-entries retained root package-prefix (.ref graph 'entries)
                      (lambda () ((.ref graph 'compiler-current)))))))
-         (entries (merge-build-entries (.ref graph 'entries) kept))
+         ;; A selection may use Modules from another source package. Observe
+         ;; their inputs and Graph guards below, but let that package's native
+         ;; build own its output names and compiler options.
+         (all-entries (merge-build-entries (.ref graph 'entries) kept))
+         (entries
+           (filter (lambda (entry)
+                     (let (identity (.ref entry 'compiler-identity))
+                       (or (and (equal? package-prefix "yuanxu")
+                                (eq? identity 'tao3k/yuanxu/prelude))
+                           (string-prefix? (string-append package-prefix "/")
+                             (symbol->string identity))))) all-entries))
+         (foreign? (not (= (length entries) (length all-entries))))
          (observed (unique-build-inputs
                      (append (.ref entry-input 'source-inputs) (.ref graph 'compiler-inputs)
                        (foldr append '()
@@ -292,6 +309,12 @@
           ((.ref graph 'compiler-current))
           (for-each (lambda (entry) ((.ref (.ref entry 'input) 'admit-current))) kept)
           (module-source-admit-current! observed))))
+    (def (publication-current!)
+      (current!)
+      ;; Output issuance covers the entire selected Graph. A package-only
+      ;; compilation cannot certify outputs owned by its source dependencies.
+      (when foreign?
+        (error "selected Graph publication requires all package owners")))
     (current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         native-make-specs: (project-native-make-specs entries package-prefix)
@@ -304,8 +327,10 @@
           (current!)
           (begin0 (call-with-module-compiler-inputs entries action) (current!)))
         .compile: (lambda (libdir action)
+                    (publication-current!)
                     (call-with-build-artifact-issuance projection libdir
                       (lambda () (.call projection .with-compiler-inputs action))))
         .process: (lambda (libdir command)
+                   (publication-current!)
                    (run-build-artifact-process projection libdir command))
         source-root: root spec: build-value admit-current: current!)))

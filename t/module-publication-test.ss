@@ -9,7 +9,7 @@
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
                  replay-slot-reads! object-read-issued?)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/mop Type. TypeError?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
@@ -53,6 +53,39 @@
 
 (def module-publication-test
   (test-suite "Hygienic Module publication over admitted sources"
+    (yuanxu-test-case "dependency bindings consume the native checked Scope callback"
+      (with-publication-source
+        (lambda (root _module-root _source _view)
+          (def provider (path-expand "modules/custom/provider" root))
+          (def consumer (path-expand "modules/custom/consumer" root))
+          (def plain
+            "(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def ScopeContract (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '()))) (export ScopeContract)")
+          (write-file (path-expand "types.ss" provider) plain)
+          (write-file (path-expand "objects.ss" provider)
+            "(import :clan/poo/object) (def calls 0) (def Scope (.o run: (lambda (value) (set! calls (+ calls 1)) value) .calls: (lambda () calls))) (export Scope)")
+          (write-file (path-expand "config.ss" provider) "(def Config #f) (export Config)")
+          (write-file (path-expand "interface.ss" provider)
+            "(.def Provider identity: 'custom/provider core: (.o requires: (.o) scope-contract: ScopeContract exports: Scope) features: (.o))")
+          (write-file (path-expand "types.ss" consumer)
+            (string-append plain
+              " (import (only-in :yuanxu/object-types/contracts YuanxuContract.) (only-in :clan/poo/mop Function) (only-in :clan/poo/number Integer) (only-in :clan/poo/type Record))"
+              " (def CheckedDependency (.cc YuanxuContract. identity: 'test/checked-dependency value-contract: (Record run: (list (Function (list Integer) (list Integer)))))) (export CheckedDependency)"))
+          (write-file (path-expand "objects.ss" consumer) "(def Placeholder #f) (export Placeholder)")
+          (write-file (path-expand "config.ss" consumer) "(def Config #f) (export Config)")
+          (write-file (path-expand "interface.ss" consumer)
+            "(.def Consumer identity: 'custom/consumer core: (.o requires: (.o Provider: (.o module-id: 'custom/provider contract: CheckedDependency)) scope-contract: ScopeContract exports: (.o provider: Provider run: (lambda (value) (.call Provider run value)))) features: (.o))")
+          (write-file (path-expand "init.ss" root)
+            "(yuanxu! :load-modules \"./modules\" mode: explicit :custom (provider) (consumer))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+          (def record (.call view .selected-record 'custom/consumer))
+          (def scope (.get record scope))
+          (check-exception (.call scope run "bad") TypeError?)
+          (check-equal? (.call (.get scope provider) .calls) 0)
+          (check-equal? (.call scope run 8) 8)
+          (check-equal? (.call (.get scope provider) .calls) 1)
+          (check-equal?
+            (eq? (.get scope provider)
+                 (.get record dependency-records Provider requirement-evidence candidate)) #t))))
     (yuanxu-test-case "Graph consumes the exact normalized publication from its single producer"
       (with-publication-source
         (lambda (root _module-root _source _view)

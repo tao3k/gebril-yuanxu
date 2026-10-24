@@ -1,4 +1,3 @@
-(import :yuanxu/object-family/syntax)
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;;
@@ -7,13 +6,16 @@
 ;;; Boundary: tasks describe work intent and adapter request shape.
 ;;; Invariant: only pure/scheme tasks carry an in-process executor.
 
-(import (only-in :clan/poo/object .@ object?)
+(import (only-in :clan/poo/object .@ .o .get .ref .slot? object?)
+        :yuanxu/modules/funflow/control-plane/signatures
         :yuanxu/modules/funflow/control-plane/projection-syntax
         :yuanxu/modules/funflow/control-plane/roles
         :yuanxu/modules/funflow/control-plane/failure
         :yuanxu/object-family/role-syntax)
 
-(export make-task
+(export TaskContract task-signature ExecutionRequestContract
+        (import: :yuanxu/modules/funflow/control-plane/signatures)
+        make-task
         task?
         task-name
         task-kind
@@ -79,14 +81,32 @@
 
 ;;; The request field is symbolic control-plane data; the executor slot is
 ;;; present only for local task kinds.
-;; : (-> Symbol Symbol Request Contract Contract Executor Task)
-(defpoo-object-family
-  (prototype Task. funflow-task? task?)
-  (constructor make-task
-    (name-value name) (kind-value kind) (request-value request) (input-contract-value input-contract) (output-contract-value output-contract) (executor-value executor))
-  (accessors
-    (task-name name) (task-kind kind) (task-request request) (task-input-contract input-contract) (task-output-contract output-contract) (task-executor executor))
-  (projections))
+;; : (-> Symbol Symbol Request Function Executor Task)
+(def (task-fields signature kind)
+  (Record funflow-task?: (list (Exactly #t)) name: (list Symbol)
+          kind: (list Symbol) request: (list Any)
+          signature: (list OperationSignature)
+          executor: (list (if (memq kind '(pure scheme)) signature (OrFalse signature)))))
+(def TaskContract
+  (.cc Type. sexp: 'FunflowTask
+    '.element? (lambda (value)
+                 (and (task? value) (element? (task-fields (.get value signature) (.get value kind)) value)))
+    '.validate (lambda (value)
+                 (unless (task? value) (raise-type-error TaskContract value))
+                 (validate (task-fields (admit-operation-signature (.get value signature)) (.get value kind)) value))))
+(def (task? value)
+  (and (object? value) (.slot? value 'funflow-task?) (.ref value 'funflow-task?)))
+(def (make-task name kind request signature executor)
+  (validate TaskContract
+    (.o bind-these: #f funflow-task?: #t name: name kind: kind request: request
+        signature: signature executor: executor)))
+(def (task-name value) (.ref value 'name))
+(def (task-kind value) (.ref value 'kind))
+(def (task-request value) (.ref value 'request))
+(def (task-signature value) (.ref value 'signature))
+(def (task-input-contract value) (operation-input (task-signature value)))
+(def (task-output-contract value) (operation-output (task-signature value)))
+(def (task-executor value) (.ref value 'executor))
 
 ;;; Task-family descriptors are POO objects because extension policy should be
 ;;; data-driven at the task boundary, not hard-coded in the runner.
@@ -108,7 +128,9 @@
            (capability family-capability)
            (route family-route)
            (runtime-owner family-runtime-owner)
-           (adapter-dispatch family-adapter-dispatch)
+           (adapter-dispatch
+            (validate (OrFalse (Union Symbol (Fun Symbol <- TaskContract)))
+                      family-adapter-dispatch))
            (responsibility
             (list 'task-family family-route family-capability))))
    (supers task-family-descriptor-prototype)))
@@ -199,7 +221,8 @@
 
 ;; : (-> TaskFamilyDescriptor AdapterDispatch)
 (def (task-family-adapter-dispatch descriptor)
-  (.@ descriptor adapter-dispatch))
+  (validate (OrFalse (Union Symbol (Fun Symbol <- TaskContract)))
+            (.@ descriptor adapter-dispatch)))
 
 ;;; Boundary: find task family is the policy-visible edge for core behavior,
 ;;; keeping validation, lookup, or projection responsibilities centralized for
@@ -302,13 +325,16 @@
    policy)
   transparent: #t)
 
-;; : (-> Symbol Procedure Contract Contract Task)
-(def (make-pure-task name proc input-contract output-contract)
-  (make-task name 'pure (list 'pure name) input-contract output-contract proc))
+(def ExecutionRequestContract
+  (.cc Type. sexp: 'ExecutionRequest '.element? execution-request?))
 
-;; : (-> Symbol Procedure Contract Contract Task)
-(def (make-scheme-task name proc input-contract output-contract)
-  (make-task name 'scheme (list 'scheme name) input-contract output-contract proc))
+;; : (-> Symbol Function Procedure Task)
+(def (make-pure-task name signature proc)
+  (make-task name 'pure (list 'pure name) signature proc))
+
+;; : (-> Symbol Function Procedure Task)
+(def (make-scheme-task name signature proc)
+  (make-task name 'scheme (list 'scheme name) signature proc))
 
 ;;; Request operation and payload are generic helpers for extension-owned task
 ;;; families that use the conventional =(family operation payload)= shape.
@@ -330,9 +356,9 @@
     (caddr (task-request task))
     #f))
 
-;; : (-> Symbol Symbol Payload Contract Contract Task)
-(def (make-external-task name operation payload input-contract output-contract)
-  (make-task name 'external (list 'external operation payload) input-contract output-contract #f))
+;; : (-> Symbol Symbol Payload Function Task)
+(def (make-external-task name operation payload signature)
+  (make-task name 'external (list 'external operation payload) signature #f))
 
 ;; : (-> TaskFamilyRegistry Task Boolean)
 (def (task-local?-in registry task)

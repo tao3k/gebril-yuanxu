@@ -100,6 +100,9 @@
                       ;; Public artifact/IR identity is shared with Core admission.
                       ;; These are library definitions, not a linked Module scope.
                       :yuanxu/modules/json-schema/json-schema-receipt
+                      ;; Validation results and diagnostics cross the same public
+                      ;; boundary; their native record identities must also agree.
+                      :yuanxu/modules/json-schema/json-schema-validate
                       ;; Source-bound contracts are ordinary Core definitions
                       ;; used by relocated publications, not a Module scope.
                       :yuanxu/admission/source

@@ -37,8 +37,6 @@
        'YuanxuContractSchemaFixture
        object?
        (list +contract-schema-fixture-slot+)
-       (lambda (candidate slot) (.slot? candidate slot))
-       (lambda (candidate slot) (.ref candidate slot))
        '((projection . test))))))
 
 (unless

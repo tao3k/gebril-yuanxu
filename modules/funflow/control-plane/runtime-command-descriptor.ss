@@ -8,7 +8,7 @@
 
 (import :yuanxu/modules/funflow/control-plane/runtime-protocol
         :yuanxu/modules/funflow/control-plane/runtime-command-invocation
-        (only-in :clan/poo/object .cc .get)
+        (only-in :clan/poo/object .cc .get .o .ref .slot? object?)
         (only-in :yuanxu/ops/objects ProcessScript.)
         (only-in :yuanxu/ops/func run-script))
 
@@ -34,13 +34,21 @@
 ;;; Runtime command descriptors are inert CLI contracts. They make the future
 ;;; Rust executable boundary inspectable before the command is materialized.
 ;; : (-> Symbol Path ArgumentsBuilder Protocol Alist RuntimeCommandDescriptor)
-(defstruct runtime-command-descriptor
-  (name
-   executable
-   arguments
-   protocol
-   metadata)
-  transparent: #t)
+(def RuntimeCommandDescriptor
+  (Record runtime-command-descriptor?: (list (Exactly #t))
+          name: (list Symbol) executable: (list String) arguments: (list RuntimeArguments)
+          protocol: (list Symbol) metadata: (list (List Any))))
+(def (make-runtime-command-descriptor name executable arguments protocol metadata)
+  (validate RuntimeCommandDescriptor
+    (.o bind-these: #f runtime-command-descriptor?: #t name: name executable: executable
+        arguments: arguments protocol: protocol metadata: metadata)))
+(def (runtime-command-descriptor? value)
+  (and (object? value) (.slot? value 'runtime-command-descriptor?) (.ref value 'runtime-command-descriptor?)))
+(def (runtime-command-descriptor-name value) (.ref value 'name))
+(def (runtime-command-descriptor-executable value) (.ref value 'executable))
+(def (runtime-command-descriptor-arguments value) (.ref value 'arguments))
+(def (runtime-command-descriptor-protocol value) (.ref value 'protocol))
+(def (runtime-command-descriptor-metadata value) (.ref value 'metadata))
 
 ;; : (-> Symbol Path ArgumentsBuilder [Alist] RuntimeCommandDescriptor)
 (def (make-stdout-runtime-command-descriptor name executable arguments . maybe-metadata)
@@ -62,10 +70,8 @@
 ;;; expose Gerbil descriptor structs in their compile-time metadata.
 ;; : (-> Symbol Path ArgumentsBuilder Protocol Alist Alist Alist)
 (def (runtime-command-fields->manifest name executable arguments protocol metadata envelope)
-  (let ((arguments-value
-         (if (procedure? arguments)
-           (arguments envelope)
-           arguments)))
+  (let* ((checked (validate RuntimeArguments arguments))
+         (arguments-value (if (procedure? checked) (checked envelope) checked)))
     (list (cons 'schema +runtime-command-descriptor-schema+)
           (cons 'request-schema (runtime-alist-ref envelope 'schema #f))
           (cons 'operation (runtime-alist-ref envelope 'operation #f))

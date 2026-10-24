@@ -3,11 +3,17 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+(import (only-in :clan/poo/mop TypeError?))
+(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+                 Fun Any Number Integer String Symbol List Pair Null Unit)
+        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Boundary: Kleisli tests cover value-dependent Functional + Agentic AI Lab binding.
 ;;; Invariant: binders return ordinary flow declarations; runner owns execution.
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
+                 check-exception
                  check-equal?
                  test-suite)
         "../modules/funflow/control-plane/flow-syntax.ss"
@@ -45,31 +51,33 @@
    (else
     (kleisli-alist-value key (cdr entries)))))
 
-(defyuanxu-arr kleisli-macro-inc
+(defyuanxu-arr
   kleisli-macro-inc
-  (lambda (x) (+ x 1))
-  'number
-  'number)
+  kleisli-macro-inc
+  (Fun Number <- Number)
+  (lambda (x) (+ x 1)))
 
-(defyuanxu-bind kleisli-macro-bound
+(defyuanxu-bind
+  kleisli-macro-bound
   kleisli-macro-bound
   kleisli-macro-inc
+  Number
   (lambda (value)
-    (flow-arr 'kleisli-macro-bound-dynamic
-              (lambda (current) (+ current value))
-              'number
-              'number))
-  'number)
+    (flow-arr
+     'kleisli-macro-bound-dynamic
+     (Fun Number <- Number)
+     (lambda (current) (+ current value)))))
 
-(defyuanxu-kleisli kleisli-macro-kleisli
+(defyuanxu-kleisli
+  kleisli-macro-kleisli
   kleisli-macro-kleisli
   kleisli-macro-inc
+  Number
   (lambda (value)
-    (flow-arr 'kleisli-macro-kleisli-dynamic
-              (lambda (current) (+ current value))
-              'number
-              'number))
-  'number)
+    (flow-arr
+     'kleisli-macro-kleisli-dynamic
+     (Fun Number <- Number)
+     (lambda (current) (+ current value)))))
 
 ;;; This suite keeps dependent composition out of the broader Arrow law owner.
 ;; : TestSuite
@@ -77,26 +85,26 @@
   (test-suite "functional flow kleisli"
     (yuanxu-test-case "binds dynamically through the category object"
       (let* ((category default-flow-category)
-             (inc (flow-category-arr category
-                                     'inc
-                                     (lambda (x) (+ x 1))
-                                     'number
-                                     'number))
+             (inc (flow-category-arr
+		   category
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
              (bound (flow-category-bind
-                     category
-                     'bind-inc
-                     inc
-                     (lambda (value)
+		     category
+		     'bind-inc
+		     inc
+		     Number
+		     (lambda (value)
                        (if (> value 3)
-                         (flow-arr 'dynamic-double
-                                   (lambda (current) (* current 2))
-                                   'number
-                                   'number)
-                         (flow-arr 'dynamic-inc
-                                   (lambda (current) (+ current 1))
-                                   'number
-                                   'number)))
-                     'number))
+                           (flow-arr
+			    'dynamic-double
+			    (Fun Number <- Number)
+			    (lambda (current) (* current 2)))
+                           (flow-arr
+			    'dynamic-inc
+			    (Fun Number <- Number)
+			    (lambda (current) (+ current 1)))))))
              (receipt (flow->dag-receipt bound))
              (result (runner-run (kleisli-runner) bound 3))
              (root-receipt (run-result-receipt result))
@@ -110,17 +118,17 @@
         (check-equal? (receipt-status kleisli-receipt) 'ok)
         (check-equal? (length (receipt-children kleisli-receipt)) 2)))
     (yuanxu-test-case "rejects binders that do not return flows"
-      (let* ((inc (flow-arr 'inc (lambda (x) (+ x 1)) 'number 'number))
-             (bad (flow-bind 'bad-bind
-                             inc
-                             (lambda (_value) 'not-a-flow)
-                             'number))
-             (failure (try-control-plane
-                       (lambda () (kleisli-run bad 3))
-                       (lambda (failure) failure))))
-        (check-equal? (execution-failure? failure) #t)
-        (check-equal? (execution-failure-code failure)
-                      'invalid-kleisli-binder-result)))
+      (let* ((inc (flow-arr
+		   'inc
+		   (Fun Number <- Number)
+		   (lambda (x) (+ x 1))))
+             (bad (flow-bind
+		   'bad-bind
+		   inc
+		   Number
+		   (lambda (_value) 'not-a-flow)))
+             )
+        (check-exception (kleisli-run bad 3) TypeError?)))
     (yuanxu-test-case "authors bind flows with hygienic macros"
       (check-equal? (flow-name kleisli-macro-bound) 'kleisli-macro-bound)
       (check-equal? (flow-name kleisli-macro-kleisli) 'kleisli-macro-kleisli)

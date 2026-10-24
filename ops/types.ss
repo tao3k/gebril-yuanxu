@@ -1,8 +1,15 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
-(export ProcessScriptContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
+(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :clan/poo/mop Type. Function Any Bool element?)
+        (only-in :clan/poo/type Record String List OrFalse Union Unit)
+        (only-in :clan/poo/number Integer Real))
+(export ProcessScriptContract ProcessResultContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
+(def ProcessResultContract
+  (Record status: (list Integer) wait-status: (list Integer) seconds: (list Real)
+          output: (list (Union String Unit))
+          log: (list (OrFalse String))))
 (def (environment? value)
   (and (object? value)
        (every (lambda (key)
@@ -11,28 +18,39 @@
                      (string? (.ref value key))))
               (.all-slots value))))
 (def OpsEnvironmentContract
-  (yuanxu-predicate-contract 'ops/environment environment? (lambda (_v _c) '())))
-(def (execution-options? value)
-  (and (object? value)
-       (every (cut .slot? value <>) '(directory environment timeout log check-status))
-       (or (not (.get value directory)) (string? (.get value directory)))
-       (environment? (.get value environment))
-       (or (not (.get value timeout))
-           (and (real? (.get value timeout)) (> (.get value timeout) 0)
-                (< (.get value timeout) +inf.0)))
-       (or (not (.slot? value 'idle-timeout)) (not (.get value idle-timeout))
-           (and (.get value timeout) (real? (.get value idle-timeout))
-                (> (.get value idle-timeout) 0) (< (.get value idle-timeout) +inf.0)))
-       (or (not (.slot? value 'progress)) (not (.get value progress))
-           (procedure? (.get value progress)))
-       (or (not (.get value log)) (string? (.get value log)))
-       (boolean? (.get value check-status))))
-(def (process-script? value)
-  (and (execution-options? value) (.slot? value 'command)
-       (pair? (.get value command)) (every string? (.get value command))
-       (not (string-empty? (car (.get value command))))))
+  (.cc Type. sexp: 'OpsEnvironment '.element? environment?))
+(def PositiveDuration
+  (.cc Type. sexp: 'PositiveFiniteDuration
+    '.element? (lambda (value)
+                 (and (real? value) (> value 0) (< value +inf.0)))))
+;; The callback result is unconstrained, but its argument and the factory's
+;; single returned callable are checked by upstream Function normalization.
+(def ProgressFactory (Function (list (Function (list Any) (list String))) '()))
+(def ConfigFields
+  (Record directory: (list (OrFalse String))
+          environment: (list OpsEnvironmentContract)
+          timeout: (list (OrFalse PositiveDuration))
+          log: (list (OrFalse String)) check-status: (list Bool)
+          idle-timeout: (list (OrFalse PositiveDuration) optional: #t)
+          progress: (list (OrFalse ProgressFactory) optional: #t)))
 (def OpsConfigContract
-  (yuanxu-predicate-contract 'ops/config execution-options? (lambda (_v _c) '())))
+  (.o inherit: (list ConfigFields)
+    (.element? (inherited)
+      (lambda (value)
+        (and ((inherited) value)
+             (or (not (.slot? value 'idle-timeout)) (not (.get value idle-timeout))
+                 (and (.get value timeout) #t)))))))
+(def (execution-options? value) (element? OpsConfigContract value))
+(def ProcessScriptFields
+  (.cc OpsConfigContract slots:
+    (.cc (.get OpsConfigContract slots)
+         command: (.get (Record command: (list (List String))) slots command))))
+(def ProcessScriptContract
+  (.o inherit: (list ProcessScriptFields)
+    (.element? (inherited)
+      (lambda (value)
+        (and ((inherited) value) (pair? (.get value command))
+             (not (string-empty? (car (.get value command)))))))))
 (def (ops-scope? scope)
   (and (object? scope)
        (every (cut .slot? scope <>) '(config types prototypes validate prepare-command merge-environment preview run))
@@ -53,5 +71,3 @@
               '(Script SelectedPackages))))
 (def OpsScopeContract
   (yuanxu-predicate-contract 'ops/scope ops-scope? (lambda (_v _c) '())))
-(def ProcessScriptContract
-  (yuanxu-predicate-contract 'ops/process-script process-script? (lambda (_v _c) '())))

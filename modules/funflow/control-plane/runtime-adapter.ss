@@ -10,7 +10,8 @@
         :yuanxu/modules/funflow/control-plane/runtime-protocol
         :yuanxu/modules/funflow/control-plane/runtime-command-invocation)
 
-(export make-runtime-adapter
+(export RuntimeAdapterContract
+        make-runtime-adapter
         runtime-adapter?
         runtime-adapter-name
         runtime-adapter-capabilities
@@ -30,14 +31,25 @@
 ;;; Function slots are the runtime boundary; Scheme policy calls these slots
 ;;; without owning the heavy implementation behind them.
 ;; : (-> Symbol [Symbol] Submitter Fetcher StorePutter StoreGetter RuntimeAdapter)
-(defstruct runtime-adapter
-  (name
-   capabilities
-   submitter
-   fetcher
-   store-putter
-   store-getter)
-  transparent: #t)
+(def RuntimeAdapterContract
+  (Record runtime-adapter?: (list (Exactly #t)) name: (list Symbol)
+          capabilities: (list (List Symbol))
+          submitter: (list (Fun AdapterResult <- ExecutionRequestContract))
+          fetcher: (list (Fun AdapterResult <- RequestId))
+          store-putter: (list (Fun AdapterResult <- ExecutionRequestContract))
+          store-getter: (list (Fun AdapterResult <- ArtifactHandle))))
+(def (make-runtime-adapter name capabilities submitter fetcher store-putter store-getter)
+  (validate RuntimeAdapterContract
+    (.o bind-these: #f runtime-adapter?: #t name: name capabilities: capabilities
+        submitter: submitter fetcher: fetcher store-putter: store-putter store-getter: store-getter)))
+(def (runtime-adapter? value)
+  (and (object? value) (.slot? value 'runtime-adapter?) (.ref value 'runtime-adapter?)))
+(def (runtime-adapter-name value) (.ref value 'name))
+(def (runtime-adapter-capabilities value) (.ref value 'capabilities))
+(def (runtime-adapter-submitter value) (.ref value 'submitter))
+(def (runtime-adapter-fetcher value) (.ref value 'fetcher))
+(def (runtime-adapter-store-putter value) (.ref value 'store-putter))
+(def (runtime-adapter-store-getter value) (.ref value 'store-getter))
 
 ;;; The request-only adapter is deterministic evidence plumbing for tests and
 ;;; early control-plane validation.
@@ -77,19 +89,19 @@
 
 ;; : (-> RuntimeAdapter ExecutionRequest AdapterResult)
 (def (adapter-submit adapter request)
-  ((runtime-adapter-submitter adapter) request))
+  ((runtime-adapter-submitter (validate RuntimeAdapterContract adapter)) request))
 
 ;; : (-> RuntimeAdapter RequestId AdapterResult)
 (def (adapter-fetch adapter request-id)
-  ((runtime-adapter-fetcher adapter) request-id))
+  ((runtime-adapter-fetcher (validate RuntimeAdapterContract adapter)) request-id))
 
 ;; : (-> RuntimeAdapter ExecutionRequest AdapterResult)
 (def (adapter-store-put adapter request)
-  ((runtime-adapter-store-putter adapter) request))
+  ((runtime-adapter-store-putter (validate RuntimeAdapterContract adapter)) request))
 
 ;; : (-> RuntimeAdapter ArtifactHandle AdapterResult)
 (def (adapter-store-get adapter handle)
-  ((runtime-adapter-store-getter adapter) handle))
+  ((runtime-adapter-store-getter (validate RuntimeAdapterContract adapter)) handle))
 
 ;; : (-> ExecutionRequest RequestId)
 (def (request-id request)

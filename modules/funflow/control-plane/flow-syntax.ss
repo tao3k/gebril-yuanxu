@@ -32,7 +32,7 @@
 ;;       # Examples
 ;;       ```scheme
 ;;       (defyuanxu-define-binding-macro defyuanxu-arr flow-arr
-;;         (proc input-contract output-contract))
+;;         (signature proc))
 ;;       ;; => macro definition for an arrow-flow binding form
 ;;       ```
 ;;     %
@@ -44,7 +44,7 @@
         (constructor 'flow-name arg ...))))))
 
 ;; defyuanxu-arr
-;;   : (-> Identifier Identifier ProcedureExpr ContractExpr ContractExpr FlowBinding)
+;;   : (-> Identifier Identifier FunctionTypeExpr ProcedureExpr FlowBinding)
 ;;   | doc m%
 ;;       `defyuanxu-arr` defines a pure arrow flow with an identifier-owned
 ;;       flow name while leaving the procedure and contracts as caller
@@ -52,14 +52,14 @@
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defyuanxu-arr parse-flow parse-request parse request-contract result-contract)
+;;       (defyuanxu-arr parse-flow parse-request (Fun result-contract <- request-contract) parse)
 ;;       ;; => flow binding
 ;;       ```
 ;;     %
 (defyuanxu-define-binding-macro
  defyuanxu-arr
  flow-arr
- (proc input-contract output-contract))
+ (signature proc))
 
 ;; defyuanxu-identity
 ;;   : (-> Identifier Identifier ContractExpr FlowBinding)
@@ -96,24 +96,24 @@
  (left right))
 
 ;; defyuanxu-map
-;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
+;;   : (-> Identifier Identifier FlowExpr FunctionTypeExpr ProcedureExpr FlowBinding)
 ;;   | doc m%
 ;;       `defyuanxu-map` defines a functional output map over an existing
 ;;       flow.
 ;;
 ;;       # Examples
 ;;       ```scheme
-;;       (defyuanxu-map rendered render checked-flow render-result output-contract)
+;;       (defyuanxu-map rendered render checked-flow (Fun output-contract <- input-contract) render-result)
 ;;       ;; => mapped flow binding
 ;;       ```
 ;;     %
 (defyuanxu-define-binding-macro
  defyuanxu-map
  flow-map
- (source proc output-contract))
+ (source signature proc))
 
 ;; defyuanxu-bind
-;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
+;;   : (-> Identifier Identifier FlowExpr FunctionTypeExpr ProcedureExpr FlowBinding)
 ;;   | doc m%
 ;;       `defyuanxu-bind` defines a Kleisli bind where the binder returns the
 ;;       next flow.
@@ -127,10 +127,10 @@
 (defyuanxu-define-binding-macro
  defyuanxu-bind
  flow-bind
- (source binder output-contract))
+ (source output-contract binder))
 
 ;; defyuanxu-kleisli
-;;   : (-> Identifier Identifier FlowExpr ProcedureExpr ContractExpr FlowBinding)
+;;   : (-> Identifier Identifier FlowExpr FunctionTypeExpr ProcedureExpr FlowBinding)
 ;;   | doc m%
 ;;       `defyuanxu-kleisli` is the authoring-layer alias for the Kleisli bind
 ;;       form.
@@ -144,7 +144,7 @@
 (defyuanxu-define-binding-macro
  defyuanxu-kleisli
  flow-kleisli
- (source binder output-contract))
+ (source output-contract binder))
 
 ;; defyuanxu-fanout
 ;;   : (-> Identifier Identifier FlowExpr FlowExpr FlowBinding)

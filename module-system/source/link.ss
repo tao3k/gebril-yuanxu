@@ -396,7 +396,7 @@
                            (.all-slots requirements))))
                     (bindings (object<-alist
                                (map (lambda (alias)
-                                      (cons alias (.ref (.ref (.ref records alias) 'provider) 'scope)))
+                                      (cons alias (.ref (.ref (.ref records alias) 'requirement-evidence) 'candidate)))
                                     (.all-slots records))))
                     (scope-value (observe-link-stage (list 'scope-factory id)
                                    (lambda ()
@@ -410,7 +410,8 @@
                     (record
                      (let ((identity id) (generation generation-value) (source source-value)
                            (publication publication-value) (publication-evidence publication-evidence-value)
-                           (dependency-records records) (scope scope-value) (scope-evidence scope-evidence-value))
+                           (dependency-records records) (scope (.ref scope-evidence-value 'candidate))
+                           (scope-evidence scope-evidence-value))
                        (.o identity generation source publication publication-evidence
                            dependency-records scope scope-evidence))))
                (current! 'scope-linked)

@@ -6,7 +6,8 @@
 ;;; Boundary: runner interprets plans and emits receipts.
 ;;; Invariant: adapter calls remain behind runtime-adapter functions.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax
+(import (only-in :clan/poo/object .cc)
+        :yuanxu/modules/funflow/control-plane/projection-syntax
         :yuanxu/utilities/algorithms
         :yuanxu/modules/funflow/control-plane/receipt
         :yuanxu/modules/funflow/control-plane/failure
@@ -52,8 +53,8 @@
 ;;; while allowing configured entrypoints to supply POO descriptor registries.
 ;; : (-> Strategy RuntimeAdapter [TaskFamilyRegistry] [FlowDeclarationRegistry] Runner)
 (def (make-runner strategy adapter . registries)
-  (make-runner-state strategy
-                     adapter
+  (make-runner-state (validate StrategyContract strategy)
+                     (validate RuntimeAdapterContract adapter)
                      (if (null? registries)
                        default-task-family-registry
                        (car registries))
@@ -149,8 +150,10 @@
 ;;; child receipts produced by each planned step.
 ;; : (-> Runner Flow Input RunResult)
 (def (runner-run runner flow input)
-  (let ((strategy (runner-strategy runner)))
-    (let ((plan (runner-plan runner flow)))
+  (def checked-flow (admit-flow flow))
+  (let ((strategy (runner-strategy runner))
+        (input (validate (flow-input-contract checked-flow) input)))
+    (let ((plan (runner-plan runner checked-flow)))
       (runner-validate-plan runner plan)
       (let* ((frontier-state
               (yuanxu-make-frontier-state
@@ -164,7 +167,7 @@
               (run-plan-nodes
                runner plan strategy (execution-plan-nodes plan) input
                '() (yuanxu-make-value-index) frontier-state)))
-        (let ((value (car result))
+        (let ((value (validate (flow-output-contract flow) (car result)))
               (children (reverse (cdr result))))
           (make-run-result
            value
@@ -188,22 +191,26 @@
 ;;; - Recovery handles both local thrown failures and adapter-failed receipts.
 ;;; - Successful runs return the normal run value.
 ;; : (-> Runner Flow Input FailureHandler Value)
-(def (runner-run-value-or-recover runner flow input handler)
-  (try-control-plane
+(def (runner-run-value-or-recover runner flow input result-type handler)
+  (def recovery-target
+    (.cc Type. sexp: 'FunflowRecoveryTarget
+      '.element? (lambda (value) (or (execution-failure? value) (receipt? value)))))
+  (def recover (validate (Fun result-type <- recovery-target) handler))
+  (try-control-plane result-type
    (lambda ()
      (let* ((result (runner-run runner flow input))
             (failed (first-failed-receipt (run-result-receipt result))))
        (if failed
-         (handler failed)
+         (recover failed)
          (run-result-value result))))
-   handler))
+   recover))
 
 ;;; Runner-level try projection mirrors Funflow's =tryE= observable contract:
 ;;; local throws and failed adapter receipts become left values, while normal
 ;;; completion keeps the successful value on the right.
 ;; : (-> Runner Flow Input TryResult)
 (def (runner-run-either runner flow input)
-  (try-control-plane
+  (try-control-plane (TryValue (flow-output-contract flow))
    (lambda ()
      (let* ((result (runner-run runner flow input))
             (failed (first-failed-receipt (run-result-receipt result))))
@@ -367,50 +374,16 @@
                                 (list source-receipt bound-receipt)))))
 
 ;; : (-> PlanNode KleisliStep Value Value Failure)
-(defpoo-core-receipt-projection
-  invalid-kleisli-binder-result-detail (node step source-value bound-flow)
-  (bindings ())
-  (fields ((node-id (plan-node-id node))
-           (step-name (kleisli-step-name step))
-           (source-value source-value)
-           (binder-result bound-flow))))
+
 
 ;; : (-> PlanNode KleisliStep Value Value Failure)
-(def (raise-invalid-kleisli-binder-result node step source-value bound-flow)
-  (raise-control-plane-failure
-   'runner
-   'invalid-kleisli-binder-result
-   "kleisli binder did not return a flow"
-   (invalid-kleisli-binder-result-detail
-    node
-    step
-    source-value
-    bound-flow)))
+
 
 ;;; Boundary: run kleisli bound result is the policy-visible edge for core behavior, keeping validation, lookup, or projection responsibilities centralized for callers.
 ;; : (-> Runner ExecutionPlan Strategy PlanNode KleisliStep Input Value [Id] Receipt StepResult)
-(def (run-kleisli-bound-result runner
-                              plan
-                              strategy
-                              node
-                              step
-                              input
-                              source-value
-                              frontier
-                              source-receipt)
-  (let (bound-flow ((kleisli-step-binder step) source-value))
-    (if (flow? bound-flow)
-      (run-kleisli-bound-flow-result runner
-                                    plan
-                                    strategy
-                                    node
-                                    step
-                                    input
-                                    source-value
-                                    frontier
-                                    source-receipt
-                                    bound-flow)
-      (raise-invalid-kleisli-binder-result node step source-value bound-flow))))
+(def (run-kleisli-bound-result runner plan strategy node step input source-value frontier source-receipt)
+  (run-kleisli-bound-flow-result runner plan strategy node step input source-value frontier source-receipt
+    ((kleisli-step-binder step) source-value)))
 
 ;;; Kleisli nodes are dynamic composition points: the source flow runs first,
 ;;; then its value selects the next flow through the binder procedure.
@@ -463,7 +436,8 @@
 ;;; the runner, while local thrown failures still become receipt-free lefts.
 ;; : (-> Runner Flow Input (Pair TryResult [Receipt]))
 (def (try-step-projection runner source input)
-  (try-control-plane
+  (def receipt-type (.cc Type. sexp: 'FunflowReceipt '.element? receipt?))
+  (try-control-plane (Pair (TryValue (flow-output-contract source)) (List receipt-type))
    (lambda ()
      (let* ((nested (runner-run runner source input))
             (receipt (run-result-receipt nested))
@@ -557,7 +531,8 @@
 
 ;; : (-> Runner ExecutionPlan Strategy PlanNode Task Input [Id] StepResult)
 (def (run-task runner plan strategy node task input frontier)
-  (let ((task-registry (runner-task-registry runner)))
+  (let ((task-registry (runner-task-registry runner))
+        (task (validate TaskContract task)))
     (cond
      ((strategy-can-run-locally-in strategy task-registry task)
       (let* ((policy (runner-execution-policy-alist runner strategy frontier))
@@ -588,7 +563,9 @@
                                              frontier
                                              (strategy-name strategy)
                                              policy))
-             (adapter-result (adapter-result-for-task task-registry (runner-adapter runner) task request))
+             (adapter-result
+              (validate (task-output-contract task)
+                (adapter-result-for-task task-registry (runner-adapter runner) task request)))
              (cache (adapter-cache-decision task-registry strategy task input adapter-result))
              (failure (adapter-result-failure (runner-adapter runner) adapter-result)))
         (cons adapter-result

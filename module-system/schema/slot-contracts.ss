@@ -6,12 +6,9 @@
 ;;; Boundary: reusable POO-native slot schemas for module Type/Contract owners.
 ;;; Invariant: schemas are ordinary POO values; alists exist only as receipts.
 
-(import (only-in :clan/poo/object .cc .o .ref)
-        (only-in :clan/poo/mop element? raise-type-error)
-        (only-in :std/list/list filter-map)
-        (only-in :yuanxu/object-types/contracts
-                 yuanxu-predicate-contract
-                 yuanxu-predicate-type))
+(import (only-in :clan/poo/object .all-slots .cc .o .ref .slot?)
+        (only-in :clan/poo/mop Type Type. validate)
+        (only-in :clan/poo/type Record))
 
 (export yuanxu-contract-value-type
         yuanxu-contract-slot
@@ -36,13 +33,17 @@
 ;; through the native Type protocol and never through this symbolic label.
 (def (yuanxu-contract-value-type identity predicate report-kind
                                    . maybe-predicate-key)
-  (.cc (yuanxu-predicate-type identity predicate)
+  (.cc Type.
+       'identity identity
+       'sexp identity
+       '.element? predicate
        'report-kind report-kind
        'predicate-key
        (if (null? maybe-predicate-key) identity (car maybe-predicate-key))))
 
 (def (yuanxu-contract-slot key-value slot-value value-type-value
                              required-value metadata-value)
+  (validate Type value-type-value)
   (.o kind: 'yuanxu.contract.slot-schema
       key: key-value
       slot: slot-value
@@ -60,10 +61,12 @@
   (.ref slot-contract 'value-type))
 
 (def (yuanxu-contract-slot-report-kind slot-contract)
-  (.ref (yuanxu-contract-slot-type slot-contract) 'report-kind))
+  (let (type (yuanxu-contract-slot-type slot-contract))
+    (if (.slot? type 'report-kind) (.ref type 'report-kind) 'Type)))
 
 (def (yuanxu-contract-slot-predicate-key slot-contract)
-  (.ref (yuanxu-contract-slot-type slot-contract) 'predicate-key))
+  (let (type (yuanxu-contract-slot-type slot-contract))
+    (if (.slot? type 'predicate-key) (.ref type 'predicate-key) 'native-type)))
 
 (def (yuanxu-contract-slot-required? slot-contract)
   (.ref slot-contract 'required?))
@@ -71,38 +74,28 @@
 (def (yuanxu-contract-slot-metadata slot-contract)
   (.ref slot-contract 'metadata))
 
-(def (yuanxu-contract-obligations slots slot-present? slot-ref)
-  (lambda (candidate _context)
-    (let (slot-failure
-          (lambda (slot-name reason-value)
-            (.o kind: 'yuanxu.contract.slot-failure
-                slot: slot-name
-                reason: reason-value)))
-      (filter-map
-       (lambda (slot-contract)
-         (let* ((slot-name (yuanxu-contract-slot-name slot-contract))
-                (required? (yuanxu-contract-slot-required? slot-contract))
-                (present? (slot-present? candidate slot-name)))
-           (cond
-            ((and required? (not present?))
-             (slot-failure slot-name 'required-slot-absent))
-            ((and present?
-                  (not (element? (yuanxu-contract-slot-type slot-contract)
-                                 (slot-ref candidate slot-name))))
-             (slot-failure slot-name 'slot-type-rejected))
-            (else #f))))
-       slots))))
-
-(def (yuanxu-object-contract identity owner object-kind predicate
-                               slots slot-present? slot-ref metadata)
-  (.cc (yuanxu-predicate-contract
-        identity
-        predicate
-        (yuanxu-contract-obligations slots slot-present? slot-ref))
-       'owner owner
-       'object-kind object-kind
-       'slots slots
-       'metadata metadata))
+;; Record owns required/optional presence and recursive Type normalization.
+;; Extend its native membership protocol with the domain predicate. Its inherited
+;; Class validator rechecks that predicate on the final normalized receiver.
+(def (yuanxu-object-contract identity-value owner-value object-kind-value predicate-value
+                             schemas metadata-value)
+  (let (fields
+         (apply Record
+           (apply append
+             (map (lambda (schema)
+                    (list (make-keyword (yuanxu-contract-slot-name schema))
+                          (list (yuanxu-contract-slot-type schema)
+                                optional: (not (yuanxu-contract-slot-required? schema)))))
+                  schemas))))
+    (.o inherit: (list fields)
+        identity: identity-value
+        owner: owner-value
+        object-kind: object-kind-value
+        slot-schemas: schemas
+        metadata: metadata-value
+        (.element? (inherited)
+          (lambda (candidate)
+            (and ((inherited) candidate) (predicate-value candidate)))))))
 
 (def (yuanxu-object-contract-key contract)
   (.ref contract 'identity))
@@ -114,7 +107,20 @@
   (.ref contract 'object-kind))
 
 (def (yuanxu-object-contract-slots contract)
-  (.ref contract 'slots))
+  (let* ((schemas (.ref contract 'slot-schemas))
+         (effective (.ref contract 'effective-slots))
+         (native-names (.all-slots effective))
+         (schema-names (map yuanxu-contract-slot-name schemas)))
+    ;; Receipts must describe the current native Slot types and optional policy.
+    ;; A native field addition also needs receipt metadata; refuse incomplete
+    ;; projection rather than publishing stale type facts from an ancestor.
+    (unless (and (= (length schemas) (length native-names))
+                 (andmap (cut memq <> schema-names) native-names))
+      (error "native contract fields require complete receipt metadata"))
+    (map (lambda (schema)
+           (let (field (.ref effective (yuanxu-contract-slot-name schema)))
+             (.cc schema 'value-type (.ref field 'type)
+                         'required? (not (.ref field 'optional))))) schemas)))
 
 (def (yuanxu-object-contract-metadata contract)
   (.ref contract 'metadata))
@@ -138,6 +144,4 @@
         (cons 'metadata (yuanxu-object-contract-metadata contract))))
 
 (def (yuanxu-contract-check-slot! slot-contract value)
-  (if (element? (yuanxu-contract-slot-type slot-contract) value)
-    value
-    (raise-type-error (yuanxu-contract-slot-type slot-contract) value)))
+  (validate (yuanxu-contract-slot-type slot-contract) value))

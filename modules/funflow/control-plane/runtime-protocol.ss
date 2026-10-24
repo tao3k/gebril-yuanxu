@@ -6,9 +6,13 @@
 ;;; Boundary: runtime request/response protocol data shared by adapters.
 ;;; Invariant: this module owns durable schemas and normalization only.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax)
+(import :yuanxu/modules/funflow/control-plane/projection-syntax
+        :yuanxu/modules/funflow/control-plane/signatures
+        (only-in :clan/poo/object .cc .get))
 
-(export make-adapter-result
+(export AdapterResult RuntimeEnvelope RuntimeResponseLike RequestId ArtifactHandle
+        (import: :yuanxu/modules/funflow/control-plane/signatures)
+        make-adapter-result
         adapter-result?
         adapter-result-request-id
         adapter-result-status
@@ -213,3 +217,28 @@
      (runtime-alist-ref response 'error #f)))
    (else
     (invalid-runtime-response envelope response))))
+
+;; References are opaque runtime identifiers, not untyped executable operations.
+(def (runtime-reference? value)
+  (or (not value) (symbol? value) (string? value) (pair? value)))
+(def RequestId (.cc Type. sexp: 'RuntimeRequestId '.element? runtime-reference?))
+(def ArtifactHandle (.cc Type. sexp: 'RuntimeArtifactHandle '.element? runtime-reference?))
+(def AdapterResult
+  (.cc Type. sexp: 'AdapterResult
+    '.element? (lambda (value)
+                 (and (adapter-result? value) (symbol? (adapter-result-status value))
+                      (element? RequestId (adapter-result-request-id value))
+                      (element? ArtifactHandle (adapter-result-artifact-handle value))))))
+(def RuntimeEnvelope
+  (.cc Type. sexp: 'RuntimeEnvelope
+    '.element? (lambda (value)
+                 (and (list? value) (every (lambda (row) (and (pair? row) (symbol? (car row)))) value)
+                      (eq? (runtime-alist-ref value 'schema #f) +runtime-request-schema+)
+                      (element? RequestId (runtime-alist-ref value 'request-id #f))))))
+(def RuntimeResponseLike
+  (.cc Type. sexp: 'RuntimeResponseLike
+    '.element? (lambda (value)
+                 (or (element? AdapterResult value) (runtime-response? value)
+                     (and (list? value)
+                          (every (lambda (row) (and (pair? row) (symbol? (car row)))) value)
+                          (runtime-response-alist? value))))))

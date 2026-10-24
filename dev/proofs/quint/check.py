@@ -563,6 +563,11 @@ def main():
              + [core / "t/graph-operations-test.ss", core / "module-system/source/projection.ss",
                 core / "module-system/source/collection.ss", core / "t/module-source-admission-test.ss",
                 core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean"])
+    bound.extend(sorted((core / "modules/funflow/control-plane").glob("*.ss")))
+    bound.extend([core / "modules/funflow/types.ss", core / "modules/funflow/objects.ss",
+                  core / "modules/funflow/func.ss", core / "modules/funflow/store.ss",
+                  core / "t/funflow-function-types-test.ss",
+                  core / "dev/proofs/lean/YuanxuProof/Modules/Funflow/FunctionBoundary.lean"])
     def digests():
         current = set(bound) | set(models.glob("*.qnt"))
         if all(case[0].startswith(("TestMakeLayout", "TestPublicationReuse", "SelectionReplay")) for case in selected_cases):
@@ -950,7 +955,12 @@ def main():
                   core / "module-system/building/configuration-source.ss",
                   core / "module-system/building/source-closure.ss",
                   core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean",
-                  core / "ops/func.ss", core / "ops/process-script.ss",
+                  core / "ops/func.ss", core / "ops/types.ss", core / "ops/process-script.ss",
+                  core / "modules/json-schema/types.ss",
+                  core / "modules/json-schema/objects.ss",
+                  core / "t/module-json-schema-publication-test.ss",
+                  core / "module-system/schema/slot-contracts.ss",
+                  core / "t/contract-function-composition-test.ss",
                   core / "ops/tests/atomic-test.ss", core / "t/module-publication-test.ss"])
     bound.extend([core / "t/qualification/module-publication/fixtures.ss",
                   core / "t/qualification/module-publication/controls.ss",

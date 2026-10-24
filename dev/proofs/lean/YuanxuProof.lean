@@ -18,6 +18,7 @@ import YuanxuProof.Composition.Overlay
 import YuanxuProof.Composition.Identity
 import YuanxuProof.PooClos.Outcomes
 import YuanxuProof.Modules.Funflow.Continuation
+import YuanxuProof.Modules.Funflow.FunctionBoundary
 import YuanxuProof.Contribution.Qualification
 import YuanxuProof.Admission.Federation
 import YuanxuProof.Admission.Source

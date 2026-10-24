@@ -256,8 +256,15 @@
 
 (def (contract-admit-evidence contract candidate context owned? analysis?)
   (let* ((value-contract (.ref contract 'value-contract))
-         (candidate (if value-contract (validate value-contract candidate) candidate))
-         (classification
+         (consume (cut contextual-contract-admit-evidence contract <> context owned? analysis?)))
+    ;; Native Type validation owns recursive Function normalization. Contextual
+    ;; admission consumes its actual result once, after the analysis edge was
+    ;; consumed above. No runtime import, wrapper or successful value is cached.
+    (if value-contract (consume (validate value-contract candidate))
+        (consume candidate))))
+
+(def (contextual-contract-admit-evidence contract candidate context owned? analysis?)
+  (let* ((classification
           (yuanxu-type-classify contract candidate context))
          (_checked
           (unless (and (yuanxu-classification-evidence? classification)

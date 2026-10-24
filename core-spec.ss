@@ -181,5 +181,8 @@
     "profile-composition/policy"
     "module-system/catalog/values"
     "module-system/authoring/syntax"
-    "module-system/selection/init-syntax"))
+    "module-system/selection/init-syntax"
+    ;; Advanced consumers explicitly import this existing library API.
+    ;; Compiling it does not import it into the ordinary Funflow module.
+    "modules/funflow/control-plane/api"))
 

@@ -1,5 +1,6 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import LeanPoo.Functional.Assembly
+import LeanPoo.Functional.FunctionValidation
 
 namespace YuanxuProof.Ops.ProcessScript
 open LeanPoo.Functional
@@ -41,6 +42,70 @@ theorem environment_override (overrides inherited : Provider Unit String (fun _ 
     (key value : String) (provided : overrides key = some (fun _ => value)) :
     mergeEnvironment overrides inherited key = some (fun _ => value) :=
   Provider.compose_provided overrides inherited key _ provided
+
+/-! The progress fragment interprets the actual nested native Function boundary:
+a zero-argument factory returns a String callback whose result is Any. The two
+value constructors below suffice to distinguish a valid line from an invalid
+argument; this finite interpretation does not model spawning or Scheme effects. -/
+inductive ProgressValue where
+  | text (value : String)
+  | number (value : Nat)
+  deriving Repr, DecidableEq
+
+inductive ProgressError where
+  | argument | factoryResult | source
+  deriving Repr, DecidableEq
+
+abbrev RawProgress := String → Except ProgressError ProgressValue
+abbrev CheckedProgress := ProgressValue → Except ProgressError ProgressValue
+
+inductive FactoryResult where
+  | callback (body : RawProgress)
+  | noncallable
+
+def progressLine : ProgressValue → Except ProgressError String
+  | .text line => .ok line
+  | .number _ => .error .argument
+
+/-- Consume the checked argument and leave the observational result unconstrained. -/
+def checkedProgress (body : RawProgress) : CheckedProgress :=
+  FunctionValidation.wrap progressLine Except.ok body
+
+def checkedFactoryResult : FactoryResult → Except ProgressError CheckedProgress
+  | .callback body => .ok (checkedProgress body)
+  | .noncallable => .error .factoryResult
+
+/-- Preview stores this closure; calling it performs both factory and returned
+callback normalization through LeanPoo, rather than accepting a callable flag. -/
+def previewProgress (factory : Unit → Except ProgressError FactoryResult) :
+    Unit → Except ProgressError CheckedProgress :=
+  FunctionValidation.wrap Except.ok checkedFactoryResult factory
+
+theorem invalid_progress_argument (body : RawProgress) (number : Nat) :
+    checkedProgress body (.number number) = .error .argument :=
+  FunctionValidation.input_error progressLine Except.ok body _ .argument rfl
+
+theorem valid_progress_argument (body : RawProgress) (line : String) :
+    checkedProgress body (.text line) = body line := by
+  cases returned : body line <;>
+    simp [checkedProgress, FunctionValidation.wrap, ObjectContract.checkedAction,
+      progressLine, Except.bind, returned]
+
+theorem factory_installs_actual_checked_callback (body : RawProgress) :
+    previewProgress (fun _ => .ok (.callback body)) () = .ok (checkedProgress body) := rfl
+
+theorem noncallable_factory_result_refused :
+    previewProgress (fun _ => .ok .noncallable) () = .error .factoryResult := rfl
+
+theorem factory_source_error_preserved :
+    previewProgress (fun _ => .error .source) () = .error .source := rfl
+
+#guard match checkedProgress (fun line => .ok (.text line)) (.text "line") with
+  | .ok value => decide (value = .text "line")
+  | .error _ => false
+#guard match checkedProgress (fun _ => .ok (.number 0)) (.number 7) with
+  | .error .argument => true
+  | _ => false
 
 /-- Natural wait-status fragment of POSIX: exited status occupies the high
 byte; a signal report is 128 plus its low-seven-bit signal number. -/

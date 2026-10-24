@@ -1,4 +1,3 @@
-(import :yuanxu/object-family/syntax)
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;;
@@ -7,7 +6,12 @@
 ;;; Boundary: flows describe workflow composition and contract shape.
 ;;; Invariant: task execution is deferred to runner/runtime-adapter code.
 
-(import (only-in :clan/poo/object .@ object?)
+(import (only-in :clan/poo/object .@ .o .cc .ref .get .call .slot? object?)
+        (only-in :clan/poo/object-contract ObjectContract. refine)
+        (only-in :clan/poo/object compute-precedence-list!)
+        (only-in :clan/poo/type Pair.)
+        (only-in :clan/poo/generalized-prototype Observation.)
+        :yuanxu/modules/funflow/control-plane/signatures
         :yuanxu/modules/funflow/control-plane/roles
         :yuanxu/modules/funflow/control-plane/failure
         :yuanxu/modules/funflow/control-plane/task
@@ -16,7 +20,9 @@
         :yuanxu/object-family/role-syntax
         :yuanxu/utilities/algorithms)
 
-(export make-flow
+(export FlowCategoryContract FlowContract FlowOf FlowOperationTypes FlowOperationsContract flow-signature admit-flow
+        (import: :yuanxu/modules/funflow/control-plane/signatures)
+        make-flow
         flow?
         flow-name
         flow-steps
@@ -114,256 +120,217 @@
 
 ;;; Boundary: a flow stores ordered steps plus its input/output contract edge.
 ;;; Invariant: nested flows remain steps until a planner chooses lowering.
-;; : (-> Symbol [Step] Contract Contract Flow)
-(defpoo-object-family
-  (prototype Flow. funflow-flow? flow?)
-  (constructor make-flow
-    (name-value name) (steps-value steps) (input-contract-value input-contract) (output-contract-value output-contract))
-  (accessors
-    (flow-name name) (flow-steps steps) (flow-input-contract input-contract) (flow-output-contract output-contract))
-  (projections))
+;; : (-> Symbol [Step] Function Flow)
+(def (flow? value)
+  (and (object? value) (.slot? value 'funflow-flow?) (.ref value 'funflow-flow?)))
+(def (branch-step? value)
+  (and (object? value) (.slot? value 'funflow-branch-step?) (.ref value 'funflow-branch-step?)))
+(def (try-step? value)
+  (and (object? value) (.slot? value 'funflow-try-step?) (.ref value 'funflow-try-step?)))
+(def (kleisli-step? value)
+  (and (object? value) (.slot? value 'funflow-kleisli-step?) (.ref value 'funflow-kleisli-step?)))
 
+;; Forward through native Types so nested steps use the same recursive Class
+;; normalization as callbacks returned by a binder. There is no field walker.
+(def Step
+  (.cc Type. sexp: 'FunflowStep
+    '.element? (lambda (value) (element? StepFields value))
+    '.validate (lambda (value) (validate StepFields value))))
+(def FlowContract
+  (refine
+    (.cc ObjectContract. identity: 'funflow/flow sexp: 'FunflowFlow
+      extra-fields: 'delegate constraints: (list (Record))
+      responsibilities:
+      (.o funflow-flow?: (Exactly #t) name: Symbol
+          signature: OperationSignature steps: (List Step)))
+    (lambda (flow location)
+      (if (flow-edges-match? flow) '()
+        (list (.o kind: 'incompatible-flow-route path: location))))))
+;; The signature describes the actual ordered route, including empty identity
+;; flows. These relations inspect Types; native Function owns value validation.
+(def (step-signature step) (.get step signature))
+(def (flow-edges-match? flow)
+  (let walk ((previous (flow-input-contract flow)) (steps (flow-steps flow)))
+    (if (null? steps)
+      (type-flows? previous (flow-output-contract flow))
+      (let (signature (step-signature (car steps)))
+        (and (type-flows? previous (operation-input signature))
+             (walk (operation-output signature) (cdr steps)))))))
+;; Inspect the native carrier parameters instead of reconstructing a Type
+;; and asking the finite expression checker to infer opaque predicate inclusion.
+(def (pair-output-matches? output left right)
+  (and (memq Pair. (compute-precedence-list! output))
+       (memq Pair. (compute-precedence-list! (.get output right)))
+       (eq? (.get output right right) Null)
+       (type-flows? left (.get output left))
+       (type-flows? right (.get output right left))))
+(def (try-output-matches? output result-type)
+  (and (.slot? output 'variants)
+       (.slot? (.get output variants) 'left) (.slot? (.get output variants) 'right)
+       (eq? (.get output variants left) ExecutionFailureType)
+       (type-flows? result-type (.get output variants right))))
+(def BranchContract
+  (refine
+    (.cc ObjectContract. identity: 'funflow/branch
+      extra-fields: 'delegate constraints: (list (Record))
+      responsibilities:
+      (.o funflow-branch-step?: (Exactly #t) name: Symbol signature: OperationSignature
+          left: FlowContract right: FlowContract))
+    (lambda (step location)
+      (def signature (.get step signature))
+      (def left (.get step left))
+      (def right (.get step right))
+      (if (and (type-flows? (operation-input signature) (flow-input-contract left))
+               (type-flows? (operation-input signature) (flow-input-contract right))
+               (pair-output-matches? (operation-output signature)
+                                     (flow-output-contract left) (flow-output-contract right)))
+        '() (list (.o kind: 'incompatible-branch-route path: location))))))
+(def TryContract
+  (refine
+    (.cc ObjectContract. identity: 'funflow/try
+      extra-fields: 'delegate constraints: (list (Record))
+      responsibilities:
+      (.o funflow-try-step?: (Exactly #t) name: Symbol
+          signature: OperationSignature source: FlowContract))
+    (lambda (step location)
+      (def signature (.get step signature))
+      (def source (.get step source))
+      (if (and (type-flows? (operation-input signature) (flow-input-contract source))
+               (try-output-matches? (operation-output signature) (flow-output-contract source)))
+        '() (list (.o kind: 'incompatible-try-route path: location))))))
+(def (kleisli-fields value)
+  (Record funflow-kleisli-step?: (list (Exactly #t)) name: (list Symbol)
+          signature: (list OperationSignature) source: (list FlowContract)
+          binder: (list (Fun (FlowOf (operation-input (.get value signature))
+                                    (operation-output (.get value signature)))
+                            <- (flow-output-contract (.get value source))))))
+(def KleisliContract
+  (.cc Type. sexp: 'FunflowKleisli
+    '.element? (lambda (value) (and (kleisli-step? value) (element? (kleisli-fields value) value)))
+    '.validate (lambda (value)
+                 (unless (kleisli-step? value) (raise-type-error KleisliContract value))
+                 (validate (kleisli-fields value) value))))
+(def StepFields (Union TaskContract FlowContract BranchContract TryContract KleisliContract))
+(def (admit-flow value) (validate FlowContract value))
+(def (FlowOf input output)
+  (.cc Type. sexp: (list 'FunflowFlow (.get input sexp) (.get output sexp))
+    '.element? (lambda (value)
+                 (and (element? FlowContract value)
+                      (type-flows? input (flow-input-contract value))
+                      (type-flows? (flow-output-contract value) output)))
+    '.validate
+    (lambda (value)
+      (def checked (admit-flow value))
+      (require-type-flow! input (flow-input-contract checked))
+      (require-type-flow! (flow-output-contract checked) output)
+      checked)))
+(def (make-flow name steps signature)
+  (admit-flow (.o bind-these: #f funflow-flow?: #t name: name steps: steps signature: signature)))
+(def (flow-name value) (.ref value 'name))
+(def (flow-steps value) (.ref value 'steps))
+(def (flow-signature value) (.ref value 'signature))
+(def (flow-input-contract value) (operation-input (flow-signature value)))
+(def (flow-output-contract value) (operation-output (flow-signature value)))
 
-;;; Branch steps keep the left and right flows as declarations so planning can
-;;; expose a DAG before runner or adapter code chooses an execution strategy.
-;; : (-> Symbol Flow Flow Contract Contract BranchStep)
-(defpoo-object-family
-  (prototype BranchStep. funflow-branch-step? branch-step?)
-  (constructor make-branch-step
-    (name-value name) (left-value left) (right-value right) (input-contract-value input-contract) (output-contract-value output-contract))
-  (accessors
-    (branch-step-name name) (branch-step-left left) (branch-step-right right) (branch-step-input-contract input-contract) (branch-step-output-contract output-contract))
-  (projections))
+(def (make-branch-step name left right signature)
+  (validate BranchContract (.o bind-these: #f funflow-branch-step?: #t name: name left: left right: right signature: signature)))
+(def (branch-step-name value) (.ref value 'name))
+(def (branch-step-left value) (.ref value 'left))
+(def (branch-step-right value) (.ref value 'right))
+(def (branch-step-input-contract value) (operation-input (.get value signature)))
+(def (branch-step-output-contract value) (operation-output (.get value signature)))
+(def (make-try-step name source signature)
+  (validate TryContract (.o bind-these: #f funflow-try-step?: #t name: name source: source signature: signature)))
+(def (try-step-name value) (.ref value 'name))
+(def (try-step-source value) (.ref value 'source))
+(def (try-step-input-contract value) (operation-input (.get value signature)))
+(def (try-step-output-contract value) (operation-output (.get value signature)))
+(def (make-kleisli-step name source binder signature)
+  (validate KleisliContract
+    (.o bind-these: #f funflow-kleisli-step?: #t name: name source: source binder: binder signature: signature)))
+(def (kleisli-step-name value) (.ref value 'name))
+(def (kleisli-step-source value) (.ref value 'source))
+(def (kleisli-step-binder value) (.ref value 'binder))
+(def (kleisli-step-input-contract value) (operation-input (.get value signature)))
+(def (kleisli-step-output-contract value) (operation-output (.get value signature)))
 
-;;; Try steps keep Funflow-style =tryE= as a composable flow declaration. The
-;;; runner owns interpretation; this record only names the protected source.
-;; : (-> Symbol Flow Contract Contract TryStep)
-(defpoo-object-family
-  (prototype TryStep. funflow-try-step? try-step?)
-  (constructor make-try-step
-    (name-value name) (source-value source) (input-contract-value input-contract) (output-contract-value output-contract))
-  (accessors
-    (try-step-name name) (try-step-source source) (try-step-input-contract input-contract) (try-step-output-contract output-contract))
-  (projections))
-
-;;; Kleisli steps keep dynamic flow selection in the flow kernel: the source
-;;; runs first, then the binder receives the source value and returns the next
-;;; flow. Runner owns execution because the next flow is value-dependent.
-;; : (-> Symbol Flow Procedure Contract Contract KleisliStep)
-(defpoo-object-family
-  (prototype KleisliStep. funflow-kleisli-step? kleisli-step?)
-  (constructor make-kleisli-step
-    (name-value name) (source-value source) (binder-value binder) (input-contract-value input-contract) (output-contract-value output-contract))
-  (accessors
-    (kleisli-step-name name) (kleisli-step-source source) (kleisli-step-binder binder) (kleisli-step-input-contract input-contract) (kleisli-step-output-contract output-contract))
-  (projections))
-
-;; flow-compose
-;;   : (forall (step) (-> Symbol [step] Contract Contract Flow))
-;;   : (-> Symbol List Contract Contract Flow)
-;;   : (-> Symbol [Step] Contract Contract Flow)
-;;   | doc m%
-;;       Compose a named flow from ordered step objects and boundary contracts.
-;;
-;;       # Examples
-;;       ```scheme
-;;       (flow-name (flow-compose 'empty '() #f #f))
-;;       ;; => empty
-;;       ```
-;;     %
-(def (flow-compose name steps input-contract output-contract)
-  (make-flow name steps input-contract output-contract))
-
-;; : (-> Symbol Task Flow)
-(def (task-flow name task)
-  (flow-compose name
-                (list task)
-                (task-input-contract task)
-                (task-output-contract task)))
-
-;; : (-> Symbol Procedure Contract Contract Flow)
-(def (pure-flow name proc input-contract output-contract)
-  (task-flow name (make-pure-task name proc input-contract output-contract)))
-
-;;; Arrow lifting keeps Funflow's =arr=/=pureFlow= idea in the core Scheme
-;;; composition API while still lowering to an ordinary pure task.
-;; : (-> Symbol Procedure Contract Contract Flow)
-(def (flow-arr name proc input-contract output-contract)
-  (pure-flow name proc input-contract output-contract))
-
-;; : (-> Symbol Procedure Contract Contract Flow)
-(def (scheme-flow name proc input-contract output-contract)
-  (task-flow name (make-scheme-task name proc input-contract output-contract)))
-
-;;; Boundary:
-;;; - This flow is the local ErrorHandling throw source.
-;;; - Recovery policy stays in runner/failure helpers.
-;; : (-> Symbol String Contract Contract Flow)
-(def (throw-string-flow name message input-contract output-contract)
-  (scheme-flow name
-               (lambda (_input)
-                 (throw-string-control-plane-failure message))
-               input-contract
-               output-contract))
-
-;;; The try flow returns a typed =try-result= value through ordinary
-;;; =runner-run=, matching Funflow's recoverable =tryE= surface.
-;; : (-> Symbol Flow Flow)
+(def (flow-compose name steps signature) (make-flow name steps signature))
+(def (task-flow name task) (flow-compose name (list task) (task-signature task)))
+(def (pure-flow name signature proc) (task-flow name (make-pure-task name signature proc)))
+(def (flow-arr name signature proc) (pure-flow name signature proc))
+(def (scheme-flow name signature proc) (task-flow name (make-scheme-task name signature proc)))
+(def (throw-string-flow name message signature)
+  (scheme-flow name signature (lambda (_input) (throw-string-control-plane-failure message))))
 (def (try-flow name source)
-  (flow-compose name
-                (list (make-try-step name
-                                     source
-                                     (flow-input-contract source)
-                                     (list 'try (flow-output-contract source))))
-                (flow-input-contract source)
-                (list 'try (flow-output-contract source))))
+  (def signature (Fun (TryValue (flow-output-contract source)) <- (flow-input-contract source)))
+  (flow-compose name (list (make-try-step name source signature)) signature))
+(def (flow-try name source) (try-flow name source))
+(def (external-flow name operation payload signature)
+  (task-flow name (make-external-task name operation payload signature)))
+(def (return-flow name type) (pure-flow name (Fun type <- type) identity))
+(def (flow-identity name type) (return-flow name type))
 
-;; : (-> Symbol Flow Flow)
-(def (flow-try name source)
-  (try-flow name source))
+(def (conditional-flow name signature predicate then-proc else-proc)
+  (def test (validate (Fun Bool <- (operation-input signature)) predicate))
+  (def yes (validate signature then-proc))
+  (def no (validate signature else-proc))
+  (scheme-flow name signature
+    (.call Observation. .bind test (lambda (accepted?) (if accepted? yes no)))))
+(def (cached-pure-flow name signature key-type key-proc proc)
+  (def key (validate (Fun key-type <- (operation-input signature)) key-proc))
+  (def operation (validate signature proc))
+  (pure-flow name signature (yuanxu-memoize key operation)))
+(def (cached-scheme-flow name signature key-type key-proc proc)
+  (def key (validate (Fun key-type <- (operation-input signature)) key-proc))
+  (def operation (validate signature proc))
+  (scheme-flow name signature (yuanxu-memoize key operation)))
 
-;; : (-> Symbol Symbol Payload Contract Contract Flow)
-(def (external-flow name operation payload input-contract output-contract)
-  (task-flow name (make-external-task name operation payload input-contract output-contract)))
-
-;;; The identity lambda is the unit flow: it preserves value and contract while
-;;; still presenting the same task-backed flow shape as non-trivial steps.
-;; : (-> Symbol Contract Flow)
-(def (return-flow name contract)
-  (pure-flow name (lambda (value) value) contract contract))
-
-;; : (-> Symbol Contract Flow)
-(def (flow-identity name contract)
-  (return-flow name contract))
-
-;;; Boundary:
-;;; - This helper owns local value selection for QuickReference.
-;;; - Graph fan-out remains =flow-branch= and scheduler-owned planning.
-;; : (forall (input output) (-> Symbol Predicate (-> input output) (-> input output) Contract Contract Flow))
-;; : (-> Symbol Predicate Procedure Procedure Contract Contract Flow)
-;; : (-> Symbol Predicate Procedure Procedure Contract Contract Flow)
-(def (conditional-flow name predicate then-proc else-proc input-contract output-contract)
-  (scheme-flow name
-               (lambda (input)
-                 (if (predicate input)
-                   (then-proc input)
-                   (else-proc input)))
-               input-contract
-               output-contract))
-
-;;; Boundary:
-;;; - This wrapper owns only local tutorial cache reuse.
-;;; - Store and CAS extensions own persistent cache materialization.
-;; : (-> Symbol KeyProcedure Procedure Contract Contract Flow)
-(def (cached-pure-flow name key-proc proc input-contract output-contract)
-  (pure-flow name (yuanxu-memoize key-proc proc)
-             input-contract output-contract))
-
-;;; Invariant:
-;;; - Cache lookup must happen before executor invocation.
-;;; - This preserves QuickReference's single visible =Increment!= observation.
-;; : (-> Symbol KeyProcedure Procedure Contract Contract Flow)
-(def (cached-scheme-flow name key-proc proc input-contract output-contract)
-  (scheme-flow name (yuanxu-memoize key-proc proc)
-               input-contract output-contract))
-
-;;; Composition concatenates logical steps and keeps the left input/right output
-;;; edge, matching pipeline composition without running either side.
-;; : (-> Symbol Flow Flow Flow)
 (def (flow-then name left right)
-  (flow-compose name
-                (append (flow-steps left) (flow-steps right))
-                (flow-input-contract left)
-                (flow-output-contract right)))
-
-;;; Branch composition applies two flows to the same input and joins their
-;;; outputs as a pair-shaped value, leaving heavy parallelism to adapters.
-;; : (-> Symbol Flow Flow Flow)
+  (require-type-flow! (flow-output-contract left) (flow-input-contract right))
+  (flow-compose name (append (flow-steps left) (flow-steps right))
+                (Fun (flow-output-contract right) <- (flow-input-contract left))))
 (def (flow-branch name left right)
-  (flow-compose name
-                (list (make-branch-step name
-                                        left
-                                        right
-                                        (flow-input-contract left)
-                                        (list 'pair
-                                              (flow-output-contract left)
-                                              (flow-output-contract right))))
-                (flow-input-contract left)
-                (list 'pair
-                      (flow-output-contract left)
-                      (flow-output-contract right))))
+  (require-type-flow! (flow-input-contract left) (flow-input-contract right))
+  (def signature (Fun (PairValue (flow-output-contract left) (flow-output-contract right))
+                     <- (flow-input-contract left)))
+  (flow-compose name (list (make-branch-step name left right signature)) signature))
+(def (flow-fanout name left right) (flow-branch name left right))
+(def (flow-map name source signature proc)
+  (flow-then name source (flow-arr (flow-derived-name name 'map) signature proc)))
+(def (flow-bind name source output binder)
+  (def signature (Fun output <- (flow-input-contract source)))
+  (flow-compose name (list (make-kleisli-step name source binder signature)) signature))
+(def (flow-kleisli name source output binder) (flow-bind name source output binder))
+(def (flow-first name source other)
+  (def input (PairValue (flow-input-contract source) other))
+  (flow-fanout name
+    (flow-then (flow-derived-name name 'first-left)
+      (flow-arr (flow-derived-name name 'first-input) (Fun (flow-input-contract source) <- input) car) source)
+    (flow-arr (flow-derived-name name 'first-right) (Fun other <- input) cadr)))
+(def (flow-second name source other)
+  (def input (PairValue other (flow-input-contract source)))
+  (flow-fanout name
+    (flow-arr (flow-derived-name name 'second-left) (Fun other <- input) car)
+    (flow-then (flow-derived-name name 'second-right)
+      (flow-arr (flow-derived-name name 'second-input) (Fun (flow-input-contract source) <- input) cadr) source)))
 
-;; : (-> Symbol Flow Flow Flow)
-(def (flow-fanout name left right)
-  (flow-branch name left right))
-
-;;; Functional output mapping is ordinary sequential composition: the source
-;;; flow runs first, then a pure arrow transforms its result.
-;; : (-> Symbol Flow Procedure Contract Flow)
-(def (flow-map name source proc output-contract)
-  (flow-then name
-             source
-             (flow-arr (flow-derived-name name 'map)
-                       proc
-                       (flow-output-contract source)
-                       output-contract)))
-
-;;; Kleisli bind is intentionally a dynamic node instead of static
-;;; =flow-then=: the next flow is selected from the previous value.
-;; : (-> Symbol Flow Procedure Contract Flow)
-(def (flow-bind name source binder output-contract)
-  (flow-compose name
-                (list (make-kleisli-step name
-                                         source
-                                         binder
-                                         (flow-input-contract source)
-                                         output-contract))
-                (flow-input-contract source)
-                output-contract))
-
-;; : (-> Symbol Flow Procedure Contract Flow)
-(def (flow-kleisli name source binder output-contract)
-  (flow-bind name source binder output-contract))
-
-;;; Arrow =first= applies a flow to the first element of a pair-shaped list and
-;;; carries the second element through unchanged.
-;; : (-> Symbol Flow Contract Flow)
-(def (flow-first name source second-contract)
-  (let* ((input-contract (list 'pair
-                               (flow-input-contract source)
-                               second-contract))
-         (left-input (flow-arr (flow-derived-name name 'first-input)
-                               car
-                               input-contract
-                               (flow-input-contract source)))
-         (left (flow-then (flow-derived-name name 'first-left)
-                          left-input
-                          source))
-         (right (flow-arr (flow-derived-name name 'first-right)
-                          cadr
-                          input-contract
-                          second-contract)))
-    (flow-fanout name left right)))
-
-;;; Arrow =second= mirrors =flow-first= and applies the source flow to the
-;;; second element of a pair-shaped list.
-;; : (-> Symbol Flow Contract Flow)
-(def (flow-second name source first-contract)
-  (let* ((input-contract (list 'pair
-                               first-contract
-                               (flow-input-contract source)))
-         (left (flow-arr (flow-derived-name name 'second-left)
-                         car
-                         input-contract
-                         first-contract))
-         (right-input (flow-arr (flow-derived-name name 'second-input)
-                                cadr
-                                input-contract
-                                (flow-input-contract source)))
-         (right (flow-then (flow-derived-name name 'second-right)
-                           right-input
-                           source)))
-    (flow-fanout name left right)))
+;; A submitted body is existentially paired with the explicit signature. The
+;; constructor above immediately validates it against that signature; the Any
+;; position here never substitutes for the operation's argument/result Types.
+(def FlowOperationTypes
+  (.o flow-arr: (Fun FlowContract <- Symbol OperationSignature Any)
+      flow-then: (Fun FlowContract <- Symbol FlowContract FlowContract)
+      flow-fanout: (Fun FlowContract <- Symbol FlowContract FlowContract)
+      flow-map: (Fun FlowContract <- Symbol FlowContract OperationSignature Any)
+      flow-bind: (Fun FlowContract <- Symbol FlowContract Type Any)
+      flow-first: (Fun FlowContract <- Symbol FlowContract Type)
+      flow-second: (Fun FlowContract <- Symbol FlowContract Type)
+      conditional-flow: (Fun FlowContract <- Symbol OperationSignature Any Any Any)
+      try-flow: (Fun FlowContract <- Symbol FlowContract)
+      return-flow: (Fun FlowContract <- Symbol Type)
+      cached-pure-flow: (Fun FlowContract <- Symbol OperationSignature Type Any Any)))
+(def FlowOperationsContract
+  (.cc ObjectContract. identity: 'funflow/operations responsibilities: FlowOperationTypes))
 
 ;; : (-> Symbol Symbol Symbol)
 (def (flow-derived-name base suffix)
@@ -430,9 +397,9 @@
 
 
 
-;;; The category object is POO metadata for the functional flow kernel. It does
-;;; not replace the stable =flow= struct; it names the Category/Arrow operations
-;;; that strategy and extension code can reuse without hard-coding helpers.
+;;; The category is an extensible native POO object. Every operation slot uses
+;;; the same Function descriptor as the module export; derived callbacks acquire
+;;; that boundary before dispatch.
 ;; : (-> Unit FlowCategoryPrototype)
 (def flow-category-prototype
   (poo-core-role-object
@@ -452,13 +419,27 @@
            (extension-policy 'functional-kernel)))
    (supers flow-role)))
 
+(def FlowCategoryContract
+  (Record kind: (list (Exactly 'flow-category)) name: (list Symbol)
+          domain: (list (Fun Type <- FlowContract))
+          codomain: (list (Fun Type <- FlowContract))
+          compose: (list (.get FlowOperationTypes flow-then))
+          identity: (list (.get FlowOperationTypes return-flow))
+          arr: (list (.get FlowOperationTypes flow-arr))
+          map: (list (.get FlowOperationTypes flow-map))
+          bind: (list (.get FlowOperationTypes flow-bind))
+          fanout: (list (.get FlowOperationTypes flow-fanout))
+          first: (list (.get FlowOperationTypes flow-first))
+          second: (list (.get FlowOperationTypes flow-second))))
+
 ;; : (-> Symbol FlowCategory)
 (def (make-flow-category category-name)
-  (poo-core-role-object
+  (validate FlowCategoryContract
+   (poo-core-role-object
    (slots ((name category-name)
            (responsibility
             (list 'functional-flow-kernel category-name))))
-   (supers flow-category-prototype)))
+   (supers flow-category-prototype))))
 
 ;; : (-> Unit FlowCategory)
 (def default-flow-category
@@ -474,16 +455,15 @@
   (.@ category name))
 
 ;; : (-> FlowCategory Symbol)
-(def (flow-category-arrow category)
-  (.@ category arrow))
+(def (flow-category-arrow category) (.@ category arrow))
 
 ;; : (-> FlowCategory Flow Contract)
 (def (flow-category-domain category flow)
-  ((.@ category domain) flow))
+  ((.ref (validate FlowCategoryContract category) 'domain) flow))
 
 ;; : (-> FlowCategory Flow Contract)
 (def (flow-category-codomain category flow)
-  ((.@ category codomain) flow))
+  ((.ref (validate FlowCategoryContract category) 'codomain) flow))
 
 ;; : (-> FlowCategory FlowStrandRegistry)
 (def (flow-category-strand-registry category)
@@ -491,34 +471,34 @@
 
 ;; : (-> FlowCategory Symbol Flow Flow Flow)
 (def (flow-category-compose category name left right)
-  ((.@ category compose) name left right))
+  ((.ref (validate FlowCategoryContract category) 'compose) name left right))
 
 ;; : (-> FlowCategory Symbol Contract Flow)
 (def (flow-category-identity category name contract)
-  ((.@ category identity) name contract))
+  ((.ref (validate FlowCategoryContract category) 'identity) name contract))
 
-;; : (-> FlowCategory Symbol Procedure Contract Contract Flow)
-(def (flow-category-arr category name proc input-contract output-contract)
-  ((.@ category arr) name proc input-contract output-contract))
-
-;; : (-> FlowCategory Symbol Flow Procedure Contract Flow)
-(def (flow-category-map category name source proc output-contract)
-  ((.@ category map) name source proc output-contract))
+;; : (-> FlowCategory Symbol Function Procedure Flow)
+(def (flow-category-arr category name signature proc)
+  ((.ref (validate FlowCategoryContract category) 'arr) name signature proc))
 
 ;; : (-> FlowCategory Symbol Flow Procedure Contract Flow)
-(def (flow-category-bind category name source binder output-contract)
-  ((.@ category bind) name source binder output-contract))
+(def (flow-category-map category name source signature proc)
+  ((.ref (validate FlowCategoryContract category) 'map) name source signature proc))
+
+;; : (-> FlowCategory Symbol Flow Procedure Contract Flow)
+(def (flow-category-bind category name source output binder)
+  ((.ref (validate FlowCategoryContract category) 'bind) name source output binder))
 
 ;; : (-> FlowCategory Symbol Flow Flow Flow)
 (def (flow-category-fanout category name left right)
-  ((.@ category fanout) name left right))
+  ((.ref (validate FlowCategoryContract category) 'fanout) name left right))
 
 ;;; Category-owned Arrow projections keep pair-routing visible as functional
 ;;; kernel metadata instead of requiring callers to hard-code helper names.
 ;; : (-> FlowCategory Symbol Flow Contract Flow)
 (def (flow-category-first category name source second-contract)
-  ((.@ category first) name source second-contract))
+  ((.ref (validate FlowCategoryContract category) 'first) name source second-contract))
 
 ;; : (-> FlowCategory Symbol Flow Contract Flow)
 (def (flow-category-second category name source first-contract)
-  ((.@ category second) name source first-contract))
+  ((.ref (validate FlowCategoryContract category) 'second) name source first-contract))

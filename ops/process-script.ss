@@ -2,7 +2,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Process execution does not import package selection or the build Graph.
-(import :clan/poo/object "./func.ss" "./config.ss")
+(import :clan/poo/object "./func.ss" "./config.ss"
+        (only-in :clan/poo/mop Function validate)
+        (only-in :clan/poo/type String)
+        (only-in "./types.ss" ProcessResultContract))
 (export ProcessScript.)
 (.def (ProcessScript. script [])
   command: '()
@@ -14,4 +17,5 @@
   progress: (.get config progress)
   log: (.get config log)
   check-status: (.get config check-status)
-  .run: (lambda arguments (run-script script arguments)))
+  .run: (validate (Function (list ProcessResultContract) '() rest: String)
+          (lambda arguments (run-script script arguments))))

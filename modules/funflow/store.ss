@@ -3,6 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
+(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+                 Fun Any Number Integer String Symbol List Pair Null Unit type-description)
+        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Owner: Store/CAS workflow alignment lives in this workflow module.
 ;;; Boundary: core provides generic task, strategy, config, and adapter slots.
 ;;; Import contract: users opt in through =:yuanxu/modules/funflow/store= exports.
@@ -194,9 +198,9 @@
                      (make-store-task-family-registry)
                      default-flow-declaration-registry)))
 
-;; : (-> Symbol Symbol Payload Contract Contract Task)
-(def (make-store-task name operation payload input-contract output-contract)
-  (make-task name 'store (list 'store operation payload) input-contract output-contract #f))
+;; : (-> Symbol Symbol Payload Function Task)
+(def (make-store-task name operation payload signature)
+  (make-task name 'store (list 'store operation payload) signature #f))
 
 ;;; Store operation accessors keep CAS semantics explicit at the extension
 ;;; boundary without requiring runners to destructure store request data.
@@ -223,10 +227,9 @@
 (def (task-store-get? task)
   (eq? (task-store-operation task) 'get))
 
-;; : (-> Symbol Symbol Payload Contract Contract Flow)
-(def (store-flow name operation payload input-contract output-contract)
-  (task-flow name
-             (make-store-task name operation payload input-contract output-contract)))
+;; : (-> Symbol Symbol Payload Function Flow)
+(def (store-flow name operation payload signature)
+  (task-flow name (make-store-task name operation payload signature)))
 
 ;; : (-> Symbol Symbol Payload)
 (def (store-directory-payload task-name operation)
@@ -238,21 +241,21 @@
 ;;; The Scheme side keeps this as request data for the runtime adapter.
 ;; : (-> Symbol Flow)
 (def (put-dir-flow name)
-  (store-flow name
-              'put
-              (store-directory-payload 'put-dir 'put)
-              'abs-dir
-              'cas-item))
+  (store-flow
+   name
+   'put
+   (store-directory-payload 'put-dir 'put)
+   (Fun AdapterResult <- String)))
 
 ;;; Funflow exposes getDirFlow as the user-facing CAS-item-to-directory arrow.
 ;;; The Scheme side only declares the adapter request and flow contracts.
 ;; : (-> Symbol Flow)
 (def (get-dir-flow name)
-  (store-flow name
-              'get
-              (store-directory-payload 'get-dir 'get)
-              'cas-item
-              'abs-dir))
+  (store-flow
+   name
+   'get
+   (store-directory-payload 'get-dir 'get)
+   (Fun AdapterResult <- String)))
 
 ;;; Boundary: store flow primary task is the policy-visible edge for workflow
 ;;; behavior, keeping validation, lookup, or projection responsibilities
@@ -280,8 +283,8 @@
      (flow-name flow)
      (task-store-operation task)
      (task-store-payload task)
-     (flow-input-contract flow)
-     (flow-output-contract flow)
+     (type-description (flow-input-contract flow))
+     (type-description (flow-output-contract flow))
      address-algorithm
      content-address
      #f)))

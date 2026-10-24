@@ -6,13 +6,15 @@
 ;;; Boundary: strategies choose planning policy, not runtime execution.
 ;;; Invariant: heavy execution remains in runner/runtime-adapter code.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax
+(import (only-in :clan/poo/object .o .cc .ref .slot? object?)
+        :yuanxu/modules/funflow/control-plane/projection-syntax
         :yuanxu/modules/funflow/control-plane/flow
         :yuanxu/modules/funflow/control-plane/failure
         :yuanxu/modules/funflow/control-plane/graph
         :yuanxu/modules/funflow/control-plane/task)
 
-(export make-strategy
+(export StrategyContract
+        make-strategy
         strategy?
         strategy-name
         strategy-capabilities
@@ -35,13 +37,22 @@
 ;;; The planner slot is the only executable policy hook; other fields are
 ;;; declarative metadata used for task and graph-frontier capability checks.
 ;; : (-> Symbol [Symbol] Symbol Symbol Planner Strategy)
-(defstruct strategy
-  (name
-   capabilities
-   cache-policy
-   failure-policy
-   planner)
-  transparent: #t)
+(def ExecutionPlanContract (.cc Type. sexp: 'ExecutionPlan '.element? execution-plan?))
+(def StrategyContract
+  (Record strategy?: (list (Exactly #t)) name: (list Symbol)
+          capabilities: (list (List Symbol)) cache-policy: (list Symbol) failure-policy: (list Symbol)
+          planner: (list (Fun ExecutionPlanContract <- FlowContract))))
+(def (make-strategy name capabilities cache-policy failure-policy planner)
+  (validate StrategyContract
+    (.o bind-these: #f strategy?: #t name: name capabilities: capabilities cache-policy: cache-policy
+        failure-policy: failure-policy planner: planner)))
+(def (strategy? value)
+  (and (object? value) (.slot? value 'strategy?) (.ref value 'strategy?)))
+(def (strategy-name value) (.ref value 'name))
+(def (strategy-capabilities value) (.ref value 'capabilities))
+(def (strategy-cache-policy value) (.ref value 'cache-policy))
+(def (strategy-failure-policy value) (.ref value 'failure-policy))
+(def (strategy-planner value) (.ref value 'planner))
 
 ;;; The default strategy mirrors Funflow's eager local path while still lowering
 ;;; to an inspectable plan before any runner touches execution.
@@ -69,7 +80,7 @@
 
 ;; : (-> Strategy Flow ExecutionPlan)
 (def (strategy-plan strategy flow)
-  ((strategy-planner-for-flow strategy flow) flow))
+  ((strategy-planner-for-flow (validate StrategyContract strategy) flow) flow))
 
 ;;; Flow descriptors declare the planner policy; strategies bind supported
 ;;; descriptor planner names to concrete plan functions.

@@ -49,7 +49,12 @@
                 (else prelude))
           identity namespace
           (or (not text)
-              (equal? (syntax->datum body) (call-with-input-string text read-all)))
+              ;; The native reader has already resolved and checked the entire
+              ;; module. Inclusion only needs to know whether it stripped a
+              ;; leading header, not convert and parse the whole body again.
+              (call-with-input-string text
+                (lambda (port)
+                  (not (memq (read port) '(prelude: namespace: package:))))))
           (default-role-prelude? prelude))))
 (def (package-source-snapshot path)
   ;; Observe the native reader's ancestor lookup, not a second package resolver.
@@ -162,7 +167,7 @@
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
            (list `(include ,path))))
-        (.o source: source-value identity: owner binding: name
+        (.o bind-these: #f source: source-value identity: owner binding: name
             compiler-identity: (cadr compiler-info)
             source-inputs:
             (append package-sources prelude-inputs
@@ -241,7 +246,7 @@
         (unless (package-snapshot-current? packages)
           (error "stale prepared build source" source-path 'package-metadata-changed))
         (context-current!))
-      (.o path: source-path compiler-identity: id admit-current: current!
+      (.o bind-these: #f path: source-path compiler-identity: id admit-current: current!
           source-inputs: (cons (cons source-path text) packages)
           compiler-forms:
           (append (cond

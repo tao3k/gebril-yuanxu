@@ -141,10 +141,8 @@
      object-key
      owner
      object-kind
-     yuanxu-json-schema-contract-candidate?
+     object?
      slots
-     yuanxu-json-schema-contract-slot-present?
-     yuanxu-json-schema-contract-slot-ref
      metadata)))
 
 ;; yuanxu-json-schema-node->object-type-contract
@@ -168,7 +166,7 @@
       object-key
       owner
       object-kind
-      yuanxu-json-schema-contract-candidate?
+      object?
       (list
        (yuanxu-contract-slot
         (yuanxu-json-schema-contract-key object-key 'value)
@@ -182,8 +180,6 @@
         (list
          (cons 'source 'json-schema)
          (cons 'schema (yuanxu-json-schema-node->alist node)))))
-      yuanxu-json-schema-contract-slot-present?
-      yuanxu-json-schema-contract-slot-ref
       (list
        (cons 'source 'json-schema)
        (cons 'schema-kind (yuanxu-json-schema-node-kind node))

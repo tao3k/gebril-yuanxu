@@ -8,11 +8,12 @@
 
 (import :yuanxu/modules/funflow/control-plane/projection-syntax
         :yuanxu/modules/funflow/control-plane/runtime-protocol
-        (only-in :clan/poo/object .cc .get .call)
+        (only-in :clan/poo/object .cc .get .call .o .ref .slot? object?)
         (only-in :yuanxu/ops/objects ProcessScript.)
         (only-in :yuanxu/ops/func run-script))
 
-(export make-runtime-command
+(export RuntimeCommandContract RuntimeArguments
+        make-runtime-command
         runtime-command?
         runtime-command-name
         runtime-command-kind
@@ -31,12 +32,19 @@
 ;;; Rust adapter. The current Scheme tests can install a procedure command;
 ;;; later Rust or process-backed commands should keep this call shape stable.
 ;; : (-> Symbol Symbol Invoker Alist RuntimeCommand)
-(defstruct runtime-command
-  (name
-   kind
-   invoker
-   metadata)
-  transparent: #t)
+(def RuntimeCommandContract
+  (Record runtime-command?: (list (Exactly #t)) name: (list Symbol) kind: (list Symbol)
+          invoker: (list (Fun RuntimeResponseLike <- RuntimeEnvelope)) metadata: (list (List Any))))
+(def RuntimeArguments (Union (List String) (Fun (List String) <- RuntimeEnvelope)))
+(def (make-runtime-command name kind invoker metadata)
+  (validate RuntimeCommandContract
+    (.o bind-these: #f runtime-command?: #t name: name kind: kind invoker: invoker metadata: metadata)))
+(def (runtime-command? value)
+  (and (object? value) (.slot? value 'runtime-command?) (.ref value 'runtime-command?)))
+(def (runtime-command-name value) (.ref value 'name))
+(def (runtime-command-kind value) (.ref value 'kind))
+(def (runtime-command-invoker value) (.ref value 'invoker))
+(def (runtime-command-metadata value) (.ref value 'metadata))
 
 ;; make-procedure-runtime-command
 ;;   : (forall (metadata) (-> Symbol Invoker [metadata] RuntimeCommand))
@@ -132,6 +140,8 @@
 ;;       ```
 ;;     %
 (def (make-process-runtime-command name executable arguments response-decoder . maybe-metadata)
+  (def checked-arguments (validate RuntimeArguments arguments))
+  (def decode (validate (Fun RuntimeResponseLike <- RuntimeEnvelope String) response-decoder))
   (let (metadata
         (runtime-command-field-rows/tail
          (if (null? maybe-metadata) '() (car maybe-metadata))
@@ -141,12 +151,12 @@
      'process
      (lambda (envelope)
        (let* ((argv (cons executable
-                          (if (procedure? arguments)
-                            (arguments envelope)
-                            arguments)))
+                          (if (procedure? checked-arguments)
+                            (checked-arguments envelope)
+                            checked-arguments)))
               (script (.cc ProcessScript. 'command argv))
               (stdout (.get (run-script script stderr-redirection: #f) output)))
-         (response-decoder envelope stdout)))
+         (decode envelope stdout)))
      metadata)))
 
 ;;; Stdout protocol commands print one runtime-response s-expression. This keeps
@@ -189,16 +199,7 @@
 
 ;; : (-> RuntimeCommandCandidate Alist RuntimeResponseLike)
 (def (runtime-command-call command envelope)
-  (cond
-   ((runtime-command? command)
-    ((runtime-command-invoker command) envelope))
-   ((procedure? command)
-    (command envelope))
-   (else
-    (runtime-command-failure-response envelope
-                                      'invalid-runtime-command
-                                      command
-                                      '()))))
+  ((runtime-command-invoker (validate RuntimeCommandContract command)) envelope))
 
 ;;; Runtime command invocation is the narrow process/IPC boundary: the command
 ;;; sees one stable request envelope and must return a normalizable response.

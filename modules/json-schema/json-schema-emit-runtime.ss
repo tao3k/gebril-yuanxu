@@ -487,28 +487,6 @@
    yuanxu-json-schema-node-predicate
    nodes))
 
-;; Native Contract admission accepts either a POO object or JSON object rows.
-;; The emitted Contract owns this bounded representation boundary; consumers do
-;; not recover an executable predicate from a projected record.
-(def (yuanxu-json-schema-contract-candidate-entry candidate slot)
-  (cond
-   ((object? candidate)
-    (and (.slot? candidate slot) (cons slot (.ref candidate slot))))
-   ((yuanxu-contract-json-object? candidate)
-    (yuanxu-json-schema-object-entry candidate slot))
-   (else #f)))
-
-(def (yuanxu-json-schema-contract-slot-present? candidate slot)
-  (if (yuanxu-json-schema-contract-candidate-entry candidate slot) #t #f))
-
-(def (yuanxu-json-schema-contract-slot-ref candidate slot)
-  (let (entry (yuanxu-json-schema-contract-candidate-entry candidate slot))
-    (if entry (cdr entry) #f)))
-
-(def (yuanxu-json-schema-contract-candidate? candidate)
-  (or (object? candidate)
-      (yuanxu-contract-json-object? candidate)))
-
 ;; yuanxu-json-schema-node-value-kind
 ;;   : (-> YuanxuJsonSchemaNode Symbol)
 ;;   | doc m%

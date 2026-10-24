@@ -46,8 +46,6 @@
   (yuanxu-object-contract
    'graph/node 'graph 'YuanxuGraphNode yuanxu-graph-node?
    YuanxuGraphNodeSlots
-   (lambda (candidate slot) (.slot? candidate slot))
-   (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-node))))
 
 (def (yuanxu-graph-node-type-contract->alist)
@@ -80,8 +78,6 @@
   (yuanxu-object-contract
    'graph/edge 'graph 'YuanxuGraphEdge yuanxu-graph-edge?
    YuanxuGraphEdgeSlots
-   (lambda (candidate slot) (.slot? candidate slot))
-   (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-edge))))
 
 (def (yuanxu-graph-edge-type-contract->alist)
@@ -118,8 +114,6 @@
   (yuanxu-object-contract
    'graph 'graph 'YuanxuGraph yuanxu-graph?
    YuanxuGraphSlots
-   (lambda (candidate slot) (.slot? candidate slot))
-   (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph))))
 
 (def (yuanxu-graph-type-contract->alist)
@@ -168,8 +162,6 @@
   (yuanxu-object-contract
    'graph/analysis 'graph 'YuanxuGraphAnalysis yuanxu-graph-analysis?
    YuanxuGraphAnalysisSlots
-   (lambda (candidate slot) (.slot? candidate slot))
-   (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-analysis))))
 
 (def (yuanxu-graph-analysis-type-contract->alist)
@@ -217,8 +209,6 @@
    'graph/loop-analysis 'graph 'YuanxuGraphLoopAnalysis
    yuanxu-graph-loop-analysis?
    YuanxuGraphLoopAnalysisSlots
-   (lambda (candidate slot) (.slot? candidate slot))
-   (lambda (candidate slot) (.ref candidate slot))
    '((scope . graph) (projection . graph-loop-analysis))))
 
 (def (yuanxu-graph-loop-analysis-type-contract->alist)

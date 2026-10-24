@@ -75,7 +75,9 @@ module's functional owner, not in downstream config files.
     (list (.o kind: 'native-config-object-required))))
 
 (def (schema-artifact->contract artifact)
-  (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
+  (.cc YuanxuContract.
+       'identity 'schema/complete
+       'value-contract (yuanxu-json-schema-contract-artifact-object-contract artifact)
        '.obligations (cut schema-obligations artifact <> <>)))
 
 (.def JsonSchema
@@ -86,11 +88,13 @@ module's functional owner, not in downstream config files.
 #+end_src
 
 The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-object-contract]] derives
-it from yuanxu-predicate-contract. It can participate in responsibilities and
-public .admit. The .cc adapter above retains that descriptor and replaces its
-obligations with the existing full-root validator. This matters because the
-emitted slot-obligation walk alone does not enforce every root-level rule such as
-additionalProperties. Do not append a second handwritten field validator or
+it from a native Record. Native validate owns required/optional fields and
+returns the normalized object, including checked Function fields. It can
+participate in native responsibilities; it does not manufacture a Core .admit
+receipt. The .cc adapter above explicitly composes that value-contract with
+Core's contextual admission and the existing full-root validator. A Record's
+field inventory alone does not enforce every root-level JSON Schema rule such
+as additionalProperties. Do not append a second handwritten field validator or
 silently weaken full-schema semantics to the slot inventory.
 
 This adapter is proposed, not a new test result. Verify diagnostic facts are

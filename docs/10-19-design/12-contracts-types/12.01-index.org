@@ -117,3 +117,10 @@ design does not rename implementation symbols or add compatibility aliases.
 The [[file:12.28-gerbil-poo-clos-alignment.org][gerbil-poo and Core CLOS alignment audit]] distinguishes upstream receiver
 generics and contribution interpreters from Core multi-argument dispatch,
 and records the dependency qualification and refactoring gates.
+
+The [[file:12.29-contract-function-core-audit.org][Contract, Function and FUN source audit]] records the exact PR revision,
+shared Record normalization, Ops callback composition and qualification boundary.
+
+The [[file:12.30-core-function-boundary-migration.org][Core Function boundary migration proposal]] inventories module operations,
+user-supplied functions and runtime callbacks against PR 13 revision =d87c44e=,
+with readable authoring examples, native signatures and duplicate-mechanism removals.

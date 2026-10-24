@@ -5,7 +5,7 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/make make)
         (only-in :std/list/list find)
-        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list)
+        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp)
         (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
@@ -17,6 +17,7 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
@@ -93,6 +94,31 @@
       (check-equal? (member "modules/json-schema/interface" core-spec) #f)
       (check-equal? (member "modules/funflow/interface" core-spec) #f)
       (check-equal? (ormap (cut string-prefix? "scenarios/" <>) core-spec) #f))
+    (yuanxu-test-case "retained inclusion preserves native leading-header semantics"
+      (with-source
+       (lambda (root prefix)
+         (for-each
+          (lambda (case)
+            (def path (path-expand (string-append (car case) ".ss") root))
+            (write-file path (cadr case))
+            (def prepared (yuanxu-prepare-module-retained-source path void))
+            (check-equal? (.get prepared compiler-identity)
+                          (string->symbol (string-append prefix "/" (car case))))
+            (def direct? (and (member `(include ,path) (.get prepared compiler-forms)) #t))
+            (check-equal? direct? (caddr case))
+            (write-file path ";; changed after native preparation")
+            (check-exception ((.get prepared admit-current)) error?))
+          '(("plain" ";; comment\n(def value '(namespace: package:)) (export value)" #t)
+            ("empty" ";; comment only\n" #t)
+            ("namespace" ";; comment\nnamespace: explicit\n(def value 7) (export value)" #f)
+            ("prelude" "prelude: :gerbil/core\n(def value 7) (export value)" #f)
+            ("package" "package: #f\n(def value 7) (export value)" #f)))
+         ;; This SDK rejects an explicit false namespace under gerbil.pkg.
+         ;; Preparation must preserve that native refusal rather than normalize it.
+         (def path (path-expand "namespace-false.ss" root))
+         (write-file path "namespace: #f\n(def value 7) (export value)")
+         (check-exception (core-read-module/sexp path) syntax-error?)
+         (check-exception (yuanxu-prepare-module-retained-source path void) syntax-error?))))
     (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
       (with-source
        (lambda (root _prefix)

@@ -6,9 +6,13 @@
 ;;; Boundary: failures are typed control-plane data, not runtime strings.
 ;;; Invariant: heavy runtime errors are wrapped here before receipts persist them.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax)
+(import (only-in :clan/poo/object .cc .get .call)
+        (only-in :clan/poo/mop Type. Function Fun Any validate element?)
+        (only-in :clan/poo/type Sum)
+        :yuanxu/modules/funflow/control-plane/projection-syntax)
 
-(export make-execution-failure
+(export ExecutionFailureType
+        make-execution-failure
         execution-failure?
         execution-failure-owner
         execution-failure-code
@@ -41,13 +45,17 @@
    recoverable)
   transparent: #t)
 
-;;; Try results are the Scheme-side value form of Funflow's =tryE= Either:
-;;; a recoverable failure becomes a left value, while success becomes right.
-;; : (-> Symbol Value TryResult)
-(defstruct try-result
-  (side
-   value)
-  transparent: #t)
+(def ExecutionFailureType
+  (.cc Type. sexp: 'FunflowExecutionFailure '.element? execution-failure?))
+
+;; Native Sum owns the POO carrier, tag recognition and payload normalization.
+;; A right payload remains polymorphic until TryValue supplies its actual Type.
+(def TryResultType (Sum left: ExecutionFailureType right: Any))
+(def (make-try-result side value)
+  (validate TryResultType (.call TryResultType make side value)))
+(def (try-result? value) (element? TryResultType value))
+(def (try-result-side value) (.get value tag))
+(def (try-result-value value) (.get value value))
 
 ;; : (-> ExecutionFailure Boolean)
 (def (execution-failure-recoverable? failure)
@@ -103,13 +111,16 @@
 ;;; - This is the Scheme-side equivalent of Funflow's =tryE= catch boundary.
 ;;; - Non-control-plane exceptions are re-raised instead of being normalized.
 ;; : (-> Thunk FailureHandler Value)
-(def (try-control-plane thunk handler)
+(def (try-control-plane result-type thunk handler)
+  (def failure-type ExecutionFailureType)
+  (def action (validate (Function (list result-type) '()) thunk))
+  (def recover (validate (Fun result-type <- failure-type) handler))
   (with-catch
    (lambda (failure)
      (if (execution-failure? failure)
-       (handler failure)
+       (recover failure)
        (raise failure)))
-   thunk))
+   action))
 
 ;;; Boundary:
 ;;; - String throws model ErrorHandling's =throwStringFlow= result.

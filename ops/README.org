@@ -58,6 +58,15 @@ parent Script has been cached. Parent defaults remain unchanged. Contracts
 validate the final command and options immediately before execution; a preview
 is not authorization or an execution receipt.
 
+Configuration, environment and process-script validation use native Type/Record
+descriptors. =validate-script= returns the checked script; preview and command
+preparation consume that result. The optional progress factory has a native
+Function signature: no arguments, one returned callback accepting a String and
+returning Any. Preview stores its checked wrapper without calling it. Execution
+uses that wrapper, so an invalid factory result or callback argument is refused
+at the actual invocation. Scope admission remains Core's contextual publication
+contract; ordinary value validation does not allocate an empty admission receipt.
+
 Literal argv goes to =std/misc/process#run-process= without implicit shell
 interpretation. Environment overrides are POO string fields. Timeout uses the
 existing owned process group and retains GNU timeout's signal diagnostic.
