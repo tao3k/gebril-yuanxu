@@ -115,6 +115,7 @@
               (only-in :yuanxu/module-system/source/declaration .def)
               (only-in :yuanxu/t/qualification/module-demand/projection-syntax include-projected-interface)
               (only-in :yuanxu/t/qualification/module-demand/fixture load-role))
+      (def core 'outer-core-must-not-be-used)
       (def SourceRows ',rows)
       (def (make-role-bindings)
         (.o (:: role-self '())

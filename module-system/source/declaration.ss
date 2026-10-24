@@ -134,7 +134,11 @@
                           '())))
                      ((row ...) (map (lambda (row)
                                        (if (eq? row core-row)
-                                         (with-syntax ((value core-value)) #'(core value)) row)) rows)))
+                                         ;; Retain the caller's lexical slot binder and its token span.
+                                         (syntax-case row ()
+                                           ((field-name _)
+                                            (with-syntax ((value core-value))
+                                              (syntax/loc row (field-name value))))) row)) rows)))
          (syntax/loc stx
            (begin
              role-import ...

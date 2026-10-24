@@ -6,7 +6,9 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
         (only-in :yuanxu/t/qualification/module-demand/fixture ProjectionFixture scope-context project-metadata)
         (only-in :yuanxu/module-system/source/selection select-module-graph)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+                 admit-module-publication! module-source-admit-current!)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key))
 (export module-demand-projection-test)
@@ -53,10 +55,42 @@
                          (lambda (id) (if (eq? id 'application) parent cyclic-database)) void)))) #t)
         (check-equal? count initial)
         (yuanxu-test-checkpoint 'metadata-only)
+        ;; Actual publication admission demands Types, never a domain scope.
+        (def source-ref (make-yuanxu-module-source-ref 'local
+                           (path-expand "interface.ss" (.get fixture root))
+                           '((module-id . application))))
+        (def (publication module)
+          (module-source-admit-current! (.get fixture sources))
+          (def result (admit-module-publication! source-ref 'application module #f))
+          (module-source-admit-current! (.get fixture sources))
+          result)
+        (def parent-publication (publication parent))
+        (check-equal? (.get parent-publication accepted?) #t)
+        (check-equal? (eq? (.get parent-publication candidate) parent) #t)
+        (check-equal? (.get (publication parent) accepted?) #t)
+        (check-equal? (- count initial) 1)
+        (check-equal? (.ref/cached parent 'scope) #f)
+        (for-each (lambda (role)
+                    (check-equal? (.ref/cached (.get parent core roles) role) #f))
+                  '(config objects func))
+        (check-equal? (Error? (with-catch values
+          (lambda () (admit-module-publication!
+            (make-yuanxu-module-source-ref 'local "interface.ss" '((module-id . other)))
+            'application parent #f)))) #t)
+        (.def (invalid-contract @ parent) core.scope-contract: #f)
+        (check-equal? (Error? (with-catch values (cut publication invalid-contract))) #t)
+        ;; The derived invalid declaration has its own dependency Type getter;
+        ;; validating it adds one Type expansion, never a domain scope.
+        (check-equal? count (+ initial 2))
+        (check-equal? (.ref/cached invalid-contract 'scope) #f)
+        (for-each (lambda (role)
+                    (check-equal? (.ref/cached (.get invalid-contract core roles) role) #f))
+                  '(config objects func))
         (def cached (.get parent scope))
         (check-equal? (.get cached port) 5432)
         (check-equal? (> count initial) #t)
         (.def (child @ parent) core.config.port: 5433)
+        (check-equal? (.get (publication child) accepted?) #t)
         (def contract (.get child core scope-contract))
         (def admitted (.call contract .admit (.get child scope) (scope-context child)))
         (check-equal? (.get admitted accepted?) #t)

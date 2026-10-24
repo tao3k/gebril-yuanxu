@@ -17,6 +17,8 @@ import time
 
 CASES = [
     ("ModuleDemand", "safety", False),
+    ("ModuleDemand_preflight", "PreflightOnly", True),
+    ("ModuleDemand_contract", "ValidPublication", True),
     ("ModuleDemand_classifier", "Classification", True),
     ("ModuleDemand_eager", "DeclarationOnly", True),
     ("ModuleDemand_premature", "AdmissionPhase", True),
@@ -604,6 +606,7 @@ def main():
     if f'quintSourceDigest : String := "{demand_digest}"' not in demand_lean.read_text():
         raise AssertionError("Lean retains a stale ModuleDemand Quint source binding")
     bound.extend([demand_lean, core / "t/module-demand-projection-test.ss",
+                  core / "dev/sysml/20-module-loading/20.01-demanded-module-lifecycle.sysml",
                   core / "module-system/source/declaration.ss",
                   core / "module-system/source/role-forms.ss",
                   core / "module-system/source/preparation.ss",

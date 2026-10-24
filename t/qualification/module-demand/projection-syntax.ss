@@ -6,6 +6,28 @@
   (syntax-case input ()
     ((_ path (names ...))
      (let-values (((_prelude _id _namespace forms) (core-read-module/sexp (stx-e #'path))))
+       ;; Inspect a disposable expansion, then emit the original declaration
+       ;; through this SAME include frame. An extra macro frame changes exports.
+       (def (check-declaration declaration)
+         (let* ((declaration (syntax-local-rewrap declaration))
+                (fields (cddr (syntax->list declaration)))
+                (key (let loop ((rest fields))
+                       (if (eq? (stx-e (car rest)) 'core:) (car rest)
+                           (loop (cddr rest)))))
+                (expected (datum->syntax (stx-car declaration) 'core (stx-source key)))
+                (expanded (core-expand1 declaration))
+                (native (find (lambda (form)
+                                (syntax-case form ()
+                                  ((head _ ...) (eq? (stx-e #'head) 'native-.def/ctx))
+                                  (_ #f)))
+                              (cdr (syntax->list expanded))))
+                (row (and native
+                          (find (lambda (row) (eq? (stx-e (stx-car row)) 'core))
+                                (cdddr (syntax->list native))))))
+           (unless (and row (bound-identifier=? (stx-car row) expected)
+                        (stx-source key) (equal? (stx-source row) (stx-source key))
+                        (equal? (stx-source (stx-car row)) (stx-source key)))
+             (raise-syntax-error #f "declaration lost original core binding or location" input))))
        ;; Native .def stays at module level. Only value expressions acquire
        ;; the original native Core receiver's lexical export aliases.
        (def (map-fields rows transform)
@@ -53,4 +75,6 @@
                                     (if (eq? (stx-e key) 'core:) (wrap-core value) value)))))
               #'(head name . slots)))))
        (syntax-local-rewrap
-         (stx-wrap-source (core-cons 'begin (map rewrite forms)) (stx-source input)))))))
+         (stx-wrap-source (core-cons 'begin (map (lambda (form)
+           (let (rewritten (rewrite form))
+             (check-declaration rewritten) rewritten)) forms)) (stx-source input)))))))

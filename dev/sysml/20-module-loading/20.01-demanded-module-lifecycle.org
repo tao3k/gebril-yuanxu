@@ -63,6 +63,7 @@ cannot be justified by choosing convenient per-module constants in the model.
 | Discover | Canonical package/window/SourceRef and role-file locations | Macro execution or business scope |
 | Select | Explicit/disabled/feature decisions and requirement graph | Config normalization, domain acceptance or Build execution |
 | Declare | Source-associated native Module metadata | Full types/objects/config expansion on the closed path |
+| Publication preflight | Native scope/dependency Type descriptors | Config, Objects, Func, export-body execution or domain acceptance |
 | Demand scope | Existing POO lazy role slots and dependency scopes actually needed | Unselected modules or unrelated branches |
 | Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
 | Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |

@@ -78,20 +78,23 @@ The actual Core =.def= declaration still owns its generated =link= function.
 The isolated syntax helper inserts native =with-slots= bindings only into value
 expressions. It keeps the Module declaration at module level and the =requires=
 objects literal, because the declaration macro checks those structures before
-expanding their payloads. =syntax/loc= is used for original value locations. Exact error spans and
-shadowing still need dedicated production correspondence controls.
+expanding their payloads. =syntax/loc= is used for original value locations. The declaration control now
+inspects the actual production macro output before allowing ordinary expansion:
+the original =core= identifier context and both row/token source positions must
+match the source declaration. This checks emitted positions, not every later
+compiler diagnostic span.
 
 The helper is in =t/qualification/module-demand=, is imported through the normal
 test dependency closure, and is not a new public macro. Role files in this
 experiment have self-contained imports. General cross-role import rewriting,
 phase-aware export indexing and production fallback remain separate obligations.
 
-A native explicit outer self reference is used for the fixture's scope getter.
-The current declaration macro replaces the outer =core= row with an introduced
-identifier, so a bare source =core= reference in another outer slot was unbound
-in the isolated experiment. This is a recorded hygiene limitation, not a reason
-to add a second lookup protocol. It must be addressed and tested before moving
-this projection into production.
+The initial experiment required an explicit outer self reference because the
+production declaration macro replaced the outer =core= row with an introduced
+identifier. The declaration fix retains the original row identifier and uses
+=syntax/loc row= for the replacement. The fixture now writes =(.get core link)=
+directly. Native =.def/ctx= still owns lexical slot binding and receiver-local
+caching; no lookup alias or second binding protocol is added.
 
 * Small correspondence control
 
@@ -142,16 +145,18 @@ when a role is demanded. No timing advantage is inferred from these controls.
 
 Before production integration:
 
-1. Close the recorded outer-slot hygiene issue using the existing declaration
-   source context, with source-location and shadowing controls.
+1. Qualify the declaration hygiene fix and the real publication preflight
+   independently of the isolated metadata-selection path.
 2. Preserve one native Module and its selection/publication identities through
    a source-owned metadata projection; do not turn fixture descriptors into a
    competing registry or trust domain.
 3. Qualify dynamic dependencies, cross-role imports, Features, build/test roles,
    unsupported exports and opaque fallback against real consumers.
-4. Ensure production declaration admission inspects only its metadata contract;
-   the isolated selected-graph call does not qualify every publication preflight.
-   A scope-contract getter must not eagerly load types during metadata admission.
+4. Preserve real declaration admission: =ModulePublicationContract= must validate
+   actual native Type descriptors for both dependency and scope contracts.
+   This legitimately demands Types. Structural selection remains role-free;
+   publication preflight must leave Config, Objects, Func and the export body
+   cold. Do not weaken descriptor checks to pretend that preflight has zero cost.
 5. Attribute retained bytes on a bounded sample: descriptors, shared source data,
    roles, native records, Generic frames and compiler roots are distinct owners.
 6. Only then change the Loader and run the original two-GiB gate once. Keep the
@@ -197,3 +202,92 @@ and the maintained list-builder to preserve emitted keyword/value order. Raw
 logs and generated diagnostic source copies remain local artifacts, not Git
 content. These failures constrain the production integration; they are not
 relabeled as successful capacity tests.
+
+* Declaration hygiene and real preflight follow-up
+
+The production change is limited to =module-system/source/declaration.ss=.
+The lowered core payload replaces the value of the original row, preserving its
+identifier and location; it is no longer paired with a macro-introduced =core=.
+The production Loader, native MOP and Gerbil compiler are unchanged.
+
+#+begin_src scheme
+(syntax-case row ()
+  ((field-name _)
+   (with-syntax ((value core-value))
+     (syntax/loc row (field-name value)))))
+#+end_src
+
+The existing isolated fixture calls actual =admit-module-publication!= using a
+SourceRef for its actual interface path and the expected fixture owner, which
+is independently compared with the parsed declaration identity. It performs
+existing =module-source-admit-current!= checks around the call, because a
+SourceRef alone does not authenticate current bytes. The admitted candidate must
+retain the module identity. A mismatched source owner is refused. Subsequent
+scope admission still runs the native SourceAdmissionContract and both domain
+requirements, independently of publication shape admission.
+
+The existing private include helper uses Gerbil =core-expand1= on the real production
+=.def=, then compares the emitted binder with the original syntax context using
+=bound-identifier=?=. Both emitted row and identifier positions must equal the
+source =core:= token position. It emits original syntax through the same include frame for ordinary expansion;
+adding another inspection macro frame changed export marks and caused retained
+negative runs. This inspection is a test, not Loader logic. A same-named outer
+=core= sentinel also verifies that the native slot binding wins over a free
+outer value.
+
+Lean separates descriptor preflight from domain admission, retains both domain
+requirements and currentness, and continues to use LeanPoo ContextSlot for the
+parent/child boundary. QNT adds matched eager-preflight and invalid-descriptor
+controls. These are model/source correspondence checks, not a verified Gerbil
+macro expander or a capacity proof. Exact downstream diagnostic rendering,
+general role imports, Feature and opaque-reader integration remain to qualify.
+
+The real preflight is repeated on a hot declaration without another role
+expansion. An invalid scope descriptor is rejected by the existing publication
+Contract; source-owner mismatch is rejected by the existing admission protocol.
+Neither case activates Objects, Config or Func. The preflight does not reuse a
+domain admission verdict. Earlier qualification receipts above describe the
+initial fixture before the additional parent-Type preflight demand.
+
+** Final follow-up receipt
+
+| Gate | Observed result |
+|------+-----------------|
+| Default Core build | Passed with the declaration hygiene fix |
+| Complete Lean build | 204 jobs; 7338 audited declarations; standard axioms only |
+| Source-bound QNT | 14 qualified positive/matched-negative controls |
+| Default projection test | MODULE-OK, HARNESS-OK, final OK; no error markers |
+| Structural selection | 0 role expansions; disabled dependency and cycle refused |
+| Parent publication, then hot publication | 1 Type expansion total; scope and business roles cold |
+| Invalid derived publication | Rejected; one receiver-local dependency Type expansion; scope and business roles cold |
+| Parent/child scope demand plus preflights | 7 role expansions total, including the additional invalid-declaration control |
+| Final values | Parent cache remains 5432; child admission reads 5433 |
+| Original issued roots / ordered replay | 1 original root; 388 visits; both traversals agree |
+| Domain/source controls | Second requirement and changed source refused; Func remains cold |
+
+The seven expansions are three Types (parent, invalid derived declaration and
+child), two Configs and two Objects. They include more preflight work than the
+initial five-expansion receipt; no speedup is inferred by comparing these totals.
+A retained negative run expected no extra Type demand for the invalid derived
+declaration; its actual dependency-contract validation required its own Type.
+The corrected control asserts that demand explicitly and separately checks that
+all business roles remain cold. A source comment changed during another run was
+rejected with =compiler tool source changed; use a fresh reader=; final validation
+uses a frozen source set and freshly rebuilt tools.
+
+No production Loader, graph, observer, native issuer or admission implementation
+was changed. Real Scenario qualification is recorded separately below; the small
+closed-source fixture still does not prove general Loader fallback or capacity.
+
+The real Gitea/PostgreSQL publication regression also passes all 11 cases through
+the default Just entry: MODULE-OK, HARNESS-OK and final OK without error markers.
+It retains the actual source/publication mechanisms and contribution checks;
+the small projection fixture does not replace it. The SysML lifecycle now names
+publication preflight separately from role-free declaration projection, and its
+source is included in the QNT receipt. SysML parser qualification remains open.
+
+The existing module-publication regression also passes through the default
+Just entry with MODULE-OK, HARNESS-OK and final OK, without error markers. It
+exercises checked dependency scopes, normalized publication identity, source
+mutation guards, and open declaration callbacks. No assertion or timeout was
+relaxed. The known failing ten-thousand-module workload was not rerun.

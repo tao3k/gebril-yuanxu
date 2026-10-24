@@ -8,7 +8,7 @@ constructors cannot stand for arbitrary Scheme or authenticate native reads. -/
 namespace YuanxuProof.ModuleSystem.Loading.MetadataProjection
 open LeanPoo.Functional LeanPoo.Functional.Requirements
 
-def quintSourceDigest : String := "sha256:be6760bd4c704b53ab9018b462eb45921e3fbdc7e7d811018c2d5ca851440710"
+def quintSourceDigest : String := "sha256:c3789e2d9898d533d2d85a47284baf0d6e806ff498fe5184a25373acb40eb6ef"
 def declaredPooRevision : String := "40c61fe6afc8313f297599da0e511f96e3a23dcf"
 def declaredLeanPooRevision : String := "5d4587a30e2333fc5f935dac6163aa56ff16a2dc"
 
@@ -121,5 +121,31 @@ theorem publishRequiresBothAndCurrent (a b current : Bool)
     (accepted : mayPublish a b current = true) :
     a = true ∧ b = true ∧ current = true := by
   simpa [mayPublish, Bool.and_eq_true, and_assoc] using accepted
+
+/-- Publication preflight is a distinct demand: descriptor validation may load
+Types, but grants neither a domain scope nor a domain admission certificate. -/
+structure Preflight where
+  descriptorValid : Bool
+  typesDemanded : Bool
+  scopeDemanded : Bool
+  domainAdmitted : Bool
+  deriving DecidableEq, Repr
+
+def preflight (descriptorValid : Bool) : Preflight :=
+  ⟨descriptorValid, true, false, false⟩
+
+theorem preflightKeepsScopeCold (valid : Bool) :
+    (preflight valid).typesDemanded = true ∧
+    (preflight valid).scopeDemanded = false ∧
+    (preflight valid).domainAdmitted = false := ⟨rfl, rfl, rfl⟩
+
+def publishAfterPreflight (checked : Preflight) (a b current : Bool) : Bool :=
+  checked.descriptorValid && mayPublish a b current
+
+theorem publicationRetainsDescriptorAndObligations (valid a b current : Bool)
+    (accepted : publishAfterPreflight (preflight valid) a b current = true) :
+    valid = true ∧ a = true ∧ b = true ∧ current = true := by
+  simpa [publishAfterPreflight, preflight, mayPublish, Bool.and_eq_true, and_assoc]
+    using accepted
 
 end YuanxuProof.ModuleSystem.Loading.MetadataProjection
