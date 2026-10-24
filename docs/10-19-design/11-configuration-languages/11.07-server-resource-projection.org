@@ -1,0 +1,276 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.07 Config Languages 06: Internal Server Projection and Effective Resource Links
+#+property: DOCUMENT_ID 11.07
+#+date: [2026-10-16]
+#+filetags: :config-language:kubernetes:contracts:design:
+#+property: STATUS unexecuted-bounded-scheme-reference-no-loader
+
+* Platform reference, not the contribution surface
+
+This continues [[file:11.06-platform-server-contracts.org][the concrete Server/Port Contracts]]. Ordinary contributors publish a
+simple Profile; the platform obtains its final effective view and runs this pure
+projection. No end user assembles these objects, types, evidence or traversal
+functions. This bounded case emits Deployment and ClusterIP Service objects.
+It is not a general Kubernetes schema implementation or a new public config DSL.
+
+Names: label app=test_app is retained, while resource names normalize underscores
+to hyphens (test-app). Namespace is an explicit platform input, default in the
+example Scenario. HTTP/TCP application protocols both map to TCP transport.
+CPU is an integral core count; memory/disk integers are bytes. Resource requests
+use decimal Kubernetes quantity strings, with disk mapped to ephemeral-storage.
+No limits, persistent volume, ingress, TLS or deployment execution is inferred.
+
+* Small internal functions and projection-input Contract
+
+#+begin_src scheme
+(def (at object . path)
+  (let loop ((value object) (rest path))
+    (if (null? rest) value
+      (if (and (object? value) (.slot? value (car rest)))
+        (loop (.ref value (car rest)) (cdr rest)) #f))))
+
+(def (distinct values)
+  (foldr (lambda (value rest) (if (member value rest) rest (cons value rest)))
+         '() values))
+(def (unique? values) (= (length values) (length (distinct values))))
+
+(def (resource-name app)
+  (list->string
+    (map (lambda (c) (if (char=? c #\_) #\- c)) (string->list app))))
+
+(def (dns-name? value)
+  (def (alnum? c)
+    (or (char<=? #\a c #\z) (char<=? #\0 c #\9)))
+  (and (nonempty-string? value) (<= (string-length value) 63)
+       (alnum? (string-ref value 0))
+       (alnum? (string-ref value (- (string-length value) 1)))
+       (every (lambda (c) (or (alnum? c) (char=? c #\-)))
+              (string->list value))))
+
+(def (projection-input? input)
+  (let ((server (at input 'server))
+        (evidence (at input 'configuration-evidence))
+        (namespace (at input 'namespace)))
+    (and (yuanxu-validation-evidence? evidence)
+         (yuanxu-validation-evidence-accepted? evidence)
+         (equal? (at evidence 'contract-identity) 'server/object)
+         (eq? (at evidence 'candidate) server)
+         (dns-name? namespace)
+         (let ((app (at server 'labels 'app))
+               (ports (at server 'mainContainer 'ports)))
+           (and (nonempty-string? app) (dns-name? (resource-name app))
+                (list? ports) (pair? ports)
+                ;; Both domain protocols produce TCP Service entries.
+                (unique? (map (lambda (p) (.get p port)) ports)))))))
+
+(def ProjectionInputContract
+  (yuanxu-predicate-contract 'server/projection-input
+    projection-input? no-obligations))
+#+end_src
+
+This is intentionally stricter than the original codelab: a nonempty exposed-port
+list, unique TCP service port numbers and conservative DNS names are required by
+this bounded resource mapper. It does not silently reinterpret duplicate HTTP/TCP
+port 80 as different transport endpoints. Full label/image/quantity constraints
+still require Kubernetes resource schema validation. distinct is a small reference
+algorithm, not an asymptotic performance claim for huge lists.
+
+* Complete bounded Deployment/Service projection
+
+#+begin_src scheme
+(def (service-port p)
+  (.o name: (string-append "p-" (number->string (.get p port)))
+      protocol: "TCP"
+      port: (.get p port)
+      targetPort: (.get p targetPort)))
+
+(def (container-port number)
+  (.o name: (string-append "p-" (number->string number))
+      protocol: "TCP" containerPort: number))
+
+(def (build-server-plan server namespace)
+  (let* ((labels (.get server labels))
+         (app (.get labels app))
+         (name (resource-name app))
+         (main (.get server mainContainer))
+         (ports (.get main ports))
+         (resource (.get server resource))
+         (selector (.o app))
+         (metadata (.o name namespace labels))
+         (container
+          (.o name: (.get main name)
+              image: (.get server image)
+              ports: (map container-port
+                          (distinct (map (lambda (p) (.get p targetPort)) ports)))
+              resources:
+              (.o requests:
+                  (.o cpu: (number->string (.get resource cpu))
+                      memory: (number->string (.get resource memory))
+                      ephemeral-storage: (number->string (.get resource disk)))))))
+    (.o source: server
+        deployment:
+        (.o apiVersion: "apps/v1" kind: "Deployment" metadata
+            spec:
+            (.o replicas: (.get server replicas)
+                selector: (.o matchLabels: selector)
+                template:
+                (.o metadata: (.o labels)
+                    spec: (.o containers: (list container)))))
+        service:
+        (.o apiVersion: "v1" kind: "Service" metadata
+            spec:
+            (.o type: "ClusterIP" selector
+                ports: (map service-port ports))))))
+#+end_src
+
+Both resources read one server argument, the exact effective view admitted before
+projection. Matching names/selectors come from the same app label. Service target
+ports and container ports come from the same final Port objects. Container targets
+are deduplicated; Service-facing port numbers remain distinct. source is internal
+plan metadata and must not be serialized into either manifest. All string-valued
+and integer resource fields retain their respective Kubernetes representation.
+
+* Shape guard and relational admission, not names-only obligations
+
+#+begin_src scheme
+(def (only-container plan)
+  (let ((items (at plan 'deployment 'spec 'template 'spec 'containers)))
+    (and (list? items) (= (length items) 1) (car items))))
+
+(def (service-port-shape? p)
+  (and (object? p) (nonempty-string? (at p 'name))
+       (equal? (at p 'protocol) "TCP")
+       (positive-integer? (at p 'port))
+       (positive-integer? (at p 'targetPort))))
+
+(def (container-port-shape? p)
+  (and (object? p) (nonempty-string? (at p 'name))
+       (equal? (at p 'protocol) "TCP")
+       (positive-integer? (at p 'containerPort))))
+
+(def (plan-shape? plan)
+  (let ((container (only-container plan))
+        (ports (at plan 'service 'spec 'ports)))
+    (and (object? plan) (object? (at plan 'source))
+         (object? container)
+         (equal? (at plan 'deployment 'apiVersion) "apps/v1")
+         (equal? (at plan 'deployment 'kind) "Deployment")
+         (equal? (at plan 'service 'apiVersion) "v1")
+         (equal? (at plan 'service 'kind) "Service")
+         (equal? (at plan 'service 'spec 'type) "ClusterIP")
+         (list? ports) (every service-port-shape? ports)
+         (let ((targets (at container 'ports)))
+           (and (list? targets) (every container-port-shape? targets))))))
+
+(def (same-string-map? actual expected)
+  (and (string-map? actual) (string-map? expected)
+       (= (length (.all-slots actual)) (length (.all-slots expected)))
+       (every (lambda (key)
+                (and (.slot? actual key)
+                     (equal? (.ref actual key) (.ref expected key))))
+              (.all-slots expected))))
+
+(def (plan-links plan input)
+  (let* ((server (.get input server))
+         (namespace (.get input namespace))
+         (app (.get server labels app))
+         (name (resource-name app))
+         (container (only-container plan))
+         (expected-ports (.get server mainContainer ports))
+         (actual-ports (.get plan service spec ports))
+         (expected-targets
+          (distinct (map (lambda (p) (.get p targetPort)) expected-ports))))
+    (if
+      (and
+        (eq? (.get plan source) server)
+        (equal? (at plan 'deployment 'metadata 'name) name)
+        (equal? (at plan 'service 'metadata 'name) name)
+        (equal? (at plan 'deployment 'metadata 'namespace) namespace)
+        (equal? (at plan 'service 'metadata 'namespace) namespace)
+        (equal? (at plan 'deployment 'spec 'replicas) (.get server replicas))
+        (equal? (at container 'name) (.get server mainContainer name))
+        (equal? (at container 'image) (.get server image))
+        (same-string-map? (at plan 'deployment 'metadata 'labels) (.get server labels))
+        (same-string-map? (at plan 'service 'metadata 'labels) (.get server labels))
+        (same-string-map? (at plan 'deployment 'spec 'template 'metadata 'labels)
+                          (.get server labels))
+        (same-string-map? (at plan 'deployment 'spec 'selector 'matchLabels) (.o app))
+        (same-string-map? (at plan 'service 'spec 'selector) (.o app))
+        (equal? (map (lambda (p)
+                       (list (.get p name) (.get p protocol)
+                             (.get p port) (.get p targetPort))) actual-ports)
+                (map (lambda (p)
+                       (list (string-append "p-" (number->string (.get p port)))
+                             "TCP" (.get p port) (.get p targetPort))) expected-ports))
+        (equal? (map (lambda (p) (.get p containerPort)) (.get container ports))
+                expected-targets)
+        (every (lambda (key)
+                 (equal? (at container 'resources 'requests key)
+                         (number->string (.ref (.get server resource)
+                           (if (eq? key 'ephemeral-storage) 'disk key)))))
+               '(cpu memory ephemeral-storage)))
+      '()
+      (list (.o kind: 'resource-link-mismatch)))))
+
+(def ResourcePlanContract
+  (yuanxu-predicate-contract 'server/resource-links plan-shape? plan-links))
+#+end_src
+
+This is a concrete linkage guard, not a complete Kubernetes OpenAPI admission
+implementation. Its input context must already pass ProjectionInputContract;
+plan-links is not an arbitrary untrusted-context parser. It catches a changed
+image, replica, namespace, selector, target port or resource request that does not
+match the final server. Its diagnostic is intentionally coarse in this reference;
+field-path/source diagnostics remain needed. Unknown extra manifest fields and
+full Kubernetes label/image rules are not proved by this guard.
+
+* Public .admit sequence and final-receiver projection
+
+#+begin_src scheme
+(def (require-admitted contract candidate context)
+  (let ((receipt (yuanxu-contract-admit contract candidate context)))
+    (unless (yuanxu-validation-evidence-accepted? receipt)
+      (error "configuration/plan admission rejected" (.get receipt diagnostics)))
+    receipt))
+
+(def (server->plan server namespace)
+  (let* ((configuration-evidence
+          (require-admitted ServerContract server (.o stage: 'configuration)))
+         (input (.o server namespace configuration-evidence))
+         (input-evidence (require-admitted ProjectionInputContract input input))
+         (plan (build-server-plan server namespace))
+         (link-evidence (require-admitted ResourcePlanContract plan input)))
+    (.o effective-server: server
+        configuration-evidence input-evidence link-evidence
+        plan
+        status: 'projected-unadmitted
+        resource-schema: 'unchecked)))
+
+;; Installed by the platform, not copied into each contribution Profile.
+(.def ServerScenario.
+  server: #f
+  namespace: "default"
+  effective-server: (server-view server)
+  preview: (server->plan effective-server namespace))
+#+end_src
+
+server and namespace in the computed slots are native outer lexical slot bindings,
+not extracted parent constants. A derived Scenario retains that computation;
+its own lazy slots therefore select its final server, even after a parent preview
+was forced. This must still be run as a receiver/cache control for this new domain.
+Normalizing the final declaration and storing effective-server once ensures the
+configuration receipt, plan.source and relation checks refer to the same object.
+
+The preview deliberately remains projected-unadmitted because full Kubernetes
+resource-schema/cluster-policy validation is absent. configuration-evidence and
+link-evidence are narrower successful receipts, not final publication authority.
+Only after that separate final gate may the exact same plan be labelled
+admitted-preview. Execution/apply is separate and not implemented. No automatic
+Loader resolution, source authentication or arbitrary function sandbox is implied.
+
+Known remaining verification: malformed receipts, lost/omitted nested Port
+evidence, default/view correspondence, parent-preview warmup then child overrides,
+unselected Scenario counters, mapping/schema checks and serialization excluding
+internal metadata. Existing Core/native tests do not qualify this new reference.

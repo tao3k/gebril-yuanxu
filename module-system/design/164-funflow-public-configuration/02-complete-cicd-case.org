@@ -1,0 +1,408 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 02: The Same CI/CD Case at Both User Layers
+#+property: STATUS target-design-not-executable-product-integration
+
+* Upstream: prototypes, schema publication and lazy default Profile
+
+Ownership correction: [[file:13-independent-profiles-and-scenario-composition.org][module 13]] supersedes this listing's Module-local
+Profile catalog, prototype-scope publication and admission-context layout. The
+neutral default fields and full recipe values remain reference material, not a
+reason to put Profiles into Module or Scenario ownership. This file is retained
+as the earlier complete design; use module 13 for current upstream/downstream
+wiring. No historical runtime source or probe is rewritten by that correction.
+
+The code in this module is the target design. The implemented local publication
+has only check/pipeline prototypes and a fixed lexical Check list. The new
+Profile prototype, Contract exports, selected-checks and resolver are not yet
+implemented. Native POO, bounded use-module and object-refinement path syntax
+are reused; ordinary dotted assignment below is the proposed bounded extension
+specified in module 11 and is not accepted by the current adapter. New domain
+names are objects/functions, not DSL
+forms. Bootstrap owners supply canonical Core/native bindings internally; no
+manual import plumbing is required in a downstream configuration.
+
+Upstream retains the base defaults from config-prototypes.ss, with the proposed
+public-field rename to commands specified in module 01. The presentation below
+is the target native value model, not an exact extraction of the existing runtime
+declarations and not a migration away from the private declaration macro. Runtime
+producers/consumers still use command-vector and are unchanged by this design:
+
+#+begin_src scheme
+(.def funflow-check
+  kind: 'yuanxu.funflow.check.prototype
+  check-name: #f
+  profile-ref: #f
+  commands: '()
+  input-bindings: '()
+  config-sources: '()
+  artifact-outputs: '()
+  cache-intents: '()
+  secret-requirements: '()
+  result-protocol: '()
+  runtime-mode: 'manifest-handoff
+  dependency-refs: '()
+  durable-task-id: #f
+  action-class: 'idempotent
+  compensation-refs: '()
+  artifact-retention: 'workflow-retained
+  observability: #f
+  observes: '()
+  guards: '()
+  report: #f
+  metadata: '()
+  runtime-executed: #f)
+
+(.def funflow-pipeline
+  kind: 'yuanxu.funflow.pipeline.prototype
+  pipeline-name: #f
+  checks: '()
+  metadata: '()
+  runtime-executed: #f)
+#+end_src
+
+Empty base fields are construction defaults, not successful runnable Check
+admission. Upstream adds these native families and publishes the guarded
+Contracts from [[file:01-surface-and-schema.org][module 01]], with their concrete field declarations and policy in
+[[file:05-field-contracts-and-capabilities.org][module 05]]:
+
+#+begin_src scheme
+(.def FunflowProfile.)
+
+(.def (FunflowPipeline. @ funflow-pipeline)
+  selected-checks: '())
+
+(.def FunflowModule.
+  source: #f
+
+  prototypes:
+  (.o check: funflow-check
+      pipeline: FunflowPipeline.
+      profile: FunflowProfile.)
+
+  contracts:
+  (.o check: FunflowCheckContract
+      pipeline: FunflowPipelineContract
+      profile: FunflowProfileContract)
+
+  ;; Native shared-slot capture; no profiles slot or aggregate parent here.
+  prototype-scope: (.o (source) (prototypes))
+
+  profiles:
+  (.o gerbil-scheme:
+      (make-gerbil-scheme-ci-profile prototype-scope)))
+
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.) source: source-handle))
+
+(def Funflow
+  (make-funflow-scope
+    (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+The prototype owner never requests the Profile owner. The Profile factory
+receives the prototype-only view, not Funflow. Contract definitions refer to
+prototype owners, not published Profile values. The dependency graph is
+prototype definitions -> Contract definitions / Profile factory definitions ->
+publication object. Requesting a Profile follows the arrows toward its inputs;
+it never reenters its own publication. Separate definitions still use the
+project's canonical lexical module bindings internally. Bounded use-module does
+not abolish Scheme's source-phase dependency graph or magically defer imports.
+
+* Upstream: complete maintained Gerbil Profile
+
+This preserves the original build/test/package fields and their inherited
+empty/optional base fields. One intentional proposed default correction is
+explicit: package runs a packaging script, rather than repeating the historical
+unit-test command. The sample assumes a project providing ./ci/package.sh and
+the named cleanup action. This is a recipe requirement, not an assertion that
+either exists in this repository or that configuration admission runs them.
+
+#+begin_src scheme
+(def (make-gerbil-scheme-ci-profile prototype-scope)
+  (use-module prototype-scope as ff
+    (.o (:: effective-profile (.get ff prototypes profile))
+      build:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'build
+        profile-ref: 'ci/build
+        commands: '("gerbil" "build")
+        artifact-outputs: '(build-log)
+        cache-intents: '(gerbil-build-cache)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        durable-task-id: 'task/build
+        action-class: 'idempotent
+        artifact-retention: 'project-retained)
+
+      test:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'test
+        profile-ref: 'ci/check
+        commands: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(test-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(build)
+        durable-task-id: 'task/test
+        action-class: 'idempotent)
+
+      package:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'package
+        profile-ref: 'ci/check
+        commands: '("sh" "./ci/package.sh")
+        artifact-outputs: '(dependency-graph-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(test)
+        durable-task-id: 'task/package
+        action-class: 'compensatable
+        compensation-refs: '(cleanup/package-artifacts)
+        artifact-retention: 'release-retained)
+
+      pipeline:
+      (.o (:: @ (.get ff prototypes pipeline))
+        pipeline-name: 'default
+        selected-checks: '(build test package)
+        checks: (funflow-selected-checks effective-profile selected-checks)
+        metadata: '((scenario . funflow-cicd)
+                    (authoring-style . gerbil-poo-native))))))
+#+end_src
+
+The explicit self identifier effective-profile is the native .o receiver
+parameter. selected-checks is the Pipeline's native lexical slot binding.
+This preserves the native outer-receiver relationship; neither identifier is
+a new hook or a global variable. At the pure function boundary the effective
+Profile is passed explicitly, as required by the native lexical slot law.
+
+The existing fixed-membership expression checks: (list build test package) is
+still the simplest implementation for a fixed recipe and has executed cache
+controls. The proposed named-selection recipe generalizes membership so a new
+smoke Check can participate without changing this getter. Its named pure
+resolver has the following precise contract:
+
+1. Consume a native effective Profile and a proper unique list of slot symbols.
+2. Resolve exactly those slots on that receiver, in list order. Do not enumerate
+   and force every available Check or every Profile in the module.
+3. Reject missing/non-Check targets with the qualified requested path; preserve
+   native object identity in the returned list. Do not copy Check objects.
+4. Leave field admission and dependency/consumer capability validation to the
+   named admission functions. Resolution alone is not successful admission.
+
+The [[file:06-admission-algorithms.org][concrete selector and guarded admission algorithms]] specify how these
+rules execute. Pipeline .admit prechecks the selection before inherited
+responsibility traversal can read checks. A direct getter may report ordinary
+evaluation failure; successful name resolution still does not mean admission.
+The [[file:07-admission-source.org][complete Scheme design bodies]] now provide the selector, obligations,
+inherited adapters and all their internal helpers. They remain document-only.
+
+This function belongs to the pure functional kernel. It needs neither a CLOS
+Generic nor an extra configurable procedure slot. Projection/consumer axes may
+reuse the existing Generic/method-bundle boundary where independent providers
+actually vary. Merely reading defaults must not register those bundles.
+
+* Downstream layer one: bind the module once, assign ordinary attributes
+
+The Scenario object is the only configuration root. There is no Case wrapper,
+component inventory, repeated Check prototype or secondary Profiles definition.
+ProjectCI is the concrete local Scenario used here; the broader Composition
+Contract association remains an admission-owner responsibility.
+
+#+begin_src scheme
+(.def ProjectCI
+  funflow: (use-module Funflow as ff (.o (:: @ ff))))
+
+;; Proposed direct-path syntax; not yet accepted by the current adapter.
+(.def (ReleaseCI @ ProjectCI)
+  funflow.profiles.gerbil-scheme.build.artifact-outputs:
+  '(release-build-log)
+  funflow.profiles.gerbil-scheme.build.cache-intents:
+  '(project-gerbil-cache)
+  funflow.profiles.gerbil-scheme.test.commands:
+  '("gerbil" "env" "./project-tests.ss")
+  funflow.profiles.gerbil-scheme.test.artifact-outputs:
+  '(release-test-receipt)
+  funflow.profiles.gerbil-scheme.package.commands:
+  '("sh" "./ci/release.sh")
+  funflow.profiles.gerbil-scheme.package.artifact-outputs:
+  '(release-bundle)
+  funflow.profiles.gerbil-scheme.pipeline.pipeline-name:
+  'release-ci)
+#+end_src
+
+Profile selection requests (funflow gerbil-scheme pipeline) from ReleaseCI.
+That path is a plan/admission input, not a new configuration syntax or a slot
+that impersonates source authority. Gerbil's available sibling Profiles are
+left untouched. The selected Pipeline sees:
+
+| Check | Final commands | Final artifact-outputs | Dependencies |
+|-------+----------------------+------------------------+--------------|
+| build | '("gerbil" "build") | '(release-build-log) | '() |
+| test | '("gerbil" "env" "./project-tests.ss") | '(release-test-receipt) | '(build) |
+| package | '("sh" "./ci/release.sh") | '(release-bundle) | '(test) |
+
+Protocol, runtime mode, durable local names, action policy, compensation and
+retention remain inherited. Users can discover those fields without listing
+them at every use site. The configuration is not globally runnable until the
+selected Scenario's sandbox references, cleanup actions and handoff capability
+are admitted too.
+
+* Specified native lowering: all assignments share inherited prefixes
+
+The proposed assignments must lower to this native form. It is a specification,
+not captured expansion from the existing adapter or another user task. Earlier
+object-level dotted =>.+ forms could express the same result with existing
+syntax. Supporting direct leaf assignment requires the bounded adapter extension
+in [[file:11-direct-path-assignment-and-refinement.org][module 11]]; dynamic selection is a separate domain adaptation.
+
+#+begin_src scheme
+(.def (ReleaseCI @ ProjectCI)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+
+              (.o artifact-outputs: '(release-build-log)
+                  cache-intents: '(project-gerbil-cache))
+              test: =>.+
+              (.o commands: '("gerbil" "env" "./project-tests.ss")
+                  artifact-outputs: '(release-test-receipt))
+              package: =>.+
+              (.o commands: '("sh" "./ci/release.sh")
+                  artifact-outputs: '(release-bundle))
+              pipeline: =>.+
+              (.o pipeline-name: 'release-ci)))))
+#+end_src
+
+Every shared prefix is refined once, so the package or Pipeline edit cannot
+erase the build/test edits. This is native nested .+ inheritance, not recursive
+NixOS definition merge. Lists at leaves are replaced by ordinary slot override;
+native => can express a deliberate functional transformation.
+
+* Downstream layer two: add a Check from the same effective module scope
+
+The alias ff is intentionally lexical to its body, not a global binding left
+behind by ProjectCI. An extension that needs prototypes obtains a bounded alias
+of the already bound effective module. This is an object lookup, not a second
+module load or another source identity. The extra let is ordinary Scheme at
+the actual scope boundary; changing existing attributes above needs none of it.
+
+#+begin_src scheme
+(def ExtendedCI
+  (let ((EffectiveFunflow (.get ReleaseCI funflow)))
+    (use-module EffectiveFunflow as ff
+      (.o (:: @ ReleaseCI)
+        funflow.profiles.gerbil-scheme.smoke:
+        (.o (:: @ (.get ff prototypes check))
+           check-name: 'smoke
+           profile-ref: 'ci/check
+           commands: '("sh" "./ci/smoke.sh")
+           artifact-outputs: '(smoke-receipt)
+           result-protocol: '(read :lines)
+           dependency-refs: '(package)
+           durable-task-id: 'task/smoke)
+
+        funflow.profiles.gerbil-scheme.package: =>.+
+         {compensation-refs: => append '(cleanup/release-metadata)}
+
+        funflow.profiles.gerbil-scheme.pipeline.selected-checks:
+        '(build test package smoke)))))
+#+end_src
+
+This constructs a genuinely new Check, so its prototype is explicit. The
+published base Check's result-protocol is empty: a new runnable Check therefore
+must supply a supported protocol, unlike the three existing recipe Checks that
+already inherit one. We do not pretend that a bare prototype is a complete
+language recipe. A later maintained command-Check subtype may supply a common
+decoder if the capability is actually shared and documented.
+
+The extra compensation reference is advanced policy configuration through the
+native functional => operator. It appends to the inherited list; it does not
+reconstruct package. Both cleanup references must resolve at capability
+admission. Changing a policy value does not implement a new executor mechanism.
+If a decoder, scheduling mechanism or new attribute is actually required, its
+native prototype/Contract/consumer extension must be published upstream first.
+
+The effective selected list is now build, test, package, smoke. Each object
+comes from ExtendedCI, including inherited-but-refined Checks. Omitting smoke
+from selected-checks leaves it available but unscheduled, with an optional
+unused-Check diagnostic. Selecting smoke without package fails dependency
+closure instead of silently loading/executing an undeclared dependency.
+
+* Internal admission connection for this exact Scenario
+
+This is a target planning-boundary example, not another downstream wrapper or
+a new public configuration form. The planning owner independently associates
+the canonical Funflow publication and recipe capability declaration. It must
+verify required source/reference evidence separately; the native calls below
+do not authenticate SourceRef or deploy cleanup actions.
+
+#+begin_src scheme
+(let* ((selected-module-value (.get ExtendedCI funflow))
+       (selected-profile-value
+        (.get selected-module-value profiles gerbil-scheme))
+       (profile-contract-value (.get Funflow contracts profile))
+       (admission-context
+        (.o scenario: ExtendedCI
+            module-slot: 'funflow
+            profile-name: 'gerbil-scheme
+            owner: Funflow
+            check-contract: (.get Funflow contracts check)
+            capabilities: GerbilCICDCapabilities.
+            effective-profile: selected-profile-value
+            profile-path:
+            '(ExtendedCI funflow profiles gerbil-scheme))))
+  (yuanxu-contract-admit
+    profile-contract-value selected-profile-value admission-context))
+#+end_src
+
+Profile preflight verifies the supplied occurrence/context. Inherited native
+responsibilities then invoke Pipeline admission. Its preflight establishes
+valid membership before checks is forced; its obligations compare effective
+identities, admit the selected Check objects with qualified child contexts,
+and validate the dependency graph. Source/capability receipts required by a
+later readiness stage cannot be invented by the configuration owner. The
+declaration is designed here; this complete boundary is not implemented.
+In the complete source listing, accepted? establishes compatibility with the
+supplied declaration and retained local source identity. It is not a successful
+source-authentication/reference-readiness/runtime-handoff receipt. Those remain
+separate gates; the example cannot manufacture them from an ordinary object.
+
+For the example, the required graph is build -> test -> package -> smoke.
+Even selecting '(package build test smoke) must respect those dependencies.
+Selection order only breaks ties among ready nodes. A new unselected smoke is
+available but unprojected; a selected missing smoke fails before checks demand;
+a selected smoke without package fails dependency closure after field admission.
+
+If ProjectCI's Pipeline/checks was cached before these descendants were created,
+the same occurrence checks still refer to ExtendedCI's effective Profile. Its
+Pipeline getter retains the native outer receiver. Resolving selected-checks
+therefore returns its refined build/test/package and new smoke objects. The
+parent's cached list is never an input to that computation. Assigning a saved
+parent list to the child's checks is the identity-mismatch counterexample.
+The [[file:04-selection-probe.org][existing probe]] validates this native receiver pattern, not the new domain
+guards or graph/capability admission.
+
+* Hygiene and native scope expansion
+
+The existing bounded declaration below does exactly this lowering:
+
+#+begin_src scheme
+(use-module Funflow as ff (.o (:: @ ff)))
+
+;; Hygienic expansion, same object identity; source expression evaluated once.
+(let ((ff (yuanxu-module-scope Funflow)))
+  (.o (:: @ ff)))
+#+end_src
+
+EffectiveFunflow in the extension uses the same rule. The alias denotes the
+complete effective module scope, so prototypes and Profiles have one source
+relationship. SourceRef is preserved; it is not authenticated by let, object?
+or alias spelling. ff does not escape as a lexical name; an ordinary returned
+closure/object getter may retain a valid lexical reference to it.
+
+No code block here installs a Loader, authenticates source, executes a command,
+or claims that the proposed field Contracts/resolver are already available.

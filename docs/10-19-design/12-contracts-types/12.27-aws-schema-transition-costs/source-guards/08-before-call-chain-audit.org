@@ -1,0 +1,121 @@
+#+title: 12.27.21 Before-Guard Call-Chain Audit
+#+property: DOCUMENT_ID 12.27.21
+#+language: en
+#+property: STATUS measured-no-reduction-hotspot-open
+
+* Measurement belongs to the before boundary
+
+The observation-enabled init-owned tests object's .run was repeated with the
+same JsonSchema, Funflow and AWS selection, source-only gerbil-poo revision,
+heap fence and progress-aware execution described in the read map. A temporary
+diagnostic in the existing ModuleTestingProfile observer recorded each distinct
+physical-read path under graph-current/build-admit-before. It did not change
+source guards, cache lifetimes or the selected test inputs and was removed
+after the run. It is not a new author-facing observer or runner.
+
+| Measure | Previous retained run | Diagnostic run |
+|---------+-----------------------+----------------|
+| Physical source reads, all phases | 46813 | 46813 |
+| Physical reads under build-admit-before | 19205 | 19205 |
+| File requests, all phases | 118412 | 118412 |
+| Read windows, all phases | 514 | 514 |
+| Publication guard bodies, all phases | 253 | 253 |
+
+There were 133 before brackets: 115 opened 167 source files each and 18 opened
+none. The recorded paths cover 167 distinct files. A post-run filesystem
+identity check of those surviving source files found 167 device/inode pairs;
+no path aliases explained the repeated passes. That post-run identity check
+is diagnostic evidence, not a source-validity or admission authority.
+
+This result does not prove that every remaining pass is necessary. It rules
+out the proposed path-alias explanation for this run and gives no justification
+for adding another cache. The exclusive stage counts in
+[[file:07-route-free-index.org][the preceding attribution]] still apply. Savings elsewhere must not be
+subtracted from the 19205 before reads.
+
+* Actual callback boundaries
+
+The package path has adjacent complete source traversals:
+
+#+begin_src text
+AdmissionPublication.publish / package-before or package-after
+  SelectedPackages.current!
+    sources-current! / inputs-current! / Graph.admit-current
+      build-admit-before
+      request.admit-current
+      build-admit-after
+    realized-package.admit-current
+      check-current! / inputs-current! / Graph.admit-current
+      possible cold realization; derivation query
+      check-current! / inputs-current! / Graph.admit-current
+    sources-current! / inputs-current! / Graph.admit-current
+#+end_src
+
+The real callbacks are resolved through public POO slots. The package checker
+is not a closed continuation of the preceding guard. Its slot getter, body,
+Source methods and cold lazy values can execute code. A warm artifact removes
+one realization, not these extension boundaries. The existing native
+warm-callback mutation control checks inputs and then writes a configuration
+file; the enclosing return guard must observe that write. The earlier failing
+whole-body read-window mutation remains relevant, not superseded by a warm
+AWS run.
+
+Within inputs-current!, Graph source checks, request observations and copied
+package inputs already share the existing synchronous observation window.
+Simply relabeling its Graph check as compiler-current would move reads out of
+the before subtotal without establishing a physical-read reduction, and could
+omit request policy. It is not an accepted optimization.
+
+* Root admission is not the proposed SourceAdmission shortcut
+
+The AWS descriptor is AWSAdmissionContract., derived from YuanxuContract.;
+its Scenario value-contract supplies AWSScenarioContract. Its Profile child
+uses AWSProfileAdmissionContract. This actual root is not wrapped by
+SourceAdmissionContract. Removing a repeated check in that other wrapper
+cannot qualify a reduction in this AWS workload. No such production change
+was made.
+
+The root Context check follows domain obligations, which can execute author
+code. It therefore cannot reuse the publication's post-package source window
+merely because the Graph object identity is unchanged.
+
+* Two invocation checks are not yet a proved pure interval
+
+publish-current uses an outer metadata.publish for atomic previous-value
+preservation and an inner bound metadata.invoke for the exact checked subject,
+actual descriptor and Context. The public bind-evidence composes the existing
+invocation rule with its identity rule; it does not replace dependent meaning.
+The inner meaning check is followed by evidence-view slot reads and then the
+outer output predicate and meaning. Those public predicates and evidence
+objects are extensible. Inspection of the current happy path is insufficient
+to classify the whole interval as pure or drop the outer meaning check.
+
+No guard receipt, single-use approval flag, continuation API or replacement
+invocation protocol was introduced to bypass that missing proof. Such a change
+would need to preserve overridden predicates, evidence getters and the public
+failure phase, as well as accepted values and previous-value preservation.
+
+* Qualification and remaining work
+
+The diagnostic aggregate exited naturally with seven MODULE-OK, two HARNESS-OK
+and two final OK markers and no error or overflow markers. The unchanged AWS
+Case retained the parent-cache final-value checks, Schema transition,
+stale-evidence refusal, exact previous-value retention and fixture cleanup.
+Observation stayed enabled; the progress-aware and total budgets were not
+changed. The temporary diagnostic was restored to the original observer after
+the process exited.
+
+The focused ops-selected-packages-test.ss rerun also exited zero with
+MODULE-OK, HARNESS-OK and final OK and no error/overflow markers. It retains
+the specific warm-callback stale-source refusal and the post-validator
+provenance refusal; these are fault-injection controls, not additional AWS
+performance measurements.
+
+No production optimization was qualified in this audit. The 19205-read hotspot
+remains open. A future candidate must identify a closed, effect-free interval
+at its actual caller, reduce physical opens in this same workload, and retain
+the mutation and publication controls. Counts from another phase or a wrapper
+absent from AWS do not satisfy that gate. The source-only qualification still
+does not qualify the concurrent compiled-build publication integration.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

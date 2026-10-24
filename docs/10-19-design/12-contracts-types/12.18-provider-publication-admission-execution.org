@@ -1,0 +1,166 @@
+#+title: 12.18 Provider Publication to Checked Admission and Local Execution
+#+property: DOCUMENT_ID 12.18
+#+language: en
+#+property: STATUS implemented-focused-native-test-no-runtime-loader
+
+The [[file:12.19-selected-publication-contract-resolution.org][selected publication resolver]] supersedes the test-owned Graph/Contract
+association below. This document preserves the earlier implementation and run;
+the current AWS source entry point lives in scenarios/aws.
+
+* One executable chain
+
+[[file:../../../t/opentofu-admission-execution-test.ss][The Scheme integration test]] realizes the existing Nix recipes for AWS
+5.99.0, AWS 5.100.0 and Null 3.2.4 through Ops ProcessScript. It obtains their
+actual provider-schema exports, admits selected configuration through Core,
+and executes a local Null hello-world. It never renders or applies AWS resources.
+The AMI-shaped test string is structural input, not proof of a deployable AMI.
+
+[[file:../../../t/fixtures/opentofu/admission-packages.nix][The selected packages]] reuse the maintained provider-schema builder and
+version/hash-pinned provider fixtures. AWSCC is not selected. The surrounding
+nixpkgs package set is resolved through the existing Nix search path; CI must
+lock that input separately. These provider pins do not lock the host package set.
+
+* Publication owns the generated association
+
+The existing JsonSchema factory retains schema-artifact and value-type from the
+SAME normalized node. Tests no longer generate another artifact or export Schema
+JSON into a temporary file to construct Context. Existing .classify/.admit
+consumers keep their existing route; adding value-type does not install another
+value validator on that contextual Contract.
+
+The OpenTofu reader retains only the manifest, selected kind index and selected
+type input snapshots. It hashes and parses the same bytes. The published
+Contract carries source-inputs, provider/version identity and input digest.
+
+#+begin_src scheme
+;; Maintainer/platform code; the linked test defines these platform inputs.
+(def AWS (yuanxu-opentofu-provider-from-directory selected-provider-directory))
+(def Instance (.get AWS types resources aws_instance))
+(def ScenarioValue
+  (.cc ObjectContract.
+    responsibilities:
+    (.o profile: (.get Instance value-type)
+        resource: (.get Instance value-type))))
+;; scenario-admission-contract uses ScenarioValue as its value-contract.
+(def Publication
+  (.cc AdmissionPublication.
+    graph: selected-build-graph
+    schemas: (list Instance)
+    contract: scenario-admission-contract))
+#+end_src
+
+The existing schemas slot accepts selected published Contracts as well as
+file-backed artifacts. Admission rejects missing observations, invalid artifacts,
+a Type whose node differs from the artifact's actual node, a different schema,
+and changed source bytes. Context copies observations and checks them before
+admission and at publication. Existing direct artifact consumers retain their
+file-backed checks.
+
+This is a trusted publisher association, not authentication of arbitrary .cc
+objects. The platform still supplies the selected Contract list. Complete
+Module/Contract discovery, export ownership and association coverage remain
+module integration work. Users do not repeat this metadata. Context observes
+selected inputs, not every resource in the provider catalog.
+
+* Simple user values and the final receiver
+
+#+begin_src scheme
+(.def WebProfile ami: "ami-fixture" instance_type: "t3.small")
+(.def (Production @ WebProfile) instance_type: "t3.medium")
+
+;; Maintained projection, lexical profile resolves on the effective receiver.
+(.def (Scenario @ [] profile)
+  profile: WebProfile
+  resource: profile)
+(def parent-resource (.get Scenario resource))
+(.def (Release @ Scenario) profile: Production)
+
+;; Platform operation, not a required user configuration step.
+(defvalues (evidence next refusal)
+  (.call Publication .publish previous Release))
+#+end_src
+
+The parent is forced first. The checked next.resource.instance_type is t3.medium;
+the cached parent stays t3.small. Core evidence and public bind-evidence retain
+the actual descriptor, checked subject and Context references. The test counts
+one root .validate invocation per admission; that is not a promise of a single
+field traversal or zero currentness work.
+
+Selecting AWS 5.100.0 captures its real Contract and a fresh Context. Replay of
+earlier evidence under this descriptor/Context is refused. Changing selection
+source bytes also invalidates the old Context. Both provider versions accept
+this instance type; no invented enum change is used to demonstrate rejection.
+
+A temporary shadow copies only the real manifest/index/aws_instance input.
+Appending whitespace after Context capture refuses publication and preserves
+the previous object. A fresh reader independently rejects the changed bytes
+against the original digest. Nix store files remain unchanged. A misspelled
+instnace_type, mismatched Type node and omitted source observations also refuse.
+
+* Execute the checked value through existing Ops
+
+#+begin_src scheme
+(.def Hello triggers: (.o message: "hello from Agentic AI Lab"))
+(def NullResource (.get Null types resources null_resource))
+;; NullAdmission uses NullResource.value-type through the same Core producer.
+(def NullPublication
+  (.cc AdmissionPublication. graph: selected-build-graph
+    schemas: (list NullResource) contract: NullAdmission))
+(defvalues (evidence checked refusal)
+  (.call NullPublication .publish previous Hello))
+
+(.def (Tofu @ ProcessScript.)
+  command: (list selected-tofu-executable)
+  directory: work-directory timeout: 20
+  environment: (.o TF_IN_AUTOMATION: "1" CHECKPOINT_DISABLE: "1"))
+(.call Tofu .run "init" "-backend=false" "-input=false" "-no-color")
+#+end_src
+
+The test renderer consumes checked.triggers.message and writes main.tf.json
+in a temporary directory. Derived Script objects invoke validate, plan, apply,
+output and destroy through .run. Terraform meta-arguments belong to this test
+renderer, not the provider resource-input Schema. The local-exec provisioner
+uses literal printf argv. Both its execution transcript and actual output must
+match. Destroy runs in dynamic-wind after apply is attempted. External effects
+are not made transactional with publication by this test.
+
+* Result and reproducible entry point
+
+From Core, with its declared Gerbil dependencies available:
+
+#+begin_src text
+just test-opentofu-admission-execution
+#+end_src
+
+The opt-in recipe uses the existing heap-fenced test-file harness and unchanged
+120-second bound. Nix daemon access and pinned provider downloads/store outputs
+are prerequisites. Cold package realization exceeding the bound is a failure;
+it does not justify widening it. No worker count, new runner or upstream change
+is introduced.
+
+The local completed run passed 49 explicit assertions, MODULE-OK, HARNESS-OK and
+final OK, including actual Null init/validate/plan/apply/output/destroy. Raw logs,
+generated JSON, plan and state remain temporary artifacts and are not committed.
+
+Four focused regression suites also passed: admission-checked-publication-test,
+admission-publication-test, json-schema-value-contract-test and
+opentofu-indexed-inputs-test. The last consumes the existing real indexed
+provider collection. No full build or full test suite was run.
+
+Counters, permissive contextual policy, one dependency-free Graph declaration,
+and the projection equality check are qualification fixtures. Graph/Context,
+Schema conversion, Type checking, Core admission/publication and Ops execution
+are actual library mechanisms. The test uses the existing Script object directly
+so that source-reader qualification is not confused with execution validation.
+There is no runtime Loader, complete association resolver, full provider SDK
+validator coverage, live AWS deployment or concurrent filesystem transaction.
+
+* Reflection
+
+Users change instance_type without assembling artifacts or receipts. Maintainers
+reuse a provider's generated association, and publication refuses approval for a
+different object/source revision. This complements OpenTofu backend validation
+and state instead of replacing them. Costs include source observation and fresh
+admission after change. Full association discovery and user-facing diagnostic
+repair guidance still need work. Exposing that machinery to ordinary users
+would add complexity without improving their configuration task.

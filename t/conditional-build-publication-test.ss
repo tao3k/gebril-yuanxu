@@ -1,0 +1,77 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import :std/test :clan/poo/object
+        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (only-in :std/error Error? Error-message)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        "./qualification/build-publication/conditional-commit")
+(export conditional-build-publication-test)
+(def conditional-build-publication-test
+  (test-suite "Conditional selected publication: serial owner boundary"
+    (yuanxu-test-fixture "admitted child commits exact plan once, parent and unused branch stay isolated"
+      (fixture ServicesFixture)
+      (with-slots (selection publication) fixture
+        (def parent (.get publication value))
+        (def cached (.get parent plan))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def owner (serial-publication-owner publication (.get selection build-graph) parent))
+        (def token (.call owner prepare Release))
+        (def plan (.call owner commit token))
+        (check-equal? (.get plan postgresql port) 5433)
+        (check-equal? (.get plan gitea database-port) 5433)
+        (check-equal? (eq? (.get plan configuration) (.get (.call owner head) config)) #t)
+        (check-equal? (.get cached postgresql port) 5432)
+        (check-equal? (length (.get publication context contributions)) 2)
+        (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
+        (check-exception (.call owner commit token) Error?)))
+    (yuanxu-test-fixture "changed head and ABA refuse without extra currentness callbacks"
+      (fixture ServicesFixture)
+      (with-slots (selection publication) fixture
+        (def parent (.get publication value))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def owner (serial-publication-owner publication (.get selection build-graph) parent))
+        (def token (.call owner prepare Release))
+        (.call owner replace-head Release)
+        (def changed (with-catch values (cut .call owner commit token)))
+        (check-equal? (Error-message changed) "selected deployment revision changed")
+        (.call owner replace-head parent)
+        (def failure (with-catch values (cut .call owner commit token)))
+        (check-equal? (Error-message failure) "selected deployment revision changed")
+        (check-equal? (eq? (.call owner head) parent) #t)
+        (def other (serial-publication-owner publication (.get selection build-graph) parent))
+        (check-exception (.call other commit token) Error?)
+        (def fresh (.call owner prepare Release))
+        (.call owner replace-selection (.cc (.get selection build-graph)))
+        (check-exception (.call owner commit fresh) Error?)
+        (check-exception (.call owner prepare Release) Error?)
+        (check-exception (.call owner commit (.o)) Error?)))
+    (yuanxu-test-fixture "external file writes are not fenced by a serial head comparison"
+      (fixture ServicesFixture)
+      (with-slots (root selection publication) fixture
+        (def parent (.get publication value))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def owner (serial-publication-owner publication (.get selection build-graph) parent))
+        (def token (.call owner prepare Release))
+        (def path (path-expand "modules/services/postgresql/objects.ss" root))
+        (def before (module-source-read path))
+        (write-source path (string-append before "\n; external write after preparation\n"))
+        ;; An intentional acceptance counterexample, not a security success.
+        (check-equal? (.get (.call owner commit token) postgresql port) 5433)
+        ;; The real publisher still rejects another admission against changed sources.
+        (def rejected (with-catch values (cut .call owner prepare Release)))
+        (check-equal? (metadata.failure? rejected) #t)
+        (check-equal? (metadata.failure-phase rejected) 'source)))
+    (yuanxu-test-fixture "both conflicting requirements still block preparation"
+      (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
+      (with-slots (selection publication) fixture
+        (def parent (.get publication value))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def owner (serial-publication-owner publication (.get selection build-graph) parent))
+        (def rejected (with-catch values (cut .call owner prepare Release)))
+        (check-equal? (metadata.failure? rejected) #t)
+        (check-equal? (eq? (.call owner head) parent) #t)))))

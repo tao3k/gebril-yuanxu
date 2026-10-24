@@ -1,0 +1,307 @@
+#+title: 10.05 Issuer-Owned Traversal Projection
+#+language: en
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Change and ownership
+
+The earlier worktree study (10.04) qualified the declared
+=ecaa8a6f= dependency without a retained traversal projection. This implementation
+lives in gerbil-poo's existing =call-with-issued-reads= closure. Core's production
+Scheme has no new protocol or cache. Public replay APIs are unchanged.
+
+The implementation working tree follows the existing
+=feat/positive-closure-costs= branch at
+=9ebd76ff9dcc400889af5c549fe4a5cee1b08221=. That branch had advanced independently
+since Core's declared pin. Its replay entry was unchanged; newer syntax helper
+refactors are preserved. A/B below uses THIS SAME parent for both images, not
+=096da65e= or a mixed-revision comparison. The later publication integrates the
+remote's independent Table/Type commits =64e2a93= and =0f81af0= before the
+projection commit =80b590b15c6d4bde7717f5fd85d5b98dbf230bd8=. It was pushed
+normally to the existing =feat/positive-closure-costs= branch / PR #13. Core's
+fixed dependency and =declaredPooRevision= now name that exact commit.
+The =object.ss= digest remains unchanged. Post-publication consumer qualification
+uses the installed Gerbil and an explicit rebuilt producer prefix plus the
+existing Core bootstrap layers; it is not a clean package installation or a
+full Core build. No compiler/runtime source is edited.
+
+The native entry owns:
+
+- A private weak key/value index from the original root-list identity to a native
+  cache receiver. Neither side is a global strong root for the read graph.
+- An ordinary native cached =projection= slot. Standard slot computation installs
+  only a successfully completed private projection; no second value evaluator is
+  introduced.
+- A private projection containing its owner, copied ordered roots, original
+  preorder and read-only receiver membership table. No populated DFS seen table
+  or passing authentication/admission result is retained.
+
+Neither the index, its owners, the projection type nor construction helpers are
+exported. =object-read-issuance= retains its existing inspect-only authority. Core
+cannot mint a projection or supply a purity/immutability flag.
+
+* Reuse and invalidation
+
+| Event | Structure behavior | Authentication behavior |
+|-------+--------------------+-------------------------|
+| Same live root-list identity and same ordered tokens | Native slot hit | Re-authenticate every saved token in DFS order |
+| Distinct root-list identity, even equal contents | Cold projection | Original complete DFS preflight |
+| Mutated root order/contents | Replace owner after successful new DFS | Original order/first refusal retained |
+| Weak owner collected | Cold projection | No old verdict is available |
+| Altered signed dependency sequence | Refuse at the original token | No callback before complete preflight |
+| Receiver revision/instance/value changed | Shape is not a validity claim | Original fresh currentness check refuses |
+| Transient miss later populated without revision change | Shape can stay the same | Native cache-absence check refuses |
+| Child receiver/new issued records | Independent identity/key | Never borrows parent plan/cache validity |
+| Failure while building | No owner installed in index | Preserve original exception |
+
+The producer's private birth closure authenticates exact dependency sequences.
+Thus, after the copied root sequence matches and all stored tokens authenticate,
+their previous preorder still covers the same selected closure. Hit processing
+does not inspect unselected object slots. Each call separately installs/unwinds
+the selected receiver frame, performs unchanged route/current checks before
+delivery, and performs unchanged full final checks after the consumer. External
+source checks and final domain admission retain their Core boundaries.
+
+GC eviction is permitted at any time; the optimization is opportunistic, not a
+persistent cache or a bound on the number of cold traversals. Receiver invalidation
+does not need to erase an immutable SHAPE before the fresh checker can reject an
+old token. No stale read is silently refreshed and no getter is rerun by replay.
+Callback/source changes cannot reuse a previous passing result.
+
+** Cache construction must not open a callback boundary
+
+Ordinary native object construction dispatches CLOS initialization. Before a cold
+cache receiver is allocated, the implementation compares the actual native object
+and object-state initializer procedures with their library-initialization values.
+If either changed, it uses the original non-cached DFS and does not invoke that
+new initializer. A valid existing hit needs no constructor call.
+
+This is derived from runtime metadata; callers provide no purity marker. The
+supported sequential runtime and trusted module-initialization premises are the
+same as the issuer/metadata-route model. Arbitrary VM/FFI rewriting and concurrent
+mutation are not proved safe by this change. Source-file checking is not an
+atomic transaction with external files or deployment effects.
+
+* Proofs before implementation
+
+[[file:../../proofs/lean/YuanxuProof/Admission/SelectionReplay.lean][SelectionReplay]]
+adds the following checked laws, with the existing LeanPoo dependency held fixed:
+
+- =topology_reuse_on_selected_closure=: equality of authenticated edges on the
+  finite selected closure suffices for identical DFS preorder. Edges and getters
+  outside that closure need not be inspected. =IdentityDFS= owns closure coverage
+  and termination under its existing finite-graph premises.
+- =authenticated_edges_match_frozen=: dependency equality derives from native
+  registry/original-closure projection, not a public Birth claim.
+- =projection_hit / changed_roots_rebuild / weak_eviction_rebuild=: separate native
+  value reuse from key change and weak collection.
+- =projection_lookup_refines / reuse_preserves_first_diagnostic=: an owned
+  structural hit retains the original ordered checking result.
+- =receiver_frame_preserved / structural_hit_still_checks_tail=: the selected
+  receiver projection and mandatory tail remain unchanged.
+- =changed_constructor_uses_uncached_path=: an unrecognized initializer is never
+  invoked by cold-cache preparation.
+
+[[file:../../proofs/quint/SelectionReplayTopology.qnt][SelectionReplayTopology]]
+models live/evicted owners, root-order changes, receiver revision, altered edges,
+forged records and constructor metadata. The existing scoped gate checks 11
+positive/expected-negative cases. A new constructor counterexample demonstrates
+why calling an unrecognized initializer is not a closed authentication step.
+
+The Lean order/diagnostic equalities are pure laws, not proofs of compiler
+correctness or native callback effects. Runtime correspondence is supplied by
+the actual native and service regressions below, under the stated premises.
+SysML assigns ownership; it is not itself a qualified theorem prover.
+
+* Native regression and measurement protocol
+
+The existing gerbil-poo =issued-read= suite now contains 17 Cases. Four additions
+check actual preorder identity, root-order replacement, forged cached dependencies,
+transient-miss staleness, child isolation, weak eviction and changed constructors.
+Private extern access checks structural identity only; it is not a public API.
+Reuse is checked between TWO captures inside a measured no-GC interval, so
+collection before the interval cannot falsely fail an allowed cold miss. Explicit
+GC occurs only in lifetime unit controls, never in timing windows.
+
+Native compilation uses the authoritative upstream spec/compiler options and
+the installed toolchain, within the original 120 s compile bound. Tests retain
+their own original Just heap/watchdog policies. Core timing runs use default
+=just test-file=, its 2 GiB heap, 60 s idle and 600 s total bounds. Native and Core
+tests run serially; no local compilation or formal verification overlaps timing.
+
+The paired images share the =9ebd76f= source baseline. The candidate changes only
+the replay entry and its direct import; Core bootstrap layers are identical and
+expose no old =clan= fallback. Existing signed test preparation warms both prefixes
+before timing. Native dependency rebuild and Core bootstrap reuse are distinct
+from a complete clean Core build.
+
+Three A/B rounds are retained, each new process making 20 same-VM warm demands
+then running the original three-Case Scenario Harness once. Cold means cold POO
+selection in that process, not an erased compiler/store/filesystem cache. Runtime
+certification is rerun in both images; no admitted result crosses processes.
+
+* Results, 2026-10-22
+
+Every trace round compiled zero support targets. Each warm demand visited exactly
+5647 records in six replays and read 128 files / 1106338 characters. Native graph
+identity stayed cached and no role evaluation occurred in the warm demands.
+Medians below average the two middle observations of 20 samples.
+
+| Image/round | First graph, s | Warm currentness wall, ms | Warm replay wall, ms | Warm replay CPU, ms |
+|-------------+----------------+---------------------------+----------------------+---------------------|
+| A1 original | 4.034 | 23.826 | 14.721 | 14.652 |
+| B1 projection | 3.581 | 17.522 | 9.322 | 9.303 |
+| A2 original, disturbed | 15.658 | 61.896 | 16.612 | 11.613 |
+| B2 projection | 3.840 | 18.841 | 10.046 | 10.036 |
+| A3 original | 3.716 | 19.536 | 10.961 | 10.913 |
+| B3 projection | 3.642 | 19.420 | 9.621 | 9.613 |
+
+A2 is retained, not removed from the record or used as an acceleration ratio.
+Its first graph had 11.446 s wall/CPU residual. Warm replay sample 1 took
+222.165 ms wall with 13.856 ms CPU, zero GC and 208.309 ms residual. Sample 6
+took 226.788 ms wall with approximately 16.310 ms CPU. These are non-CPU gaps,
+not proof of a specific competing process or IO cause. No timeout was relaxed.
+
+Replay CPU medians fall in all three pairs (approximately 12--37%), but this is
+a bounded local result, not an end-to-end throughput guarantee. In pair 3, whole
+currentness barely changes: 19.536 to 19.420 ms. Source IO, GC placement and other
+work can absorb the replay saving. Inclusive spans must not be added or treated
+as exclusive allocation costs. No VM-account value is called physical bytes.
+
+On a successful STRUCTURAL HIT, source inspection establishes that two DFS tables
+and two preorder list spines are not reconstructed. It does not establish an
+all-hit count for a real run: weak eviction may occur between samples, including
+during diagnostic output. Misses additionally allocate a root snapshot and native
+cache owner. Fresh signature checking still traverses signed dependency sequences;
+total authentication is not O(1). No instrumentation counter or user-visible cache
+control was added to the production entry.
+
+** Real application admission
+
+The existing =t/slot-read-cost-test.ss= measures actual application =.admit= in
+three batches of three calls per regime. Counter observations run separately.
+The parent plan is warmed at 5432 before each derived child's port becomes 5433.
+
+| Regime | A wall ms/call, three batch means | B wall ms/call, three batch means | A/B collections per batch |
+|--------+----------------------------------+----------------------------------+---------------------------|
+| Fresh child | 68.270 / 67.439 / 67.505 | 63.533 / 61.427 / 46.301 | 1,1,1 / 1,1,0 |
+| Same warmed child | 52.680 / 66.221 / 64.961 | 61.650 / 62.260 / 60.571 | 0,1,1 / 1,1,1 |
+
+These ranges overlap and collection placement differs. They do not establish
+stable application-admission acceleration. Both images retain both service
+requirements, final normalized-config/plan identity, child obligations, stale
+parent-plan rejection and post-child source-change refusal. The nested wrapper
+controls are contextual fixtures, not a second production admission fast path.
+The measurement helper's unqualified final VM-account column is ignored.
+
+Shared-read widths 1, 8, 64 and 512 retain 12 unique replay records, with signed
+edge counts 11, 18, 74 and 522 in BOTH images. No edge or observer event is erased
+to obtain the saving. The existing persisted build handoffs also expose ten shared
+Core support-source inputs; their contents match between images, with no multiple
+versions observed. Shared bootstrap layers and equal work/character counts supply
+additional controls, not a claim of a clean full Core rebuild.
+
+* Final qualification and remaining boundary
+
+Native =issued-read= passes 17 Cases through its existing Just entrypoint,
+including the corrected no-GC reuse interval. Core candidate publication passes
+11, checker-origin passes 10, field-read/replay passes 16, and admission-cost
+passes three Cases. All have =MODULE-OK=, =HARNESS-OK= and final =OK=, without
+error/heap/stack failure markers. Six three-Case Scenario trace runs also pass.
+Source changes, forged dependencies/checkers, metadata replacement, parent cache
+isolation, explicit port mismatch, both requirements, nested obligations and
+unselected branches retain their existing refusal/laziness controls.
+
+Lean passes the selected 105-job closure. Quint passes 11 catalogued cases.
+The dev-only =--producer-source= option binds the real native source owners into
+the same receipt/currentness cut. =projectionObjectDigest= connects the Lean
+correspondence to the actual =object.ss= bytes; real source paths are retained
+relative to Core, not invented logical paths. Default proof catalog behavior is
+unchanged. This is a source binding plus runtime correspondence, not a theorem
+about the Gerbil compiler or all kernel reflection/SMP behaviors.
+
+Local receipts and transcripts remain under
+=/private/tmp/yuanxu-replay-projection-20261022/=, including all six trace runs,
+both admission-cost runs, native/Core regressions, initial failed test compilation,
+Lean/QNT results, source/product digests and persisted-input comparison. No raw
+logs or patch file are added to either repository.
+
+The maintained producer source is the existing branch working tree at
+=agentic-ai-lab/.data/gerbil-poo-replay/=; it has no competing Core implementation.
+The producer publication and Core pin update are now complete. The remote branch
+retains both independently published Table/Type commits. No new branch or PR was
+created. CI and clean-install qualification remain separate from the local
+results below. No compiler source, timeout, heap limit or admission boundary
+changed.
+
+** Post-publication qualification (2026-10-22)
+
+The initial bounded rebuild of the integrated producer reached its existing
+120-second limit without a reported compiler error. That failed attempt is
+retained locally. A subsequent incremental =std/make= invocation completed under
+the same limit, using its existing four-worker setting. The integrated producer's
+17-case issued-read suite passed its existing =just test-file= entrypoint.
+The post-pin Lean closure passed 105 jobs; the source-bound Quint gate passed
+all 11 catalogued cases, including the expected counterexamples. These verify
+the declared commit and actual producer source together; admission conclusions
+are never cached by the projection.
+
+
+After changing Core's pin, the default =just test-file= path passed the real
+=t/gitea-postgresql-publication-test.ss= (11 Cases),
+=t/slot-read-replay-test.ss= (16), and =t/mop-checker-origin-test.ss= (10).
+All three transcripts contain =MODULE-OK=, =HARNESS-OK= and final =OK= without
+error or overflow markers. These preserve default-following after parent-plan
+caching, explicit client-port mismatch and stale-plan refusal, both independent
+requirements, nested obligations, source-currentness refusal and untouched
+unselected branches. No admission verdict is reused across calls or callbacks.
+Post-pin logs are named =post-pin-services=, =post-pin-reads=, =post-pin-mop=,
+=post-pin-lean= and =post-pin-quint= under the local artifact directory above.
+At the last remote query, PR #13's build was queued; a CI pass is not claimed.
+
+** Scoped Core publication
+
+The Core PR publishes the producer pin, SelectionReplay Lean/QNT correspondence,
+its source-binding gate and this report. Unrelated in-progress test-build,
+source-window and platform migrations remain in their owners' working trees.
+The maintained proof gate retains its existing full-catalogue bindings; the
+explicit SelectionReplay scope binds its own replay consumers, package/proof
+inputs and (when supplied) producer sources without requiring uncommitted files
+from another workstream. Local runtime results above used the integrated Core
+worktree, not a claim that all concurrent changes ship in this commit.
+
+The release-tree check exports the exact staged Git tree to a temporary directory,
+then runs its own source-bound SelectionReplay gate: all 11 cases passed. Its
+SelectionReplay Lean file also passed with the existing locked Lean environment.
+This extra check establishes that the submitted proof scope does not depend on
+other uncommitted workstreams. It is not a new runtime performance measurement
+or a replacement for the integrated Scenario regressions above.
+
+** Core CI environment preparation control
+
+The first Core #19 run at =d3efaae= failed before importing Gerbil: the pinned
+Nix input has an =outPath= attribute and serializes as a JSON string, while the
+setup action attempted =jq .outPath= on that result. The bounded local control
+explicitly selects =(import ./t/fixtures/nixpkgs.nix).outPath= before JSON
+serialization, requires a =/nix/store/= string, and preserves the existing
+=test -d=, pinned input, Nix store checks and job budgets. It returned the exact
+pinned store source successfully. Only that committed action line changes;
+the other session's working-tree Nix relocation is not included or replaced.
+This local control does not assert a green rerun of the complete Core workflow.
+
+The first CI action edit contained an extra closing parenthesis that the separate
+local control had not exercised. The subsequent CI failure is retained rather
+than described as a runtime failure. The corrected action is now parsed as YAML;
+every actual =run= block passes =bash -n=, and the exact extracted path-selection
+and directory-check lines execute against the fixed input. This closes the
+specific validation gap; complete workflow status remains a separate result.
+
+** Core CI follow-up: fixed Just installation
+
+At =9291075=, Ubuntu failed before dependency installation: setup-just reported
+no matching =1.56.0= release. The official Just release and both Linux/macOS
+assets were independently checked and do exist. The installer is replaced with
+a commit-pinned taiki-e action using =just@1.56.0=, checksums enabled and no
+build fallback. A post-install exact version assertion prevents accidental
+selection of another binary. This repairs the installer path without changing
+the tool version, compiler release, job budgets or test checks. Actual YAML run
+blocks are syntax-checked; CI remains the cross-platform execution gate.

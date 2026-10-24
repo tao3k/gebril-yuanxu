@@ -1,0 +1,294 @@
+#+title: 32.30 Checker Identity, Issuance and Metadata Dispatch
+#+language: en
+#+startup: overview
+
+Follow-up: [[file:32.31-selected-metadata-route.org][32.31]] tests a selected route inspector against nested hash/equality,
+instance-cache replacement and callback gaps. It preserves transient misses but
+does not claim to authenticate their issuance or fix production replay.
+
+* Question and scope
+
+Can the closed verification segment in [[file:32.29-constrained-return-tail.org][32.29]] admit MOP checkers by native
+identity and receiver ownership, without asking users to claim that a closure
+is pure? This qualification audits the actual producer and runs hostile-record
+controls against the unchanged runtime. It does not modify production Scheme,
+introduce a Loader path, or establish an in-process security sandbox.
+
+The important distinction is between currentness, issuance and read-only
+execution. A current record need not have been issued by the receiver. A fixed
+checker can still call a mutable metadata interface. These are independent
+boundaries; an identity comparison alone closes neither one.
+
+* Audited construction and replay
+
+Producer checkout: gerbil-poo =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+Core HEAD: =80e2e74022c9c4053445475402856c5f369aec48= plus concurrent worktree
+changes. LeanPoo remains =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+The default SDK is Gerbil =1cfb032=, patch =618d76f9eb72=.
+
+The global =~/.gerbil/pkg/clan/poo= points at an older, unrelated checkout.
+Qualification explicitly selects this workspace's =.gerbil= package and
+compiled libraries, where the audited producer is installed. This is dependency
+selection, not a compatibility runtime. No package is uninstalled or rewritten.
+
+| Entry | Actual behavior | Assurance implication |
+|-------+-----------------+-----------------------|
+| =object-record-read= | Constructs records with =object-read-current?= and receiver revision/instance | One native constructor for the selected read routes |
+| =.ref= cold | Stores the value and the exact read token on that receiver | Ordinary token membership is checkable |
+| =.ref= hot, =.ref/cached= hit, =.ref/inline= hit | Deliver the receiver's retained token when observation is active | No inherited parent token substitutes for a child's cache |
+| =object-read-bootstrap= | Stores a token for the pinned bootstrap anchor | Checker tests the anchor, not table membership |
+| =.ref/cached= miss | Uses =object-read-query ... cache?: #f= | A genuine token is transient and is NOT registered in the read table |
+| =make-slot-read=, =%deliver-slot-read= | Publicly exported through =slot-observation= and MOP | A caller can construct and inject records |
+| =replay-slot-reads!= | Calls each token's stored =current?=, visits dependencies, then checks visited records again | No checker-authentication gate precedes that call |
+
+Relevant implementations are
+[[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/object.ss][object.ss]],
+[[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/slot-observation.ss][slot-observation.ss]] and
+[[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/mop.ss][mop.ss]].
+Native replay is identity-based DFS; this work does not replace its ordering or
+claim to order the final =hash-keys= sweep across executions.
+=without-observation= suppresses observation/precheck parameters; it is not a
+write barrier. Running a stored checker inside it does not make that procedure
+read-only.
+
+#+begin_src scheme
+;; Existing producer, abridged to the boundary under audit:
+(make-slot-read self key (object-revision self) (object-%instance self)
+                value inherited-dependencies object-read-current?)
+
+;; Existing replay executes the stored procedure:
+(unless ((slot-read-current? read) read)
+  (error "stale slot dependency" (slot-read-key read)))
+#+end_src
+
+* Executable negative controls
+
+The maintained controls are
+[[file:../../../t/mop-checker-origin-test.ss][mop-checker-origin-test.ss]] and the qualification-only
+[[file:../../../t/qualification/mop-state/checker-origin.ss][checker-origin.ss]]. All mutation targets are test-owned objects or temporary
+service files. A runtime reflection write is explicitly identified as fault
+injection; it is not represented as an ordinary supported Profile edit.
+
+** Currentness does not authenticate construction
+
+Copying a normal symbolic token while retaining the native checker fails:
+=object-read-current?= requires the exact registered token. However, a copied
+bootstrap token and a synthetic cache-miss token both pass the native checker.
+Their checker branches compare the anchor or cache absence, respectively.
+Neither branch proves that the token was issued by a native access route.
+
+The isolated preflight inspects the exact native record class, compares the
+checker with =object-read-current?= using =eq?=, requires receiver-table token
+membership, and recursively checks dependencies with identity-based deduplication.
+It does not execute a foreign checker and does not use a purity annotation.
+
+This preflight is deliberately NOT ready for production: it also rejects a
+genuine =.ref/cached= miss, whose token is intentionally uncached. Requiring
+table membership everywhere would break supported native behavior. A production
+issuance protocol must cover transient tokens without making absence queries
+populate the value cache or forcing unselected getters.
+
+** A checker can change state and still return true
+
+#+begin_src scheme
+(def forged
+  (make-slot-read dependency 'port (object-revision dependency)
+    (object-%instance dependency) 5432 '()
+    (lambda (_read)
+      (set! calls (+ calls 1))
+      (.putslot! dependency 'port ($constant-slot-spec 5440))
+      #t)))
+
+;; Probe-only Contract; classification is a fixture, not the service contract.
+(def Contract
+  (.cc (.get sample contract)
+    .obligations:
+    (lambda (_candidate _context)
+      (%deliver-slot-read forged #t)
+      '())))
+(def evidence (.call Contract .admit candidate #f))
+#+end_src
+
+The actual =SourceAdmissionContract.= accepts this injected-record control and
+the dependency ends at =5440=. The fixture supplies the permissive domain
+classifier/obligation; the MOP, source replay and public =.admit= are unchanged.
+This demonstrates the missing record-authentication premise, not that the real
+Gitea contract accepts arbitrary incompatible ports. Raw replay calls a foreign
+checker twice in the single-root control, including its final sweep.
+Domain obligations are already executable extension code. This witness does not
+establish a new privilege escalation: it falsifies the stronger premise that
+everything invoked by replay must be a read-only native operation.
+
+The qualification preflight rejects the foreign identity with zero calls. A
+native, registered root can still depend on a foreign record; therefore checking
+only root identities is insufficient. Every selected dependency must be covered
+before invoking any checker. Complete extraction is a separate correspondence
+premise, not a theorem obtained from checking a list's members.
+
+** Native identity is not transitive purity
+
+The installed SDK's =gerbil/runtime/hash.ss= implements =hash-get= through the
+=HashTable.ref= interface. The current native checker calls =hash-get= on the
+receiver's read table. The following fault injection changes that table's own
+method, without changing the checker identity:
+
+#+begin_src scheme
+(def table (object-%reads Root))
+(def ref (runtime.slot-ref table 'ref))
+(runtime.slot-set! table 'ref
+  (lambda (self key default)
+    (set! calls (+ calls 1))
+    (.putslot! Victim 'port ($constant-slot-spec 5440))
+    (ref self key default)))
+(check-equal? (object-read-current? genuine) #t)
+(check-equal? (> calls 0) #t)
+#+end_src
+
+This control passes. Even the preflight's membership lookup depends on trusted
+metadata operations; it is not a safe inspection sandbox for hostile tables.
+The earlier 32.23 snapshot also remains =state-current!= and =state-closed?=
+after this method replacement: it retained the table pointer, not the mutable
+interface's =ref= procedure. Its previous sufficient-gate interpretation must
+therefore retain the unchanged-native-metadata premise. In this stronger fault
+model it is not a complete read-only certificate, and invoking its native checker
+can itself perform the injected write. The old extractor is not silently changed.
+A separate raw write can register a forged native-identity token in the read
+table, making both membership and currentness pass. The supported POO edit
+protocol is not used for these raw writes and cannot invalidate them for us.
+
+* Real service control, without replacing domain obligations
+
+The existing =ServicesFixture= publishes the actual Scenario via the reader and
+linker into an owned temporary tree. Its two contribution origins remain
+=postgresql-port= and =gitea-port=. The observation Context delegates the original
+=.contract-obligations= and captures the actual normalized candidate; it does
+not replace the domain analyzer with a positive result.
+
+#+begin_src scheme
+(def cached (.get Parent plan))
+(.def (Release @ Parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+
+(def evidence (.call Contract .admit Release Observed))
+(check-equal? (.get evidence accepted?) #t)
+(check-equal? (.get analyzed plan postgresql port) 5433)
+(check-equal? (.get analyzed plan gitea database-port) 5433)
+(check-equal? (.get cached postgresql port) 5432)
+(check-equal? (eq? cached (.get Parent plan)) #t)
+#+end_src
+
+Both cold and warm runs retain the Config candidate identity and both child
+responsibility evidence entries. Explicit Gitea client port =5440= is rejected
+against PostgreSQL =5433=. Substituting the cached parent plan is rejected.
+After a source-file change, that same stale-plan candidate reports
+=configuration source changed=: the earlier source diagnosis retains priority.
+An error-valued unselected slot remains unforced in the native access control.
+These controls establish semantic behavior, not a performance improvement.
+
+* Lean and QNT correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean][CheckerOrigin.lean]] reuses the existing LeanPoo-backed admission models.
+It proves that a passing identity/membership gate retains both comparisons,
+every member of the supplied closure passes, both requirements and child
+ownership remain necessary, and the prior source fault keeps priority. Concrete
+counterexamples separate bootstrap/miss currentness from ownership and show why
+writable table membership cannot prove issuance.
+
+Its pure =kernelCurrent= projects the native checker's three branches. The
+=fixed_kernel_preserves_state= theorem is CONDITIONAL on those comparisons
+being primitive read-only metadata operations. The raw HashTable-method control
+shows why this is a runtime premise, not an automatic proof of Scheme effects.
+Neither this theorem nor checker pointer equality establishes that premise.
+
+[[file:../../../dev/proofs/quint/CheckerOrigin.qnt][CheckerOrigin.qnt]] has one conditional positive model and eight matched
+counterexample checks: identity-only ownership, arbitrary checker invocation,
+root-only validation, raw table replacement, metadata method dispatch, a dropped
+second requirement, parent-plan substitution and an acceptance witness.
+The positive safety predicate explicitly excludes metadata-hook effects from
+its read-only conclusion. The separate =metadataHook= check refutes the
+unconditional conclusion. This exclusion is a documented trust assumption,
+not a user-maintained purity flag or an implemented runtime restriction.
+
+Both formal artifacts bind the QNT source digest. The catalogued proof runner
+binds the test and qualification helper and retains finite state counts,
+counterexample outcomes and the source-cut check. No proof claims that arbitrary
+Scheme procedures have been automatically classified as pure.
+
+* Design conclusion and remaining work
+
+1. Retain a single native creation/delivery protocol. A future trusted issuance
+   mechanism must authenticate persistent AND transient records, their receiver,
+   revision and dependency closure. Do not expose a second user protocol or
+   require user lists of paths, records or purity facts.
+   Preserve receiver-local lifetime and demand-only discovery. Transient tokens
+   need a producer-owned issuance association that survives only their actual
+   read/dependency lifetime; a process-global strong registry or a scan of all
+   modules is not an acceptable substitute. This association is not implemented
+   or performance-qualified here.
+2. Prefer closed native checker operations over an arbitrary =current?= closure
+   at the verification boundary. Authenticity must be checked before invocation,
+   and independently of currentness. A stale authentic token still fails.
+3. Protect or constrain the metadata operations that the checker and gate use.
+   Private constructors alone do not defeat arbitrary runtime reflection,
+   mutable table methods, rebinding or foreign code. This trusted-runtime
+   boundary must be stated rather than marketed as hostile-code isolation.
+   The protected object is verification metadata, not every domain Profile:
+   globally sealing user configurations would discard the extension behavior
+   being verified. A token's receiver association is not a reason to execute an
+   arbitrary receiver method during verification.
+   Comparing method pointers only after invocation would also miss temporary
+   mutation and restoration. Entry authentication and a callback-free interval
+   are separate from endpoint equality, as established in 32.24--32.29.
+4. Keep complete dependency discovery, root/child receiver separation, source
+   currentness and diagnostic scheduling. The qualifier adds no field table and
+   does not force unselected getters. A production full-closure authentication
+   pass has costs that remain unmeasured here.
+5. The source-observer gate from 32.29 and checker authenticity solve different
+   openings. Neither alone closes an external writer's filesystem race; atomic
+   snapshots or conditional publication remain separate requirements.
+
+This is evidence against installing the simplistic membership preflight, not a
+request to add another series of return-time sweeps. First make native issuance
+and trusted metadata ownership precise; then prove the execution correspondence.
+No production MOP, SourceAdmissionContract or Loader change is made here.
+
+* Executable receipt
+
+The focused test uses the normal =just test-file t/mop-checker-origin-test.ss=
+heap-fenced entrypoint with the workspace =GERBIL_PATH= and compiled library
+path. Local qualification artifacts and failed attempts remain under
+=/private/tmp/core-checker-origin-20261018/=. They are not committed as logs.
+The final result counts and limitations are recorded after qualification below.
+
+** Native result
+
+Ten cases complete through =MODULE-OK=, =HARNESS-OK= and final =OK=, without an
+error/heap/stack marker. The final run binds 46 source/library identities before
+and after execution with no change. These include installed producer sources,
+the tested native libraries, runtime hash implementation, service sources and
+qualification code. It is a stable run cut, not a rebuild proof that every
+compiled library was produced from the whole current dirty worktree.
+Earlier import/fixture failures remain in local artifacts; they are not counted
+as passes and no timeout was expanded.
+
+** Formal result
+
+The final Lean build completes 170 jobs. The imported Core closure audits 5,548
+declarations using only the standard Lean axioms, and passes the model-shape
+audit. The ten new theorems are required by the existing aggregate audit; this
+does not prove Scheme-to-Lean extraction or arbitrary procedure purity.
+
+All 146 QNT sources typecheck. The =CheckerOrigin= scoped receipt accepts nine
+expected outcomes: one conditional safety pass and eight counterexamples or
+acceptance witnesses. It is not a full-catalog verification receipt. The matched
+=rootOnly= counterexample actually selects =nested=, whereas the independent
+metadata limitation selects =metadataHook=; a metadata fault cannot stand in
+for the missed-dependency control. The final source-cut check passes.
+
+The first two attempts retain sandbox backend bind/connect failures, not model
+counterexamples. A subsequent exploratory run is rejected because bound model
+and checker sources changed during qualification. That stale run is retained;
+only =quint-04.log= with =quint-qualified.ss= is the accepted stable scoped run.
+The dedicated local backend is stopped after verification. No runtime budget,
+negative-case predicate or source-cut check is weakened to admit a failed run.

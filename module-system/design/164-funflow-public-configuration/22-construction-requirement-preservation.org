@@ -1,0 +1,260 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Automatic Requirement Preservation at Native Object Construction
+#+date: [2026-10-15]
+#+property: STATUS proposed-native-construction-boundary-with-proved-reference-laws-no-module-adapter-no-loader
+
+* Decision: preserve construction provenance, not extra semantic parents
+
+Follow-up source audit: [[file:23-construction-entrypoint-audit.org][module 23]] supersedes the provisional post-allocation
+record-operands! design below with a single constructor-owned protocol. It adds
+the .cc/instance/Lens source-loss boundary, data-reconstruction exclusions,
+selected admission closure and the precise native cache/mutation limitations.
+The code below remains the earlier proposal, not the current implementation or
+the preferred finalization design. The reference proofs remain applicable.
+
+Users continue to write native .def, multiple parents, .+ and =>.+. They do not
+maintain a mandatory RHS Contract list. Automatic collection requires a NEW
+native construction integration; current MOP reflection alone cannot recover
+an operand whose identity has already been discarded.
+
+There are two separate relations:
+
+- object-supers owns slot inheritance, C3 precedence and receiver semantics.
+- Private construction provenance owns non-droppable admission requirements.
+
+Do not insert the RHS object into object-supers to repair provenance. That would
+change native precedence and slot application. Do not encode requirements in a
+normal overridable slot: a downstream assignment could erase the obligation.
+Construction provenance is kernel-maintained metadata, not a new public DSL or
+a second configuration object. Modules, Profiles and Scenarios remain POO values.
+
+* Source finding and existing boundaries
+
+This review uses the same pinned native source as module 21:
+099b381588360a8a49fd772f666a1a00351366f5. The isolated source is
+/tmp/agenticailab-dfs-admit-20261015/clan/poo/object.ss. Its .+ definition at lines
+239--241 is:
+
+#+begin_src scheme
+(def (.+ base override)
+  (make-object slots: (object-slots override)
+               supers: [(object-supers override)... base]
+               defaults: (object-defaults override)))
+#+end_src
+
+The same file's object/slot-spec rules lower =>.+ to => .+. .def lowers through
+.o and object construction. The native object :init! initializes supers, slot
+storage and lazy caches. Neither it nor the reviewed MOP provides a complete
+operand-provenance callback for .+. A generic method declaration cannot intercept
+this ordinary function automatically. A lexical replacement of .+ in a user
+module also cannot capture calls already bound inside another module's macros.
+
+Therefore the following Scheme is a kernel-change DESIGN, not executable current
+API and not a claim that the existing 61 native assertions exercised a new hook.
+
+* Minimal private construction design
+
+Each native object receives one non-reused construction token and a private,
+immutable provenance node. This private positional record deliberately is NOT
+a POO object: creating metadata must not recursively invoke object construction.
+The proposed object-construction accessor is private kernel storage, not .get.
+
+#+begin_src scheme
+;; DESIGN ONLY: new private object field/accessor and constructor integration.
+(defstruct construction-node (token parents))
+
+(def (record-operands! result operands)
+  (let ((initial (object-construction result)))
+    (set! (object-construction result)
+      (make-construction-node
+        (construction-node-token initial)
+        (map object-construction operands))))
+  result)
+
+;; Proposed replacement BODY at the existing native .+ owner.
+;; make-object initializes its fresh node before this internal finalization.
+(def (.+ base override)
+  (record-operands!
+    (make-object slots: (object-slots override)
+                 supers: [(object-supers override)... base]
+                 defaults: (object-defaults override))
+    (list base override)))
+#+end_src
+
+Constructor requirements:
+
+1. :init! creates a fresh token and a node containing the provenance of ALL
+   flattened native parents. Fresh local objects with no parents get an empty
+   parent list, not an unknown marker.
+2. .+ replaces that provisional node with the SAME fresh token and both actual
+   operand nodes, before returning/publishing the object. Both operand histories
+   already include their own parents and earlier .+ operations.
+3. The provenance nodes are immutable after finalization; no object escapes
+   during provisional initialization. The internal setter above is unavailable
+   to ordinary configuration. Atomicity and concurrent initialization require
+   qualification before implementation.
+4. Node edges retain metadata, not operand instances or forced slot values.
+   Token allocation, authenticity and retention policy are kernel obligations.
+
+No extra raw self/super compute hook appears in ordinary configuration. Existing
+=>.+ continues to reach the native .+ owner when its slot is demanded. Its
+provenance is captured THEN, rather than by eagerly forcing the declaration.
+
+* Collect requirements against a sealed publication view
+
+Upstream publishes a trusted token-to-Contract association once, through the
+package interface design. No ProfilePublication or per-child origin declaration
+is introduced. The index is sealed for an admission view; absence means no
+published own requirements ONLY in that complete trusted view.
+
+The following is the collector reference body. descriptor entries are canonical
+Contract objects. The index must reject inconsistent identity/source/policy
+bindings before this function runs; descriptor equality alone does not prove
+source authenticity. Duplicate traversal paths do not repeat Contract execution.
+
+#+begin_src scheme
+(def (construction-contracts candidate sealed-index)
+  (let ((seen (make-hash-table-eq))
+        (contracts (make-hash-table-eq))
+        (ordered '()))
+    (let walk ((node (object-construction candidate)))
+      (unless (construction-node? node)
+        (error "untracked-object-construction"))
+      (unless (hash-key? seen node)
+        (hash-put! seen node #t)
+        (for-each
+          (lambda (contract)
+            (unless (hash-key? contracts contract)
+              (hash-put! contracts contract #t)
+              (set! ordered (cons contract ordered))))
+          (hash-ref sealed-index (construction-node-token node) '()))
+        (for-each walk (construction-node-parents node))))
+    (reverse ordered)))
+#+end_src
+
+This collector neither traverses all published exports nor forces business slots.
+Production storage should share immutable provenance DAG nodes and memoize by
+node AND sealed index revision. Bounded traversal and deduplication avoid repeated
+diamond visits. Metadata overhead is not zero: allocation, retained nodes,
+publication-index lifetime and cold/warm costs need measurement. No performance
+improvement is inferred from the reference algorithm.
+
+For each collected Contract the boundary uses the existing public protocol:
+
+#+begin_src scheme
+;; candidate/context are the FINAL effective objects, never RHS or parent values.
+(yuanxu-contract-admit contract candidate context)
+#+end_src
+
+Module 21's checked-receipt? validates evidence type, Contract identity,
+candidate/context, classification identity and acceptance. Invoke it for every
+collected Contract. Missing/invalid receipts refuse admission. Never silently
+drop an inherited requirement because another Contract has the same display name.
+Incompatible requirements produce a conflict; changing policy requires an
+explicit authorized contract-consequence mechanism, not a slot assignment.
+
+* Ordinary user path and lazy admission closure
+
+#+begin_src scheme
+;; Upstream Root/RightProvider carry associations once through publication.
+;; These declarations remain entirely native for the user.
+(.def (Release @ Root)
+  build: =>.+ (.o value: 'release-build)
+  smoke: (.o value: 'smoke)
+  pipeline: =>.+
+  (.o selected-checks: '(build test package smoke)))
+
+(def Combined (.+ Release RightProvider))
+(.def (Final @ Combined))
+#+end_src
+
+The construction trace of Final retains Release, Root and RightProvider even
+though native .+ does not retain RightProvider itself in object-supers. It also
+retains requirements introduced on a previous RHS of RightProvider. All these
+requirements are checked against Final, not against formerly admitted parents.
+
+Collecting only the outer Scenario's provenance is NOT sufficient for lazy
+nested values. The Scenario Contract determines selected Profile candidates;
+Profile Contracts determine selected modules/Checks/Pipelines. For each demanded
+candidate, complete its construction first, collect its own provenance and admit
+it in the same sealed view. A nested =>.+ can create new provenance during this
+process. Plan publication requires closure over this selected candidate graph;
+it must refuse an unresolved candidate, late dependency or changed view. An
+arbitrary undeclared free-slot read by a custom Contract remains outside the
+qualified protocol. Unselected Profiles stay lazy and are not runtime-admitted.
+
+Parent cache warm-up does not change the rule: Pipeline checks must still resolve
+from the final receiver's lexical slots. Module 21's ordered eq? identity check
+rejects a fixed parent list, even when its length matches. Construction tracing
+does not repair stale lists and does not turn a parent's admission receipt into
+evidence for a child. Preview, configuration admission and execution remain
+separate boundaries.
+
+* Corresponding Lean laws and proof status
+
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Requirements.lean][Requirements.lean]] adds a narrow reference trace, with an index
+fixed for one view. At every trace node, own requirements remain discoverable:
+
+#+begin_src lean
+inductive Trace where
+  | fresh (token : Nat)
+  | derive (token : Nat) (parent : Trace)
+  | plus (token : Nat) (left right : Trace)
+
+def requirements (index : Nat → List Nat) : Trace → List Nat
+  | .fresh token => index token
+  | .derive token parent => index token ++ requirements index parent
+  | .plus token left right =>
+      index token ++ requirements index left ++ requirements index right
+#+end_src
+
+The executable file proves derive_preserves, plus_right_complete and
+accepted_right_receipt. The last theorem has the following full statement:
+
+#+begin_src lean
+theorem accepted_right_receipt (index : Nat → List Nat)
+    (token requirement candidate context : Nat) (left right : Trace)
+    (retained : List Nat) (receipts : Nat → Receipt)
+    (required : requirement ∈ requirements index right)
+    (accepted : compositionGate (requirements index (.plus token left right)) retained
+      (fun contract => receiptGate contract candidate context (receipts contract)) = .ok ()) :
+    requirement ∈ retained ∧
+      receiptGate requirement candidate context (receipts requirement) = true
+#+end_src
+
+Unlike the previous explicit rhs list, requirements index right recursively
+includes the ENTIRE modeled RHS history. Omission or a failed receipt contradicts
+successful admission by existing composition_accepts_iff. Native multi-parent
+construction requires a faithful fold of the metadata parent list into this
+reference trace; this correspondence is not proved here. Trace list order is
+not execution order. The reference list permits duplicates; deduplication must
+preserve membership and canonical identity in a future native correspondence.
+
+Validation: lake env lean on the new file passes, and the existing
+lake build YuanxuProof.ModuleSystem.Schema.Association target passes (46 jobs) with this file
+included as a root. The two preservation lemmas
+use no axioms; accepted_right_receipt uses only the existing ordinary Lean
+axioms propext, Classical.choice and Quot.sound. No sorry or custom axiom was
+introduced. These three new reference laws do NOT extend module 21's historical
+native receipt or establish native hook coverage.
+
+* Remaining integration premises and refusal boundaries
+
+| Boundary | Required condition / refusal |
+|----------+------------------------------|
+| Construction coverage | Every relevant constructor, clone, .mix, .extend, .def, multiple-parent lowering and raw .+ reaches the instrumented owner; wrappers alone are insufficient. |
+| Foreign/old objects | Missing or uncertified provenance refuses admission; an untracked RHS cannot be treated as an empty requirement set. |
+| Publication trust | Canonical token, descriptor, source and policy association in a sealed complete index; a symbol or module name is insufficient. |
+| Mutation | Initially qualify immutable graphs only. Slot/parent mutation must invalidate view and receipts, retain historical required policies or refuse; no silent fresh-empty trace. |
+| Serialization | Rehydrated values need authenticated provenance reconstruction or refusal; metadata lost in serialization is not trusted. |
+| Demand closure | Admit every selected effective candidate after construction; newly demanded RHS histories cannot be omitted. |
+| Concurrent changes | Freeze or validate graph/value/index revisions through admission and plan publication; otherwise retry/refuse. |
+| Contract protocol | Custom .admit must obey the evidence laws; stronger source obligations may legitimately reject a value that shape-checks. |
+| Cache projection | Receiver/view identity, lexical binding and ordered final Check identity premises remain necessary. |
+
+The kernel construction integration, metadata protection/storage, publication
+index, selected-candidate closure adapter, mutation/version enforcement and
+native-to-trace correspondence are all PENDING. No module adapter, Loader,
+runtime object kernel or dependency pin is changed by this design.

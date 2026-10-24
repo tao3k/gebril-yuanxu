@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Yuanxu Namespace and Build Projection Ownership
+#+property: STATUS implemented-namespace-with-separate-validation-gates
+
+* One package and one language entry
+
+| Owner | Identity |
+|-------+----------|
+| Repository | tao3k/gebril-yuanxu |
+| Root Gerbil package | yuanxu |
+| Ordinary library import | :yuanxu/<owner>/<module> |
+| Language entry | :tao3k/yuanxu/prelude |
+| Language implementation | root prelude.ss |
+| Public function prefix | yuanxu- |
+| Object/Contract prefix where qualification is needed | Yuanxu |
+| Type fact projections | :yuanxu/object-types/facts |
+
+The physical core/ submodule checkout does not define a compiler package.
+The product Agentic AI Lab retains its own product namespace. Yuanxu imports no
+product implementation. Semantic module keys such as core/json-schema are
+publication identities, independent of Gerbil library paths.
+
+No parallel package root, forwarding namespace or legacy API alias is kept.
+Normal library consumers need no custom prelude. The root prelude bootstraps
+on :gerbil/core; explicit build entrypoints bind its actual native module
+context before importing source-only Yuanxu libraries.
+
+* Publication and build have the same selected graph
+
+=module-system/building/interface.ss= owns =yuanxu-init-build=;
+=module-system/building/build-projection.ss= owns
+=yuanxu-project-source-spec=. The init declaration publishes the ordinary
+build-spec/build-run accessors, dependency scopes and test projections.
+Projection checks retained source paths, native compiler identities, options
+and selected generations. Duplicate retained identities remain an error.
+
+Source-first registration belongs only to the compiler/build entry.
+Importing init or projecting build data must not reprioritize runtime
+libraries or reinstall held Contract identities. The installed Gerbil
+compiler and std/make own compilation and scheduling without source patches.
+
+* Evidence after migration
+
+Maintained examples and historical Scheme probes use the current namespace.
+Renaming an example does not requalify its previous result. Historical
+commit identities and failure outcomes remain evidence of their original
+source cut. Current native, Lean and Quint results are recorded separately
+in [[file:../../docs/10-19-design/13-module-loading/13.16-yuanxu-package-and-prelude.org][the package and prelude qualification]].

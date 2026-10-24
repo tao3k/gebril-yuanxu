@@ -1,0 +1,305 @@
+#+title: 32.50 Original Issued Roots And The Functional Object-System Direction
+#+language: en
+#+startup: overview
+
+* Problem and non-negotiable boundary
+
+Follow-up: [[file:32.51-types-contracts-and-issued-reobservation.org][32.51]] integrates the newer Types/ObjectContract implementation
+with issuance protection and migrates the contextual/native Contract boundary.
+Its new dependency pin and receipts are separate from this historical cut.
+
+[[file:32.49-persistent-selected-head-transaction.org][32.49]] qualified persistent head storage but retained a failing current-Core
+Scenario integration: native replay refused =unissued slot dependency=.
+The failure was real. Core wrapped observations in application-constructed
+=make-slot-read= records in both =reader.deliver-publication-reads= and
+=read-projection.deliver-projection=. Those records had arbitrary checker
+closures and no native producer association. A truthful checker is not a mint.
+
+This step removes those synthetic bundles rather than teaching replay to trust
+them. Issuance, metadata-route checks and native final replay remain unchanged.
+No Gerbil/compiler or installed dependency source is modified. The ordinary user
+configuration, Scenario Contract and contribution publication APIs are unchanged.
+
+* Native root forwarding
+
+The reader now forwards the original root identities:
+
+#+begin_src scheme
+(def (deliver-publication-reads reads)
+  (for-each
+    (lambda (read) (%deliver-slot-read read (slot-read-value read)))
+    reads))
+#+end_src
+
+The roots have already been deduplicated by identity in first-delivery order.
+Neither their receiver, checker, revision nor dependency list is reconstructed.
+Nested dependency edges remain native-owned, including cache-miss observations.
+The root collector is not an authenticity oracle; native replay still refuses
+an unissued token anywhere in the selected closure.
+
+The construction scope uses the same conservative rule:
+
+#+begin_src scheme
+(def (deliver-original-reads reads)
+  (def seen (make-hash-table-eq))
+  (for-each
+    (lambda (read)
+      (unless (hash-key? seen read)
+        (hash-put! seen read #t)
+        (%deliver-slot-read read (slot-read-value read)))) reads))
+#+end_src
+
+Successful and failed actions retain their complete original trace. Failed
+actions rethrow the original exception. This is observation forwarding, not
+admission: with no weak projection to certify, the scope does not insert an
+extra replay into the middle of the caller's action. The enclosing native
+consumer retains its existing replay/admission boundary. It receives no cached
+approval bit or application-issued substitute token.
+
+Delivery uses the maintained observation boundary. It does not rerun getters;
+observers can see forwarded deliveries as well as the original computation.
+No identical observer-count or allocation-cost claim is made. An arbitrary
+observer's effects are not made rollback-safe by this change.
+
+* Parent and carrier policy support must also be genuine
+
+The former synthetic checker included weak witnesses and raw revision policies.
+Simply deleting it while dropping those requirements would weaken acceptance.
+Instead:
+
+- =owned-read-derived!= observes each selected ancestor's =.all-slots= query.
+  This records its real native preparation/names/revision support without reading
+  the values of unselected fields. A parent edit followed by restoration still
+  invalidates the prior token.
+- =clos-carrier-policy-guard= observes native names queries for its concrete
+  Type/prototype owners. Its existing identity and revision comparisons remain.
+  The guard runs within the same recording frame before and after the action.
+- Unknown bodies and MOP owners still call the existing open-operation boundary;
+  full traces no longer need an application-made =owned-call/full= marker.
+
+These concrete Core policies are native object policies. This does not certify
+arbitrary lexical mutable state hidden in a user callback as an automatically
+observed source. Such state still needs a declared source/owner. There is no
+new purity annotation or second field table.
+
+* Deliberate retention tradeoff
+
+Weak witness projection is removed in this step. A retained native graph may
+keep temporary receipts/validation carriers alive longer than the former weak
+projection intended. The earlier GC/retention claims and work-count comparisons
+must not be reused as evidence for this version.
+
+The existing =evidence-read-ownership= and =evidence-witness-replay= suites include
+assertions about synthetic bundle tags, raw test-made read probes and collection
+of carriers while an enclosing cache remains live. Those optimization-specific
+expectations are not claimed green here and are not rewritten merely to pass.
+They require a separate native-issued retention design if that optimization is
+restored. In particular, do not reintroduce a weak application checker into the
+native graph under another name.
+
+This preserves demand laziness: only already observed reads are forwarded; no
+whole Module catalogue or unselected field values are scanned. Lower temporary
+retention and faster replay are different properties and remain unqualified.
+
+* Current native controls and real integration
+
+[[file:../../../t/issued-root-forwarding-test.ss][issued-root-forwarding-test.ss]] checks:
+
+1. The recorded roots and every nested dependency remain native-issued, and an
+   original root retains its exact identity after forwarding.
+2. Raw =make-slot-read= fabrication is still rejected before native replay
+   observers run; changing a real source receiver invalidates the old roots.
+3. An unread ancestor policy edit/restore invalidates the prior dependency.
+4. A failed action preserves its exact original exception and native reads.
+5. Carrier Type/prototype changes invalidate genuinely recorded policy support.
+
+[[file:../../../t/persistent-selected-head-test.ss][persistent-selected-head-test.ss]] exercises the real Scenario, not a Boolean
+stand-in: parent plan warmed at 5432, child PostgreSQL/Gitea both at 5433, exact
+normalized config/plan identity, both independently published contributions,
+conflicting requirements, unselected service exclusion, independent persistent
+head clients and rejection of fresh admission after source modification.
+Previously captured snapshot-head commit remains permitted by its explicitly
+separate immutable-snapshot policy, as documented in 32.49.
+
+[[file:../../../t/gitea-postgresql-publication-test.ss][gitea-postgresql-publication-test.ss]] retains the broader eleven-control
+domain suite. Its first current run refused a source edit correctly but expected
+the older =stale prepared Module publication= string. The current reader's
+compilation-source guard runs first and emits =stale prepared build source=.
+The test now checks that exact diagnostic PLUS the canonical source path and
+=source-bytes-changed= reason. Production diagnostic ordering is not reordered
+to satisfy the old assertion; unrelated refusal messages cannot satisfy it.
+The original failed receipt remains a failure. A second run exposed macOS's
+=/var= versus =/private/var= alias in the fixture expectation; only the expected
+path is normalized, matching the reader's existing source normalization. The
+failure reason and concrete file identity are still checked.
+
+* Lean and QNT correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean][IssuedRootForwarding.lean]] models tokens as original native registry identities:
+
+- =exact_membership=: identity deduplication neither adds nor drops a root.
+- =preserves_issuance=: genuinely issued roots stay genuine after forwarding.
+- =cannot_hide_unissued=: deduplication cannot authenticate a foreign root.
+- =forward_keeps_dependency_closure=: unchanged dependency edges give exactly the
+  same reachable token set, including shared/transitive nodes.
+- =changed_source_refused= / =both_requirements_retained=: root transfer alone
+  does not replace independent currentness and domain admission.
+
+The model does not prove the Scheme interpreter, pointer identity extraction,
+native private registry, arbitrary callback purity or filesystem atomicity.
+Native tests exercise the corresponding identities and refusals; there is no
+new verified Scheme-to-Lean compiler or automatic extraction theorem.
+
+[[file:../../../dev/proofs/quint/IssuedRootForwarding.qnt][IssuedRootForwarding.qnt]] has a normal safety control and matched omission,
+fabrication, source-check removal, second-requirement removal, eager-branch and
+acceptance controls. Runs use 1000 samples, 6 steps and seed 50. Negative controls
+must produce actual invariant violations, not arbitrary failures. It models
+set coverage, not the full DFS diagnostic schedule; the implementation keeps
+first-delivery order and delegates native DFS to the existing replay owner.
+The Lean source binds the same QNT digest. Initial bounded simulations used
+1000 samples, 6 steps and seed 50; those alone were not exhaustive verification.
+The models are now also registered with the existing Core TLC runner: all seven
+finite safety/counterexample controls passed with final input-cut checking.
+That finite-state result does not prove the runtime projection or renew earlier
+memory cost claims.
+
+* Updated gerbil-poo TODO and Examples: direction, not blind dependency replacement
+
+Remote refs were queried on 2026-10-21. The feature branch is pinned for this
+review at =b8f487da294192d05bc4ab0a2218e8057f69286f=. Remote master/HEAD is
+=099b381588360a8a49fd772f666a1a00351366f5= and does not represent that feature
+work. The fixed feature revision was fetched into a separate temporary checkout;
+the user's dirty installed dependency was not reset or overwritten.
+
+Sources at that exact revision:
+
+- [[https://github.com/tao3k/gerbil-poo/blob/b8f487da294192d05bc4ab0a2218e8057f69286f/doc/TODO.md][TODO implementation ledger]] separates executable features from finite-model
+  premises and open generalization. Its new preparation gate captures schema
+  inputs BEFORE computed =.parameters= or admission callbacks can mutate them.
+- [[https://github.com/tao3k/gerbil-poo/blob/b8f487da294192d05bc4ab0a2218e8057f69286f/examples/object-contracts.ss][object-contracts.ss]] combines a normal ObjectContract responsibilities object,
+  independent whole-object obligations, JSON decoding, lens revision and checked
+  FUN consumption. It is the relevant practical Config Language abstraction.
+- [[https://github.com/tao3k/gerbil-poo/blob/b8f487da294192d05bc4ab0a2218e8057f69286f/examples/row-services.ss][row-services.ss]] demonstrates explicit prototype parameters, closed Object rows,
+  bounded guarded recursive service trees, inferred disjoint extensions and
+  ordinary contract building from the same finite expression.
+- [[https://github.com/tao3k/gerbil-poo/blob/b8f487da294192d05bc4ab0a2218e8057f69286f/examples/contract-publication.ss][contract-publication.ss]] composes =refine=, =checked-action= and exact evidence
+  binding rather than inventing another Config DSL. It explicitly does not
+  promise rollback of effects performed by a callback before later refusal.
+
+This is a useful counterpart to the ergonomic goal of NixOS =mkOption= /
+=types.submodule=: maintain one native field Contract and reuse its parameters,
+normalization and obligations, rather than repeating field/predicate wrappers
+at each Module boundary. It is not a claim that the two module systems are
+semantically identical or that POO already supplies durable execution authority.
+
+The reviewed =object-contracts.ss= expresses that split directly (an upstream
+source excerpt, not a newly qualified Core dependency):
+
+#+begin_src scheme
+(def ServiceShape
+  (.cc ObjectContract. identity: 'service
+    responsibilities:
+    (.o host: String port: Port capacity: Integer used: Integer secure: Bool)))
+(def ServiceContract
+  (.cc ServiceShape
+    obligations: (diagnostic-all [capacity-issues transport-issues])))
+#+end_src
+
+The same file defines =Port= with the native Type recognizer, and the two named
+obligations inspect the whole admitted value. Core's existing parameterized
+=GiteaValueContract.= / =ApplicationValueContract.= follow this shape-versus-
+relation separation. This is the direction to extend: reuse Types, native
+responsibilities, normal functions and checked functional composition. It does
+not remove domain connection checks, independently contributed requirements,
+source currentness or the exact config/plan identity check.
+
+For Core the intended layering is:
+
+1. Ordinary JSON/Scheme values remain the simple configuration surface.
+2. =types.ss= owns native Types and =ObjectContract.= responsibilities; object
+   construction and normalization reuse them once. The current Gitea/PostgreSQL
+   Contracts already use this route; this fix does not duplicate their shape.
+3. =objects.ss= assembles reusable Profiles and Scenario objects. Inheritance,
+   lenses and ordinary functions are exposed when a real extension requires them.
+4. Closed rows diagnose spelling mistakes; open/disjoint rows are deliberate
+   extension contracts, not a reason to silently accept arbitrary misspellings.
+5. =refine= / checked FUN actions express domain relations and effect boundaries.
+   Source association, contribution completeness and release authorization remain
+   separate from structural typing.
+
+Important version boundary: Core currently pins =fdeadfa...= and the installed
+checkout also contains uncommitted producer-issuance/route defenses used by these
+tests. The reviewed feature revision does not contain those defenses in the same
+form: its slot-observation still exports raw-checker replay. A blind pin bump
+would discard an actual assurance boundary. A trial three-way combination in the
+disposable review checkout refused conflicting file changes; it was not adopted,
+and the installed dependency stayed untouched. No patch file is maintained in Git.
+
+Thus =b8f487d= is reviewed design/source evidence here, not a claimed qualified
+runtime upgrade. Future integration must preserve the native mint and route
+defenses on the existing upstream branch, then qualify the concrete revision
+before changing package pins. Default master, a dirty installed checkout and
+the reviewed feature commit must never be reported as the same artifact.
+
+* Validation and reproduction
+
+The existing compiler recipe now includes the complete CLOS runtime and macro
+closure, so its cached prototypes and =poo-clos/types.ss= policy owners use the
+same source cut as reader and read-projection. A partial Type-only overlay is
+not sufficient qualification for consumers of the public CLOS interface.
+All compilation uses the installed unmodified Gerbil with its existing watchdog.
+
+#+begin_src sh
+just compile-build-publication /private/tmp/core-issued-roots-20261021
+just test-build-publication /private/tmp/core-issued-roots-20261021 t/issued-root-forwarding-test.ss
+just test-build-publication /private/tmp/core-issued-roots-20261021 t/persistent-selected-head-test.ss
+just test-build-publication /private/tmp/core-issued-roots-20261021 t/gitea-postgresql-publication-test.ss
+#+end_src
+
+Run these focused Scheme tests serially. Lean uses =lake env lean= on the named
+module, with the same finite 120-second fence. QNT uses the named invariant and
+bounds above. Installed dependency source hashes and compiler input hashes are
+local artifacts, not substitute signature records or committed logs.
+
+Early receipts remain scoped: compile 01 invoked the recipe from the wrong
+directory; the first Lean command imported a not-yet-built unrelated module and
+failed before proof checking. It now imports the existing SerialUse foundation.
+Final current-source receipts follow; prior failures remain scoped above.
+
+** Final receipts for this step
+
+All Scheme runs below use the final compile-04 current-source overlay, the
+installed Gerbil and existing heap-fenced Just entrypoints. No installed runtime
+or dependency source is replaced. Logs remain local artifacts, not Git content.
+
+| Gate | Result | Evidence scope |
+|------+--------+----------------|
+| =issued-root-forwarding-test=, run 04 | PASS, 5 cases | Original identities, forgery rejection, ancestor/carrier revisions, exceptional traces |
+| =poo-clos-dispatch-test=, run 02 | PASS, 19 cases | Complete current CLOS closure, open MOP trace retention and native invalidation |
+| =gitea-postgresql-publication-test=, final | PASS, 11 cases | Real current reader/link, domain requirements, source diagnostics and lazy branches |
+| =persistent-selected-head-test=, final | PASS, 2 fixture cases | Real domain admission, independent-process commit/recovery, stale token and source refusal |
+| =lake env lean=, run 03 | PASS | New forwarding theorems, including exact transitive dependency membership |
+| =lake build ...IssuedRootForwarding= | PASS, 97 jobs | Leaf model and its existing proof dependencies |
+| =lake build YuanxuProof= | PASS, 193 jobs | Integrated imports, required-theorem checks, 6,624-declaration standard-axiom and model-shape audit |
+| Existing Quint/TLC runner, run 02 | PASS, 7 controls | Safety plus omission, fabrication, stale source, missing requirement, eager branch and acceptance witness |
+
+Each passing Scheme receipt contains =MODULE-OK=, =HARNESS-OK= and final =OK=,
+natural exit 0 and no error/overflow marker. The 45 compiled Core source hashes
+were rechecked after the tests; all matched. The four installed POO issuance /
+route source hashes also matched their pre-test cut.
+
+The first broad =poo-clos-dispatch-test= attempt failed during initialization
+before cases in the partial Type-only overlay. A default-library control also
+failed before cases for a different reason: its installed closure lacks current
+=object-family/read-projection=. These remain failed receipts. Compiling the
+complete current CLOS closure with the same installed compiler resolved the
+initialization failure; its 19 cases pass without changing CLOS semantics or
+weakening trace/refusal assertions. The same full overlay is used for the final
+domain and persistent-commit reruns, rather than mixing the two source cuts.
+
+Earlier service diagnostic failures, the initial Lean import failure and the
+sandbox-denied local Quint backend port remain failed receipts. The existing
+verifier was rerun with permission to bind its local backend, without changing
+the invariant or using a weaker backend. This step does not claim a full Core
+suite pass, a weak-retention performance win or a qualified upgrade to the
+reviewed gerbil-poo feature revision.

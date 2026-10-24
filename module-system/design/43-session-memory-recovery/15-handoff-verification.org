@@ -1,0 +1,202 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.15 Context Handoff Verification
+:PROPERTIES:
+:ID: agentic-ai-lab-context-handoff-verification-20261014
+:STATUS: joint-protocol-consumer-pass-live-registry-and-target-host-open
+:DATE: 2026-10-14
+:END:
+
+* Scope and focused results
+
+[[file:14-session-query-project-handoff.org][The handoff protocol]] now has an executable finite Model and real Module
+consumer controls. The focused Quint run passed nine Cases; its safe run
+generated 1561681 states, explored 162324 distinct states and left no queue.
+Current Context Lean roots build successfully: 43 laws / 46 guards, including
+seven new laws / six guards. LeanPOO remains v0.1.1 at
+=d8adf138948c854e7564234bc046387b4a5ee63b=.
+
+| New Quint Case | Generated / distinct | Result |
+|----------------+----------------------+--------|
+| Current Query, target review/permission, conflict and history | 1561681 / 162324 | Complete safe exploration |
+| Multiple Sessions share one workspace | 3 / 3 | Reachability counterexample |
+| One Session uses multiple workspaces | 2 / 2 | Reachability counterexample |
+| Independent target acceptance | 4207 / 954 | Reachability counterexample |
+| Accepted target knowledge survives producer unbinding | 10063 / 1930 | Reachability counterexample |
+| Competing candidates remain with one accepted interpretation | 20144 / 3435 | Reachability counterexample |
+| Fault: source proposal substitutes for target review | 364 / 147 | Target-current counterexample |
+| Fault: review substitutes for permission | 1429 / 407 | Permission counterexample |
+| Fault: renewed permission replays old review | 20879 / 3546 | Old-epoch counterexample |
+
+Real Scheme replay passed 49 controls using the installed Orgize/ASCENT/POO
+dependencies. Thirteen structural controls are new; 36 reuse the existing
+sealed Core/Assurance/Governance fixture. They exercise actual ORG Contract
+execution and selection, qualified origins, shared/multiple Context slices,
+rebinding and retirement, and current review/revocation checks. This is not
+49 new independent obligations or a completed Project Host implementation.
+
+* Failed attempts and repairs
+
+- Quint first refused translating a shared action helper used by both init
+  and step (QNT409). Init now explicitly assigns initial values; transition
+  assignments retain one helper.
+- The unnormalized model hit the checker deadline. Its source SHA256 was
+  =dbeccc8d1f5316f5bc0f8d9c6bfd6d3bac1b880ae4d84d1ff5c9b028b4992a78=.
+  Inactive stamps are now canonicalized while live/replayable stamps remain.
+  To compare that state representation with the current model, replace the two =mapBy= stamp
+  assignments in =move= with =queryCut' = qc= and =reviewCut' = rc=.
+  This comparison is not reconstruction of the exact historical source hash;
+  the later historical-tuple and idempotence changes remain separate.
+- An initial ever-accepted ID set was insufficient provenance. Historical
+  records now retain root/source/target/epoch tuples. That full-history attempt
+  also hit the existing deadline before the idempotence correction.
+- The old Propose transition reset review/acceptance even for the exact same
+  source/interpretation. Corrected duplicate proposals do not reopen those
+  subjects. Changed source/target/epoch transitions remain and all nine
+  controls are retained. Old failures are not turned into successful receipts.
+- A Lean epoch-refusal proof initially had an unresolved BEq goal. It now uses
+  decidable equality; the successful audit contains no sorry or new axiom.
+- Direct cold Scheme import hit the five-second silence watchdog. A standalone
+  AOT attempt also hit the unchanged 120s build bound and encountered cache
+  filesystem restrictions. AOT completion is not claimed here.
+- The private replay harness loads canonical installed modules in phases.
+  It prints a milestone only after that actual import returns, never periodic
+  padding. Its whole execution still uses the original total/idle bounds.
+- Replay exposed stale C-compiler/option ABI objects. Only the failing
+  dependencies were rebuilt. Six Aitia Assurance files had eight obsolete
+  =agentic-ai-lab/core= imports; these now use the existing =core= identity. Type
+  declarations, policies and execution bodies were not changed.
+- Older numbered objects shadowed fresh =.o1= files. Fifty-four confirmed older
+  numbered cache objects were moved to recoverable, ignored repository-local
+  backup, not deleted. Orphan empty build locks were likewise preserved after
+  checking that no process held them. No uninstall, temporary SDK, ABI-check
+  suppression, timeout or heap relaxation was used.
+
+* Joint gate and boundaries
+
+The full gate completed with exit 0: all 44 Quint Cases, all five Context Lean
+roots (43 laws / 46 guards), 23 ASCENT controls, the existing 90 ORG controls
+and the new 49-control Scheme replay passed. The two Scheme harness counts
+overlap and are not a claim of 139 independent obligations. All 66 declared
+local inputs, 30819 compiled Scheme inputs and the old ORG executable remained
+stable before/after. The new handoff consumer is a compiled library replay,
+not the uncompleted standalone AOT build.
+
+The compiled pool aggregate SHA256 is
+=15f7146f129582d0149e973e7cc7bc3c4bef8a64b974bd0c54c4a1bef9db9a98=.
+The ORG executable SHA256 remains
+=8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+The handoff interface SHA256 is
+=be88f0bb78c8f2ee0d9872dab445f9b6644e6bc422bcd866523e744b6571a5ab=;
+its generated runtime objects are also bound by the complete compiled pool,
+not merely that interface file. Earlier receipts keep their original hashes
+and compiled cuts. Producer CI is not inferred from this local gate.
+
+* Source identities at the joint gate
+
+| Repository-relative input | SHA256 |
+|---------------------------+--------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/ContextComposition.qnt | 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 |
+| packages/proofs/context-lifecycle/GraphContext.qnt | cd6353cb8204494b637765bd121583861a8e37bf2a24f2036efeb68d41e45195 |
+| packages/proofs/context-lifecycle/GitContext.qnt | a8cfb43931ba6051409d512b1964aa31a4796016ce7e6781dfa42ba03bd8a963 |
+| packages/proofs/context-lifecycle/ContextHandoff.qnt | 412111ba64a26348c8754a571ba155dd4723fb9aa716080d0d0381e312d265eb |
+| packages/proofs/context-lifecycle/relations.ss | 81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f |
+| packages/proofs/context-lifecycle/check_quint.py | e3e52c503e32771ec9bcff9be086549a4b30b04fd08f6f70e31e062eaf3bd837 |
+| packages/proofs/context-lifecycle/verify.py | b70153f16e29688a15315373cde1d741d04987f2c972c7b4bf5b2811b74b45f7 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | 5bc7382e85d5aa963c2ce3176304dea3b72815f9750924baaf5724d2e1fa505b |
+| packages/proofs/lean-poo/lake-manifest.json | 56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean | 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean | ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean | 708948b0ff7a4aec56de1dfc49a03d3f67e2a052a0ff1c1b4e28cc786a0d1630 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean | 4bc0f3062529655354fe3c7af26f59d784317f4a64746477cf881696bf798f43 |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/ai-agentic-context/admission.ss | 08114f145c31b7fa97f8a8b72010ccfbafbf6e515d25bc7d366a1e871a0c493e |
+| modules/ai-agentic-context/consumers.ss | 88d71cc956f189299d185a127c505c96382b1edc6bd50bb359b2b066eed09b32 |
+| modules/ai-agentic-context/contracts.ss | b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 |
+| modules/ai-agentic-context/funs.ss | e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9 |
+| modules/ai-agentic-context/interface.ss | 5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca |
+| modules/ai-agentic-context/objects.ss | c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d |
+| modules/ai-agentic-context/reasoning.ss | 3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312 |
+| modules/ai-agentic-context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629 |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+| packages/proofs/context-lifecycle/handoff-controls.ss | 9c4c6d09ef369e6cb0be65d1c89591cbf28d8db38c76e9dd23a0af54167ac600 |
+| packages/proofs/context-lifecycle/run_handoff.py | dfdaa4c61b6c18c0bad21b8ca22ac9a64597940f254b006262a9b046522e895d |
+| src/policy/authorized-effect-token.ss | ef9abd5335f478d15b5b5a782be5ece07380995b009f504c3d5ae41a618281fb |
+| src/graph/types-core.ss | 316e922bcb1cdd1ffcb30b2fb20f168938b65c0574c9ec6d27950d0eaff15a00 |
+| packages/proofs/context-lifecycle/admission-controls.ss | ae170d3640481e19a8edf722263371af6bae9a7f50f76e5f2b77c3db92a3c150 |
+| packages/lambda-aitia/modules/assurance/context-consumer.ss | a38f4537be4e70c8c364e8e326139307596acd253f1a81178b8aa65072a92453 |
+| packages/lambda-aitia/t/formal/lifecycle-fixture.ss | 6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd |
+| core/contribution/verification.ss | e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c |
+| modules/governance/types.ss | 633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1 |
+| modules/governance/objects.ss | c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7 |
+| packages/lambda-aitia/modules/assurance/types.ss | ea13ca72b85ac4c7635d0192242ac82771f82d75c6abcba27ba8c73f64c50419 |
+| packages/lambda-aitia/modules/assurance/objects.ss | 56f76d0ab65c1bee10524bc59944890df3c2e334a80b528a2ab1933c484f0e35 |
+| packages/lambda-aitia/modules/assurance/funs.ss | 9f70e669e21fd349343539bea5b150362c799004f8c895ede62bf2b39e3200e2 |
+| packages/lambda-aitia/modules/assurance/evidence-admission.ss | a63a9b357d213f0273541744dff31b75f6a90b790a984efb0224c5b2e946b263 |
+| packages/lambda-aitia/modules/assurance/host.ss | 116b0d743f481d2cfde27e409b6719cee788f74d11d379f98bebf7d3f5a4ab26 |
+| packages/lambda-aitia/modules/assurance/effect-host.ss | a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569 |
+| packages/lambda-aitia/modules/assurance/config.ss | 6badb8eabcb67c64725623019f8e4b1cd1c2e17aaac82b39db2bd7bdeeed6d3e |
+| src/graph/algorithms-list-support.ss | c549a62b7d5d164ffea0a97bae9d4824e9197c29ce7a4d545f6d08b3ae7a0b9b |
+| src/graph/algorithms.ss | 7dbcabe5d125ff292ae3cf709e3b5519c06ee35e0f5082b2533bac8d4df75f6a |
+| src/graph/types-contracts.ss | 25c7d63a39a9ce4372213fea7d9d249c3061bf4035631e0ff4a3ee02be6e3af5 |
+| modules/temporal-causality/types.ss | 70f2e2fc5dba0250ebf533b2cc356877a2db18e2655249442b810a45a4f765db |
+| modules/temporal-causality/objects.ss | 8dabf9c3655aa2ce59fb92d8a7dfbfb1ac2ea1ee16ea52d09d6898b986f35c63 |
+| modules/temporal-causality/funs.ss | 42a16245370476cef379c85805320384831b379cf9068c0b5fdd394af45004f4 |
+| packages/lambda-aitia/modules/assurance/invalidation-projection.ss | 3f8499f1ff93a70b040e58c63229fc2a36009c5d4b7233e9da77daa42817d2d5 |
+| packages/lambda-aitia/modules/assurance/verification-projection.ss | 7b65ebde0aa33b7f2861797b41d125c3e2a1ee2e4385e8d9d6f945c53e9286d1 |
+| src/core/roles.ss | f2cbe4e4c7aa60f7a4ec9953b185e74db835fbc8a2f9d337edcb4d746b4846d0 |
+| src/utilities/functional.ss | c6d7c71cadaa1fe54efe211d5d0b93e7fe7203c1060696c2116443dee0d3e8d1 |
+| src/feature-system/model.ss | 44d4b37e5baf1eda31af58b74629964b4039b7a9dffc40538e5b21ee2f04deb8 |
+| src/feature-system/source-lock-feature.ss | 3b480b232c28ac9ef1932fe66115841e3eb82f26174dd31927014d6dbaeb62bd |
+| modules/authorization/providers/cedar/objects.ss | 4f157fc03c7ca233bc566c44fd76b25130251d3ff783d46805998c70f1aee24d |
+| modules/authorization/types.ss | 34416b636b699e75a5e99ff54e91ea3edb737d378e5f455ae23989cbc6b3f7d6 |
+| modules/authorization/objects.ss | 421c3dcec6c22419fc1ff65a7bea6fbc2ad8e909ebfdf0f879e12fefb6a05b43 |
+| modules/authorization/providers/cedar/config.ss | 7617f1219f9ffc3e5a25b9a6273aceeeee26b1a591db83a54ce73477618ab77c |
+| modules/authorization/contracts.ss | d878cb9c5e954074db574a777e04263f5692e1341e165a7442a1b5a308003039 |
+| modules/authorization/providers/cedar/contracts.ss | 1dc971992ebc7fe767c7af65bce98dd99b83347ad787c21c2f3d896be2dfda18 |
+| modules/authorization/providers/cedar/funs.ss | 1a84b41c34b8914321098d5bd544cd8b3cffab62a8bdb281845e021ba13a2bdd |
+| modules/authorization/providers/cedar/decision.ss | 30a79e4c41df665c41e9db52617364d77ba8476da1ef7d1f1dccbd5815c5b29c |
+
+Limits remain: TLC 60s total / 12s silence, one worker, 512MiB; Lean 120s;
+Scheme 120s total / five-second progress watchdog / 1GiB heap. No storage,
+bindings, Rust Memory optimization or delivery is exercised. The real consumer
+replay uses the existing Scheme package, not a replacement SDK.
+
+Live consumer registry/generation admission, GQL-to-Context result adaptation,
+Project-specific target Host/Contract, capture-race handling and durable
+journal/availability remain open. Model acceptance is not effect authorization;
+ORG structure is not source authentication; the stamp law is not a complete
+Quint-to-Scheme bisimulation. No remote producer CI or KV savings are claimed.
+
+* Reproduction
+
+Compile the proof consumer into the current ordinary package first, retaining
+the caller's installed dependency load path:
+
+#+begin_src sh
+gerbil compile -O packages/proofs/context-lifecycle/handoff-controls.ss
+#+end_src
+
+From the repository root:
+
+#+begin_src sh
+CONTEXT_ASCENT_GERBIL_PATH="$ASCENT_PACKAGE_PATH" \
+  CONTEXT_SCHEME_PACKAGE_PATH="$POO_SCHEME_PACKAGE_PATH" \
+  python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+Focused diagnostics remain distinct from the combined gate:
+
+#+begin_src sh
+python3 packages/proofs/context-lifecycle/check_quint.py --model ContextHandoff
+#+end_src
+
+The package selectors refer to installed dependencies. No machine-local
+absolute path or transient SDK is required by this document.

@@ -1,0 +1,223 @@
+#+title: 13.12 Build-Owned Source Package Registration
+#+property: DOCUMENT_ID 13.12
+#+language: en
+#+property: QUALIFICATION single-suite-available-cpu-same-state-passed
+
+* Normal entry without caller source paths
+
+The earlier launcher-only correction in [[file:13.11-same-state-source-reimport.org][10]] did not establish the normal
+build entry. Registering inside init.build-spec would also be too late:
+Gerbil expands init's imports before evaluating that function.
+
+Core now enters its declaration compiler through a relative source import.
+Existing for-syntax and begin-syntax forms invoke an SDK-only Building function
+before the declaration compiler imports Core:
+
+#+begin_src scheme
+;; init.ss -- the Core source entry is relative.
+(import "./module-system/selection/init-syntax.ss")
+(yuanxu! mode: explicit source: "./modules" (json-schema))
+
+;; selection/init-syntax.ss -- internal infrastructure.
+(import (for-syntax
+          (only-in :std/source this-source-file)
+          (only-in "../building/source-package.ss" register-module-build-source!)))
+(begin-syntax
+  (register-module-build-source!
+    (path-expand "../.." (path-directory (this-source-file))) 'core))
+;; Existing Core imports and yuanxu! follow.
+
+;; build.ss -- unchanged, user-owned SDK dispatcher.
+(import (only-in :std/build-script defbuild-script)
+        (only-in "./init.ss" init.build-spec)
+        (only-in "./core-spec.ss" core-spec))
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+The live repository can select additional sources in init.ss. Qualification
+uses a snapshot selecting real JsonSchema and three retained roots; it does
+not compile those other modules or the complete Core inventory.
+
+[[file:../../../module-system/building/source-package.ss][source-package.ss]] validates gerbil.pkg's package identity before calling
+the existing add-load-path!. The SDK package-prefix resolver confines priority
+to Core; other packages retain compiled dependency lookup. Public dependencies
+must already be installed. The relative entry remains reachable without Core
+binary interfaces. No replacement resolver, new public macro, generated build
+script, main wrapper, or Standard Library change is introduced.
+
+The projector also imports this owner. Its source and package metadata are
+therefore part of the existing observed tool closure. Registration does not
+authorize changed tool bytes or weaken publication source confinement.
+
+* Graph and validity
+
+init.build-spec still prepares one selected Graph and caches one ordinary SDK
+spec list per imported init epoch. Equal retained roots reuse that list;
+different roots reject. Registration creates no second Graph or compiler spec.
+
+Before-use guards remain. A publisher or test must explicitly invoke
+init.build-current! after command completion before accepting outputs. The SDK
+dispatcher has no post-command hook. This change does not promise atomic builds
+or automatic after-command acceptance. A new process constructs a fresh Graph
+from current inputs; it does not share in-memory object identity with its parent.
+
+* Focused controls
+
+[[file:../../../t/module-build-process-test.ss][The process test]] invokes actual build.ss for spec, compile, clean,
+a second compile and a final clean within one native test. Every build child removes CORE_QUALIFICATION_ROOT and
+GERBIL_LOADPATH. The parent uses the former only to locate the isolated fixture;
+no build function reads it. All children share the same GERBIL_PATH and retain
+clean's residual loader files. Children have a heap fence and a 60-second
+timeout; the parent retains the existing 120-second Just boundary.
+
+The operations are declared in [[file:../../../t/qualification/module-bootstrap/objects.ss][test objects]] using the maintained Ops Module's
+prototypes.Script and .run protocol. There is no run.sh, run.ss, extra main,
+imperative script coordinator or second process API. std/test owns assertions;
+Ops owns literal argv execution, directory, environment, timeout and status:
+
+#+begin_src scheme
+(.def (Build @ (.get Ops prototypes Script))
+  command: '("env" "-u" "CORE_QUALIFICATION_ROOT" "-u" "GERBIL_LOADPATH"
+                  "-u" "SDKROOT" "gerbil" "-:max-heap=1G,debug=q" "env" "gxi" "build.ss")
+  directory: (.get Fixture root)
+  environment: (.o GERBIL_PATH: (.get Fixture state))
+  timeout: 60 check-status: #f)
+
+;; Inside the native test case; each call starts a fresh OS process.
+(.call Build .run "spec")
+(.call Build .run "compile")
+(.call Build .run "clean")
+(.call Build .run "compile")
+(.call Build .run "clean")
+#+end_src
+
+The test reads every generated .ssi with the SDK core-read-module/sexp and
+checks its declared module identity against core/<selected-target>. It compares
+the two complete identity inventories, checking absence after each clean.
+The second compile starts a new OS process with the same Script, source tree
+and GERBIL_PATH while residual loader .scm files remain. No manual second test
+invocation is required.
+
+InputChecks is another declarative Ops Script inheriting Build's state and
+timeout. It invokes the existing heap-fenced native registration test. That
+child receives the same fixture root only as test data, imports init itself,
+checks repeated spec-list identity, and verifies rejection of wrong package
+identity and changed registration-tool bytes. It restores the fixture bytes.
+The outer native suite requires the child's exit status and all harness success
+markers, and rejects error/overflow markers. This reuses existing tests, not
+a new runner or input-validation protocol.
+
+The two compile commands are sequential. The Script does not override
+GERBIL_BUILD_CORES: it inherits the normal project setting, whose existing
+Justfile default discovers online CPUs with getconf _NPROCESSORS_ONLN. The
+SDK owns the worker pool; test processes are not run concurrently. The earlier forced
+single-worker configuration completed its assertions but exceeded the unchanged
+120-second file watchdog (exit 124), so it is a failed qualification despite
+success markers. Individual compile times were about 54 and 50 seconds, plus
+source startup and clean. The 60-second Script deadline, 120-second file
+watchdog, and 1 GiB pre-import heap fence remain unchanged. This is not a claim
+of an aggregate process-tree memory limit or a performance benchmark.
+
+The ordinary [[file:../../../t/qualification/module-bootstrap/fixtures.ss][fixture functions]] prepare test data only. They copy source and
+installed public dependencies, exclude Core AOT outputs, and narrow only the
+fixture's init and retained roots. They neither start a process nor change the
+parent environment. A supplied existing fixture preserves its GERBIL_PATH;
+the same-state regression does not call cold preparation again. The cold copy
+and preserved-state branches have a separate native fixture unit control.
+just test-bootstrap is simply the existing heap-fenced test-file entry for
+this native test, not an additional runner.
+
+The fixture requires the retained roots utilities/algorithms, types and
+core-spec and exactly 36 selected JsonSchema targets before compiling. It checks
+expected .ssi identities after each compile and their removal after each clean,
+keeps the macro loader .scm, and compares identities across fresh processes.
+
+[[file:../../../t/module-build-source-package-test.ss][The registration test]] checks wrong-package refusal without a path change,
+source lookup without intercepting the public POO dependency, in-process spec
+identity reuse, and rejection after registration-tool source drift. Only the
+isolated snapshot is temporarily modified; original bytes are restored.
+
+The first compile hit the 60-second child boundary and retained partial outputs.
+That is a failed qualification. A subsequent same-state cycle completed all 36
+targets and clean/new-process-spec. Resuming interrupted work is distinct from
+a full rebuild after clean; neither a new state directory nor a larger timeout
+substitutes for the latter check.
+
+The next cycle started after the successful clean, in the same GERBIL_PATH,
+and also completed spec/compile/clean/new-process-spec for all 36 targets.
+Both successful cycles reached MODULE-OK, HARNESS-OK, final OK and natural
+exit 0 without error, heap or stack markers. Thus the second success is a
+complete post-clean rebuild, not merely continuation of the timed-out compile.
+
+After moving execution to declarative Ops test objects, the same state again
+completed the 36-target spec/compile/clean/new-process-spec cycle with the full
+harness markers and exit 0. Registration-tool drift and wrong-package refusal
+also passed their separate native control. Cold preparation of an entire new
+real fixture has not been rerun as part of this same-state regression; its
+data-copy control is distinct from the demonstrated real JsonSchema rebuild.
+
+The [[file:../../../t/module-build-fixture-test.ss][fixture unit test]] passed both cold-copy and preserved-state cases with
+MODULE-OK, HARNESS-OK, final OK and exit 0. Its earlier same-name slot
+self-reference hung and was terminated; that failed attempt remains a local
+negative receipt. Distinct lexical names for fixture-root and fixture-state
+prevent accidentally reading the slot being initialized. No timeout was enlarged.
+
+The test-file launcher's source-path prepend is removed. Direct source tests
+which do not exercise init may still declare their own source fixture. This is
+separate from normal build startup. Runtime Loader and Contract-system work
+remain out of scope.
+
+* Single-invocation rebuild qualification and current CPU policy
+
+The current test includes two compiles of the complete 36-target spec, both cleans, native
+.ssi identity comparisons and the existing input-change controls in one suite
+invocation. A diagnostic run with two SDK workers completed all of these with
+MODULE-OK, HARNESS-OK, final OK and natural exit 0. That diagnostic setting is
+not retained: the Script now inherits the normal available-CPU configuration
+and asserts that its environment object does not pin GERBIL_BUILD_CORES.
+
+The first run under this final policy inherited 12 CPUs but hit the unchanged
+60-second compile deadline; it is a failed qualification. The spec step took
+about 27 seconds, versus about 8 in the preceding run. After the task's test
+and compiler processes had exited, aggregate host observations showed load
+above 100 and 0% CPU idle. No matching task process remained. This establishes
+host contention, not a controlled explanation of every timing difference or
+proof of correctness for the final concurrency policy.
+
+That attempt did not qualify the final available-CPU configuration. Do not report the earlier
+fixed-worker success as that result, silently restore a worker cap, enlarge
+the timeout, replace the state directory, or repeatedly rerun under unchanged
+saturation. Existing failure receipts remain local artifacts; build.ss and the
+runtime Loader are unchanged.
+
+** Successful repeat after resource contention subsided
+
+Before retrying, successive aggregate host samples showed CPU idle capacity
+recovering from 32-48% to 51-65%, and one-minute load falling from the previously
+observed value above 100 to approximately 22. No process matching this task's
+fixture or test command remained. This materially changed the failed run's
+resource conditions; the unchanged test was not retried in the same saturation.
+
+One invocation of just test-bootstrap then inherited the discovered 12 CPUs,
+used the exact existing Fixture and GERBIL_PATH, and completed all controls:
+
+- spec;
+- first compile and SDK-read identity checks for all 36 outputs;
+- clean, with every expected .ssi absent and residual loader .scm retained;
+- a new-process compile rebuilding those 36 outputs with identical identities;
+- final clean and absence checks;
+- the existing native package-mismatch and changed-input rejection controls.
+
+The process exited naturally with status 0. Both native test modules reported
+MODULE-OK, HARNESS-OK and final OK, with no error or heap/stack overflow markers.
+The Script retained its 60-second deadline, the outer test retained its
+120-second watchdog, and the pre-import heap fence remained 1 GiB. No worker
+count was pinned, runner added, state directory replaced, or Loader enabled.
+The repository build.ss and the fixture build.ss were unchanged.
+
+The first compile took approximately 9.2 seconds and could reuse existing valid
+outputs from the earlier interrupted attempt. It is not a cold-build benchmark.
+The second compile, after the explicit absence checks, took approximately
+21.7 seconds. It supplies the clean/new-process rebuild evidence; the two times
+must not be compared as a speedup. Raw observations remain local artifacts,
+while this document records the structured result and its limits.

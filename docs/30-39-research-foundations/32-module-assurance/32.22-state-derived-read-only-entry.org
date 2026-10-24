@@ -1,0 +1,297 @@
+#+title: 32.22 State-derived Read-only Entry Qualification
+#+language: en
+
+* Question and bounded answer
+
+Can the two JSON source comparisons in [[file:32.20-remaining-read-boundaries.org][32.20]] share bytes with structural
+replay without a manually maintained purity flag? Partially. The actual state
+can exclude callback invocation in a narrow selected window. It cannot prove an
+arbitrary Scheme procedure read-only merely because that procedure is captured,
+sealed, named like an inspector, or returns the checked C3 order.
+
+This chapter audits the real producer, adds an executable entry analysis and
+proofs, and retains the existing checks. It changes no production Scheme and
+connects no Loader. The earlier 356 native reads are not a new measurement.
+No optimization is authorized until native snapshot extraction and the complete
+selected replay correspondence are established.
+
+Proof owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean][Admission.ReadOnlyEntry]] and
+[[file:../../../dev/proofs/quint/ReadOnlyEntry.qnt][ReadOnlyEntry.qnt]]. They reuse IdentityDFS/DFSFrames, ReplayBoundary,
+SourceWindows and LeanPoo's actual C4/MetaBootstrap proofs. =ClosedOp= is a
+private proof instruction type, not a proposed configuration language.
+
+* Fixed source cut and actual entry chain
+
+The inspected gerbil-poo revision is
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=; LeanPoo remains locked to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. These are fixed revisions, not a
+claim about an uninspected newer branch. Source links below select that revision.
+
+The initial pin was =ece6f609357ea918038090559ac051a8d9f3e52f=. Another
+session advanced =gerbil.pkg= during this work. The exact new source archive was
+retrieved for inspection only. The audited =object.ss=, =slot-observation.ss=,
+=meta-prototype.ss=, =prototype-map.ss= and the two inspected tests are byte-for-byte
+unchanged. =mop.ss= changed generic-combination argument forwarding; its diff
+does not change these read/replay entry definitions. That independent change
+is preserved. No production runtime was installed or rerun here.
+
+| Actual entry | What it does | Remaining callback exposure |
+|--------------+--------------+-----------------------------|
+| [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/meta-prototype.ss][bootstrap-protocol]] | Reads two hook values, captures anchors, makes a self-protocol root, instantiates and seals it | Obtaining the hooks and initial construction may execute user computations; this is not a purity certificate |
+| [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/object.ss][bootstrap-anchor / object-read-bootstrap]] | Returns a captured function value through the bootstrap path | Returning the function is different from calling it; demand prechecks on the ordinary read path remain separate |
+| =object-read-current?= | Checks revision, then the appropriate anchor/instance/table/value identities | This exact kernel procedure performs no user dispatch; an arbitrary =make-slot-read= checker can |
+| =compute-precedence-list!= | Returns a cached order, or recursively constructs canonical C3 before invoking the selected ordering hook | Cold hook can perform effects while returning exactly the same C3 order |
+| [[file:../../../configuration/slot-origin.ss][slot-origins]] | Prepares order, examines raw override/specification/declaration metadata | Cold order preparation is the exposure; reading a specification is not applying it |
+| [[file:../../../admission/source.ss][check-source]] | Projects one demanded slot's source metadata and checks observed inputs | It does not read arbitrary child getters on this one-slot path; general multi-component locator paths are not classified by that fact |
+| [[file:../../../module-system/source/admission.ss][observe-source]] | Invokes =current-module-source-observer= when non-false | The parameter accepts arbitrary Scheme; slot =without-observation= does not disable it |
+| =call-with-collected-module-sources= | Creates private collectors that copy and retain successful (path, expected-text, message) requests | Private bookkeeping is allowed; it is not permission for arbitrary query/callback bodies |
+
+The ordered native replay is: check record; check that record's source metadata;
+visit its dependencies; repeat for siblings; finally check every seen record
+again. =without-observation= disables slot frames/observers/prechecks during
+replay. It does not disable the separate source observer. The final seen-table
+iteration need not have a stable order; the same-order theorem is relative to
+the actual chosen schedule, not a replacement sorted order.
+
+=object-slots= returns the retained prototype-map snapshot as fresh entry/list
+pairs. [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/prototype-map.ss][prototype-map-list]] traverses the private ordered tree and copies
+pairs; it does not apply the stored slot specifications. Native primitive/tree
+correctness and filesystem behavior remain outside this Lean extraction.
+
+* Bootstrap validity does not imply readiness
+
+The native bootstrap currentness branch checks only the record revision and
+captured anchor identity. Unlike ordinary value records, it does not require the
+same instantiated receiver and read-table entry. =clear-object-cache!= clears
+precedence, instance and reads without itself advancing revision. Normal
+=uninstantiate-object!= first invalidates revisions; these operations must not
+be conflated. Raw cache operations are exposed by the pinned object module.
+
+The Lean concrete control therefore proves all three statements:
+
+#+begin_src lean
+bootstrap_still_current_after_clear
+ordinary_record_rejects_clear
+bootstrap_validity_not_readiness
+#+end_src
+
+A valid bootstrap record may lead to a cold ordering computation. The sealed
+self-protocol root still contains callable anchors. =bootstrap-protocol?= is
+representation provenance, as its source explicitly states; it is not a security
+seal. =bootstrapLookup_order= proves retrieval of the captured function value.
+=bootstrapReflect_fixed= closes that finite reflection equation, not arbitrary
+Scheme callback effects. Neither it nor =checkedOrder_sound= proves absence
+of callback effects.
+The dependency's own meta-prototype test installs a hook that updates a list;
+sealing/capturing such a function is supported behavior. This source control was
+inspected, not newly executed in this qualification.
+
+* Derive closure from state, not declarations
+
+The proof projects real procedure/object reference identities into natural
+numbers. No =pure?= field or user purity registry is introduced. A future native
+owner must derive these references and caches internally, without forcing a
+configuration getter. The raw-state analyzer admits these sufficient routes:
+
+1. The record's currentness procedure is reference-identical to the pinned
+   =object-read-current?=. An already stale token has a closed rejecting prefix;
+   later metadata and observers are not executed by that prefix.
+2. For a current token, its receiver already has a precedence cache; OR raw
+   traversal of its selected prototype ancestor closure finds no installed
+   protocol. The cold default route retains the C4 success/error result in place.
+3. Every source request in the proposed shared-byte window has no installed
+   =current-module-source-observer=. Earlier JSON requests in that window need
+   the same condition; pruning a stale replay suffix alone is insufficient.
+4. Every selected replay frame passes, the graph is finite/stable, and ordinary
+   source operations/collectors belong to the audited kernel implementation.
+   Arbitrary =module-source-observe= query procedures are not classified.
+
+The default-cold route conservatively requires ALL selected ancestor protocol
+references absent. It does not guess whether a protocol's missing particular
+hook would fall through, nor execute a protocol to classify it. A cached order
+is sufficient even when a protocol is installed because the warm branch returns
+before invoking it. A cache-warmed parent is not evidence that its child has a
+prepared order, matching instance, or matching plan.
+
+#+begin_src lean
+def inspect (kernelRef : Nat) (observerRef : Option Nat) (frame : Frame) :=
+  lower (entries kernelRef observerRef frame)
+-- lower rejects every opaque checker, cold-dispatch or observer instruction.
+#+end_src
+
+=warm_state_closes= and =cold_default_closes= prove successful construction of a
+closed program from these conditions. =cold_order_has_no_protocol= uses
+LeanPoo =linearizeChecked_graph_sound=, =GraphTrace.covers= and =reachable_iff=:
+a returned canonical order cannot contain a hidden protocol when the selected
+ancestor closure has none. =self_protocol_not_default= excludes the bootstrap
+self-protocol from that shortcut. =seal_does_not_change_inspection= proves that
+changing only the sealed bit cannot change the answer.
+
+The native =slot-read-current?= accessor is private to the observation producer;
+=make-slot-read= itself is exported and accepts an arbitrary checker. Existing
+Core cannot safely classify all records by their public key/shape alone. A
+future MOP-owned inspection boundary must retain checker identity, raw readiness
+and graph/cache snapshot coherence. Projection also requires well-formed
+native receivers and record payloads. For example, a cache-miss hash-table
+operation on a malformed absent instance raises a native error; it is not
+silently mapped to the model's Boolean result. Unsupported shapes must retain
+the native failure or decline lowering. Procedure identity alone does not
+certify arbitrary caller-constructed record payloads. No such production
+adapter is added here.
+
+* Cost and lifetime of classification
+
+The warm route needs actual token/checker/cache references, not a new traversal
+of every module. The conservative default-cold route must inspect the selected
+raw ancestor closure; its graph cost must be accounted for before any performance
+claim. The proof currently recomputes a pure C4 result for correspondence, not
+as a proposed duplicate production computation. No startup or wall-time saving
+is established here.
+
+An inspection result is scoped to its receiver/cache/graph and dynamic observer
+snapshot. It is not a reusable approval attached to a procedure name. Rebinding
+the observer, changing protocol ancestry, clearing preparation caches or entering
+a callback requires a new inspection/fresh window as appropriate. Capturing an
+exact procedure reference is an identity check against audited kernel code,
+not a way for callers to assert their own function's purity.
+
+* What closed execution proves
+
+=successful_lowering_no_callbacks= excludes every opaque instruction.
+=lowering_independent= is stronger than assuming well-behaved callbacks: for
+EVERY callback implementation, executing a successfully lowered program equals
+executing only its closed operations. No callback is invoked.
+
+=execute_preserves_protected= preserves the source-world and candidate identities
+on success; byte-cache state may change. This is a controlled-effect boundary,
+not a claim of zero allocation or no internal mutation. Error paths have no
+callback instructions either. =ordered_failure_exact= retains the exact first
+failure, including C4 errors, stale-token keys and source message/location, under
+a sound byte cache for the stable source-world. It leaves operations in order.
+
+These are kernel-checked laws of the model, not automatic Scheme code extraction.
+The model does not read a file to prove that another process cannot change it.
+An external filesystem writer, signal/FFI callback, escaping continuation or
+concurrent object mutation breaks the stable-window premise and requires a
+separate consistency mechanism. A source check is not a filesystem transaction.
+
+* Gitea/PostgreSQL and unchanged authority boundaries
+
+The Scenario retains BOTH independent port requirements. If both effective
+policies permit 5433, changing the final PostgreSQL port to 5433 lets the default
+Gitea client follow it. An explicit 5432 client fails the relation. Shipped
+5432-only policies must be updated legitimately; a 5433 edit alone is not admitted.
+A cached parent plan cannot satisfy the child plan's receiver identity check.
+
+This entry analysis does not defer child Contract obligations, omit contributions
+or replace the final plan check. RootChild/ReturnWindows/IdentityDFS controls
+remain in the aggregate qualification. Selected graph traversal still ignores
+unselected branches; the protocol-absence test concerns raw ancestors of demanded
+objects, not all module exports or all configured services.
+
+Before any arbitrary obligation, contribution callback or replaceable
+=admit-current= slot, byte reuse stops. Its return does not prove source purity.
+Independent admission, post-callback checks and root return-time currentness
+start their required fresh windows. A configured source counter observer is
+also an unknown callback under this sufficient analysis, even if a human can
+see that today's test implementation only updates private counters. Scope changes
+cannot reuse a previous observer-absence result.
+
+The concrete benefit is a source-derived gate for a future same-order byte
+reuse optimization. It is not yet a reduction in the 356 reads. Configurations
+that require arbitrary metalevel hooks keep their capabilities and the existing
+fresh-check path; they are not rejected merely for being ineligible for reuse.
+
+* Matched QNT controls
+
+The finite model derives =eligible= from curated raw snapshots. It does not
+receive a producer purity claim. It covers warm ordinary/anchor records, a
+cleared sealed bootstrap, stale tokens, cold default/protocol metadata, an
+unknown checker, an installed observer, and an initially stale JSON prefix.
+
+| Control | Deliberately invalid inference | Expected rejection predicate |
+|---------+--------------------------------+------------------------------|
+| =sealed= | Sealed root implies cold hook cannot write | =NoOpaque= |
+| =revision= | Same revision implies warm metadata | =NoOpaque= |
+| =checker= | Any current? procedure is the kernel | =NoOpaque= |
+| =observer= | Any source observer is harmless | =NoOpaque= |
+| =anchorExecute= | Retrieving a hook means executing it is harmless | =NoOpaque= |
+| =scopeReuse= | Closed result survives an explicit later observer scope rebind | =NoOpaque= |
+| =dropPrefix= | Stale JSON prefix can be skipped in favor of a later token error | =OrderedDiagnostic= |
+| =parent= | Parent plan identity substitutes for final child | =ReceiverIdentity= |
+| =sourceReuse= | Bytes may cross a possible callback write | =SourcesCurrent= |
+| =acceptance= | All inputs are rejected | =RejectAll= witness |
+
+The scope control models an explicit sequential scope change, not another
+thread mutating a thread-local parameter. The closed analysis is conservative:
+a cold C4 failure can stop before an otherwise possible hook, but this version
+may still decline that route. Declining reuse is safe; it is not failed admission.
+
+* Qualification and remaining gates
+
+Qualification results are recorded below after the complete source-bound gates.
+Native snapshot/trace extraction, C4-to-Scheme exception correspondence, source
+collector coverage, selected dependency stability and primitive/FFI correctness
+remain explicit premises. Graph termination and closed-operation effect laws do
+not establish those premises by themselves. No public syntax, manually maintained
+field inventory, Scheme patch or Loader connection is introduced.
+
+** Completed gates, 2026-10-18
+
+The complete Lean 4.34.0 aggregate passed 162 jobs. The shape audit rejected
+arbitrary Prop-valued model shells; the axiom audit accepted 4,918 declarations
+with standard Lean axioms only. The new owner built without local warnings.
+No =sorry=, =native_decide= axiom, extra recursion limit or larger test deadline
+was introduced.
+
+The final Quint 0.33.0 / Apalache 0.62.1 run typechecked all 67 QNT sources and
+completed all 66 expected outcomes: ten exhaustive positive checks, fifty
+matched unsafe controls and six acceptance witnesses. Positive checks require
+an empty state queue. Counterexample controls require the expected invariant
+violation, not merely a nonzero exit. The original 45-second case ceiling,
+five-second real-output watchdog, five-second typecheck limit and 1GB TLC heap
+were retained. No deadlock suppression was added.
+
+| New case | Predicate | Generated / distinct / queued |
+|----------+-----------+-------------------------------|
+| =ReadOnlyEntry= | =safety= | 1124 / 484 / 0 |
+| =ReadOnlyEntry_sealed= | =NoOpaque= | 641 / 337 / 87 |
+| =ReadOnlyEntry_revision= | =NoOpaque= | 641 / 337 / 87 |
+| =ReadOnlyEntry_checker= | =NoOpaque= | 505 / 281 / 87 |
+| =ReadOnlyEntry_observer= | =NoOpaque= | 313 / 201 / 71 |
+| =ReadOnlyEntry_anchorExecute= | =NoOpaque= | 385 / 241 / 87 |
+| =ReadOnlyEntry_scopeReuse= | =NoOpaque= | 145 / 145 / 71 |
+| =ReadOnlyEntry_dropPrefix= | =OrderedDiagnostic= | 601 / 329 / 103 |
+| =ReadOnlyEntry_parent= | =ReceiverIdentity= | 817 / 405 / 83 |
+| =ReadOnlyEntry_sourceReuse= | =SourcesCurrent= | 868 / 422 / 83 |
+| =ReadOnlyEntry_acceptance= | =RejectAll= | 817 / 405 / 83 |
+
+The first full QNT attempt completed the same expected cases but refused to
+issue a receipt because the concurrently edited dependency declaration changed
+its bound source cut. That failure is preserved, not retroactively converted
+into a pass. The separate current-source rerun above passed with a stable bound
+cut. An initial aggregate command run from the product rather than the Lean
+project directory failed to locate a lakefile; its log is also retained. Only
+the correctly scoped completed Lean gate is counted.
+
+Raw artifacts remain outside Git at
+=/private/tmp/core-entry-readonly-20261018/=:
+
+- =lean-all-02.log=: complete successful Lean aggregate and audits.
+- =quint-all-01.log=: completed cases followed by source-drift refusal.
+- =quint-all-02-current.log= and =quint-current-receipt.ss=: stable current cut.
+- =audited-dependencies-current.json=: exact new-pin source byte hashes.
+- =concurrent-source-change.json= and =qualification.json=: source-cut/change
+  summary and joined output identities.
+
+No Scheme tests or timing/read-count measurements were rerun. The actual native
+producer audit is source evidence; the Lean/QNT results are model evidence. They
+are kept separate from future MOP-adapter implementation and runtime validation.
+
+* Follow-up: actual field extraction
+
+[[file:32.23-mop-state-extraction.org][32.23]] exercises the installed Gerbil runtime MOP field-reflection entry on
+actual producer records. The private getter remains unexported, but runtime
+reflection can recover its stored procedure reference. The follow-up keeps
+representation/version coupling, coherent snapshot extraction and source
+authority as distinct boundaries; production Scheme remains unchanged.

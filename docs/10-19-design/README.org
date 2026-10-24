@@ -1,0 +1,21 @@
+#+title: Core Architecture Design
+#+language: en
+
+* Configuration Module System
+
+Read [[file:10-configuration/10.01-index.org][the configuration design map]]. These documents own our proposals,
+including lexical dependencies, ordinary data construction, Contract admission,
+effective previews and Human-Agent review. They cite independent research under
+[[file:../20-29-ecosystem-research/README.org][the research library]].
+
+Keep three statements separate in every decision: what the source establishes,
+what we propose, and what an executable control has verified. Preserve rejected
+alternatives and reasons when they explain a semantic or UX tradeoff.
+
+* Additional design categories
+
+- [[file:11-configuration-languages/11.01-index.org][11 Configuration Languages]]: ecosystem comparisons, configuration UX and case studies.
+- [[file:12-contracts-types/12.01-index.org][12 Contracts and Types]]: public value Types, Schema adaptation and Core admission.
+- [[file:13-module-loading/13.01-index.org][13 Module Loading and Building]]: directory publication, init selection and build projection.
+
+The type/admission reading entry is [[file:12-contracts-types/12.20-aws-alignment-and-dynamic-typing.org][AWS alignment and dynamic typing]].

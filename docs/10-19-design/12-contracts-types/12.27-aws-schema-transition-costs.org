@@ -1,0 +1,206 @@
+#+title: 12.27 AWS Schema Transition Cost Boundaries
+#+property: DOCUMENT_ID 12.27
+#+language: en
+#+property: STATUS source-only-qualified-hotspot-open
+
+[[file:12.27-aws-schema-transition-costs/source-guards/39-init-demand-boundaries.org][Init import and namespace demand]] separates native infrastructure imports and
+Reader creation from namespace discovery, retaining one selection and the
+original source guards. Real declaration capacity remains a separate gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/38-live-witness-replay.org][Live witness replay in one native DFS]] removes repeated traversal of shared
+closed-call policy suffixes without changing open callback guards or retaining
+currentness results. The real thousand-declaration gate remains separate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/37-prototype-query-import-boundary.org][Prototype queries without Class construction]] removes an unused SDK import
+edge and records the real declaration memory/read comparison, deadline
+attribution and consumer/capacity qualifications.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/36-carrier-candidate-admission.org][EffectiveMethod candidate admission]] removes the duplicate closed-path carrier
+check at the real handoff; public hooks retain checked input and a checked
+return, with no validation cache.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/35-authoring-dispatch-work-and-open-returns.org][Authoring dispatch work and open returns]] separates nested CLOS policy-read
+deliveries from predicate execution and tests the return boundary after a
+public hook; thousand-declaration capacity remains open.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/34-authoring-construction-and-admission.org][Authoring construction and Interface admission]] prevents the default getter
+from capturing constructor validation receipts, while keeping the public
+validated constructor and per-Interface admission boundary.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/33-sdk-enrollment-and-declaration-budget.org][SDK enrollment and the real declaration budget]] separates import topology
+registration from fresh admission, removes repeated registration, and records
+why source-read bounds alone cannot establish thousand-module capacity.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/32-location-support-and-replay-cost.org][Candidate location support and native replay cost]] investigates the remaining
+metadata prefix independently of physical source reads, with separate native
+replay/compile/evaluation observation and cached-path support controls.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/31-staged-candidate-publications.org][Candidate publication support and complete Graph commit]] implements the
+approved candidate-local source boundary in the same reader and Graph, while
+retaining complete source and native evidence checks before visibility.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/30-reader-effect-support.org][Reader source closure versus ambient effect support]] audits the remaining
+entry/return prefix: an actual import closure does not certify arbitrary native
+initializers as confined. It separates the root-optimization premise from the
+existing quadratic implementation and records the real capacity gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/29-private-dependency-continuation.org][Private dependency continuation]] lowers the paired role-file recurrence
+to =4N^2 + 4N= and records an actual native read reduction, with full guards
+before the next opaque declaration or Feature operation.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/28-checked-publication-subject.org][Checked publication subject handoff]] makes owner checking and Graph
+consumption use the unified producer's exact normalized candidate once.
+It repairs a real raw/checked-object mismatch without removing open guards.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/27-metadata-to-admission.org][Metadata-to-admission audit]] separates completed source declarations, cold
+metadata checks and open Context obligations. Native negative controls retain
+the necessary tail guard; the measured remaining recurrence is unchanged.
+
+* Current status and evidence limits
+
+[[file:12.27-aws-schema-transition-costs/source-guards/26-closed-location-prefix.org][Closed location prefix]] implements the first paired native source operation:
+one authoring admission and one physical entry traversal, with complete
+metadata/ancestor support and conservative open-callback fallback. It records
+the actual sixteen/256 read reduction rather than only a cost recurrence.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/25-outer-stop-and-prefix-guard-cost.org][Outer stop cleanup and prefix guard cost]] repairs delivered-TERM fixture
+unwinding and identifies the accumulated-prefix guard recurrence. It keeps
+the 684-publication timeout as a failed capacity gate and distinguishes
+operation-support coverage proofs from unsafe removal of opaque guards.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/24-checked-role-receiver-lifetime.org][Role validation receiver lifetime]] follows original dependency suffixes into
+unreturned native checked receivers, retains transitive parent policy and
+records the next collected-byte comparison. It reuses public ObjectContract
+validation rather than weakening fields or clearing SDK bindings.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/23-evidence-read-ownership.org][Evidence read ownership]] follows the actual temporary authoring-Profile
+receipts into Graph dependencies, with a paired 256-declaration live-memory
+comparison and conservative open-callback fallback.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/22-reader-binding-ownership.org][Reader binding ownership]] records the real thousand-declaration capacity
+boundary, shared SDK prelude and original-token publication projection.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/21-owned-call-read-projection.org][Owned authoring-call read projection]] bounds the two maintained method
+bodies, promotes original external read tokens and keeps native replay for live
+escaped carriers. Unknown execution-state callbacks retain the complete trace.
+This is a Core-local retention projection, not an upstream collector patch or
+an unrestricted CLOS purity certificate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/20-semantic-reads-and-link-records.org][Semantic reads and link records]] keeps policy/Contract/source/Generic
+dependencies distinct from temporary carriers. Its normal live-Graph comparison
+does not clear caches; the measured contraction is small and native declaration
+capacity remains open. Quint mutation schedules and Lean completeness properties
+state the missing projection premises explicitly.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/19-clos-carrier-retention.org][POO/MOP/CLOS and retained call values]] separates reader binding roots, CLOS
+payloads and native read-record ownership. Native constant lexical slots keep
+the same semantic payloads; their use alone does not close the capacity gate.
+
+[[file:12.27-aws-schema-transition-costs/source-guards/18-reader-retained-roots.org][Reader retained roots and Role value checks]] separates stable receipt identity,
+streamed private projections and public-library value checking from native
+declaration capacity, which remains an independent gate.
+
+This page is a read map. Detailed mechanisms and retained receipts live in the
+modules below; new experiments belong in their owning module, not at the end
+of this index. Historical timings qualify their recorded revisions and policy,
+not today's complete checkout or a general speedup.
+
+The observed source-only qualification uses gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b= and the unchanged 2 GiB heap fence.
+The same init-owned tests object selects JsonSchema, Funflow and AWS, with
+observation and progress-aware execution. Its retained passing aggregate has
+seven MODULE-OK, two HARNESS-OK and two final OK markers, natural exit zero,
+Schema updates, stale-evidence refusals, old-value preservation and cleanup.
+
+The earlier retained AWS work sample is 37785 physical reads, including 12852
+build-admit-before reads. [[file:12.27-aws-schema-transition-costs/source-guards/12-demanded-source-support.org][Demanded source support]] reduces each retained before
+pass from 167 to 153 files, with 84 passes unchanged. The
+[[file:12.27-aws-schema-transition-costs/source-guards/13-scale-and-model-correspondence.org][1000/10000-module controls and Quint/Lean correspondence]] qualify catalog,
+selected resolver and iterative closure behavior separately from native expansion.
+
+The preceding [[file:12.27-aws-schema-transition-costs/source-guards/10-operation-boundaries.org][operation-boundary composition]] removed 2505 before
+reads from the preceding 16533 subtotal by assigning each closed native boundary
+one check. It generalizes across the sequential package chain, retaining full
+entry/return guards around opaque callbacks. The new
+[[file:12.27-aws-schema-transition-costs/source-guards/11-graph-cost-and-ownership.org][Graph cost and ownership analysis]] separates this implemented composition law
+from finer dependency slicing and issued-code costs that remain open.
+
+The preceding source-only receipt had 43981 physical reads and 16533 before
+reads. The
+[[file:12.27-aws-schema-transition-costs/source-guards/09-package-entry-prefix.org][package entry-prefix change]] removes 2672 before reads (16 traversals
+of 167 files) from the preceding 19205 subtotal. It factors a closed native
+function prefix; it neither skips custom callbacks nor shares bytes across Nix.
+
+The preceding source-only receipt had 46813 physical reads and 19205 before
+reads. The
+[[file:12.27-aws-schema-transition-costs/source-guards/07-route-free-index.org][route-free index change]] removes another 356 all-phase reads after the
+[[file:12.27-aws-schema-transition-costs/source-guards/06-context-source-entry.org][Context source-entry check]]. That route-free change did not reduce its
+before subtotal. Those two earlier changes added no public interface or cache.
+The subsequent [[file:12.27-aws-schema-transition-costs/source-guards/08-before-call-chain-audit.org][before-guard call-chain audit]] reproduced those historical counts,
+excluded path aliases and a SourceAdmission wrapper absent from AWS, and recorded
+the remaining open callback boundaries. It qualifies no additional reduction.
+The earlier Context continuation experiment was removed;
+its internal method is not a supported API. See the
+[[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][rejected experiment and design reflection]].
+
+The source-only qualification excludes the concurrent compiled-build-artifact
+issuance integration. It is not a claim that the complete working checkout or
+compiled-artifact path is qualified. No raw logs are stored in this document
+tree. There is no new cache, runner, public builder, upstream change, full
+build or pushed change associated with the rejected experiment.
+
+* Read by question
+
+| Question | Owning module |
+|----------+---------------|
+| Which repeated preparations are gone, and what retains native read dependencies? | [[file:12.27-aws-schema-transition-costs/source-guards/15-public-preparation-and-read-retention.org][Public-source uniqueness, native name refusal and read-token retention]] |
+| Which algorithm properties belong to Quint, Lean and thousand-scale Scheme checks? | [[file:12.27-aws-schema-transition-costs/source-guards/16-source-closure-algorithm.org][Demanded closure work, counterexamples and evidence responsibilities]] |
+| Does the actual SDK Context walker preserve postorder without recursive dependency depth? | [[file:12.27-aws-schema-transition-costs/source-guards/17-context-walk-frames.org][Explicit frames, native identity and callback-order controls]] |
+| Do 1000/10000 real source declarations expand within the existing limits? | [[file:12.27-aws-schema-transition-costs/source-guards/14-declaration-capacity.org][Native declaration gates, retained capacity failures and SDK closure cut]] |
+| Which actual dependencies replace the complete tool catalog? | [[file:12.27-aws-schema-transition-costs/source-guards/12-demanded-source-support.org][Demanded support, deferred Build and source ownership]] |
+| What has been tested at 1000/10000 Modules, and what do Quint/Lean prove? | [[file:12.27-aws-schema-transition-costs/source-guards/13-scale-and-model-correspondence.org][Scale controls and model correspondence]] |
+| How were root and request reads attributed? | [[file:12.27-aws-schema-transition-costs/source-guards/04-remaining-guards.org][Root, request and callback guards]] |
+| How are checked returns and subsequent entries composed? | [[file:12.27-aws-schema-transition-costs/source-guards/10-operation-boundaries.org][One-call boundary normalization, opaque barriers and Lean correspondence]] |
+| What is the architectural cost problem beyond removing wrappers? | [[file:12.27-aws-schema-transition-costs/source-guards/11-graph-cost-and-ownership.org][Boundary ownership, dependency projection and issued code]] |
+| Which callback prefix actually reduced before reads? | [[file:12.27-aws-schema-transition-costs/source-guards/09-package-entry-prefix.org][Exact procedure binding, conservative fallback and measured reduction]] |
+| What did the preceding before-only rerun establish? | [[file:12.27-aws-schema-transition-costs/source-guards/08-before-call-chain-audit.org][Actual callbacks, path identities and unchanged counts]] |
+| Why does source collection not repeat full request admission? | [[file:12.27-aws-schema-transition-costs/source-guards/06-context-source-entry.org][Context source entry and complete admission]] |
+| What can a route-free index skip, and what must stay guarded? | [[file:12.27-aws-schema-transition-costs/source-guards/07-route-free-index.org][Cached metadata and the cold-handler boundary]] |
+| Which reductions actually changed physical reads? | [[file:12.27-aws-schema-transition-costs/source-guards/02-pure-stage-fusion.org][Qualified pure-stage fusion]], [[file:12.27-aws-schema-transition-costs/source-guards/03-publication-producer.org][publication-owned analysis]] |
+| Why do Nix hits and misses differ from output reuse? | [[file:12.27-aws-schema-transition-costs/nix/01-evaluation-cache.org][Evaluation cache]], [[file:12.27-aws-schema-transition-costs/nix/06-dependency-misses.org][dependency misses]] |
+| What happens after GC or during genuine build progress? | [[file:12.27-aws-schema-transition-costs/nix/03-progress-and-gc.org][Progress and GC recovery]] |
+| Does Source Builder differ from Building? | [[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][One Building chain and the rejected experiment]] |
+| What is the tested workload and admission boundary? | [[file:12.27-aws-schema-transition-costs/qualification/01-workload-and-controls.org][Workload and controls]] |
+
+* Nix evaluation and publication
+
+- [[file:12.27-aws-schema-transition-costs/nix/01-evaluation-cache.org][Evaluation cache and ownership boundaries]].
+- [[file:12.27-aws-schema-transition-costs/nix/02-final-publication.org][Final derivation publication]].
+- [[file:12.27-aws-schema-transition-costs/nix/03-progress-and-gc.org][Progress-aware execution and GC recovery]].
+- [[file:12.27-aws-schema-transition-costs/nix/04-input-identities.org][Input fingerprints and exact attribute selection]].
+- [[file:12.27-aws-schema-transition-costs/nix/05-cost-attribution.org][Retained 128837 ms cost attribution]].
+- [[file:12.27-aws-schema-transition-costs/nix/06-dependency-misses.org][Evaluation misses, dependency overlap and invalidation]].
+- [[file:12.27-aws-schema-transition-costs/nix/07-source-hash-reuse.org][Source-to-hash reuse in Nix]].
+- [[file:12.27-aws-schema-transition-costs/nix/08-remaining-costs.org][Remaining costs and diagnostic limits]].
+
+* Source guards and admission
+
+- [[file:12.27-aws-schema-transition-costs/source-guards/01-physical-reads.org][Physical read attribution and effect partitions]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/02-pure-stage-fusion.org][Qualified pure-stage fusion and matched controls]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/03-publication-producer.org][Publication-owned responsibility analysis]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/04-remaining-guards.org][Remaining guards, closed branches and observed reruns]].
+- [[file:12.27-aws-schema-transition-costs/source-guards/05-context-assembly.org][One complete check at the Context assembly boundary]].
+
+* Workload and retained qualification
+
+- [[file:12.27-aws-schema-transition-costs/qualification/01-workload-and-controls.org][Workload, invariants and focused controls]].
+- [[file:12.27-aws-schema-transition-costs/qualification/02-historical-receipts.org][Historical one-GiB and early two-GiB receipts]].
+- [[file:12.27-aws-schema-transition-costs/qualification/03-startup-attribution.org][Startup attribution and duplicate source expansion]].
+- [[file:12.27-aws-schema-transition-costs/qualification/04-test-source-admission.org][Test-source and full configuration admission separation]].
+
+* Building design reflection
+
+[[file:12.27-aws-schema-transition-costs/building/01-ownership-and-context-experiment.org][Building ownership and rejected Context preparation experiment]] distinguishes
+one Graph/build integration from an unnecessary second builder. Fixture-only
+savings are not a real AWS performance improvement or a reason to expand the
+Core interface. The remaining hotspot is open.

@@ -1,0 +1,33 @@
+#+title: Yuanxu Development and Assurance
+
+* Entry points and ownership
+
+Development is organized by responsibility, not by collecting every artifact in
+one models directory. Runtime discovery must not select this development tree.
+
+| Owner | Responsibility | Entry |
+|-------+----------------+-------|
+| SysML | Architecture, system boundaries, requirements, allocation and verification relationships | [[file:sysml/README.org][Development system model]] |
+| Quint / QNT | Executable transition models, bounded exploration and negative traces | [[file:proofs/quint/README.org][Quint project]] |
+| Lean / LeanPoo | Explicit premises, semantic properties and preservation proofs | [[file:proofs/README.org][Proof ownership]] |
+| Scheme regression | Actual implementation correspondence, refusal behavior and public consumers | =../t/= and selected =tests/= owners |
+| Just | Existing bounded build/test/proof commands; no second scheduler | [[file:just/README.org][Development commands]] |
+| Measurements | Actual actions, time, reads, allocation and host context | Local/CI artifacts; structured summaries in the owning design Org |
+
+SysML is the organization entry, not a replacement for the other owners. A
+model requirement needs an identified verification obligation. QNT can expose a
+bad interleaving without proving arbitrary executions; Lean proves its stated
+model under explicit premises; Scheme establishes tested correspondence with
+native calls. None alone authenticates external files or proves performance.
+
+* Change route
+
+1. Classify the system question under =sysml/=; record the existing source owner.
+2. State requirements, assumptions, alternatives and prohibited shortcuts.
+3. Link the applicable QNT counterexample and Lean property; record missing
+   correspondence as missing, rather than creating a parallel formal project.
+4. Validate through the existing bounded Just/TestingScript/Fixture path.
+5. Record matched performance and failure receipts in the owning design document.
+
+The initial organized workstream is [[file:sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]].
+It does not authorize a new cache protocol or a public recovery API.

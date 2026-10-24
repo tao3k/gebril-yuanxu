@@ -1,0 +1,173 @@
+#+title: 20.10 Gitea/PostgreSQL Port Changes: Fixed-Source Comparison
+#+language: en
+#+property: DOCUMENT_ID 20.10
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-reviewed-no-new-platform-installation
+
+* Question, version and scope
+
+What does an ordinary port edit guarantee, and where must maintainers put
+additional composition checks? The baseline is nixpkgs commit
+=50ab793786d9de88ee30ec4e4c24fb4236fc2674=, not moving master. On 2026-10-17
+the GitHub source connector successfully retrieved the fixed Gitea module and
+lib/modules.nix after the web reader's earlier cache misses. This supersedes
+the access limitation recorded in 20.09, without changing its historical receipt.
+No installation, build, activation or new Nix evaluation was performed here.
+
+Primary owners:
+- [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix#L145-L154][Gitea port declaration]], [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix#L188-L201][socket default]], [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix#L494-L498][HOST projection]].
+- [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix#L470-L483][Existing domain assertions]] and [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix#L610-L618][service ordering/requirements]].
+- [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix#L1126-L1138][filterOverrides']] and [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix#L1241][mkForce]].
+- [[https://nixos.org/manual/nixos/stable/#sec-option-definitions][Official option-definition manual]] for the user-facing interface; this moving
+  manual is documentary context, not the version identity of the source audit.
+
+* Same user action, real consumer
+
+This analyst-written configuration fragment uses the inspected module fields:
+
+#+begin_src nix
+{
+  services.postgresql.settings.port = 5433;
+  services.gitea.enable = true;
+  services.gitea.database = {
+    type = "postgres";
+    createDatabase = true;
+    socket = null;
+  };
+}
+#+end_src
+
+It is a port-use fragment, not a deployable machine with credentials. Setting
+socket to null is essential to study the TCP endpoint; the default local socket
+would otherwise bypass the host:port projection. The real module declaration is:
+
+#+begin_src nix
+port = mkOption {
+  type = types.port;
+  default = if usePostgresql then pg.settings.port else 3306;
+#+end_src
+
+Here pg is config.services.postgresql. HOST reads cfg.database.port in the TCP
+branch. The final-config default and maintained consumer already solve the
+ordinary user problem. POO inheritance is not evidence of an improvement over it.
+The pinned module also owns user/database assertions and systemd relationships;
+our local pure plan does not replace those operational integrations.
+
+* The four comparison questions
+
+| Mutation | What inspected source establishes | What it does not establish |
+|----------+-----------------------------------+----------------------------|
+| Two parties require incompatible allowed-port sets | Separate assertions can express each requirement; ordinary scalar option conflicts also have merge/type handling | No universal cross-party allowed-port protocol is inferred from the Gitea module |
+| A contributor is omitted | Only selected/imported modules can contribute definitions and assertions | The library cannot infer an unstated intended contributor; a composition root must declare expected membership |
+| Working source changes | A fresh evaluation uses its selected inputs; stable Store artifacts and generations serve another lifecycle | Editing a working file is not intrinsically an error; rejecting a previously admitted plan needs a defined revision boundary |
+| An old projection is reused | The real module derives HOST from current final cfg | A hand-authored detached cached JSON object is not automatically the real module's consumer or an engine-cache defect |
+
+A maintainer can add an application-specific assertion such as the following;
+this is proposed adapter code using the existing interface, not an upstream
+assertion or a locally executed control:
+
+#+begin_src nix
+assertions = [{
+  assertion = builtins.elem config.services.postgresql.settings.port teamPorts;
+  message = "PostgreSQL port violates the team requirement";
+}];
+#+end_src
+
+Value priority and requirements must not be conflated. mkForce selects a value
+using mkOverride 50; filterOverrides' keeps winning-priority definitions. A
+separately retained assertion still checks the resulting value. Our Contract
+proposal does not gain an advantage simply by renaming numeric merge priority.
+
+* Issues and Engineering Limitations
+
+[[https://github.com/NixOS/nixpkgs/issues/379855][#379855]], reported 2025-02-06, shows top-level module structure depending on
+_module.args and an infinite-recursion diagnostic. The exact affected revision
+is unspecified in the inspected report. ISSUE-REPORTED, NOT-REPRODUCED here.
+The fixed library source documents specialArgs for import-time information and
+_module.args for later values. No resolving PR was verified. This motivates
+phase-aware dependency errors; it is not evidence of port-default failure.
+
+* Reflection, improvement target and conclusion
+
+Keep NixOS's ordinary assignment, final-config dependencies, declared option
+introspection and maintained consumers. Our candidate improvement is an explicit
+selected-publication protocol that checks expected contribution coverage, binds
+observed source revisions and refuses a detached stale candidate plan. The
+corresponding Core controls exist; an absence of an identical built-in NixOS
+API in the inspected files does not prove that a NixOS library cannot implement
+it. Lower authoring cost, better diagnostics and larger-scale selectivity remain
+unmeasured design goals.
+
+Do our dependency errors name the early demand and its source better than the
+reported recursion? Can a real service consumer retain all these guarantees?
+Those questions remain open; they must not be marked solved by a local integer
+port check. Shared design: [[file:../../10-19-design/10-configuration/10.20-module-system-assurance.org][10.20]]. Core evidence owner:
+[[file:../../30-39-research-foundations/32-module-assurance/32.01-gitea-postgresql-evidence.org][32.01]].
+
+* Maintainer code: what is built in and what is an application adapter?
+
+** Real fixed-version source, not our adapter
+
+The same fixed lib/modules.nix exposes =definitionsWithLocations = res.defsFinal=
+at line 996. Definitions have file locations; override filtering occurs before
+the final definitions are exposed. The fixed [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix#L331-L403][Type source]] defines port as
+ints.u16, covering 0 through 65535. Our service's 1 through 65535 is a stricter
+domain choice, not proof that the Nix type is broken. The default 5432 and a
+team's allowed-port list are separate constraints.
+
+A current manual's free-floating mkDefinition example must not be retroactively
+attributed to this fixed source revision. This article uses the fixed definition
+file tracking, not a guessed availability of that helper.
+
+** Analyst-written application guard over known data
+
+The following is complete as a bounded function, using ordinary Nix/library
+operations. It is NOT an upstream NixOS API, an executed control, a required
+implementation for every user, or a shortest-code comparison. The application
+maintainer supplies an envelope with config and plan, selected requirement rows,
+a required-route list and captured file revisions. Routes have owner/exportPath;
+rows have origin/payload. Source entries have path/digest. These inputs are
+maintainer context, not extra fields an ordinary port-editing user must fill.
+
+#+begin_src nix
+{ lib, candidate, rows, requiredRoutes, sources }:
+let
+  key = route: builtins.toJSON [ route.owner route.exportPath ];
+  actual = map (row: key row.origin) rows;
+  expected = map key requiredRoutes;
+  port = candidate.config.postgresql.settings.port;
+  client = candidate.config.gitea.database.port;
+  fail = message: throw ("application: " + message);
+in
+if !(builtins.length actual == builtins.length expected
+     && lib.all (id: lib.count (x: x == id) actual == 1) expected)
+then fail "incomplete or substituted contribution routes"
+else if !(lib.all (s: builtins.hashFile "sha256" s.path == s.digest) sources)
+then fail "observed source changed"
+else if !((lib.types.ints.between 1 65535).check port
+          && (lib.types.ints.between 1 65535).check client)
+then fail "config: invalid connection port"
+else if !(lib.all (row: builtins.elem port row.payload.allowedPorts) rows)
+then fail "config.postgresql.settings.port: conflicting requirements"
+else if client != port
+then fail "config.gitea.database.port: connection mismatch"
+else if !(candidate.plan.configuration == candidate.config
+          && candidate.plan.postgresql.port == port
+          && candidate.plan.gitea.databasePort == client)
+then fail "plan: stale projection"
+else candidate
+#+end_src
+
+The function deliberately exposes the unfinished ownership problem: another
+maintained layer must derive requiredRoutes from selected declarations, capture
+sources, and supply them without trusting arbitrary candidate metadata. A route
+string comparison does not authenticate a source or retain all deep object
+identities. Structural plan equality over known data is also not POO receiver
+identity, nor is this function a system-generation publication transaction.
+
+Reflection: NixOS already handles definition origins, option merge/type checks
+and assertions. Our prospective gain concerns a standard selected-publication
+context for these additional application obligations. We cannot infer that
+NixOS maintainers must each write this exact function, or that a reusable Nix
+library could not centralize it equally well. No maintenance-code ranking is
+supported by this example. See [[file:../../30-39-research-foundations/32-module-assurance/32.02-maintainer-publication-comparison.org][32.02]] for the common responsibility ledger.

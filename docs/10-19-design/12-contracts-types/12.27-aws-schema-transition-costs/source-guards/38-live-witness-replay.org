@@ -1,0 +1,228 @@
+#+title: 12.27.51 Live Witness Replay In One Native DFS
+#+property: DOCUMENT_ID 12.27.51
+#+language: en
+#+property: STATUS final-closed-gc-qualified-capacity-startup-refused
+
+* Actual continuation after the 614-publication refusal
+
+[[file:37-prototype-query-import-boundary.org][The previous thousand-declaration gate]] stopped after 614 completed
+publications. Its last observations show linear private-context ownership and
+375 physical reads per completed publication, but significant metadata replay
+CPU. Counts alone do not identify exclusive retained bytes or prove that those
+contexts can be released. Their bindings may still be needed by later imports
+and deferred Build roles. This change does not clear SDK state or bindings.
+
+The real call chain is =read-candidate -> current! ->
+publication-metadata-current -> publication-read-current ->
+replay-slot-reads! -> owned-call current? -> weak-reads-current?=.
+The last function used to start a separate native DFS for each live owned
+receiver. Frame, EffectiveMethod and evidence witnesses can share the same
+Generic, Contract and policy suffix. Each independent DFS revisited that suffix
+and allocated its own temporary traversal set.
+
+* One check owns the complete live witness set
+
+The closed call's existing weak witness table remains unchanged. At each
+currentness demand the implementation:
+
+1. Resolves every still-live receiver and all its original read tokens. A
+   missing token for a live receiver refuses immediately.
+2. Verifies that each resolved token has that receiver identity. The native
+   token structure holds its receiver strongly, so these roots themselves pin
+   every resolved receiver. There is no additional receiver list. This does
+   not resurrect a collected receiver or suppress a missing-token error.
+3. Calls the original public =replay-slot-reads!= once on the combined roots.
+   Native token identity deduplication and the native final recheck cover the
+   whole set, including shared dependencies.
+4. Releases the local roots on return or exception. Nothing stores a successful
+   validity decision. Native receiver edges, not a duplicated pin collection,
+   provide liveness during the replay.
+
+This changes the scope of an existing native DFS. It adds no cache, read-token
+registry, second Graph, reconstructed token predicate or user interface. All
+original read observations at construction still occur. The returned receipt
+and policy identities are unchanged. A later demand performs a fresh replay.
+
+For R live witnesses with private suffixes A_i and one shared suffix S, the
+old nested traversal component is proportional to sum_i(|A_i| + |S|). The
+single native DFS visits the union of those original tokens instead. Native
+first/final passes multiply both costs by the same constant. In particular,
+repeating S R times is removed, rather than merely deleting one check from
+every witness. Root collection is still linear in the number of recorded
+roots, and every independent admission demand still repeats its checks.
+This bound is about token identities in one closed call, not all filesystem
+reads, SDK contexts or total work for N Modules.
+
+Unknown methods, Context/obligation callbacks, MOP hooks and borrowed copies
+still select =owned-call/full= and keep complete strong support. Their callback
+guards are not coalesced. Nor are the reader's separate preparation/admission/
+preparation source boundaries merged: no general purity certificate for an
+arbitrary token-currentness callback is inferred from an import path. The
+batch's correspondence premise is the existing closed, constructor-owned
+projection with native currentness queries. Arbitrary callback invocation
+counts or scheduling are not an equivalence claim.
+
+* Native controls and formal division
+
+The first batch candidate's =evidence-read-ownership-test.ss= passes all 11 cases with natural exit zero,
+MODULE/HARNESS/final OK markers and no error/overflow marker. The added cost
+probe keeps 1, 4 and 8 returned witnesses alive while sharing one suffix. Its
+successful native replay work is independent of witness count; it then mutates
+a returned receiver and requires refusal. The counter/token and owned factory
+in that one probe are explicit test instrumentation, not a production contract
+or source-currentness substitute. Existing cases cover collected scratch,
+live invalidated receipts, full open traces, parent changes, normalized checked
+objects and Contract identity. The original synthetic cost token had an
+unprepared receiver, however, and that probe did not assert that it stayed in
+the closed branch. Its passing work assertion is therefore not evidence of
+the weak-witness optimization. Dedicated probes now live in
+=t/evidence-witness-replay-test.ss=, use prepared synthetic receivers, and
+explicitly refuse an unexpected =owned-call/full= before measuring work or GC.
+The original ten ownership cases remain in their own unchanged suite.
+
+Lean =OwnedReads.live_witness_batch_exact_support= proves equivalence between
+all per-group predicates and the flattened token set at one stable query epoch.
+=final_witness_mutation_refused= and =shared_witness_suffix_work= separately
+state rejection and the shared-suffix cost component. The focused Lean target
+builds successfully (41 jobs). Receiver pinning, original-token resolution,
+closed-call eligibility and the native final pass remain Scheme correspondence
+premises, not a Lean theorem about the native evaluator or collector.
+
+Quint =WitnessReplay= checks finite schedules for live/dead witnesses, open
+fallback, missing tokens and mutation after the first pass. Negative controls
+drop a live root, weaken an open trace, ignore a missing token, skip the final
+pass, repeat the shared suffix or reject all values. This is transition
+coverage, not another unbounded algorithm proof or capacity receipt. All seven
+cases qualified for the first batch candidate. The final model adds collection
+during replay and roots surviving after return as distinct negative controls;
+its final source-bound receipt is reported separately.
+The first final-model attempt stops in the existing 5-second per-file
+typechecker budget for =WitnessReplay_noPin.qnt=, before a model-checking
+result. That infrastructure failure is not a semantic counterexample and no
+limit is enlarged.
+
+Two replay-time GC fixture attempts passed during-replay liveness but failed
+post-replay collection, including an attempt using the production evidence
+factory. The initial self-slot capture hypothesis did not resolve the second
+failure. Source inspection finds a more direct eligibility defect: the
+synthetic token's cold receiver causes =observe-owned-hook= to select the full
+trace. Such a trace is supposed to keep its receiver alive. Those failures are
+retained; no roots-release qualification follows from them. The corrected
+fixture uses a prepared synthetic receiver, the production
+=yuanxu-validation-evidence= factory and an external formula defined outside
+the Case frame. It must assert the closed branch, drop setup references during
+replay, survive replay-time GC, then allow collection after replay. No collection
+assertion is removed or weakened. A diagnostic helper's earlier expression
+definition error is a separate failed test import, not a native GC result.
+
+The corrected dedicated two-Case suite passes with natural exit zero, all
+MODULE/HARNESS/final OK markers and no error/overflow marker. It explicitly
+requires =owned-call/full= to be absent before checking either property. The
+prepared-receiver cost probe confirms bounded suffix work for 1/4/8 live
+receivers and rejects a later native edit. The production-evidence GC probe
+keeps both receivers alive during replay, then collects both after return;
+its raw dependency traversal reports no strong receiver path. The previous
+cold-token passes/failures are superseded as eligibility tests, not silently
+reclassified as measurements of this closed path.
+
+The final nine-case Quint retry also stops in the unchanged 5-second native
+typechecker budget, this time on the base model, without reaching model
+checking. A local combined-import typecheck experiment likewise exceeds that
+limit; no batching change or timeout increase is made to the existing driver.
+The earlier seven-case receipt and successful Lean build remain distinct from
+the unqualified final nine-case source cut.
+
+* Real init Graph comparison
+
+The intermediate batch with an explicit receiver-pin list completes all 64 native body expansions and
+evaluations through the same init test object's =.run=. It preserves unused
+business-Scope laziness, rejects the changed init source and releases its
+fixture. There are no error/overflow markers and both child and parent finish
+with their MODULE/HARNESS/final OK markers and exit zero.
+
+| Observation | Previous query-boundary control | Witness batch |
+|-------------+---------------------------------+---------------|
+| Physical reads at Graph ready | 6564 | 6564 |
+| Native read deliveries | 193024 | 193024 |
+| Delivered direct edges | 243210 | 243210 |
+| Outer metadata replay visits | 137336 | 137336 |
+| Metadata replay CPU, microseconds | 827868 | 701373 |
+| Collected process live bytes, Graph held | 503476352 | 503504032 |
+
+The measured replay CPU component is about 15.3% lower in this single pair.
+This is not an end-to-end or statistically qualified speedup. The outer visit
+counter measures the reader's native DFS callback, not recursively invoked
+weak-witness DFS work; its unchanged value does not mean the removed nested
+work still runs. The native shared-suffix probe controls that distinction.
+
+There is NO physical-read or retained-memory reduction in this pair: live
+bytes are 27680 higher. The change removes repeated temporary traversals; it
+does not prove that private role contexts are disposable. Allocation-counter
+validity differs between runs, so allocation deltas are not compared. The
+thousand-declaration result must be reported separately rather than inferred
+from the probe or CPU component. The final code removes the duplicate pin list
+using the native token-to-receiver edge; its GC control and scale results must
+not be attributed to this intermediate pair.
+
+The intermediate explicit-pin thousand-declaration gate completes 380
+publications, stopping during the next publication under the unchanged outer
+budget (Ops TERM, then exit 137). The last completed record is 538201ms elapsed,
+104850ms CPU and 142804 physical reads. No Graph-ready or final live-byte
+sample is reached, and no heap-overflow marker is present. The fixture root
+is absent afterwards. This is a failed capacity qualification, not an OOM
+diagnosis or a successful thousand-module run.
+
+At the matched 256-publication checkpoint, replay CPU is 7707893 versus
+8931741 microseconds in the previous candidate, but total process CPU is
+66316 versus 65316 milliseconds. Physical reads are exactly 96304 in both.
+Thus the component improvement is real within these observations, but there
+is no demonstrated total-work reduction or capacity improvement. Wall times
+must not be used to claim that fewer completed publications establish an
+algorithmic regression either. The final root-held candidate removes the
+redundant per-receiver pin pairs and requires its own qualification.
+
+The final root-held thousand-declaration attempt does not reach its worker
+harness: its child log remains empty and the parent refuses with
+=idle-exceeded 60000 60005= after launching that worker. The launch checkpoint
+reports 28768ms Case elapsed and 3701ms Case CPU. There is no final-version
+publication-count, Graph-ready, source-mutation or retained-memory result from
+that child. No overflow marker appears, and a scoped process query finds no
+surviving declaration worker after Ops unwinds. This is a pre-harness startup
+refusal, not another completed 600-second Graph measurement. It is not retried
+unchanged, bypassed with compiled inputs, or converted to a pass by increasing
+the idle budget. Cold import observability remains an explicit qualification
+gap outside the now-verified closed witness replay boundary.
+
+The final production publication control passes all seven cases: one value
+check and actual Contract/Context binding, cached-parent versus current child,
+same-name Contract refusal, source/Schema changes before and during admission,
+unresolved network and previous-value preservation. The final candidate
+metadata control also passes both cases, including actual policy/Contract
+mutation rejection before replacement obligations run. These use the existing
+native producers and small selected-source fixtures; they do not substitute
+for the stopped thousand-module or real AWS provider qualification.
+
+The final cancellation control also passes: a real OS TERM interrupts the
+existing Ops effect, both nested fixtures release in order, the directory is
+absent, and a subsequent fixture acquires/releases normally. This is an
+independent cleanup control, not a completed capacity or import qualification.
+
+* Focused reproduction
+
+#+begin_src sh
+just test-file t/evidence-read-ownership-test.ss true
+just test-file t/evidence-witness-replay-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/admission-checked-publication-test.ss true
+just test-file t/execution-cancellation-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix WitnessReplay --typecheck-scope selected --receipt ../.data/qualification/witness-replay.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
+#+end_src
+
+Use the same repository-locked source environment and original budgets.
+Native tests run serially. Raw receipts stay outside version control. A small
+Graph or the suffix cost law cannot qualify thousand-module capacity, retained
+memory reduction or the separate real AWS provider integration.

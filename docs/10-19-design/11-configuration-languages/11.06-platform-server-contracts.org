@@ -1,0 +1,205 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.06 Config Languages 05: Internal Server Defaults and Contracts
+#+property: DOCUMENT_ID 11.06
+#+date: [2026-10-16]
+#+filetags: :config-language:contracts:design:
+#+property: STATUS unexecuted-scheme-design-no-runtime-or-loader-change
+
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+its Core export rename is pending. This example does not introduce an alias.
+
+* This is platform code, not Profile authoring
+
+The [[file:11.05-kcl-kubernetes-multi-environment.org][user comparison]] owns the simple contribution Profile. Core/platform authors
+maintain these defaults and Contracts once. Ordinary configuration authors can
+fill native object slots without inheriting a default prototype, declaring Contract
+responsibilities or assembling a resource plan. Upstream contributors and downstream
+users alike can also inherit maintained Profiles, define new types or extend a
+consumer when their actual task requires it. These are intent-dependent operations,
+not separate permissions or fixed complexity levels for different author roles.
+
+The code below is a concrete bounded reference design, not existing exports.
+It uses actual native POO operators and public Core Contract APIs. Internal
+functions are not a new user DSL. This is not a general Kubernetes schema package.
+The codelab's protocol/port constraints remain deliberately narrow.
+
+* Internal default objects and demand-time effective view
+
+#+begin_src scheme
+(.def Port.)
+(.def Resource.
+  (cpu ? 1) (memory ? 1073741824) (disk ? 10737418240))
+(.def Main.
+  (name ? "main") (ports ? '()))
+(.def Server.
+  (replicas ? 1) (labels ? (.o))
+  (resource ? Resource.) (mainContainer ? Main.))
+
+(def (present-or object slot fallback)
+  (if (.slot? object slot) (.ref object slot) fallback))
+
+(def (port-view value)
+  (if (object? value) (.o (:: @ [value Port.])) value))
+
+(def (main-view value)
+  (if (not (object? value)) value
+    (.o (:: @ [value Main.])
+      ports:
+      (let ((items (present-or value 'ports '())))
+        (if (list? items) (map port-view items) items)))))
+
+(def (resource-view value)
+  (if (object? value) (.o (:: @ [value Resource.])) value))
+
+(def (server-view declaration)
+  (if (not (object? declaration)) declaration
+    (.o (:: @ [declaration Server.])
+      resource: (resource-view (present-or declaration 'resource (.o)))
+      mainContainer: (main-view (present-or declaration 'mainContainer (.o))))))
+#+end_src
+
+This is a pure, lazy native object view. It retains the declaration as an actual
+parent, rather than copying its fields or flattening it into JSON. Native ? is a
+default; ordinary declarations remain replacements. Nested views are demanded
+when their slots are read. Invalid non-object values are retained for rejection,
+not silently coerced. Port objects are wrapped only when their selected list is
+demanded. The view does not merge multiple independently assigned declarations,
+append lists automatically or resolve a source package.
+
+The semantic output is the effective view, distinct from the sparse declaration.
+Admission and projection must share the same view instance. Source/Contract
+association across that view still needs the prior construction-protocol work;
+this code is not a proof of universal provenance preservation or cache safety.
+
+* Closed field checks and primitive Contracts
+
+#+begin_src scheme
+(def (no-obligations candidate context) '())
+
+(def (closed-fields allowed candidate context)
+  (map (lambda (slot-name)
+         (.o kind: 'unknown-field field: slot-name))
+       (filter (lambda (slot-name) (not (memq slot-name allowed)))
+               (.all-slots candidate))))
+
+(def (positive-integer? value)
+  (and (integer? value) (exact? value) (> value 0)))
+(def (nonempty-string? value)
+  (and (string? value) (> (string-length value) 0)))
+(def (string-map? value)
+  (and (object? value)
+       (every (lambda (key) (string? (.ref value key))) (.all-slots value))))
+
+(def StringContract
+  (yuanxu-predicate-contract 'server/string nonempty-string? no-obligations))
+(def IntegerContract
+  (yuanxu-predicate-contract 'server/positive-int positive-integer? no-obligations))
+(def LabelsContract
+  (yuanxu-predicate-contract 'server/labels string-map? no-obligations))
+(def ProtocolContract
+  (yuanxu-predicate-contract 'server/protocol
+    (lambda (v) (and (string? v) (if (member v '("HTTP" "TCP")) #t #f)))
+    no-obligations))
+(def PortNumberContract
+  (yuanxu-predicate-contract 'server/port
+    (lambda (v) (and (positive-integer? v) (if (memv v '(80 443)) #t #f)))
+    no-obligations))
+(def TargetPortContract
+  (yuanxu-predicate-contract 'server/target-port
+    (lambda (v) (and (positive-integer? v) (> v 1024) (<= v 65535)))
+    no-obligations))
+#+end_src
+
+The 65535 upper bound is an added projection guard, not part of the cited KCL
+codelab predicate. Report that distinction. string-map? checks representation,
+not the full Kubernetes label syntax. Main command/args/Port name extensions are
+outside this bounded case; adding them requires upstream Contract and projection
+updates, not silent acceptance. Labels are deliberately open to new string-valued
+keys while structural fields are closed against misspellings.
+
+* Native Port and resource Contracts
+
+#+begin_src scheme
+(.def (PortContract @ YuanxuObjectContract.)
+  identity: 'server/port-object
+  proto: Port.
+  responsibilities:
+  (.o protocol: ProtocolContract port: PortNumberContract targetPort: TargetPortContract)
+  .obligations: (cut closed-fields '(protocol port targetPort) <> <>))
+
+(.def (ResourceContract @ YuanxuObjectContract.)
+  identity: 'server/resources
+  proto: Resource.
+  responsibilities:
+  (.o cpu: IntegerContract memory: IntegerContract disk: IntegerContract)
+  .obligations: (cut closed-fields '(cpu memory disk) <> <>))
+#+end_src
+
+* Port sequence admission retains every child receipt
+
+Core's responsibility map handles named slots, not arbitrary list elements.
+This private adapter uses public .admit and preserves accepted as well as rejected
+child evidence. It never lets a successful list-shape receipt stand in for its
+Port admissions. The candidate contains the final normalized Port objects.
+
+#+begin_src scheme
+(def PortListShape
+  (yuanxu-predicate-contract 'server/ports list? no-obligations))
+
+(def (admit-ports descriptor ports context)
+  (let ((shape (yuanxu-contract-admit PortListShape ports context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape)) shape
+      (let* ((children
+              (map (lambda (p) (yuanxu-contract-admit PortContract p context)) ports))
+             (failures
+              (filter (lambda (receipt)
+                        (not (yuanxu-validation-evidence-accepted? receipt))) children)))
+        (.cc (yuanxu-validation-evidence
+              (.get descriptor identity) ports (.get shape classification)
+              failures (null? failures) failures context)
+             'element-evidence children)))))
+
+(.def (PortsContract @ PortListShape)
+  .admit: (cut admit-ports @ <> <>))
+
+(.def (MainContract @ YuanxuObjectContract.)
+  identity: 'server/main
+  proto: Main.
+  responsibilities: (.o name: StringContract ports: PortsContract)
+  .obligations: (cut closed-fields '(name ports) <> <>))
+
+(.def (ServerContract @ YuanxuObjectContract.)
+  identity: 'server/object
+  proto: Server.
+  responsibilities:
+  (.o image: StringContract replicas: IntegerContract labels: LabelsContract
+      resource: ResourceContract mainContainer: MainContract)
+  .obligations: (cut closed-fields
+                    '(image replicas labels resource mainContainer) <> <>))
+#+end_src
+
+The list receipt uses the same identity/classification as PortListShape;
+PortsContract inherits that identity and changes its admission method. Per-Port
+context is the same explicit input context, matching Core's current named-child
+walker; no stronger scoped-context protocol is claimed. element-evidence must
+have exactly one receipt in input order, matching the final Port object identities,
+descriptor and context before publication. This extra adapter has not been run or
+formally connected to the earlier closure proofs; malicious/omitted evidence
+qualification remains pending, not an implied guarantee of .cc.
+
+Concrete rejection examples: imag instead of image -> unknown-field or missing
+responsibility; targetPort=443 -> TargetPortContract rejection; non-string label
+value -> LabelsContract rejection. Missing image cannot be fixed by defaults.
+An unselected Profile is not normalized or admitted by this selected-server path.
+
+* Existing versus proposed
+
+Native defaults, multiple-parent objects, lazy getters, responsibilities and the
+public yuanxu-contract-admit entry exist. All Server-domain declarations,
+normalization, per-list receipts, contribution associations and diagnostics above
+are design additions, not installed runtime behavior. Full Kubernetes resource
+schema validation belongs to the separate resource publication boundary; these
+Contracts do not validate arbitrary Kubernetes manifests. See
+[[file:11.07-server-resource-projection.org][the concrete projection and relationship checks]].

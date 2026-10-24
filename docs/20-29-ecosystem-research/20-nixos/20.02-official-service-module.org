@@ -1,0 +1,107 @@
+#+title: 20.02 NixOS Module Research: PostgreSQL and the Module Library
+#+language: en
+#+property: DOCUMENT_ID 20.02
+#+date: [2026-10-17]
+#+property: STATUS official-source-inspection-not-a-nixos-evaluation
+
+* Scope and source identity
+
+This studies the official NixOS PostgreSQL module and its module-library owner,
+not only the Nix language. The original study used nixos-24.11. The follow-up resolves that branch to
+=50ab793786d9de88ee30ec4e4c24fb4236fc2674= and rereads the official files;
+links below now use that historical immutable baseline.
+No NixOS build, service start or timing was performed here.
+
+* A maintained service behind an ordinary configuration
+
+The following is an analyst-written consumer of the observed interface:
+
+#+begin_src nix
+{ ... }: {
+  services.postgresql = {
+    enable = true;
+    settings.port = 5433;
+    ensureDatabases = [ "guestbook" ];
+    ensureUsers = [{ name = "guestbook"; ensureDBOwnership = true; }];
+  };
+}
+#+end_src
+
+Source: [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/databases/postgresql.nix][official PostgreSQL module]]. It declares options, derives config from the
+effective cfg, checks database/user ownership requirements, generates PostgreSQL
+configuration, and contributes a systemd service. Its defaults preserve package
+compatibility through system.stateVersion. Imports carry renamed/removed option
+migrations. The service has startup and readiness-related logic beyond configuration
+generation. These are maintained implementation responsibilities hidden by the
+consumer above, not proof that a process was started by evaluating that consumer.
+
+Reflection: a module is a maintained configuration-to-system contribution, not
+just a bag of attributes. Our types/config/objects/func/interface roles should
+place these responsibilities once and present a comparably small public surface.
+Moving implementation code behind a macro is useful only if its compatibility,
+diagnostic and operational responsibilities still have owners.
+
+* Catalogue, declared options and effective definitions
+
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/module-list.nix][module-list.nix]] enumerates service and other module paths, including PostgreSQL.
+An available catalogue entry is not the same fact as enable = true or a running
+service. This distinction matters at thousands of modules: catalogue discovery,
+source evaluation, enabled contributions and built closures require separate
+measurements. Nix laziness alone is not evidence that all those costs disappear.
+
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix][lib/modules.nix]] owns collection, argument application and effective option
+evaluation. It separates specialArgs needed during import resolution from
+_module.args values, checks unmatched definitions, retains definition locations,
+and exposes extendModules. Its comments warn that adding global evaluation
+arguments makes moving module groups into submodules harder. The recursive result
+supports configuration contributions that cannot be modeled merely by a topological
+ordering of module files.
+
+Our uniform args proposal should address that warning: namespace convenience
+must not bind reusable modules to one root layout. A required database interface
+is stable even if mounted under services in one project and modules.data in another.
+The root can select and bind an instance without changing its published source.
+
+* Issues and Engineering Limitations
+
+The following entries retain the initial pass scope. See
+[[file:20.07-issues-and-evidence.org][the refreshed independent issue register]] for current observations and
+[[file:20.08-real-service-composition-and-design-decisions.org][the real Gitea/PostgreSQL case]] for the expanded integration analysis.
+
+
+** NX-01: import selection versus merged argument recursion
+
+- Reference: [[https://github.com/NixOS/nixpkgs/issues/379855][Issue 379855]], reported 2025-02-06.
+- Marks: ISSUE-REPORTED; PHASE-BOUNDARY; NOT-REPRODUCED.
+- Version: exact nixpkgs revision not pinned by this study.
+- State: recorded open in the initial review; not refreshed here.
+
+The [[file:20.01-index.org][dossier]] records an argument-dependent conditional causing recursion.
+The phase distinction above explains why selecting imports from a value produced
+by their own evaluation is dangerous. It does not establish that all recursive
+option definitions or cross-service relationships are invalid.
+
+** NX-02: global context can damage module relocatability
+
+- Reference: evalModules comments in the inspected library source.
+- Marks: SOURCE-OBSERVED; MAINTAINER-DESIGN-WARNING; NOT-A-BUG-CLAIM.
+
+There is no new defect claim here. For our design, a universal args object needs
+bounded views, stable dependency identities and a documented way to rebind an
+interface. Automatically injecting all roots would only hide the coupling.
+
+* Conclusion and design questions
+
+NixOS supplies important infrastructure that a POO slot alone does not replace:
+option discovery, contribution semantics, provenance, migrations and activation
+integration. Native POO can be our object/extension foundation; Module System
+semantics must still specify those services and their costs.
+
+Can a module move between roots without editing its dependency references? Can
+an option's declared Contract explain its default and winning contribution? Can
+we distinguish a real demand cycle from a legal deferred relationship? Those
+questions precede deciding a shorter Scheme syntax.
+
+Next comparison: [[file:../21-devenv/21.01-index.org][devenv's development-service module]]. Source differences and lifecycle
+differences must remain visible; it is not simply the same service with a new name.
+

@@ -1,0 +1,170 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.61 Config Languages 60: Explicit Authorization and One Source Tree
+#+property: DOCUMENT_ID 11.61
+#+property: STATUS local-functional-controls-passed-currentness-followup-61
+
+* Selection is authorization, not an inferred root list
+
+In explicit mode every Module Core in a required dependency closure must have an
+enabled init declaration. A core.requires edge describes a dependency; it does
+not grant permission to enable it. The resolver rejects an undeclared required
+module with requester, required identity, init source and generation. A disabled
+required module remains disabled and rejects before its source is located.
+Optional Features retain their existing positive/negative resolver semantics.
+
+The rule applies to semantic Module dependencies. The separately observed SDK
+compiler/bootstrap closure is not a second implicit list of enabled Modules.
+Auto mode still allows bounded on-demand discovery, while explicit disable
+continues to deny required dependencies in both modes.
+
+* One explicit source tree
+
+The file-based init reader now accepts the existing selection surface's literal
+(module @ directory) source binding. It emits the same local SourceRef used by
+ordinary directory sources, rather than copying, symlinking or searching for an
+alternative implementation. Relative bindings resolve against the init file.
+
+#+begin_src scheme
+(yuanxu! mode: explicit source: "./modules"
+  (json-schema @ "./core/modules/json-schema")
+  (nix @ "./core/modules/nix")
+  (opentofu @ "./core/modules/opentofu")
+  :app
+  (infrastructure))
+#+end_src
+
+The core paths above are explicit repository inputs, not built-in fallback
+locations. A missing explicit origin is an error even if a same-named local
+module exists. Disabled origins are not opened. Distinct declarations cannot
+claim the same physical source owner. Directory style, non-symlink checks,
+Module identity admission and native role preparation remain unchanged.
+
+The context indexes enabled source owners once. Native source import ownership
+is found through the path's ancestors instead of scanning a module catalog. The
+same source tree covers local and explicitly bound origins, including auto-mode
+namespace projection. No global search path or Loader registry is introduced.
+
+* Native type identity across module boundaries
+
+The native publication reader reuses an observed compiler context for the same
+physical source, whether the source is imported by its owner or by another
+declared owner. This is necessary for prototype-bearing Contracts: identical
+source text expanded twice does not give the same native prototype identity.
+The source guard still checks every retained dependency before publication.
+Canonical compiled SDK imports keep their original native import closure;
+redirecting imports inside a compiled library would disagree with its compiled
+runtime symbols. Only the source caller is redirected to a declared owner.
+Trusted SDK source-identity projection is checked against that explicit owner;
+it never grants an undeclared Module a source binding. Resolved source paths are
+observed and canonicalized once, so internal ../ spelling cannot create a
+second compiler entry for the same file.
+SDK tool confinement and the prohibition on shared-source back-dependencies into
+a Module implementation remain in force.
+
+OpenTofu now explicitly publishes both Nix and JSON Schema requirements:
+
+#+begin_src scheme
+(.def OpenTofu
+  identity: 'opentofu
+  core:
+  (.o requires:
+      (.o Nix: (.o module-id: 'nix contract: NixScopeContract)
+          JsonSchema: (.o module-id: 'json-schema contract: JsonSchemaScopeContract))
+      scope-contract: OpenTofuScopeContract
+      exports: OpenTofuScope.
+      configuration-build: Build)
+  features: (.o))
+#+end_src
+
+* Upstream policy and downstream ordinary values
+
+Core's default Config.source remains unset. Upstream package configuration must
+supply a native Nix Source. That configuration is separate from where the Core
+implementation is located. The direct-source control derives the actual native
+publication through the existing SourceContext/read-publication capability:
+its ordinary link and delayed Build.module receive the same configured scope.
+It creates no alternative declaration, does not modify Core files, and does not
+copy any module directory. This is an upstream configuration fixture, not a new
+user-facing configuration DSL or a Loader implementation.
+
+Infrastructure retains only its ordinary config.ss and interface.ss dependency:
+
+#+begin_src scheme
+(def Config
+  (.o resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))))
+
+(.def Infrastructure
+  identity: 'app/infrastructure
+  core:
+  (.o requires: (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract))
+      scope-contract: InfrastructureScopeContract
+      exports: (.o config: Config))
+  features: (.o))
+#+end_src
+
+There is no Infrastructure/build.ss, Provider selection list, manual phase
+assembly or root-init reload. The existing core.configuration-build association
+projects Provider demand from final Config, realizes the upstream Source, derives
+a receiver-local artifact scope and performs final native .admit before success.
+Adding Null changes the demand and requires a fresh build generation; it does
+not modify the cached parent Contract or enable awscc.
+
+* Currentness and bounded reuse
+
+Actual Core files, their private dependencies, ancestor package observations,
+init declarations, consumer Config and Nix inputs remain currentness inputs.
+Cached values do not authorize publishing a stale plan. The native reader may
+reuse source bytes, native compiler identity and package-snapshot comparisons
+only inside one synchronous, effect-free guard validation. File reads still
+check regular-file status; identical package snapshots share one check in that
+boundary. The observation cache ends before native expansion or an external
+effect, and each independent validation starts fresh.
+Negative controls continue to reject changed inputs and missing/disabled owners.
+
+Product Loader, package acquisition, automatic runtime artifact injection,
+Provider RPC plan/apply and cloud deployment remain outside this change.
+
+* Qualification boundary
+
+The subsequent [[file:11.62-currentness-cost-and-shared-validation.org][currentness and native Ops qualification]] closes the new three-round gate.
+The historical failures below are retained; they are not rewritten as passes.
+The current Core publishes external-package contributions for the explicit Ops
+consumer rather than exposing the removed write-build-entry API.
+
+The direct-source real AWS-to-Null control now passes all 82 named assertions on
+the default Gerbil runtime, including final admission before build success and
+the independent invalid-configuration rejection. Infrastructure has no Build
+role. Core implementations are the actual declared repository sources, not
+fixture copies. AWS-only reads and compiles one selected resource Contract;
+adding Null reads and compiles two, while awscc remains outside the derivation.
+Hot receiver accesses read and compile no additional types and start no Nix CLI.
+
+The prior monolithic control exceeded the unchanged 60-second Case watchdog
+while creating the independent invalid-configuration lifecycle. That run is a
+failure, not qualification evidence. The control now separates complete
+parent/child evolution from a fresh invalid-configuration lifecycle into two
+self-contained Cases. Both keep the same watchdog, all rejection assertions and
+the outer 120-second process limit. No timeout was widened. Fixed-source repeat
+results are recorded separately below.
+
+The fixed-source three-round run passed two complete rounds (82 assertions each)
+and failed round three. Its AWS+Null independent currentness measurement took
+27.020 seconds, versus approximately three seconds in the passing controls;
+the later Case watchdog refused the run. This is not a successful three-round
+performance qualification. All tracked qualification inputs and the locked
+Flake fixture were rehashed after the failure and were unchanged. The failure
+and passing rounds are retained together; no timeout, assertion or historical
+receipt was adjusted to turn that run into a pass. The delayed measurement
+includes both native checking and Nix evaluation, so it does not establish a
+cause for the slowdown.
+
+Fourteen focused heap-fenced regression gates passed after the final source
+changes, covering explicit authorization, directory and collection admission,
+native publication, scope linking, Config/Build roles, selected build graphs,
+configuration sources, Nix publication and LoadPath behavior. The new explicit
+source control has 11 named assertions; actual OpenTofu publication has 15.
+The structured [[file:../../../t/fixtures/opentofu/explicit-core-sources-control.json][qualification receipt]] retains source hashes, both complete rounds and the
+third-round failure. Historical publication receipts remain unchanged.

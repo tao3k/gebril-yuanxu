@@ -7,61 +7,61 @@
 ;;; Authoring roles and source-file policy belong to the consuming package.
 (import (only-in :clan/poo/object .o .mix .ref)
         (only-in :clan/poo/mop define-type validate)
-        (only-in :core/types
-                 PooFlowContract. PooFlowNativeObjectContract.
-                 poo-flow-classification-evidence))
+        (only-in :yuanxu/object-types/contracts
+                 YuanxuContract. YuanxuObjectContract.
+                 yuanxu-classification-evidence))
 (export SemanticSymbol
         ModuleIdentityContract ModuleImportsContract ModuleProfilesContract
         ModuleCapabilitiesContract ImportContributionContract
         SemanticImports. SemanticProfiles. SemanticCapabilities.
         ModuleIdentity. ImportContribution.
-        poo-flow-semantic-identity poo-flow-empty-imports
-        poo-flow-empty-profiles poo-flow-empty-capabilities
-        poo-flow-import-contribution poo-flow-module-imports)
+        yuanxu-semantic-identity yuanxu-empty-imports
+        yuanxu-empty-profiles yuanxu-empty-capabilities
+        yuanxu-import-contribution yuanxu-module-imports)
 
 (def (semantic-symbol-classify candidate context)
-  (poo-flow-classification-evidence
+  (yuanxu-classification-evidence
    'semantic-symbol candidate (symbol? candidate)
    (if (symbol? candidate) '() '(expected-symbol)) context))
 
-(define-type (SemanticSymbol @ PooFlowContract.)
+(define-type (SemanticSymbol @ YuanxuContract.)
   identity: 'semantic-symbol
   .classify: semantic-symbol-classify)
 
-(define-type (ModuleIdentityContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleIdentityContract @ YuanxuObjectContract.)
   identity: 'module-identity
   proto: (.o)
   responsibilities: (.o namespace: SemanticSymbol name: SemanticSymbol))
 
 ;;; Distinct prototypes prevent import/profile contribution ancestry from aliasing.
-(define-type (ModuleImportsContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleImportsContract @ YuanxuObjectContract.)
   identity: 'module-imports
   proto: (.o contributions: '())
   responsibilities: (.o))
 
-(define-type (ModuleProfilesContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleProfilesContract @ YuanxuObjectContract.)
   identity: 'module-profiles
   proto: (.o contributions: '())
   responsibilities: (.o))
 
-(define-type (CapabilityRequirementsContract @ PooFlowNativeObjectContract.)
+(define-type (CapabilityRequirementsContract @ YuanxuObjectContract.)
   identity: 'capability-requirements
   proto: (.o contributions: '())
   responsibilities: (.o))
 
-(define-type (CapabilityProvisionsContract @ PooFlowNativeObjectContract.)
+(define-type (CapabilityProvisionsContract @ YuanxuObjectContract.)
   identity: 'capability-provisions
   proto: (.o contributions: '())
   responsibilities: (.o))
 
-(define-type (ModuleCapabilitiesContract @ PooFlowNativeObjectContract.)
+(define-type (ModuleCapabilitiesContract @ YuanxuObjectContract.)
   identity: 'module-capabilities
   proto: (.o)
   responsibilities:
   (.o requirements: CapabilityRequirementsContract
       provisions: CapabilityProvisionsContract))
 
-(define-type (ImportContributionContract @ PooFlowNativeObjectContract.)
+(define-type (ImportContributionContract @ YuanxuObjectContract.)
   identity: 'import-contribution
   proto: (.o)
   responsibilities:
@@ -83,31 +83,31 @@
 (def CapabilityProvisions.
   (.ref (.ref CapabilityResponsibilities. 'provisions) 'proto))
 
-(def (poo-flow-semantic-identity namespace-value name-value)
+(def (yuanxu-semantic-identity namespace-value name-value)
   (validate ModuleIdentityContract
     (.o (:: @ ModuleIdentity.)
         namespace: namespace-value name: name-value)))
 
-(def (poo-flow-empty-imports) (.mix SemanticImports.))
-(def (poo-flow-empty-profiles) (.mix SemanticProfiles.))
-(def (poo-flow-empty-capabilities)
+(def (yuanxu-empty-imports) (.mix SemanticImports.))
+(def (yuanxu-empty-profiles) (.mix SemanticProfiles.))
+(def (yuanxu-empty-capabilities)
   (.o (:: @ SemanticCapabilities.)
       requirements: (.mix CapabilityRequirements.)
       provisions: (.mix CapabilityProvisions.)))
 
-(def (poo-flow-import-contribution identity-value owner-value instance-value
+(def (yuanxu-import-contribution identity-value owner-value instance-value
                                    source-value revision-value target-value)
   (validate ImportContributionContract
     (.o (:: @ ImportContribution.)
         identity: identity-value owner: owner-value instance: instance-value
         source: source-value revision: revision-value target: target-value)))
 
-(def (poo-flow-module-imports . contribution-values)
+(def (yuanxu-module-imports . contribution-values)
   (.o (:: @ SemanticImports.)
-      (contributions => poo-flow-import-contributions-before
+      (contributions => yuanxu-import-contributions-before
                      contribution-values)))
 
 ;;; C4 owns ancestry and diamond de-duplication; this slot rule only states
 ;;; the domain-specific order within that ancestry.
-(def (poo-flow-import-contributions-before inherited local)
+(def (yuanxu-import-contributions-before inherited local)
   (append local inherited))

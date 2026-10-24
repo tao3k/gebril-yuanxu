@@ -1,0 +1,87 @@
+#+title: 13.01 Module Loading and Building
+#+property: DOCUMENT_ID 13.01
+#+language: en
+
+This track owns source discovery, init selection, selected Module/Feature Graphs,
+compiler input projection and the eventual runtime loading boundary.
+
+- [[file:13.13-root-directory-windows.org][Root directory windows]] selects Modules and Scenarios from one init,
+  lowers mounted read-only bindings through the existing hygienic macro and
+  shares the selected Graph across compilation and independently demanded tests.
+
+Current boundary: automatic role association and direct source projection are
+integrated in Core. The user owns the original defbuild-script; init.build-spec
+returns an ordinary standard-library spec, merging the selected Module Graph
+with top-level core-spec.ss. No returned-main API, source alias, generated
+preparation script or separate bootstrap.ss is required. Publication reading
+and compilation share one role inventory. Post-command acceptance remains an
+explicit currentness check; runtime integration and generated contributions
+are separate work.
+Contract-system design remains a separate workstream and is not expanded here.
+
+- [[file:13.02-init-graph-and-build-spec.org][Init Graph and native build-spec integration]] audits the actual Gerbil extension
+  points and separates directly composable native specs from relocated compiler input.
+- [[file:13.03-core-jsonschema-init-build-case.org][Core and the real JsonSchema init/build case]] uses current source files and
+  retained targets, expands common-root preparation, and identifies cold-start
+  and native macro/source-root qualification before removing bootstrap.ss.
+- [[file:13.04-isolated-init-build-validation.org][Isolated native validation]] records the passing SDK source-capture control and
+  the historical cold publication compiler cycle. It is not end-to-end acceptance.
+- [[file:13.05-reader-tool-context-and-cold-build.org][Reader tool Context correction]] describes exact Context reuse, source guards,
+  and the subsequent real JsonSchema native-build qualification and its limits.
+- [[file:13.06-init-build-spec-adapter.org][Init to ordinary build-spec adapter]] implements native list projection and
+  retained-root preparation without extending the selected Graph. It specifies
+  the source-anchor requirement and the remaining acceptance boundary.
+- [[file:13.07-core-build-entry.org][Repository specs and built-in Building]] keeps target ownership and native
+  spec consumption explicit in build.ss, with core-spec.ss at the repository
+  root. Building prepares and guards inputs; it is not a selectable
+  Module that loads itself through init.ss.
+
+- [[file:13.08-in-process-build-entry.org][Historical in-process SDK entry]] records the superseded experiment returning the standard main
+  from an ordinary function, keeping source location internal without modifying
+  the SDK or executing a second build script.
+
+- [[file:13.09-user-owned-build-script.org][Historical user-owned build control]] records direct repository source targets and the
+  JsonSchema import correction with the unchanged standard macro, without source
+  aliases, a replacement main or generated build scripts.
+
+- [[file:13.10-automatic-role-projection.org][Automatic role association]] implements declaration-only interface.ss through a
+  standard Gerbil package prelude and shared role discovery, without author
+  imports or consumer bindings. It supersedes the manual-import control.
+
+- [[file:13.11-same-state-source-reimport.org][Same-state source reimport after clean]] isolates loader/source shadowing and
+  verifies new-process import and rebuild with the same artifacts and native SDK.
+
+- [[file:13.12-build-owned-source-registration.org][Build-owned source registration]] replaces the launcher-only repair with
+  phase-correct registration before Core imports, keeping build.ss unchanged.
+
+The [[file:../12-contracts-types/12.01-index.org][Contract-system design]] is a separate feature. It may consume publication and
+source-generation information; that does not make Contract evidence a build
+specification or runtime loading authority. This track does not implement Schema
+binding or final-object Contract admission.
+
+These notes distinguish implemented build-source corrections from proposed
+integration. They include no runtime Loader implementation.
+
+- [[file:13.12-declarative-module-testing.org][Declarative Module Testing and Benchmark Projection]]
+  records guarded init projections, the existing namespace's independently lazy
+  scope/test leaves, native fixture isolation and remaining benchmark policies.
+  Public operation and project-context conventions are owned by
+  [[file:../../../standards/README.org][Core Standards]], not another execution layer.
+
+- [[file:13.16-yuanxu-package-and-prelude.org][Yuanxu package identity and language prelude]] separates the one library
+  namespace from its optional consumer language entry and documents source-only
+  bootstrap, native dependency ownership and direct consumer migration.
+
+- [[file:13.17-init-exports-and-sdk-consumers.org][Init exports and SDK consumers]] proposes one lazy POO publication for
+  native Make specifications and tests, reusing the current selection and
+  execution owners instead of adding a separate test Builder. Current naming
+  and qualification boundaries are recorded in 13.19.
+
+- [[file:13.18-guarded-test-precompilation.org][Guarded test precompilation and Harness execution]] specifies the existing
+  issuance boundary, separate product authority under one graph, bounded SDK
+  compilation and final source/artifact checks. No bare-Make path is admitted;
+  completed focused gates are distinguished from full CI in 13.19.
+
+- [[file:13.19-source-qualified-init-exports.org][Source-qualified init exports]] derives the single public entry from the
+  native package/module Context, removes unqualified aliases and keeps existing
+  lazy graph, build and test consumers under their original ownership.

@@ -1,0 +1,186 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Open Profile Composition: Actual Admission, Dynamic Participants and Plan Projection
+#+date: [2026-10-15]
+#+property: STATUS complete-scheme-design-no-implementation-or-loader-change
+
+* Correction: seven tasks are a fixture, not the abstraction
+
+The fixed gerbil/rust comparison in module 14 was too restrictive. The framework
+must accept independently published upstream or user Profiles under arbitrary
+selected binding names. Language support belongs to those publications and their
+Contracts, not a branch in the composition kernel. Task count follows actual
+selected Pipelines, not a required seven-entry plan.
+
+This design supersedes module 14's object-shape-only Profile positions, externally
+preassembled evidence maps and fixed-participant projection. It also completes
+the effective-config guard migration from module 07. All new admission/projection
+helpers have Scheme bodies in the three linked source modules. They are design
+blocks, not installed source, compiled code, executed admission or Loader work.
+
+| Source module | Complete responsibility |
+|---------------+-------------------------|
+| [[file:15-open-profile-composition/01-feature-admission.org][01 Configured-feature admission]] | Field Contracts, neutral defaults, pure Module, Check/Pipeline/config Contracts and all 31 migrated helper bodies |
+| [[file:15-open-profile-composition/02-profile-admission.org][02 Independent Profile admission]] | Profile Contract construction, module-position context derivation, actual deep .admit, example policy associations and dynamic preparation |
+| [[file:15-open-profile-composition/03-dynamic-composition.org][03 Dynamic composition and plan]] | Open CompositionContract, current preparation validation, selected node projection, combined graph order, obligations and evaluation result |
+
+These modules form one replacement design family. Do not evaluate superseded
+declarations alongside it. Canonical Core/POO/list utilities are explicit existing
+dependencies; no undisclosed new callback, loader helper or user-side collector
+is required. The names of independent feature exports and recipe constructors
+come from their owning publications, as documented in module 13.
+
+* What the devenv ecosystem changes in the design
+
+The [[file:../164-module-interface-comparison/09-devenv-open-ecosystem.org][devenv source study]] shows a maintained language/service ecosystem,
+custom defaults published from another repository, documented Profile extension
+and deferred configuration. The useful product is reusable capabilities and
+contribution boundaries, not a printed execution list for two languages. We keep
+our own pure Module / independent Profile / Scenario-composition model rather
+than copying devenv's names, merge syntax or activation behavior.
+
+An independent Profile exports its configuration, expected field/module Contracts
+and requirements. A Scenario selects occurrences. A trusted planning owner
+associates their independently chosen expected Contracts, compatible policies and
+output protocols. The user does not repeat this information to override commands.
+Source authority and later readiness are not proven by the declaration itself.
+
+* Open selection in the same CI/CD case
+
+After defining the pure publication and independent recipe factories in module
+13 against this corrected design family, publish GerbilCIProfile and RustCIProfile
+as before. Only the concrete example selects these two; the base prototype does
+not mention either language:
+
+#+begin_src scheme
+(.def (CICDScenario @ CICDScenario.)
+  gerbil: GerbilCIProfile
+  rust: RustCIProfile
+  composition: =>.+
+  (.o participants: '(gerbil rust)
+      handoffs:
+      (list (.o from: '(gerbil funflow package)
+                to: '(rust funflow build)
+                condition: 'success))))
+#+end_src
+
+The direct assignments, Rust artifact append and Gerbil smoke construction from
+module 13 still create ReleaseCI. Module 14's append adds the Rust-package ->
+Gerbil-smoke relation to form CoordinatedReleaseCI. These are owner recipe values,
+not part of the generic prototype or a hardcoded Contract participant list.
+
+The following uses a third occurrence of an existing publication to demonstrate
+that neither the names nor arity are fixed, without inventing a missing language
+implementation in an example:
+
+#+begin_src scheme
+(.def (ExpandedScenario @ CoordinatedReleaseCI)
+  extra: RustCIProfile
+  composition: =>.+
+  (.o participants: => append '(extra)))
+
+(.def (ExpandedBindings @ ExampleBindings)
+  extra: (.get ExampleBindings rust))
+
+;; Planning-owner design call, not another user configuration wrapper:
+(cicd-evaluate-scenario ExpandedScenario ExpandedBindings)
+#+end_src
+
+For a new user language publication, bind that Profile value instead of the
+existing RustCIProfile, and let its admitted owner supply the expected Contract
+and output requirements instead of the Rust association. No edit to the selected
+iteration, graph algorithm or composition Contract is required when it uses the
+same supported Funflow output protocol. A different feature output protocol needs
+an explicit compatible projection extension, not an assumption that all DevOps
+features can masquerade as Pipelines.
+
+ExpandedBindings illustrates internal source/Contract association. It is not a
+second mandatory user configuration language or a catalog registration API. A
+production association must be tied to the current selected publication revision;
+that source/Loader mechanism remains outside this document.
+
+* Publication association boundary
+
+[[file:16-profile-publication-and-contract-resolution.org][Module 16]] specifies how a contribution publication interface associates Profile exports
+with expected Contracts and requirements without per-Profile wrapper objects,
+and how selected final occurrences
+resolve the internal association. ExampleBindings below remains a fixture for
+that result; the publication/provenance resolver is not implemented.
+yuanxu-contract-admit is Core's admission protocol, not a Module Contract.
+The concrete supplied descriptor determines the checked boundary.
+
+* Actual admission and current final values
+
+The full call path is:
+
+1. CICDCompositionContract checks composition structure, then its obligations
+   demand the current context's preparation.
+2. Preparation iterates the current participants. It resolves each actual Profile
+   occurrence and the trusted expected Contract, creates its context and calls
+   yuanxu-contract-admit. There is no caller-provided accepted flag or assumed
+   Profile receipt replacing this work.
+3. Profile responsibilities invoke a module-position Contract. It derives the
+   configured-feature context and invokes ConfiguredFunflowContract.
+4. Configured-feature guards verify occurrence/source association and selection
+   before Pipeline.checks demand. Check fields, capabilities, payloads, final
+   identities and local dependency graph are admitted through the native kernel.
+5. Projection validates the current prepared Profile/evidence correspondence,
+   resolves each declared compatible plan-module and reads its final selected
+   Checks. It qualifies local dependency references, adds explicit handoffs and
+   refuses missing endpoints or a cross-Profile cycle.
+6. The result remains projected-unadmitted for the consumer. A separate consumer
+   must admit its format/IDs/failure protocol on the same stable view before the
+   plan owner can label admitted-preview, atomically publish, then explicitly run.
+
+The capability declarations in source module 02 are policy input, not authenticated
+readiness or successful execution evidence. No admission of a selected Rust
+occurrence borrows Gerbil's cleanup capability. Exceptions/refusals block the
+candidate; an unsupported metadata/Contract binding is not silently skipped.
+
+* Cache controls and variable-size results
+
+Keep both parent Pipeline cache controls from module 13. For the coordinated
+release fixture, Gerbil must resolve four child Checks and Rust three, including
+the appended Rust build artifacts. Same names/length do not establish current
+object identity. The original Profile publications and other Scenario references
+remain unchanged.
+
+| Selected scenario | Expected candidate membership | Meaning |
+|-------------------+-------------------------------+---------|
+| A maintained single-Profile verification Scenario | Its selected Profile's tasks | No requirement to add another language |
+| Two-Profile CICDScenario before smoke | Three Gerbil + three Rust | Six tasks are this recipe's result |
+| CoordinatedReleaseCI | Four Gerbil + three Rust | Seven-task parent-cache/handoff regression fixture only |
+| ExpandedScenario | Four Gerbil + three Rust + three extra | Ten qualified occurrences; equal commands do not merge identities |
+| User-defined language Scenario | Whatever its selected supported Pipelines admit | No fixed list of languages, Pipelines or total tasks |
+
+The seven-task fixture still has the order Gerbil build/test/package, Rust
+build/test/package, then Gerbil smoke, because of its explicit edges. Expanded
+selection adds another independent local chain; no cross-edge is inferred for it.
+Unselected publications are not constructed to prepare these plans. An explicit
+catalog audit is a separate broader demand.
+
+Native context-local lazy slots may avoid repeating preparation within one view.
+ConstructionCache, ContextSlot and ContractConsequence require the unchanged-input,
+factory/context or implication premises from module 08. These source blocks do
+not prove that arbitrary Scheme getters are pure or that snapshots are immutable.
+Unsupported mutation/effects require conservative re-preparation/refusal. Returning
+old validation evidence unchanged for a changed receiver is never justified by
+matching names or a source digest.
+
+* Status and future acceptance
+
+Existing foundations: native objects, responsibility Contracts, evidence-bearing
+.admit, inheritance/refinement, bounded scopes and the historical domain-free
+receiver/cache probe. New design only: the complete migrated guard source,
+independent Profile admission/association, dynamic composition/projection and
+consumer/publication adapters. Direct dotted assignment and commands producer/
+consumer migration remain unimplemented. No source, compiler, runtime or Loader
+integration is performed here.
+
+Future checks must cover arbitrary participant names/counts, differing Profile
+Contracts, missing/mismatched associations, actual deep field rejection, distinct
+capability policies, both cached-parent controls, new/unselected smoke, seven- and
+ten-task fixtures, cross-Profile cycles, output-ID collisions and preview
+nonexecution. Scale evaluation varies catalog size and selected closure separately.
+These are not new passing receipts, a Lean proof of Scheme, or performance claims.

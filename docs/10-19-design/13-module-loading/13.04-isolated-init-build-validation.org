@@ -1,0 +1,162 @@
+#+title: 13.04 Isolated Native Init and Build Validation
+#+property: DOCUMENT_ID 13.04
+#+language: en
+
+This is the historical pre-fix record. The subsequent implementation and
+qualification are recorded separately in [[file:13.05-reader-tool-context-and-cold-build.org][04]]; the failure below is retained.
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Result: native source capture passes; real cold Graph construction fails
+
+Validation on 2026-10-17 used the heap-fenced Core Justfile test-file entrypoint,
+one process at a time, without invoking the full package build or root bootstrap
+script. No production source, runtime Loader, Contract-system design or remote
+branch was changed. Raw transcripts remain local temporary artifacts.
+
+The final snapshot reader.ss and the live reader.ss have the same SHA-256:
+=3f9fa2546f36f3d4d249e05a31d3521b896b462f3baac0376220eecf2095c1eb=.
+The compiler-cycle diagnosis therefore does not rely on an older copied reader.
+
+The result is NOT end-to-end acceptance. The real JsonSchema test stops during
+publication expansion, before a build Graph/native spec is available. Do not
+describe the intended JsonSchema compile/clean assertions as executed controls.
+
+| Focused suite | Actual result |
+|---------------+---------------|
+| [[file:../../../t/module-build-entry-capture-test.ss][Native source-anchor capture]] | PASS: spec, compile and clean for a native probe under the locally supplied source root |
+| [[file:../../../t/module-build-dependency-qualification-test.ss][Public dependency prerequisite]] | PASS: compile exactly nine observed gerbil-poo units; no Core binaries produced |
+| [[file:../../../t/module-build-source-snapshot-test.ss][Source-only Core staging]] | PASS: copied Core Scheme sources/package metadata; no root build.ss/bootstrap.ss or Core binaries |
+| Real init/JsonSchema/retained-root gate (retired control) | FAIL: native cyclic expansion in the declaration wrapper; spec/compile/clean not reached |
+
+Passing suites had MODULE-OK, HARNESS-OK and final OK without error markers.
+The failed suite also prints MODULE-OK/HARNESS-OK, but has ERROR CASE / ERROR
+HARNESS and a failed Just recipe. Those earlier markers do not make it a pass.
+
+* What the native positive control proves
+
+The actual SDK macro expands using the caller-context this-source-file identifier.
+This executable control confirms that a lexical procedure binding supplies the
+source anchor used by its existing dispatcher:
+
+#+begin_src scheme
+(def (entry-at entry spec lib bin)
+  (let ((this-source-file (lambda () entry)))
+    (defbuild-script spec libdir: lib bindir: bin prefix: ""
+                     parallelize: 1 optimize: #f)
+    main))
+#+end_src
+
+The probe source exists only in the intended temporary source root. spec returns
+its ordinary native list without compiling; compile creates the expected
+probe.ssi in the explicit library directory; clean removes that same identity.
+No native macro/dispatcher/specification protocol was replaced. This proves the
+SDK lexical pattern for the probe, NOT the real JsonSchema source closure.
+
+* Cold environment and the dependency prerequisite
+
+Core sources were selected explicitly through a temporary source path. The
+public dependency source was the local gerbil-poo PR checkout at d93ffd5 with its
+local changes; this is an explicit qualification override, not validation of the
+gerbil.pkg dependency pin or an exact clean upstream revision.
+
+An all-source attempt first encountered reader rejection of an external public
+dependency source. No source authority rule was broadened. A separate SDK/native
+make control prepared only the nine gerbil-poo units observed in the tool import
+closure. The following cold-Core process used that dependency cache, not a Core
+cache. No source or binary from an unrelated installed Core package was admitted.
+
+Another intermediate attempt mixed a copied source root with a live Core import
+root and was refused. The final attempt uses ONE source-only Core snapshot as
+both source provider and selected root, avoiding that invalid fixture premise.
+The snapshot retains the internal SDK-only helper currently named
+modules/building/bootstrap.ss, but excludes the independent ROOT bootstrap.ss and
+ROOT build.ss. These are different dependencies and must not be conflated.
+
+The final process confirms its imported Core module context is .ss and that its
+isolated GERBIL_PATH has no lib/core before Graph demand. No root bootstrap script
+was executed. Absence of a binary cache does not mean absence of required SDK or
+public dependency sources/binaries.
+
+* Typed root cause in the real path
+
+The final refusal is native "Cyclic expansion" of a temporary generated
+publication-reader declaration wrapper. The relevant existing path is:
+
+#+begin_src text
+init.ss
+  -> yuanxu-load-modules
+  -> selected publication reader
+  -> source-context / source-wrapper for Core declaration.ss
+  -> generated include-module-body wrapper
+  -> import of the same declaration compiler binding
+  -> cyclic expansion
+#+end_src
+
+reader.ss handles absolute .ss imports through source-context before its symbolic
+bootstrap-identity exemption. preparation.ss gives ordinary private-source wrappers
+an import of include-module-body from the declaration module. Applying that generic
+wrapper route to the declaration compiler itself creates a self-dependency.
+
+The corrective boundary to investigate is the existing SDK/compiler tool-source
+route: recognize exact prepared tool identities AND observed source paths before
+rewrapping their compiler bindings. Do not exempt arbitrary Core-looking paths,
+trust stale native contexts, compile all Core in advance, or suppress the cycle.
+This is a proposed build/source preparation correction, not a runtime Loader or
+Contract-system change. It was not implemented during this validation request.
+
+* Init publishes the build view; users do not publish gxc paths
+
+The user's intended boundary is retained: init selection is the authority for a
+deferred selected build Graph and its derived native list. Compiler filenames are
+internal output, never a handwritten JsonSchema inventory.
+
+Today yuanxu! exports yuanxu-module-init as selection intent. Existing
+yuanxu-load-modules can derive a build-graph from that source, but init does not
+yet export a completed lazy build Graph/native spec capability. That declaration
+integration is still missing; the failed fixture must not be reported as its
+implementation. Future Graph and list views must share one observation/selection
+generation and must not independently re-resolve the directory.
+
+The fixture obtains the actual selected view, then merges REAL retained roots
+utilities/algorithms and types through existing source preparation. It has no
+handwritten JsonSchema gxc input list. Its expected identity list is an assertion
+about platform output only. Distinct compiler identities/options are checked
+before native make; equivalent shared units may be compiled once.
+
+* What remains unverified
+
+- Automatic init export of the lazy Graph/native build-spec projection.
+- Successful cold real-JsonSchema Graph construction after the compiler-source
+  self-dependency is repaired.
+- Real JsonSchema + retained-root deduplication, compile output identities and clean.
+- Init/private/retained/generated input mutation refusal in that integrated path.
+  Assertions exist in the gate, but execution never reached them.
+- Moving the SDK-only helper to its lower-level owner and removing the root
+  bootstrap entry with no forwarding layer.
+- Atomic build/publication, historical cleanup and large-module performance.
+
+The real gate is deliberately left failing; no expectations were weakened and no
+manual spec or fabricated reader was substituted to obtain a green result. Do not
+rerun the unchanged failed route until the identified preparation boundary changes.
+
+* Reproduction boundary
+
+The focused native setup is staged through the SDK-only snapshot test before
+starting the source-only Core process. CORE_QUALIFICATION_ROOT is the actual
+directory used both as the Core source provider and as the init selection root.
+GERBIL_PATH is isolated; its lib contains only the nine prepared public dependency
+units, with no lib/core. GERBIL_LOADPATH puts that dependency lib before the Core
+source provider. The source provider does not fall back to another installed Core.
+
+Run each suite serially through =just test-file <path>= under those explicit
+environment values. Source staging refuses an already existing target, so a
+reproduction uses a fresh staging directory. Compilation output for the native
+probe is temporary and separate from the isolated package cache. All processes
+retain the Justfile's pre-import heap fence and timeout. No new Bash/Python test
+runner, dependency uninstall, full Core build or bootstrap command is involved.

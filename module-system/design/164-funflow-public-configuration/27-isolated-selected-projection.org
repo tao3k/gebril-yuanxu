@@ -1,0 +1,209 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Executed Automatic Selected-Contract Projection in an Isolated Fixture
+#+date: [2026-10-16]
+#+property: STATUS executed-test-local-projection-no-production-module-adapter-no-loader
+
+* Result and exact implementation boundary
+
+The isolated fixture executes module 26's selected responsibility projection
+through the actual public Core yuanxu-contract-admit protocol. The final run
+passes 41 assertions, exit 0. There is NO completed-checks field or supplied
+work/completion list anywhere in the executable fixture.
+
+Required children come from the final Pipeline's selected-checks and upstream
+schema/policy. Completed work comes from actual responsibility-evidence. New
+smoke is automatically assigned the upstream default Check family Contract;
+the named build Contract remains stricter. Unknown selected names are not
+silently filtered, and corrupted/missing child evidence is refused.
+
+The projection functions are executed ONLY in this documentation-owned fixture.
+This is implementation/validation of an isolated reference path, NOT a production
+Module adapter, export resolver, automatic Scenario admission installation or
+Loader integration. No object construction provenance hook is implemented.
+
+| Artifact | Role |
+|----------+------|
+| [[file:27-isolated-selected-projection/probe.ss][probe.ss]] | Entry point, canonical imports and test includes |
+| [[file:27-isolated-selected-projection/setup.ss][setup.ss]] | Upstream defaults, user .def, counters and commands Contracts |
+| [[file:27-isolated-selected-projection/selected-admission.ss][selected-admission.ss]] | Module-26 design blocks 2--5, extracted verbatim after corrections |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/projection-extraction.json][Extraction record]] | Design/source/block hashes and exact extraction boundary |
+| [[file:27-isolated-selected-projection/controls.ss][controls.ss]] | Positive, negative, receipt-corruption and matched laziness controls |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/native.log][native.log]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/native-receipt.json][native receipt]] | Final output, pinned source hashes, interpreter, fresh environment, fixture/runner hashes, timeout and exit |
+| [[file:27-isolated-selected-projection/run.py][run.py]] | Replay into a fresh empty project/package source environment |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/qualification.json][Qualification summary]] | Source-bound separation of native observations and Lean reference evidence |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/27-isolated-selected-projection/lean-reference.log][Lean reference recheck]] | Separate recheck of SelectedResponsibilities.lean |
+
+* Exact source and environment
+
+The runner verifies every POO source hash listed in module 21's historical
+receipt against the archive at 099b381588360a8a49fd772f666a1a00351366f5.
+It copies the original clan/poo gerbil.pkg and byte-identical current Core
+types.ss, hash cff7774aa8e6a6daaeae866984fb8a5ec291fe2045a326f846b6e1f4f22a325f.
+A test-only (package: yuanxu) scopes that source; it does not edit the real package.
+
+Each run has a fresh GERBIL_PATH and explicit source GERBIL_LOADPATH. Standard
+libraries come from /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc.
+This is interpreted source evidence, not installed-package repair, AOT
+performance qualification or remote CI. No gxpkg operation or dependency update
+is used. Commands are configuration values and are NEVER executed.
+
+* User declaration, automatic discovery and final values
+
+Root provides build/test/package defaults and an optional unused Check. Its
+Pipeline checks map selected symbols through the native outer effective-config
+lexical binding, exactly as in the prior receiver controls. The fixture warms
+Root.pipeline.checks BEFORE the user declares Release:
+
+#+begin_src scheme
+(def parent-pipeline (.get Root pipeline))
+(def parent-checks (.get parent-pipeline checks))
+
+(.def (Release @ Root)
+  build: =>.+ (.o commands: '("gerbil" "build" "--release"))
+  smoke: (.o commands: '("printf" "smoke"))
+  pipeline: =>.+ (.o selected-checks: '(build test package smoke)))
+
+;; Internal fixture admission boundary, not another user configuration layer.
+(def context (.o target: Release))
+(def result (admit-selected-profile FixturePolicy Release context))
+#+end_src
+
+FixturePolicy is maintained upstream: static pipeline-selection responsibility,
+default Check commands Contract and a stricter per-name build Contract. The
+selector must be a duplicate-free symbol list. Protected role names refuse.
+Static responsibility admission occurs first, then final selected symbols are
+projected into a fresh native descriptor without mutating the shared template.
+
+The public native walker admits those actual child objects. Coverage verifies
+typed/correlated parent and child receipts, exact responsibility membership and
+no duplicated receipt names. A retained required-checks field is a DERIVED
+snapshot for inspection, never a supplied completion claim.
+
+#+begin_example
+(automatic-admitted #t)
+(required-checks (build test package smoke))
+(final-commands (("gerbil" "build" "--release")
+                ("gerbil" "env" "unit-tests.ss")
+                ("gerbil" "env" "package.ss")
+                ("printf" "smoke")))
+(parent-commands (("gerbil" "build")
+                 ("gerbil" "env" "unit-tests.ss")
+                 ("gerbil" "env" "package.ss")))
+(initial-force-counts (2 2 0))
+#+end_example
+
+The counts are Pipeline construction, checks computation and optional unused
+Check evaluation. They include both parent and child receivers. Declarations
+leave the first two at 1; admission brings them to 2. Parent object/list identity
+remains unchanged. Every final Pipeline Check is eq? to its selected Release
+slot, including new smoke. Check receipt identities distinguish smoke's default
+Contract from build's stricter Contract and identify the actual final child.
+
+* Refusal and laziness controls
+
+| Case | Executed observation |
+|------+----------------------|
+| selected smkoe | Projection retains the required typo; public Core returns missing-responsibility; overall admission refuses |
+| Missing smoke receipt | A deliberately faulty Contract first performs genuine native admission, then deletes only the smoke receipt; the adapter refuses despite the untouched accepted? header |
+| Parent Check receipt substituted | Correct name/count with the wrong parent candidate identity fails receipt coverage |
+| Frozen parent checks list | Final-identity obligation refuses the old three-element parent list after smoke is selected |
+| Equal-length stale list | Three final names but a refined build still reject the old three-element parent list |
+| Forbidden smoke command | Default family obligations reject the actual final smoke |
+| Stricter build policy | Generic family would accept cargo build, but the maintained build Contract rejects it |
+| Duplicate/non-symbol selectors | Shape/selector admission refuses before projection |
+| Reserved pipeline selected as Check | Refused; reading the diagnostic name returns pipeline without recursion |
+| Optional unused remains unselected | Not in the projected responsibility map; its evaluation counter stays 0 across successful and negative cases |
+| Matched control selects unused | The same inherited thunk is evaluated once, admitted and reused; counter changes from 0 to 1 |
+
+The fault-injected Contract is an explicit protocol-violation control, not a
+claim that normal Core drops evidence. Its .admit obtains an authentic receipt
+from a clean native descriptor before removing one entry. Expected roles still
+come from the final selection; no user completion list is introduced for the
+negative case. Correlated successful headers alone cannot bypass coverage.
+
+#+begin_example
+(typo-admitted #f)
+(typo-native-diagnostic missing-responsibility)
+(corrupt-header-accepted #t)
+(omitted-smoke-admitted #f)
+(stale-parent-admitted #f)
+(same-count-stale-admitted #f)
+(bad-smoke-admitted #f)
+(unused-before-matched-control 0)
+(unused-after-matched-control 1)
+(assertions 41)
+#+end_example
+
+These are finite counters/identity observations. They establish this fixture's
+unselected business thunk behavior, not zero metadata cost, general incremental
+cache invalidation or performance at thousands of modules. Selection of unused
+alone is allowed here because build is optional in this fixture's schema; an
+unconditional upstream responsibility would remain required independently.
+
+* Corrections exposed by execution, with failures preserved
+
+Module 26's earlier reader-only result did not qualify execution. Actual execution
+required two native corrections, now applied to the CURRENT design blocks:
+
+1. Use the existing :std/list/list delete-duplicates/hash with an explicit
+   eq?-keyed table. The assumed delete-duplicates primitive was unbound.
+2. Use native bare-slot capture for an outer Scheme value with the same name as
+   a new POO slot. evidence: evidence and name: name accidentally reference their
+   own receiver-aware slots. The corrected forms are:
+
+#+begin_src scheme
+(.o kind: 'selected-responsibility-refused evidence)
+(.o kind: 'reserved-check-name name)
+#+end_src
+
+This is existing native punning/lexical semantics, not a new escape-hatch macro.
+The corrected diagnostic name and evidence are actually read by the controls.
+
+| Retained attempt | Outcome |
+|------------------+---------|
+| attempt-01 | Exit 70: unbound delete-duplicates; initial design and exact fixture snapshots retained |
+| attempt-02 | Exit 124 at the unchanged 60-second bound; recursive diagnostic slot was not a pass |
+| attempt-03 | Exit 124 at the same bound; semantic stage traces locate the stall after rejected child admission |
+| attempt-04 | Preliminary 36-assertion success after native bare-slot correction |
+| native | Final 41-assertion success with stricter policy, malformed selector, same-count stale list and diagnostic-read controls |
+
+Each run retains its own log, receipt and snapshots directory. Failed runs are
+not overwritten, timeout is never widened, and diagnostic stage output is not a
+synthetic progress/acceptance signal. The final run extracts the corrected
+design verbatim without diagnostic instrumentation.
+
+* Native results versus Lean reference premises
+
+SelectedResponsibilities.lean separately rechecks its five theorems and two
+controls. discovery_exact describes fixed ++ final-selected demand membership;
+missing_selected_refused excludes successful admission with a missing required
+work item; accepted_candidate_is_final requires candidate/context correlation.
+The native coverage guard is stricter than the reference gate about extra and
+duplicate entries. No Scheme-to-Lean operational equivalence is claimed.
+
+The new native transcript is not generated into Lean fixtures. The native finite
+observations and reference proofs remain separate receipts. Still pending are
+universal native identity/projection fidelity, complete arbitrary-depth dynamic
+dependency discovery, custom Contract protocol validation, trusted schema/source
+association, immutable-generation enforcement and mutation invalidation.
+Static responsibility recursion is existing Core behavior; dynamic child families
+still need a qualified upstream projection/context rule. This test does not
+discover hidden dependencies from Scheme function bodies.
+
+No production Module adapter, Scenario auto-dispatch, construction provenance
+capture, Module Loader, effective runtime plan publication or Session execution
+is implemented or exercised. The original module-25 and module-26 receipts remain
+historical evidence with their original boundaries.
+
+* Reproduction
+
+#+begin_src sh
+python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/27-isolated-selected-projection/run.py \
+  --archive /private/tmp/agenticailab-poo-099b381-source.tar.gz --label replay
+#+end_src
+
+The pinned archive acquisition is documented in module 25. The runner checks all
+recorded source hashes, creates a fresh source environment, snapshots the fixture,
+uses the fixed 60-second bound and refuses to overwrite an existing label.

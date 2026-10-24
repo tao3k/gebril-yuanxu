@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 05 - Macro Phase And Lowering
+
+* Admission
+
+Use a macro only when repetition is structural, the call site names domain
+facts, expansion produces ordinary POO/functional code, errors retain source
+locations, and no effect or authority is hidden.
+
+Use the smallest tier: =defrules= for direct frames; =defsyntax= for validated
+shape/default generation; syntax-time metadata only for shared static facts;
+macro objects only when the expander itself has classed behavior.
+
+* Phase law
+
+Syntax owners preserve syntax objects, lexical context and binding-aware
+identifier comparison.  Runtime owners construct POO values and perform
+policy behavior.  Import syntax support with =for-syntax=; never load source or
+maintain a mutable runtime registry during expansion.
+
+Parse each declaration once and lower once.  Work and generated form count
+should be =O(n + m)= for =n= declarations and =m= clauses.  Repeated scans,
+=map= plus =apply append=, temporary runtime objects and source evaluation in
+the expander are forbidden.
+
+* Static lowering exception
+
+A bounded static declaration may lower directly to =object<-alist= when the
+public result remains a native POO object and same-source A/B evidence proves
+the benefit.  This does not authorize a public alist DSL.  Keep =.o= for
+inheritance, dynamic composition, computed methods, =self= or =next-method=.
+
+* Implemented bounded path-slot authoring
+
+=:yuanxu/object-syntax/path-slots= provides explicit .def/.o/brace authoring
+bindings for dotted existing-object =>.+ refinements. Shared prefixes lower to
+one native ancestor method, retaining native outer-slot lexical references and
+receiver-local caches. Primitive gerbil-poo bindings retain literal dotted slots.
+The expansion-time ordered trie never resolves sources or evaluates payloads.
+Duplicate leaf paths and ancestor/descendant overlaps are errors; an intentional
+ancestor refinement contains relative paths inside its own refinement body.
+See the [[file:../../../object-syntax/README.org][Core path-slot contract]] and [[file:../164-pipeline-receiver-cache-validation.org][executed receiver/cache controls]].
+This syntax authorization does not implement or widen Loader/source admission.
+
+* Implemented bounded Module alias
+
+Core use-module accepts one compound body after =Module as alias= and lowers to
+an ordinary lexical let over the unchanged native scope. It does not resolve a
+registry key or force source/prototype/Profile slots. Source/value and body are
+evaluated once; body syntax and helper references preserve hygiene. Identifier-only
+tails retain indexed ProfileBundle selection. See the [[file:../../../profile-composition/README.org][scope contract]].
+Use distinct lexical source and slot names (Funflow versus funflow:). The path
+object frame diagnoses a direct same-name initializer; it does not hoist sources
+or introduce a hidden namespace. Result-specific admission and Loader activation
+remain separate owners. Retaining a source handle is not authenticating it.
+
+* Proposed configuration-source gate (design, not implemented)
+
+The [[file:../../../docs/10-19-design/11-configuration-languages/11.26-schema-discovery-source-lowering-and-macro-governance.org][Guestbook discovery/source design]] applies the existing
+[[file:../45-40-10-poo-constrained-gerbil-macro-governance.org][POO-constrained macro governance]] rather than introducing another macro system.
+A concise ordinary configuration is a product requirement. Native correspondence
+controls belong to maintainers, not users editing two values. Shortness alone
+still does not authorize new merge semantics or hidden runtime authority.
+
+Before adding dotted assignment/source wrappers: preserve original slot/expression
+syntax before trie merging, carry private source metadata through publication,
+keep initializer evaluation single, qualify longest-prefix source fallback and
+bound path depth/generated forms. Native fields/Contracts stay authoritative;
+source metadata cannot become another configuration schema or public value slot.
+The budget must account for total path segments, not just declaration count.
+Do not evaluate user values, load Modules or compile Schemas during expansion.
+The authoring binding now attaches original slot-token locations to native
+computed specifications, retaining them through inheritance and .+ copies.
+The [[file:../../../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][executed source-package controls]] cover JSON baseline association and selected
+field currentness after relocation. Raw native writes without instrumentation,
+dotted direct assignment and AOT source authentication remain separate gaps.
+
+* Implemented internal build-role binding
+
+The source preparer's internal define-module-build-binding expands to a native
+POO lazy slot and an identifier-rules reference with fresh private bindings.
+Expansion performs no IO. The source reader captures an admitted resolver during
+publication; the build graph alone grants the native dynamic phase. Phase checks
+run before cached slot reads, so caching never grants ordinary runtime access.
+This is not public configuration syntax. See the build-role gate in chapter 56.

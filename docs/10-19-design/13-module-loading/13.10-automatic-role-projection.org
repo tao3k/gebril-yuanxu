@@ -1,0 +1,182 @@
+#+title: 13.10 Automatic Role Association for Declaration and Standard Compilation
+#+property: DOCUMENT_ID 13.10
+#+language: en
+
+* Boundary and Core integration
+
+The module author owns a declarative interface.ss. The Module System owns role
+discovery, import association and the compiler environment. Requiring the author
+to repeat types/config/func/objects imports was the wrong solution. The manual
+import control in [[file:13.09-user-owned-build-script.org][08]] is superseded by this Core implementation.
+
+The consumer imports init exports at the build entry, never in the library
+inventory. The Core adapter preserves SDK macro syntax and encloses native compilation:
+
+#+begin_src scheme
+(import (only-in "./module-system/building/script.ss" defbuild-script)
+        (only-in :clan/poo/object .get)
+        (only-in "./init.ss" yuanxu.init.exports)
+        (only-in "./core-spec.ss" core-spec))
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
+#+end_src
+
+There is no consumer source alias, replacement main, SDK patch or additional
+macro. The original JsonSchema interface.ss is byte-for-byte unchanged in the
+qualification. It contains its Module .def and no imports.
+
+* Selected role lowering belongs to yuanxu!
+
+This section supersedes the earlier directory-level package workaround. See
+[[file:13.20-init-owned-role-compilation.org][13.20]] for the current integration and qualification boundary.
+The actual package root owns =gerbil.pkg=. A =modules/= or =scenarios/=
+directory does not become another package merely to receive role bindings.
+
+The existing source preparer emits the declaration and ordinary role frames.
+Its admitted =role-sources= inventory serves reader publication and native Make.
+The internal compiler callback uses the SDK's public import parameter, retains
+native identities and original syntax, and cleans its temporary frames. An
+explicit custom prelude remains authoritative. Native Make still owns source
+and product timestamps; plain package compilation grants no publication approval.
+
+Maintained build scripts consume =std-make-spec= through the Core
+=defbuild-script= adapter. It retains the prepared callback; importing the SDK
+macro directly and compiling bare role sources does not supply that boundary.
+Explicit =.compile= reuses the same callback inside its existing issuance guard.
+No per-directory metadata, compiler patch or new Builder is needed.
+
+* One inventory, two consumers
+
+The SDK-only role-forms module owns the existing allowed-role catalogue. The
+admission module imports and re-exports that same binding. Both
+publication-forms and declaration expansion call module-publication-role-imports.
+The former supplies its admitted source snapshot; the latter checks only the
+fixed role filenames next to the interface source, rejecting non-regular files
+and symlinks. Neither performs a repository-wide import scan.
+
+Generated imports carry the interface's use-site syntax context and source
+location. They therefore resolve adjacent roles and their exported names in
+the original module scope. The existing POO declaration macro still constructs
+the object and exports the Module binding. Role bindings are not re-exported
+as accidental interface API.
+
+* Keep source authority separate from compiler package metadata
+
+A nested package/prelude boundary must not accidentally redefine the allowed
+repository kernel. The directory Context now places its init-owned kernel root
+in its internal source-tree object. The reader uses that root only when the
+module collection is physically below it, falling back to its existing package
+boundary otherwise. Compiler prefix resolution still uses Gerbil's actual
+package metadata.
+
+This is internal directory Context data, not a user-supplied Contract or a
+namespace string that grants authority. Existing owner confinement, regular-file
+checks, exact compiler-tool Context matching and kernel-depth checks remain.
+The integration does not introduce a blanket exemption for paths named core.
+
+The native reader's resolved source prelude is also captured in publication
+source-inputs and checked by admit-current. Observing only gerbil.pkg would miss
+an edit to the prelude implementation at the same path. Role-catalogue and
+declaration source changes remain covered by the existing tool-input guards.
+
+* Results and evidence limits
+
+All controls use the unmodified installed Standard Library and serial,
+heap-fenced just test-file entrypoints with the existing 120-second timeout.
+
+- [[file:../../../t/module-role-projection-test.ss][Role association controls]] pass: publication role-sources and standard source
+  expansion use the same inventory; a declaration with no imports reads object,
+  function and Config values; role POO definitions retain their meaning; Config
+  is not leaked through the interface; missing optional roles and symlink roles
+  are distinguished.
+- [[file:../../../t/module-reader-tool-context-test.ss][Reader controls]] pass: changed tool bytes invalidate the Graph, a foreign
+  same-identity declaration is rejected before its effect marker is written,
+  private cycles, interface self-import and reversed role dependency remain
+  rejected in the complete source package. Negative assertions inspect
+  diagnostic messages/irritants rather than test-source text in a backtrace.
+- [[file:../../../t/module-source-spec-test.ss][The real JsonSchema control]] passes spec/compile/clean for 36 targets, including
+  bounded retained roots utilities/algorithms, types and core-spec. It verifies
+  source existence, unique/canonical output identities, removal of expected
+  outputs, identical cached spec-list identity, and absence of a prepared build
+  directory or independent bootstrap.ss. The role helper is included through
+  the observed dependency closure rather than a second target inventory.
+- Input drift is rejected for the real build.ss, retained manifest, native module
+  package metadata, resolved prelude source, role helper, tool source and module
+  configuration and private helper sources. Changed init permanently refuses
+  the selected session.
+
+The integrated source also passes the actual root-entry control with 169 selected
+and retained targets using spec and clean only. No whole-Core compile is part
+of that control. Build-spec boundary controls verify selected Graph identity,
+matching-overlap deduplication, option/source/identity conflicts, retained
+symlinks and stale root-entry refusal. Synthetic package prefixes exercise
+identity projection without a hard-coded Core prefix.
+
+The partial JsonSchema-copy controls were retired: a Module copy sharing Core
+IDs while omitting its kernel dependencies is not an isolated package. Private
+source drift and cycle rejection now run against the complete source-only
+snapshot, keeping the source-confinement checks unchanged. The bounded SDK
+compile/clean control replaces the retired materialized-tree compile controls;
+it is not evidence for unselected or generated contributions.
+
+Each final run completed MODULE-OK, HARNESS-OK, final OK and natural exit 0 with
+no error/heap/stack markers. The final compilation began in a new GERBIL_PATH,
+with no compiled Core cache; the eight observed public dependency units were
+freshly built from the clean locked gerbil-poo revision
+099b381588360a8a49fd772f666a1a00351366f5. No whole-Core compilation was run.
+
+The earlier manual-import control is not evidence for automatic association.
+The initial nested-package attempt was rejected by the reader's existing source
+boundary. A later attempt reused an old output directory and failed during
+macro expansion; that directory contained auxiliary files left by standard
+clean. Neither failure is counted as acceptance. No timeout was widened and no
+upstream change was made to turn a failure into a pass.
+
+** Cross-process reuse: source registration correction
+
+The earlier same-state failure is retained as a negative result. Its cause is
+now isolated: lib-first registration selected a generated runtime loader .scm
+once clean removed the .ssi. That loader does not export the declaration macro.
+It was not evidence of lost macro hygiene or a broken compiler projection.
+
+[[file:13.11-same-state-source-reimport.org][10]] records the native resolver contrast and same-state rebuild regression.
+Core's explicit source qualification now registers its native package directory
+before output loaders. The original failed state succeeds without clearing its
+artifacts. The consumer macro and main are unchanged. This corrects the former
+fresh-state-only evidence boundary without claiming that clean empties the
+output directory or that source priority is a runtime Loader cache policy.
+
+* Reproduction and remaining boundaries
+
+Use the source-only setup in [[file:13.07-core-build-entry.org][06]]. No overlay or generated preparation
+script is required: the shared role inventory, package prelude, declaration
+expansion and direct source projector now live in Core. Run each focused test
+serially through just test-file in the fresh source/dependency environment:
+
+#+begin_src sh
+just test-file t/module-role-projection-test.ss
+just test-file t/module-reader-tool-context-test.ss
+just test-file t/module-build-graph-test.ss
+just test-file t/module-build-spec-test.ss
+just test-file t/module-source-spec-test.ss
+#+end_src
+
+The selected Graph and spec are cached together inside the init closure.
+Every SDK command evaluates the spec expression again, which checks that source
+epoch before dispatch. The original macro has no after-command hook: an executor
+or publisher must explicitly call init.build-current! before accepting outputs.
+The test exercises this separate check after command completion and subsequent
+source drift. It is not a lease on files, rollback, runtime authority or automatic
+concurrent-change prevention.
+
+The shared inventory and direct-source projection are now integrated in Core.
+The old main-returning/materialization APIs and test overlays are removed; no
+compatibility forwarding layer remains. The direct-source projector rejects
+external-package and other generated contributions instead of silently omitting
+them. Additional Config export and Build-phase formats still need their own compiler controls.
+No runtime Loader is introduced and no all-module or performance claim is made.
+
+Source-only qualification suites require CORE_QUALIFICATION_ROOT explicitly.
+Without it they print SKIP and do not mutate the ordinary checkout or count as
+qualification evidence. The CI source-only launcher runs the same Scheme
+controls; it no longer invokes an independent bootstrap entry.

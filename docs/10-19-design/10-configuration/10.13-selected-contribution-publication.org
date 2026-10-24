@@ -1,0 +1,306 @@
+#+title: 10.13 Core Selected Contribution Admission and Publication
+#+language: en
+#+property: DOCUMENT_ID 10.13
+#+date: [2026-10-17]
+#+property: STATUS implemented-current-core-source-tested-no-product-loader-integration
+
+* Domain implementation successor
+
+[[file:10.14-gitea-postgresql-publication.org][10.14]] now owns the maintained PostgreSQL/Gitea port-domain Contracts,
+interface declarations and checked connection-plan implementation. Earlier
+fixture-only statements below describe their historical controls. Full service
+rendering, provisioning and product Loader integration remain outside this work.
+
+* Implemented owner and user boundary
+
+The collection adapter previously exercised in [[file:10.12-deep-selected-publication-controls.org][10.12]] is now owned by Core:
+
+- [[file:../../../admission/contributions.ss][admission/contributions.ss]] owns the selected metadata index, deep collection,
+  exact coverage and source/MOP currentness, and binds platform policy to Context.
+- [[file:../../../admission/publication.ss][admission/publication.ss]] calls that owner inside the EXISTING .for-export.
+  Existing .publish remains the sole checked publication path.
+- [[file:../../../module-system/source/publication.ss][source/publication.ss]] admits the ordinary core.contributions route field
+  through ContributionRouteContract and ModulePublicationContract.
+- [[file:../../../types.ss][types.ss]] composes the Contract's own obligations with optional platform Context
+  obligations in the existing Core .admit evidence producer.
+- [[file:../../../core-spec.ss][core-spec.ss]] includes the new ordinary Core library root.
+
+Neither user configuration nor a Scenario author assembles origins, rows,
+descriptor wrappers or source guards. Source selection and publication use the
+existing Core entrypoints. No product Loader backend was connected or changed.
+No second publisher, evidence type, parser or configuration DSL was introduced.
+
+* Maintainer declarations, independent of candidate value composition
+
+Each independently selected module declares ordinary metadata in interface.ss:
+
+#+begin_src scheme
+contributions:
+(.o database-port:
+    (.o target-owner: 'fixture/application
+        target-admission: 'Scenario
+        export-path: '(exports policy requirements port)))
+#+end_src
+
+ContributionRouteContract checks symbol-valued target owner/admission and a
+nonempty proper symbol path. Module publication admission checks every declared
+route. The index additionally refuses references to an unknown admission on an
+already SELECTED owner. An unselected target remains inert; a route does not
+implicitly activate that owner or turn into a core.requires link cycle.
+
+Two sources may use the same database-port key. Their identities remain
+(owner, declaration key), not the eventual port field or a C4 winner. Collection
+happens from independent selected publications, not by inspecting the merged
+candidate's surviving business slots. This does not recover declarations already
+erased before publication or authenticate an anonymous .+ operand.
+
+The receiving domain Contract interprets the complete row list through its
+ordinary .contribution-obligations procedure slot. The public native slot Generic
+is declared once by Core:
+
+#+begin_src scheme
+(.defgeneric
+  (yuanxu-contract-contribution-obligations contract candidate rows context)
+  slot: .contribution-obligations)
+#+end_src
+
+For the port domain, the fully executable Contract declaration lives in the
+[[file:../../../t/contribution-deep-publication-isolation-test.ss][test module's types.ss source template]]. Its procedure compares the candidate's
+FINAL PostgreSQL port with EVERY row's payload value, retaining each actual
+origin in diagnostics. Core does not hard-code that port path or assume that all
+contributions are ports. A domain may use existing CLOS multiple dispatch inside
+this procedure for independently extensible payload families. That domain method
+package is separate from collection; Core does not register a global domain
+method registry while loading modules.
+
+Incoming rows without a callable domain slot refuse at .for-export. They are not
+silently ignored. Missing, malformed or failing exports refuse rather than being
+filtered out. Domain handlers are trusted Contract implementations and must
+validate their payload semantics; provenance coverage cannot infer whether an
+arbitrary handler interpreted its inputs correctly.
+
+* Selected query and source-bound collection
+
+The private weak-key cache is keyed by the publication BUILD Graph's selected
+Graph identity. This is the same canonical graph retained by the publication's
+existing admission Context, including when a source-link view reuses a build
+Graph. A transient scope view is not substituted for that authority.
+
+The first query scans selected Core metadata and groups routes by target owner
+and admission. Later queries use the relevant bucket. No payload scope is forced
+while indexing; no unselected catalogue module or service is activated. Nodes,
+publications, core objects, declaration containers and raw routes retain revision
+observations. The cache value does not directly retain its weak Graph key.
+This is a structural cache design, not a measured memory/reclamation guarantee.
+
+Each demanded edge then uses real .selected-record and prepare-publication:
+
+#+begin_src scheme
+(def record (.call selection .selected-record owner))
+(unless (eq? (.get record publication) (.get edge node publication))
+  (error "selected contribution publication mismatch" owner))
+(def prepared ((.get selection prepare-publication) owner))
+(unless (and (eq? (.get prepared identity) owner)
+             (equal? (.get prepared generation) (.get record generation)))
+  (error "selected contribution preparation mismatch" owner))
+((.get prepared admit-current))
+(defvalues (payload receivers)
+  (walk-export (.get record scope) (.get edge path)))
+#+end_src
+
+The deep walk checks slot existence and records object-revision BEFORE each .ref;
+it observes the final POO payload separately. Only the selected path is demanded.
+Origin rows retain the actual record, SourceRef, publication, generation, key and
+copied symbol path. Labels or matching path strings do not establish identity.
+The source capability and its implementation remain trusted Core mechanisms;
+this is not remote signature authentication or a sandbox against rewriting Core.
+
+Coverage is a positional bijection with the platform's private edge/row list:
+proper list and exact count, exact registered row identity, actual selected
+record/source/publication/owner/generation/key/path, and current deep payload
+identity. Context gets separate LIST CELLS so destructive updates of its row list
+cannot rewrite the private expected list. Supported MOP mutations of retained
+objects are checked through the fixed observations. Original path lists are
+copied for the same reason.
+
+An empty collection remains explicit. Even a publication with no incoming rows
+retains the selected metadata fence, so a later supported mutation adding a route
+cannot reuse an earlier empty-policy approval. Mutation refuses the immutable
+snapshot; obtaining a fresh valid selection is different from silently refreshing
+an already checked publisher.
+
+* Native .admit composition without cloning the domain Contract
+
+The failed intermediate implementation derived a Contract and wrapped its
+.obligations with =>. That lost a runtime override already present on the source
+instance in the inherited-obligation control. It was replaced, not accepted as a
+compatibility behavior. The final implementation keeps the ACTUAL published
+Contract object, its effective value-contract, classifiers and own obligations.
+
+Core's existing evidence producer first normalizes the candidate, classifies it,
+then explicitly sequences domain obligations and optional platform obligations:
+
+#+begin_src scheme
+(let* ((local (yuanxu-contract-obligations contract candidate context))
+       (platform (context-contract-obligations context contract candidate)))
+  (append local platform))
+#+end_src
+
+The optional Context protocol is itself a native slot Generic:
+
+#+begin_src scheme
+(.defgeneric (yuanxu-context-contract-obligations context contract candidate)
+  slot: .contract-obligations)
+#+end_src
+
+Contexts without that slot retain their existing behavior. A present handler must
+return a proper diagnostic list. The publication's platform handler verifies that
+the admitting Contract is its actual selected descriptor, checks the complete
+batch, delegates to the domain's .contribution-obligations, and checks currentness
+again. It also preserves an existing base Context hook if one is present.
+Successful field validation is not a substitute for these joint obligations.
+
+The receiving Contract object is not cloned and retains its source identity in
+Core evidence. A direct .admit on that Contract WITH the platform's Context runs
+the same policy. An unattached Contract may still validate its own fields, but
+that alone does not authorize checked publication under independent selected
+requirements. Custom .admit implementations must preserve the Core producer's
+policy protocol to claim these semantics; arbitrary replacement of Core methods
+or malicious handler code is outside this qualification.
+
+Existing .publish still checks Context before admission, calls the native .admit
+protocol once, binds the returned evidence.candidate and checks final currentness.
+This protects the publication boundary before field evaluation as well as after
+policy evaluation. A refusal retains its supplied previous subject, not a newly
+admitted last-good state and not rollback of external effects.
+
+* Caller path after removing the fixture coordinator
+
+The test's platform helper now only calls production boundaries:
+
+#+begin_src scheme
+(def selection
+  (yuanxu-load-modules (path-expand "init.ss" root)))
+(def publication
+  (.call AdmissionPublication. .for-export
+         selection 'fixture/application 'Scenario))
+#+end_src
+
+After user configuration/derivation, the existing platform publishes:
+
+#+begin_src scheme
+(defvalues (receipt next failure)
+  (.call publication .publish parent Release))
+#+end_src
+
+There is no caller-supplied batch or origin list and no caller wrapping of the
+Contract or Context. The test reads Context rows only to inspect provenance and
+inject negative faults. Such mutation is not ordinary configuration syntax.
+The four-segment payload path is unchanged; the final plan still computes server
+and client ports from the effective child config through native lexical slots.
+
+* Executable controls and retained development failures
+
+The production control is [[file:../../../t/contribution-deep-publication-isolation-test.ss][contribution-deep-publication-isolation-test.ss]].
+The source templates, temporary role files, Probe counter and fault injection are
+fixtures. Query/indexing, collection, coverage, source/MOP checks, protocol
+composition and checked publication now run production code; none are duplicated
+inside the test.
+
+| Control | Required outcome |
+|---------+------------------|
+| Deep source identities | Both rows resolve through real selected records, with accepted scope evidence and the complete declared path |
+| Intermediate change with the SAME leaf | Reject contribution object changed; unchanged leaf identity/value cannot bypass receiver revision fences |
+| Omitted/duplicate authority | Reject incomplete collection or substituted origin; same-path SourceRef replacement cannot bind a different row |
+| Destructive Context list update | Reject substitution; private expected-list cells are not aliased |
+| Route removed after indexing | Reject metadata currentness rather than silently dropping a requirement |
+| Actual config.ss change | Reject stale prepared Module publication for an otherwise valid child |
+| 5433 and 5440 requirements | Native .admit refuses and retains BOTH values and owners in obligation evidence |
+| Incoming rows, missing domain protocol | Refuse at .for-export |
+| Selected target admission misspelled | Refuse at index validation, not an empty bucket success |
+| Existing domain obligations | Remain effective alongside successful contribution obligations |
+| No incoming rows | Keep the original Contract identity; later route insertion refuses |
+| Parent leaves cached before child creation | Admitted child preview reads 5433/5433; parent remains 5432; reattaching the cached parent plan refuses |
+| Unselected exports/module | Deep cold sibling Probe stays zero; malformed disabled module remains unparsed and absent from selection |
+
+There are ten test CASES; some cases contain multiple related controls. Exact
+underlying errors are asserted where a generic refusal could mask the intended
+fence. Domain-refusal tests also check that no new subject is published.
+
+A first draft used def inside when expression context and failed expansion; let
+bindings replaced it. The intermediate Contract-wrapper draft passed the basic
+path controls but FAILED the inherited-obligation case (accepted a value that
+should refuse). The final Context protocol fixed that semantic failure without
+loosening the assertion. Raw attempts remain local; historical 10.11/10.12 inputs
+and receipts are not rewritten as if they had exercised production collection.
+
+* Validation and scope
+
+The final focused run uses the CURRENT Core source, the same pinned native
+=gerbil-poo@26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5= artifacts and the default
+host Gerbil runtime with isolated source/library paths. There is no frozen Core
+fallback and no dependency patch. Tests run SERIALly through the Core Justfile's
+heap-fenced =just test-file= entrypoint, with the existing 120-second bound.
+
+The production control and focused regressions cover:
+
+- contribution-deep-publication-isolation-test.ss (ten cases);
+- core-test.ss and admission-binding-test.ss;
+- admission-publication-test.ss and admission-checked-publication-test.ss;
+- module-scope-link-test.ss and module-publication-test.ss.
+
+Each requires exit 0, MODULE-OK, HARNESS-OK and standalone OK, without ERROR
+CASE/CHECK/HARNESS or heap/stack overflow. Raw logs and before/after source hashes
+remain under =/private/tmp/poo-core-contributions-20261017=; they are not committed.
+core-spec.ss includes the new library, but a full Core AOT build, full-suite CI and
+product Loader acceptance are distinct gates, not established by these tests.
+
+Indexing is O(selected metadata); per-target collection is O(incoming edges and
+path depth). Publication guards still check retained metadata/source observations.
+The index does NOT make source currentness constant-time. Existing Core source
+read-cache scopes share reads inside a pure guard boundary; no validation snapshot
+is reused across arbitrary domain effects. No thousand-module latency claim is
+made here.
+
+Scope admission still obeys the declared scope-contract and eagerly linked
+core.requires of the existing source linker. A stricter domain Scope Contract
+may demand additional required fields. The cold-branch controls establish the
+collector's demand behavior with their declared lazy Scope, not universal
+laziness for arbitrary custom Scope Contracts.
+
+Selected Feature contribution projection, arbitrary closure IO dependencies,
+unsafe raw mutation outside supported boundaries, concurrent hostile code, remote
+source authentication and general policy-family method packages remain separate
+work. Product Loader, external-package realization and service execution were not
+connected by this change. Existing other-session linker edits were preserved.
+
+
+* Current source receipt
+
+Core base HEAD remains =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e= with working
+changes; this is not clean-HEAD or remote-CI acceptance. The unchanged other-session
+linker blob is =f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6=.
+Before/after hashes match for the new contribution owner, publication entrypoint,
+source linker/publication/reader, types.ss, core-spec.ss and the production test.
+
+| Final source | SHA-256 |
+|--------------+---------|
+| admission/contributions.ss | 68cf5282ae49f47218b572d718fc6a96b15f53c3e08d7bf2749aac2c714f6a44 |
+| admission/publication.ss | 32cd4c369ca02e64768f1a58faa5d9422e586f9aa918167a9d9db609d6e47d99 |
+| types.ss | 446c369648a5b3a2a2e8e2f1d67fa9e8f4b295251ba7ba719607c43212abb70b |
+| production deep test | 89da1c8661f965e3ffec7177cb3ce7654934893bdd746a7cc3f6304886fa7c12 |
+
+The final ten-case log SHA-256 is
+=286a20a50a19b58a29add1db94da25760bbaf9f6602da3a0e078b2d26833d514=.
+All seven focused files passed through the guarded launcher. Earlier failed
+attempts remain under the same local artifact directory; the inherited-obligation
+failure was not reclassified as success.
+
+Reproduction uses the current-source alias from 10.12, not the frozen Core copy:
+
+#+begin_src sh
+# From the current Core directory; dependency state contains no Core artifacts.
+export GERBIL_PATH=/private/tmp/poo-deep-publication-20261017/state
+export GERBIL_LOADPATH="$GERBIL_PATH/lib:/private/tmp/poo-current-deep-publication-20261017/source"
+just test-file t/contribution-deep-publication-isolation-test.ss
+#+end_src

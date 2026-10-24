@@ -1,0 +1,182 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Executed Native Parent Association and Cached Pipeline Controls
+#+date: [2026-10-15]
+#+property: STATUS executed-domain-free-probe-no-module-adapter-no-loader
+
+[[file:20-lean-profile-association.org][Module 20]] now implements a narrow reference model in the existing proof
+workspace using the unchanged locked LeanPoo version. Its 19 theorems and 21
+guards are separate from this unchanged native receipt; they do not establish
+the Scheme implementation correspondence.
+
+* Executed result and exact evidence boundary
+
+The isolated native probe passed 44 assertions, exit 0. It exercises ordinary
+POO objects, identity-indexed test descriptors and module 18's exact native parent
+walk. The test-local .admit predicate is deliberately a boolean observation of
+which receiver is consumed; it is NOT Core's evidence-bearing Contract admission,
+Funflow field/capability validation or a publication/source-authentication adapter.
+No module production code, Loader or dependency pins were changed.
+
+| Artifact | Meaning |
+|----------+---------|
+| [[file:19-native-parent-validation/probe.ss][Complete probe]] | Exact executed test program, not an installed module or user interface |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/receipt.json][Receipt and SHA identities]] | Dependency, interpreter scope, native and Lean outcomes |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/native-final.log][Final native output]] | PASS native-parent probe assertions=44 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/installed-import.log][Installed-package failure]] | Exit 70: support/base compiled module incompatible; not repaired or counted as pass |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/native-run-2.log][Incorrect nested-identity expectation]] | Retained failure that exposed a real design boundary |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/19-native-parent-validation/draft-incomplete.log][Initial probe draft syntax failure]] | Incomplete form; corrected before successful qualification |
+
+The program uses /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc,
+and direct isolated source import from /tmp/agenticailab-pipeline-receiver-pin.
+object.ss and support/base.ss SHA-256 match the historical pinned-source receipt
+in [[file:../164-pipeline-receiver-cache-validation.org][receiver/cache validation]]. The package pin in gerbil.pkg is
+099b381588360a8a49fd772f666a1a00351366f5. Module 18's earlier source audit used
+the separate learning corpus at 240695a7461ec2d7fbbad4b83cab86508ec9c748;
+do not collapse those identities into a single revision. The actual execution
+qualifies the dependency-pin source, not the incompatible installed artifact.
+
+* What passed
+
+| Control | Observed result |
+|---------+-----------------|
+| .def child | Published Profile root remains a direct parent; test Contract association is found |
+| Multiple parents | Both independent root descriptors are found; no association is selected merely by parent order |
+| Top-level .+ | Left base and its association remain reachable |
+| Nested =>.+ | Inherited base exists, but inline base construction can run at the child receiver rather than return the parent's cached object |
+| Named constant Check as inherited slot value | Its canonical identity remains reachable after =>.+ |
+| Parent Pipeline cached before child declaration | Child declaration does not demand Pipeline/checks; child demand yields refined build/test/package and new smoke |
+| Effective Check identities | Each returned Check is identical to the corresponding final child slot; child/parent caches remain distinct and stable |
+| Fixed parent list | Refused by final identity/selection checks, including the same-count negative control |
+| Associated descriptor's test predicate | Observes final child; old parent fails the chosen child-value predicate |
+| .+ right-hand root | Direct slots are copied but the right-hand root and its own association are absent |
+| .+ right-hand child | Its parents remain reachable, but its own identity/association is absent |
+| Copied object without published parent | Root discovery refuses rather than inventing a source association |
+
+These are finite test observations, not a general proof or complete domain
+admission. Multi-parent Contract conjunction/compatibility remains unimplemented;
+the test verifies that both descriptor origins remain visible, not that two
+arbitrary obligations have been reconciled.
+
+* Correction: inherited slot base is receiver-relative
+
+The original expectation that the child build's direct parent must be eq? to
+Root.build failed. Root.build is an inline (.o ...) slot method. The inherited
+method is evaluated with the child receiver, so it constructs the base used by
+that child's =>.+. That base has inherited values but is not necessarily the
+object already cached under the parent receiver.
+
+#+begin_src scheme
+(.def Root
+  build: (.o value: 'build))
+
+(.def (Child @ Root)
+  build: =>.+ (.o value: 'child-build))
+
+;; Observed: false for this inline construction.
+(memq (.get Root build) (object-supers (.get Child build)))
+
+(def SharedCheck (.o value: 'shared))
+(.def SharedProfile build: SharedCheck)
+(.def (SharedChild @ SharedProfile)
+  build: =>.+ (.o value: 'shared-child))
+
+;; Observed: non-false for this canonical constant object.
+(memq SharedCheck (object-supers (.get SharedChild build)))
+#+end_src
+
+Therefore automatic published-Profile association can use the top-level parent
+root, but must not assume every nested slot value retains the parent's cached
+identity. Module/Check association must come from the declared responsibility
+position, canonical exported values, or a separately validated source boundary.
+The final field/identity checks still consume the final receiver's values.
+
+* .+ right operand: a provider fact is not necessarily a parent
+
+#+begin_src scheme
+(.def RightRoot flag: 'right)
+(def Result (.+ Root RightRoot))
+
+;; Result.flag is right, but RightRoot is not a parent of Result.
+;; Its own Contract/source association cannot be recovered by parent traversal.
+
+(.def (RightChild @ RightRoot) extra: 'child)
+(def Second (.+ Root RightChild))
+
+;; RightRoot is retained as a parent; RightChild itself is not.
+#+end_src
+
+This is native .+ behavior, not an adapter bug. Parent-graph discovery is an
+INHERITANCE association mechanism, not full value-provider provenance. When the
+right operand contributes an independent mandatory obligation, integration must
+explicitly preserve that requirement through an admitted boundary or reject the
+composition as unsupported. Silently declaring all provenance recovered is
+unsound. Do not alter native .+ semantics merely to manufacture a source parent.
+A stronger future property should be stated as mandatory-requirement preservation,
+not as a claim that native object-supers contains every construction input.
+
+* LeanPoo: reuse the library, add a narrow model rather than a new project
+
+The repository already has packages/proofs/lean-poo with Lean v4.34.0 and a
+LeanPoo dependency. Its current manifest resolves d8adf138948c854e7564234bc046387b4a5ee63b.
+The inspected local LeanPoo checkout is 7ee3027d4f38ec4a6c3f1ed95ec9a9aec3011e0d;
+it also has unrelated staged work, which was not modified. ConstructionCache
+exists in this newer checkout but not in the current project's dependency source.
+No pin update, lake update or new Lean project was performed.
+
+The following current-checkout SOURCE files were individually rechecked with
+Lean v4.34.0, using their existing compiled dependency library; all exited 0:
+
+| Existing library | Reusable definition/theorem | Limit |
+|------------------+-----------------------------+-------|
+| ContextSlot | read_hit, read_miss, read_value; exact context/factory-indexed data | Does not identify arbitrary Scheme receiver caches or prove their identity semantics |
+| ContractConsequence | Certified.entails, Snapshot.entails, ContextSlot.entails; proof-preserving reuse under an explicit implication | Does not infer implication between arbitrary .admit predicates |
+| ConstructionCache | Cache.reference, Partial.step_reused; materialized result matches reference and certified hits skip builder | Not a native .def provenance or performance theorem |
+
+The source-check logs and hashes are in the receipt directory. This was not a
+clean full LeanPoo rebuild or a proof of the new Scheme walker. Existing
+LeanPoo C4 reachability/graph and generalized-prototype libraries are additional
+model candidates; the native Scheme walker does not run C4 linearization and
+requires its own explicit correspondence before using their theorems.
+
+A follow-up model belongs in the existing proof workspace, with these explicit
+obligations, rather than another implementation of POO:
+
+1. Root association completeness for a finite acyclic native parent graph with
+   stable identity and trusted root index; diamonds must not drop roots.
+2. Reference-model correspondence for the Scheme DFS and its visited-state rule.
+3. Receiver/context-indexed final selection: parent cached data cannot substitute
+   for a changed child receiver, even with equal names/count.
+4. Distinguish inherited roots from right-operand provider requirements; an
+   integration must preserve all mandatory requirements or refuse.
+5. Contract/source/policy/graph changes invalidate affected evidence; reuse needs
+   an explicit equality or implication proof rather than a matching label.
+
+Module 20 now proves a narrow reference version of root discovery, exact-context
+final values and mandatory RHS requirement retention/checking. Its model does NOT
+prove the Scheme DFS, mutation invalidation or source projection. Those remaining
+correspondences are still required before a runtime soundness claim. Source authentication and consumer
+plan admission remain separate premises. Reuse existing LeanPoo machinery where
+its premises match; do not assert a formal bridge merely because names resemble
+ConstructionCache or ContextSlot.
+
+* Reproduction and remaining gates
+
+After preparing and verifying the pinned files as described in the historical
+receiver/cache document, run the archived probe directly:
+
+#+begin_src sh
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/19-native-parent-validation/probe.ss
+#+end_src
+
+Lean source checks used ELAN_TOOLCHAIN=leanprover/lean4:v4.34.0 and LEAN_PATH set
+to the inspected checkout's .lake/build/lib/lean, then lean on each source file
+without an output artifact argument. Existing compiled dependencies were reused;
+no global package repair or dependency refresh was attempted.
+
+Remaining: installed artifact compatibility, full Core evidence-bearing admission,
+contribution/export index adapter, staged selected-source demand, immutable-view
+or mutation invalidation mechanism, formal correspondence and consumer/runtime
+integration. No throughput, first-use latency or catalog-scale claim follows
+from the assertion count.

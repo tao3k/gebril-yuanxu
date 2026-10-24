@@ -1,0 +1,384 @@
+#+title: 32.09 Contract field demand and receiver-bound cache replay
+#+language: en
+#+property: DOCUMENT_ID 32.09
+#+property: STATUS design-with-isolated-read-qualification
+#+date: [2026-10-18]
+
+* Decision and evidence identity
+
+Remove preflight leaf guards only after native value-demand observation covers
+both cold computations and warm cache reads. Reuse Contract field selection and
+receiver rebinding; do not synthesize another field catalog, wrap user .get
+bindings, or put a second evaluator in Core.
+
+This is the fixed-input design audit. The implemented protocol, integrated
+consumer receipt and subsequent dependency update are recorded in
+[[file:32.12-mop-read-records-and-source-admission.org][32.12]]; the following pins identify this audit's original inputs.
+
+At audit time Core gerbil.pkg pinned gerbil-poo
+26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5. The product gerbil.pkg separately
+pinned 099b381588360a8a49fd772f666a1a00351366f5. This audit reads fixed upstream
+source for the Core pin; it changes neither pin. Local .data reference checkouts
+are older copies and do not contain the Core pinned commit.
+
+Installed .ssi/generated Scheme under /Users/guangtao/.gerbil/lib/clan/poo also
+exposes .ref/inline and layout-cache access, absent from both inspected fixed
+object.ss versions. Its presence does not prove which native object binary was
+loaded in an earlier test. The version.ssxi/generated version string is not a
+complete dependency attestation. Treat these as additional installed interfaces
+to audit, not as features of the Core pin. A future implementation must first
+close the source/compiler/import identity for the canonical POO dependency and
+its compiled consumers; no package installation or upgrade is performed here.
+
+* Fixed source findings
+
+** Scenario ownership
+
+Gitea/PostgreSQL is a composed service example, not a Core built-in capability.
+Its target owner is scenarios/gitea-postgresql/, with postgresql/, gitea/ and
+application/ entries using the same module role/publication mechanism. The
+Scenarios window supplies a different namespace, not a second loader or a
+special evaluator. Core owns reusable source admission and native POO integration;
+the Scenario owns service Contracts, JSON defaults, joint port requirements and
+the final application plan. Scenario entries must follow the same applicable
+role-file rules as other loaded entries; this namespace does not exempt them.
+
+The maintained service role files now reside in
+scenarios/gitea-postgresql/gitea and scenarios/gitea-postgresql/postgresql.
+The shared test fixture resolves those actual sources. Earlier qualification
+manifests retain their historical modules/ paths and are not rewritten.
+
+** Fixed dependency evidence
+
+All upstream links in this table are fixed to the Core pin:
+
+| Owner | Actual source behavior | Consequence |
+|-------+------------------------+-------------|
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-contract.ss#L59][object-shape-issues]] | Reads prepared responsibilities; enumerates names for unknown-field checking; reads each declared field through .ref | Insert demand association at actual declared-field access, not a separate path walk |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-contract-validation.ss#L11][validation-fields / validate-object]] | Builds validators from the existing selected descriptor; structural gate precedes checked receiver construction | Reuse that selection and preserve normalization order |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/validation-rebinding.ss#L30][prepare-rebinding / force-rebinding]] | Creates a fresh receiver with computed validators; carries explicit assignments; forces selected checks; does not copy computed caches | Do not manually rebuild plans or return a different child from contextual admission |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss#L193][invoke-object-hook / compute-slot-funs!]] | Existing compute-slot hook transforms effective thunks during method-table assembly | It cannot alone observe cache hits |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss#L324][compute-slot-value / .ref]] | Cycle-aware computation runs only on misses; .ref returns cached values directly | Add a read boundary covering both routes, preserving the native evaluator |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss#L347][.ref/cached]] | Inspects the existing instance; may invoke its absence fallback without computing the requested slot | Observe hit versus absence without changing this API into .ref |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-state.ss#L14][object-state dependencies]] | Weak dependency edges support transitive revision/invalidation of registered descendants | Existing edges cover parents/protocol/declarations; arbitrary value-read edges are not already installed |
+| [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss#L780][.cc and object construction]] | New object state/cache; copies specifications, not the old receiver's computed values | A trace cache must obey the same fresh-receiver law |
+
+object-shape-issues computes declared-field errors even when it has found extra
+names. It does not evaluate unknown values, but this is not a blanket guarantee
+that no declared value is touched after an unknown name is found. Keep this
+distinction in both tests and UX claims.
+
+* Native protocol extension, not a user configuration API
+
+The proposed observer has two cooperating parts:
+
+1. Contract demand association: immediately before an actual candidate field
+   access, associate descriptor, effective receiver, slot, semantic diagnostic
+   path and validation phase. Required-prototype/name checks still precede value
+   access. An unknown-name diagnostic may inspect that slot's source metadata
+   without reading its value. Container indices require the corresponding native
+   container diagnostic path propagation; object-only coverage is not universal.
+2. Native slot read observation: before delivering a cached or computed value,
+   make its effective receiver, slot/specification identity, revision and cache
+   status available to the active admission observer. Nested domain reads in
+   classifiers and obligations use the same boundary, not special wrappers that
+   maintainers must call.
+
+These hooks are proposed, not existing exports. .get, lexical slot identifiers,
+with-slots and ordinary .ref keep their current syntax. A native optimized read
+must route through the shared boundary while an observer or dependency frame is
+active, without emitting the same event twice through a fallback .ref. Installed
+.ref/inline/layout bypasses need explicit coverage before they can be qualified.
+
+Physical dependency identity and semantic diagnostic location are different.
+If Gitea's port getter reads PostgreSQL's port, that is a PostgreSQL receiver/slot
+dependency caused by a Gitea field demand, not a fictitious child path under
+Gitea's port. Retain the actual definition location and the demanding Contract
+path separately. Aliases can give one receiver several valid semantic paths;
+do not build a global first-path-wins origin map.
+
+The observer must use a resolved native callback/dynamic parameter, not perform
+another .ref to look up its own observer on every read. Metadata inspection is
+non-evaluating, reentrancy-controlled, and cannot suppress nested user value
+computation. Preserve bootstrap anchors and the existing cycle guards. Reads
+from custom construction/compute-slot hooks need an explicit construction-frame
+coverage decision; a hook that eagerly demands unrelated values cannot be made
+lazy by attaching an observer afterwards.
+
+* Receiver-bound trace and commit law
+
+A private cache entry retains a compact immutable dependency node together with
+its value. Its key is effective receiver identity plus slot and receiver revision,
+not just a slot symbol, prototype identity or source filename. Reuse object
+revision/weak invalidation primitives; do not add a schema-shaped public table.
+
+On a miss, extend the existing native computation frame to record actual reads.
+Each dependency identifies its receiver, slot, revision and resolved definition
+or cache-entry token. Commit value and trace together only after computation and
+dependency validation succeed. Exceptions/cycles install neither accepted value
+nor complete trace. Existing cache clearing must clear traces too.
+
+Record cold-computation dependencies even before a source-admission scope opens.
+Otherwise the required "parent already cached" case has no reliable history to
+replay. An inactive observer performs no filesystem checks, and simple leaves
+can share an empty dependency representation. The cost of this native tracing
+is a design tradeoff to measure, not a zero-overhead claim.
+
+On a hit, validate/replay only the retained dependency DAG for that cache entry.
+Do not execute getters again, scan sibling slots, invoke stored Function bodies,
+or read current source bytes and call them an original baseline. Source callbacks
+project original located-definition observations into the existing 32.08 collector.
+Shared nodes may be visited once per admission using identity/revision checks.
+No accepted cross-admission memo substitutes for fresh final currentness.
+
+Ordinary reads with neither observer nor active computation frame keep their
+fast value path. A hit inside a cold computation can link the existing child
+dependency node without walking its whole DAG. An active source admission
+performs guarded replay. Do not replay every transitive source dependency on
+every ordinary hot read or turn trace bookkeeping into filesystem I/O outside
+the explicit source-bound admission boundary.
+
+An untraced computed cache hit cannot be declared complete. The intended normal
+rollout is a new, consistently compiled runtime recording from process start;
+legacy/unqualified entries fail source-bound admission with an explicit coverage
+diagnostic. Do not silently recompute them: arbitrary callbacks may have effects.
+This is not a compatibility evaluator or an implicit effect retry.
+
+For non-ancestor reads, successful computation can register the discovered weak
+dependency edges using the existing invalidation engine. This registration is
+new behavior, not something already guaranteed by prototype ancestry. Check
+dependency revisions at commit and replay; effects are not rolled back. A stale
+trace refuses before delivering a value to admission rather than repairing a plan.
+
+* Cache routes that must not be conflated
+
+| Route | Required handling |
+|-------+-------------------|
+| Cold constant/default/computed slot | Deliver native value; bind definition/revision and actual dependency trace |
+| Warm .ref | Observe/replay before return, even though compute-slot is bypassed |
+| .ref/cached hit | Observe that existing cache entry; never force a missing field |
+| .ref/cached absence | Retain an absence observation; replay must detect a later fill even without object revision change; fallback computation may have its own reads |
+| Explicit .put! value | Retain instance assignment/revision identity; do not invent a source locator |
+| Declaration/metadata mutation | Existing dependency invalidation plus trace clearing; preserve construction/cycle refusal |
+| Installed layout/inline fast path | Observer/frame-aware route or explicit unsupported coverage until audited |
+
+Default provenance is a concrete gap: Core's current source-object-slots filters
+out ? rows and stores locations on method specifications. A read observer cannot
+manufacture the missing default location. Add optional provenance to the native
+definition/default entry, preserving its constant/default semantics, rather than
+turning defaults into computed methods or maintaining a separate field catalog.
+Unlocated raw writes remain unlocated; .cc replacements must not borrow a parent
+assignment's source. JSON baseline and package/source ownership remain separate
+existing observations.
+
+* Parent/child isolation and normalization
+
+.def inheritance, multi-parent composition, .+, .cc and delayed =>.+ must create
+fresh receiver-local computed cache/trace state. They can share immutable method
+specifications; they cannot transplant a parent's receiver-bound dependency node.
+An intentional reference to another object remains a dependency on that actual
+object, not a request to rewrite every parent reference to the child.
+
+Native validation wrappers introduce another receiver without necessarily
+introducing another user assignment. prepare-rebinding supplies the raw/checked
+relationship; expose it as internal normalization lineage for diagnostics. Do not
+misattribute its validator wrapper as a user override, or use that relationship
+to replace the receiver used by inherited computation. rebind-validation may
+return the raw candidate when checks preserve identities; admission evidence must
+refer to that actual returned candidate, not a discarded temporary receiver.
+
+Keep Gitea's contextual descendants with value-contract: #f: classifiers and
+.obligations still run on exact normalized children. Keep both contribution
+requirements and the plan.configuration identity/scalar checks. A valid source
+trace for a cached parent plan does not make it a valid child plan.
+
+* Target maintainer surface
+
+** Private trace sketch and admission integration
+
+The following Scheme is a proposed internal protocol sketch, not executable
+current Core exports. defstruct is used only for private cache bookkeeping;
+the public object and Contract syntax does not change. A slot-read node is
+sealed after cold computation. It records original source inputs from located
+definitions, never newly read bytes presented as the old baseline.
+
+#+begin_src scheme
+;; NEW private native cache metadata; not a user-maintained field catalog.
+(defstruct slot-read (receiver slot revision token inputs dependencies))
+
+;; NEW Core/native bridge. Each pass has its own identity-based visited set.
+(def (replay-slot-reads! roots)
+  (def seen (make-hash-table-eq))
+  (def (visit read)
+    (unless (hash-get seen read)
+      (hash-put! seen read #t)
+      (unless (and (= (slot-read-revision read)
+                      (object-revision (slot-read-receiver read)))
+                   (eq? (slot-read-token read)
+                        (%slot-entry-token (slot-read-receiver read)
+                                           (slot-read-slot read))))
+        (error "stale slot dependency" (slot-read-slot read)))
+      (module-source-admit-current! (slot-read-inputs read)
+                                   "configuration source changed")
+      (for-each visit (slot-read-dependencies read))))
+  (for-each visit roots))
+
+;; NEW delivery callback: called on BOTH qualified cold and warm value returns.
+;; The existing native evaluator still computes/returns the actual value.
+;; call-with-slot-read-observer and %slot-entry-token are PROPOSED hooks.
+(def (call-with-admission-slot-reads body)
+  (def roots (make-hash-table-eq))
+  (def (observe! read)
+    (replay-slot-reads! (list read))
+    (hash-put! roots read #t))
+  (call-with-slot-read-observer observe!
+    (lambda ()
+      (body (lambda () (replay-slot-reads! (hash-keys roots)))))))
+
+;; Proposed insertion into the EXISTING SourceAdmissionContract. .admit body.
+;; next is the bound native inherited .admit, invoked once.
+(def (source-contract-admit/observed contract next candidate context)
+  (call-with-module-source-fresh-reads
+    (lambda ()
+      (call-with-collected-module-sources
+        (lambda (sources-current!)
+          (call-with-admission-slot-reads
+            (lambda (dependencies-current!)
+              (def evidence
+                (source-contract-admit contract next candidate context))
+              (dependencies-current!)
+              (sources-current!)
+              evidence)))))))
+#+end_src
+
+source-contract-admit and the source collector already exist; the /observed
+wrapper illustrates their future integration, not a second public admission
+entry. The two fresh replays finish after inherited validation, child evidence,
+diagnostic decoration and contextual currentness. Native token lookup must not
+read a user slot or trigger the observer. Trace traversal must have a finite
+resource budget; exhaustion rejects rather than accepting a truncated graph.
+The sketch elides the native cold-frame implementation, not its requirements:
+capture dependencies from process start; register weak read edges; commit the
+value and sealed node together; invalidate them together. Absence observations
+need a distinct token/presence form. An unqualified cached value must refuse,
+not be disguised by constructing an empty slot-read node on a warm hit.
+
+Contract field-demand association is the other NEW hook. The existing
+object-shape-issues/validation-fields access should retain its selected Type
+and diagnostic field path around its ordinary .ref. That association supplies
+semantic paths; the native read node supplies the actual receiver and original
+definition. The existing source locator joins these facts. Neither the callback
+above nor a module author enumerates the leaves of responsibilities.
+
+Nested observer scopes must notify every active admission collector, as the
+existing collected-source protocol does. A dynamic binding that simply replaces
+the outer callback loses outer revision coverage after the child returns. The
+native dispatcher therefore keeps a scoped observer stack; each delivered read
+reaches all enclosing collectors exactly once. Metadata traversal itself emits
+no user-read event. Each final pass uses a fresh visited set, so earlier visits
+cannot suppress a changed dependency at return. These checks assume synchronous
+admission and the native mutation protocol, not a concurrent snapshot transaction.
+
+** Parent warm-up and child admission
+
+This sequence mirrors the current publication control's native object syntax.
+Guest services and ApplicationContract belong to the Scenario owner described
+above. publication is the existing bound publication supplied by that Scenario;
+it is not hand-assembled source metadata.
+
+#+begin_src scheme
+(def Parent (.get publication value))
+(def parent-plan (.get Parent plan))
+;; Deliberately warm the computed leaves, not just the outer plan object.
+(def parent-db-port (.get parent-plan postgresql port)) ; 5432
+(def parent-client-port (.get parent-plan gitea database-port)) ; 5432
+
+(.def (Release @ Parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+
+(def evidence
+  (.call (.get publication contract) .admit
+         Release (.get publication context)))
+;; On acceptance, use evidence.candidate: normalization may return a new receiver.
+;; candidate.plan.configuration eq? candidate.config
+;; candidate.plan.postgresql.port = candidate.plan.gitea.database-port = 5433
+;; parent-plan still belongs to Parent and retains its 5432 values.
+
+(.def (Frozen @ Release) plan: parent-plan)
+;; The same public .admit refuses Frozen with stale-parent-plan.
+;; Valid source traces cannot authorize a plan for a different configuration.
+#+end_src
+
+The port assignment replaces a scalar; =>.+ only preserves intermediate objects.
+The omitted client port follows the effective database via the existing lexical
+slot default. An explicit client port is not silently rewritten. The raw/checked
+normalization lineage and final plan identity must remain as described above.
+
+The target change is only removal of the third source-path argument after the
+native hooks are qualified. Safe domain stage ordering remains:
+
+#+begin_src scheme
+;; Proposed second-step surface, NOT the current implementation's coverage.
+(source-diagnose-at database-type '(config postgresql))
+(source-diagnose-at client-type '(config gitea))
+
+;; Existing declaration remains; field selection comes from its value Contract.
+.preflight: (.get value-contract preflight)
+.locate-diagnostic: (config-diagnostic-locator documents '(config))
+#+end_src
+
+The root paths locate a stage, not a maintained leaf field list. The observer
+checks actual intermediate/leaf reads. Source locator projection remains inside
+collection; child refusal receipts keep their Contract/candidate lineage. After
+all inherited admission, diagnostic and contextual checks, the 32.08 collector
+freshly rechecks retained sources before return. Native dependency tokens must
+also remain current. Observation does not introduce another normalization pass.
+
+* Laziness, cost and minimum implementation gate
+
+Contract responsibilities are required fields, not arbitrary lazy suggestions:
+force-rebinding intentionally forces selected validators. Source observation
+must preserve that existing demand, neither force undeclared siblings nor skip
+required child obligations. Selected projections must already exclude unused
+branches. Function bodies remain deferred until their explicit call boundary.
+
+Trace capture distributes work over actual cold computations, without eager
+catalog loading. A guarded hot admission still pays for its reachable dependency
+closure and unique source observations. Bound trace growth and visited sets;
+budget exhaustion refuses, never silently truncates a proof. No scale or
+performance advantage is established by this design.
+
+Native object instantiation already assembles method tables from its slot
+metadata, including compute-slot hooks. Observing demanded values does not make
+that existing preparation free, nor repair a custom hook that eagerly evaluates
+unrelated fields. This design does not solve arbitrary mutable Scheme globals,
+non-POO container mutation, external I/O or effects concealed in a getter. Those
+need their own explicit guarded protocols; tracing is not a sandbox.
+
+Required controls before deleting the current leaf guards:
+
+- Pre-admission cache warming followed by parent admission and derived-child
+  port changes; parent caches remain unchanged and the child plan aliases final config.
+- Cache-hit replay of a dependency not otherwise revisited by the field Contract;
+  source bytes change with unchanged object revision and admission refuses.
+- Cross-object revision changes, shared roots and diamond dependencies; proper
+  invalidation/replay without copying a parent's trace to a child or looping.
+- Ordinary miss/hit, cached-only absence-to-fill, default, instance override and
+  any enabled inline/layout route; callback errors publish no partial cache.
+- Raw/checked validation lineage and canonical identity; no second normalization
+  or false user-origin attribution for built-in wrappers.
+- Unknown value remains cold, unused erroring branch remains unobserved, and
+  stored Function bodies are not executed to discover dependencies.
+- Existing child obligation, joint policy, exact plan identity and nested source
+  currentness controls remain green without manual source-path lists.
+
+* Evidence boundary
+
+The production native hooks and leaf-guard removal remain proposed. A later
+[[file:32.10-isolated-slot-read-replay.org][32.10 isolated native qualification]] exercises cold/warm .ref delivery against
+the fixed Core source pin without installing those hooks into production.
+Scenario source ownership/default composition is updated separately. The
+38 cases recorded in [[file:32.08-collected-source-observations.org][32.08]] establish the first-step explicit-guard implementation;
+they do not prove the proposed observer, trace capture/replay, extra dynamic
+invalidation edges or installed fast-path coverage.

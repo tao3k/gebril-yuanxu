@@ -1,0 +1,293 @@
+#+title: 10.07 Guestbook: JSON and Scheme Data to Contracted Domain Objects
+#+language: en
+#+property: DOCUMENT_ID 10.07
+#+date: [2026-10-17]
+#+property: STATUS design-only-native-json-api-source-inspected-no-new-adapter-implemented
+
+* Two layers and two independent sources of Contracts
+
+The [[file:10.08-guestbook-construction-protocol.org][native construction protocol]] now expands presence/default handling, field
+policy, Contract-associated holes, used bindings and final .admit into concrete
+Scheme design bodies. The [[file:10.09-guestbook-construction-reflection.org][companion reflection]] ties each decision to actual
+ecosystem mechanisms, reports and matched controls. Both remain design-only.
+
+The authoring model has ordinary data and domain objects. A user may supply JSON
+or equivalent Scheme data. The Module constructs effective domain objects using
+maintained defaults, functions and Contracts. Native refinement is an optional
+capability of the object layer, not a third mandatory wrapper or another engine.
+
+JSON Schema is not a prerequisite for loading JSON or constructing a POO object:
+
+| Source situation | Contract authority | Construction consequence |
+|------------------+--------------------+--------------------------|
+| Ordinary machine/deployment data without a supplied Schema | Maintained native Scheme Types/Contracts | Decode, objectify, then check applicable input and final-object Contracts |
+| Upstream supplies a standard JSON Schema | Existing JSON Schema -> Scheme Contract bridge | Generate covered field Contracts and reuse them in the same object path |
+| OpenTofu provider exports its Schema representation | Provider-format adapter, then shared Contract generation | Preserve provider/version/type identity; do not call every JSON Schema-shaped file standard JSON Schema |
+
+These are sources of requirements, not separate user interfaces. Native domain
+Contracts may add relationships not covered by a generated field Contract. Do not
+require a user to write a JSON Schema for ordinary data, or regenerate native
+Contracts through JSON Schema merely to use the same pipeline.
+
+This continues [[file:10.05-guestbook-context-and-contribution-design.org][the lexical-context Guestbook design]] and its selected Module/Scenario
+graph. No new selection syntax, role filename, Loader or execution API is added.
+
+* Native JSON support: verified source boundary
+
+The installed Gerbil package is gerbil-scheme@0.19,
+0.19.20261009110849.1cfb032.patch618d76f9eb72. Its std/encoding/json.ss re-exports
+the JSON API, and src/std/encoding/json/util.ss defines string->json, json->string,
+u8vector->json and read-json. Source was inspected, not executed in this change.
+
+Native decoding can be expressed directly:
+
+#+begin_src scheme
+(import :std/encoding/json)
+
+(def Input
+  (string->json
+    "{\"frontend\":{\"labels\":{\"env\":\"dev\"}}}"
+    (JSONReadOptions key-as-symbol: #t)))
+#+end_src
+
+This produces Gerbil JSON data, not an automatically contracted domain object.
+The inspected default reader options use walist-style objects, string keys and
+list arrays; the explicit option above selects symbol keys. JSON null decodes
+as #!void. Preserve null separately from a missing key, false and an empty list.
+Do not use truthiness to decide whether a default applies.
+
+Core already uses read-json and explicit reader options in
+[[file:../../../modules/json-schema/json-schema-source.ss][its JSON Schema source reader]]. That owner reads Schema documents. Ordinary
+configuration ingestion should reuse native decoding without pretending that the
+Schema reader already implements domain construction, input publication or source
+locations. The [[file:../../../module-system/source/config-prelude.ss][current config prelude]] provides POO/Core forms, not automatic
+JSON bindings. Package/prelude publication of selected native utilities remains
+an integration decision; no hand-written import is required by this target UX.
+
+* One Guestbook input, two representations
+
+** JSON data supplied by the user
+
+User-owned deployment.json:
+
+#+begin_src json
+{
+  "frontend": {
+    "image": "gcr.io/google-samples/gb-frontend:v5",
+    "labels": { "env": "dev" },
+    "services": [
+      { "ports": [
+        { "port": 8080, "targetPort": 80, "protocol": "TCP" }
+      ] }
+    ]
+  }
+}
+#+end_src
+
+** Equivalent ordinary Scheme configuration
+
+User-owned config.ss, as an alternative input:
+
+#+begin_src scheme
+(def Config
+  (.o frontend:
+      (.o image: "gcr.io/google-samples/gb-frontend:v5"
+          labels: (.o env: "dev")
+          services:
+          (list (.o ports:
+                 (list (.o port: 8080
+                           targetPort: 80
+                           protocol: "TCP")))))))
+#+end_src
+
+These are name/value inputs. No parent, =>.+, runtime Session or user-side stage
+chain is necessary. A .o creates a data object; it does not inherently extend one.
+
+One configured instance chooses one input authority. If a maintained entry selects
+a JSON file, the Module owns reading it relative to that source, retaining it in
+currentness and binding its data once. If it selects config.ss, Config is the value
+authority. Do not silently read both files and guess precedence. The public source
+selection spelling remains to be specified; config.json is not currently an
+automatically discovered role. Existing config.ss publication remains reusable.
+
+* Defaults and field policy are owned by the Module
+
+The [[file:../11-configuration-languages/11.24-guestbook-effective-services.org][existing Guestbook case]] supplies the maintained domain baseline. For this
+design's evolution control, frontend has replicas 2, labels app=guestbook and
+owner=platform-v2, and container port 80. Leader/Follower retain their maintained
+Redis Profiles and port 6379. These are the study's defaults, not universal
+Kubernetes defaults or a claim about the live images.
+
+| Authored input | Declared policy in this interface | Effective result |
+|----------------+-----------------------------------+------------------|
+| frontend.image | Replace scalar | Explicit v5 overrides maintained image |
+| frontend.labels.env | Merge entries by label key | env=dev plus inherited app/owner |
+| frontend.services | Replace supplied list | Exactly the supplied Service/ports |
+| Omitted replicas | Fill from maintained defaults | 2 |
+| Omitted Leader/Follower | Retain selected Profiles | Their final values remain available |
+
+This field policy is maintained once alongside the native Contract/interface. It
+is not inferred from JSON punctuation or duplicated in a separate JSON-only field
+schema. Field discovery projects the same policy and Contract metadata.
+
+Objectification preserves authored keys and value kinds; it must not discard an
+unknown key before strict input checking. Maps become data objects, arrays retain
+their sequence meaning, and scalars remain values. Domain construction subsequently
+applies the stated defaults/merge policy and the applicable prototypes. A plain
+POO data object does not acquire every domain meaning merely because it has slots.
+
+For a later upstream default of replicas 3 and owner=platform-v3, both ordinary
+inputs above receive those new defaults in a new qualified instance, while keeping
+their explicit image/env/Service list. If a user requests whole-label replacement,
+the maintained interface must provide an explicit intent or native object-layer
+assignment. A plain JSON object cannot silently mean both merge and replacement.
+
+* Functions are ordinary Scheme, not strings evaluated as code
+
+An optional upstream func.ss helper can compute a value:
+
+#+begin_src scheme
+(def (image-for-tag tag)
+  (string-append "gcr.io/google-samples/gb-frontend:" tag))
+#+end_src
+
+The Module's scope Contract declares its accepted input/result types and its
+interface publishes it once. A Scheme consumer may use the already bound scope:
+
+#+begin_src scheme
+(with-slots (image-for-tag) (.get guestbook functions)
+  (def Config
+    (.o frontend:
+        (.o image: (image-for-tag "v5")
+            labels: (.o env: "dev")))))
+#+end_src
+
+This example computes a string and then assigns it; it does not change the image
+field into a procedure. The constructor's final Contract still requires a string.
+A genuinely function-valued policy slot needs an explicit callable Contract and
+dependency/effect boundary. Do not automatically call every procedure found in
+data, eval JSON strings, or force unrelated function bodies for discovery.
+
+* Optional templates and placeholders
+
+Templates are an optional maintained entry, not a requirement for ordinary JSON.
+For a concrete placeholder example, an upstream template may contain null at
+frontend.image and frontend.services[0].ports[0].port, while retaining targetPort
+80 and TCP. The template-input Contract explicitly identifies those two locations
+as holes. Null at any other field retains its declared normal meaning.
+
+The publication associates those locations with named input bindings:
+
+| Template location | Binding | Required result |
+|-------------------+---------+-----------------|
+| frontend.image | frontend-image | Image string |
+| frontend.services[0].ports[0].port | frontend-port | Integer Service port |
+
+These associations belong to the template's Contract metadata, not a universal
+placeholder parser or a second field-schema registry. A JSON user can supply the
+binding values as data; a Scheme user can compute them with the same functions:
+
+#+begin_src scheme
+;; Value owned by the selected template entry; no substitution call by the user.
+(.o frontend-image: (image-for-tag "v5")
+    frontend-port: 8080)
+#+end_src
+
+The selected template entry owns decoding, binding and construction. Its concrete
+internal publication is expanded in the protocol; public source selection remains
+pending. The fragment illustrates binding values,
+not an implemented global Bindings role. Only declared holes consume these values.
+Missing bindings report the template path and name; a string port is rejected
+without implicit numeric parsing. Unused bindings should be diagnosed, not become
+ambient variables. There is no implicit getenv or whole-file textual substitution.
+
+Bindings may depend on declared pure values. Resolve demanded bindings in their
+dependency order and reject an actual demand cycle with its chain. Bind them once
+per effective instance. A required deployment input gets no fabricated default;
+it remains missing and prevents final admission. Secret resolution and process
+execution are separate capabilities, not consequences of a placeholder.
+
+* Internal construction order, not a user-written pipeline
+
+| Internal responsibility | Input/output and rejection boundary |
+|-------------------------+-------------------------------------|
+| Acquire selected source | Read only selected file/value; retain source identity and reader options |
+| Decode and objectify data | Native JSON or Scheme value to lossless data objects; no domain defaults yet |
+| Check input intent | Native authored or generated input Contract; retain unknown-field paths; permit only declared holes |
+| Bind selected holes | Check demanded binding values and provenance; reject missing/cyclic bindings |
+| Construct effective domain objects | Apply field policy, maintained defaults and selected prototypes; evaluate demanded pure functions |
+| Admit effective objects and connections | Public native .admit owners inspect final values, required children and field/relationship constraints |
+| Project and check resources | Deployment/Service use the admitted effective instance; check selector/port correspondence |
+| Publish preview | Expose effective values, covered checks, origins and remaining limitations; no deployment |
+
+These responsibilities may be demand-driven rather than eight global passes.
+Input acceptance is not final object admission. Generated field Contracts do not
+replace domain connection checks, and local acceptance does not prove cluster
+readiness. Reuse the public native Contract protocol; do not introduce a second
+JSON-specific admission engine or let an input override its required Contract.
+
+* Effective preview and failure controls
+
+Expected outcomes for both ordinary input representations, not runtime receipts:
+
+#+begin_example
+Development — projected-unadmitted
+  frontend.image                 gcr.io/google-samples/gb-frontend:v5
+  frontend.replicas              2                  inherited
+  frontend.labels                app=guestbook, owner=platform-v2, env=dev
+  frontend.containerPort         80                 inherited
+  frontend.Service               TCP 8080 -> 80      supplied list
+  redis-leader / redis-follower   retained selected Profile values
+
+After final Contract and resource-correspondence checks:
+Development — admitted-preview; not deployed
+#+end_example
+
+For each representation test port="8080", targetPort=1100 with containerPort=80,
+an unknown declared field, missing required data, null outside declared holes,
+an unused binding and a cyclic function/binding demand. An open labels map does
+not make evn a provable typo. Prefer a declared key policy or a labelled heuristic.
+
+JSON errors must retain the selected filename and JSON path. The native decoder
+alone does not establish a complete field source map; precise token ranges and
+duplicate-key diagnostics need separate qualification. Scheme source maps must
+survive hygienic lowering. Both errors should point to the authored value rather
+than expose generated object/cache records as required user knowledge.
+
+* Currentness, laziness and existing capabilities
+
+Decode once per qualified selected source instance, not once per field. Cache
+qualification includes source bytes, relevant bindings/functions, Contracts,
+default/merge policy and projection identity. A file or binding change invalidates
+dependent effective values even if the parent resource preview was already cached.
+Unchanged raw input does not justify reuse after a Contract or default changes.
+The original parent object remains unchanged by a child's construction/refinement.
+
+Unselected input files/templates remain unread; unused optional bindings/functions
+remain unforced. Selected Contracts can force what they actually require. Existing
+module linking eagerly traverses declared interface requirements; this proposal
+does not claim finer granularity from a lazy slot alone. Build/runtime phase guards
+remain in force. No JSON parse or ordinary preview should launch a process.
+
+Existing, source-inspected: native string->json/read-json, POO construction and
+slot semantics, the JSON Schema Contract bridge, and current publication/linking
+primitives. Pending: common deployment-input objectification, source association,
+template metadata/publication, role-wide lexical context, completion/merge policy,
+diagnostics and the complete Guestbook resource consumer. No new implementation
+or runtime test was performed for this design.
+
+* Issues and Engineering Limitations
+
+Keep the [[file:10.05-guestbook-context-and-contribution-design.org][qualified NixOS/devenv/Flox and Terraform references]] and
+[[file:../../20-29-ecosystem-research/23-terraform/23.07-practitioner-experience-and-restrictions.org][practitioner reports]]. Marks here: DESIGN-INFERENCE; NOT-REPRODUCED.
+Merge semantics still require choices, connection defaults can break clients,
+and source/selection must not depend on a result of their own construction.
+
+* Reflection and conclusion
+
+The improvement to evaluate is a small data-first interface with maintained domain
+integration, not compulsory JSON Schema authoring or compulsory POO inheritance.
+Humans and Agents inspect the same Contracts and effective values. Test equivalent
+JSON/Scheme outcomes, upstream evolution and diagnostic repair before claiming
+that this proposed convenience is correct or faster.
+

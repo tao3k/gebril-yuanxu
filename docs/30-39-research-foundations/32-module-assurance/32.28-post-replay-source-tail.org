@@ -1,0 +1,297 @@
+#+title: 32.28 Post-Replay Source Inspection Can Invalidate Admission
+#+language: en
+
+* Result: an actual limitation, not a repaired guarantee
+
+[[file:32.27-source-admission-body-observation.org][32.27]] verified changes made during the observed body. This chapter moves
+fault injection after the production MOP replay, into the real final source
+collector. The current SourceAdmissionContract can return accepted evidence
+after the selected objects or an already checked source become stale.
+
+The production code is unchanged. Passing a limitation test means the undesired
+behavior was reproduced; it does not mean that behavior is safe. No production
+Scheme fix or Loader adaptation is included.
+
+The native controls establish three different outcomes:
+
+- Changes in the context callback or at MOP replay entry are rejected by replay.
+- During final source inspection, object changes can escape: source bytes still
+  match and there is no subsequent MOP sweep.
+- During an ordered multi-file pass, a later file's observer can change an
+  earlier file that will not be checked again. Each comparison passed at its
+  own time, but the complete source set is stale when admission returns.
+
+* Audited boundary and fixed producer
+
+Core HEAD: =80e2e74022c9c4053445475402856c5f369aec48= with existing dirty changes
+preserved. gerbil-poo: =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. LeanPoo:
+=6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+[[file:../../../admission/source.ss][SourceAdmissionContract.]] currently performs:
+
+#+begin_src scheme
+(def evidence
+  (call-with-source-slot-reads
+    (cut source-contract-admit @ (inherited) candidate context)))
+;; The helper has completed its native MOP replay here.
+(parameterize ((current-module-source-phase 'return-currentness))
+  (sources-current!))
+evidence
+#+end_src
+
+The collected-source =current!= in
+[[file:../../../module-system/source/admission.ss][module-system/source/admission.ss]] starts fresh source reads and walks the
+previously collected observations. It does not traverse the candidate, retain
+another MOP observer around this tail, or replay the earlier object records
+again. Source freshness is not object freshness.
+
+=module-source-read= invokes =file-read= observation before the actual byte
+read. Therefore a callback changing that same file is caught by the following
+comparison. The multi-file witness changes a different, earlier file instead.
+The final collector itself uses fresh reads plus =for-each=, not a newly invented
+post-read callback. The cache wrapper used by the earlier MOP pass also has a
+=check-seconds= exit observation; that distinct exit hook is source-audited but
+not separately injected in this chapter.
+
+The replaceable context =admit-current= callback executes before MOP replay.
+The tests do not pretend it is a post-replay callback. Post-replay injection uses
+the actual public source observer and producer-owned phase/event values.
+
+* Actual native tests
+
+Owner: [[file:../../../t/source-admission-tail-test.ss][source-admission-tail-test.ss]]. It calls real =.admit= and never imports
+=recorded=, installs active MOP frames or invokes a test replay. The event helper
+only installs the existing =current-module-source-observer= parameter, forwards
+the prior observer, and fires once on a matching actual event. It reads but never
+sets =current-module-source-phase=. No production admission, reader or checker
+is replaced.
+
+The minimal probe has three consistency rules: Contract marker 0, candidate port
+5432 and External.port 5432. Its real obligation reads all three. Classification
+is deliberately simple; the actual service Scenario is exercised separately.
+A probe's test data is not a new public configuration API or purity assertion.
+
+** Before replay: the existing checks still reject
+
+1. A context =admit-current= callback edits the observed External.port. Native
+   replay raises =stale slot dependency=.
+2. A source observer at actual phase =slot-replay=, event =checks=, edits the
+   dependency before native replay starts. The same refusal occurs.
+
+The writes are not rolled back. These controls preserve the earlier qualified
+body/callback boundary rather than weakening it to make late witnesses pass.
+
+** After replay: three object targets escape
+
+A successful call first warms .admit. On the next call, the observer waits for
+=return-currentness/file-read= and makes one supported mutation:
+
+| Target | Mutation | Actual outcome |
+|--------+----------+----------------|
+| Contract receiver | marker 0 → 1 | accepted evidence returns |
+| Candidate | port 5432 → 5433 | accepted evidence returns |
+| Independent dependency | port 5432 → 5433 | accepted evidence returns |
+
+All selected source bytes remain ={}=. The obligation's captured values remain
+=(0 5432 5432)=, and the changed receiver's native revision advances once. A
+subsequent independent admission without the observer sees the changed policy
+and returns rejected evidence. The original returned acceptance was stale;
+calling the independent checker later does not retroactively repair it.
+
+#+begin_src scheme
+(at-event Contract candidate #f 'return-currentness 'file-read
+  (lambda ()
+    (.putslot! receiver key ($constant-slot-spec replacement)))
+#+end_src
+
+The real event helper asserts that the producer emitted the selected event. The
+actual test uses distinct fresh objects for each target and compares the stored
+obligation observations and revisions, not a caller-supplied state marker.
+
+** Late source mismatch still rejects in its original order
+
+The observer changes both External.port and the file about to be read. The
+final source comparison raises =configuration source changed=. It does not
+substitute a stale-object error for the existing source diagnostic. This is
+refusal before normal return, unlike the unchanged-file object witnesses.
+
+** Changing an earlier source escapes the ordered final pass
+
+The probe declares two fixture-owned inputs: =first.json= and =second.json=.
+When the final collector is about to read the second file, the actual observer
+rewrites the first. Admission returns accepted evidence, but a new independent
+=module-source-admit-current!= immediately rejects the changed first file.
+
+#+begin_src scheme
+(at-event Contract candidate #f 'return-currentness 'file-read
+  (lambda () (write-source first "{\"late\":true}")) second)
+#+end_src
+
+The expected bytes for both files are ={}=. The first comparison completed
+before the second file event, by the actual ordered collector loop. No parallel
+thread, timing race, cache poisoning or observer-binding ABA is required.
+
+** Maintained Gitea/PostgreSQL Scenario: stale returned plan
+
+The real publication retains both contributions. The parent plan is cached at
+5432; Release configures PostgreSQL 5433. A derived Context delegates to the
+original root analyzer, then captures the actual normalized candidate only when
+the analyzed Contract is the root. All original domain and contribution checks
+run before the late observer fires.
+
+#+begin_src scheme
+(at-event Contract Release Observed 'return-currentness 'file-read
+  (lambda ()
+    (.putslot! (.get analyzed config postgresql settings)
+               'port ($constant-slot-spec 5440))))
+#+end_src
+
+Actual assertions after the public .admit returns:
+
+#+begin_src scheme
+(check-equal? (.get evidence accepted?) #t)
+(check-equal? (eq? (.get evidence candidate) analyzed) #t)
+(check-equal? (.get analyzed config postgresql settings port) 5440)
+(check-equal? (.get analyzed plan postgresql port) 5433)
+(check-equal? (.get cached postgresql port) 5432)
+(check-equal? (eq? cached (.get Parent plan)) #t)
+(check-equal? (length (.get Context contributions)) 2)
+#+end_src
+
+The returned candidate/plan disagree even though their identities remain linked.
+Both requirements were evaluated earlier; preserving their rows is not proof
+that those requirements still hold after a late configuration edit. Parent-cache
+isolation survives this witness and must not be confused with child-plan
+currentness. No publish/deploy effect is executed or claimed qualified here.
+
+* Lean: historical checks versus applicable return
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
+versions, the successful earlier MOP check, and the source versions seen at each
+file comparison. These are projections of the native controls, not new runtime
+epochs or trusted user labels.
+
+- =object_tail_counterexample=: the actual sequence can accept with a stale
+  receiver, candidate or external dependency after an earlier valid replay.
+- =earlier_file_counterexample=: both source comparisons can pass while the
+  live first file no longer matches at return.
+- =retained_requirements=: acceptance still records the earlier replay result,
+  per-file matches, both evaluated requirements and child owner identity. It
+  deliberately does not conclude current object/source/policy truth at return.
+- =closed_inspection_trace= and =quiet_tail_preserves_replay=: a structurally
+  read-only trace preserves a checked state. Its event algebra has no writes
+  to admitted objects or sources; private instrumentation is outside that state.
+  This is a conditional law, not a native mechanism restricting arbitrary source
+  observer procedures. The current observer API has not been proved to map to
+  that closed algebra, and cannot acquire the property from a manual pure flag.
+- =late_source_failure_first=: the completed-source-error order remains intact.
+
+The revision projection remains necessary rather than sufficient for full MOP
+currentness; native checks also cover cache/instance/checker identity. Stronger
+cache controls from prior chapters remain in the full regression catalog.
+
+* Quint: three limitation witnesses on the correct implementation model
+
+[[file:../../../dev/proofs/quint/ReturnTail.qnt][ReturnTail]] models early callbacks, MOP replay, first-file inspection,
+second-file inspection and final return. It records the object revision at replay
+and the source versions at their respective read times, rather than inventing a
+single atomic snapshot. Terminal states have an explicit self-step.
+
+| Predicate/control | Meaning |
+|-------------------+---------|
+| recordedChecks | Earlier replay and individual source matches, evaluated requirements, child identity, parent isolation and diagnostic order |
+| skipReplay | Unsafe omission misses an early dependency change |
+| skipFile | Unsafe omission accepts an actually mismatched source read |
+| dropB / parent | Unsafe omission of second requirement / wrong candidate owner |
+| prefix | Unsafe replacement of the source error with a stale-object error |
+| objects | Correct-algorithm limitation: accepted evidence can contain stale objects at return |
+| sources | Correct-algorithm limitation: accepted evidence can have a stale source set at return |
+| plan | Correct-algorithm limitation: returned configuration can differ from cached plan |
+| acceptance | Stable valid data can still be accepted; the model is not vacuously rejecting |
+
+=recordedChecks= is deliberately not named a proof of end-to-end return safety.
+The limitation traces refute that stronger claim without changing the modeled
+production algorithm. Passing the gate means obtaining those expected
+counterexamples, not asserting the stronger predicates.
+
+* Reflection and design consequences
+
+The final file checks assumed stable, effect-free inspection. The source code
+comments state that assumption; the public observer is an arbitrary procedure
+and the tested native path does not enforce it. These witnesses do not refute
+a theorem conditioned on a closed read-only tail. They refute inferring that
+premise automatically from the existence of fresh reads, restored dynamic scope,
+a successful MOP pass or the name of an instrumentation callback.
+
+Do not repair this with a user-maintained source table, more purity booleans or
+an endless alternation of source and object checks. If the last check can call
+another writer, there is another gap. A future production design needs a
+qualified boundary with no later writes to the admitted footprint, or a final
+trusted non-callback object inspection after all callbacks, retaining its actual
+read graph. Such inspection must preserve the established diagnostic order and
+must not invoke cold hooks/foreign checkers as if they were closed metadata.
+No syntax or implementation of that boundary is introduced here.
+
+An object-only final sweep would not make a multi-file filesystem read atomic.
+External writers still require a snapshot/immutability assumption or an external
+atomic conditional-commit/fencing authority. Immutable packaged source bytes may
+help that particular premise but do not freeze Scheme objects or make arbitrary
+observers read-only. Neither proof artifacts nor accepted preview evidence alone
+authorize applying a stale plan.
+
+* Qualification
+
+Completed gates and raw-artifact boundaries follow below. Production Scheme,
+source observers, return checks, Loader and resource budgets remain unchanged.
+
+** Formal gates
+
+The final Lean build completed 168 jobs and audited 5377 declarations with only
+standard Lean axioms. All six ReturnTail obligations are required by the aggregate
+proof gate. The earlier successful =lean-01.log= is superseded by =lean-02.log=:
+the final relation records each file's version at its own read time, rather than
+assuming a simultaneous live-source snapshot.
+
+The full Quint gate completed 128 outcomes across 129 source files: 16 positive
+models, 91 unsafe-variant counterexamples, nine correct-algorithm limitation
+witnesses and 12 acceptance witnesses. The bound source cut remained unchanged.
+The new positive =ReturnTail= exhausted 192 distinct states (224 generated, zero
+queued). Correct-algorithm counterexamples were found for =objects= (164 distinct
+states), =sources= (192) and =plan= (168). These are retained failures of the stronger
+return predicates, not repaired safety claims. Existing unsafe controls still
+reject dropping either requirement, substituting parent identity or changing the
+first diagnostic.
+
+** Artifact boundary
+
+Raw logs and the source-bound Quint receipt remain local under
+=/private/tmp/core-return-tail-20261018/=; no raw execution logs are committed.
+The production/fixture/installed-MOP source manifest was rechecked without drift.
+The supported sequential writes and real native observation events are tested.
+A closed effect-free return tail, atomic external-source snapshot and conditional
+commit remain unestablished premises. No deployment or publication effect is run.
+
+** Native gates and retained failed attempt
+
+Using the existing heap-fenced =just test-file= entrypoint serially, the new
+return-tail test completed six cases, actual body regression six, root/child
+regression one, and real service publication regression eleven: 24 completed
+cases, each with MODULE-OK, HARNESS-OK and final OK, without harness/heap/stack
+error markers. The tail cases include expected stale-acceptance witnesses.
+
+The first service regression attempt failed during import: the compiled fixture
+could not resolve =AdmissionPublication.= from =:yuanxu/admission/publication=.
+The current compiled publication interface was inspected and contained that
+export. Repeating the unchanged default command completed all eleven cases.
+The first failed log is retained; the exact cause of the transient import failure
+is not established. No source edit, dependency reinstallation, compatibility
+runtime, timeout increase or compiled-artifact deletion was used for the retry.
+The 24-case total describes completed controls, not universal safety or a fix.
+
+
+* Follow-up: constrained dispatch, not another replay
+
+[[file:32.29-constrained-return-tail.org][32.29]] distinguishes a replaceable caller wrapper from a producer-owned gate.
+The latter is tested only in a temporary source candidate; this chapter's
+production limitation remains unchanged. External filesystem writers remain
+outside a source-observer dispatch restriction.

@@ -1,0 +1,302 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.01 Configuration Language Design: User Intent, Data Overlays and Native Extension
+#+property: DOCUMENT_ID 11.01
+#+date: [2026-10-16]
+#+filetags: :config-language:research:comparison:
+#+property: STATUS research-router-no-runtime-or-loader-change
+
+* Core principle: modular configurations
+
+The [[file:11.63-aws-two-layer-interface.org][two-layer AWS interface analysis]] separates ordinary values from justified
+executable extension, including the still-missing deep direct assignment.
+The [[file:11.64-configuration-and-iac-platform-boundaries.org][configuration/platform comparison]] records real ecosystem strengths,
+questions and criteria for removing unjustified abstraction rather than
+rebuilding existing IaC engines or control planes.
+
+[[file:11.32-modular-configurations-core-principle.org][Modular configurations are a core design principle]], grounded in Nickel's
+official rationale and actual Omnibus AWS/Sandbox sources. Configuration must be
+inspectable and composable, retain final-value dependencies and admit selected
+results without exposing implementation plumbing. Functions remain first-class
+for algorithms and explicit transformations. This is selective ecosystem learning,
+not a goal of reproducing the Nix module system or its merge policies.
+
+The [[file:11.33-aws-contract-composition-and-local-dependencies.org][AWS Contract composition and local dependency design]] makes that principle
+concrete: configuration and mandatory Contract contributions travel together;
+dependency requirements are explicit; users replace ordinary values and receive
+Contract-driven discovery and source-aware resource diagnostics.
+
+Read the consolidated [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][AWS consumer config.ss]] and its [[file:11.69-aws-case-index.org][source guide]]: Module capability,
+independent Profiles, named Scenario relationships and one ordinary user edit.
+The reusable capability uses the established Module role shell outside the case;
+shared provenance/admission stays in Core. The [[file:11.68-audit.org][source audit]] records removal of
+the over-split 19-file draft. All these sources are design-only, not build inputs.
+
+The [[file:11.34-aws-main-source-parity-and-profile-families.org][real Omnibus AWS source mapping]] accounts for the actual main.ncl inputs,
+selected resource elaborations and reusable Profile variants, distinguishing the
+faithful baseline from the user's type change and the second Scenario.
+
+* Core design ownership
+
+The [[file:../../../module-system/design/08-infrastructure-platforms-and-design-gates.org][cross-platform configuration architecture review]] separates expression,
+provider planning, state, workflow governance and reconciliation. Its research
+modules record actual issues, reflection, proposed responses and gates before
+multi-window/args implementation resumes. A more expressive language is not,
+by itself, evidence of a better infrastructure platform.
+
+This chapter is owned by yuanxu. It contains configuration expression,
+contract/default views, native inheritance/refinement, module source organization,
+publication/selection, and design reasoning from ecosystem comparisons. The
+[[file:../../../module-system/design/README.org][Module System protocol documents]] and
+[[file:../../../feature-system/design/README.org][Feature System migration design]] own shared mechanism boundaries.
+
+Agentic AI Lab retains runnable/source-backed business cases and its product adapters.
+Examples here may cite that consumer, but no such citation creates a Core runtime
+dependency. Workspace-only links to unpublished consumer design notes are marked
+by their location outside this Core checkout; pinned ecosystem code references
+use direct upstream URLs. These are design sources, not a second dependency lock.
+
+Feature System and JSON Schema now have actual Core implementation owners.
+Historical consumer citations do not imply a Core -> product dependency. Read the
+[[file:11.22-migrated-core-guestbook-chain.org][migrated Core Guestbook chain audit]] for current callable interfaces, source-only
+load-modules behavior and the remaining init/deny/build/provider adapters.
+
+The [[file:11.23-source-ref-to-admitted-scope.org][explicit interface and SourceRef-to-scope link design]] replaces direct
+implementation imports as the target user route, while preserving the source/API
+audit in module 21. It is the canonical four-file Guestbook example: init,
+JsonSchema/Guestbook interfaces and minimal build script, with one selected graph
+serving admitted scopes and build input.
+
+The [[file:11.21-jsonschema-guestbook-role-examples.org][four-role JsonSchema/Guestbook review]] prints the proposed source contents and
+records duplicate-authority, publication and dependency gaps instead of hiding
+them behind helper names.
+
+The [[file:11.24-guestbook-effective-services.org][effective Guestbook service study]] continues that chain with real KCL Profiles,
+port/label changes, final-child Contract admission and resource candidates. Its linked D2 sources and embedded SVG attachments
+distinguish module/build ownership from service/DNS relationships.
+
+The [[file:11.25-guestbook-field-discovery-and-diagnostics.org][Guestbook field-discovery and diagnostic UX study]] compares the same port/Pod-label
+edit against inspected KCL fields, specifies origin-aware errors and records the
+label-scope difference and unexecuted comparison controls.
+
+The [[file:11.26-schema-discovery-source-lowering-and-macro-governance.org][Schema discovery and source-preserving macro design]] gives concrete native
+projections over the existing artifact/diagnostic IR and applies the existing
+macro governance owner to direct assignment and private source association.
+
+The [[file:11.27-guestbook-macro-admission-and-minimal-controls.org][Guestbook macro admission and minimal controls]] specifies shared-prefix, source/
+hygiene, single-evaluation and Schema-revision gates without exposing metadata to
+users or implementing the proposed adapters.
+
+The [[file:11.28-guestbook-concrete-qualification-fixtures.org][concrete Guestbook fixtures]] define the complete Schema revisions, value probes,
+source-syntax rows and native comparisons, distinguishing expected data from
+pending observation of generated publication metadata.
+
+The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][imported JSON/native Contract and observed-expansion design]] is the current
+source model: real pinned JSON assets replace synthetic Schema revisions as the
+main walkthrough; actual core-expand1 output supplies observed origin rows.
+
+The [[file:11.30-workflow-module-contract-and-simple-user-config.org][simple Workflow Module example]] hides file/compile plumbing in one ordinary
+from-file function and publishes config/types.Config. It retains the full
+observed-origin reader/comparator as internal maintainer controls in module 28.
+
+The [[file:11.31-module-config-types-and-function-slots.org][module config/types/function-slot convergence]] is the current public access model:
+one native scope, direct interface bindings and no forwarding prototypes. Its Nix
+comparison separates option declarations from native Contract/default/merge owners.
+
+* Purpose and organization
+
+Treat configuration-language design as a distinct research track, with evidence,
+reflection and acceptance criteria, not a collection of incidental Scheme syntax
+examples. Start from a maintained Profile, its consumer and a real change. Choose
+ordinary assignment, data transformation, object construction or protocol extension
+only after stating that intent. Native POO is an available abstraction, not an
+obligation imposed on every configuration author.
+
+This configuration-language track complements the Core-owned
+[[file:../../../module-system/design/00-index.org][Module System design chapter]].
+KCL comparison and scope-binding research live here; existing ecosystem evidence
+remains linked at its original location. Use :config-language: for this track, plus
+:comparison: for external evidence, :data-overlays: for value transformations,
+and :design: for proposed POO interfaces. These are documentation tags, not runtime
+module/category metadata or a new package catalog schema.
+
+| Question | Owner document |
+|----------+----------------|
+| Pinned actual KCL, Omnibus AWS/Sandbox and HiveBus source cases | [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/README.org][Scenario reference submodules and provenance]] |
+| What actual user/model/renderer source changes in the POO design | [[file:../../../../docs/10-19-design/10.08-config-languages/10-source-scenario-research.org][Source scenario research and acceptance]] |
+| Concrete Scenario responsibilities, per-Profile admission and required-role evidence | [[file:11.10-application-scenario-admission.org][Application Scenario admission design code]] |
+| Contract-directed declarations and Web/API/database relationships | [[file:11.09-contract-directed-service-scenarios.org][Typed service Profiles and final Scenario references]] |
+| When upstream/downstream reuse Profiles and how selected service graphs differ from inheritance | [[file:11.08-profile-families-and-service-composition.org][Profile families and selected service graphs]] |
+| Platform-only defaults and concrete Server/Port Contracts behind simple contribution values | [[file:11.06-platform-server-contracts.org][Internal Server defaults and Contracts]] |
+| Concrete Deployment/Service projection and effective-object link admission | [[file:11.07-server-resource-projection.org][Internal Server resource projection]] |
+| Real multi-environment Server defaults, user differences and Kubernetes projection boundary | [[file:11.05-kcl-kubernetes-multi-environment.org][KCL and Scheme multi-environment Scenario UX]] |
+| Existing POO slot bindings instead of repeated let/.get | [[file:11.03-native-slot-binding.org][Native slot binding comparison]] |
+| Same assignment/append/prepend/index/keyed operation in each language | [[file:11.04-common-operations-comparison.org][Matched common operations and data overlays]] |
+| Research purpose, method and actual ecosystem evidence | [[file:../../../module-system/design/164-module-interface-comparison.org][Modular configuration comparison]] |
+| Concrete directory Contract, native lazy tree and Guestbook scope | [[file:11.16-directory-contract-and-native-tree.org][Directory projection design code]] |
+| Standard Module directory roles, Agent UX and actual ecosystem tradeoffs | [[file:11.20-module-structure-contract-and-authoring-ux.org][Module structure design decision and research controls]] |
+| interface.ss publication, init.ss selection and one load-modules facade | [[file:11.19-feature-system-guestbook-selection.org][Module/Feature integration, full Guestbook init and graph]] |
+| Complete Guestbook auto/explicit init, negative decisions and build closure | [[file:11.18-guestbook-auto-explicit-init-examples.org][Guestbook init examples and diagnostics]] |
+| init.ss discovery/selection, Core/features, disable policy and build graph | [[file:11.17-init-selection-core-features-and-build.org][Init and selected graph design]] |
+| Typed directory sources, init.ss entrypoints and selected lazy module trees | [[file:../../../../docs/10-19-design/10.08-config-languages/14-directory-module-tree-design.org][Directory module tree design]] |
+| Module-scoped Schema capability, native responsibilities and Guestbook admission | [[file:11.14-guestbook-module-contract-admission.org][Module-scoped integration design code]] |
+| Existing schema bridge through Guestbook defaults, final admission and resources | [[file:../../../../docs/10-19-design/10.08-config-languages/12-guestbook-schema-profile-plan-chain.org][Schema-to-plan integration design]] |
+| Guestbook frontend/Redis Profiles, environment values and final resources | [[file:../../../../docs/10-19-design/10.08-config-languages/11-guestbook-source-comparison.org][Source-grounded Guestbook comparison]] |
+| Actual Nickel library configuration | [[file:../../../module-system/design/164-module-interface-comparison/01-omnibus-ncl-cases.org][Omnibus NCL cases]] |
+| Actual Nix deployment and advanced extension | [[file:../../../module-system/design/164-module-interface-comparison/02-hivebus-nixos.org][HiveBus and NixOS]] |
+| Matched language semantics, including Jsonnet and Dhall | [[file:../../../module-system/design/164-module-interface-comparison/03-config-language-semantics.org][Language semantics]] |
+| KCL replacement, insertion and merge distinctions | [[file:11.02-kcl-data-overlays.org][KCL and data overlays]] |
+| Native functions, publication and four matched CI examples | [[file:../../../module-system/design/164-funflow-public-configuration/29-functions-and-overlay-use-cases.org][Scoped data operations]] |
+| User intent and ordinary assignment | [[file:../../../module-system/design/164-funflow-public-configuration/11-direct-path-assignment-and-refinement.org][Assignment and refinement]] |
+| Final validation, discovery and plan preview | [[file:../../../module-system/design/164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][Discovery and preview]] |
+| Current programming constraints | [[file:../../../module-system/design/44-current-project-programming-style/02-poo-dispatch-and-extension.org][POO programming style]] |
+
+* Public names and Gerbil syntax
+
+Use YuanxuObjectContract. for the object Contract in design examples. POO is the
+normal object semantics; Native is not a second public category. The current
+[[file:../../../types.ss][Core export]] still uses its earlier name, so these examples describe a pending
+API rename, not an already available binding. Migrate the owning definition and
+consumers directly when implementation is authorized; do not add an alias layer.
+
+Keep Gerbil/Scheme syntax: boolean #t/#f and keyword disable: #t. Emacs Lisp t
+and Doom :disable are reference-language syntax, not substitutes for Scheme
+booleans/keywords. Existing yuanxu! is the bounded declaration surface; its
+new mode/root/disable interpretation remains a proposed extension, not a reason
+to create a second package DSL.
+
+* Required comparison discipline
+
+Compare both library maintainers and downstream authors using the same task and
+defaults. Record operation semantics, identity/conflict rules, diagnostics, demand
+and effective output. Do not compare an elaborate POO implementation with only
+another language's minimal syntax, or claim superiority merely from supporting
+higher-order functions. Use actual library consumers where evidence is available;
+label language-only examples and pending ecosystem research explicitly.
+
+Every comparison must end with a conclusion answering: (1) what Agentic AI Lab could
+improve for the matched real task, (2) where it is worse or incomplete, (3) why the
+additional abstraction is needed, and (4) what evidence would establish the gain.
+Separate native mechanism, proposed ecosystem capability and measured result.
+Relate Scheme functions, POO, Contracts, generics and MOP to a maintenance problem;
+do not treat expressiveness itself as proof of a better user interface. The
+[[file:../../../../docs/10-19-design/10.08-config-languages/11-guestbook-source-comparison.org][Guestbook conclusions]] apply this format to the three-service baseline.
+
+Distinguish three layers: data operations describe transformations over ordinary
+values; business functions encode maintained task policy; POO inheritance and
+Contracts preserve object behavior and validate admissible extensions. Namespaces
+organize exports. Do not repeat the namespace in each function name or create a
+new DSL to select procedures that normal lexical binding can already select.
+
+* Reflection and next evidence
+
+Scheme can express general transformations, but that alone does not supply field
+discovery, stable-key conventions, conflict diagnostics, pure execution, bounded
+cost or source-qualified previews. The design must supply those deliberately.
+KCL demonstrates the value of making operation intent visible; dmerge demonstrates
+collection-update needs beyond append. We must retain both clarity and familiar
+Scheme composition instead of hiding merge policies behind arbitrary functions.
+
+Next qualification needs matched executable cases for replacement versus update,
+missing/duplicate identities, order-sensitive composition, final-field rejection,
+and unselected-demand controls. The new function publication/preview examples are
+designs, not executed results. Existing native POO receipts retain their narrower
+scope. Loader implementation is excluded.
+
+* AWS Profile data and executable publication
+
+[[file:11.35-aws-profile-data-and-scheme-command-publication.org][34 AWS Profile data and Scheme command publication]] separates grouped configuration, single entry publication, selected build projection and runtime effects.
+
+[[file:11.36-aws-contracts-objects-and-configuration-roles.org][35 AWS Contracts, objects and configuration roles]] corrects role ownership and expands final Scenario admission.
+
+[[file:11.37-aws-complete-consumer-case-and-capability-boundary.org][36 Complete AWS consumer case and capability boundary]] replaces the one-value consumer example with full deployment input ownership.
+
+[[file:11.38-shared-value-types-and-private-domain-contracts.org][37 Shared value types and private domain Contracts]] grounds refined AWS fields in native Type/Contract and Gerbil address facilities.
+
+[[file:11.39-provider-schema-first-aws-contracts.org][38 Provider-schema-first AWS Contracts]] connects the existing Schema compiler, native semantic refinements and final Scenario/output admission.
+
+[[file:11.40-opentofu-module-and-complete-aws-contract-flow.org][39 OpenTofu module and complete AWS Contract flow]] owns provider conversion and connects the full role-based user Case.
+
+[[file:11.41-opentofu-generation-and-lazy-publication.org][40 OpenTofu generation and lazy publication]] expands the producer pipeline and generated Contract scope in three focused chapters.
+
+[[file:11.42-provider-collections-and-nested-types.org][41 Provider collections and nested types]] records real exported fixtures, complete structural conversion and mandatory native semantic residuals.
+
+[[file:11.43-opentofu-json-schema-implementation.org][42 OpenTofu conversion and shared JSON Schema admission]] records the implemented subset, real-source controls, native admission and remaining provider semantics.
+
+[[file:11.44-default-native-test-tool-repair.org][43 Default native test tool repair]] records the source fix, compiler/artifact rebuild and default-entry acceptance; no compatibility runtime is required.
+
+- [[file:11.45-aws-provider-source-and-collection-admission.org][44 Real AWS Provider Source and Collection Admission]]:
+  fixed release provenance, native Types/Contracts, actual HashString collisions,
+  separate exported-configuration and collection Contracts, actual offline
+  Provider validation, and Schema-export gaps.
+
+- [[file:11.46-package-produced-provider-contracts.org][45 Package-produced Provider Contracts]]:
+  package-owned schema production, generic native Contract publication and
+  test-only historical AWS qualification.
+
+- [[file:11.47-provider-version-cache-isolation.org][46 Real Provider Version Cache Isolation]]:
+  real AWS upgrade/rollback after parent caching, version-bound provenance and
+  native admission identity without Loader integration.
+
+- [[file:11.48-real-provider-family-publication.org][47 Real AWS, awscc and Null Publication]]:
+  three real package scopes, same-name provider/resource/data isolation and
+  verified selected demand boundaries without Loader integration.
+
+- [[file:11.49-multi-provider-configuration-admission.org][48 One Configuration, Three Provider Families]]:
+  selected published Contracts, one complete provider/resource/data candidate,
+  whole-configuration native admission, exact error paths and unselected types.
+
+- [[file:11.50-configuration-driven-contract-discovery.org][49 Configuration-driven Contract Discovery]]:
+  final-candidate discovery inside the module object layer, no user SelectedTypes,
+  original child admission, provenance and demand boundaries.
+
+- [[file:11.51-indexed-opentofu-artifacts.org][50 Indexed OpenTofu Artifacts]]:
+  Nix-owned kind indexes and per-type inputs, selected runtime IO, source/digest
+  preservation and matched real-package controls without Loader integration.
+
+- [[file:11.52-one-opentofu-artifact-collection.org][51 One OpenTofu Artifact Collection]]:
+  one collection injection for arbitrary Provider counts, native lazy modules,
+  final-candidate admission and no per-Provider environment declarations.
+
+- [[file:11.53-selected-opentofu-build-inputs.org][52 Selected OpenTofu Build Inputs]]:
+  final-configuration package demand, pre-realization catalog filtering, actual
+  derivation closure controls and cached native admission without a Loader.
+
+- [[file:11.54-selected-graph-nix-sources.org][53 Selected Graph External Inputs and Nix Sources]]:
+  one selected build handoff, owned Nix Source, source-bound demand, guarded
+  realization and replay, with real AWS-to-Null controls and no Loader.
+
+- [[file:11.55-repeatable-nix-phases-and-flakes.org][54 Repeatable Nix Phases and Flake Sources]]:
+  per-phase multi-round process/type counts, final-receiver cache binding,
+  native frozen-lock flake Sources and retained performance/rejection controls.
+
+- [[file:11.56-configuration-selected-flake-builds.org][55 Configuration-selected Flake Builds]]:
+  final-config Provider demand applied to locked FlakeSource capabilities,
+  actual derivation closure checks, source-bound replay and parent isolation.
+
+- [[file:11.57-module-build-role-and-final-admission.org][56 Module-local Build Roles and Final Admission]]:
+  lazy hygienic Build publication, phase isolation, no reverse root loading,
+  final native admission inside the build success boundary and real Flake tests.
+
+- [[file:11.58-config-role-native-defaults.org][57 Native Config Role Defaults]]:
+  headerless POO Config, conventional export, native weak prelude, original
+  source locations and compiler/interpreter parity; no mandatory consumer Build.
+
+- [[file:11.59-upstream-configuration-builds.org][58 Upstream Construction over Final Consumer Config]]:
+  dependency-selected upstream construction, consumer Config association,
+  separate artifact identities and final admission without consumer build.ss.
+
+- [[file:11.60-opentofu-single-module-publication.org][59 One Maintained OpenTofu Module Publication]]:
+  formal Core publisher, configured native Nix Source, one Build role, native
+  scope publication and direct migration away from the flat facade.
+
+- [[file:11.61-explicit-module-authorization-and-core-sources.org][60 Explicit Module Authorization and Core Sources]]
+- [[file:11.62-currentness-cost-and-shared-validation.org][61 Currentness Cost and Shared Source Validation]]
+
+- [[file:11.70-funflow-core-jobs.org][70 Core Funflow Jobs and the Ops Execution Boundary]]:
+  Core ownership, independent Profiles, one declarative task Graph, existing Ops
+  execution, failure blocking and final-receiver/cache verification boundaries.
+- [[file:11.71-functional-kernel-alignment.org][71 Functional Kernel Ownership and Funflow Alignment]]:
+  corrects the incomplete migration claim and distinguishes functional semantics,
+  Ops interpretation, real domain consumers and still-unqualified runtime parity.

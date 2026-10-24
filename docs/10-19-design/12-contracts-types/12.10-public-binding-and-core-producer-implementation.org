@@ -1,0 +1,147 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.10 Public Evidence Binding and the Unified Core Producer
+#+property: DOCUMENT_ID 12.10
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS local-implementation-no-module-adapter-loader-or-push
+
+* Implemented ownership
+
+The gerbil-poo checkout based on =850d7c81e77a92b261d16a0c081018244e22370a= now has local,
+unpushed changes exporting =bind-evidence= from =declarative-metadata.ss=.
+The public source owns exact subject/descriptor/context binding through existing
+invocation Contracts, formulas and publication. It imports no Core or Schema
+library and introduces no receipt type, registry, macro or approval cache.
+
+Core at =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e= has local changes to the
+existing =types.ss= evidence producer. Graph selection, source/Schema revision
+policies and publication-currentness decisions remain Core-owned. The generic
+binding algorithm is not copied into Core. Installed dependencies and locks
+remain unchanged; controls explicitly load the local public-library source.
+During the run, independent work amended that baseline to
+=d5f76e5956508f2f8ce766895421db44a7ff1eea=. The relevant object-contract,
+object-diagnostics and declarative-metadata source did not change between those
+commits. This task's public binding/test/docs edits remain local and uncommitted.
+
+* Public binding and existing publication
+
+#+begin_src scheme
+(def (core-evidence-view evidence)
+  (.o subject: (.get evidence candidate)
+      descriptor: (.get evidence admission-contract)
+      context: (.get evidence context)))
+
+(def BoundAdmission
+  (metadata.bind-evidence AdmissionCall Release ActualAdmission Context
+                         core-evidence-view))
+
+(defvalues (evidence next refusal)
+  (metadata.publish BoundAdmission Parent
+    (lambda (candidate)
+      (values (yuanxu-contract-admit ActualAdmission candidate Context)
+              candidate))
+    Release))
+#+end_src
+
+=AdmissionCall= retains the existing typed input and accepted-evidence output
+predicate. The public function adds an exact-reference relation while preserving
+the original formula and meaning. A private atom avoids formula-name collisions.
+The original rule short-circuits before evidence projection. Cold binding does
+not force invariant preparation, including when the parent prepared its checks.
+Existing stamps refuse stale input/output/rule preparation. Invocation and
+publication failure phases remain those of =declarative-metadata=.
+
+The actual admission descriptor must include all field contracts and obligations
+that affect approval. Merely binding a Schema Type while ignoring a changed
+admission policy would be insufficient.
+
+* One existing producer, no domain attachment
+
+The existing =yuanxu-validation-evidence= constructor now takes a Contract
+object as its first argument instead of a symbolic identity. It derives the
+diagnostic identity and records the reference in the same existing evidence:
+
+#+begin_src scheme
+(def (yuanxu-validation-evidence contract-value candidate-value
+                                    classification-value obligation-evidence-value
+                                    accepted-value diagnostics-value context-value)
+  (.o kind: 'yuanxu.contract.validation-evidence
+      contract-identity: (.ref contract-value 'identity)
+      admission-contract: contract-value
+      candidate: candidate-value
+      classification: classification-value
+      obligation-evidence: obligation-evidence-value
+      accepted?: (if accepted-value #t #f)
+      diagnostics: diagnostics-value
+      context: context-value))
+#+end_src
+
+All three construction paths were migrated directly: ordinary admission,
+responsibility-object admission, and missing-responsibility rejection. The
+native =.admit= generic and slot remain unchanged; direct slot calls also record
+the correct derived receiver. Nested responsibility evidence records its own
+descriptor, not just the root descriptor. A missing child row records the
+required Contract and remains rejected; it does not claim that a missing value
+was executed or accepted.
+
+=YuanxuValidationEvidence= now requires =admission-contract=, an object with
+an identity consistent with =contract-identity=. Malformed or absent references
+cannot pass the existing accepted-evidence predicate. Direct callers of the
+low-level constructor must pass the actual descriptor; there is no symbol-only
+compatibility path. Runtime call sites were checked and migrated.
+
+The alist encoder intentionally retains symbolic diagnostic identity rather
+than serializing the live descriptor object. A wire report cannot reconstruct
+an in-process binding or be replayed as a validated receipt. Core's existing
+candidate/context consistency checks are not claimed to provide authentication.
+
+* Fixture cleanup and native verification
+
+Removed: the isolated =produce-evidence= wrapper and the generated
+=fixture-binding.ss= implementation. Scheme preparation no longer extracts a
+binding function from a document. The scenario qualification directly imports
+=metadata.bind-evidence= and calls =yuanxu-contract-admit=. Negative tests alone
+deliberately corrupt a reference or relabel a receipt; domain code does neither.
+
+| Focused gate | Coverage |
+|--------------+----------|
+| Public =t/evidence-binding-test.ss= | 6 cases without Core: exact identities/state, each mismatched reference, wrong request, formula short circuit, cold binding after prepared parent, malformed projection |
+| Core =t/admission-binding-test.ss= | 2 cases: direct/generic ordinary and derived admission, rejection, nested responsibility and missing-child references, nonportable wire projection |
+| Updated qualification =evidence-binding-test.ss= | 9 cases: same-name contracts, cached parent/final child, changed contexts, malformed reference, fresh refusal, preserved formula, authentication counterexample |
+| Existing public =t/declarative-metadata-test.ss= | 6 cases of invocation, specialization and failure compatibility |
+| Existing Core =t/core-test.ss= | 5 cases: Core consumers of native admission and object behavior |
+| Existing qualification =schema-test.ss= | 10 cases: Schema responsibilities, missing references, final child values and existing Core admission/snapshot consumers |
+
+All tests run serially through the existing heap-fenced =just test-file= recipe,
+not a new runner. The source path overlays the actual modified Core =types.ss=;
+it does not use the earlier unchanged admission snapshot. The public test is
+registered in the existing Bazel declarations group; the Core producer test is
+registered in the existing Core test list. No full local build was run.
+All six suites passed (38 cases), plus the native preparation case. Each final
+run reported MODULE-OK, HARNESS-OK and final OK without ERROR CASE/CHECK/HARNESS
+or heap/stack overflow markers. Raw output remains in temporary artifacts.
+
+The first public test draft accidentally used identical lexical variable and
+POO slot names, producing a CyclicSlot refusal. Test locals were renamed so the
+objects contain the intended external values. This is a fixture correction,
+not a change to native lexical-slot semantics. A reading error in the initial
+Core test draft was also corrected before the final native gates.
+
+* What this does not establish
+
+References and nested contents must remain immutable. A new Graph, source or
+Schema generation needs a new Core-controlled context and new admission.
+Automatic mutation invalidation, live selection races, process-portable evidence
+and selective cyclic-publication readmission are not implemented or qualified
+by these tests. Existing preparation reuse is not approval-result reuse.
+
+The explicit forged-field counterexample still passes identity matching after
+relabeling a freely constructible POO receipt. This proves the boundary: the
+controlled producer/publication path is a premise, not authentication of an
+arbitrary external receipt. No signature, evidence store or second authority
+system was added to obscure that limitation.
+
+This change installs the generic algorithm and reference recording locally;
+only domain schemas, context selection and replay executors remain fixtures.
+No module adaptation, runtime Loader, dependency lock update or push is included.

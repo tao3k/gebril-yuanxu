@@ -8,25 +8,25 @@
 
 (import (only-in :clan/poo/object .ref))
 
-(export poo-flow-module-phase-file
-        poo-flow-module-hook-values
-        poo-flow-module-flag-enabled?
-        poo-flow-module-flags-enabled?
-        poo-flow-module-depth-value
-        poo-flow-module-depth-before?
-        poo-flow-module-phase-order)
+(export yuanxu-module-phase-file
+        yuanxu-module-hook-values
+        yuanxu-module-flag-enabled?
+        yuanxu-module-flags-enabled?
+        yuanxu-module-depth-value
+        yuanxu-module-depth-before?
+        yuanxu-module-phase-order)
 
 (def (module-context-alist-ref/default entries key default-value)
   (let (entry (assoc key entries))
     (if entry (cdr entry) default-value)))
 
-(def (poo-flow-module-phase-file module phase . maybe-default)
+(def (yuanxu-module-phase-file module phase . maybe-default)
   (module-context-alist-ref/default
    (.ref module 'phase-files)
    phase
    (if (null? maybe-default) #f (car maybe-default))))
 
-(def (poo-flow-module-hook-values module hook-id)
+(def (yuanxu-module-hook-values module hook-id)
   (let (value
         (module-context-alist-ref/default
          (.ref module 'hooks)
@@ -61,18 +61,18 @@
    (else
     (module-context-flag-present? (cdr flags) flag))))
 
-(def (poo-flow-module-flag-enabled? module flag)
+(def (yuanxu-module-flag-enabled? module flag)
   (if (module-context-negative-flag? flag)
     (not (module-context-flag-present?
           (.ref module 'flags)
           (module-context-positive-flag flag)))
     (module-context-flag-present? (.ref module 'flags) flag)))
 
-(def (poo-flow-module-flags-enabled? module flags)
+(def (yuanxu-module-flags-enabled? module flags)
   (cond
    ((null? flags) #t)
-   ((poo-flow-module-flag-enabled? module (car flags))
-    (poo-flow-module-flags-enabled? module (cdr flags)))
+   ((yuanxu-module-flag-enabled? module (car flags))
+    (yuanxu-module-flags-enabled? module (cdr flags)))
    (else #f)))
 
 (def (module-context-depth-part depth phase)
@@ -84,17 +84,17 @@
          (else 0)))
     (if (number? value) value 0)))
 
-(def (poo-flow-module-depth-value module phase)
+(def (yuanxu-module-depth-value module phase)
   (module-context-depth-part (.ref module 'depth) phase))
 
-(def (poo-flow-module-depth-before? left right phase)
-  (< (poo-flow-module-depth-value left phase)
-     (poo-flow-module-depth-value right phase)))
+(def (yuanxu-module-depth-before? left right phase)
+  (< (yuanxu-module-depth-value left phase)
+     (yuanxu-module-depth-value right phase)))
 
 (def (module-context-insert-by-depth module modules phase)
   (cond
    ((null? modules) (list module))
-   ((poo-flow-module-depth-before? module (car modules) phase)
+   ((yuanxu-module-depth-before? module (car modules) phase)
     (cons module modules))
    (else
     (cons (car modules)
@@ -109,7 +109,7 @@
      (module-context-insert-by-depth (car modules) sorted phase)
      phase)))
 
-(def (poo-flow-module-phase-order modules . maybe-phase)
+(def (yuanxu-module-phase-order modules . maybe-phase)
   (module-context-phase-order/add
    modules
    '()

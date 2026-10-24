@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.44 Config Languages 43: Repairing the Default Native Test Tool
+#+property: DOCUMENT_ID 11.44
+#+property: STATUS default-native-qualified-no-loader
+
+* Root causes and controls
+
+The host release is Gerbil =0.19.20261009110849.1cfb032.patch618d76f9eb72=.
+Its standalone =gxtest= failed a Core-independent =std/test= source control with
+=Unbound variable: __eval-import=. The same release's =gerbil test= interpreter
+dispatch passed the control. Switching to an older runtime was not a repair.
+
+The standalone tool had two independent defects:
+
+1. Its installed =build-aot.ss= selected whole-program optimization, which
+   eliminated runtime bindings referenced by generated evaluation forms.
+2. Ordinary AOT alone retained those bindings but exposed the missing expander
+   startup: a source test could not resolve =def=. The tool must call the native,
+   idempotent =gerbil-load-expander!= before importing test source.
+
+The retained source patch is
+=agentic-ai-lab/tools/ci/patches/gerbil-gxtest-runtime-init.patch=. It changes
+=gxtest= to ordinary =exe:= and initializes the expander in its =main=.
+No replacement evaluator, runtime binding shim or compatibility runtime is used.
+The installed =env= tool dependency also had to be compiled because its static
+object was absent from the release; this is a build input, not a user API.
+
+* Compiler and artifact coherence
+
+The release uses GCC 16, while unqualified =gcc= on this host resolves to Apple
+Clang. Native tools must use the release compiler. The default launchers now
+select =/opt/homebrew/bin/gcc-16= through Gerbil's existing =GERBIL_GCC= setting,
+while preserving an explicit user choice. Loading the workspace's old POO/Core
+AOT objects also exposed compiler/options incompatibility. Those generated
+objects were rebuilt under the repaired default toolchain; the dependency
+revision itself is unchanged. Cleaning is native =gerbil clean=, never package
+uninstallation. Originals are preserved as local artifacts, not committed logs.
+
+* Default entry and regression controls
+
+=just test-file= invokes the default =gxtest= directly and passes the managed
+heap limit to that executable before import. The process-group timeout also
+avoids leaving a tool child behind after a parent launcher times out.
+
+=agentic-ai-lab/t/gerbil-runtime-import-test.ss= deliberately imports only =std/test=
+and exercises dynamic =eval import=. It does not depend on Core or POO and
+therefore distinguishes a broken host tool from a failing domain test.
+
+The build/candidate gates are =just build-gerbil-test-tool <output>= and
+=just test-gerbil-test-tool <executable>=. The default gate is
+=just test-file t/gerbil-runtime-import-test.ss=.
+
+The native binary installed at the existing default location has SHA-256
+=bd61116a001ec511da131d96cc1de64c27508e32ca562e67fb3960425e9e619e=.
+The original broken binary has SHA-256
+=559d3d6970001ebd24dabc55bb56da7861c3036d23e72b1a142e90972dcb1a47=.
+Backups/build intermediates are local under
+=/private/tmp/agenticailab-gxtest-gcc16-repair-20261016= and
+=/private/tmp/agenticailab-gxtest-repair-20261016=.
+This is a locally rebuilt host tool, not a newly published Homebrew release.
+
+* Evidence boundary
+
+The standalone candidate passed the Core-independent control. The default
+entry also passed after repair. Domain gates must additionally qualify the
+rebuilt POO/Core artifacts; a host-tool pass alone does not qualify OpenTofu.
+The default =just test-file t/opentofu-schema-test.ss= gate passed all 54
+assertions using compiled Core interfaces, with =MODULE-OK=, =HARNESS-OK=,
+final =OK= and exit 0. The source-copy fixture and test-body =eval= workaround
+have been removed. POO's native build and the full Core native build also
+completed successfully. This does not assert the full product suite or remote CI.
+
+The release-compiler wrapper correction is retained separately in
+=agentic-ai-lab/tools/ci/patches/gerbil-homebrew-release-compiler.patch=. It is specific
+to this GCC-16 release and must not be applied blindly to another release.
+A Homebrew reinstall from the original uncorrected bottle would replace the local
+repair; the retained source patches/build gate are needed when publishing its
+replacement. No corrected bottle has been published in this task.
+
+
+** Final default-entry receipt
+
+All commands below completed with exit 0 and the required =MODULE-OK=,
+=HARNESS-OK= and final =OK= markers, without error/overflow markers:
+
+| Default command | Result |
+|-----------------+--------|
+| just test-file t/gerbil-runtime-import-test.ss | passed dynamic import and source macro control |
+| just test-file t/opentofu-schema-test.ss | 54 assertions passed against compiled public Core interfaces |
+| just test-file t/json-schema-contract-bridge-test.ss | passed |
+| just test-file t/json-schema-native-contract-test.ss | passed |
+
+The pinned POO rebuild and =just build-core= also exited 0. No old-runtime
+selector or source-copy fixture remains in the active OpenTofu test entry.
+Unrelated product/build-system edits already present in the workspace were not
+reverted or staged as part of this repair. No Loader adapter was implemented.

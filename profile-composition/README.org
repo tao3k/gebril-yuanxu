@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Bounded native Module scopes and indexed Profile selection
+
+* Implemented declaration
+
+The canonical =:yuanxu/profile-composition/selection-syntax= use-module accepts
+one compound expression after =module as alias=. The source identifier denotes
+an already available native POO scope. It is evaluated once, checked with
+object?, and bound unchanged. No source, prototype or Profile slot is forced by
+the binding itself. The result is the ordinary expression result; upstream
+Profile construction and downstream Module derivation use the same declaration.
+
+#+begin_src scheme
+;; Standalone lowercase source binding is valid.
+(use-module funflow as ff
+  (.get ff prototypes check))
+
+;; In a Scenario, give the source reference a name distinct from the slot.
+(.def (ProjectCI @ CICDScenario)
+  funflow:
+  (use-module Funflow as ff
+    (.o (:: @ ff))))
+#+end_src
+
+The bounded form lowers hygienically to:
+
+#+begin_src scheme
+(let ((ff (yuanxu-module-scope Funflow)))
+  (.o (:: @ ff)))
+#+end_src
+
+The helper checks the native object and returns it by identity, without
+traversal/copying. The alias and body retain call-site syntax; helper/let bindings
+retain definition-site syntax. ff is local to that body and captured closures,
+not a global definition or instance name. Bodies with several expressions use
+begin. A bare identifier tail still means the existing Profile selection grammar:
+
+#+begin_src scheme
+(use-module Module build test)
+(use-module Module as ci build test)
+#+end_src
+
+Those forms still return the existing ProfileBundle. They are not reinterpreted
+as bounded bodies. A scope expression is not a Bundle conversion.
+
+* Lexical names and the object frame
+
+Native POO introduces lexical identifiers for slots. =funflow:= and a source
+reference =funflow= in its initializer would collide. Do not bypass ordinary
+Scheme scoping through hidden lookup, source lifting or a second namespace.
+Use an upstream source binding such as Funflow and keep the user slot funflow.
+The Core path-slot object authoring frame rejects a direct bounded initializer
+whose source name matches that slot, including renamed use-module bindings.
+
+This diagnosis is intentionally bounded to a direct named slot initializer. It
+is not a whole-Scheme lexical analyzer; opaque helper expressions and primitive
+POO frames retain their normal lexical semantics. The bounded macro itself can
+be used with primitive .o when source/slot names are distinct. No primitive
+binding or object kernel is modified.
+
+Native .+ needs base AND override. For an otherwise unchanged derived object,
+use =(.o (:: @ ff))=; =(.+ ff)= is invalid and is not a new shorthand.
+
+* Source, admission and loading boundary
+
+Binding ff preserves the exact scope identity. Native derived objects inherit
+its source slot, so the source handle is retained unless explicitly overridden.
+This preserves identity; it does not authenticate a source or make a forged
+same-shaped object trusted. The macro does not synthesize source/revision proof,
+resolve a symbol through a registry, or validate a whole returned Profile/Module.
+Source admission, result-specific Contracts, owner publication, discovery,
+Loader activation and cycle/currentness checks remain separate integration work.
+
+An existing scope may expose lazy prototypes and Profiles through native slots.
+Only body demand forces them. Reading a Profile may demand its necessary
+prototype; accessing checks demands the selected Check slots. No registry scan,
+Profile enumeration or source-slot read occurs merely to bind the scope.
+The macro cannot undo an eager initializer that the caller evaluated earlier.
+
+* Local evidence
+
+=t/module-scope-syntax-test.ss= contains nine cases: exact scope/source identity,
+outer and nested aliases, negative leakage with a positive expansion control,
+closures/renamed syntax/helper hygiene, single evaluation with untouched slots,
+upstream/downstream prototype/Profile getters, parent-cached Pipeline with four
+path refinements, invalid inputs, direct slot/source conflicts and existing
+identifier-only selection. Native fixture publications are used; no Loader runs.
+These are source-runtime tests, not first-access latency or native AOT evidence.

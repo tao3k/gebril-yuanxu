@@ -1,0 +1,250 @@
+#+title: 10.14 Gitea/PostgreSQL Domain Admission and Checked Plan Publication
+#+language: en
+#+property: DOCUMENT_ID 10.14
+
+* Current implementation successor
+
+[[file:10.15-json-service-construction.org][10.15]] supersedes the integration placement and config entry below:
+JSON supplies ordinary data and a separate Scenario owns both contribution
+routes and admission. This file preserves the prior implementation receipt.
+
+* Owner and boundary
+
+The port-domain implementation now belongs to maintained Modules:
+[[file:../../../scenarios/gitea-postgresql/postgresql/interface.ss][PostgreSQL]] and [[file:../../../scenarios/gitea-postgresql/gitea/interface.ss][Gitea]]. It no longer exists solely
+inside generated test source strings. The implementation is deliberately a
+configuration/connection-plan surface, not a complete Gitea deployment adapter,
+PostgreSQL installer, or runtime health check. It starts no processes.
+
+The platform collector remains [[file:10.13-selected-contribution-publication.org][10.13]]. No product Loader adapter is added.
+The public path stays =.for-export -> .admit/.publish=; a caller never supplies
+contribution rows, source records, prepared publications or a Requirements list.
+
+* Source roles and dependency identity
+
+- PostgreSQL =types.ss= owns the exact integer TCP port Type (1..65535), its
+  configuration Contract, and its publication Scope Contract.
+- Gitea =types.ss= owns the client configuration shape, dependency-scope shape,
+  Application Contract, joint port requirements and effective-plan checks.
+- =objects.ss= owns receiver-aware plans and inert object construction.
+- =config.ss= contains ordinary defaults and the module's allowed port policy.
+- =interface.ss= assembles scopes, dependency requirements, contribution routes
+  and admission declarations. It performs no deployment or validation algorithm.
+
+Gitea does not import PostgreSQL source or construct another Port Type. Its
+=core.requires.PostgreSQL= alias receives the admitted scope; its published
+Application Contract binds =PostgreSQL.types.Config= and =PostgreSQL.types.port=.
+Consequently the real provider of the database Type is the dependency scope,
+not a same-named global or a test-local prototype.
+
+The dependency-scope Contract checks the required surface. Final admission
+actually invokes the provided database Config Contract and port Type. These
+capabilities are trusted module-maintainer implementations; this is not a
+sandbox against a malicious dependency that lies about its validation.
+
+* Defaults and policies
+
+PostgreSQL defaults to port 5432; Gitea omits the client port and uses the
+linked server default. Both default to =allowed-ports: '(5432)=. An installation
+that permits a port migration configures its policies to ='(5432 5433)=. These
+are independent requirements: they are not overridden by prototype precedence.
+If PostgreSQL allows only 5433 and Gitea allows only 5440, neither requirement is
+silently discarded. The joint diagnostic retains both lists and actual origins.
+
+#+begin_src scheme
+;; PostgreSQL config.ss
+(def Config (.o settings: (.o port: 5432) allowed-ports: '(5432)))
+;; Gitea config.ss
+(def Config (.o database: (.o) allowed-ports: '(5432)))
+#+end_src
+
+The assembled default client database port follows the effective PostgreSQL
+configuration through the native =(port ? ...)= default slot. An explicitly
+supplied client port remains authoritative, including in raw config.ss input;
+the constructor must not silently replace it to make a connection pass. A caller can override the client port explicitly; Application
+admission then requires agreement. The standalone Gitea Config Contract checks
+an integer client-port shape; the composed Application Contract additionally
+uses the injected PostgreSQL Port Type for the 1..65535 bound.
+
+* Native publication and deep routes
+
+PostgreSQL publishes its own policy through ordinary slots:
+
+#+begin_src scheme
+(.def (PostgreSQL. @ [] config)
+  policy:
+  (.o requirements:
+      (.o database-port: (.o allowed-ports: (.get config allowed-ports)))))
+#+end_src
+
+Both interfaces declare a route to =services/gitea=, admission =Application=,
+with =export-path: '(policy requirements database-port)=. PostgreSQL's target
+is inert if Gitea is unselected; this is an optional contribution edge, not a
+reverse loading dependency. Gitea declares the PostgreSQL dependency normally.
+The integration is intentionally Gitea-specific; universal parameterized policy
+routing across arbitrary consumers is not claimed.
+
+The Gitea interface publishes the Scenario and its bound Contract in one scope:
+
+#+begin_src scheme
+requires:
+(.o PostgreSQL:
+    (.o module-id: 'services/postgresql contract: PostgreSQLScopeContract))
+admissions:
+(.o Application: (.o export-path: '(Scenario)
+                    contract-path: '(types Application)))
+;; Inside exports:
+Scenario: (gitea-application (.get PostgreSQL config) Config)
+types:
+(.o Application:
+    (.cc ApplicationContract
+      database-contract: (.get PostgreSQL types Config)
+      port-type: (.get PostgreSQL types port))
+    Config: GiteaConfigContract)
+#+end_src
+
+* Final configuration and plan
+
+The plan contains its effective configuration identity as well as projected
+ports. This is internal object-level association, not user-maintained metadata.
+A cached parent plan fails for a child with a different configuration even if
+someone supplies coincidentally equal scalar fields.
+
+#+begin_src scheme
+(.def (Application. @ [] config)
+  plan:
+  (.o configuration: config
+      postgresql: (.o port: (.get config postgresql settings port))
+      gitea: (.o database-port: (.get config gitea database port))))
+#+end_src
+
+The constructor creates native lexical relationships, without extracting and
+reattaching a fixed parent plan:
+
+#+begin_src scheme
+(def (gitea-application database client)
+  (.cc Application.
+    config:
+    (.o (:: @ [] postgresql)
+      postgresql: database
+      gitea:
+      (.o (:: @ client)
+        database: (.o (:: @ (.get client database))
+                    (port ? (.get postgresql settings port)))))))
+#+end_src
+
+The actual Application Contract checks, in order: required service fields;
+database configuration admission; client shape and injected Port Type; equality
+of server/client ports; plan configuration identity and both projected ports.
+Native contribution obligations then check every incoming allowed-port policy.
+The original Contract identity is retained by Core's Context policy hook.
+
+* User extension and publication
+
+The example below changes a port while retaining the rest of the maintained
+configuration and behavior. The corresponding policies must allow 5433.
+A direct path assignment is an alternative authoring surface; this control uses
+the already verified explicit native expansion to avoid conflating the two.
+
+#+begin_src scheme
+(def publication
+  (.call AdmissionPublication. .for-export
+         selection 'services/gitea 'Application))
+(def parent (.get publication value))
+(def cached (.get parent plan))
+(.get cached postgresql port)   ; 5432
+(.get cached gitea database-port) ; 5432
+
+(.def (Release @ parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+
+;; Optional inspection; .publish independently admits the actual candidate.
+(def evidence
+  (.call (.get publication contract) .admit
+         Release (.get publication context)))
+(defvalues (receipt next failure)
+  (.call publication .publish parent Release))
+;; next.plan.postgresql.port = next.plan.gitea.database-port = 5433
+;; cached.postgresql.port remains 5432
+#+end_src
+
+Configuration admission and checked plan publication do not run services.
+=receipt.candidate= is the published candidate object. Failures preserve the
+previous object and return a failure value rather than installing the candidate.
+
+* Validation controls and reproduction
+
+Executable owner: [[file:../../../t/gitea-postgresql-publication-test.ss][maintained service publication test]].
+The first test binds the repository's actual PostgreSQL and Gitea directories
+through explicit SourceRefs and publishes the unchanged default configuration.
+The destructive controls read the maintained role bodies above, without generating
+substitute domain Contracts. It isolates those bodies in temporary module directories to
+permit destructive configuration/source controls. The only substituted content
+is ordinary config and root selection; no alternate collector or linker exists.
+This source-isolated test is not an installed-package/AOT or product Loader test.
+
+The retained [[file:../../../t/contribution-deep-publication-isolation-test.ss][platform deep controls]] continue to cover source omission,
+replacement, domain-obligation preservation and cold selected sibling slots.
+The service test additionally exercises the domain and plan through the same
+Core selected records, =.for-export=, public =.admit= and =.publish=.
+
+Reproduction uses the existing heap-fenced =just test-file= entrypoints serially.
+Source alias and dependency pin are documented in 10.13. No compatibility runtime
+or timeout widening is involved. Raw failed and successful logs stay in local
+artifacts, not source control. Early development failures included role-direction,
+self-shadowing slot initializers and forbidden cross-module source import; these
+were repaired at the module boundary without relaxing admission policy.
+
+* Remaining scope
+
+No service start, SQL provisioning, Gitea configuration rendering, network
+reachability, provider execution or distributed transaction is verified here.
+The plan is a pure connection projection. Unknown-field discovery, full service
+Schemas, rendering and deployment belong to subsequent domain work. Native
+source currentness covers the selected source closure; arbitrary external IO
+inside a trusted Contract is not automatically discovered.
+
+** Focused control matrix
+
+| Control | Expected outcome |
+|---------+------------------|
+| Repository directories, unchanged defaults | Native checked publication, both ports 5432 |
+| Allowed policies include 5432/5433, parent plan forced first | Child plan ports 5433; parent remains 5432 |
+| Attach the cached parent plan to the child | Refuse stale-parent-plan |
+| Independent allowed-port lists (5433) and (5440) | Preserve both origins; refuse joint requirements |
+| Explicit client port 5440 in config.ss or a derived Scenario, server 5432 | Refuse connection-mismatch |
+| String server port | Refuse with path config/postgresql/settings/port |
+| Same leaf reinserted into the deep policy receiver | Refuse contribution object changed |
+| Omit a row / substitute another selected SourceRef | Refuse incomplete collection / substituted origin |
+| Edit PostgreSQL config source after selection | Refuse stale prepared Module publication |
+| Disabled malformed module | Remains unselected and unread |
+
+Eight service cases include the combined controls above. Retain the ten-case
+Core deep-publication suite as the separate selected-sibling laziness and
+platform-provenance regression gate. Neither suite establishes end-to-end
+service execution or full-suite/AOT acceptance.
+
+** Recorded result (2026-10-17)
+
+Default host runtime, current Core source alias, pinned native POO dependency
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=; no dependency-source patch or
+compatibility shim. Serial heap-fenced commands completed with exit 0,
+=MODULE-OK=, =HARNESS-OK= and standalone =OK=, and no error/overflow markers:
+
+#+begin_src sh
+just test-file t/gitea-postgresql-publication-test.ss
+just test-file t/contribution-deep-publication-isolation-test.ss
+just test-file t/admission-checked-publication-test.ss
+just test-file t/module-publication-test.ss
+#+end_src
+
+The service file completed eight cases, the retained deep file ten, and checked
+publication seven. The service file was rerun after the native default-slot fix
+and the config.ss explicit-client-port control; it again completed all eight.
+The unchanged linker Git blob throughout this work was
+=f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6=.
+Local logs remain under =/private/tmp/service-final-*= and
+=/private/tmp/gitea-postgresql-*=. Full-suite, installed-build and service runtime
+acceptance were not run. The Justfile's existing full-suite file list now includes
+the service test, without another test launcher or independent build root.

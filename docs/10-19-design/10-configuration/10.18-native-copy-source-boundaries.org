@@ -1,0 +1,205 @@
+#+title: 10.18 Native Copy Operations and MOP Source Boundaries
+#+language: en
+#+property: DOCUMENT_ID 10.18
+
+* Question and answer
+
+Can =.+=, =.cc= and delayed ==>.+= preserve field provenance without three
+operation-specific adapters? For the pinned native engine, yes: the common
+carrier is the native slot specification. The existing authoring constructor
+attaches source metadata once. The native operators continue to copy or inherit
+that specification without being redefined. This is reuse of the existing MOP
+representation and checked precedence, not a new merge language or Loader.
+
+There is a separate question: can a plain runtime function =.cc= manufacture the
+precise syntax location of its new argument? No. Its arguments are values; the
+native constructor does not receive their syntax objects. Retaining an old
+location would be false attribution. The new value remains valid ordinary POO,
+but its new field has no precise Scheme locator until a genuine source-bearing
+declaration supplies one. No runtime stack guess or operation-specific wrapper
+is introduced to conceal that limit.
+
+* Pinned source audit
+
+The audited dependency is =gerbil-poo@26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=,
+the same native dependency used by the default-runtime controls in 10.17.
+Its =object.ss= provides the following behavior:
+
+| Operation | Native construction behavior | Source consequence |
+|-----------+------------------------------+--------------------|
+| =.+= | =make-object= receives the right operand's direct specifications, defaults, protocol and declarations, with its supers followed by the base | Located right-hand specifications survive even though the right-hand object itself is not an ancestor |
+| =.cc= | Untouched direct specifications are retained; explicit replacements become fresh =$constant-slot-spec= values; supers/protocol/declarations are retained | Untouched fields retain their locations; replaced fields cannot claim the old location, even for an equal value |
+| ==>.+= | The native slot macro lowers to inherited-value application of =.+= | The same copy behavior occurs when the selected field is demanded; there is no additional provenance operation |
+| =.put!= | Explicit receiver assignments are stored separately from computed caches | A live assignment shadows the declaration locator; it is not inherited or copied by =.cc= as a cache |
+| Slot declaration | Native =declaration-specifications= compiles descriptors through =.slot.define=, then direct specifications override declarations | An untracked descriptor must not borrow an inherited method's location |
+
+The native =:init!= initializes these representations; it is not currently a
+generic call-site-source hook. The optional =compute-slot= hook operates on
+effective computations and also does not reconstruct discarded argument syntax.
+Moving source capture there would be too late and could confuse cache hits with
+declarations. The native dependency is unchanged by this work.
+
+* A single read-only source resolution
+
+[[file:../../../configuration/slot-origin.ss][slot-origin.ss]] now uses one private resolution value per requested receiver
+and slot:
+
+#+begin_src scheme
+(defstruct slot-sources (visible observed opaque?) final: #t)
+#+end_src
+
+=visible= contains tracked specifications before the first opaque provider.
+=observed= conservatively retains the located ancestor specifications for
+currentness checks, including those hidden from exact diagnostic attribution.
+=opaque?= records that the winning provider has no usable source location.
+These are ephemeral query results over native metadata, not another persistent
+origin/requirements table.
+
+The unit controls also compare specification identity: =.+= retains the exact
+right-hand port specification, and =.cc= retains the exact untouched port
+specification while replacing an explicitly assigned one. No copy-time
+provenance callback is needed for these laws.
+
+Resolution reads the receiver's explicit override map and the checked C3 order.
+For each provider it reads native direct specifications and declaration metadata;
+direct specifications take precedence over declarations, as in the native
+engine. It does not force the field payload to discover a source. An unknown
+winning provider clears precise-source fallback at that path. Thus:
+
+#+begin_src scheme
+(.def Parent port: 5432)
+(def unchanged (.cc Parent))
+(def replacement (.cc Parent port: 5432))
+(.def Container database: replacement)
+
+;; Same value is not evidence of the same declaration.
+(field-slot-origins/value unchanged '(port))       ; retained Parent locator
+(field-slot-origins/value replacement '(port))     ; ()
+(field-slot-origins/value Container '(database port)) ; ()
+#+end_src
+
+The last control originally failed: the query fell back to =Container.database=
+and presented that container's location as a precise port source. The common
+resolver now distinguishes an unknown winning write from absence of a local
+declaration. The fix belongs to resolution, not to =.cc=.
+
+A second failing control used =.put!= after a cached read. The query previously
+returned the declaration locator for the explicitly replaced live value. Reading
+the native receiver override map fixes this without modifying =.put!= or the
+cache implementation. Cloning that receiver still follows native semantics:
+=.cc= copies its specifications, not its explicit instance assignment.
+
+The descriptor check is conservative: it does not invoke =.slot.define= merely
+to classify a source. A default-only descriptor may therefore suppress an exact
+inherited locator. Known located ancestor requirements remain observed for
+currentness, rather than being dropped because attribution is uncertain.
+This can conservatively invalidate a candidate because an older observed
+provider changed even when a particular override does not use it. Narrowing
+that dependency requires native demand/dependency evidence; a diagnostic's
+visible-source prefix is not sufficient evidence for cache reuse.
+Arbitrary descriptor compilation and custom =compute-slot= transformations are
+not claimed to have complete value-production source maps. The existing native
+precedence hook may run as part of checked C3 construction; no stronger claim
+about arbitrary custom protocol effects or costs is made.
+
+* Relocated Scenario control
+
+The actual [[file:../../../t/gitea-postgresql-relocation-test.ss][Core integration suite]] packages the maintained selected modules, relocates them,
+removes the originals and reads this real operators.ss with the SDK:
+
+#+begin_src scheme
+(def (overlay)
+  (.o config.postgresql.settings: =>.+ {port: 5433}))
+(def (client parent)
+  (.def (Client @ parent)
+    config.gitea.database: =>.+ {port: 5440})
+  Client)
+#+end_src
+
+The test caches the parent's 5432 plan first, then uses only the existing native
+operators:
+
+#+begin_src scheme
+(def patch (overlay))
+(def merged (.+ parent patch))
+(def clone (.cc merged))
+(defvalues (receipt next failure)
+  (.call publication .publish parent clone))
+(def refined (client clone))
+(def evidence
+  (.call (.get publication contract) .admit
+    refined (.get publication context)))
+#+end_src
+
+The right-hand =patch= is explicitly checked not to occur in =merged='s C3
+ancestor list. Nevertheless =clone='s source and the admitted expected server
+port point to operators.ss line 2. Its plan follows 5433; the cached parent
+stays at 5432. The invalid client's diagnostic points to line 5, expected 5433,
+actual 5440, and retains its relocated JSON baseline.
+
+An additional raw =.cc= replacement changes that client's database port to
+5450. Its value is checked, its mismatch is rejected, and it has no precise
+Scheme locator from the previous 5440 declaration. The diagnostic retains the
+JSON missing/default baseline instead of fabricating the raw function call's
+source location.
+
+After both derived plans have been cached, changing operators.ss makes
+=.publish= reject =merged=, =clone= and =refined= with
+=Scheme configuration source changed=. The unchanged parent still admits.
+The separate frozen-parent-plan refusal from 10.17 remains in the same suite.
+
+* Scope, laziness and remaining work
+
+No new native operation wrappers or mutable global provenance registry are
+installed. JSON baselines and =derived-from= remain the single diagnostic
+channel described in [[file:10.17-scheme-field-origins.org][10.17]]. Admission traverses only the selected domain
+field paths, checks observed sources afresh and preserves the database-before-
+dependent-client ordering. The existing counter control ensures source lookup
+does not demand its scalar payload or an unselected sibling; payloads still use
+receiver-local native caches.
+
+This is a source-runtime/source-package qualification. It does not authenticate
+AOT code against subsequently installed files, infer argument syntax inside raw
+runtime functions or prove complete provenance of arbitrary MOP computations.
+A future generalized source hook must be a reviewed native construction/metadata
+protocol with explicit syntax input and copy laws, not a patch for every operator.
+No product Loader integration is performed.
+
+* Executable evidence
+
+[[file:../../../t/slot-origin-test.ss][The native slot-origin suite]] contains six cases including regression controls
+for the two originally failing paths, untouched/equal-value =.cc= behavior, native declaration
+replacement, right-hand =.+= retention and undemanded payload counters.
+The Core relocation suite contains four cases, including the complete native
+operator chain above. Focused runs use the unchanged heap-fenced Core launcher;
+raw development and acceptance logs remain local, not committed.
+
+The default host runtime passed all five focused files (33 cases): the six
+slot-origin cases, four Core relocation cases, eleven existing path-slot cases,
+four JSON configuration cases and eight service publication cases. After the
+ownership/macro migration, the six and four changed cases were rerun serially
+through =just test-file= using =yuanxu-test-case=. The unchanged 1 GiB process
+heap fence, 120-second worker timeout and inherited Case policy were retained.
+All runs required =MODULE-OK=, =HARNESS-OK=, final =OK= and no error/overflow
+markers. This is not a full-suite, custom-MOP or AOT qualification.
+
+* Test ownership and declaration
+
+The follow-up [[file:10.19-service-publication-fixtures.org][10.19]] consolidates service/relocation preparation into native
+POO Fixtures. Resource cases now use =yuanxu-test-fixture=, while pure cases
+retain =yuanxu-test-case=. Their source/MOP assertions and ownership stay here.
+
+=core/t/slot-origin-test.ss= owns the native specification/MOP controls.
+=core/t/gitea-postgresql-relocation-test.ss= owns filesystem relocation, source
+currentness, selected packaging and cross-module cached publication controls.
+The latter moved out of =scenarios/gitea-postgresql/tests/=: using a real
+Scenario as input does not make a Core implementation qualification a module
+unit test. Both suites use the existing =yuanxu-test-case= macro; assertions
+and discovery remain native =std/test=.
+
+=modules/<name>/tests/= and =scenarios/<name>/tests/= are for the owner's own
+public Contract, configuration and behavior. Resource-owning cases can use
+=yuanxu-test-fixture=, as the existing JsonSchema/Funflow atomic suites do.
+They do not own Core reader/packager internals or temporary source trees solely
+to revalidate Core. No artificial Scenario unit suite is added to keep an
+otherwise empty directory, and no new testing DSL or runner is introduced.

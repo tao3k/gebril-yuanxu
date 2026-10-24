@@ -1,0 +1,331 @@
+#+title: 32.49 Persistent Selected-Head Transaction And Effect Ownership
+#+language: en
+#+startup: overview
+
+* Question and scoped outcome
+
+Follow-up: [[file:32.50-issued-roots-and-object-system-direction.org][32.50]] removes Core's unissued bundles and qualifies original-root
+forwarding. Read its receipts separately from the failed integration recorded here.
+
+Status: the storage capability and its formal projection are qualified separately
+from current-source Scenario integration. The latter is NOT closed: the current
+reader rejects =unissued slot dependency=. Installed-library passing controls
+are retained historical evidence, not substituted for that failing current run.
+
+[[file:32.48-nix-profile-effect-boundary.org][32.48]] found that native Nix profile selection survives new clients but does
+not reject a stale application's saved request. This step asks whether revision,
+fence and an ACTUAL effect can be committed together, without another preflight
+loop or a new signature system.
+
+The narrow positive result is a persistent selected-head transaction using the
+installed Gerbil standard SQLite library. The actual effect is updating the
+authoritative selected snapshot value in the same database row as its revision
+and fence. A new independent Gerbil process commits an issued request and another
+independent process recovers the resulting row after all previous DB connections
+have closed. Stale, reused, foreign-selection and ABA requests are refused.
+
+This is a qualification adapter, not a newly adopted production database or a
+complete deployment service. The adapter lives under =t/qualification=; it is not
+published through a Core Module interface. The result establishes a feasible
+transaction owner, not automatic integration of arbitrary effects into SQLite.
+
+In particular, a database commit followed by =nix-env --set= would still be TWO
+effects. We deliberately do not implement or claim that sequence as atomic.
+Existing Core/Nix production calls retain their semantics and checks.
+
+* Reused production mechanism and native substrate
+
+- Real Gitea/PostgreSQL =ServicesFixture= materializes the maintained Scenario
+  and uses the current Core reader/linker/publication. It does not simulate the
+  domain Contract with a Boolean predicate.
+- =AdmissionPublication .publish= performs real normalization, child obligations,
+  contribution binding and source checks. The test preserves its returned
+  candidate and final plan/configuration identity.
+- =std/db/sqlite=, =std/db/db= and =std/db/interface= provide prepared SQL bindings,
+  queries, native transactions and connection cleanup. No SQL string interpolation
+  of user values and no shell command is used for the transaction.
+- Existing =ProcessScript.= / =run-script= launches the independent clients;
+  =Justfile= applies the pre-import heap limit and finite timeout.
+- Existing =yuanxu-test-fixture= owns temporary directories and cleanup.
+
+The adapter is
+[[file:../../../t/qualification/build-publication/persistent-head.ss][persistent-head.ss]], the executable is
+[[file:../../../t/persistent-selected-head-test.ss][persistent-selected-head-test.ss]], and the independent client is
+[[file:../../../t/qualification/build-publication/persistent-head-worker.ss][persistent-head-worker.ss]].
+The standalone storage capability is exercised by
+[[file:../../../t/persistent-head-store-test.ss][persistent-head-store-test.ss]]. Storage checks are maintained there rather
+than duplicated as another passing case inside the Scenario integration suite.
+
+The database is the trusted owner in this experiment. A writable database is not
+a cryptographic approval mechanism. Requests persist in its =requests= table;
+their random identifiers are lookup keys, not signatures or independently
+authenticated bearer capabilities. Filesystem ownership and trusted issuance are
+premises. Copying or restoring an older whole database is not detected by this
+model or test; durable monotonicity outside the database remains a separate
+deployment responsibility. No user-facing schema or loader API is added here.
+
+* Binding preparation to the actual effect
+
+The caller captures the owner state BEFORE real admission. This prevents an
+admission callback or concurrent owner transition from silently rebasing the
+request on a newer deployment state:
+
+#+begin_src scheme
+(def expected (.call owner inspect))
+(defvalues (receipt next failure)
+  (.call publication .publish parent Release))
+(def plan (.get next plan))
+(def token
+  (.call owner issue generation snapshot
+         (vector-ref expected 0) (vector-ref expected 1)))
+#+end_src
+
+The test checks failure/acceptance before issuing. Its =snapshot= is the readable
+projection of the admitted plan's PostgreSQL/Gitea ports, not an arbitrary raw
+candidate. =generation= comes from the actual selected build Graph. It is an
+opaque selection association, not newly claimed globally authenticated content
+identity. Request issuance is still privileged: the low-level adapter accepts
+strings and cannot itself prove they were produced by =.publish=. Production
+integration must retain that issuer boundary; this experiment does not erase it.
+
+Issuance uses a prepared =INSERT ... SELECT= constrained by selection, revision
+and fence. If the head changed during admission, zero inserted rows causes a
+refusal; the transaction rolls back. Caller input cannot choose newer expectations
+implicitly. Initialization is explicit; reopening the owner does not initialize
+or reset its revision/fence. A duplicate initialization fails.
+
+* Single transactional boundary
+
+The adapter opens a native connection, starts =BEGIN IMMEDIATE=, executes this
+prepared statement, checks that exactly one row changed and commits:
+
+#+begin_src sql
+UPDATE head
+SET revision = revision + 1,
+    fence = fence + 1,
+    snapshot = (SELECT snapshot FROM requests WHERE token = ?)
+WHERE id = 1 AND EXISTS (
+  SELECT 1 FROM requests r
+  WHERE r.token = ?
+    AND r.revision = head.revision
+    AND r.fence = head.fence
+    AND r.selection = head.selection
+)
+#+end_src
+
+The comparison and head effect are the SAME SQL statement in the SAME
+transaction. There is no Scheme observer, source read, slot computation, Nix
+process or service callback between them. A later query/COMMIT failure rolls
+back; the adapter propagates the original error, preserving a rollback error
+alongside it if rollback also fails. Uncertain outcome after a lost process
+response is not given a retry/exactly-once claim.
+
+SQLite transaction isolation is a substrate premise. The tests do not prove its
+native implementation, filesystem flush behavior or power-loss recovery.
+Opening connections is bounded by the existing test/runtime process fences;
+no retry loop, widened timeout or cross-effect currentness cache is introduced.
+
+The requests table retains old requests. Their expected versions make reuse
+fail after a successful commit, including when the snapshot returns to its old
+value. Request retention/pruning, revision overflow, schema migration and owner
+epoch rotation are not qualified production behavior. In this minimal adapter
+fence and revision both increment on commit; independent fencing handoff to a
+remote consumer is not implemented. Wrong-fence issuance is separately tested.
+
+* Native controls
+
+The storage rows below are the independent native capability controls. Domain
+rows describe passing installed-library runs 03/04 only; current-source run 06
+refuses during reader replay BEFORE reaching the domain checks. They must not
+be reported as current-source passing Gitea/PostgreSQL evidence.
+
+| Control | Actual observed behavior |
+|---------+--------------------------|
+| Initialize/open/reopen | Revision/fence persist; reopening does not reinitialize |
+| Independent process commits token | Durable row becomes revision 1, fence 1, child snapshot |
+| Another independent process reads | Exact row contains the selected generation and =(5433 5433)= |
+| Two requests issued against the same old head | First accepted; second and token reuse refused |
+| Unknown request / another selection | Refused, no active-head update |
+| Child then original parent snapshot | Revision/fence become 2; old request still refused (ABA) |
+| Matching revision but wrong expected fence | Issuance refused |
+| Parent plan cached before child admission | Parent stays 5432; child plan reads 5433 for both services |
+| Independent domain requirements 5433 vs 5440 | Real Contract refuses; no request issued by the test |
+| Unselected service | Absent from selected module order; no catalogue scan added |
+
+This validates process restart, not machine or Nix daemon restart. The supervising
+test process remains alive; DB writer connections close between every operation.
+The independent clients do not receive POO objects or an in-memory issuance table.
+They receive only the database location and an opaque request key.
+
+The selected snapshot effect is real persistence, but the DB is temporary and
+test-owned. This does not deploy actual Gitea/PostgreSQL services or package a
+complete application release. The two-port projection is intentionally bounded;
+serializing arbitrary functions, secrets, lazy objects or recursive Profiles is
+not attempted. Real graph admission is reused, not a general verified serializer.
+
+* External source mutation remains a policy distinction
+
+After real admission and issuance, the test edits the selected PostgreSQL role
+file. Committing the request still installs the previously captured snapshot.
+A new call to the real publisher refuses the changed source. No extra source
+check is appended to the SQL transaction.
+
+This is correct for an approved immutable snapshot-head policy. It is NOT a
+guarantee that the head always names the latest mutable workspace. If that live
+policy is required, source changes must be reflected in the SAME authoritative
+selection/version protocol, or the actual external effect must offer a suitable
+conditional precondition. Filesystem edits bypassing the owner are not fenced by
+its database revision. The existing Nix immutable release can provide a future
+snapshot reference, but the current two-port payload is not authenticated Nix
+build issuance and is never claimed as such.
+
+Likewise, moving the whole authoritative deployment configuration or restoring
+the database requires external governance. Persistence does not create initial
+approval authority or authenticate who may write the store.
+
+* Lean and QNT boundaries
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/PersistentSelectedHead.lean][PersistentSelectedHead.lean]] proves properties of the exact conditional state
+transition relation:
+
+- =accepted_binds_revision_fence_selection=: acceptance requires all three
+  preconditions, not just equality of the selected snapshot.
+- =commit_updates_effect_with_fence=: snapshot, revision and fence change together.
+- =stale_revision_refused= / =stale_fence_refused=: mismatches yield no transition.
+- =restart_preserves_fence=: recovery of the persisted row does not invent a reset.
+
+Recovery equality is an explicit storage-model assumption, backed by the native
+process controls, not a proof of SQLite or the OS. =source_not_a_commit_operand=
+records only that recovery is identity in this model; it is not a theorem that
+external source files are unchanged. Existing real Scheme domain tests retain
+the two requirements; the new Lean relation does not re-prove their semantics.
+
+[[file:../../../dev/proofs/quint/PersistentSelectedHead.qnt][PersistentSelectedHead.qnt]] adds bounded interleavings, ABA, revision-only and
+fence-only changes, restart and source mutation. Six controls use 1000 samples,
+7 steps and seed 49:
+
+| Control | Expected outcome |
+|---------+------------------|
+| Normal =safety= | No violation |
+| Skip revision / =Bound= | Counterexample for revision-only change |
+| Skip fence / =Bound= | Counterexample for fence-only change |
+| Reset fence at restart / =Recovery= | Counterexample |
+| Normal / =LiveSource= | Counterexample: source changed, snapshot commit allowed |
+| Normal / =RejectAll= | Acceptance witness |
+
+The Lean file binds the QNT source digest. There is no automatic extraction proof
+from the Scheme SQL text to Lean, no proof of arbitrary DB tampering resistance
+and no new claim of concurrent-writer stress qualification. Bounded QNT runs
+are not exhaustive model checking. Parent/laziness model invariants alone are
+not substitutes for the real domain assertions listed above.
+
+* Reflection and next production decision
+
+This reduces one uncertainty left by 32.48: persistent conditional head selection
+is achievable with an actual transactional substrate and the installed Scheme
+runtime. It does not require modifying Gerbil, a new syntax or a signature system.
+
+It does NOT authorize adding this database to every Module. Before production
+adoption, select the existing runtime owner and durable store, define ownership
+of its schema/epoch and bind its privileged issuance to the existing publication
+receipt. Reuse a runtime transaction capability if one is already available.
+The adapter here is a qualification of the required relation, not a competing
+global Module registry or a replacement Nix profile implementation.
+
+If consumers read this authoritative head directly, selection is the one effect
+qualified by the transaction. If consumers instead need a Nix profile symlink or
+a provider mutation to change, that is another effect. A database update followed
+by =nix-env --set=, or by OpenTofu apply, still needs reconciliation and cannot be
+advertised as the same atomic commit. Fencing is useful only when every relevant
+writer/consumer enforces it. Do not attach arbitrary callbacks inside this
+transaction to imply that a remote effect has become rollback-safe.
+
+* Reproduction and receipts
+
+From Core:
+
+#+begin_src sh
+just compile-build-publication /private/tmp/core-persistent-head-20261021
+just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-head-store-test.ss
+just test-build-publication /private/tmp/core-persistent-head-20261021 t/persistent-selected-head-test.ss
+cd dev/proofs/lean
+timeout 120s lake env lean YuanxuProof/Admission/PersistentSelectedHead.lean
+#+end_src
+
+The ordinary =just test-file= invocation is also a valid installed-library
+baseline, but must not be substituted for the owned current-source compilation
+when qualifying a dirty Core checkout.
+
+The independent workers run through =just persistent-head-worker=, which applies
+the pre-import heap fence and 30-second timeout. Test execution remains serial.
+QNT runs use their named model/invariant and the bounds above; negative outcomes
+require an actual invariant violation, not an arbitrary process failure.
+
+Logs remain in local artifacts. The first native run failed on an extra closing
+parenthesis in the test; it was corrected, not relabeled as a pass. Native runs
+02 and 03 exercised progressively broader controls. Final validation receipts
+are appended after rechecking the exact current sources.
+
+The initial runs resolve the existing installed Core library and are not by
+themselves evidence that current dirty Core sources rebuild. The first owned
+rebuild exposed an actual dependency migration: =replay-slot-reads!= is exported
+by the locked gerbil-poo =object=/MOP entry, not =slot-observation=. The second
+rebuild found the same outdated import in the source reader. Both imports are
+corrected narrowly without changing their algorithms or other session edits.
+The qualification compiler now explicitly rebuilds these two owners as part of
+its source-observed closure. Those failed rebuild receipts remain failures.
+The next rebuild exposed a different stale interface: installed
+=for-each-build-module= supports only two/three arguments while current reader
+code passes its fourth =descend?= argument. The current =source-closure= is now
+explicitly compiled before the reader. No traversal behavior or timeout is
+changed to accommodate that mismatch.
+
+The rebuilt reader then exposed a mixed runtime/interface preparation artifact:
+native test run 05 warned that =agentic-ai-lab-prepare-module-publication__%= was
+undefined and exited 139. It has no success status. The current =preparation.ss=
+is now included in the same owned compiler closure before the reader. The
+shared installed library is not rewritten to hide this mismatch. Initial passing
+tests and the new current-source qualification remain distinct receipts.
+
+After rebuild 05 succeeds, current-source integration run 06 fails with
+=unissued slot dependency= in =reader -> replay-slot-reads!=. Core still constructs
+synthetic bundle reads with raw =make-slot-read= in
+=reader.deliver-publication-reads= and =read-projection.deliver-projection=;
+the locked native replay correctly requires producer-issued reads. These are
+identified candidate boundaries, not a proved attribution to one exact bundle.
+No native issuance assertion is bypassed, no raw record is relabeled as genuine,
+and no obligation/currentness check is removed to make this suite green.
+
+The next integration repair must retain the union of genuine native reads and
+the owned-value/parent currentness policy without fabricating native provenance.
+It needs its own MOP correspondence controls before claiming closure. The
+persistent-head transaction is not a workaround for that failure, and production
+Module publication remains outside the positive storage-only result.
+
+Final scoped receipts (2026-10-21):
+
+- =core-persistent-head-compile-05=: natural exit zero; 22 current Core owners
+  rebuilt in the private overlay, including source preparation and reader.
+  =core-persistent-head-currentness-03= confirms their retained source hashes.
+- =core-persistent-store-01=: natural exit zero, =MODULE-OK=, =HARNESS-OK= and
+  final =OK=, without error or overflow markers. Independent clients commit and
+  recover the exact persisted row; stale, unknown, reused, wrong-selection,
+  wrong-fence and ABA controls pass. Reinitialization refuses without resetting
+  the existing head. No Scenario admission is credited to this storage suite.
+- =core-persistent-head-06=: failed real Scenario integration with native
+  =unissued slot dependency=. The two domain cases remain failing integration
+  controls; their earlier installed-library success is not current qualification.
+- =core-persistent-head-lean-02=: exit zero for the new Lean relation. Six
+  =core-persistent-head-quint-*-01= controls match the table; expected negative
+  exits contain actual invariant-violation traces. The QNT digest equals the
+  Lean binding.
+
+The storage suite was separated after integration run 06 to avoid attributing
+its capability result to the failing domain suite. Its previous duplicate storage
+case was moved, not retained as a second copy. Integration has not been rerun
+merely to reproduce the same unchanged reader refusal.
+
+No Gerbil source or dependency pin is changed. The only production source edits
+in this step are the two import corrections; transaction code stays in the
+qualification adapter. Raw logs remain local. No blanket all-Core or production
+deployment acceptance is claimed.

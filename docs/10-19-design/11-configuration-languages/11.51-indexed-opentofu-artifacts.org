@@ -1,0 +1,216 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.51 Config Languages 50: Indexed OpenTofu Artifacts and Selected Input IO
+#+property: DOCUMENT_ID 11.51
+#+property: STATUS implemented-default-runtime-qualification-no-loader
+
+* Boundary and migration
+
+[[file:11.52-one-opentofu-artifact-collection.org][Chapter 51]] fixes the remaining injection granularity: the current single
+environment variable names a COLLECTION of these v2 outputs. Per-family
+environment variables used in the earlier control are removed from current
+entrypoints. Use the one-argument collection recipes
+in chapter 51; the earlier receipt and individual artifact identities stay intact.
+
+This completes the package-index gap recorded in [[file:11.50-configuration-driven-contract-discovery.org][chapter 49]]. The Nix producer
+now splits each actual Provider export into per-type Contract inputs and hashed
+kind indexes. Runtime discovery still uses the final candidate, but no longer
+reads/decodes =schema.json= or linearly searches raw resource/data export tables.
+No Loader, Provider RPC, plan or apply is introduced.
+
+This is a direct artifact-format migration to =yuanxu/provider-schema-v2=.
+There is no v1 reader fallback. A v1 manifest is rejected; rebuild that package
+with the current producer. Historical v1 paths/digests/receipts in chapters
+45-49 remain historical evidence, not supported runtime inputs. The small
+selected-subtree regression fixture has separately been migrated to v2 without
+changing its historical audit Schema; it is not a new complete Provider export.
+
+* Module-specific injection
+
+The development/package default is now exclusively
+=YUANXU_OPENTOFU_ARTIFACT=, declared by =devenv.nix= and consumed lazily by
+=modules/opentofu/config.ss=. The former generic Provider environment names
+are removed, without aliases or fallback.
+
+#+begin_src scheme
+(.def OpenTofuConfig
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
+#+end_src
+
+The =provider-artifact= slot belongs to a Provider LEAF and has no environment
+input. Its path is filled by the collection object's native projection. All
+current multi-Provider tests accept one collection path, using the same default
+environment input as normal package integration. Low-level artifact/upgrade
+controls use explicitly TEST-scoped fixture transport only. See chapter 51 for
+the current collection definition and complete ordinary user entrypoint.
+
+* Package layout and provenance chain
+
+Each Nix output has:
+
+#+begin_example
+manifest.json
+indexes/provider.json
+indexes/resource.json
+indexes/data.json
+inputs/provider/provider.json
+inputs/resource/aws_security_group.json
+inputs/data/aws_region.json
+schema.json                              audit only
+#+end_example
+
+The example input names above belong to AWS. awscc's identical resource/data
+type names occupy different directories and indexes; Null has one actual type
+in each kind. Empty catalogs produce valid empty indexes.
+
+The actual AWS manifest is:
+
+#+begin_src json
+{
+  "format": "yuanxu/provider-schema-v2",
+  "provider": "registry.opentofu.org/hashicorp/aws",
+  "version": "5.100.0",
+  "schema-sha256": "7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c",
+  "indexes": {
+    "data": "6111efe35eedfcf75e7baa012e61d7cdedf8ffcc98b846a5dd0af464bcc499a3",
+    "provider": "517d5f3f1e83fbbcf1a8f4a0c33ea31284df6190138fb3e8442ebe9f1be29f41",
+    "resource": "35a034014d56aacf5a9498b09887f45b630cd86d33874482e5957c45df4b07a9"
+  }
+}
+#+end_src
+
+Every kind index repeats the Provider address, version, original export digest
+and kind; =entries= maps type name to the SHA-256 of its individual input file.
+Runtime checks both the index digest and its source/kind binding before creating
+a native hash table. Type lookup uses that table, not an association-list scan.
+Only a demanded kind's metadata index is parsed and cached.
+
+The selected filename is derived from a closed kind and an ASCII type name;
+indexes do not supply arbitrary filesystem paths. The input is hashed and
+decoded from the same bytes. Modified input/index bytes, source-binding mismatch
+and unsafe path components are rejected. A missing selected index/input reports
+=build-required= at demand; it is not silently treated as an unknown type.
+
+The Nix producer owns original-export to input/index consistency. The audit
+export's digest remains a source identity, not a runtime reread requirement.
+Package trust still comes from the caller's locked package closure; a manifest
+and its hashes are not a separate authentication certificate for arbitrary
+mutable directories. Nix outputs are immutable. Cached Contracts do not watch
+mutable files: changing an artifact reference creates a new receiver-local scope.
+
+The producer retains the full exported entry for each selected type, including
+its block and metadata. These are Provider-format Contract inputs, not falsely
+relabeled standard JSON Schema. Existing Scheme conversion still maps the
+selected block to JSON Schema and the shared native Contract compiler.
+
+* Runtime objects and unchanged ordinary configuration
+
+Opening a package scope reads only its manifest. =source.ss= supplies internal
+=.contains?=, =.names= and =.read-entry= methods backed by demand-loaded indexes.
+=objects.ss= compiles and caches the original native Contract by =(kind . name)=.
+Catalog introspection can explicitly request names without reading every input.
+Configuration-driven discovery bypasses those catalogs entirely.
+
+Contracts retain =provider=, =version=, =schema-digest= and the original native
+=source=. They now also retain =input-digest=; their qualified identities append
+that digest to bind the actual selected input bytes. Source metadata includes
+the advertised kind-index digests. Same-name Provider configuration nodes and
+awscc resource/data remain isolated.
+
+Package integration binds the rebuilt outputs once:
+
+#+begin_src scheme
+(.def (AWS @ OpenTofuModule.)
+  config: (.o provider-artifact:
+    "/nix/store/g79zf5kxy8778bsiq3iagvhl4qww7pbc-terraform-provider-aws-5.100.0-schema"))
+(.def (AWSCC @ OpenTofuModule.)
+  config: (.o provider-artifact:
+    "/nix/store/5yag978db1m9w853817z8z10d43gz4mm-terraform-provider-awscc-1.77.0-schema"))
+(.def (Null @ OpenTofuModule.)
+  config: (.o provider-artifact:
+    "/nix/store/pn9vvfwwajj67n54p1d9vi92jgxl1dga-terraform-provider-null-3.2.4-schema"))
+(.def (Infrastructure @ OpenTofuConfiguration.)
+  modules: (.o aws: AWS awscc: AWSCC null: Null))
+#+end_src
+
+The complete ordinary Configuration from chapter 49 is unchanged. Its final
+native entrypoint remains:
+
+#+begin_src scheme
+(use-module Infrastructure as tf
+  (.call (.get tf types configuration) .admit Configuration #f))
+#+end_src
+
+No SelectedTypes, input-file enumeration, explicit type retrieval or evidence
+maintenance is added to user configuration. Cached parent Contract and final
+child discovery continue to use the original native receiver semantics.
+
+The AWS 5.99.0 parent was also rebuilt with the same producer at
+=/nix/store/ksilrwxv6pm86c0g4pcc6w9vig33hplw-terraform-provider-aws-5.99.0-schema=.
+The existing actual upgrade/rollback control passes with both v2 outputs after
+parent Contract/source/catalog caching; changing only the child's artifact
+reference preserves its own version/source while leaving the parent intact.
+
+* Matched controls and IO boundaries
+
+The new default-runtime gate is =t/opentofu-indexed-inputs-test.ss=. For all three
+actual Nix outputs it checks selected input hashes, source/version preservation,
+kind-index demand, one selected input read, cached repeat admission and untouched
+unselected inputs. It constructs a shadow from REAL package bytes containing
+only the requested kind index and selected input. Admission succeeds with no
+audit export, and still succeeds when a fresh scope sees a poisoned audit file.
+
+Selected input/index absence reports build-required. Changed bytes are rejected
+by their digests. Even after recomputing a modified index's advertised digest,
+wrong Provider, version, original export digest or kind is rejected. Unsafe type
+paths are rejected before file access.
+
+A deliberately separate whole-export A/B control parses the original export on
+the TEST side. The same actual selected resource and candidate produce equal
+generated Contract schemas, equal valid admission and equal invalid-field paths.
+It is not a runtime fallback. A package qualification additionally compares all
+5,802 split entries against their complete original exported entries and checks
+every input/index hash. No claim rests only on a byte-size comparison.
+
+For the chapter 49 full example, each Provider uses its three kind indexes and
+three selected inputs. Measured logical module read sets are:
+
+| Package | Audit export bytes | Indexed manifest + indexes + selected inputs |
+|---------+--------------------+-----------------------------------------------|
+| AWS 5.100.0 | 13,591,718 | 278,755 |
+| awscc 1.77.0 | 12,570,947 | 409,423 |
+| Null 3.2.4 | 2,964 | 4,144 |
+
+These are file-byte/read-set controls, excluding test-side parity/integrity IO,
+not measured end-to-end wall time, process allocation or deploy latency. Null
+demonstrates real fixed metadata overhead; this format is not universally
+smaller or faster. Kind-index parsing remains proportional to its metadata size;
+selected Contract lookup is hashed afterwards. Further partitioning/index format
+work needs a measured scenario rather than a new blanket performance claim.
+
+* Reproduction and remaining work
+
+#+begin_src sh
+nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; in import ./t/fixtures/opentofu/family-artifacts.nix { inherit pkgs; }'
+just test-opentofu-indexed-inputs COLLECTION_OUTPUT
+just test-opentofu-configuration-discovery COLLECTION_OUTPUT
+#+end_src
+
+The caller owns the package-set lock; local =<nixpkgs>= qualification does not
+establish a new production lock or cross-platform release guarantee. This
+control is aarch64-darwin with Nix OpenTofu 1.11.5 and the existing fixed Provider
+archives. No cloud credentials or effects are needed for these schema exports.
+
+On 2026-10-17, all nine serial default-runtime gates passed after the environment
+rename: indexed-inputs 93, configuration-discovery 49, provider-families 64,
+explicit-selection 36, migrated selected fixture 17, actual AWS artifact 17,
+module scope 20, actual AWS upgrade/rollback 84, and Schema conversion 57:
+437 assertions total. Every gate completed with exit 0, MODULE-OK, HARNESS-OK,
+final OK and no harness/error/overflow markers. The structured consumer receipt
+is =t/fixtures/opentofu/indexed-artifact-control.json=; raw logs and full generated
+Provider exports remain local/Nix artifacts, not source-control additions.
+
+Provider aliases and unexported Provider rules remain outside this adapter.
+Final full error paths, including nested port errors, stay under the shared
+Contract diagnostic owner. Loader admission/build graph integration is still
+unimplemented and is not required by this local package consumer.

@@ -1,0 +1,178 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Functional User Surface and Extend Interface Audit
+#+date: [2026-10-14]
+#+property: SDD_KIND architecture-decision
+#+property: STATUS design-only-source-audit
+
+* Decision and evidence boundary
+
+This document refines [[file:164-capability-gradient-and-default-expression-surface.org][RFC 164]] with a source-bound Core interface inventory
+and Scheme examples. The default interface selects values, refines data and
+composes maintained capabilities through named functions. Extend publishes
+the particular prototype and behavior contract needed to define a new
+capability. An extension becomes a named value usable through the same default
+interface. Both surfaces preserve native POO identity and slot algebra.
+
+Audit baseline: parent =main= at =7ab549d0= with existing unrelated working-tree
+changes; Core is a clean detached checkout at
+=e85fd45303b208b23e5957fd316e7004994109a4=. The inventory describes this checkout,
+not another branch or a live GitHub PR. No implementation, export removal,
+Core commit or gitlink update is made by this design change.
+
+Functional and Extend are responsibility boundaries, not new module names or
+an eager umbrella import. Existing precise =:yuanxu/...= imports remain the
+source owners. An exported binding is not automatically an ordinary user API.
+[[file:164-core-interface-export-inventory.org][The export inventory]] assigns every non-test Core export occurrence to a
+surface, including support exports and facade reexports.
+
+The inventory's D designation means an operation or value is eligible behind a
+Functional facade. It does not require root users to import a Core leaf,
+construct a descriptor or read raw slots. Root config exposes domain options
+and capability selection; native construction and slot algebra belong in
+Extend documentation. Internal semantic ownership does not dictate which
+concepts ordinary configuration authors must learn.
+
+HiveBus supplies the interface-shape precedent: declarations feed named
+functional operations and exports, while POP remains available for extension.
+Its actual source uses Nix attribute sets and functions; JSON is an analogy
+for declarative data, not the semantic carrier adopted here. See its
+[[https://github.com/tao3k/hivebus/blob/ef2f0e0eaa5622b5cba72a3a705c447293c69ad4/README.org][README]] and [[https://github.com/tao3k/hivebus/blob/ef2f0e0eaa5622b5cba72a3a705c447293c69ad4/units/self/flakeOutputs.nix][output boundary]].
+
+* Two categories of public configuration slot values
+
+The user-confirmed meaning of “POO types” is native POO objects/prototype
+values, including Type and Contract descriptors, not only type descriptors.
+Every public configurable noun slot therefore resolves to one of:
+
+| Category | Examples | Composition |
+|----------+----------+-------------|
+| Ordinary inert value | number, boolean, string, symbol, inert list/vector/metadata | replacement, inherited default, named pure refinement |
+| Native POO value | Profile, Policy, Query, StageSpace, nested object, prototype, Type, Contract | the same operations plus native nested prototype refinement |
+
+This is a surface contract over Scheme values, not a new tagged union or a
+second evaluator. A collection can contain ordinary values and native POO
+values if its owning Contract admits that shape. Collections do not smuggle
+anonymous procedures, mutable runtime handles or action ASTs into data slots.
+An alist may be inert metadata or a boundary receipt; it may not become an
+alternate object declaration or merge language. An actual JSON boundary needs
+an explicit projection; prototypes and Type behavior are not JSON data.
+
+Type descriptors validate candidates; a domain object inherits its domain
+prototype, not the Contract used to validate it. =value-type: SomeType= is a
+POO-valued slot; =candidate: 3= is a data slot. A Type's private predicate and
+admission methods belong to Extend's behavior protocol.
+
+** Slot result versus slot implementation
+
+The two categories constrain the resolved public configuration value. Native
+POO implements defaults and inherited refinements with computations. The
+function in =(items => append additions)= computes an inert slot result; it
+does not make =items= a user-configurable callback slot.
+
+Named pure functions remain callable bindings. One-receiver behavior lives
+behind named slot generics; multiple independent extension axes use Core
+CLOS. Procedures used in those methods, Type predicates, Loader callbacks and
+MOP slots are behavior implementation, not a third ordinary configuration
+category. A POO wrapper around a callback does not make it an inert setting.
+
+Private derived indexes, mutable caches and runtime handles are implementation
+or handoff state. Reading a public configuration slot must not activate a
+Module, perform I/O or acquire authority. Generic =object?= checks alone do
+not establish this contract: POO objects can carry behavior and effects.
+
+* Classification rule
+
+| Surface | Entry condition | Normal author |
+|---------+-----------------+---------------|
+| D: Default Functional | select maintained values; pure data refinement, composition, bounded inspection or admission | application/config author |
+| E: Extend | define a new domain prototype, Contract, behavior, source adapter or independently extensible crossing | Module/Provider author |
+| R: Explicit runtime/host operation | load, call an effectful provider, sample memory/time, issue/revoke trusted state, mutate runtime state | runtime/host owner |
+| M: Controlled meta | change class/generic lifecycle, method-combination policy or dispatch machinery | kernel maintainer |
+| I: Internal | indexes, support algorithms, caches, declaration IR, build support | implementation owner |
+
+R and M are explicit sub-boundaries reachable from advanced development; they
+are not pure default functions. Creating a new capability requires E. Changing
+a parameter or selecting an existing capability stays D. A function's name
+or absence of =!= is insufficient evidence of purity.
+
+* Core interface decisions by capability
+
+The companion inventory lists individual bindings. This table explains the
+decision for each current owner and the interface that users should see.
+
+| Existing Core owner/API family | Default Functional surface | Extend or deeper surface |
+|-------------------------------+----------------------------+---------------------------|
+| Upstream =clan/poo/object= | product keyword settings and capability selection yielding POO values | native =.o= / =.def=, raw =.ref=, inheritance and slot refinement for facade/extension authors; mutation is R |
+| =types= | supplied Types/Contracts; =yuanxu-type-classify=, =yuanxu-contract-admit= and evidence inspection | predicate Type/Contract construction, =.classify= / =.obligations= / =.admit= specialization |
+| =module-system/types= | inspect/use supplied Module Contracts | changing Module source-role and authoring policy |
+| =module-system/objects= | select an already admitted SemanticModule | =SemanticModule.=, =ModuleSourceRole.=, =ModuleAuthoringProfile.= and =make-semantic-module= authoring |
+| =module-system/schema/relations= | use maintained identity/import/profile/capability values | build Module identities, import contributions and extensible relation prototypes |
+| =module-system/config= | inspect an existing Interface id, schemas, schema spec, authoring and metadata | =make-module-interface=, String schema and option-policy declarations; schema-index construction is I |
+| =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =yuanxu-contract-value-type=, =yuanxu-contract-slot=, =yuanxu-object-contract= and new predicates |
+| =module-system/schema/interface= | use maintained admitted objects and supplied Types | schema/object/field/transformer authoring and explicit field-resolution; internal caches/indexes remain I |
+| =module-system/schema/validation= | product-owned validation of declared values | low-level validation helpers stay E; they are not a new root config vocabulary |
+| =module-system/projection/option-objects= | inspect option validation receipts | construct option projections bound to their owning Interface |
+| =module-system/projection/option-validation= | invoke bounded option validation | do not expose projection rows as an independent option-authoring DSL |
+| =module-system/source/objects= | inert SourceRef construction, equality, getters and receipt projection | extend the source prototype for a new source kind; construction does not discover/load |
+| =module-system/catalog/objects= | immutable Catalog values, pure add/find/resolve and inspection | Catalog/entry prototype authoring; no filesystem discovery implicit in lookup |
+| =module-system/loader/load-path= | select maintained LoadPath/collection values | collection/LoadPath authoring; =locate= can invoke callbacks, so invocation is R |
+| =module-system/loader/objects= | select a maintained load plan and inspect resulting receipts | Backend callback construction is E; loading/forcing is R even when it returns a receipt |
+| =module-system/funs=, =graph/funs= | bounded phase/flag/dependency queries on admitted data | caller-supplied hook/accessor callbacks are E; closure helpers are not root graph syntax |
+| =profile-composition/profile-bundle= | =profiles=, =compose=, selection and immutable Bundle inspection/conflict presentation | publish exports, module profile sets and composition strategy; StageSpace construction is maintainer-owned |
+| =profile-composition/selection-syntax= | =use-module= selects existing named Profiles | hygienic selection only; it is not a clause interpreter |
+| =profile-composition/bindings= | =yuanxu-profile-ref= | Scenario/Module binding adapters are E |
+| =contribution/objects= | =contribution?=, diagnostics and =admit-contributions= on supplied values | =Contribution.= / =make-contribution= publication; admission grants no execution authority |
+| =contribution/verification= | consume an already returned host receipt through the product interface | adapter definition is E; verification, validity callbacks, receipt issuance and revocation are R |
+| =composition/lineage= | pure lineage/cycle/productive-recursion analysis on supplied identity lists | lineage result prototype publication is E; this owner takes data, not accessor callbacks |
+| =graph/interface= | consume the effective result through ordinary POO values | every graph operation, contribution and ordered application stays E; no generic patch language in root config |
+| =object-family/interface= | consume maintained family values and domain accessors | =defpoo-object-family= and indexed-family authoring are E; positional indexes/lenses are I |
+| =observability/objects=, =funcs= | bounded receipt facts, summaries, diagnostics, next-action and pure projections | observation prototypes and overridable protocols are E; custom callbacks retain their contract |
+| =observability/slot-presentation= | =yuanxu-slot-presentation= at default level | provenance/composition use authored source metadata; advanced/source views are opt-in, not causal effect traces |
+| =observability/types= | supplied observation/receipt Contracts | author new Contracts; shape helpers stay I and explicit requirement checks are E |
+| =observability/debug=, =slot-debug= | inspect returned receipts through ordinary presentation | debug calls and monitors are R; slot probing may evaluate computations, so cannot promise purity |
+| =observability/testing-case= | select a maintained test Profile | test declaration and Profile specialization are E; current-profile parameterization is R |
+| =observability/output= | obtain an inert presentation value | =yuanxu-write-observation-line!= is R |
+| =poo-clos/interface= | call a domain operation published by its owner | generic/method/bundle declarations and specializers are E; lifecycle/mutation is R, meta changes are M |
+| =poo-clos/*= leaf support | no direct ordinary config vocabulary | implementation/IR/cache helpers are I; facade bindings retain E/R/M classification |
+
+* Canonical user expression
+
+The earlier default/Extend example ladder has been removed in favor of
+[[file:164-profile-module-targeting-design.org][the consolidated fluent Profile design]]. This audit retains source ownership
+and the two configurable-value categories. It does not publish a competing
+keyword entry, nested copy idiom or root grammar. The export inventory remains
+source evidence, not a list of required ordinary user concepts.
+
+* Current gaps and follow-up implementation gates
+
+This design does not claim that every existing export or POO slot already
+enforces the two-category public contract. Specific current gaps are:
+
+1. =YuanxuStageSpace= rejects a direct procedure but permits other non-procedure
+   values, including nested containers without a recursive inertness check.
+   Its current predicate is evidence for a partial boundary, not full closure.
+2. Source collections expose a =locate= procedure and Loader Backends expose
+   a =load= procedure. They belong to Extend/R, not default configuration.
+   A future migration should preserve their owned behavior behind named
+   protocols, with no callback-as-data wrapper or compatibility evaluator.
+3. Several existing constructors admit broad values and metadata. Recursive
+   admission must be owner/Contract-specific, bounded and cycle-aware; Type
+   implementation methods must not be recursively rejected as configuration.
+4. Interface schema indexes and indexed-family vectors are exported or
+   inspectable. Their representation does not become a public configurable slot.
+5. The broad CLOS facade includes declarations, lifecycle, mutation and MOP.
+   Default product facades must expose owned domain operations, not reexport it.
+6. =yuanxu-settings= forwards arbitrary native slot forms rather than enforcing
+   a bounded keyword/value surface. Plain options must remain the ordinary
+   interface; advanced native slot authoring belongs to Extend. This audit does
+   not implement that restriction.
+
+Any later implementation needs positive cases for both value categories;
+negative cases for direct/nested callback injection and opaque runtime handles;
+identity/parent-preservation and inherited-refinement checks; a no-load/no-effect
+default path; unsupported-crossing rejection; and separate runtime receipts.
+Changing exports or admission behavior requires Core owner qualification and
+affected consumer tests at the actual changed heads. This documentation-only
+change supplies no such runtime or CI claim.

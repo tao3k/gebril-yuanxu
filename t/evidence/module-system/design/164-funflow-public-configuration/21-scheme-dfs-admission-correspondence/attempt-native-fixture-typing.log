@@ -1,0 +1,166 @@
+ℹ [39/45] Replayed PooFlowProfileAssociationProof.Model
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:221:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:222:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:223:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:224:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+ℹ [40/45] Replayed PooFlowProfileAssociationProof.DFS
+info: PooFlowProfileAssociationProof/DFS.lean:144:0: 'PooFlowProfileAssociationProof.DFS.visit_spec' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:145:0: 'PooFlowProfileAssociationProof.DFS.success_membership_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:146:0: 'PooFlowProfileAssociationProof.DFS.successful_dfs_association_iff' depends on axioms: [propext, Quot.sound]
+ℹ [41/45] Replayed PooFlowProfileAssociationProof.Projection
+info: PooFlowProfileAssociationProof/Projection.lean:161:0: 'PooFlowProfileAssociationProof.Projection.dfs_native_path_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Projection.lean:162:0: 'PooFlowProfileAssociationProof.Projection.list_identity_iff' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:163:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_correlated' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:164:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_discharged' depends on axioms: [propext]
+ℹ [42/45] Replayed PooFlowProfileAssociationProof.Bridge
+info: PooFlowProfileAssociationProof/Bridge.lean:57:0: 'PooFlowProfileAssociationProof.Bridge.inherited_root_receipt_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Bridge.lean:58:0: 'PooFlowProfileAssociationProof.Bridge.rhs_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+✖ [44/45] Building PooFlowProfileAssociationProof.NativeFixtures (1.6s)
+trace: .> LEAN_PATH=/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/packages/LeanPoo/.lake/build/lib/lean:/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean /Users/guangtao/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/PooFlowProfileAssociationProof/NativeFixtures.lean -o /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/NativeFixtures.olean -i /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/NativeFixtures.ilean -c /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/NativeFixtures.c --setup /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/NativeFixtures.setup.json --json
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:138:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence0)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:138:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:147:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence1)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:147:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:156:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence2)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:156:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:165:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence3)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:165:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:174:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence4)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:174:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:183:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence5)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:183:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:192:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence6)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:192:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:201:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence7)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:201:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:210:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence8)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:210:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:219:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence9)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:219:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:228:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence10)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:228:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:237:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence11)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:237:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:246:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence12)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:246:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:255:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence13)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:255:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:264:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence14)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:264:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:273:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence15)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:273:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:282:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence16)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:282:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:291:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence17)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:291:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:300:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence18)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:300:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:309:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence19)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:309:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:318:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence20)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:318:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:327:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence21)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:327:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:336:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence22)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:336:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:345:7: failed to synthesize instance of type class
+  Decidable (CoreRule evidence23)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:345:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:349:7: failed to synthesize instance of type class
+  Decidable (ResponsibilityRule evidence12 [evidence13, evidence14] [])
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:349:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:351:7: failed to synthesize instance of type class
+  Decidable (ResponsibilityRule evidence15 [evidence16, evidence17] [])
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:351:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:353:7: failed to synthesize instance of type class
+  Decidable (ResponsibilityRule evidence18 [] [])
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:353:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+Some required targets logged failures:
+- PooFlowProfileAssociationProof.NativeFixtures
+error: build failed

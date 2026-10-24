@@ -1,0 +1,267 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.36 Config Languages 35: AWS Role Ownership and Final Scenario Admission
+#+property: DOCUMENT_ID 11.36
+#+property: STATUS design-only-not-executed-no-loader
+
+* Correction: data, objects and Contracts are separate responsibilities
+
+The previous draft mixed named Profile construction with configuration fragments
+and made types.ss refer back to objects.ss prototypes. The corrected dependency
+is Contracts plus configuration data -> object definitions -> Scenario composition
+-> interface publication. Types do not depend on the constructed domain objects.
+
+| Source | Responsibility |
+|--------+----------------|
+| types.ss | Types, Contracts, responsibilities and Contract obligations |
+| config.ss | Ordinary config values, analogous in purpose to a Nix module config value |
+| scenarios/profiles/network.ss | Network configuration data fragment |
+| scenarios/profiles/machines.ss | Images and machine configuration data fragment |
+| scenarios/profiles/access.ss | Access/state configuration data fragment |
+| objects.ss | Native object definitions that apply configured values to Contract prototypes |
+| scenarios/development.ss, build-host.ss | Scenario object definitions, organized as object-role fragments |
+| func.ss | Pure admission algorithms and resource projection; no configuration defaults |
+| interface.ss | One publication of the actual types/config/profiles/scenarios/operations |
+
+.o can construct a plain native data object in config.ss; it is not inherently an
+extension operation. .def in objects.ss owns a named extensible domain object.
+The classification follows responsibility, not a ban on every object literal in
+configuration. Grouped config fragments use def-bound ordinary values; they no
+longer define named Profile prototype families. interface.ss remains the boundary.
+
+* Contract parent is a declaration intent, not current direct inheritance
+
+The desired declaration (.def (VPCProfile @ NetworkContract) ...) must mean
+creating a domain object from that Contract's proto and retaining its requirement.
+Current core/types.ss explicitly separates Contract descriptors from domain values;
+raw .def does not identify a Contract and silently substitute proto. Until shared
+parent resolution/association exists, native design code uses explicit proto:
+
+#+begin_src scheme
+(def Network. (.get NetworkContract proto))
+(.def (VPCProfile @ (.+ Network. (.get Config profiles network vpc))))
+#+end_src
+
+The data portion is independently readable:
+
+#+begin_src scheme
+(def NetworkConfig
+  (.o vpc: (.o cidr-block: (.o prefix: "10.1.0.0" length: 16)
+               tag-prefix: "Tf-Ncl")
+      build-vpc: (.o cidr-block: (.o prefix: "10.2.0.0" length: 16)
+                     tag-prefix: "Build")))
+(def Config
+  (.o profiles: (.o network: NetworkConfig
+                   machines: MachineConfig
+                   access: AccessConfig)
+      projection: (.o output-format: 'terraform-json)))
+#+end_src
+
+These explicit proto/.+ expressions are maintained internal native expansions,
+not additional syntax the consumer must write. Neither construction nor .+ alone
+proves automatic Contract provenance. The selected final Scenario is explicitly
+admitted below. Complete inherited policy/source preservation remains shared Core
+work, including .+ right-hand-side requirements.
+
+* Explicit native Contract definitions
+
+The following are copied from the reviewable types.ss design source. AWSString,
+AWSName, AWSCidrBlock, AWSCidrs, AWSBoolean and AWSNamedMap are predicate Contracts
+fully defined in that file. Other access/state Contracts also live there. Empty
+proto values carry no deployment defaults; those belong to configuration.
+The YuanxuObjectContract. spelling in the historical listings below was a
+proposed Core admission-base rename, not an installed API. It must not be confused
+with public gerbil-poo ObjectContract., which validates values. No alias is
+installed here. The implemented AWS source and vocabulary are documented in
+[[file:../12-contracts-types/12.20-aws-alignment-and-dynamic-typing.org][current AWS alignment]]; these listings do not define an additional current system.
+
+#+begin_src scheme
+(define-type (NetworkContract @ YuanxuObjectContract.)
+  identity: 'aws/network
+  proto: (.o)
+  responsibilities:
+  (.o region: AWSString cidr-block: AWSCidrBlock tag-prefix: AWSString)
+  .obligations: (cut aws-closed-fields @ <> <>))
+
+(define-type (InstanceContract @ YuanxuObjectContract.)
+  identity: 'aws/instance
+  proto: (.o)
+  responsibilities:
+  (.o ami: AWSString type: AWSString
+      network-ref: AWSName key-ref: AWSName
+      ssh-cidrs: AWSCidrs public-ip?: AWSBoolean)
+  .obligations: (cut aws-closed-fields @ <> <>))
+
+(define-type (ApplicationContract @ YuanxuObjectContract.)
+  identity: 'aws/application
+  proto: (.o)
+  responsibilities:
+  (.o region: AWSString credentials: CredentialsContract state: StateContract
+      keys: AWSNamedMap networks: AWSNamedMap
+      instances: AWSNamedMap outputs: AWSNamedMap)
+  .obligations:
+  (lambda (candidate context)
+    (append (aws-closed-fields @ candidate context)
+            (aws-application-obligations candidate context))))
+
+#+end_src
+
+* Concrete admission algorithms, maintained inside the module
+
+Public .admit is the receipt-producing entry already present in core/types.ss.
+Its native responsibility admission checks required fields first; obligations run
+only after those field receipts accept. Closed fields are derived from the SAME
+responsibilities rather than a second vocabulary table. Selected map entries are
+then admitted against NetworkContract, InstanceContract and access Contracts.
+Only after child fields accept are their network/key/output links dereferenced.
+
+#+begin_src scheme
+(def (aws-closed-fields descriptor candidate context)
+  ;; One authoritative input vocabulary: native responsibilities.
+  (let (allowed (.all-slots (.get descriptor responsibilities)))
+    (map (lambda (name) (.o kind: 'unknown-field path: (list name)))
+         (filter (lambda (name) (not (memq name allowed)))
+                 (.all-slots candidate)))))
+(def (aws-require contract value)
+  (let (receipt ((.get contract .admit) value #f))
+    (unless (yuanxu-validation-evidence-accepted? receipt)
+      (error "AWS configuration rejected" (.get receipt diagnostics)))))
+(def (aws-image-for-region profile region)
+  (aws-require ImageContract profile)
+  (let ((key (string->symbol region)) (images (.get profile images)))
+    (unless (.slot? images key)
+      (error "No AMI configured for selected region" region))
+    (let (ami (.ref images key))
+      (aws-require AWSString ami)
+      ami)))
+(def (aws-receipts contract nodes prefix context)
+  (map (lambda (name)
+         (.cc ((.get contract .admit) (.ref nodes name) context)
+              'path-prefix (list prefix name)))
+       (.all-slots nodes)))
+(def (aws-application-obligations candidate context)
+  (let* ((receipts
+          (append
+           (aws-receipts NetworkContract (.get candidate networks) 'networks context)
+           (aws-receipts InstanceContract (.get candidate instances) 'instances context)
+           (aws-receipts ExternalKeyContract (.get candidate keys) 'keys context)
+           (aws-receipts AWSName (.get candidate outputs) 'outputs context)))
+         (failures
+          (filter (lambda (receipt)
+                    (not (yuanxu-validation-evidence-accepted? receipt))) receipts)))
+    (if (pair? failures) failures
+      (append
+       (yuanxu-append-map
+        (lambda (name)
+          (let (instance (.ref (.get candidate instances) name))
+            (append
+             (if (.slot? (.get candidate networks) (.get instance network-ref)) '()
+               (list (.o kind: 'missing-network
+                         path: (list 'instances name 'network-ref)
+                         reference: (.get instance network-ref))))
+             (if (.slot? (.get candidate keys) (.get instance key-ref)) '()
+               (list (.o kind: 'missing-key
+                         path: (list 'instances name 'key-ref)
+                         reference: (.get instance key-ref)))))))
+        (.all-slots (.get candidate instances)))
+       (yuanxu-append-map
+        (lambda (name)
+          (if (.slot? (.get candidate instances) (.ref (.get candidate outputs) name)) '()
+            (list (.o kind: 'missing-output-instance path: (list 'outputs name)))))
+        (.all-slots (.get candidate outputs)))))))
+
+#+end_src
+
+ApplicationContract responsibilities check map shape; aws-application-obligations
+performs real entry admission and referential checks. No claim is made that a map
+predicate alone validates its children. The path-prefix attached to nested receipts
+retains the named occurrence; common diagnostics must combine that prefix with
+responsibility/leaf paths without losing the original receipt or source identity.
+Flattened source-aware user messages remain an adapter requirement, not verified
+output of the present source. Missing required field diagnostics already originate
+from the native responsibility mechanism. Unknown fields are this module's closed-
+field obligation, not a built-in universal ban on open extension.
+
+* One user edit; final-value checks before resource projection
+
+#+begin_src scheme
+;; Downstream config.ss
+(.def (Production @ (.get AWS scenarios build))
+  instances.build.type: "t3.medium")
+
+;; Existing native expansion of the target path assignment
+(.def (NativeProduction @ (.get AWS scenarios build))
+  instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
+
+;; Inside the maintained aws-project function, before generating resources:
+(aws-require config-contract options)
+(aws-require application-contract final)
+;; Every resource lookup below uses final, e.g.:
+(.get final instances build type)
+#+end_src
+
+The final block excerpts the actual admission boundary; the complete func.ss
+design emits Terraform resources from the final networks/instances/keys maps.
+Local rejection happens before constructing that resource map. The interface
+closes the operation over its published Contracts and internal artifact resolver;
+users neither extract receipts nor invoke these admission helpers.
+
+Expected negative cases (not executed):
+
+#+begin_src scheme
+(.def (Typo @ Production)
+  instances: =>.+ (.o build: =>.+ (.o tyep: "t3.large")))
+(.def (MissingNetwork @ Production)
+  instances: =>.+ (.o build: =>.+ (.o network-ref: 'absent)))
+#+end_src
+
+#+begin_example
+Typo: instances.build.tyep -- unknown-field; allowed fields come from InstanceContract
+MissingNetwork: instances.build.network-ref -- missing-network; reference absent
+Production: test.instance_type = t2.micro; build.instance_type = t3.medium
+#+end_example
+
+A misspelled added slot does not remove inherited type. Closed-field checking is
+therefore necessary even if all required slots are present. A named missing
+network is rejected by relationship obligations; an absent network-ref field is
+rejected earlier by responsibilities. A disabled required network must remain
+missing, not be silently re-enabled. This draft does not implement disable logic.
+
+Parent projection is not a valid substitute for child projection: admit final
+Production and generate from it again, retaining inherited AMI/network/key/SSH
+values and replacing only its instance type. Status stays projected-unadmitted:
+local domain admission is not full inherited-policy admission, Terraform output
+Schema validation, provider execution or live AWS evidence. No AWS control ran.
+
+* Publication and remaining evidence
+
+[[file:../../../scenarios/aws/types.ss][types.ss]], [[file:../../../scenarios/aws/config.ss][config.ss]],
+[[file:../../../scenarios/aws/objects.ss][objects.ss]], [[file:../../../scenarios/aws/func.ss][func.ss]] and
+[[file:../../../scenarios/aws/interface.ss][interface.ss]] are reviewable design sources, not production imports.
+Scenario source files are object-role fragments; Profile data fragments are config
+role fragments. The pending source preparation must distinguish them without
+filesystem execution, circular types/objects imports or duplicated declarations.
+Native .def/.+/.admit foundations exist. Contract-directed parent resolution,
+automatic policy/source association, target Core naming, direct path assignment,
+role-fragment linkage and flattened source diagnostics still need adaptation.
+No Loader implementation or runtime modification is included.
+
+* Current complete deployment-input boundary
+
+See [[file:11.37-aws-complete-consumer-case-and-capability-boundary.org][the complete consumer case and capability correction]].
+The earlier one-value example is an override control, not a deployment configuration.
+Account/backend/key/network/machine inputs belong to the consumer. SSH user input
+is private-key-path; executable selection belongs to the capability.
+
+* Shared and private value-type refinement
+
+[[file:11.38-shared-value-types-and-private-domain-contracts.org][The value-type library design]] records why current AWSString/map predicates are
+insufficient, which native Gerbil address structures/parsers can be reused, and
+which field/type/Contract refinements remain unimplemented.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

@@ -1,0 +1,114 @@
+#+title: 13.11 Same-State Source Reimport After Standard Clean
+#+property: DOCUMENT_ID 13.11
+#+language: en
+
+* Diagnosis: source registration, not lost macro hygiene
+
+The failed source qualification put GERBIL_PATH/lib before the Core source
+package. The installed SDK's core-resolve-library-module-path searches each
+load-path directory in order. Inside each directory it tries the compiled .ssi,
+then .ss, .sld and .scm. It does not search every directory for .ss before
+considering a .scm in an earlier directory.
+
+Standard std/make gxc-outputs inventories the interface .ssi and static output.
+After make-clean removed those outputs, runtime loader .scm files remained in
+lib/core. With lib first, importing :yuanxu/object-family/syntax resolved to
+lib/core/object-family/syntax.scm rather than object-family/syntax.ss in the
+source package. That generated loader has no macro exports. The missing
+yuanxu-module-source-ref-kind binding in source/objects.ss was a downstream
+symptom: its object-family declaration no longer expanded as a macro.
+
+The diagnostic control expanded the apparent declaration as a plain call to
+an unbound defpoo-object-family. Registering the source package first restored
+the actual macro expansion and the real accessor. No macro definition or
+projected compiler form needed changing.
+
+* Fix the owning source-only launch context
+
+This section records the earlier qualification-launcher repair. It was
+insufficient for ordinary build.ss startup and is superseded by
+[[file:13.12-build-owned-source-registration.org][Building-owned registration]]. The launcher prepend below has been removed;
+its historical successful receipts do not establish normal startup.
+
+Core's test-file launcher now prepends CORE_QUALIFICATION_ROOT when explicitly
+running source qualification. This directory has gerbil.pkg with package: yuanxu;
+Gerbil's existing package-prefix lookup limits that source priority to Core.
+Other packages still use their compiled public dependencies before their source
+fallback. The source-only CI launcher declares the same order explicitly:
+
+#+begin_example
+Core source package -> GERBIL_PATH/lib -> dependency source aliases -> SDK
+#+end_example
+
+This is native package registration in our launcher, not a replacement resolver,
+a cache purge, a new syntax, or a runtime Loader. The production declaration
+macro, publication reader, compiler projection and build.ss are unchanged by
+this repair. The consumer remains:
+
+#+begin_src scheme
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+The priority is specific to explicit source qualification. It does not change
+ordinary compiled-library loading or establish an AOT cache policy for a future
+runtime Loader. A legitimate authored .scm remains a valid Gerbil source; there
+is no global ban on .scm and no deletion of unrelated cache files.
+
+* Regression with original artifacts and one GERBIL_PATH
+
+[[file:../../../t/module-build-reimport-test.ss][The SDK-only regression entry]] imports Core inside its test cases, so a broken
+source import is a test failure rather than an unobserved test-module bootstrap.
+It checks:
+
+1. Native resolver contrast: with the existing loader and no .ssi, lib-first
+   resolves that loader; the registered source context resolves the actual .ss.
+   The negative control changes only the test's load-path temporarily and
+   restores it before importing any Core module.
+2. The object-family macro comes from its source module and binds a real
+   use-site accessor; the actual SourceRef module also imports and executes.
+3. The unchanged user-owned build.ss generates its spec, reuses the same spec
+   list within the process, compiles the bounded real JsonSchema closure, and
+   cleans its expected output identities. Explicit currentness checks remain
+   outside the SDK main.
+4. A second new process repeats import, spec, compile and clean with the same
+   sources and GERBIL_PATH. The loader residue remains present. No directory
+   swap, artifact quarantine, manual deletion or dependency rebuild separates
+   the processes.
+
+For a new qualification, first run the cold source-spec control once using the
+setup in [[file:13.07-core-build-entry.org][06]]. For an already compiled/cleaned state, keep that exact state
+and run the following directly; do not repeat the cold setup:
+
+#+begin_src sh
+CORE_REIMPORT_PHASE=first-new-process just test-file t/module-build-reimport-test.ss
+CORE_REIMPORT_PHASE=second-new-process just test-file t/module-build-reimport-test.ss
+#+end_src
+
+The regression refuses a retained manifest other than the three bounded roots
+utilities/algorithms, types and core-spec before invoking compile. It does not
+compile the complete Core manifest. Each invocation uses the existing heap
+fence and 120-second timeout, serially.
+
+* Evidence and limits
+
+The original lib-first failure and the source-priority recovery used the same
+previously failed state. The failure was not repaired by clearing that state.
+Both consecutive new-process cycles passed for 36 targets each, including
+explicit checks that all expected .ssi outputs existed after compile and were
+absent after clean, while the original loader path remained populated. Each
+completed MODULE-OK, HARNESS-OK, final OK and natural exit 0, without
+error/heap/stack markers. The original macro-reimport failure is retained as
+a negative receipt; it is not reclassified as a passing run.
+
+The existing reader controls also pass after those cycles in that same state:
+changed tool bytes refuse admission, foreign same-identity source is rejected
+before evaluation, private cycles and interface self-import reject, and reversed
+role dependencies remain rejected. Source registration did not weaken the
+reader's source confinement or currentness checks.
+
+This closes source-only reimport for this qualified configuration; it does not
+claim that standard clean removes every compiler auxiliary file. Source input
+changes still require normal Graph/currentness admission, and a new process
+constructs a new Graph rather than sharing an in-memory POO identity across
+processes. This is correctness evidence, not a performance or runtime loading
+claim. No upstream Standard Library code is changed or copied.

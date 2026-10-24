@@ -1,0 +1,303 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.29 Config Languages 28: Imported Schema Contracts and Observed Expansion Origins
+#+property: DOCUMENT_ID 11.29
+#+date: [2026-10-16]
+#+filetags: :config-language:json-schema:contracts:guestbook:macro:source:
+#+property: STATUS revised-design-not-implemented-or-executed-no-loader
+
+* Correction: external Schema input, native Contract API
+
+Do not make SchemaV1/SchemaV2 the production or ordinary user model. The small
+handwritten Schemas in modules 26/27 were synthetic bridge controls, not the
+source of Kubernetes/GitHub field definitions. They are superseded as the main
+UX walkthrough. Use a package-owned, pinned upstream JSON file as the source of
+standard wire fields; load it through the Schema module and expose the generated
+native POO Contract. No user retypes those fields in Scheme or updates a second
+help/validation inventory.
+
+Distinguish three owners:
+
+| Value | Source and meaning |
+|-------+--------------------|
+| Upstream JSON/OpenAPI schema | External field definitions, pinned file/dialect/source; input to generation |
+| Generated POO Contract | Native Type/admission API over those imported definitions |
+| Guestbook Scenario/Profile Contract | Maintained native input vocabulary, defaults and relationships not supplied by a generic resource schema |
+
+A Guestbook Server-shaped Profile is not a Deployment JSON object. Do not apply a
+Deployment output Contract directly to that input and call it reuse. The platform
+must publish its native Server/Port Contract and its association with qualified
+imported fields; resource output is checked by the appropriate generated output
+Contract. The old reduced Guestbook input Schema was a bounded adapter example,
+not an official Kubernetes Schema. Its field-discovery experiment must not be
+advertised as the only way to describe a native domain Contract.
+
+* A real downloaded Schema already exists
+
+The product repository maintains [[file:../../../../schemas/json/github-workflow.json][schemas/json/github-workflow.json]], indexed by
+[[file:../../../../schemas/README.org][its schema registry]]. The .data copy is a research/cache copy; it is not a second
+runtime authority. During this documentation audit both files had identical bytes:
+
+#+begin_example
+source: https://json.schemastore.org/github-workflow.json
+$id: https://json.schemastore.org/github-workflow.json
+$schema: http://json-schema.org/draft-07/schema#
+bytes: 113286
+sha256: 7a952fdb7c1b130732e40ccea9db9bced906c1198e97834f8a49ae3b411f3161
+#+end_example
+
+Attribution matters: this is the [[https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/github-workflow.json][SchemaStore-maintained Workflow JSON Schema]].
+[[https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax][GitHub's workflow syntax reference]] is a separate authority; the available JSON
+file must not be called a GitHub-published official standard merely because it
+models GitHub workflows. An upstream refresh is a reviewed new source pin, not
+an implicit network fetch during expansion or first ordinary config access.
+
+The current [[file:../../../../modules/workflow/profiles/github-ci-contract.ss][Workflow GitHub contract owner]] records the actual source hash and uses
+a curated fragment with an explicit top-level scope/unsupported-semantics audit.
+It does not currently prove complete validation of the raw upstream document.
+The proposed raw-file route must report/refuse unsupported semantic coverage;
+loading/compiling JSON successfully is not sufficient evidence of complete support.
+
+Kubernetes officially publishes [[https://kubernetes.io/docs/concepts/overview/kubernetes-api/][OpenAPI v2/v3 API descriptions]]. These are not
+arbitrarily interchangeable with draft-07 JSON Schema. Select a fixed official
+resource definition and qualify any dialect conversion and resource extraction
+before Contract generation. This checkout audit found no pinned Kubernetes
+resource JSON file in the maintained schema registry; do not invent a file path
+or claim the consumer is already connected. Kubernetes server-side admission also
+remains distinct from local Schema checks.
+
+* One-function owner route supersedes the repeated owner call sequence
+
+The [[file:11.30-workflow-module-contract-and-simple-user-config.org][complete Workflow Module example]] contracts the repeated read-file/compile/
+contract sequence into the JsonSchema scope's proposed from-file function. The
+sequence below remains an internal explanation; neither ordinary users nor every
+Module author should copy it. The module publishes config and types.Config
+once, then downstream code only builds/extends native objects.
+
+* Load the raw file behind the module scope, not in ordinary configuration
+
+The following is proposed owner-side code. The existing read/compile primitives
+are reused, exposed through the module's bounded scope; read-file in this scope
+and its publication remain pending. contract uses the full-root validator adapter,
+not only the emitted slot list. resolved-file is supplied by admitted package
+source preparation, anchored to the owning package, not process working directory.
+
+#+begin_src scheme
+(def (contract-file-artifact JsonSchema resolved-file)
+  (use-module JsonSchema as schema
+    (with-slots (read-file compile) schema
+      (let (artifact
+             (compile (read-file resolved-file)
+                      '((owner . github-workflow)
+                        (source-ref . schemas/json/github-workflow.json))))
+        (unless (and (yuanxu-json-schema-contract-artifact-valid? artifact)
+                     (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
+          (error "imported Schema requires coverage review" artifact))
+        artifact))))
+
+(def (workflow-contracts JsonSchema resolved-file)
+  (.o artifact: (contract-file-artifact JsonSchema resolved-file)
+      WorkflowContract: ((.get JsonSchema contract) artifact)))
+#+end_src
+
+The paths above identify a real asset; admission/currentness must bind the actual
+bytes to its source receipt. The quoted source-ref is identification, not proof
+of those bytes. Source preparation handles the verified path/hash. These functions
+neither download a Schema nor authorize arbitrary file access during expansion.
+Even zero generation diagnostics still requires declared dialect/keyword coverage
+qualification. An unsupported artifact must not be silently replaced by a fragment
+and presented as an equivalent Contract.
+
+Field discovery reads the same imported artifact/native Contract metadata and
+supported schema paths. The object/array-only discovery adapter in module 25 does
+not yet handle every Workflow union/pattern. It must refuse unsupported views or
+publish an explicit coverage limitation, rather than flattening away constraints.
+For native domain Contracts, discover their actual native field descriptors and
+qualified associations; do not reconstruct an unrelated JSON field table.
+
+* Observe what the real authoring macro emits
+
+Existing [[file:../../../../.data/gerbil/src/gerbil/expander/core.ss][Gerbil core-expand1]] invokes the bound syntax transformer once. Existing
+[[file:../../../t/path-slots-test.ss][Core tests]] already use core-expand for syntax controls, but no source-bundle
+emission exists in the current path macro. The proposed extension makes the
+first authoring expansion produce a native value definition plus a fresh private
+quoted source bundle. This is a specified pending output format, not a claim that
+the current macro emits it.
+
+The private bundle contains inert compiler data, not a public patch language or
+runtime registry. Publication projects it into native origin views. The user
+object gets no extra source slots. Macro lowering captures each original slot
+before merging prefixes, including ordinary non-dotted parent declarations.
+
+#+begin_src scheme
+;; Proposed private syntax-owner functions, not installed implementations.
+(begin-syntax
+  (def (capture-origin path slot-stx value-stx)
+    (vector path (stx-source slot-stx) (stx-source value-stx)))
+
+  (def (emit-with-origins ctx name native-value origin-data)
+    (with-syntax ((name name)
+                  (value native-value)
+                  (source-name (genident 'source-data))
+                  (payload
+                   (datum->syntax ctx
+                     (vector 'yuanxu-source/v1 origin-data)
+                     (stx-source ctx))))
+      #'(begin
+          (def name value)
+          (def source-name
+            (native-.o value: name source-data: (quote payload)))))))
+#+end_src
+
+The existing parser supplies origin-data by calling capture-origin on original
+path/slot/value syntax during its single parse. It must not reparse the generated
+nested value to infer origins. Native-value is the existing lowering result;
+source emission does not evaluate its initializer or introduce another evaluator.
+The private source object associates the actual declared value binding with the
+quoted bundle, without demanding any of its fields. The interface/source wrapper
+retains that fresh sidecar binding in its private publication projection; ordinary
+exports expose only the declared value. Consumers must not look it up by a printed
+gensym. This publication association is pending, not implemented by core-expand1.
+The private quoted constant has no calls to user code. If source locations need
+serialization, the compiler source owner must preserve exact qualified spans;
+serialization across artifacts remains a qualification gate, not arbitrary printing.
+
+For the existing Guestbook two-edit input, the value part has one frontend
+ancestor refinement. The source bundle still contains both original rows, paths
+(frontend labels env) and (frontend services), even though the generated ancestor
+has only one definition. An initializer such as observed-services occurs once in
+the value definition and never in the quoted bundle.
+
+* Extract observed rows from the actual expansion
+
+This maintainer test reader calls the actual authoring transformer. It does not
+call emit-with-origins itself, wrap the old macro's output in fake data, evaluate
+a quoted expected form or execute the generated configuration. The test context
+supplies the real .def binding and original GuestbookUserSyntax from module 27.
+Literal begin/def/quote/native-.o bindings in the reader must match the emitter's
+bindings.
+
+#+begin_src scheme
+(def (observed-origin-rows input)
+  (let (expanded (core-expand1 input))
+    (syntax-case expanded (begin def quote native-.o)
+      ((begin (def actual-name native-value)
+              (def private-name
+                (native-.o value: associated-name source-data: (quote payload))))
+       (begin
+         (syntax-case input ()
+           ((_ (decl . options) . slots)
+            (unless (and (free-identifier=? #'decl #'actual-name)
+                         (free-identifier=? #'decl #'associated-name)
+                         (not (free-identifier=? #'decl #'private-name)))
+              (error "expansion binding association mismatch"))))
+         (let (data (syntax->datum #'payload))
+           (unless (and (vector? data) (= (vector-length data) 2)
+                        (eq? (vector-ref data 0) 'yuanxu-source/v1)
+                        (list? (vector-ref data 1)))
+             (error "invalid emitted source bundle"))
+           (map (lambda (row)
+                  (unless (and (vector? row) (= (vector-length row) 3)
+                               (list? (vector-ref row 0)))
+                    (error "invalid emitted origin row"))
+                  (.o path: (vector-ref row 0)
+                      slot-location: (vector-ref row 1)
+                      expression-location: (vector-ref row 2)))
+                (vector-ref data 1)))))
+      (_ (error "actual macro did not emit a qualified source bundle")))))
+#+end_src
+
+The current macro is expected to fail this reader because it has no bundle output.
+That is a pending integration, not a passing origin test. The reader is bounded
+to this reviewed first-step shape; changes to wrapper layering must update its
+binding-aware observation point and corresponding acceptance tests. Do not scan
+arbitrary quoted user data for a matching tag or match a printed gensym name.
+The quoted metadata itself is not an authenticated provider record or provenance
+proof; this test only checks the actual emitted data of the trusted transformer.
+
+Compare against independent expected rows captured directly from the input syntax,
+not produced through capture-origin. Those concrete expected-origins definitions
+remain in module 27. Comparison uses paths and exact retained locations:
+
+#+begin_src scheme
+(def (origins-match? observed expected)
+  (and (= (length observed) (length expected))
+       (every
+        (lambda (wanted)
+          (let (matches
+                 (filter (lambda (row) (equal? (.get row path) (.get wanted path)))
+                         observed))
+            (and (= (length matches) 1)
+                 (equal? (.get (car matches) slot-location)
+                         (.get wanted slot-location))
+                 (equal? (.get (car matches) expression-location)
+                         (.get wanted expression-location)))))
+        expected)))
+
+(origins-match? (observed-origin-rows GuestbookUserSyntax) expected-origins)
+#+end_src
+
+The wrapper/native prefix inspection is a separate MG1 observation: one frontend
+refinement and both edits must remain in native-value. This source comparison
+alone cannot prove the value is correct. A row dropped during merging, generated
+ancestor location substituted for a user location, duplicated path or wrong span
+must fail; a native-value initializer duplicated while source rows remain correct
+is caught by the demand counter instead. Observe alias hygiene, evaluation and
+source association as separate controls.
+
+* Port diagnostic uses observed source, not an expected-row fallback
+
+For wrong targetPort=8080, take the same real input syntax with that value and
+obtain its emitted rows through observed-origin-rows. The same Guestbook native
+relationship obligation reads final listener=80 and emits the structured path
+specified in module 25. The existing proposed diagnostic-origin function then
+uses the observed rows:
+
+#+begin_src scheme
+(def (port-error-source-view diagnostic observed-rows)
+  (.o path: (.get diagnostic path)
+      actual: (.get diagnostic actual)
+      expected: (.get diagnostic expected)
+      local-origin:
+      (diagnostic-origin (.get diagnostic origin-path) observed-rows)
+      related-path: (.get diagnostic related-path)))
+#+end_src
+
+A source row at (frontend services) is a valid enclosing-expression origin for
+(frontend services 0 ports 0 targetPort). Do not invent an exact nested field span.
+When targetPort is absent, origin-path points to the actual port write and the
+message explains fallback. expected-origins is never a runtime diagnostic source.
+
+Locating the related inherited listener requires the final-value/source association:
+the publication owner must select the actual FrontendProfile declaration and its
+observed parent bundle according to native resolution, then apply the relative
+related path there. Its source row may cover mainContainer rather than a precise
+containerPort expression. This MOP/publication association and serialization remain
+pending. Until available, report the final related value with origin unavailable;
+do not hand-construct a FrontendProfile origin or use source timestamps to infer it.
+No new global registry, Loader or alternate inheritance algorithm is introduced.
+
+* Replacement validation plan and user experience
+
+Main controls now use the real imported JSON file and generated native Contract:
+verify pinned-source admission, raw-file decoding, generation diagnostics/coverage,
+field discovery and malformed candidate diagnostics from that same artifact. A
+second external revision is tested only when a real new source pin is available;
+there is only one audited Workflow snapshot in this change. Do not manufacture
+an "official" next version or modify upstream numeric bounds to explain the user API.
+Synthetic mutations in module 27 can remain isolated bridge unit controls only.
+
+Guestbook users still write the two ordinary assignments; no SchemaV1/SchemaV2,
+source row, Contract artifact or Provider context is user configuration. Their
+published native Profile/Scenario Contracts and final resource Contracts remain
+distinct. KCL comparison retains its real Server/Service/backend sources and the
+matched port/Pod-label experiment, with no inferred UX superiority.
+
+Existing: downloaded Workflow file, JSON decoding, normalization/Contract generation,
+validation-path primitives, core-expand1 and source-aware existing path parsing.
+Pending: raw-file scope publication with qualified full coverage; Kubernetes source/
+dialect qualification; direct assignment and actual source-bundle emission; private
+publication/final-value association; the new reader/tests and diagnostic integration.
+Only source/asset inspection and document checks were performed here. No new macro,
+test fixture, Schema fetching, Loader, runtime adaptation or deployment was run.

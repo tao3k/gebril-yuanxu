@@ -1,0 +1,223 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.30 Config Languages 29: Workflow Module Contract and Simple User Configuration
+#+property: DOCUMENT_ID 11.30
+#+date: [2026-10-16]
+#+filetags: :config-language:github-actions:module:contracts:ux:design:
+#+property: STATUS proposed-interfaces-not-implemented-no-loader
+
+* Put file/import machinery behind the module interface
+
+The repeated read-file/compile/contract sequence in module 28 is owner code, not
+a user recipe. The public operation should be one ordinary function, from-file,
+published by the JsonSchema scope. This is no new macro/DSL or alternate schema
+engine. Its contract is: load an admitted resolved JSON file, construct a candidate
+native Contract using the existing bridge, refuse generation diagnostics under
+this strict policy, and retain full-root validation in native .admit.
+
+All new yuanxu- names and scope publications below are target APIs. Existing
+read/compile/validate implementations have legacy names in
+[[file:../../../modules/json-schema/interface.ss][the actual Core interface]]. Nothing here has been installed or executed.
+
+* Core owner implementation of the one public function
+
+These are proposed func.ss definitions, reusing existing primitives. The caller's
+Module source policy admits/anchors the resolved path and qualifies source bytes.
+File reading is explicit owner-side I/O on demand; it never happens in macro
+expansion. No public user is asked to pass generation/evidence records.
+
+#+begin_src scheme
+(def (schema-file-obligations artifact candidate _context)
+  (yuanxu-json-schema-object-contract-validation-diagnostics
+   (yuanxu-json-schema-contract-artifact-validate artifact candidate)))
+
+(def (yuanxu-json-schema-from-file config-contract effective-config resolved-file)
+  (let (artifact
+         (compile-schema config-contract effective-config
+           (yuanxu-json-schema-read-file resolved-file)
+           (list (cons 'source-ref resolved-file))))
+    ;; Raw-file publication keeps a coverage-review floor, even when inspection
+    ;; of in-memory artifacts allows diagnostics through configured policy.
+    (unless (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact))
+      (error "Schema conversion needs coverage review" artifact))
+    (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
+         '.obligations (cut schema-file-obligations artifact <> <>))))
+#+end_src
+
+compile-schema is the named implementation in [[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]. It admits the passed
+config against its passed native Contract and checks generation validity/policy.
+The interface binds those first two arguments from effective lexical types/config
+slots, leaving the public from-file signature as one resolved-file argument.
+There is no JsonSchemaFileScope. forwarding prototype. JsonSchemaScope. owns
+reusable behavior; interface.ss declares module-specific public bindings once:
+
+#+begin_src scheme
+(.def JsonSchema
+  identity: 'core/json-schema
+  core:
+  (.o requires: (.o)
+      scope-contract: JsonSchemaScopeContract
+      exports:
+      (.o (:: @ JsonSchemaScope.)
+        types: (.o Config: SchemaConfigContract)
+        config: JsonSchemaDefaultConfig
+        from-file:
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
+  features: (.o))
+#+end_src
+
+This is one interface shown for comparison with module 20, not a second declaration
+to install. The scope Contract must cover config/types and the from-file callable.
+Consumer code can read the ordinary config/types slots through the same native
+Module object. The default is defined once in configs.ss, and the Config Contract
+once in types.ss. config.ss is an existing role spelling in some owners; no source
+file rename is performed by these target examples.
+
+This is a strict candidate-construction guard, not a complete coverage certificate.
+Even zero diagnostics cannot replace a pinned dialect/keyword conformance review.
+Source policy must retain the schema bytes/normalization and generated-field facts
+for discovery; the existing artifact APIs provide them, but a file-to-Contract
+publication association is pending. Do not regenerate an unrelated help table.
+The wrapper can reuse its artifact by qualified source generation; adding this
+function alone is not an implemented cache or source-admission protocol.
+
+* GitHub Actions module: declare the Contract once
+
+Proposed file modules/ci/github-actions/interface.ss in the product/contribution
+package, referencing the existing package-root schemas/json/github-workflow.json.
+this-source-file anchors the path to that file's directory; the example does not
+rely on process working directory or invent another JSON copy. Source admission
+must verify that the reference remains within the declared package and approved
+asset closure. The wrapper generates role imports/compiler export as in module 22.
+
+#+begin_src scheme
+(.def GitHubActions
+  identity: 'ci/github-actions
+  core:
+  (.o requires:
+      (.o JsonSchema:
+          (.o module-id: 'core/json-schema
+              contract: JsonSchemaScopeContract))
+      scope-contract: GitHubActionsScopeContract
+      exports:
+      (.o config: (.o on: "push" jobs: (.o))
+          types:
+          (.o Config:
+              ((.get JsonSchema from-file)
+               (path-expand "../../../schemas/json/github-workflow.json"
+                            (path-directory (this-source-file)))))
+          admit:
+          (cut yuanxu-contract-admit (.get types Config) <> <>)))
+  features: (.o))
+#+end_src
+
+The corresponding type-owner shape Contract is concrete, deliberately bounded:
+
+#+begin_src scheme
+(def (workflow-scope-shape? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(config types admit))
+       (object? (.get value config))
+       (object? (.get value types))
+       (.slot? (.get value types) 'Config)
+       (object? (.get value types Config))
+       (procedure? (.get value admit))))
+
+(def (workflow-scope-shape-obligations _value _context) '())
+
+(def GitHubActionsScopeContract
+  (yuanxu-predicate-contract
+   'github-actions/scope workflow-scope-shape? workflow-scope-shape-obligations))
+#+end_src
+
+This shape Contract reads types.Config, so linking this scope can demand the
+selected schema file/conversion. It cannot honestly promise the Contract stays
+cold through that admission. It must not force unrelated modules, workflows or
+runtime execution. A lighter scope-presence Contract would postpone conversion
+and require the first admission/help request to qualify it; that is a separate
+reviewed demand policy, not an accidental change hidden in this predicate.
+Shape acceptance is not proof of conversion correctness. The JsonSchema provider's
+qualified implementation/coverage and native candidate admission remain required.
+config is an incomplete workflow template; it needs concrete jobs before admission.
+
+* Downstream: native values only
+
+The product facade returns the admitted scope through the previously designed
+Modules namespace; the Loader connection itself remains excluded. A user can bind
+one Module and construct a native workflow object from its maintained prototype:
+
+#+begin_src scheme
+(def ProjectCI
+  (use-module (.get Modules ci github-actions) as gha
+    (.o (:: @ (.get gha config))
+      name: "CI"
+      jobs:
+      (.o build:
+          (.o runs-on: "ubuntu-latest"
+              steps:
+              (list (.o uses: "actions/checkout@v4")
+                    (.o run: "gerbil build")))))))
+#+end_src
+
+The outer def retains ProjectCI outside the bounded alias. Do not put a .def inside
+a let-like use-module body and imply its name leaks to the caller. Users neither
+load the JSON file nor pass a Contract artifact. The module's ordinary admission
+entry checks ProjectCI against its published types.Config at the configured
+preview/export boundary; that automatic boundary remains pending. It does not run
+the workflow or replace GitHub's own validation/runner behavior.
+
+For an existing workflow, plain native inheritance remains available:
+
+#+begin_src scheme
+(.def (ReleaseCI @ ProjectCI)
+  name: "Release CI")
+#+end_src
+
+No artificial POO refinement is required for a replacement name value. A true
+original-value transformation uses a named Scheme function/native => operation.
+
+* Actual source rows: one maintained reader and comparator
+
+The complete observed-origin-rows and origins-match? definitions are in
+[[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][module 28]], together with the proposed emitted syntax frame. They are ordinary
+maintainer inspection functions over actual core-expand1 output, not public user
+configuration. They fail if the real macro emits no sidecar. Do not add a fake
+sidecar around current output merely to satisfy the test reader.
+
+The sidecar is a private native object referencing the declared value binding and
+an inert quoted source payload. The reader checks the original declaration binding,
+the associated value binding, fresh private binding separation and payload shape,
+then converts those emitted rows into native views. The comparator checks each
+expected path has exactly one observed row with the original source spans.
+Prefix/native-value correctness and once-only demand are independent tests.
+Parent-derived origin selection still requires the pending publication/MOP link;
+this source observation alone is not end-to-end provenance or authenticated evidence.
+
+* Conversion coverage and current evidence
+
+Real input: [[file:../../../../schemas/json/github-workflow.json][the maintained Workflow JSON asset]], hash recorded in module 28.
+Current consumer: [[file:../../../../modules/workflow/profiles/github-ci-contract.ss][Workflow GitHub contract]], whose audit declares a curated,
+top-level scope. Do not claim the raw-file route is already fully supported.
+Qualifier requirements include local/external/recursive refs, unions, conditional
+keywords, negation, patterns, map values and workflow-specific expression semantics.
+Inspect actual bridge support and corpus controls; an old unsupported audit is
+not a fresh claim that every listed feature is still absent.
+
+The object/array discovery prototype is insufficient for arbitrary Workflow union/
+pattern paths; unsupported views need explicit refusal or coverage-limited help.
+The full-root Contract adapter retains the existing validator, but cannot repair
+unsupported upstream semantics by itself. This is where implementation/conformance
+work remains, not something a more elaborate user call should conceal.
+
+Existing source read/generation/validation and expander APIs are reusable. Pending:
+from-file scope publication, namespace migration, qualified raw-file coverage,
+automatic module/Contract association and real source-sidecar emission/publication.
+No implementation, tests, Loader integration, Schema fetch or workflow execution
+was performed. The desired UX improvement is fewer repeated owner steps and a
+small native user object; it is not a completed runtime result.
+
+The [[file:11.31-module-config-types-and-function-slots.org][config/types/function-slot convergence]] owns the shared access model and the Nix
+comparison. Functions implement behavior; interface.ss declares config/types and
+binds operations directly. No forwarding prototype or second public alias is
+required for this example.

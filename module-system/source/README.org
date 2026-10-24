@@ -1,0 +1,94 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Executable source preparation boundary
+
+* Entry and selection
+
+The public =:yuanxu/module-system/interface= entry now accepts either the existing
+native source context, an exact =init.ss= path, or a module directory. It does
+not import or execute source files. A normalized publication reader is still an
+explicit capability, not an installed runtime Loader. For example:
+
+#+begin_src scheme
+;; repository/init.ss; parsed as declaration data
+(yuanxu! mode: explicit source: "./modules"
+  :custom (guestbook -smoke)
+  :unused (experimental disable: #t))
+
+;; Preparation succeeds without an executable publication provider.
+(def sources (yuanxu-load-modules "./init.ss"))
+;; A platform can supply an admitted source/publication adapter explicitly.
+(def selected (yuanxu-load-modules "./init.ss"
+                read-publication: read-normalized-publication))
+(.get selected modules custom guestbook)
+((.get selected admit-current)) ; required before publishing a derived plan
+#+end_src
+
+=read-normalized-publication= above is a caller-supplied protocol implementation,
+not a new function provided by this change. Without that capability, executable
+scope demand fails explicitly. Existing native source contexts remain supported.
+
+A directory without init uses automatic, on-demand eligibility. A directory named
+=modules= can use its own =init.ss= or the adjacent repository init. If both exist,
+pass the exact authoritative init path; implicit precedence is refused. Relative
+=source:= paths resolve against that init file. Without an explicit source option,
+repository init defaults to =modules/=; =modules/init.ss= defaults to its directory.
+
+=init.ss= is read, never evaluated. One bounded =yuanxu!= form plus compiler
+=import/export= scaffolding is accepted. The reader lowers categorized rows through
+the existing native selection constructor; it does not create another Feature
+resolver. =disable: #f= remains an explicit decision distinct from absence;
+negative feature symbols remain in the native selection flags. Duplicate module
+rows, conflicting feature signs, nonboolean disable and computed forms fail.
+Nested feature declarations, external =@= roots, named Profile init forms and
+arbitrary source computation are not supported by this filesystem adapter yet;
+the legacy short compiler form retains its existing surface. The =mode:/source:=
+compiler form and filesystem reader share the same pure lowering and produce
+native intent. The compiler form exports only the source-qualified =<owner>.init.exports=
+binding. Native module identity determines =owner=; the compiler no longer
+publishes a separate =yuanxu-module-init= value;
+it performs no filesystem discovery during expansion or declaration evaluation.
+
+* Demand and source lifetime
+
+Only immediate directory metadata is enumerated. Native lazy namespace slots
+expand a branch on access, not every module at startup. Source lookup validates
+=types.ss=, =objects.ss=, =config.ss= and =interface.ss= as regular files and records
+their contents for the selected module; it does not execute them. This new source
+adapter enforces the target four-role shell without changing legacy collection
+admission. A published module directory is a namespace leaf; nested implementation
+directories inside it are private, not additional module namespace branches.
+Symlink entries and case-colliding directory names are refused conservatively.
+
+Selected modules automatically include their declared Core dependency closure.
+This does not globally select every module under a category named core. A denied
+required owner fails before its publication is read. The error retains the
+requester chain; the denying init path and negative decision remain in context.
+Features are retained intent only: activation, Feature dependency validation and
+unknown Feature diagnostics still require the Feature integration boundary.
+
+Each preparation has a fresh generation and its own native slot cache. Before
+publication, =admit-current= checks observed immediate directory names, observed
+role contents, the chosen init contents and probed negative init lookups. An
+unvisited subtree's implementation is neither read nor authenticated. Cached
+slots are immutable snapshots, never live filesystem access. Additional provider
+inputs, transitive compiler dependencies and atomic filesystem authenticity must
+be qualified by the eventual publication adapter; these observations alone do
+not eliminate TOCTOU races or establish a content-addressed global cache.
+
+In auto mode the namespace expresses eligibility, not an eager selected build.
+=selected-records= and =dependency-order= concern declared roots and their demanded
+closure. Merely enumerating namespace keys must not become a build-all operation.
+A future selected build consumer must bind its explicit demand and source
+currentness before producing executable entries.
+
+* Focused controls
+
+=t/module-directory-test.ss= exercises directory-only auto discovery, root and
+module-local init, declaration provenance, negative decisions, required Core
+closure, stale source refusal, and cold unselected implementation files. The
+publication bodies in this test are explicit fixtures; no runtime Loader is
+connected. =t/module-scope-link-test.ss= retains the native scope Contract, cycle,
+owner identity and generation controls. These are correctness controls, not
+startup-time or thousand-module performance measurements.

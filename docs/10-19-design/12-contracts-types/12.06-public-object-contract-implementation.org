@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.06 Public Object Contract Implementation
+#+property: DOCUMENT_ID 12.06
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS local-public-library-implementation-no-module-adapter-loader-or-push
+
+* Ownership and exact implementation scope
+
+The active gerbil-poo PR 13 checkout on =feat/positive-closure-costs=, based on
+=ebe17df9426f644a9ac43f1ffd65ab6f1b450039=, now contains local changes for:
+
+- =object-contract.ss=: public =ObjectContract.=, =TypeContract.=, =diagnose= and
+  =as-value-contract=.
+- =build.ss=: one native package build entry for the new module.
+- =t/object-contract-test.ss=: native positive/negative library controls.
+- =BUILD.bazel=: only the new test's entry in the existing contracts group;
+  other concurrent CI/Bazel edits are not owned by this task.
+- =doc/object-contracts.md= and its README link: English public API documentation.
+
+These changes are local and unpushed. They do not update Agentic AI Lab's dependency
+lock or installed package. Other concurrent checkout changes are outside this
+task. The object-contract module imports only standard list helpers, POO objects
+and the existing MOP Type protocol; it imports no Core, Schema, Graph or module
+publication mechanism.
+
+During qualification, the checkout advanced to =308e67f= through a separate
+CI-only commit. Its changed files do not include the MOP, Type, object or metadata
+implementations used by these tests. This task's public module, tests, docs and
+small build/test registrations remain uncommitted on that checkout; the concurrent
+CI changes were preserved.
+
+* Existing mechanisms retained
+
+=Type.=, =element?=, =validate= and slot =.defgeneric= remain authoritative.
+=ObjectContract.= is a Type whose membership is derived from diagnosis. A normal
+field Type is adapted, while an existing diagnostic Type is reused. The Type
+adapter delegates =.validate= as well as =.element?= so Function Types retain
+their existing input/output wrappers when explicitly validated.
+
+The existing =declarative-metadata= invocation Contract accepts these Types
+through =typed=. No second invocation wrapper, predicate registry, effect
+protocol or registration system was introduced. Structural checking does not
+implicitly rewrite a procedure-valued field with a checked wrapper.
+
+* Difference from the earlier proposal
+
+The public implementation additionally checks malformed descriptor callbacks
+and composed diagnostic lists, adapts plain Types in whole-value constraints,
+and prepares constraint lists on the effective Contract receiver. Unexpected
+callback errors retain their causes. Generic issues do not embed raw candidate
+secrets. Optional/default semantics remain with explicit schema constraints;
+the responsibilities map defines required fields.
+
+All ordinary data objects are structural by default. A prototype requirement is
+an explicit additional policy, checked before candidate field demand. It does
+not establish module origin, source association or authorization. Closed field
+checking and delegated external schema checking remain distinct policies.
+
+* Schema adapter stays outside the public library
+
+The qualification now imports =:clan/poo/object-contract= directly. It no longer
+generates a generic object-contract fixture or forwarding module, and no longer
+extracts generic Type/object implementation from the discussion document.
+The JsonSchema-owned blocks
+still supply =SchemaContract.= and schema compilation/node validation on the
+consumer side. The local AWS factory remains an isolated domain control.
+
+The AWS local-link diagnostic now constructs its ordinary POO issue directly;
+it does not depend on a private generic helper. Schema representation, provider
+input conversion, resource relationships and Core receipts are not added to
+gerbil-poo. A reusable JsonSchema library was subsequently implemented locally;
+see [[file:12.07-json-schema-value-contract-implementation.org][the JsonSchema implementation record]]. This section records the earlier gate.
+
+* Validation boundaries
+
+The library tests exercise the actual public module from an isolated source path,
+with no Core source on that path. Tests include Type and Function adaptation,
+missing/unknown/nested fields, explicit ancestry, inherited/copy-derived prepared
+maps and constraints, external diagnostic Types, invalid policies and callbacks,
+existing invocation checking and final-child resource projection after parent
+cache demand. Schema and admission controls use the public module as a consumer,
+not an embedded copy.
+
+Focused results:
+
+| Gate | Result |
+|------+--------|
+| New public API suite | 14 cases passed from source |
+| Single-module native compilation | Passed; explicit module-context path check confirmed the compiled SSI |
+| Public API suite with compiled module | Same 14 cases passed |
+| Existing MOP / Type / invocation Contract suites | 6 / 10 / 6 cases passed |
+| External generic / JsonSchema-consumer controls using public API | 7 / 10 cases passed |
+| Native Scheme fixture preparation | Passed |
+
+Every suite reported MODULE-OK, HARNESS-OK and final OK with no error-case/check/
+harness/module or heap/stack-overflow markers. Logs and generated compiler files
+remain temporary artifacts. No full-package build, Bazel build, benchmark or
+remote CI run is claimed. Agentic AI Lab's installed dependency remains unchanged.
+
+Production module adaptation,
+automatic source association, Loader integration and publication remain out of
+scope. No performance or formal-completeness claim follows from these controls.

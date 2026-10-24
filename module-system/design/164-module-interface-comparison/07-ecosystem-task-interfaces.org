@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Ecosystem Task Interfaces: Omnibus AWS, Sandbox, CI, HiveBus and BAML
+#+date: [2026-10-15]
+#+property: STATUS source-comparison-and-design-no-loader-change
+
+* Compare the maintained authoring-to-consumer path
+
+Language features do not establish an ecosystem's configuration experience.
+Compare what users write, what the maintained library derives, where contracts
+are attached and what artifact the consumer receives. These excerpts supplement
+the longer [[file:01-omnibus-ncl-cases.org][Omnibus]] and [[file:02-hivebus-nixos.org][HiveBus]] studies rather than replacing their evidence.
+No sample was executed or deployed in this revision.
+
+Omnibus excerpts use the retained source archive at commit
+c5d37eb51961fd7bd32f775843044ca7f8191715, read under
+/private/tmp/agenticailab-comparison-omnibus. HiveBus uses committed source at
+edc6095bed63a3c14f9f7147c931378d3e9d1609. BAML uses the inspected local
+.data/baml source at HEAD 1e1b97e8096219581ddcc16e3f3660bab17ef236.
+These are source cuts, not claims about the latest remote releases. Omnibus and
+HiveBus excerpts retain their original MIT-source attribution in the case-study
+links. BAML is a separate LLM language/tooling reference, not a CI framework or
+a Lisp implementation.
+
+* Omnibus AWS: a business object elaborates into infrastructure
+
+Actual excerpt from [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/main.ncl][aws/main.ncl]]:
+
+#+begin_src nickel
+aws.simple.ec2.instances = {
+  test = {
+    ami = ami-id aws.region,
+    type = "t2.micro",
+    network = aws.simple.networks.test,
+    public_key_name = "${resource.aws_key_pair.ssh_key.key_name}",
+  },
+},
+#+end_src
+
+The surrounding expression applies Aws.Simple, Aws.S3Backend and Tf.Config.
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws.ncl][aws/modules/aws.ncl]] assembles the provider/network/instance modules;
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws-simple-ec2.ncl][aws-simple-ec2.ncl]] declares instance fields and derives security groups and
+aws_instance resources. The user names an instance and supplies business inputs;
+the library owns resource elaboration. The example still exposes Terraform
+interpolation strings and has placeholder credentials/keys. It is not evidence
+of a successful cloud deployment or an entirely hidden provider layer.
+
+For POO: a named smoke Check should similarly elaborate into a consumer task
+without requiring users to reconstruct the scheduler or protocol. We still need
+that checked projection; inheriting an object alone is not an equivalent product.
+
+* Omnibus Sandbox: configuration, defaults and output belong to a library
+
+Actual excerpt from [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/seatbelt-minimal.ncl][sandbox/examples/seatbelt-minimal.ncl]]:
+
+#+begin_src nickel
+Sandbox.build {
+  id = "seatbelt-minimal",
+  backend = 'seatbelt,
+  cmd = ["/bin/pwd"],
+  network = { enabled = false },
+  fs = { mode = 'ro, allowed_paths = ["/tmp"] },
+}
+|> Sandbox.to_profile
+#+end_src
+
+The builder supplies defaults and the emitter produces a Seatbelt profile. That
+is a meaningful end-to-end configuration interface. Its backend-specific policy
+must be evaluated as policy, not inferred from the short syntax. Named contracts
+and actual builder attachment remain distinct, as the longer case study shows.
+For smoke, profile-ref must resolve to an admitted sandbox policy; a symbol such
+as ci/check does not establish that permission, availability or execution safety.
+
+* Omnibus CI: reusable transformations and a checked wire boundary
+
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/github/nix/ci.ncl][github/nix/ci.ncl]] supplies configs, job steps and concurrency. Its ending is:
+
+#+begin_src nickel
+& (import "../matrix.ncl")
+|> std.serialize 'Json
+|> std.deserialize 'Json
+  | (import "../github-workflow.schema.ncl")
+#+end_src
+
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/github/matrix.ncl][github/matrix.ncl]] maps configurations into jobs, derives names and excludes
+intermediate fields from export. Adding a workflow step and adding a dependency
+Check are different operations, but both require a useful final consumer shape.
+Our selected-checks and graph validation do not yet supply matrix generation or
+a validated GitHub workflow projection. Derived-name collision diagnostics also
+need examination: record merging by itself is not evidence of an explanatory
+business-identity conflict report.
+
+* HiveBus: values first, maintained object extension before export
+
+Actual ordinary host configuration from [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/hosts/host-3/meta.nix][hosts/host-3/meta.nix]]:
+
+#+begin_src nix
+deployment = {
+  allowLocalDeployment = true;
+  targetHost = "127.0.0.1";
+};
+#+end_src
+
+[[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/pops/hosts.nix][units/self/pops/hosts.nix]] centralizes source/input loading. Actual advanced
+extension from [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/flakeOutputs.nix][units/self/flakeOutputs.nix]]:
+
+#+begin_src nix
+renamerHiveExports = (super.pops.hive.setNixosConfigurationsRenamer "asd").setHomeConfigurationsRenamer "myHm";
+#+end_src
+
+The same owner exposes ordinary configuration outputs and pops. That is an
+existing library-level example of progressive disclosure. Our ordinary CI
+refinement and native extension should meet this usability baseline. These
+consumers do not prove the external POP implementation's cache semantics,
+diagnostic quality or scalability. Do not substitute generic NixOS options
+claims for observations of HiveBus itself.
+
+* BAML: task-oriented authoring and tools, without syntax transplantation
+
+The inspected [[file:../../../../.data/baml/integ-tests/baml_src/fiddle-examples/extract-receipt-info.baml][receipt example]] has this declaration signature:
+
+#+begin_src text
+function ExtractReceiptInfo(email: string, reason: "curiosity" | "personal_finance") -> ReceiptInfo
+#+end_src
+
+Its body references a client and a prompt, and nearby classes describe the
+returned data. The [[file:../../../../.data/baml/fern/pages/welcome.mdx][local introduction]] describes editor preview/playground and
+typed outputs. The [[file:../../../../.data/baml/fern/03-reference/baml-cli/test.mdx][test reference]] documents discovery without execution via
+test --list and selection by function/test patterns. These are source/documentation
+observations, not newly run BAML tests or a verification of its editor product.
+
+Borrow the workflow: identify the task, discover its inputs/output, inspect the
+effective configuration, validate, and explicitly execute a selected test.
+Do not copy function/client/class syntax into Scheme, or equate a preview with
+an LLM call. For CI, the task names are build/test/package/smoke; advanced POO
+mechanisms stay available behind that understandable task surface.
+
+* Concrete design follow-through
+
+The [[file:../164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][smoke discovery/conflict/preview design]] specifies the missing interfaces
+as native object projections and acceptance cases. It does not add public DSL
+forms, an inspection CLI, runtime execution or Loader behavior.
+
+| Ecosystem capability | Adopt | Remaining POO requirement |
+|----------------------+-------+---------------------------|
+| AWS business-object elaboration | Maintained task-to-consumer transformation | Qualified task projection and consumer Contract |
+| Sandbox defaults and emitter | One owner for policy defaults and output | Actual reference/capability admission, not a source-name shortcut |
+| CI matrix and schema boundary | Reusable transformations, hide internals, validate output | Matrix/name collision policy and checked plan publication |
+| HiveBus values and POP exports | Common values first, object extension when needed | Discoverable fields and source-aware conflict explanation |
+| BAML task/tool loop | Task discovery, diagnostics and preview before execution | A native inspection/preview result with explicit validation state |

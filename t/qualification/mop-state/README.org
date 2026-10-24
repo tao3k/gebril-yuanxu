@@ -1,0 +1,78 @@
+#+title: MOP selected-state extraction qualification
+#+language: en
+
+Run from Core with the unchanged heap-fenced test entrypoints:
+
+#+begin_src sh
+just test-file t/mop-state-snapshot-test.ss
+just test-file t/gitea-postgresql-publication-test.ss
+#+end_src
+
+=snapshot.ss= is a private consumer test helper. It reads actual native records
+and raw selected prototype metadata; it never implements object evaluation,
+source admission, a Loader, or a production byte cache. Runtime class/field
+reflection is from the installed Gerbil MOP. Producer APIs and the recorded
+checker are bound to the installed gerbil-poo package identity.
+
+The native source-observer parameter is read, not replaced by a testing purity
+flag. Unknown checkers are not invoked. Raw metadata comparisons use =eq?=
+reference identity. Numeric values/revisions are not substituted for object
+identity; equal separately allocated numbers exercise that distinction.
+
+The Gitea/PostgreSQL tests use existing resource-owning fixtures, actual JSON,
+reader/link/publication and public =.admit=. Temporary source trees isolate
+intentional source mutations. No shared installed dependency or production
+Scheme source is edited. Some tests deliberately clear or corrupt a private
+receiver's native cache; they are negative controls, not user extension APIs.
+
+MOP snapshot equality covers the selected recorded footprint only. It is not
+source currentness, a concurrency transaction, a history certificate or an
+untrusted-code sandbox. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for exact evidence and open correspondence premises.
+
+* Revision and dynamic-scope lifetime
+
+=just test-file t/mop-snapshot-lifetime-test.ss= exercises supported ABA,
+external demand dependencies, active-frame veto, actual observer file writes
+and exceptional restoration. It reuses this helper without changing its
+footprint or producer code. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]].
+
+* Serial-use controls
+
+=just test-file t/mop-serial-use-test.ss= exercises actual cold frames, warm reads,
+independent-demand mutation, replay callback mutation and source writes. It does
+not install an active frame or claim filesystem transactionality. The existing
+lifetime/publication regressions retain both requirements and parent-cache/source
+diagnostic controls. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]].
+
+* Call phase controls
+
+=just test-file t/mop-call-phases-test.ss= records actual cold acquisition and
+body frames, checks warm function reuse, receiver/external mutation, inherited
+caller protection and acquisition-only observation omission. No frame registry
+is fabricated. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]].
+
+* Actual source admission bodies
+
+=just test-file t/source-admission-body-test.ss= invokes real SourceAdmissionContract.
+and nested ordinary/source-aware child Contracts. It neither imports recorded nor
+calls native replay directly. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] for fixture/domain boundaries.
+
+* Return-tail limitation controls
+
+=just test-file t/source-admission-tail-test.ss= uses real public source events.
+Expected stale acceptance is a reproduced gap, not a safe runtime result. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] for source/plan/observer boundaries and unchanged production scope.
+
+
+* Constrained return-tail qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] separates a replaceable caller wrapper from a temporary producer-owned
+source-event gate. Opaque observers are refused before invocation; this is not
+a purity declaration or a production fix. An independent writer remains a
+correct-model limitation requiring snapshot/conditional-commit authority.
+
+The final candidate covers both slot-replay (including cache exit) and
+return-currentness. A return-only gate is retained as an unsafe matched control.
+Only source-observer calls are restricted; arbitrary MOP record/checker ownership
+and external snapshot/commit remain separate premises.

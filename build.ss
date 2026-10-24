@@ -1,75 +1,30 @@
-#!/usr/bin/env gxi
+#!/usr/bin/env -S timeout --signal=TERM --kill-after=5s 180s gxi
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
-;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import (for-syntax
+          (only-in :std/source this-source-file)
+          (only-in "./module-system/building/source-package.ss" register-yuanxu-build-source!)))
+(begin-syntax
+  (when (getenv "GERBIL_BUILD_VERBOSE" #f)
+    (displayln "BUILD-BOOTSTRAP Core at=" (real-time)) (force-output))
+  (register-yuanxu-build-source! (path-directory (this-source-file))))
 
-(import (only-in :std/build-script defbuild-script))
+(import (only-in :clan/poo/object .get)
+        (only-in "./prelude.ss")
+        (only-in "./module-system/building/script.ss" defbuild-script)
+        (only-in "./init.ss" yuanxu.init.exports)
+        (only-in "./module-system/building/artifacts.ss" current-build-output-directory)
+        (only-in "./module-system/building/source-closure.ss" package-library-spec)
+        (only-in :std/source this-source-file)
+        (only-in "./core-spec.ss" core-spec core-public-roots))
 
-(defbuild-script
-  '("types"
-    "object-family/funcs"
-    "object-family/indexed"
-    "object-family/syntax"
-    "object-family/interface"
-    "extension-graph/support/data"
-    "extension-graph/support/node-operations"
-    "extension-graph/support/operation"
-    "extension-graph/support/apply"
-    "extension-graph/interface"
-    "contribution/objects"
-    "contribution/verification"
-    "module-system/schema/support/contracts"
-    "module-system/schema/support/slot-policy"
-    "module-system/schema/support/field-resolution"
-    "module-system/schema/support/object-slots"
-    "module-system/schema/support/object"
-    "module-system/schema/interface"
-    "module-system/schema/slot-contracts"
-    "module-system/schema/relations"
-    "module-system/schema/validation"
-    "module-system/types"
-    "module-system/objects"
-    "module-system/config"
-    "module-system/graph/funs"
-    "module-system/source/objects"
-    "module-system/funs"
-    "module-system/loader/objects"
-    "module-system/loader/load-path"
-    "module-system/catalog/objects"
-    "module-system/projection/option-objects"
-    "module-system/projection/option-validation"
-    "profile-composition/bindings"
-    "profile-composition/profile-bundle"
-    "profile-composition/selection-syntax"
-    "module-system/observability/diagnostics"
-    "composition/lineage"
-    "observability/types"
-    "observability/funcs"
-    "observability/objects"
-    "observability/slot-debug"
-    "observability/slot-presentation"
-    "observability/debug"
-    "observability/output"
-    "observability/testing-case"
-    "poo-clos/types"
-    "poo-clos/objects"
-    "poo-clos/funcs"
-    "poo-clos/lambda-list"
-    "poo-clos/method-combination"
-    "poo-clos/classes"
-    "poo-clos/model"
-    "poo-clos/instance-state"
-    "poo-clos/lifecycle"
-    "poo-clos/dispatch"
-    "poo-clos/evolution"
-    "poo-clos/generic-evolution"
-    "poo-clos/reflection"
-    "poo-clos/load-form"
-    "poo-clos/mop"
-    "poo-clos/declaration-ir-core"
-    "poo-clos/class-declaration-ir"
-    "poo-clos/method-combination-declaration-ir"
-    "poo-clos/declaration-ir"
-    "poo-clos/syntax"
-    "poo-clos/interface"))
+;; init.exports owns selected Module targets; core-spec owns library targets.
+;; Only this entry consumes both. core-spec must never compile init itself.
+;; The adapter keeps role/currentness boundaries inside the SDK consumer.
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(def library-spec
+  (append core-spec
+    (package-library-spec (path-directory (this-source-file)) 'yuanxu core-public-roots
+      exclude: core-spec)))
+(defbuild-script (modules-spec library-spec) libdir: (current-build-output-directory))

@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Feature System
+
+The public interface is [[file:interface.ss][interface.ss]]. It owns native POO descriptors, dependency and
+conflict resolution, manifests, composition, capabilities, generic DomainCase
+closure and inert runtime/Bundle projections. It has no Agentic AI Lab dependency.
+
+[[file:bundle-v1-writer.ss][Byte output]] consumes an already validated frozen image. Scenario planning,
+guard policy and execution Plan conversion belong to the consuming package.
+See [[file:design/README.org][the ownership and validation boundary]].

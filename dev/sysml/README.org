@@ -1,0 +1,56 @@
+#+title: Development System Architecture and Verification Allocation
+
+* System entry
+
+[[file:00-development-assurance.sysml][00 Development Assurance]] defines the
+responsibilities of architectural modeling, temporal analysis, proof, runtime
+correspondence and measurement. It is a textual SysML v2 design, not a new
+build graph. The existing native selected graph and Just entrypoints execute work.
+SysML parsing/semantic validation is not yet qualified in this repository.
+
+* Classification
+
+| Area | System responsibility | Current workstream |
+|------+-----------------------+--------------------|
+| 00 | Cross-cutting assurance ownership and traceability | [[file:00-development-assurance.sysml][Development system]] |
+| 10 | Evaluation, receiver identity, dependencies and caching | [[file:10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] |
+| 20 | Module selection, package/build phases and demand boundaries | [[file:20-module-loading/20.01-demanded-module-lifecycle.org][20.01 Demand-Driven Module Loading]] |
+| 30 | Contracts, provenance, admission and publication | Reserved classification; current proofs remain dev/proofs |
+| 40 | Explicit execution, effects and resource lifecycle | Reserved classification; current implementation remains ops/testing |
+
+Only populated areas get directories. A concern spanning areas has one primary
+owner and cross references; it is not copied into several models. Existing QNT
+and Lean paths remain stable. This index allocates their responsibilities and
+does not relocate or duplicate them.
+
+The evaluation workstream includes [[file:10-evaluation/10.02-runtime-accounting.org][10.02 Installed Runtime Accounting]],
+which separates native VM accounts from physical allocation and records the
+matched source-window lookup control under the same SysML ownership model.
+[[file:10-evaluation/10.03-replay-structure-ownership.org][10.03 Replay Structure Ownership]]
+separates native cached values from traversal-local work and fresh authentication.
+[[file:10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
+qualifies that boundary against the declared dependency and its issuer projection.
+[[file:10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
+implements the producer-owned structure and qualifies reuse without caching admission.
+[[file:10-evaluation/10.06-issued-record-storage.org][10.06 Issued Record Storage]] separates duplicated issuer closure storage
+from original read identities, dependency edges and mandatory fresh checks.
+
+[[file:20-module-loading/20.02-metadata-projection-correspondence.org][20.02 Metadata Projection Correspondence]]
+qualifies the closed source boundary with LeanPoo, QNT and actual role wrappers
+before production Loader changes.
+
+* Required trace for each workstream
+
+| Question | Required artifact | What it cannot establish alone |
+|----------+-------------------+--------------------------------|
+| What is the system boundary? | SysML structure, actions and requirements | Executable correctness |
+| What sequence must fail? | Existing QNT owner and matched negative trace | Unbounded correctness or filesystem trust |
+| What property is preserved? | Lean statement, premises and Scheme projection | Native behavior without correspondence |
+| Does current code implement it? | Source entry + focused Just regression | Untested executions |
+| Is it more efficient? | Same workload, cold/hot action and time counts | Stable speedup from a single run |
+
+Every row has an evidence status: design, modeled, machine-checked or runtime
+observed. Status is per property, not a blanket badge for an entire workstream.
+Model files do not carry trusted currentness results into runtime.
+
+- [[file:20-module-loading/20.03-retention-and-incremental-roles.org][20.03 Retention and Incremental Roles]] — retained owners, distinct dependency relations, native cache limits and bounded scheduling.

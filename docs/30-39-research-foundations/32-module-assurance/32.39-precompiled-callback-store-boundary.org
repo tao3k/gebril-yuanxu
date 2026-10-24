@@ -1,0 +1,200 @@
+#+title: 32.39 Precompiled Callback Bodies And The Shared Store Boundary
+#+language: en
+#+startup: overview
+
+* Question and result
+
+[[file:32.40-compiler-artifacts-and-selected-closure.org][32.40]] follows this with compiler-issued artifact facts, native runtime import
+closure checks and old/replaced artifact controls before callback loading.
+
+[[file:32.38-compiled-store-boundary.org][32.38]] left an important counterexample: a function compiled before store
+lowering could mutate a shared SlotSpec, evaluate Cold at 5440, then restore
+the function while leaving Cold's cache poisoned. Processing only its caller
+cannot repair a store already emitted inside a precompiled callee.
+
+This follow-up independently compiles a callback library through the SAME
+store-lowering stage, before compiling its consumer. Generated-setter,
+reflective and inlined callback bodies now refuse their first write, even when
+called by an unlowered, separately compiled higher-order caller. Cold is not
+prepared during the protected frame and later reads 5432. No new runtime
+guarding wrapper or public invocation API was added.
+
+The old unprocessed callback remains a failing control: it still leaves Cold
+at 5440. This establishes a viable rebuild boundary for selected callback
+artifacts, not retroactive protection of arbitrary existing binary code.
+
+* Actual compilation and invocation paths
+
+The prior negative artifact's emitted =unlowered-store~0.scm= contains
+=##structure-set!= directly inside the returned writer lambda. That store does
+not dispatch through a replaceable public setter. Binding a different setter
+name after compilation, wrapping the call site, or compiling only the consumer
+does not rewrite that instruction.
+
+The new [[file:../../../t/qualification/mop-state/precompiled-stores.ss][precompiled-stores.ss]] uses ordinary POO slots and existing APIs:
+
+#+begin_src scheme
+(def Callbacks
+  (.o generated:
+      (lambda (spec value) ($self-slot-spec-fun-set! spec value))
+      reflective:
+      (lambda (spec value) (runtime.slot-set! spec 'fun value))
+      inline:
+      (lambda (spec value) (struct-instance-init! spec value))))
+(def (precompiled-store route) (.ref Callbacks route))
+#+end_src
+
+The local compiler recipe performs these steps:
+
+1. Compile the trusted isolation policy and old negative-control module with
+   the ordinary compiler.
+2. Install the existing compilation-local runtime-emission transformation.
+3. Compile the callback module to its own =.ssi=, =.ssxi.ss= and =.o1= artifacts;
+   finish its compiler jobs before compiling the consumer.
+4. Compile the consumer, then run the standard heap-fenced test driver that
+   imports the compiled consumer. It does not interpret the consumer source.
+
+Both modules load through ordinary Gerbil imports. The callback module's
+generated body contains =before-store!= immediately before the primitive
+checked/unchecked store. Its reflection body calls the derived SDK
+=store-cut#__slot-set!__%=, whose primitive stores share that same policy.
+The native class identities are unchanged. This is the same isolation pass as
+32.38, not a second callback-specific rewrite or callback dispatcher.
+
+The test's unlowered caller is itself a runtime-returned function:
+
+#+begin_src scheme
+;; In the ordinary-compiled control module. This contains no guarding logic.
+(def Invoker
+  (.o call: (lambda (writer spec value) (writer spec value))))
+(def (unlowered-invoker) (.get Invoker call))
+
+;; In the consumer test. REFUSAL is the existing 32.38 test driver.
+(def invoke (unlowered-invoker))
+(def writer (precompiled-store 'generated))
+(refusal "precompiled-generated" (cut invoke writer <> <>))
+#+end_src
+
+Returning both functions from POO slots prevents the result from being merely
+a source-level alias re-inlined into the processed consumer. The caller fixture
+only applies its function argument. It does not provide or activate protection;
+the native replay frame and the callee's compiled store own that behavior.
+
+* Ownership, refusal and cache observations
+
+The existing 32.38 policy is unchanged: weak direct allocation ownership plus
+DFS over native dependents finds Parent, Hot, Cold, =.cc= Copy, =.+= Merged and
+Direct. Unknown SlotSpec allocation is refused during replay. The preflight
+uses native =check-object-edit= for every discovered owner before storage.
+It does not scan or evaluate unselected configuration branches.
+
+Each callback runs the existing replace/force/restore control. The first
+dynamic-wind before thunk raises =object mutation during read replay=; its
+body and restoration thunk are never entered. Assertions check original
+specification identity, unchanged Parent revision, unprepared Cold, copied
+receiver protection, and subsequent values. The actual trace is:
+
+#+begin_example
+route                    owners  body entries  Parent Hot  Cold
+generated                   6         0         5432 5432 5432
+reflective                  6         0         5432 5432 5432
+inline                      6         0         5432 5432 5432
+precompiled-generated       6         0         5432 5432 5432
+precompiled-reflective      6         0         5432 5432 5432
+precompiled-inline          6         0         5432 5432 5432
+#+end_example
+
+The unlowered negative callback still completes replacement/Cold evaluation/
+restoration and yields Parent=5432, Hot=5432, Cold=5440. It is an expected
+counterexample, not an accepted safe execution. Native nested-frame restoration,
+exception identity, operand evaluation once, unknown allocation refusal, unread
+carrier protection and ordinary default values remain covered: 12 compiler
+isolation cases pass in total.
+
+The recipe hashes both callback modules' emitted runtime Scheme and runtime
+object artifacts before and after execution. This verifies that the separately
+compiled bodies are not rewritten between invocation and the final assertions.
+The manifests are test artifact bindings, not a production code certificate.
+
+* Formal projection and negative controls
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean][StoreLowering.lean]] adds three precompiled route constructors to the existing
+model. The actual theorem proofs are:
+
+#+begin_src lean
+theorem precompiled_callees_refuse :
+    (attempt .precompiledGenerated true).writes = 0 ∧
+    (attempt .precompiledReflective true).writes = 0 ∧
+    (attempt .precompiledInlined true).writes = 0 := by decide
+
+theorem precompiled_callees_preserve_cold :
+    (attempt .precompiledGenerated true).cold = 5432 ∧
+    (attempt .precompiledReflective true).cold = 5432 ∧
+    (attempt .precompiledInlined true).cold = 5432 := by decide
+#+end_src
+
+These are exact results of the finite route projection. They do NOT prove that
+arbitrary binaries are mediated. The independent [[file:../../../dev/proofs/lean/StoreLoweringCheck.lean][Lean decoder]] now requires all
+six actual trace rows in order, checks their owner counts and cache values, and
+rejects a tampered precompiled-generated row with Cold=5440. Ownership derivation
+continues to reuse the existing MetadataAllocation/IdentityDFS/LeanPoo model.
+
+[[file:../../../dev/proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] includes the three precompiled routes. The new
+[[file:../../../dev/proofs/quint/StoreLowering_missCallback.qnt][missCallback control]] removes mediation only from those callees while retaining
+the same allocation/protection phases. =DeclaredPreWrite= then fails: caller
+protection cannot substitute for callee-store mediation. The original
+unlowered counterexample still violates =NoPoison= after replacement/restoration.
+
+The scoped family now checks ten expected outcomes, retaining both contribution
+requirements, child plan identity, Parent/Hot isolation and unused-branch
+laziness controls. The positive exploration exhausts 168 distinct states with
+zero states pending. The route enum models code coverage; it is not an automatic
+native-code purity or provenance certificate. Neither Lean nor Quint proves
+the emitted-code transformation complete or semantics-preserving for all SDKs.
+
+* Real admission control and evidence
+
+The current-Core =issued-read-admission-test.ss= was rerun through the normal
+heap-fenced entry. Both cases passed: the real SourceAdmissionContract and
+Gitea/PostgreSQL Scenario retain nested child obligations, both port
+requirements, default-following final child values after Parent caching,
+explicit mismatch refusal, stale-plan refusal and changed-source refusal.
+Its temporary publication environment remains a fixture, and the whole real
+Scenario has not been compiled under this isolation transformation.
+
+The full Lean build passed 178 jobs and audited 6085 declarations with standard
+Lean axioms only. LeanPoo remains pinned to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. The scoped Quint receipt binds the
+updated Scheme and formal sources. Scoped success is not full-catalog success.
+
+Local evidence is kept outside Git:
+
+- =/private/tmp/core-precompiled-store-01.log= and
+  =/private/tmp/core-precompiled-store-20261018/candidate-01/= contain the actual
+  AOT outputs, six-row trace, source/SDK/callback artifact manifests.
+- =/private/tmp/core-precompiled-lean-01.log=,
+  =/private/tmp/core-precompiled-decoder-01.log= and
+  =/private/tmp/core-precompiled-decoder-negative-01.log= record model/trace gates.
+- =/private/tmp/core-precompiled-quint-01.ss= and matching log record the scoped
+  ten-outcome qualification; =/private/tmp/core-precompiled-domain-01.log=
+  records the separate real admission consumer.
+
+* Production work still required
+
+The tested solution is rebuilding selected callback bodies through one owned
+store phase. It does not make already-issued old callbacks safe. Production
+needs an authenticated compiler/artifact provenance and dependency-closure rule
+that either rebuilds an unqualified artifact or rejects its use. A plain
+exported flag or caller-supplied purity declaration would recreate the gap.
+
+That rule must cover dynamic module loading and callback escape paths, SDK
+runtime helpers, later compiler lowerings, eval and foreign unchecked writes.
+It must also preserve source/SDK/compiler identity through incremental builds;
+this experiment's post-run hash check is not an atomic execution certificate.
+
+The remaining 32.38 obligations also apply: integrate allocation registration
+inside the actual MOP before optimized construction, cover subsequent metadata
+reassignment and non-SlotSpec storage, remove the qualification-only private
+frame bridge, and establish concurrent-write semantics. Raw storage access can
+still bypass a policy that is absent from its compiled body. No new public
+wrapper, Loader behavior or production sandbox is claimed here.

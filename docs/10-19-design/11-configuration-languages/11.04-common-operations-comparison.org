@@ -1,0 +1,342 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.04 Config Languages 03: Matched Common Operations and Data Overlays
+#+property: DOCUMENT_ID 11.04
+#+date: [2026-10-16]
+#+filetags: :config-language:comparison:data-overlays:
+#+property: STATUS design-comparison-not-executed
+
+* Compare expressions for the same intent
+
+For language-level overlays, use the same logical shape: a record with an
+outputs field containing a sequence of strings, and separately a people field
+containing records with string name and integer age. Compare complete input,
+overlay and resulting records. Do not compare a full Nix attribute set with a
+bare Scheme slot declaration, or strings with Scheme symbols. Native Nix
+attribute sets, KCL schema instances and POO objects are different runtime types;
+the matched logical data shape is a record, not an assertion of runtime identity.
+
+The actual CI Profile below separately uses its existing artifact-outputs field
+and symbolic artifact identities. Preserve that domain representation in the CI
+examples; do not silently substitute it for the string-valued outputs benchmark.
+
+Sources are the [[https://github.com/divnix/dmerge#semantics][dmerge README examples]] and KCL's versioned
+[[https://www.kcl-lang.io/docs/0.12/user_docs/support/faq-kcl][configuration operator FAQ]]. Nix snippets adapt the README; KCL snippets adapt
+its documented schema operations. No execution/equivalence proof is claimed.
+The Scheme primitives are existing syntax; the data function publication remains
+the [[file:../../../module-system/design/164-funflow-public-configuration/29-functions-and-overlay-use-cases.org][proposed value-first library]].
+
+* Same CI/CD Profile, four complete Scheme configurations
+
+The baseline is the independent GerbilCIProfile from
+[[file:../../../module-system/design/164-funflow-public-configuration/13-independent-profiles-and-scenario-composition.org][the maintained Profile design]], reused as CICDScenario.gerbil. Its build has
+commands '("gerbil" "build") and artifact-outputs '(build-log). Its Pipeline
+selects '(build test package). All four alternatives preserve these commands,
+selection and other inherited Check fields. CIHelpers publishes the proposed
+value-first data library; native scope binding is already available.
+
+#+begin_src scheme
+(use-module CIHelpers as ff
+  (with-slots (append prepend replace-at replace) (.get ff data)
+
+    (.def (AppendCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => append '(release-log))))
+
+    (.def (PrependCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => prepend '(release-log))))
+
+    (.def (PositionCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => replace-at 0 'release-build-log)))
+
+    (.def (IdentityCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => replace 'build-log 'release-build-log)))
+
+    (values AppendCI PrependCI PositionCI IdentityCI)))
+#+end_src
+
+Only functions needed by the chosen configuration should be declared. with-slots
+obtains the data object once, then defers selected function getter reads until
+references demand them. The names stay inside the bounded lexical body; returned
+methods retain native references. There is no per-field .get, helper factory or
+new use-module selection grammar. See [[file:11.03-native-slot-binding.org][binding semantics and source evidence]].
+
+* Side-by-side operation comparison
+
+Both operands and results are full records. Shared initial records are:
+
+#+begin_src nix
+base = { outputs = ["build-log"]; };
+#+end_src
+
+#+begin_src scheme
+(def Base (.o outputs: '("build-log")))
+#+end_src
+
+| Intent | dmerge complete expression | KCL complete expression | Scheme complete expression |
+|--------+----------------------------+-------------------------+----------------------------|
+| Append | merge base { outputs = append ["release-log"]; } | OutputConfig { outputs += ["release-log"] } | (.+ Base (.o (outputs => append '("release-log")))) |
+| Prepend | merge base { outputs = prepend ["release-log"]; } | OutputConfig { outputs = ["release-log"] + _base.outputs } | (.+ Base (.o (outputs => prepend '("release-log")))) |
+| Position 0 | merge base { outputs = update [0] ["release-build-log"]; } | OutputConfig { outputs = _base.outputs[:0] + ["release-build-log"] + _base.outputs[1:] } | (.+ Base (.o (outputs => replace-at 0 "release-build-log"))) |
+| Existing string identity | A matching scalar identity operation is not established here | OutputConfig { outputs = ["release-build-log" if x == "build-log" else x for x in _base.outputs] } | (.+ Base (.o (outputs => replace "build-log" "release-build-log"))) |
+
+All four Scheme expressions produce an object retaining the outputs field, not
+a bare list. Its final string list is respectively [build-log, release-log],
+[release-log, build-log], [release-build-log], [release-build-log]. Selected helper
+bindings come from the native with-slots declaration shown earlier; no operation
+has implicitly available helper exports. The record-key case follows separately.
+
+KCL slice/comprehension expressions are now checked against the official FAQ;
+see [[file:11.02-kcl-data-overlays.org][the full source-grounded KCL examples]] for _base and explicit range/unique-match
+guards. They have not been executed. Do not infer identical error semantics from
+the happy-path table. Dmerge's record identity case is compared separately below
+against Scheme update-by, not against scalar replace. The complete adapted language snippets follow for readability.
+Adding an artifact declaration does not produce that file: final collection and
+producer obligations must support it. Prepend affects declaration order, not
+execution order. Position-based and identity-based updates can diverge after an
+upstream insertion; missing or duplicate identity is rejected by our chosen
+library policy. Do not claim these edge cases match dmerge without execution.
+
+KCL setup for the matched scalar/list examples:
+
+#+begin_src python
+schema OutputConfig:
+    outputs: [str] = ["build-log"]
+_base = OutputConfig {}
+#+end_src
+
+* Complete replacement: user knows the final value
+
+KCL:
+
+#+begin_src python
+replaced = OutputConfig { outputs = ["release-build-log"] }
+#+end_src
+
+Scheme, ordinary assignment:
+
+#+begin_src scheme
+(.+ Base (.o outputs: '("release-build-log")))
+#+end_src
+
+Expected result: [release-build-log]. No inherited-value function is necessary.
+Dmerge permits scalar replacement, but deliberately protects collection structure;
+do not represent it as a general whole-list replacement API. Our field Contract
+may permit whole-list replacement; that is a deliberate policy difference.
+
+* Append: retain the old collection and add an item
+
+Dmerge:
+
+#+begin_src nix
+merge { outputs = ["build-log"]; }
+      { outputs = append ["release-log"]; }
+#+end_src
+
+KCL:
+
+#+begin_src python
+extended = OutputConfig { outputs += ["release-log"] }
+#+end_src
+
+Scheme:
+
+#+begin_src scheme
+(.+ Base (.o (outputs => append '("release-log"))))
+#+end_src
+
+Expected result: [build-log, release-log]. KCL uses a dedicated operator; dmerge
+uses a merge decoration; Scheme calls an ordinary function with the inherited
+value first. The latter can be used outside configuration, but still needs its
+one-time lexical binding and target object context.
+
+* Prepend: retained items follow the new item
+
+Dmerge:
+
+#+begin_src nix
+merge { outputs = ["build-log"]; }
+      { outputs = prepend ["release-log"]; }
+#+end_src
+
+Scheme:
+
+#+begin_src scheme
+(.+ Base (.o (outputs => prepend '("release-log"))))
+#+end_src
+
+KCL, with the same full record and explicit original value:
+
+#+begin_src python
+prepended = OutputConfig { outputs = ["release-log"] + _base.outputs }
+#+end_src
+
+Expected result is a record whose outputs is [release-log, build-log]. This is
+declaration order, not task execution order. This expression uses documented
+list concatenation; it is not a special KCL prepend operator.
+
+* Position update: the requirement explicitly names index zero
+
+Dmerge:
+
+#+begin_src nix
+merge { outputs = ["build-log"]; }
+      { outputs = update [0] ["release-build-log"]; }
+#+end_src
+
+Scheme:
+
+#+begin_src scheme
+(.+ Base (.o (outputs => replace-at 0 "release-build-log")))
+#+end_src
+
+KCL, with explicit validation to align the proposed helper's range policy:
+
+#+begin_src python
+_index = 0
+assert 0 <= _index and _index < len(_base.outputs)
+positioned = OutputConfig {
+    outputs = _base.outputs[:_index] + ["release-build-log"] + _base.outputs[_index+1:]
+}
+#+end_src
+
+Expected result is a record whose outputs is [release-build-log]. The chosen
+Scheme library rejects an invalid index. Its exact diagnostics have not been
+established equivalent to dmerge's or the KCL assert.
+If upstream inserts at the front, both expressions still target position zero;
+neither expresses a stable named-output requirement.
+
+* Keyed structured update: retain a record, modify its age
+
+Dmerge:
+
+#+begin_src nix
+merge { people = [{ name = "bert"; age = 42; }]; }
+      { people = updateOn "name" [{ name = "bert"; age = 43; }]; }
+#+end_src
+
+Scheme library owns the meaning of a person update:
+
+#+begin_src scheme
+(def (person-name person) (.get person name))
+(def (age-43 person) (.+ person (.o age: 43)))
+#+end_src
+
+The configuration operation is:
+
+#+begin_src scheme
+(.+ (.o people: (list (.o name: "bert" age: 42)))
+    (.o (people => update-by person-name "bert" age-43)))
+#+end_src
+
+Expected result has the same person name/order and age 43. Other fields are
+inherited through native .+. This demonstrates actual record-key projection,
+not substitution of a symbol-only replace example. For frequent business use,
+the owner can publish a meaningful person-update function so users supply only
+the key and new value. General arbitrary record merge, insertion of missing keys
+and duplicate-key behavior are not implied. Our update-by policy requires one
+existing match; not every dmerge edge case is asserted equivalent. Native .+
+source-requirement preservation remains separately qualified work.
+
+KCL, preserving the same outer people record, list and record fields:
+
+#+begin_src python
+_peopleBase = {people = [{name = "bert", age = 42}]}
+assert len([p for p in _peopleBase.people if p.name == "bert"]) == 1
+aged = {
+    people = [
+        (p | {age = 43}) if p.name == "bert" else p
+        for p in _peopleBase.people
+    ]
+}
+#+end_src
+
+The conditional comprehension comes from the official FAQ's list-editing pattern;
+the right-hand dict union uses the tour's expression-level rule. Both can be
+encapsulated in a named KCL function; inline code here exposes the actual semantic
+construction, not a claim that KCL consumers must repeat it. Source checked, not
+executed. Dmerge updateOn's absent/duplicate policies still need independent
+verification; all three happy paths alone do not establish complete equivalence.
+
+
+* Object construction is distinct from assigning a field
+
+#+begin_src scheme
+;; Construct the original full record:
+(def Base (.o outputs: '("build-log")))
+
+;; Refine that existing object; do not construct Base again.
+(.+ Base (.o (outputs => prepend '("release-log"))))
+
+;; Complete leaf replacement inside the existing object:
+(.+ Base (.o outputs: '("release-build-log")))
+
+;; The same replacement in a named declaration needs no inner constructor:
+(.def (Replacement @ Base)
+  outputs: '("release-build-log"))
+#+end_src
+
+.o constructs an ordinary native object; outputs: is a slot declaration inside
+that constructor. Bare (outputs: ...) is not a native record expression and
+cannot be passed as the left operand of .+. Inside a surrounding .def/.o, the
+field assignment itself needs no extra .o around its list value. In a derived
+Check, the object refinement retains its other fields, while assignment replaces
+only the leaf. Thus .o here does not turn direct assignment into an inherited-value
+operation. Braces can be an existing reader form where configured; this comparison
+uses explicit .o consistently instead of adding another notation.
+
+* Reflection: brevity is not a superiority claim
+
+At the field-operation level, ordinary Scheme calls are compact and can compose
+existing functions without creating a merge-language interpreter. Native POO
+supplies inherited-value access and object refinement where those are needed.
+Business helpers can hide recurring policy without duplicating generic names
+such as append-artifacts. Assignment remains the default for full replacement.
+
+The complete Scheme configuration still has scope/object scaffolding. KCL's
+common operators can be shorter, and dmerge encodes several update intentions
+as concise data decorations. Small operation snippets alone do not prove better
+overall UX. Our outstanding obligations are selecting/discovering functions,
+callable signatures, missing/duplicate identity errors, source/conflict reporting,
+purity and cost assumptions, and a preview of the final admitted values.
+
+Both the targeted field Contract and the enclosing task/plan obligations must
+validate the transformed result. Preview uses the child receiver even if the
+parent Pipeline was cached; stale parent lists are not final values. with-slots
+does not invoke unused helpers, although the namespace object is obtained on
+entry. Updating a supplied list can traverse that list; no helper may turn a
+local operation into a scan of the global catalog. No unselected Check command
+should be forced just to display the operation.
+
+* Admission, effective preview and demand acceptance
+
+The preview must resolve each variant's final build Check from its effective
+Profile and report its transformed artifact-outputs and inherited commands. The
+four expected output lists are in the comparison table; selected-checks remains
+(build test package). These are illustrative results, not executed receipts.
+
+Validate final field types, uniqueness and allowed names, actual artifact
+production/collection, selected Check dependencies and cross-Profile obligations.
+An accepted input is not proof of an accepted transformation result. Mark the
+projection projected-unadmitted before successful final admission; only then may
+it be admitted-preview. Neither status runs the CI commands. A warm parent
+Pipeline cannot substitute a frozen parent Check list for the child's final
+objects; admission evidence must match the effective child Check identities.
+
+Scope binding and obtaining the data object can evaluate their own getters.
+Declaring names with with-slots does not invoke those functions or force the
+inherited artifact list. Reading a selected method demands that method's getter;
+applying => demands the old field and actual parameters. A list/key operation may
+traverse its given list; it must not scan the package catalog or force unselected
+Check commands. Purity and bounded functions remain explicit library assumptions.
+
+The remaining UX gaps are callable/field discovery, signature and mutation-intent
+help, source-qualified conflict diagnostics, argument errors at their use sites,
+and preview explanations for arbitrary composed functions. Native binding reduces
+repetition but does not supply these tools. KCL common operators and dmerge
+payloads can still be shorter in complete configurations; syntax power is not
+proof of superior UX. No runtime library, Loader or new DSL is implemented here.

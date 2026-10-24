@@ -18,54 +18,54 @@
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT)
         (only-in :std/error deferror-class)
-        (only-in "types.ss"
-                 PooFlowDebugSlotPolicyContract
-                 PooFlowDebugSlotReceiptContract)
-        (only-in "funcs.ss"
-                 poo-flow-debug-slot-policy
-                 poo-flow-debug-slot-receipt
-                 poo-flow-debug-slot-receipt-sexp))
+        (only-in :yuanxu/observability/types
+                 YuanxuDebugSlotPolicyContract
+                 YuanxuDebugSlotReceiptContract)
+        (only-in :yuanxu/observability/funcs
+                 yuanxu-debug-slot-policy
+                 yuanxu-debug-slot-receipt
+                 yuanxu-debug-slot-receipt-sexp))
 
-(export PooFlowDebugSlotPolicyContract
-        PooFlowDebugSlotReceiptContract
-        poo-flow-debug-slot-policy
-        poo-flow-debug-slot-receipt
-        poo-flow-debug-slot-receipt-sexp
-        poo-flow-debug-poo
-        poo-flow-debug-poos
-        PooFlowDebugSlotAnomaly?
-        PooFlowDebugSlotAnomaly-receipt)
+(export YuanxuDebugSlotPolicyContract
+        YuanxuDebugSlotReceiptContract
+        yuanxu-debug-slot-policy
+        yuanxu-debug-slot-receipt
+        yuanxu-debug-slot-receipt-sexp
+        yuanxu-debug-poo
+        yuanxu-debug-poos
+        YuanxuDebugSlotAnomaly?
+        YuanxuDebugSlotAnomaly-receipt)
 
-(deferror-class PooFlowDebugSlotAnomaly (receipt))
+(deferror-class YuanxuDebugSlotAnomaly (receipt))
 
 ;;; Active slots are dynamically scoped per Scheme thread.  A path contains
 ;;; only receiver/slot symbol pairs and therefore cannot keep a receiver or
 ;;; computed value alive while a resolution is being diagnosed.
 ;; : (Parameter [(Pair Symbol Symbol)])
-(def poo-flow-debug-active-slot-path (make-parameter '()))
+(def yuanxu-debug-active-slot-path (make-parameter '()))
 
-;; : (-> PooFlowDebugSlotReceipt OutputPort Unit)
-(def (poo-flow-debug-emit-slot-receipt receipt port)
+;; : (-> YuanxuDebugSlotReceipt OutputPort Unit)
+(def (yuanxu-debug-emit-slot-receipt receipt port)
   (parameterize ((current-error-port port))
-    (DDT 'debug-slot poo-flow-debug-slot-receipt-sexp receipt)))
+    (DDT 'debug-slot yuanxu-debug-slot-receipt-sexp receipt)))
 
-;; : (-> PooFlowDebugSlotReceipt Never)
-(def (poo-flow-debug-raise-slot-anomaly receipt)
+;; : (-> YuanxuDebugSlotReceipt Never)
+(def (yuanxu-debug-raise-slot-anomaly receipt)
   (let (failure
-        (PooFlowDebugSlotAnomaly
-         "POO Flow debug slot admission rejected lazy resolution"
+        (YuanxuDebugSlotAnomaly
+         "Yuanxu debug slot admission rejected lazy resolution"
          irritants: '()))
-    (set! (PooFlowDebugSlotAnomaly-receipt failure) receipt)
+    (set! (YuanxuDebugSlotAnomaly-receipt failure) receipt)
     (raise failure)))
 
 ;;; Resolution tracing follows Clan's `traced-function`, but the upstream
 ;;; printer sees a zero-argument thunk and the closed symbol `resolved` only.
 ;;; The actual slot value and original exception remain lexical values here.
-;; : (forall (a) (-> PooFlowDebugSlotPolicy Symbol Symbol (-> a) OutputPort Boolean a))
-;; : (-> PooFlowDebugSlotPolicy Symbol Symbol (-> Object) OutputPort Boolean Object)
-(def (poo-flow-debug-resolve-slot policy receiver slot superfun port emit?)
+;; : (forall (a) (-> YuanxuDebugSlotPolicy Symbol Symbol (-> a) OutputPort Boolean a))
+;; : (-> YuanxuDebugSlotPolicy Symbol Symbol (-> Object) OutputPort Boolean Object)
+(def (yuanxu-debug-resolve-slot policy receiver slot superfun port emit?)
   (let* ((edge (cons receiver slot))
-         (path (poo-flow-debug-active-slot-path))
+         (path (yuanxu-debug-active-slot-path))
          (depth (length path))
          (rejected-outcome
           (cond ((member edge path) 'rejected-cycle)
@@ -73,19 +73,19 @@
                 (else #f))))
     (when rejected-outcome
       (let (receipt
-            (poo-flow-debug-slot-receipt
+            (yuanxu-debug-slot-receipt
              policy receiver slot depth path rejected-outcome))
-        (when emit? (poo-flow-debug-emit-slot-receipt receipt port))
-        (poo-flow-debug-raise-slot-anomaly receipt)))
+        (when emit? (yuanxu-debug-emit-slot-receipt receipt port))
+        (yuanxu-debug-raise-slot-anomaly receipt)))
     (let (resolved-value #!void)
       ;; The non-emitting guard is an admission boundary, not a receipt path.
       ;; Avoid constructing and validating an observation that cannot escape.
       (when emit?
-        (poo-flow-debug-emit-slot-receipt
-         (poo-flow-debug-slot-receipt
+        (yuanxu-debug-emit-slot-receipt
+         (yuanxu-debug-slot-receipt
           policy receiver slot depth path 'admitted)
          port))
-      (parameterize ((poo-flow-debug-active-slot-path (cons edge path)))
+      (parameterize ((yuanxu-debug-active-slot-path (cons edge path)))
         (let (resolve
               (lambda ()
                 (set! resolved-value (superfun))
@@ -93,78 +93,78 @@
           (with-exception-catcher
            (lambda (failure)
              (when emit?
-               (poo-flow-debug-emit-slot-receipt
-                (poo-flow-debug-slot-receipt
+               (yuanxu-debug-emit-slot-receipt
+                (yuanxu-debug-slot-receipt
                  policy receiver slot depth path 'raised)
                 port))
              (raise failure))
            (lambda ()
              (if emit?
                ((traced-function
-                 (list 'poo-flow-debug-slot receiver slot)
+                 (list 'yuanxu-debug-slot receiver slot)
                  resolve
                  port))
                (resolve))))))
       (when emit?
-        (poo-flow-debug-emit-slot-receipt
-         (poo-flow-debug-slot-receipt
+        (yuanxu-debug-emit-slot-receipt
+         (yuanxu-debug-slot-receipt
           policy receiver slot depth path 'resolved)
          port))
       resolved-value)))
 
-;; : (-> PooFlowDebugSlotPolicy Symbol Symbol OutputPort Boolean SlotSpec)
-(def (poo-flow-debug-slot-spec policy receiver slot port emit?)
+;; : (-> YuanxuDebugSlotPolicy Symbol Symbol OutputPort Boolean SlotSpec)
+(def (yuanxu-debug-slot-spec policy receiver slot port emit?)
   ($computed-slot-spec
    (lambda (_self superfun)
-     (poo-flow-debug-resolve-slot
+     (yuanxu-debug-resolve-slot
       policy receiver slot superfun port emit?))))
 
-;; : (-> PooFlowDebugSlotPolicy Symbol PooObject OutputPort Boolean PooObject)
-(def (poo-flow-debug-install-slot-guards! policy receiver source port emit?)
+;; : (-> YuanxuDebugSlotPolicy Symbol PooObject OutputPort Boolean PooObject)
+(def (yuanxu-debug-install-slot-guards! policy receiver source port emit?)
   (let (guarded (.o (:: @ source)))
     (for-each
      (lambda (slot)
        (.putslot!
         guarded
         slot
-        (poo-flow-debug-slot-spec policy receiver slot port emit?)))
+        (yuanxu-debug-slot-spec policy receiver slot port emit?)))
      (.all-slots source))
     guarded))
 
-;; : (-> PooFlowDebugSlotPolicy Symbol PooObject OutputPort Boolean PooObject)
-(def (poo-flow-debug-poo/validated policy receiver source port emit?)
-  (poo-flow-debug-install-slot-guards!
+;; : (-> YuanxuDebugSlotPolicy Symbol PooObject OutputPort Boolean PooObject)
+(def (yuanxu-debug-poo/validated policy receiver source port emit?)
+  (yuanxu-debug-install-slot-guards!
    policy receiver source port emit?))
 
-;; : (-> PooFlowDebugSlotPolicy Symbol [PooObject] port: OutputPort emit?: Boolean [PooObject])
-;; poo-flow-debug-poos
-;;   : (-> PooFlowDebugSlotPolicy Symbol [PooObject] port: OutputPort emit?: Boolean [PooObject])
+;; : (-> YuanxuDebugSlotPolicy Symbol [PooObject] port: OutputPort emit?: Boolean [PooObject])
+;; yuanxu-debug-poos
+;;   : (-> YuanxuDebugSlotPolicy Symbol [PooObject] port: OutputPort emit?: Boolean [PooObject])
 ;;   | doc m%
 ;;       Install the same slot policy over a batch of native POO values. The
 ;;       shared policy is admitted once at the batch boundary; each returned
 ;;       receiver still owns independent :clan/poo lazy-slot caches.
 ;;     %
-(def (poo-flow-debug-poos policy receiver sources
+(def (yuanxu-debug-poos policy receiver sources
                           port: (port (current-error-port))
                           emit?: (emit? #t))
   (unless (and (symbol? receiver) (list? sources)
                (andmap object? sources)
                (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow slot debug batch request" receiver))
-  (unless (eq? (validate PooFlowDebugSlotPolicyContract policy) policy)
-    (error "invalid POO Flow debug slot policy"))
+    (error "invalid Yuanxu slot debug batch request" receiver))
+  (unless (eq? (validate YuanxuDebugSlotPolicyContract policy) policy)
+    (error "invalid Yuanxu debug slot policy"))
   (map (lambda (source)
-         (poo-flow-debug-poo/validated
+         (yuanxu-debug-poo/validated
           policy receiver source port emit?))
        sources))
 
-;; : (forall (a) (-> PooFlowDebugSlotPolicy Symbol a port: OutputPort emit?: Boolean a))
-;; poo-flow-debug-poo
-;;   : (-> PooFlowDebugSlotPolicy Symbol PooObject port: OutputPort emit?: Boolean PooObject)
+;; : (forall (a) (-> YuanxuDebugSlotPolicy Symbol a port: OutputPort emit?: Boolean a))
+;; yuanxu-debug-poo
+;;   : (-> YuanxuDebugSlotPolicy Symbol PooObject port: OutputPort emit?: Boolean PooObject)
 ;;   | doc m%
 ;;       Create a POO proxy whose inherited slots are admitted before lazy
-;;       resolution.  Re-entering an active slot or crossing the depth budget
-;;       raises a typed anomaly before the upstream cache can recurse.
+;;       resolution. Crossing the guard's depth budget raises a typed anomaly;
+;;       native POO cycle failures propagate unchanged when detected first.
 ;;       Successful values retain ordinary POO object-local caching.  Clan's
 ;;       tracer receives only a zero-argument resolver returning `resolved`.
 ;;
@@ -175,17 +175,17 @@
 ;;
 ;;       ```scheme
 ;;       (def guarded
-;;         (poo-flow-debug-poo policy 'configuration configuration))
+;;         (yuanxu-debug-poo policy 'configuration configuration))
 ;;       (.ref guarded 'project-id)
-;;       ;; => cached value, or raises PooFlowDebugSlotAnomaly
+;;       ;; => cached value, or raises YuanxuDebugSlotAnomaly
 ;;       ```
 ;;     %
-(def (poo-flow-debug-poo policy receiver source
+(def (yuanxu-debug-poo policy receiver source
                          port: (port (current-error-port))
                          emit?: (emit? #t))
   (unless (and (symbol? receiver) (object? source)
                (output-port? port) (boolean? emit?))
-    (error "invalid POO Flow slot debug request" receiver))
-  (unless (eq? (validate PooFlowDebugSlotPolicyContract policy) policy)
-    (error "invalid POO Flow debug slot policy"))
-  (poo-flow-debug-poo/validated policy receiver source port emit?))
+    (error "invalid Yuanxu slot debug request" receiver))
+  (unless (eq? (validate YuanxuDebugSlotPolicyContract policy) policy)
+    (error "invalid Yuanxu debug slot policy"))
+  (yuanxu-debug-poo/validated policy receiver source port emit?))

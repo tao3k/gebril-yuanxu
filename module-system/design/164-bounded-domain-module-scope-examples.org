@@ -1,0 +1,666 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Bounded Native Module Scopes for LangGraph, CrewAI and Tool Calling
+#+date: [2026-10-15]
+#+property: STATUS proposed-not-implemented
+
+* Declaration implementation update (2026-10-15)
+
+The compound-body use-module grammar is now implemented for an already bound
+native scope; see [[file:../../profile-composition/README.org][Core bounded scopes]]. The configured domain defaults,
+owner publication, authenticated discovery and selected-result admission below
+remain product design. Use distinct lexical source/slot names; no implicit
+registry resolution is performed by this declaration. Native unary .+ is invalid;
+use =(.o (:: @ module-alias))= when only deriving a scope.
+
+* One scope protocol, three domain examples
+
+This is the canonical downstream domain configuration surface. Native .def/.o,
+.+, =>.+, .get and lexical binding exist. The bounded use-module body, complete
+configured Profile/policy defaults and bounded scope protocol below are proposed. The current
+libraries publish semantic declarations, not these business/policy interfaces.
+No code, export, source admission or runtime is changed.
+
+| Module binding | Proposed complete Profile | Existing policy slot | Proposed default |
+|----------------+---------------------------+----------------------+------------------|
+| LangGraphModule as lg | profiles.state-graph | routing-policy | declaration-order route policy; checkpoint unset, resume false |
+| CrewAIModule as cr | profiles.crew-workflow | scheduling-policy | FIFO; goal unset, capacity 1 |
+| ToolCallingModule as tc | profiles.tool-loop | argument-validator | depth bound 64; empty allowed-tools, 30000 ms timeout |
+
+These names/defaults are product proposals, not claims about external framework
+APIs. Owner publication must actually supply native objects, Contracts and
+consumers. The source stage defaults listed per example are existing data only.
+Module aliases distinguish lexical scopes; graph/crew/tool are placement slots.
+Existing as only records instance identity and does not establish these lexical
+bindings. Each example's Scenario selection is assumed explicitly maintained by
+that domain owner; neither modifying a Profile nor reading a catalog selects
+all available Profiles.
+
+* LangGraph Scenario
+
+Sources: [[file:../../../user-interface/scenarios/langgraph/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/langgraph.ss][current Module publication]].
+Existing source stage defaults: fuel 8, terminal-edge exit, marlin-control-plane handoff. Proposed complete state-graph Profile: no checkpoint selected, resume false, declaration-order routing.
+
+These complete Profile/policy objects are proposed, not existing exported names.
+The Scenario admits/selects graph.profiles.state-graph; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyGraphScenario @ LangGraphScenario)
+  graph:
+  (use-module LangGraphModule as lg
+    (.+ lg
+        {profiles: =>.+
+         {state-graph: =>.+
+          {checkpoint-key: "review-session-42"
+           resume?: #t
+
+           routing-policy: =>.+
+           {selection: 'priority}}}})))
+#+end_src
+
+The alias lg binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyGraphScenario.graph. The business values and routing-policy refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* CrewAI Scenario
+
+Sources: [[file:../../../user-interface/scenarios/crewai/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/crewai.ss][current Module publication]].
+Existing source stage defaults: fuel 6, final-output exit, marlin-control-plane handoff. Proposed complete crew-workflow Profile: inherited task graph, no extra goal, capacity 1, FIFO scheduling.
+
+These complete Profile/policy objects are proposed, not existing exported names.
+The Scenario admits/selects crew.profiles.crew-workflow; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyCrewScenario @ CrewAIScenario)
+  crew:
+  (use-module CrewAIModule as cr
+    (.+ cr
+        {profiles: =>.+
+         {crew-workflow: =>.+
+          {goal: "Review the release candidate."
+           max-concurrency: 2
+
+           scheduling-policy: =>.+
+           {ordering: 'priority}}}})))
+#+end_src
+
+The alias cr binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyCrewScenario.crew. The business values and scheduling-policy refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* Tool Calling Scenario
+
+Sources: [[file:../../../user-interface/scenarios/tool-calling-agent-loop/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/tool-calling.ss][current Module publication]].
+Existing source stage defaults: fuel 5, tool-result-accepted exit, python-runtime-tool-plane handoff. Proposed complete tool-loop Profile: empty allowlist, 30000 ms timeout and validator depth bound 64.
+
+These complete Profile/policy objects are proposed, not existing exported names.
+The Scenario admits/selects tool.profiles.tool-loop; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyToolScenario @ ToolCallingScenario)
+  tool:
+  (use-module ToolCallingModule as tc
+    (.+ tc
+        {profiles: =>.+
+         {tool-loop: =>.+
+          {allowed-tools: '(read-file search)
+           timeout-ms: 5000
+
+           argument-validator: =>.+
+           {maximum-depth: 16}}}})))
+#+end_src
+
+The alias tc binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyToolScenario.tool. The business values and argument-validator refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* Upstream MultiAgentScenario. and its Composition Contract
+
+This is a complete proposed upstream declaration, not an existing export or a
+runnable integration. The user examples below inherit this native object. The
+common CompositionContract supplies the common proto/obligations; its descriptor
+is never used as a native configuration parent. ControlGraph. below is an
+upstream-local import alias for the existing native graph prototype in
+[[file:../../graph/types-core.ss][graph/types-core.ss]], avoiding confusion with the configured graph Module slot.
+This alias is not a new graph engine or a currently published export.
+
+#+begin_src scheme
+(.def (MultiAgentScenario. @ (.get CompositionContract proto))
+  participants:
+  (.o graph: '(graph profiles state-graph)
+      crew: '(crew profiles crew-workflow)
+      tool: '(tool profiles tool-loop))
+
+  handoffs:
+  (.o dispatch-crew:
+      (.o from: 'graph to: 'crew
+          request-contract: ReviewTaskContract
+          reply-contract: CrewOutcomeContract)
+      crew-tool:
+      (.o from: 'crew to: 'tool
+          request-contract: ToolRequestContract
+          reply-contract: ToolReceiptContract))
+
+  control:
+  (.o (:: @ ControlGraph.)
+    graph-id: 'graph-crew-tool
+    entry-node: 'dispatch
+    finish-node: 'done
+    node-declarations:
+    (.o dispatch:
+        (yuanxu-graph-node
+          'dispatch (.o participant: 'graph operation: 'dispatch-crew))
+        crew-run:
+        (yuanxu-graph-node
+          'crew-run (.o participant: 'crew operation: 'start))
+        tool-call:
+        (yuanxu-graph-node
+          'tool-call (.o participant: 'tool operation: 'invoke))
+        crew-resume:
+        (yuanxu-graph-node
+          'crew-resume (.o participant: 'crew operation: 'resume))
+        done:
+        (yuanxu-graph-node
+          'done (.o participant: 'graph operation: 'finish)))
+    edge-declarations:
+    (.o dispatch-crew:
+        (yuanxu-graph-edge 'dispatch 'crew-run)
+        request-tool:
+        (yuanxu-graph-edge 'crew-run 'tool-call 'branch)
+        finish-directly:
+        (yuanxu-graph-edge 'crew-run 'done 'branch)
+        return-result:
+        (yuanxu-graph-edge 'tool-call 'crew-resume)
+        finish-after-tool:
+        (yuanxu-graph-edge 'crew-resume 'done)))
+
+  transition-events:
+  (.o dispatch-crew: 'accepted
+      request-tool: 'tool-request
+      finish-directly: 'completed
+      return-result: 'validated-tool-result
+      finish-after-tool: 'completed)
+
+  failure-policy:
+  (.o mode: 'stop retries: 0 max-tool-calls: 1)
+
+  plan: (multi-agent-scenario->plan @))
+
+(define-type (MultiAgentCompositionContract @ CompositionContract)
+  identity: 'multi-agent-composition
+  proto: MultiAgentScenario.
+  responsibilities: =>.+
+  (.o graph: GraphModuleScopeContract
+      crew: CrewModuleScopeContract
+      tool: ToolModuleScopeContract
+      participants: MultiAgentParticipantsContract
+      handoffs: MultiAgentHandoffsContract
+      control: MultiAgentControlGraphContract
+      transition-events: MultiAgentTransitionEventsContract
+      failure-policy: MultiAgentFailurePolicyContract)
+  (.obligations => contract-obligations-all
+    multi-agent-composition-obligations))
+#+end_src
+
+All specialized Contract names, contract-obligations-all,
+multi-agent-composition-obligations and multi-agent-scenario->plan in this block
+are design names requiring definitions/adapters. The combining helper is pure:
+it retains inherited common obligations and adds domain obligations. It must
+not replace the common admission rules with a weaker domain-only check.
+responsibilities: =>.+ likewise refines the inherited responsibility map.
+The native plan slot uses @, the effective derived receiver, not the literal
+MultiAgentScenario. object. Its pure projector never recursively invokes root
+admission; admission may demand the projected plan and then validate it.
+
+Operation symbols and transition-events are domain facts to admit and lower,
+not executable callbacks. entry-node/finish-node are proposed domain control
+slots: the projector validates their nodes and maps them to existing runtime
+entry/finish policy fields; basic graph shape alone does not interpret them.
+The owner maps the admitted control/event facts to the existing canonical
+ExecutionPlan/runtime handoff boundary through named pure projection functions
+and explicit runtime adapters. This adds no public scheduling syntax, second
+scheduler or interpreter. Merely accepting a graph node's payload as Any does
+not establish operation, event or handoff correctness.
+
+** Cross-Module Contract admission
+
+| Contract / obligation | Required check before the selected operation can run |
+|-----------------------+-----------------------------------------------------|
+| Module scope Contracts | authenticated source/version, compatible exports, selected Profile and effective policy ancestry; reject substituted or conflicting sources |
+| Participants | each named path resolves in the final receiver to the required admitted Profile; preserve source, placement and occurrence identity |
+| Control graph / events | every node operation belongs to its participant; every event names an existing allowed edge; entry/finish nodes exist; outgoing event choice is unambiguous; all required terminal/branch rules are present |
+| ReviewTaskContract | correlated task/session identity, input and goal shape, ownership and authorized scope |
+| CrewOutcomeContract | tagged tool-request/completed/failed outcome, with required task and handoff correlation |
+| ToolRequestContract | correlated request identity, tool name/arguments, authorization context and caller ownership |
+| ToolReceiptContract | same request/task/session, execution status and typed result, policy/authority evidence; unknown or indeterminate is not success |
+| Cross-boundary compatibility | sender output satisfies receiver input, reply fits the waiting continuation, permissions cannot widen, deadline and bounded call count are valid |
+| Plan and evidence | projection identifies this effective selected configuration; execution evidence is fresh and separately checked at the explicit Session boundary |
+
+The owner must define these concrete Contracts and obligations, not merely add
+their names to responsibilities. Static admission rejects missing participants,
+incompatible event/operation wiring or invalid effective policy. Runtime request,
+receipt and authority checks remain necessary because configuration admission
+cannot certify future tool output or current mutable permissions. Contract
+inheritance never grants authority or constitutes execution evidence.
+
+** Concrete graph -> crew -> tool -> crew -> graph handoff
+
+The table defines the proposed bounded flow. Edge labels are exact event facts,
+not parent order, arbitrary truthy values or an implicit sequential node walk.
+
+| Current node | Checked event | Next node | Handoff meaning |
+|--------------+---------------+-----------+-----------------|
+| dispatch | accepted | crew-run | graph submits an admitted ReviewTask to crew |
+| crew-run | tool-request | tool-call | crew yields a correlated ToolRequest to the tool boundary |
+| crew-run | completed | done | crew may complete without a tool call |
+| tool-call | validated-tool-result | crew-resume | a matching admitted ToolReceipt resumes the waiting crew task |
+| crew-resume | completed | done | crew returns its checked final outcome to graph |
+
+For ProductionScenario below, a Session supplies release-notes.md as the review
+input. Graph dispatch reads the effective crew goal and creates a ReviewTask;
+crew may request read-file for that input. The tool adapter checks the effective
+allowlist, argument-validator, caller permissions, sandbox and remaining deadline
+before invocation. A matching checked receipt resumes that same crew task; crew
+then reports its review and graph finishes. IDs for Sessions, tasks, requests and
+attempts are minted by their runtime owner, never reused from shared proto data.
+The checkpoint-key is a configuration namespace, not a unique Session identity.
+
+Graph orchestration does not transfer crew's authority to graph or widen a tool
+request's permissions. Tool output is untrusted observation data; it cannot
+rewrite the routing, authorization or Contract policy. A user-written
+validated-tool-result symbol alone cannot authorize the return edge: the adapter
+must derive that event from the checked matching receipt.
+
+** Failure, timeout, cancellation and retry boundary
+
+This example uses stop, zero automatic retries and at most one tool call.
+A failed/invalid/unknown operation, an unsupported event or a mismatched receipt
+terminates with a typed failure diagnostic; none selects a success edge. A second
+tool request after crew-resume is outside this bounded graph and is rejected.
+A domain extension may explicitly admit a bounded loop, but parent inheritance
+or tool-call counters must not silently introduce one.
+
+The effective tool timeout below is 3000 ms. Execution uses the earlier of that
+operation deadline and the enclosing Session/task's remaining deadline. The
+Session boundary must supply/admit the latter; this configuration does not
+invent a universal graph/crew timeout. Expiry produces timeout, never a synthetic
+success receipt. Cancellation propagates to outstanding work through the runtime
+owner; late results cannot resume a cancelled/expired continuation. If the
+underlying action cannot be cancelled, report its uncertain outcome and retain
+correlation/evidence; do not claim rollback or automatically retry side effects.
+
+No compensation is implied by stop. Future retries/compensation need admitted
+idempotency/action semantics, bounded attempts, fresh attempt identity and an
+explicit recovery edge/owner. Runtime terminal state and receipt acceptance must
+prevent duplicate or out-of-order replies from advancing the flow twice.
+
+* Native multi-inheritance: one Scenario, three independently bound Modules
+
+The complete example below extracts the three Module configurations as native
+contribution objects. Each owns only graph, crew or tool; they do not inherit
+three separate domain Scenario roots or closed runtime Case/Session objects.
+That avoids accidentally treating competing root stage/handoff metadata as a
+combined execution model. Existing per-domain examples remain useful standalone
+configurations; this section is the canonical combined variant.
+
+MultiAgentScenario. is a proposed upstream shared native proto supplied by a
+proposed MultiAgentCompositionContract specializing the common CompositionContract.
+The preceding upstream declaration specifies that proto and its admission duties;
+neither symbol is an existing export. It supplies explicit control/handoff facts
+rather than an empty placeholder that would appear to satisfy runtime admission.
+No new user Scenario/compose/import syntax is introduced.
+
+#+begin_src scheme
+(.def GraphConfig
+  graph:
+  (use-module LangGraphModule as lg
+    (.+ lg
+        {profiles: =>.+
+         {state-graph: =>.+
+          {checkpoint-key: "review-session-42"
+           resume?: #t
+
+           routing-policy: =>.+
+           {selection: 'priority}}}})))
+
+(.def CrewConfig
+  crew:
+  (use-module CrewAIModule as cr
+    (.+ cr
+        {profiles: =>.+
+         {crew-workflow: =>.+
+          {goal: "Review the release candidate."
+           max-concurrency: 2
+
+           scheduling-policy: =>.+
+           {ordering: 'priority}}}})))
+
+(.def ToolConfig
+  tool:
+  (use-module ToolCallingModule as tc
+    (.+ tc
+        {profiles: =>.+
+         {tool-loop: =>.+
+          {allowed-tools: '(read-file search)
+           timeout-ms: 5000
+
+           argument-validator: =>.+
+           {maximum-depth: 16}}}})))
+
+;; Proposed upstream shared proto, owned by MultiAgentCompositionContract.
+;; MultiAgentScenario. is a native object, not the Contract descriptor.
+(.def (AgentScenario @
+       [GraphConfig CrewConfig ToolConfig MultiAgentScenario.]))
+
+;; Downstream refinement: no new module binding or strategy construction.
+(.def (ProductionScenario @ AgentScenario)
+  graph: =>.+
+  {profiles: =>.+
+   {state-graph: =>.+
+    {checkpoint-key: "release-session-43"}}}
+
+  crew: =>.+
+  {profiles: =>.+
+   {crew-workflow: =>.+
+    {goal: "Review release notes and report blocking issues."
+     max-concurrency: 3}}}
+
+  tool: =>.+
+  {profiles: =>.+
+   {tool-loop: =>.+
+    {allowed-tools: '(read-file)
+     timeout-ms: 3000
+     argument-validator: =>.+
+     {maximum-depth: 8}}}})
+#+end_src
+
+Each Module has one binding declaration. lg/cr/tc are bounded lexical aliases,
+not exported Scenario fields or cross-Module globals. Native parent slots can
+be evaluated per effective receiver: parent-first demand followed by child
+refinement may resolve compatible source bindings through existing owner reuse
+rules, so "one declaration" is not a claim of one global evaluation forever.
+
+The complete Module defaults/Profile/policy publication and source-scope protocol
+remain proposed. GraphConfig/CrewConfig/ToolConfig define disjoint placement
+slots, so their root parent order cannot choose between the three modules.
+A future overlapping same-name slot would follow native precedence and require
+explicit source/conflict admission, not automatically combine every hidden value.
+Unchanged policy instance attributes and ancestry remain inherited by the final
+ProductionScenario; all its changes use ordinary =>.+.
+
+** MultiAgentScenario. Contract responsibilities
+
+| Owner responsibility | Required meaning / proposed evidence |
+|----------------------+--------------------------------------|
+| root classification | actual shared MultiAgentCompositionContract proto ancestry plus common CompositionContract obligations |
+| graph / crew / tool | configured Module/source/occurrence Contracts for three effective placement values |
+| selected contribution set | exactly the Scenario-admitted state-graph, crew-workflow and tool-loop occurrences, not all available exports |
+| field/policy checks | respective Profile obligations: checkpoint/route, capacity/dispatch, permissions/deadline/argument validation |
+| source and contribution identity | authentic source/version/capability compatibility; distinct qualified occurrences and user refinements |
+| cross-Module plan and handoff | explicit permitted graph/task/tool relationships, control/data contracts and runtime boundary compatibility |
+| plan/evidence relationship | pure effective plan projection and admission of that same configuration; fresh execution evidence belongs to explicit Session |
+
+The shared proto is the stable native basis; the Contract descriptor is not a
+configuration parent. The upstream declaration above specifies responsibilities and the plan/adapter
+protocol; their concrete domain Contracts and adapters still need implementation. It must not add a second round of Module bindings
+for slots already supplied by the configuration contributors. Native ancestry is
+necessary classification evidence, not proof that a whole composition is valid.
+
+** Parent precedence never determines execution sequence
+
+[GraphConfig CrewConfig ToolConfig MultiAgentScenario.] is an ordered inheritance
+expression. It controls native slot method precedence, not graph -> crew -> tool
+execution. Merely reversing disjoint configuration parents does not reverse the
+workflow. The upstream root above supplies explicit dependency, control/data and handoff
+relationships, all subject to domain admission. Graph routing, ready-task dispatch and
+tool invocation remain with their actual consumers; no second scheduler or
+implicit loop over parent prototypes is introduced.
+
+If relationships are missing, ambiguous or incompatible, selected plan admission
+must fail with a diagnostic. It must not infer a runnable pipeline from the
+parent list. Therefore this is complete configuration syntax, not an implemented
+multi-agent execution recipe or a claim the three current UI libraries are wired.
+
+** Final receiver reads and qualified plan projection
+
+#+begin_src scheme
+(.get ProductionScenario graph profiles state-graph checkpoint-key)
+;; Expected configuration: "release-session-43"
+(.get ProductionScenario graph profiles state-graph routing-policy selection)
+;; Expected configuration: priority (inherited)
+
+(.get ProductionScenario crew profiles crew-workflow goal)
+;; Expected configuration: "Review release notes and report blocking issues."
+(.get ProductionScenario crew profiles crew-workflow max-concurrency)
+;; Expected configuration: 3
+(.get ProductionScenario crew profiles crew-workflow scheduling-policy ordering)
+;; Expected configuration: priority (inherited)
+
+(.get ProductionScenario tool profiles tool-loop allowed-tools)
+;; Expected configuration: (read-file)
+(.get ProductionScenario tool profiles tool-loop timeout-ms)
+;; Expected configuration: 3000
+(.get ProductionScenario tool profiles tool-loop argument-validator maximum-depth)
+;; Expected configuration: 8
+#+end_src
+
+#+begin_src scheme
+(.get ProductionScenario plan)
+;; Proposed pure projection; demand is explicit, no runtime invocation.
+#+end_src
+
+The plan getter inherited from MultiAgentScenario. executes its pure projection
+with @ = ProductionScenario. The participant paths resolve against that receiver;
+therefore the plan uses the release goal, concurrency 3, read-file only, timeout
+3000 and maximum-depth 8, retaining inherited routing/scheduling policies. It
+also reads that receiver's effective control/handoffs/failure-policy, including
+any admitted downstream refinements. It must not close over parent Module values
+or reuse a plan/evidence receipt keyed only by the upstream proto. Reuse requires
+matching effective configuration/source identity and the existing validity rules.
+A subsequent child gets its own effective projection; no shared default is mutated.
+
+The proposed root projection consumes ProductionScenario, not a cached list of
+GraphConfig/CrewConfig/ToolConfig default values or the original Module catalog.
+Selected identities retain (graph state-graph), (crew crew-workflow) and
+(tool tool-loop), with source/placement/policy evidence for each effective value.
+Any downstream graph/list/runtime projection must translate all qualified
+references and associated evidence together, not flatten equal-looking names
+or mutate shared defaults. Checks and permissions are not weakened by inheritance.
+
+** Demand and validation boundaries for the combined root
+
+1. Declare configuration contributors and native Scenario parents. Parent
+   expressions/proto owners may need resolution; no full Module initialization.
+2. Demand graph or one of its attributes. Native POO may linearize all parent
+   metadata/slot methods as structural work, then evaluate required graph values.
+   This does not authorize forcing crew/tool implementation or full plan slots.
+3. Refine/demand the child. Read its effective inherited slots, retaining policies
+   and changes even if AgentScenario was forced earlier. No binding alias leaks.
+4. Request whole selected admission/plan. Demand all three participating Modules
+   and mandatory domain/cross-Module obligations. The root may need pure plan
+   projection during admission; it never skips checks in the name of laziness.
+5. Explicit Session/handoff alone performs execution, checking current mutable
+   permissions and producing runtime evidence for the admitted plan.
+
+No defer flag is needed. Lazy scope/source references, precise owner granularity
+and native slot demand must avoid unrelated sources and monolithic first-access
+initialization. Measure parent resolution/linearization, one-Module first read,
+child-after-parent refinement, whole combined admission/plan and warm repeats
+separately with equal semantic outputs/evidence. Assert that a graph-only read
+does not force crew/tool consumers, and missing cross-plan wiring fails admission.
+Static imports still have their own dependency closure. Cold/warm budgets remain
+to be established; this document claims no measured speedup.
+
+** Existing foundation versus proposed combined behavior
+
+Existing: native ordered multiple parents, slot precedence, .+/=>.+ and .get;
+Core Contract algebra and Loader/lazy-slot foundations. Source native semantics
+have been inspected; reader checks are not execution evidence.
+Proposed: bounded scope grammar/objects; complete domain defaults/protos and
+consumers; MultiAgentCompositionContract and its actual MultiAgentScenario.
+proto; selected source/contribution admission; cross-Module dependency/handoff
+semantics; effective qualified plan projection and natural-lazy cost guarantees.
+Current generic plan-shape admission does not establish those domain obligations.
+
+| Existing source foundation | What this design still needs |
+|----------------------------+------------------------------|
+| graph/types-core.ss native graph, named node/edge declarations and list projection | admitted domain operation/event payloads and selected participant resolution |
+| graph/types-contracts.ss basic graph shape, currently opaque/Any node payload | concrete cross-Module request/reply/authority and control/event Contracts |
+| graph/runtime-executor.ss pure graph walk, explicitly no tool/model calls | explicit crew/tool invocation, correlation, deadline/cancellation and checked receipt adapters |
+| scenario/plan-projection.ss canonical plan projection | lowering of this domain graph/handoff model into that existing plan boundary |
+| Core proto-aware responsibility/obligation admission | MultiAgent domain obligations preserving the common Contract checks |
+| native POO lazy effective slots and existing Loader | bounded Module scope grammar/publications, precise lazy owners and cold/warm cost verification |
+
+Reader acceptance of the examples proves delimiter/read syntax only. It does
+not prove macro expansion, domain admission, runtime dispatch or latency bounds.
+
+* Existing policy refinement versus genuinely new objects
+
+All three complete examples modify policy objects already supplied upstream.
+Use =>.+ on the existing slot. It derives from that actual inherited instance,
+retaining previous specializations and native proto ancestry. Do not look up a
+prototype and construct a replacement merely to change one field, and do not
+require a separately named PriorityRouting/PriorityScheduling/ShallowArguments.
+
+Only a genuinely new named domain object needs construction from a published
+proto in the current module scope. The alias must still be in its bounded body,
+and the destination collection must admit the new object/identity. See
+[[file:164-funflow-cicd-user-authoring-design.org][the complete Funflow scope example]] for a real new smoke Check definition
+from ff.prototypes.check. These three ordinary policy examples intentionally
+add no new object just to demonstrate the mechanism.
+
+Source access proves which exported proto is requested, while domain admission
+still checks actual origin, ancestry, fields and capabilities. New-object APIs
+and collection Contracts must be published before concrete new domain object
+examples are claimed supported. The existing module-scoped prototype protocol
+remains proposed, but it is not an extra dependency of ordinary field refinement.
+
+* Shared hygienic lowering and source admission
+
+The candidate (use-module Module as alias (expression ...)) lowers conceptually
+to a native lexical binding and scope-result check as detailed in
+[[file:164-funflow-cicd-user-authoring-design.org][the complete bounded-scope design]]. It does not expose an alias to sibling
+Scenario slots, inject constructor names, or change native .def/.o scope rules.
+Body syntax and caller alias context are retained, internal bindings are hygienic,
+the body is evaluated once, and source resolution cannot capture the same-named
+POO placement slot. Expansion does no runtime lookup/IO/loading or registry work.
+
+| Required domain Contract | Responsibilities / actual proposed consumer |
+|--------------------------+--------------------------------------------|
+| graph selected contribution | checkpoint configuration and routing-policy through LangGraphRoutingPolicyContract; checkpoint/session preparation and route adapter |
+| crew selected contribution | goal/capacity and scheduling-policy through CrewSchedulingPolicyContract; task-input preparation and dependency-ready dispatch adapter |
+| tool selected contribution | requested tool subset/timeout and argument-validator through ToolArgumentValidatorContract; permission, deadline and argument-validation adapters |
+
+The Module scope must retain authenticated source/revision/capability evidence.
+Existing policy refinement is admitted against its required policy Contract,
+including actual inherited ancestry and effective fields/obligations. Genuinely
+new objects additionally use an admitted scope-published prototype; a constructor
+label is not proof of origin. The body result must preserve compatible Module/occurrence
+lineage. Context/source conflicts across ancestors or deliberate replacement
+are admitted explicitly rather than hidden by native slot precedence.
+
+Business constraints remain mandatory: checkpoint ownership/restore support;
+capacity/dependency/guardrail constraints; requested tools intersect actual
+session grants; deadline/cancellation support; schema validation and untrusted
+output rules. A policy override cannot reset required evidence or override a boolean
+to bypass those obligations. read-file/search and checkpoint identifiers are
+illustrative and must resolve in the actual selected context.
+
+These consumer paths and concrete collection/field Contracts are proposed.
+Existing generic Scenario plan-shape checks do not prove domain enforcement.
+Current graph/runtime or tool-core machinery is not automatically wired by
+changing a semantic policy symbol in the UI libraries.
+
+* Effective values, provenance and qualified projection
+
+#+begin_src scheme
+(.get MyGraphScenario graph profiles state-graph checkpoint-key)
+;; Expected configuration: "review-session-42"
+(.get MyGraphScenario graph profiles state-graph routing-policy selection)
+;; Expected configuration: priority
+
+(.get MyCrewScenario crew profiles crew-workflow max-concurrency)
+;; Expected configuration: 2
+(.get MyCrewScenario crew profiles crew-workflow scheduling-policy ordering)
+;; Expected configuration: priority
+
+(.get MyToolScenario tool profiles tool-loop timeout-ms)
+;; Expected configuration: 5000
+(.get MyToolScenario tool profiles tool-loop argument-validator maximum-depth)
+;; Expected configuration: 16
+#+end_src
+
+The selected composition reads these derived receivers, not the source catalog
+again. Example contribution keys are (graph state-graph), (crew crew-workflow)
+and (tool tool-loop); inherited policy origins stay associated with their local
+placements and resolved source bindings. Legacy output qualification must
+translate all relevant references and evidence together, preserving identity
+without mutating the native upstream objects. A successful selection receipt is
+not a fresh policy/runtime proof. Unselected catalog entries stay unselected.
+
+* Natural lazy demand, not opt-in deferral
+
+1. Expand: validate the bounded shape and preserve syntax/source context; no
+   implementation loading or Profile evaluation during expansion.
+2. Bind on demand: create a bounded native scope/request; no full-catalog force.
+3. Read business config: evaluate only required Profile slots/inherited values.
+4. Demand the refined inherited policy: evaluate its base and required fields
+   through native =>.+. Do not add prototype lookup/construction to this path.
+   A genuinely new object has a separate demand for its scope-published proto;
+   neither operation loads unrelated prototypes or executes a job.
+5. Admit/project selected composition: force all mandatory selected source,
+   policy/business and dependency facts; pass the same effective values to the
+   owned plan adapters. Do not skip obligations to claim more laziness.
+6. Explicit run: load required execution owners, recheck mutable permissions and
+   enforce the admitted policy through its actual consumer.
+
+Natural laziness has no required defer keyword. .+ or native parent construction
+can perform bounded work, and static imports still load their own closure.
+An import-all facade behind the scope is not compliant. Split precise interface,
+prototype, configuration and execution owners using existing Loader mechanisms;
+do not build another loader/cache or move initialization into a getter.
+Measure binding, first Profile read, inherited policy refinement, full
+selected admission/plan demand and warm repeat separately; for genuine new
+objects also measure their first prototype demand/construction: loaded owners,
+allocations/memory, latency and unrelated-source count. Require equal semantic
+results/evidence and preserve child changes after parent-first demand. No speed
+or source-isolation guarantee is claimed before those checks.
+
+* Status and compatibility
+
+Existing foundations: native POO access/extension, Gerbil hygienic lexical
+binding, Core Contract algebra, deferred Loader plans and current source data.
+New work: bounded macro grammar/review; native scope and alias/source resolution;
+complete native Profile/policy defaults; domain field/collection/obligation
+Contracts; selected effective projection; consumers enforcing the proposed
+checkpoint, scheduling and tool policies. Scoped proto publication is separate
+new work for genuine new-object authoring. Current as-selection returns a Bundle;
+these examples are not executable against it unchanged. User-root .def/.o role
+admission must also be explicitly aligned with the authorized extension route.
+
+Older fuel-only and unscoped/helper expansions are superseded for these user
+examples. The [[file:164-domain-scope-legacy-expression-reference.org][separate expression history]] preserves them for migration research only.
+No user Case, raw import recipe, internal component list or mandatory per-object
+constructor reconstruction is part of the current default surface.

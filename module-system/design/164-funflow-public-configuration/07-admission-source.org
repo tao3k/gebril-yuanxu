@@ -1,0 +1,604 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 07: Complete Scheme Admission Design Source
+#+property: STATUS documentation-source-only-not-runtime-implementation
+
+* Reading and evidence boundary
+
+[[file:13-independent-profiles-and-scenario-composition.org][Module 13]] supersedes the owner/occurrence layout assumed in this earlier
+31-function reference. A Scenario, independent Profile occurrence and configured
+Funflow occurrence need separate context roles. The effective-profile variable
+here historically means the Check container; it must become an explicit
+effective-config role in the corrected adapter. These bodies are not already
+qualified for that architecture, and are retained rather than silently renamed
+and presented as verified. Check field/selection/identity obligations still apply.
+
+The subsequent [[file:08-leanpoo-reuse-and-performance.org][LeanPoo PR #13 source review]] maps exact-context caches,
+certified construction skipping and proof consequence to this reference. It
+identifies performance experiments; it does not silently optimize these bodies
+or claim their correctness from an upstream Lean proof.
+
+This is the complete proposed Scheme body for the three obligations and three
+inherited .admit adapters. Every new internal helper used below is defined here.
+It supersedes the algorithm-only bodies in [[file:06-admission-algorithms.org][module 06]], which remains a readable
+behavior specification. The [[file:01-surface-and-schema.org][native Contract declarations]],
+[[file:05-field-contracts-and-capabilities.org][field Contracts/capability value]] and [[file:02-complete-cicd-case.org][complete upstream/downstream case]] retain
+their bindings and public syntax. These are documentation blocks, not installed
+source, a Loader integration or a new execution receipt.
+
+Existing dependencies are native .o/.get/.ref/.slot?/.all-slots,
+compute-precedence-list!, Core's classification/validation constructors and
+protocols, YuanxuContract., the source-ref predicate, with-catch, standard
+list/hash operations, and the existing yuanxu-append-map, yuanxu-find and
+yuanxu-stable-duplicates functions from
+[[file:../../../utilities/functional.ss][utilities/functional.ss]]. named-symbol?, unique-symbols?,
+nonempty-unique-symbols?, metadata-shape? and funflow-check come from the already
+shown field/default owners. There is no omitted domain validation procedure or
+public callback interface. Canonical owner imports are a bootstrap concern.
+
+The caller is a planning owner that independently selects the publication and
+capability declaration. This code proves compatibility with that supplied local
+policy and retained source identity. It does not authenticate that policy,
+resolve external capabilities, certify all wire values or execute anything.
+Required readiness receipts still belong to a later admission boundary. In
+particular, capabilities in the complete local context is a declaration, not
+a bag of fabricated execution evidence.
+
+* Diagnostics, safe shape checks and native evidence
+
+#+begin_src scheme
+(def (ff-issue code-value path-value detail-value)
+  (.o code: code-value path: path-value detail: detail-value))
+
+(def (ff-require condition code-value path-value detail-value)
+  (if condition '() (list (ff-issue code-value path-value detail-value))))
+
+(def (ff-slots? value names)
+  (and (object? value) (every (cut .slot? value <>) names)))
+
+(def (ff-derives? value prototype)
+  (and (object? value)
+       (if (memq prototype (compute-precedence-list! value)) #t #f)))
+
+(def (ff-contract? value)
+  (ff-derives? value YuanxuContract.))
+
+(def (ff-safe-path context)
+  (with-catch
+    (lambda (_error) '())
+    (lambda ()
+      (if (and (ff-slots? context '(profile-path))
+               (list? (.get context profile-path)))
+        (.get context profile-path)
+        '()))))
+
+(def (ff-admit-problems contract-value candidate context path-value code-value)
+  (let ((evidence
+         (yuanxu-contract-admit contract-value candidate context)))
+    (cond
+      ((not (yuanxu-validation-evidence? evidence))
+       (list (ff-issue 'invalid-validation-evidence path-value evidence)))
+      ((not
+         (and
+           (eq? (.get evidence contract-identity) (.get contract-value identity))
+           (equal? (.get evidence classification type-identity)
+                   (.get contract-value identity))
+           (if (object? candidate)
+             (eq? candidate (.get evidence candidate))
+             (equal? candidate (.get evidence candidate)))
+           (eq? context (.get evidence context))))
+       (list (ff-issue 'admission-input-mismatch path-value evidence)))
+      ((yuanxu-validation-evidence-accepted? evidence) '())
+      (else (list (ff-issue code-value path-value evidence))))))
+
+(def (ff-reject descriptor candidate context classification problems)
+  (yuanxu-validation-evidence
+    (.get descriptor identity) candidate classification problems #f
+    (append (.get classification diagnostics) problems) context))
+
+(def (ff-evaluation-rejection descriptor candidate context caught)
+  (let* ((problems
+          (list (ff-issue 'configuration-evaluation-failed
+                          (ff-safe-path context) caught)))
+         (classification
+          (yuanxu-classification-evidence
+            (.get descriptor identity) candidate #f problems context)))
+    ;; The result is rejection, not a fabricated successful family proof.
+    (yuanxu-validation-evidence
+      (.get descriptor identity) candidate classification problems #f
+      problems context)))
+
+(def (unknown-field-problems descriptor candidate path-value)
+  (let ((declared (.all-slots (.get descriptor responsibilities))))
+    (map
+      (lambda (slot-name)
+        (ff-issue 'unknown-attribute
+                  (append path-value (list slot-name))
+                  (.get descriptor identity)))
+      (filter (lambda (slot-name) (not (memq slot-name declared)))
+              (.all-slots candidate)))))
+#+end_src
+
+The ff- prefix denotes private owner functions, not the user's ff scope alias.
+Constructor parameters use distinct names so native slot lexical bindings do
+not shadow a same-named outer variable accidentally. Diagnostics retain native
+values/evidence; eventual diagnostic serialization must handle causes separately.
+Exceptions are rejected with their original cause. Divergence/resource limits
+remain outside this exception wrapper.
+
+* Complete context and selected-path validation
+
+#+begin_src scheme
+(def (ff-capabilities? value)
+  (and
+    (ff-slots? value
+      '(runtime-modes result-protocols action-classes artifact-retentions
+        sandbox-references inline-sandbox-profiles compensation-actions
+        payload-contracts))
+    (every (lambda (slot-name) (unique-symbols? (.ref value slot-name)))
+           '(runtime-modes action-classes artifact-retentions
+             sandbox-references compensation-actions))
+    (list? (.get value result-protocols))
+    (list? (.get value inline-sandbox-profiles))
+    (every object? (.get value inline-sandbox-profiles))
+    (ff-slots? (.get value payload-contracts)
+      '(input-bindings config-sources observability observes guards report))
+    (every
+      (lambda (slot-name)
+        (ff-contract? (.ref (.get value payload-contracts) slot-name)))
+      '(input-bindings config-sources observability observes guards report))))
+
+(def (ff-context? context)
+  (and
+    (ff-slots? context
+      '(scenario module-slot profile-name owner check-contract capabilities
+        effective-profile profile-path))
+    (object? (.get context scenario))
+    (named-symbol? (.get context module-slot))
+    (named-symbol? (.get context profile-name))
+    (list? (.get context profile-path))
+    (every named-symbol? (.get context profile-path))
+    (ff-slots? (.get context owner) '(source contracts))
+    (yuanxu-module-source-ref? (.get context owner source))
+    (ff-slots? (.get context owner contracts) '(check))
+    (ff-contract? (.get context check-contract))
+    (eq? (.get context check-contract) (.get context owner contracts check))
+    (ff-derives? (.get context effective-profile) FunflowProfile.)
+    (ff-capabilities? (.get context capabilities))))
+
+(def (ff-profile-context-problems context)
+  (let* ((scenario-value (.get context scenario))
+         (module-name (.get context module-slot))
+         (profile-name-value (.get context profile-name))
+         (path-value (.get context profile-path)))
+    (cond
+      ((not (.slot? scenario-value module-name))
+       (list (ff-issue 'selected-module-missing path-value module-name)))
+      (else
+       (let ((module-value (.ref scenario-value module-name)))
+         (cond
+           ((not (ff-slots? module-value '(source profiles)))
+            (list (ff-issue 'invalid-module-scope path-value module-name)))
+           ((not (eq? (.get module-value source)
+                      (.get context owner source)))
+            (list (ff-issue 'source-identity-mismatch path-value module-name)))
+           ((not (object? (.get module-value profiles)))
+            (list (ff-issue 'invalid-profile-catalog path-value profile-name-value)))
+           ((not (.slot? (.get module-value profiles) profile-name-value))
+            (list (ff-issue 'selected-profile-missing path-value profile-name-value)))
+           (else
+            (ff-require
+              (eq? (.ref (.get module-value profiles) profile-name-value)
+                   (.get context effective-profile))
+              'effective-profile-mismatch path-value profile-name-value))))))))
+
+(def (ff-profile-preflight _descriptor candidate context)
+  (ff-require (eq? candidate (.get context effective-profile))
+              'effective-profile-mismatch (.get context profile-path) candidate))
+
+(def (ff-check-preflight descriptor candidate context)
+  (if (not (and (ff-slots? context '(check-slot path))
+                (named-symbol? (.get context check-slot))
+                (list? (.get context path))))
+    (list (ff-issue 'invalid-admission-context
+                    (.get context profile-path) 'check-position))
+    (let* ((name (.get context check-slot))
+           (profile-value (.get context effective-profile))
+           (path-value (append (.get context profile-path) (list name))))
+      (append
+        (unknown-field-problems descriptor candidate path-value)
+        (ff-require (equal? (.get context path) path-value)
+                    'invalid-admission-context path-value 'check-path)
+        (cond
+          ((not (.slot? profile-value name))
+           (list (ff-issue 'selected-check-missing path-value name)))
+          (else
+           (ff-require (eq? candidate (.ref profile-value name))
+                       'effective-check-mismatch path-value name)))))))
+#+end_src
+
+Profile names are dynamic symbolic keys. profile-path is a diagnostic label
+provided by the planning owner; authority comes from the actual scenario and
+occurrence lookup, not a spelling in that label. SourceRef equality is retained
+local identity only. This code deliberately does not manufacture an authenticated
+source receipt. Context validation also cannot attest a caller-chosen owner.
+
+* Selector and Pipeline preflight before checks demand
+
+#+begin_src scheme
+(def (native-check? value)
+  (ff-derives? value funflow-check))
+
+(def (funflow-selected-checks profile names)
+  (unless (object? profile)
+    (error "Expected a native Funflow Profile" profile))
+  (unless (nonempty-unique-symbols? names)
+    (error "Expected nonempty unique Check names" names))
+  (map
+    (lambda (name)
+      (unless (.slot? profile name)
+        (error "Selected Check does not exist" name))
+      (let ((check (.ref profile name)))
+        (unless (native-check? check)
+          (error "Selected slot is not a Funflow Check" name))
+        check))
+    names))
+
+(def (ff-selection-problems profile names path-value)
+  (yuanxu-append-map
+    (lambda (name)
+      (cond
+        ((eq? name 'pipeline)
+         (list (ff-issue 'reserved-check-position path-value name)))
+        ((not (.slot? profile name))
+         (list (ff-issue 'selected-check-missing path-value name)))
+        ((not (native-check? (.ref profile name)))
+         (list (ff-issue 'selected-slot-not-check path-value name)))
+        (else '())))
+    names))
+
+(def (ff-pipeline-preflight descriptor candidate context)
+  (let* ((profile-value (.get context effective-profile))
+         (path-value (append (.get context profile-path) '(pipeline))))
+    (append
+      (unknown-field-problems descriptor candidate path-value)
+      (cond
+        ((not (.slot? profile-value 'pipeline))
+         (list (ff-issue 'effective-pipeline-missing path-value 'pipeline)))
+        ((not (eq? candidate (.get profile-value pipeline)))
+         (list (ff-issue 'effective-pipeline-mismatch path-value candidate)))
+        ((not (.slot? candidate 'selected-checks))
+         (list (ff-issue 'missing-selection path-value 'selected-checks)))
+        ((not (nonempty-unique-symbols? (.get candidate selected-checks)))
+         (list (ff-issue 'invalid-selection
+                         (append path-value '(selected-checks))
+                         (.get candidate selected-checks))))
+        (else
+         (ff-selection-problems profile-value
+           (.get candidate selected-checks)
+           (append path-value '(selected-checks))))))))
+#+end_src
+
+Preflight constructs only selected Check objects to classify their family. It
+does not read candidate.checks or Check business fields. Missing/duplicate/wrong
+role selections therefore reject before the inherited responsibilities can
+demand checks. A direct selector call retains ordinary Scheme error behavior.
+
+* Complete inherited admission adapters
+
+#+begin_src scheme
+(def (ff-guard-admission descriptor base-admit candidate context preflight)
+  (with-catch
+    (lambda (caught)
+      (ff-evaluation-rejection descriptor candidate context caught))
+    (lambda ()
+      (let ((classification
+             (yuanxu-type-classify descriptor candidate context)))
+        (if (not (yuanxu-classification-evidence-accepted? classification))
+          (base-admit candidate context)
+          (with-catch
+            (lambda (caught)
+              (ff-reject descriptor candidate context classification
+                (list (ff-issue 'configuration-evaluation-failed
+                                (ff-safe-path context) caught))))
+            (lambda ()
+              (if (not (ff-context? context))
+                (ff-reject descriptor candidate context classification
+                  (list (ff-issue 'invalid-admission-context
+                                  (ff-safe-path context) 'required-context)))
+                (let* ((position-problems (ff-profile-context-problems context))
+                       (problems
+                        (if (null? position-problems)
+                          (preflight descriptor candidate context)
+                          position-problems)))
+                  (if (null? problems)
+                    (base-admit candidate context)
+                    (ff-reject descriptor candidate context
+                               classification problems)))))))))))
+
+(def (funflow-admit-check descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-check-preflight))
+
+(def (funflow-admit-pipeline descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-pipeline-preflight))
+
+(def (funflow-admit-profile descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-profile-preflight))
+#+end_src
+
+preflight is a private function argument supplied by these three named adapters,
+not a configured callback slot. .admit inherits Core admission; it does not
+reimplement responsibility traversal. Returned root evidence retains the caller's
+candidate/context. A failed getter produces rejection, not a successful empty
+selection. An explicit owner-controlled alternative Contract remains a different
+trust association, not something a candidate.contract field can authorize.
+
+* Capability, metadata and payload helpers
+
+#+begin_src scheme
+(def (ff-membership-problems check field-name caps capability-name path-value)
+  (ff-require
+    (if (member (.ref check field-name) (.ref caps capability-name)) #t #f)
+    (case field-name
+      ((runtime-mode) 'unsupported-runtime-mode)
+      ((result-protocol) 'unsupported-result-protocol)
+      ((action-class) 'unsupported-action-class)
+      ((artifact-retention) 'unsupported-retention))
+    (append path-value (list field-name)) (.ref check field-name)))
+
+(def (ff-reference-resolved? value caps)
+  (cond
+    ((symbol? value)
+     (if (memq value (.get caps sandbox-references)) #t #f))
+    ((object? value)
+     (if (memq value (.get caps inline-sandbox-profiles)) #t #f))
+    ((and (pair? value) (list? value))
+     (every (cut ff-reference-resolved? <> caps) value))
+    (else #f)))
+
+(def (ff-metadata-problems descriptor candidate path-value)
+  (map
+    (lambda (key)
+      (ff-issue 'reserved-metadata-key (append path-value '(metadata)) key))
+    (filter
+      (lambda (key) (memq key (.get descriptor reserved-metadata)))
+      (map car (.get candidate metadata)))))
+
+(def (ff-payload-problems check context)
+  (yuanxu-append-map
+    (lambda (field-name)
+      (let* ((path-value (append (.get context path) (list field-name)))
+             (field-context (.o (:: @ context) path: path-value))
+             (contract-value
+              (.ref (.get context capabilities payload-contracts) field-name)))
+        (ff-admit-problems contract-value (.ref check field-name)
+                           field-context path-value 'unsupported-payload)))
+    '(input-bindings config-sources observability observes guards report)))
+#+end_src
+
+The small case above labels four fixed domain fields; it is not a provider-name
+switch or dispatch substitute. Runtime provider crossings are not implemented
+here. Symbol/object membership is compatibility with the supplied declaration;
+actual resolution receipts and full wire-value admission remain separate.
+
+* Complete Check obligations
+
+#+begin_src scheme
+(def (funflow-check-obligations descriptor check context)
+  (let* ((name (.get context check-slot))
+         (path-value (.get context path))
+         (caps (.get context capabilities))
+         (compensations (.get check compensation-refs)))
+    (append
+      (ff-check-preflight descriptor check context)
+      (ff-require (eq? (.get check check-name) name)
+                  'check-name-mismatch (append path-value '(check-name))
+                  (.get check check-name))
+      (ff-membership-problems check 'runtime-mode caps 'runtime-modes path-value)
+      (ff-membership-problems check 'result-protocol caps 'result-protocols path-value)
+      (ff-membership-problems check 'action-class caps 'action-classes path-value)
+      (ff-membership-problems check 'artifact-retention caps
+                              'artifact-retentions path-value)
+      (ff-require
+        (or (not (eq? (.get check action-class) 'compensatable))
+            (pair? compensations))
+        'missing-compensation (append path-value '(compensation-refs)) name)
+      (map
+        (lambda (reference)
+          (ff-issue 'unresolved-compensation
+                    (append path-value '(compensation-refs)) reference))
+        (filter (lambda (reference)
+                  (not (memq reference (.get caps compensation-actions))))
+                compensations))
+      (ff-require (ff-reference-resolved? (.get check profile-ref) caps)
+                  'unresolved-sandbox-reference
+                  (append path-value '(profile-ref)) (.get check profile-ref))
+      (ff-payload-problems check context)
+      (ff-metadata-problems descriptor check path-value))))
+#+end_src
+
+Core has admitted the field shapes before calling this obligation. Direct
+internal calls must retain that precondition; the function is not a second
+untyped public entry point. Declared symbolic references being present does not
+establish source authentication or deployed readiness.
+
+* Complete selected graph analysis
+
+#+begin_src scheme
+(def (ff-selected-graph names checks context)
+  (let ((index (make-hash-table-eq))
+        (indegrees (make-hash-table-eq))
+        (dependents (make-hash-table-eq))
+        (path-value (.get context profile-path)))
+    (for-each
+      (lambda (name check)
+        (hash-put! index name check)
+        (hash-put! indegrees name 0)
+        (hash-put! dependents name '()))
+      names checks)
+    (let* ((missing
+            (yuanxu-append-map
+              (lambda (name)
+                (map
+                  (lambda (dependency)
+                    (ff-issue 'missing-selected-dependency
+                      (append path-value (list name 'dependency-refs)) dependency))
+                  (filter (lambda (dependency) (not (hash-key? index dependency)))
+                          (.get (hash-get index name) dependency-refs))))
+              names))
+           (duplicate-tasks
+            (map (lambda (task-id)
+                   (ff-issue 'duplicate-durable-task-id path-value task-id))
+                 (yuanxu-stable-duplicates
+                   (map (cut .ref <> 'durable-task-id) checks)))))
+      (if (pair? missing)
+        (.o order: '() problems: (append missing duplicate-tasks))
+        (begin
+          (for-each
+            (lambda (name)
+              (for-each
+                (lambda (dependency)
+                  (hash-put! indegrees name (+ 1 (hash-get indegrees name)))
+                  (hash-put! dependents dependency
+                    (cons name (hash-get dependents dependency))))
+                (.get (hash-get index name) dependency-refs)))
+            names)
+          (let loop ((remaining names) (order-rev '()))
+            (if (null? remaining)
+              (let ((order-value (reverse order-rev)))
+                (.o order: order-value problems: duplicate-tasks))
+              (let ((ready-name
+                     (yuanxu-find
+                       (lambda (name) (zero? (hash-get indegrees name)))
+                       remaining)))
+                (if ready-name
+                  (begin
+                    (for-each
+                      (lambda (dependent)
+                        (hash-put! indegrees dependent
+                          (- (hash-get indegrees dependent) 1)))
+                      (hash-get dependents ready-name))
+                    (loop (filter (lambda (name) (not (eq? name ready-name)))
+                                  remaining)
+                          (cons ready-name order-rev)))
+                  (let ((order-value (reverse order-rev))
+                        (issues
+                         (append duplicate-tasks
+                           (list (ff-issue 'cyclic-dependencies
+                                           path-value remaining)))))
+                    (.o order: order-value problems: issues)))))))))))
+#+end_src
+
+The private tables are local algorithm state; no candidate, parent cache or
+global registry is mutated. Each loop chooses the earliest remaining ready
+name in selection order. This simple complete reference has O(K^2 + E) work,
+not a claimed linear-time or latency result. A qualified maintained priority
+queue may optimize that later without changing the ordering rule. Work is over
+the selected graph, not the entire module catalog. Cycle diagnostics contain
+residual blocked names, not a falsely claimed minimal cycle witness.
+
+* Complete Pipeline and Profile obligations
+
+#+begin_src scheme
+(def (funflow-pipeline-obligations descriptor pipeline context)
+  (let* ((profile-value (.get context effective-profile))
+         (path-value (append (.get context profile-path) '(pipeline)))
+         (names (.get pipeline selected-checks))
+         (expected (funflow-selected-checks profile-value names))
+         (actual (.get pipeline checks))
+         (identity-problems
+          (ff-require
+            (and (= (length actual) (length expected))
+                 (every eq? actual expected))
+            'effective-checks-mismatch (append path-value '(checks)) names))
+         (preflight (ff-pipeline-preflight descriptor pipeline context))
+         (metadata-problems (ff-metadata-problems descriptor pipeline path-value)))
+    (if (or (pair? preflight) (pair? identity-problems))
+      (append preflight identity-problems metadata-problems)
+      (let ((check-problems
+             (apply append
+               (map
+                 (lambda (name check)
+                   (let* ((check-path
+                           (append (.get context profile-path) (list name)))
+                          (check-context
+                           (.o (:: @ context) check-slot: name path: check-path)))
+                     (ff-admit-problems (.get context check-contract)
+                       check check-context check-path 'check-admission-failed)))
+                 names expected))))
+        (if (pair? check-problems)
+          (append metadata-problems check-problems)
+          (append metadata-problems
+            (.get (ff-selected-graph names expected context) problems)))))))
+
+(def (funflow-profile-obligations descriptor profile context)
+  (append
+    (ff-profile-context-problems context)
+    (ff-profile-preflight descriptor profile context)
+    (ff-require
+      (not (memq 'pipeline (.get profile pipeline selected-checks)))
+      'reserved-check-position (.get context profile-path) 'pipeline)))
+#+end_src
+
+The inherited Pipeline responsibilities have already admitted list shape before
+pairwise identity comparison. Its guard ran before checks demand. The obligation
+admits exactly the selected effective objects, then reads their admitted graph
+fields. Profile responsibilities already invoked Pipeline admission, so the
+Profile obligation does not repeat it or force unselected entries.
+
+* Same CI/CD case: exact connection and expected failures
+
+The complete [[file:02-complete-cicd-case.org][upstream defaults, module publication and both user layers]] remain
+unchanged. The full integration point is:
+
+#+begin_src scheme
+(let* ((selected-profile-value
+        (.get ExtendedCI funflow profiles gerbil-scheme))
+       (context-value
+        (.o scenario: ExtendedCI
+            module-slot: 'funflow
+            profile-name: 'gerbil-scheme
+            owner: Funflow
+            check-contract: (.get Funflow contracts check)
+            capabilities: GerbilCICDCapabilities.
+            effective-profile: selected-profile-value
+            profile-path: '(ExtendedCI funflow profiles gerbil-scheme))))
+  (yuanxu-contract-admit
+    (.get Funflow contracts profile) selected-profile-value context-value))
+#+end_src
+
+Profile guard -> inherited Pipeline responsibility -> Pipeline guard -> inherited
+field Contracts -> Pipeline obligations -> Check guards/fields/obligations ->
+selected graph -> Profile obligations is the call order. No user wrapper or
+manual checks extraction is added. The context proves compatibility only with
+the independently supplied local policy; required external readiness evidence
+still gates an actual handoff.
+
+An unknown commmands is rejected in Check preflight without reading that
+getter. A missing smoke is rejected in Pipeline preflight without reading
+checks. A new unselected smoke stays outside the selected closure. Selecting
+smoke without package fails graph closure. Placing package first in the name
+list does not bypass its test dependency. A wrong decoder passes list shape but
+fails the declared result-protocol membership check.
+
+After parent Pipeline/checks caching, the inherited native getter still captures
+the child's effective-profile and selected-checks. It resolves child build,
+test, package and smoke. Assigning a fixed saved parent list instead fails the
+pairwise eq? check, even if both lists contain individually valid Checks.
+Whole-object replacement with a saved Profile remains explicit selection of
+that object; this code cannot infer a different intended configuration.
+
+* What is and is not checked in this design turn
+
+Only document structure, links and Scheme reader syntax are checked for this
+new source listing. No function here has been installed, compiled as a product
+module or executed to claim admission success. The historical ten-assertion
+probe and real fixed-list publication controls remain evidence for native
+receiver/cache semantics only. Exception conversion, context rejection, capability
+checks, graph ordering, domain identity rejection and their evaluation-demand
+counts all require future implementation qualification. Loader/authentication,
+runtime readiness, effect isolation and termination remain outside this source.

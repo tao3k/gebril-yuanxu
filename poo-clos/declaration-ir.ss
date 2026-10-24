@@ -28,6 +28,7 @@
         clos-generic-declaration-ir-name clos-generic-declaration-ir-lambda-list
         clos-generic-declaration-ir-argument-precedence-order
         clos-generic-declaration-ir-method-combination
+        clos-generic-declaration-ir-protocol
         clos-generic-declaration-ir-documentation
         clos-generic-declaration-ir-generic-function-class
         clos-generic-declaration-ir-method-class

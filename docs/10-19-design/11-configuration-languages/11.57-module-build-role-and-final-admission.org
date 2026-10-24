@@ -1,0 +1,201 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.57 Config Languages 56: Module-local Build Roles and Final Admission
+#+property: DOCUMENT_ID 11.57
+#+property: STATUS implemented-local-native-no-product-loader
+
+* Ownership and implemented boundary
+
+Root =init.ss= is the highest-level unified Module/Feature entry. It is not a
+peer of Module-local config/build files. A selected Module declares its own
+build contribution; generic Core orchestration supplies its admitted owner and
+source context. No Module reloads root init to discover the application.
+
+This implementation admits an optional =build.ss=, supplies a hygienic lazy
+=Build= binding to its interface, consumes that binding in the existing selected
+build graph, and forces contributed domain admission before the build-entry
+writer returns successfully. It connects no product Loader or deployment runner.
+A general command-line root build launcher is still outside this change.
+
+* Infrastructure is not required to own build.ss
+
+The example below is a co-located integration fixture for the optional Build
+role. It is not the downstream AWS application architecture. Infrastructure
+configuration does not intrinsically require build.ss. Reusable OpenTofu/Nix
+Modules own Provider Schema construction capabilities; the root selected graph
+orchestrates them. Consumers supply deployment values, not copied build scripts.
+
+This chapter originally qualified owner-local contributions only. The later
+[[file:11.59-upstream-configuration-builds.org][upstream configuration-build protocol]] binds direct dependency contributions to
+consumer Config through the same selected graph. Its real OpenTofu control no
+longer places build.ss in Infrastructure. The co-located example below remains a
+historical role/phase illustration, not a recommended consumer layout.
+
+* Concrete files
+
+The maintained Module shell still has =types.ss= and =objects.ss=. The files
+below show the changed boundaries, not a universal three-file shell.
+
+#+begin_src scheme
+;; project/init.ss -- unchanged for both config revisions
+(yuanxu! mode: explicit source: "./modules"
+  :app
+  (infrastructure))
+#+end_src
+
+#+begin_src scheme
+;; modules/app/infrastructure/config.ss -- AWS-only revision
+(def Config
+  (.o provider: (.o aws: (list (.o region: "us-east-1")))
+      resource:
+      (.o aws_security_group: (.o web: (.o name: "web")))))
+#+end_src
+
+#+begin_src scheme
+;; The same config.ss -- next revision
+(def Config
+  (.o provider: (.o aws: (list (.o region: "us-east-1")))
+      resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))))
+#+end_src
+
+The [[file:11.58-config-role-native-defaults.org][config-role wrapper]] now provides the native POO prelude and exports Config
+when present. The author no longer repeats those import/export forms. Provider config is business
+data, not a duplicate list of packages to construct. Null demand follows the
+new resource even without an explicit empty Null provider block.
+
+The original co-located OpenTofu Build example is superseded by the single
+[[file:11.60-opentofu-single-module-publication.org][Core OpenTofu publication]]. Infrastructure publishes Config and declares its
+OpenTofu dependency; it has no build.ss. Generic independently owned compiler
+contributions can still publish an optional Build using the role protocol below.
+
+* Native phase projection, not a second evaluator
+
+Source admission reads selected role bytes as inert data. Required roles remain
+=types objects config interface=; =func= and =build= are optional. The authoring
+Profile now has =BuildSourceRole.=. Ordinary role imports may not depend on build;
+interface references the generated identifier instead of importing the file.
+Both presence and absence of build.ss participate in source currentness.
+
+Publication preparation emits the internal =define-module-build-binding Build=
+form, not an import/evaluation of build.ss. Its lowering is a native POO lazy
+slot and a hygienic identifier reference. Generated state/resolver names are
+fresh, while =Build= belongs to that interface's lexical context. The native
+macro performs no source IO or Module resolution.
+
+The key runtime boundary is deliberately outside the cached slot:
+
+#+begin_src scheme
+(def (module-build-binding-value state)
+  (unless (current-module-build-phase?)
+    (error "Build is available only in the Module build-publication phase"))
+  (native-.ref state 'value))
+#+end_src
+
+Thus even an already cached Build cannot be accessed through ordinary runtime
+exports. A narrow resolver captured during admitted publication reading evaluates
+build.ss only when the selected build graph requests its projections. That
+resolver reuses =module-prepared-source-binding= and native inclusion/expansion;
+it does not add an evaluator, Loader, registry or a syntax parser for Build.
+The same owner's admitted ordinary roles are available in this build phase.
+Unadmitted relative source imports reject. Canonical prebuilt build-tool imports
+retain their original identities.
+
+Compiler publication forms contain the deferred binding but do not import the
+build file. The build role is not an ordinary runtime compiler root. Config-role
+evaluation excludes it even if a caller supplies its filename in related roles.
+These two protections are separate: runtime metadata can exist without granting
+permission to force Build, and evaluating config does not execute build code.
+
+The build graph and explicit build handoff enter the internal build phase.
+=yuanxu-load-modules= rejects reentry there, including calls through aliases;
+the build-entry writer also rejects recursive root build invocation. Owner-
+confined imports reject a build source's attempt to import the root init file.
+This enforces the declared dependency direction in the native protocol; it is
+not a sandbox for arbitrary adversarial Scheme or external processes.
+
+* Existing graph and final native admission
+
+Core still consumes selected =core.projections=. The existing
+=module/external-package= Contract and =.prepare(owner, current!, publication)=
+protocol supply a Module-local request to the same graph's =external-packages=.
+OpenTofu projects final Provider demand; Core has no AWS/Null branch. Duplicate
+package identities still reject. Build-role publication does not introduce a
+second discovery graph or overwrite another consumer's configuration.
+
+The entry writer already guarded inputs, generated entry and Nix realization.
+It now also forces every contributed =admission= slot and requires accepted
+native evidence before returning. Contributions without a domain admission slot
+retain their existing package-only protocol. OpenTofu always supplies the slot,
+which calls its generated configuration Contract's public =.admit=. Rejection
+raises with the original evidence retained as an error irritant. Source and
+entry-byte checks run again after final admission.
+
+This is an observable boundary correction: obtaining a returned OpenTofu build
+result now implies that configuration admission completed. Callers no longer
+need a separate =.get package admission= step to discover that the configuration
+was invalid. Cached evidence does not replace independent currentness checks.
+Generated entry replay retains the same source/derivation guards; this change
+does not claim to serialize arbitrary admission closures or authorize execution.
+
+* Validation and accounting
+
+=core/t/module-build-role-test.ss= covers lazy graph demand, automatic role
+bindings, native compiler expansion without executing build, ordinary config
+isolation, cache reuse, runtime rejection before AND after Build is cached,
+mutation/addition invalidation, aliased root-load rejection and root-init import
+confinement. Disabled and unselected malformed build files remain untouched.
+
+=t/opentofu-selected-graph-test.ss= now declares the contribution in build.ss
+and publishes only =(list Build)= from interface. It validates real locked AWS
+5.100.0 to AWS plus Null 3.2.4, final admission before return, invalid configuration
+rejection, selected Schema producer inputs, unselected types, immutable AWS
+artifact reuse, distinct child Contract identity and unchanged parent cache.
+Existing source/transitive-Nix/lock/entry-mutation controls remain in the gate.
+
+Accounting changes intentionally follow the moved success boundary. Previously
+build counted 2 evaluations and deferred first admission counted 1. Now build
+counts 3 and accessing returned admission counts 0: total work through first
+admission remains 3 evaluations. The 1/2 selected type reads/compiles likewise
+move into build. Realization remains one call per build, hot reads remain zero
+processes/reads/compiles, and independent currentness still evaluates Nix once.
+The old chapter 55 receipt is retained as historical evidence, not rewritten.
+
+* Qualified local result
+
+The final source-stable default-runtime gate passed three serial rounds with
+70 assertions each (210 total), retaining the existing Case duration/heap and
+process budgets. The Build-role control passed 15 explicit assertions, including
+an explicit native prelude and ordinary source expansion without Build execution.
+Eight additional focused Core regression files passed: publication, build graph,
+source admission, directory selection, configuration source, module source, Nix
+phase and Nix publication. Every gate required MODULE-OK, HARNESS-OK, final OK
+and no ERROR CASE/CHECK/HARNESS or heap/stack overflow marker. Focused native owner
+compilation passed; the complete Core build was not requalified.
+
+| Phase | AWS-only median seconds | AWS plus Null median seconds | Count per round |
+|-------+-------------------------+------------------------------+-----------------|
+| Build through final admission | 3.202 | 2.731 | 3 evaluations, 1 realization; 1 / 2 type reads and compiles |
+| Read returned admission | 0.000010 | 0.000007 | 0 processes and type work |
+| Five hot accesses | 0.000003 | 0.000004 | 0 processes and type work |
+| Independent currentness | 0.851 | 0.737 | 1 evaluation; 0 realizations and type work |
+
+These are local populated-store observations, not a speedup or latency guarantee.
+The additional malformed AWS configuration must fail inside write-build-entry,
+not after it returns. The already locked real Provider outputs are package
+fixtures; no network-cold cost or Provider RPC semantics is claimed.
+
+Reproduction keeps native heap-fenced entrypoints and serial tests:
+
+#+begin_src sh
+just test-file core/t/module-build-role-test.ss
+just test-opentofu-selected-flake /absolute/prepared-locked-flake
+just test-opentofu-selected-flake-rounds /private/tmp/new-build-role-rounds \
+  /absolute/prepared-locked-flake 3
+#+end_src
+
+The structured source/phase/regression receipt is
+[[file:../../../t/fixtures/opentofu/module-build-role-control.json][module-build-role-control.json]]. Raw test/build logs stay outside Git.
+Historical chapter 55 receipts and the intermediate failed assertions remain
+separate from this final passing qualification.

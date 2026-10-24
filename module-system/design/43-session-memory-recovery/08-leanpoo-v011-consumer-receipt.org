@@ -1,0 +1,110 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.08 LeanPOO v0.1.1 Consumer Verification Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-leanpoo-v011-verification-20261014
+:STATUS: historical-local-dependency-consumer-pass-runtime-redesign-open
+:DATE: 2026-10-14
+:END:
+
+* Ownership and immutable dependency
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the design; [[file:07-leanpoo-functional-design.org][10.06.43.07]] records the actual API/use-case
+correspondence. LeanPOO v0.1.1 resolves to =d8adf138948c854e7564234bc046387b4a5ee63b=.
+Lake updated the parent declaration/lockfile from the earlier 71609603 cut;
+AITIA's independent lock already resolves v0.1.1 to the same commit. The annotated
+tag object is not mistaken for the peeled source commit. No toolchain, timeout,
+heap, Scheme runtime, storage, bindings or old Memory source was changed.
+
+The printed parent theorem audits introduce no new axioms or sorry. The five
+new laws use actual Functional APIs over a small design projection. They do not
+prove consumer authentication or implement AC-01 through AC-08.
+
+* Actual gates
+
+| Gate | Observed result | Bound/scope |
+|------+-----------------+-------------|
+| Parent Temporal and Context roots | 61 build jobs passed | Existing 120s; Lean 4.34.0 |
+| Selected upstream Functional owners | 92 build jobs passed | Same 120s; existing lint warnings retained |
+| Five upstream executable examples | All exited zero | 120s each; actual v0.1.1 source |
+| Context Lean roots | 26 laws / 27 guards passed | 21/19 lifecycle plus 5/8 functional composition |
+| Quint / TLC | 21 existing checks passed with expected counterexamples | 60s total / 12s silence each; one worker; 512MiB |
+| ASCENT Scheme | 23 controls passed | 120s total / 5s output; 1GiB |
+| ORG / Session / domain consumer | 90 controls passed | Same Scheme limits |
+| Joint identity gate | source-stable=true; storage-bindings=not-executed | Declared local inputs, selected compiled pool and executable compared before/after |
+
+The five examples were FunctionalPipeline, PreparedViews, FocusedAllocation,
+CertifiedContextCache and ReceiptWorkflow. FocusedAllocation reported 960
+direction controls and its invalid/factory controls. ReceiptWorkflow reported
+value 38, zero evaluation budget with an empty recipient memo, current input/output
+refusal, changed-request recomputation and retained batch-prefix behavior.
+These are generic library controls, not a new Agentic AI Lab Source/Host execution or
+a performance measurement.
+
+The Scheme binary is unchanged from the prior consumer cut; the new source/Lean
+dependency cut is independently verified. This is local uncommitted evidence,
+not upstream CI, a runtime upgrade or an authentication/disclosure qualification.
+
+* Bound input identity
+
+- Declared local input files: 35.
+- Selected compiled package pool files: 30837.
+- Pool aggregate SHA256: =afe5ecb9de146ff3142b6a075bc5e3ae06f944b2b3cf12326e056ce43a2fd903=.
+- Consumer executable SHA256: =8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+- All declared inputs and compiled/binary bytes remained stable during the joint run.
+
+| Repository-relative input | SHA256 |
+|---------------------------+--------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/ContextComposition.qnt | 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 |
+| packages/proofs/context-lifecycle/relations.ss | 81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f |
+| packages/proofs/context-lifecycle/check_quint.py | 57670bfe44d21a205984ea802b471938f7ecba87faf5350d872162fecfca889f |
+| packages/proofs/context-lifecycle/verify.py | fb4c92173fce0a13be5a9938b9f57e1806feed2da1e5583bb270eb86cc7fc34b |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | 067ddc461b9beac3ec8a90eb3adc09ac0d5cb1cd829978d0a399d78444bd776d |
+| packages/proofs/lean-poo/lake-manifest.json | 56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean | 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/ai-agentic-context/admission.ss | 08114f145c31b7fa97f8a8b72010ccfbafbf6e515d25bc7d366a1e871a0c493e |
+| modules/ai-agentic-context/consumers.ss | 88d71cc956f189299d185a127c505c96382b1edc6bd50bb359b2b066eed09b32 |
+| modules/ai-agentic-context/contracts.ss | b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 |
+| modules/ai-agentic-context/funs.ss | e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9 |
+| modules/ai-agentic-context/interface.ss | 5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca |
+| modules/ai-agentic-context/objects.ss | c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d |
+| modules/ai-agentic-context/reasoning.ss | 3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312 |
+| modules/ai-agentic-context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629 |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+| packages/proofs/context-lifecycle/admission-controls.ss | ae170d3640481e19a8edf722263371af6bae9a7f50f76e5f2b77c3db92a3c150 |
+| packages/lambda-aitia/modules/assurance/context-consumer.ss | a38f4537be4e70c8c364e8e326139307596acd253f1a81178b8aa65072a92453 |
+| packages/lambda-aitia/t/formal/lifecycle-fixture.ss | 6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd |
+| core/contribution/verification.ss | e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c |
+| modules/governance/types.ss | 633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1 |
+| modules/governance/objects.ss | c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7 |
+| packages/lambda-aitia/modules/assurance/types.ss | fd9df8e1e53365b20dc77cd92a297bfaee3a0957067247c6fb58deead4379db7 |
+| packages/lambda-aitia/modules/assurance/objects.ss | e5a2dfcf5dec17ae9c5e13a68749425af8c1f7cb1275bed3247e3bd2b84b6a02 |
+| packages/lambda-aitia/modules/assurance/funs.ss | 91e0f08035617a83052457aed57cfdcf1f51a810d85e45dfde579dd334eef826 |
+| packages/lambda-aitia/modules/assurance/evidence-admission.ss | f1d9eb576d95ed4c2a4990f83851afde5c014eefb21a8ee56f9726fd5a0a7d31 |
+| packages/lambda-aitia/modules/assurance/host.ss | abfb782fe8ae3c081d6e59a64a5324d5118c379f9ec7e7b56b7e17eda929f660 |
+| packages/lambda-aitia/modules/assurance/effect-host.ss | a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569 |
+
+* Reproduction and outstanding work
+
+Use [[file:../../../../packages/proofs/lean-poo/README.org][the parent proof package]] and its Lake-generated lockfile. Run
+=timeout 120s lake build AgenticAILabTemporalPooProof AgenticAILabContextLifecycleProof=.
+The optional library examples use =timeout 120s lake env lean= on the corresponding
+=.lake/packages/LeanPoo/Examples/= files after building their imported owners.
+
+The [[file:../../../../packages/proofs/context-lifecycle/README.org][joint verifier]] uses the existing Scheme package selectors and ordinary
+compiled consumer; no temporary SDK or absolute workstation path is an input.
+Future rebuilds must issue a fresh receipt, not copy these hashes.
+
+Functional capability availability is not authority. Projection and equal-base
+data sharing do not grant disclosure. Receipt re-admission preserves the original
+program/input/result witness and must not revive a revoked grant. Scheme
+implementation correspondence for new functional preparation/focus/view features,
+complete authority generations, protected readers and disclosure remain open.
+

@@ -1,0 +1,266 @@
+#+title: 12.27.42 Private Dependency Continuation and Guard Placement
+#+property: DOCUMENT_ID 12.27.42
+#+language: en
+
+* Real optimization after checked-subject alignment
+
+The [[file:28-checked-publication-subject.org][checked-subject repair]] made the existing Graph and its evidence consume
+the same normalized receiver. This change reduces physical source work on the
+next interval; it does not infer that public Contract callbacks are pure.
+
+The old linker checked the complete reader prefix after every publication's
+admission. Selection immediately reread =core.requires= from that publication
+to discover the next module. Every opaque declaration, value Contract and
+Context callback retained separate full entry/return boundaries. The repeated
+post-admission prefix scan contributed a third quadratic term.
+
+The optimized native path completes publication/Contract execution first, probes
+ONLY metadata cache/token storage witnessed by that actual producer call, then
+traverses a private list of symbol dependency identities. Its
+next full check is before the next closed directory location window, or after
+dependency closure and before decision slots, Feature construction and resolver
+callbacks. No source approval survives an intervening opaque callback.
+
+* What remains native and what is private
+
+The publication, its normalized receiver, requirements, Feature descriptors and
+public evidence remain ordinary POO objects. There is still one selected Graph
+and one publication index. The author interface and =init.tests .run= do not
+change.
+
+[[file:../../../../../module-system/source/link.ss][The linker]] replaces its PRIVATE publication carrier with a compact final
+Scheme struct: source, final publication, actual evidence, dependency identities.
+It is not a new public configuration record or namespace. The fresh symbol
+list is a projection of the actual admitted receiver, not another requirements
+registry; the original POO requirements continue to own contracts and linking.
+
+#+begin_src scheme
+(defstruct linked-publication (source value evidence dependencies) final: #t)
+(def reads (make-hash-table-eq))
+(def evidence-value
+  (call-with-slot-read-observer
+    (lambda (read) (hash-put! reads read #t))
+    (lambda ()
+      (admit-module-publication! source-value id publication-value context-value))))
+(def checked-publication (.ref evidence-value 'candidate))
+(def dependency-ids
+  (module-publication-dependency-projection checked-publication
+    (lambda (read) (hash-key? reads read))))
+#+end_src
+
+The per-call token index stores no validation result or file bytes and is not
+retained by the returned carrier. It does not intercept, suppress or replay any
+existing observer. The original semantic reads still belong to the enclosing
+native Graph dependency frame.
+
+[[file:../../../../../module-system/source/publication.ss][The private projection]] requires the original maintained Contract revision,
+captured at its definition, and actual read-token membership from this producer
+call. It inspects native instance/read storage, revision and instance identity,
+known prepared precedence and absence of a MOP protocol. It never invokes
+=.ref=, a native replay callback or observer delivery. All dependency leaves
+must be symbols. A warm slot without a witnessed token is not sufficient.
+
+This distinction fixes an unsafe intermediate: reading =requires= unconditionally
+after .admit could execute a new cold getter installed by a Context. The final
+probe returns false instead. The ordinary full tail then runs BEFORE any new
+metadata getter. If selection had already started in projection mode, that
+fallback's metadata read has independent full before/after guards as well.
+Extended Contracts, including edit-and-restore, retain the public guarded path.
+
+Only a fresh native paired source operation with unchanged native Context
+support can defer its tail. Custom readers/Contexts retain their ordinary
+post-admission check. The existing selector's default API remains available;
+the optional native dependency reader is not a contributor purity flag.
+
+[[file:../../../../../module-system/source/selection.ss][Selection]] receives the actual publication and dependency list together and
+fills its EXISTING publication index. This is important: failing to populate
+that index would reread publications during Core/Feature resolution and merely
+move the quadratic work elsewhere. The private dependency path performs list,
+symbol and hash operations; it does not access contributed POO slots.
+
+* Guard ownership and tentative state
+
+| Interval | Boundary |
+|----------+----------|
+| Native expansion/initializers | Full reader entry and declaration-return guards remain |
+| Value normalization, classifier, contextual admission, requirement getters | Open code still executes before the dependency projection is complete |
+| Completed projection to next node | Private symbol/list/hash traversal only |
+| Next paired directory location | A pending full source guard runs BEFORE location; the reader entry shares the existing closed location read window |
+| Dependency closure complete | Full currentness BEFORE decision/Feature/resolver processing |
+| Feature/resolver effects to accepted Graph | Existing final selector guard remains |
+| Custom/unpaired publication path | Original independent complete tail guard remains |
+
+The local =selection-tail= cell records outstanding guard work, not a successful
+approval or cached bytes. It exists only during one selection call. A fresh
+successful currentness boundary consumes the pending work; failures unwind the
+candidate operation. No guard work is transferred into a later public call.
+
+A private publication carrier may be tentatively indexed during the pure walk.
+It is not an accepted selected Graph. No author callback executes before the
+next full boundary. The Graph index is written only after selector completion
+and its final check. Any failure marks the linking session refused; restoring
+source or a Contract does not revive that session.
+
+The existing source read window is reused only around the already audited
+closed directory prefix. It ends before preparation, macro expansion, native
+initialization, admission or other user code. Neither this cell nor the symbol
+projection is a new source/result cache, and no SDK state is cleared.
+
+* Native counterexamples and generic controls
+
+[[file:../../../../../t/module-dependency-continuation-test.ss][The native continuation test]] reuses the existing publication fixture in a
+fresh test process, without extending the shared publication Contract. Its two
+boundary rows change the first module's observed config in its cold identity
+getter during actual classification:
+
+- With a second selected declaration, its config initializer would write a
+  marker. The full check before the next location refuses; normalization ran
+  once and the second initializer's marker is absent.
+- With a selected =+ci= Feature, its cold descriptor getter would write a marker.
+  The closure guard refuses before that getter; its marker is absent.
+
+It requires the maintained Contract revision to remain current, no ordinary
+=publication-admitted= guard, and an actual pending-next-location or closure
+guard event. Thus a conservative fallback cannot accidentally satisfy the
+purported fast-path test. A third control replaces a dependency leaf with a cold
+getter after shape checking, changes source, and verifies refusal before that
+getter. A token-membership control rejects an empty witness set and a cold
+replacement without incrementing the actual getter's computation count.
+
+[[file:../../../../../t/module-publication-test.ss][The existing publication suite]] retains the corresponding extended-Contract
+fallback controls. The existing normalized-owner refusal, exact subject identity, Context-source
+mutation, native metadata revision, SourceRef prototype, custom locator and
+unselected Feature controls remain in the same suite. These injections are
+Core qualification, not code required from module authors.
+
+* Cost model and measurement boundary
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the historical =6N^2 + 2N= recurrence and proves
+the new paired-source recurrence independently:
+
+- Entry checks over preceding role prefixes plus declaration-return checks
+  over completed role prefixes: =4N^2=.
+- One complete dependency-closure boundary: =4N=.
+- Total principal role-file cost: =4N^2 + 4N=.
+- At =N = n + 1=, the exact principal saving is =2n(n + 1)=.
+
+Both sides exclude the unchanged final Graph guard, compiler/package support,
+directory observations and byte lengths. These are source-operation counts,
+not a native wall-clock, heap or thousand-module capacity theorem. Custom/open
+paths retain their conservative checks and are not assigned this lower bound.
+
+[[file:../../../../../dev/proofs/quint/DependencyContinuation.qnt][DependencyContinuation]] owns finite ordering, deferred work and cleanup:
+nine expected outcomes include positive safety, an open getter substituted
+into the private walk, missing next-reader/Feature guards, dropped Schema
+support, missing observed-token qualification, premature publication, missing
+cleanup and an acceptance witness.
+It binds actual source support identities symbolically. Native callback purity,
+symbol projection completeness and SDK revision fidelity remain the audited
+Scheme correspondence, not consequences of a finite state-space count.
+
+The existing sixteen-module source-only control used the same init tests
+object and =.run=, enabled observation and unchanged limits:
+
+| Graph-ready work | Checked-subject baseline | Private dependency candidate |
+|------------------+--------------------------+------------------------------|
+| Physical file reads | 4,351 | 3,241 |
+| Full reader guard bodies | 52 | 37 |
+| Role parses | 64 | 64 |
+| Native body expansion/evaluation | 64 / 64 | 64 / 64 |
+
+The measured saving is 1,110 physical reads (about 25.5%). The larger total
+than the principal role-only saving includes compiler support no longer read
+at fifteen redundant boundaries. No reduction in actual declaration execution
+is hidden in this comparison. Scope and unselected Feature laziness, the same
+Graph identity, init-source change refusal and fixture release still passed.
+
+The first source probe had a parenthesis error and did not produce a native
+result; it is not counted as a measurement. The successful sixteen-module
+candidate predates the observed-token hardening. A second sixteen-module run
+with the hardened producer/probe returned the same 3,241 reads and passed its
+native source-change, same-Graph, laziness and cleanup controls.
+
+** 256-declaration result before observed-token hardening
+
+The existing =t/module-declaration-retention-test.ss= completed through the same
+init test projection and Ops =.run=, with observation enabled and original
+heap/progress/total limits. Its worker retained one complete selected Graph,
+left business scope and the unselected Feature cold, rejected the changed init
+source, and released its fixture. Both the worker and enclosing native test
+reported module/harness/final success markers and exited normally.
+
+| Graph-ready work at 256 | Preceding paired control | Dependency continuation candidate |
+|-------------------------+--------------------------+-------------------------------|
+| Physical file reads | 434,671 | 293,401 |
+| Full reader guard bodies | 772 | 517 |
+| Role parses | 1,024 | 1,024 |
+| Native body expansion/evaluation | 1,024 / 1,024 | 1,024 / 1,024 |
+
+The saving is 141,270 reads, about 32.5%. Of this, 130,560 is the principal
+four-role term =2 * 256 * 255=; 10,710 is the unchanged 42-source compiler
+support no longer read at 255 redundant boundaries. The result does not borrow
+reads saved by another stage. The preceding control's final SourceRef holder
+hardening changes native revision comparisons, not this file support/count.
+
+The collected Graph-held sample was 731,738,840 live bytes. This is NOT
+exclusive Reader memory, and the modest difference from the preceding
+734,272,136 sample does not establish a capacity solution. Remaining entry and
+return prefixes still have quadratic role work. A completed 256-declaration
+Graph is not a thousand-module native pass or a wall-clock speed claim.
+
+** Observed-token qualification and retained limits
+
+The 256-declaration test was repeated after introducing actual producer-token
+membership and the original Contract revision gate. It again completed the
+same init test projection with 293,401 Graph-ready physical reads, 517 full
+reader guard bodies and 1,024 role parses/body expansions/body evaluations.
+Same-Graph identity, source-change refusal, cold business scope/Feature and
+fixture release all passed. The collected Graph-held sample was 731,883,840
+live bytes; it remains an aggregate, not exclusive Reader retention.
+
+The only later production change adds an =object?= check before inspecting an
+invalid cached requires carrier. It adds no source operation on these valid
+benchmark objects. The final AWS/publication regressions use that final source;
+the exact 256 sample predates this defensive invalid-carrier check.
+
+The hardened native witness suite passed three independently useful controls:
+actual token membership and non-forcing cold-cache refusal; delayed source
+change rejection before the next declaration/Feature; and a cold dependency
+leaf installed after the shape predicate. The last uses native =.putslot!= in
+the real publication's scope-contract getter, not a replaced producer. A first
+fixture incorrectly supplied a nonliteral requires declaration and was rejected
+by the declaration macro; only the corrected literal declaration is a runtime
+result. Another initial fixture had an illegal local definition in =when= and
+did not run. Neither source-setup failure is counted as a successful control.
+
+Final =t/module-publication-test.ss= passed the normalized subject/owner,
+extended-Contract fallback, Context, custom locator, policy/SourceRef revision
+and source-change cases. =t/module-testing-isolation-test.ss= passed through the
+existing observed init selection of JsonSchema, Funflow and AWS: seven module
+success markers, two harness markers, two final success markers and natural
+exit zero, without failure/overflow markers. Actual Schema/Contract/Context
+changes, stale evidence rejection, prior accepted-value preservation and
+fixture cleanup remain in that same qualification.
+
+Native gates run through the existing =just test-file= entrypoints; no runner,
+module-author observation Profile or environment probe was added. One earlier
+supplemental scope test briefly overlapped a publication rerun; both exited,
+and the scope gate was repeated serially. No timing or capacity evidence is
+taken from that overlap. The physical-read comparisons above come from the
+separate declaration tests.
+
+The current native path retains the original two-GiB heap and Case/progress/
+termination budgets. No cache or SDK state was cleared, no result cache was
+introduced, and no upstream source was edited. Quint's final nine continuation
+outcomes and retained eleven prefix outcomes bind current sources; Lean's
+focused SourceClosureWork build passed. A prefix run begun before the final
+source edit correctly reported a stale source-bound receipt and was rerun.
+
+The final-source sixteen-module calibration again passed with 3,241 physical
+reads, unchanged cold-scope/source-refusal/cleanup assertions and natural module/
+harness/final success. The actual TERM cancellation test also passed on final
+source, including nested release order, owned Ops interruption, fixture removal
+and successful subsequent fixture use. These controls establish the supported
+TERM boundary; they do not promise Scheme cleanup under arbitrary SIGKILL.
+The final-source =t/module-scope-link-test.ss= was also run serially and passed
+its custom Context, source refusal, dependency/Contract and warm-record controls.

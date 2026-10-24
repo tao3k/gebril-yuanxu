@@ -1,0 +1,267 @@
+#+title: 32.40 Compiler Artifacts And Selected Runtime Closure Admission
+#+language: en
+#+startup: overview
+
+* Question and bounded result
+
+[[file:32.41-issuer-bound-native-loading.org][32.41]] follows this with parent-retained compiler-pipe issuance and a native
+load-site experiment. It also retains an actual original-SDK dispatch bypass;
+the follow-up does not claim production-wide closure.
+
+[[file:32.39-precompiled-callback-store-boundary.org][32.39]] showed that independently rebuilt callback bodies obey the primitive
+store boundary through an unlowered caller. It did not establish that the
+callback artifacts actually selected later are those compiled bodies.
+
+This isolation experiment observes the compiler's actual outputs, discovers
+runtime dependencies from emitted native loader code, and reuses Gerbil's
+native artifact resolver before callback loading. It introduces no user
+purity flag, callback annotation, replacement invocation API, or product
+Loader implementation. Checks happen at the test build/admission boundary;
+the subsequent native callback invocation is unchanged.
+
+The claim is relative to a trusted compiler invocation and its retained
+issuance data. This is not authenticated distribution of arbitrary binary
+packages. The checker does not learn new trusted binary digests at admission.
+
+* Native entries inspected
+
+The active SDK sources are =src/gerbil/runtime/loader.ss= and
+=src/gerbil/compiler/driver.ss= under the installed Gerbil SDK, not =.data=.
+
+1. Native =__find-library-module= tries directories in =load-path= order. Within
+   a directory it chooses the highest CONTIGUOUS existing =.oN= starting at
+   =.o1=, then falls back to =.scm=. A digest for yesterday's =.o1= does not
+   certify what the native loader selects today.
+2. Native =load-module= first checks its loaded-module table. If the selected
+   callback was loaded earlier, checking current files cannot authenticate the
+   already resident procedure. This experiment refuses that situation.
+3. The compiler emits a loader =.scm= with ordinary =load-module= calls and a
+   separate =~0= runtime unit. Its =.ssi= and =.ssxi.ss= describe phase bindings
+   and optimizer metadata. Native import forms, runtime units and metadata are
+   different facts; no one file stands in for all three.
+
+The existing store lowering now materializes its introduced policy dependency
+as a native loader edge, rather than relying on a test consumer importing the
+policy first:
+
+#+begin_src scheme
+(def original-loader apply-generate-loader)
+(set! apply-generate-loader
+  (lambda (stx)
+    `(begin ,(original-loader stx)
+       (load-module "core/t/qualification/mop-state/store-policy"))))
+#+end_src
+
+This is compiler-generated dependency code, not a function that wraps callback
+execution. It is installed only after compiling the trusted isolation policy
+and negative-control module.
+
+* Compiler issuance before admission
+
+[[file:../../../t/qualification/mop-state/compile-store-boundary.ss][compile-store-boundary.ss]] observes input bytes before each owned compile job,
+waits for completion and rejects a changed source. After the callback and
+consumer jobs, it records the actual selected callback closure's code facts:
+module identity, selected binary digest, emitted-code digest, metadata digests
+and ordered native dependency edges.
+
+The derived native setter binding set is also emitted by the existing lowering
+analysis. It is not a manually maintained list of safe/unsafe callbacks.
+
+[[file:../../../t/qualification/mop-state/seal-artifact-closure.ss][seal-artifact-closure.ss]] runs after the native Gambit kernel compilation. It
+rechecks observed compiler inputs and the compiler's closure record, then binds
+the generated kernel Scheme and binary as compiler-owned resource outputs.
+That resource edge is explicit because the trusted policy loads its generated
+kernel dynamically; it is not represented by a =load-module= import edge.
+
+These records are issued by the experiment's trusted build job. They remain
+ordinary local files, without signatures or a protected production registry.
+The security of the issuer and its retained expected data is a premise.
+
+* Discovery and actual checks
+
+[[file:../../../t/qualification/mop-state/artifact-closure.ss][artifact-closure.ss]] reads the selected generated loader code, collects literal
+native =load-module= edges, and follows them with a visited set. Resolution
+uses the actual SDK =__find-library-module=, not an imitation of its search
+algorithm. It does not enumerate module directories or execute callback slots.
+
+For each selected unit it captures the resolved path, binary bytes, emitted
+Scheme, available interface/optimizer metadata and outgoing edges. Observed
+hashes are calculated BEFORE constructing the returned POO value. A lazy
+=digest: (file-digest path)= slot would otherwise let an old snapshot read new
+bytes at comparison time; that is specifically avoided here.
+
+Capture first checks emitted stores in the bounded qualification namespace.
+Every audited primitive store must have the exact lowering shape, including
+the same lexical target in the immediately preceding checker call. References
+to unlowered native setter bindings derived by the compiler are also refused.
+The trusted policy and SDK are the experiment's base; this is not a general
+proof of their arbitrary writable capabilities.
+
+Capture then compares the observed code facts with the COMPILER-ISSUED facts.
+Copying old binary bytes underneath unchanged, apparently guarded emitted
+Scheme cannot create a newly trusted baseline:
+
+#+begin_src scheme
+(unless (equal? compiler-facts (code-facts observed-units))
+  (error "unissued or changed compiler artifact" root-entry))
+#+end_src
+
+The issuer's code facts use logical unit names and content hashes, permitting
+the fixture's byte-identical relocation. Once selected, the snapshot also binds
+actual resolved paths; later path shadowing or a newly selected =.o2= is a
+change even if the bytes happen to be identical.
+
+Each subsequent inspection independently rediscovers the closure and rechecks:
+
+- all recorded compiler inputs and generated resource outputs;
+- complete ordered unit facts, including paths, bytes, metadata and edges;
+- emitted-store coverage in the bounded namespace;
+- absence of prior native loading for the selected callback namespace.
+
+Missing artifacts or unparsable emitted code raise an error rather than falling
+back to an unverified callback. Unselected directories are not traversed.
+
+* Controls and native observations
+
+[[file:../../../t/artifact-closure-test.ss][artifact-closure-test.ss]] uses the existing native POO DirectoryFixture and
+test macros. It owns temporary library trees and restores the native load path.
+It does not mutate SDK or repository files. Kernel resource corruption is
+restricted to this run's owned temporary artifact, restored with dynamic-wind.
+
+The controls cover:
+
+| Change | Required result |
+|--------+-----------------|
+| Original compiler-issued selected closure | Admit before loading |
+| Replace selected runtime binary | =artifact-closure-changed= |
+| Add a higher native =.o2= | =artifact-closure-changed= |
+| Shadow a transitive policy dependency | =artifact-closure-changed= |
+| Mix old emitted callback body | =unmediated-primitive=; fresh capture refuses |
+| Mix old binary BEFORE capture | =unissued or changed compiler artifact= |
+| Add an old dependency edge | Rebuilt closure differs; refuse |
+| Omit an issued dependency row | Actual closure coverage differs; refuse |
+| Change =.ssxi.ss= metadata | Refuse |
+| Change compiler routing input | =stale-compiler-input= |
+| Change generated kernel resource | =stale-compiler-input=; restoration recovers |
+| Add an unselected broken module | Admit; do not discover or load it |
+| Load callback before checking | =callback-already-loaded= |
+
+There are thirteen native cases and twelve observation rows: the before-capture
+binary control is an exception assertion, not a fabricated successful capture.
+Each observation contains actual issued/observed fact strings, structural-check
+result, compiler-input currentness, native loaded status and the actual decision.
+The rows do not carry caller-written safe/unsafe annotations.
+
+After the artifact tests exit, the unchanged compiled callback suite runs in a
+fresh process. Its twelve cases retain six automatically discovered shared
+owners, native replay refusal, Parent/Hot=5432, Cold unprepared during replay
+and later Cold=5432, exception/frame restoration and unselected-slot laziness.
+The explicitly unprocessed old callback still retains its historical 5440
+counterexample outside a production artifact gate; its binary is not promoted
+to a safe selected callback.
+
+* Lean and Quint correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean][ArtifactClosure.lean]] defines the protocol over actual serialized facts:
+
+#+begin_src lean
+def admit (issued observed : String)
+    (storesValid inputsCurrent loaded : Bool) : Bool :=
+  issued == observed && storesValid && inputsCurrent && !loaded
+
+theorem changed_closure_refuses (issued observed : String)
+    (h : issued ≠ observed) (storesValid inputsCurrent loaded : Bool) :
+    admit issued observed storesValid inputsCurrent loaded = false := by
+  simp [admit, h]
+#+end_src
+
+Further compiled theorems refuse raw stores, stale inputs and prior loading,
+and preserve both domain requirements after artifact admission. These prove
+the decision protocol. They do not prove the native resolver, structural
+scanner, cryptographic collision resistance or trusted issuer authentic.
+
+[[file:../../../dev/proofs/lean/ArtifactClosureCheck.lean][ArtifactClosureCheck.lean]] independently consumes all twelve native observation
+rows, recomputes this decision, and checks positive/negative coverage. Flipping
+the first native acceptance field creates a deliberately invalid trace that
+must be rejected. This bridge is stronger than a model with no native data,
+but still assumes that the actual observation extractor reports its inputs.
+
+[[file:../../../dev/proofs/quint/ArtifactClosure.qnt][ArtifactClosure.qnt]] has ten scoped outcomes: positive selection and negative
+policies omitting dependencies, ignoring native resolution, trusting an old
+body, skipping compiler inputs, ignoring prior loading, dropping a domain
+requirement, corrupting Parent's cached value, forcing an unused branch and rejecting every
+configuration. Accepting an old body leads to Cold=5440 despite restoration.
+The original StoreLowering callee model remains a separate checked family.
+
+The scoped family passed all ten expected outcomes; its positive exploration
+exhausted 96 distinct states. The full Lean build passed 179 jobs and audited
+6096 declarations with standard Lean axioms only. The native twelve-row decoder
+passed; the deliberately changed acceptance row was refused. These results do
+not discharge the native extraction and compiler-authenticity premises above.
+
+The real Gitea/PostgreSQL SourceAdmissionContract consumer remains the separate
+control for both port requirements, child obligations, final child values after
+Parent caching, explicit mismatch, stale plans and changed sources. Artifact
+admission does not replace these domain checks or establish runtime authority.
+Its two current-Core cases passed again. Together with thirteen artifact and
+twelve callback cases, this run contains 27 passing native cases across three
+processes, including explicitly asserted negative controls. Each test entry
+reported MODULE-OK, HARNESS-OK and final OK with natural exit zero.
+
+* Production obligations and reflection
+
+1. Protect issuer identity and expected records. A hash file stored beside an
+   attacker-writable artifact is not an authenticated build certificate. Use
+   a protected issuer association or authenticated content-addressed output;
+   consumers must not bless arbitrary presented bytes by reissuing a baseline.
+2. Make check-to-load binding authoritative. These tests are serial. Native
+   loading in a later process can race a file replacement after this gate.
+   Immutable verified outputs, held file identity or an atomic loader handoff
+   are required; appending another digest check does not prove atomicity.
+3. Close all relevant phases and dynamic edges. The current walker covers
+   generated literal runtime imports and the known compiler-owned kernel job.
+   Hashing =.ssi=/=.ssxi.ss= is not complete compile-time import-graph analysis.
+   Dynamic =load=, eval, foreign code, callbacks from other namespaces and later
+   compiler stages remain outside this bounded certificate.
+4. Bind the full toolchain and options. Observed source files, active emitted
+   SDK code and generated outputs do not yet constitute a complete reproducible
+   compiler/toolchain/flag identity. Do not call this a reproducible build proof.
+5. Integrate native loading and resident-code identity. Refusing already-loaded
+   callbacks is conservative. Production reuse needs an authentic association
+   with the exact code already resident, not just current file paths.
+6. Retain the actual MOP ownership and primitive-store integration work from
+   32.38/32.39. This artifact protocol does not itself repair raw storage paths
+   outside the compiler phase, all mutable metadata families or concurrent writes.
+
+The improvement is concrete: native resolution, emitted dependency discovery
+and compiler issuance remove repeated user-maintained callback lists and avoid
+self-certifying a mixed old binary. The remaining trust and atomicity conditions
+are infrastructure responsibilities, not configuration fields for users.
+
+* Reproduction and records
+
+#+begin_src sh
+just --justfile core/Justfile test-mop-store-boundary /private/tmp/closure-check
+just --justfile core/Justfile check-artifact-closure /private/tmp/closure-check/artifact-observations.json
+just --justfile core/Justfile check-store-lowering /private/tmp/closure-check/observations.json
+#+end_src
+
+All Scheme tests use the existing heap-fenced entrypoints. Logs and emitted
+manifests remain outside Git under =/private/tmp/core-artifact-closure-20261018/=
+and =/private/tmp/core-artifact-*=. The successful full pipeline is
+=core-artifact-closure-04.log= with =candidate-04/=; it discovers 60 selected
+runtime units. The native/Lean correspondences are in
+=core-artifact-decoder-01.log=, =core-artifact-decoder-negative-01.log= and
+=core-artifact-store-decoder-01.log=. The full Lean result is
+=core-artifact-lean-02.log=; the scoped Quint result and receipt are
+=core-artifact-quint-03.log= and =core-artifact-quint-03.ss=. Its 351 bound
+source digests were rechecked after completion. The real consumer receipt is
+=core-artifact-domain-01.log=.
+
+Earlier failures remain distinguishable:
+the first snapshot used ambiguous lexical/slot names and raised CyclicSlot;
+reusing it after changing the verifier correctly refused stale compiler inputs;
+a compiler attempt could not resolve the test macro, and the next explicitly
+resolved its native exported phase before compilation. The initial Quint model
+failed native effect typechecking; a subsequent run rejected its source cut
+because bound files changed during verification. No failed receipt is a pass.

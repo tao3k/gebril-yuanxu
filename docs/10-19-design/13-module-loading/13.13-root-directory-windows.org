@@ -1,0 +1,147 @@
+#+title: 13.13 Root Init Directory Windows
+#+property: DOCUMENT_ID 13.13
+#+language: en
+#+property: STATUS implemented-bounded-windows-focused-qualification-no-runtime-loader
+
+* One repository selection
+
+The following declaration illustrates selecting Modules and Scenarios together.
+The maintained [[file:../../../init.ss][root init]] owns its actual selection. There is no
+separate scenarios/init.ss and no repeated Module selection in that directory.
+
+#+begin_src scheme
+(import :yuanxu/module-system/selection/init-syntax)
+(yuanxu!
+  :load-modules "./core/modules" mode: explicit rename: Core
+  (json-schema)
+  (funflow)
+  :load-modules "./modules" mode: auto
+  :load-modules "./scenarios" mode: explicit rename: scenarios
+  (null)
+  (aws-validation)
+  (aws))
+#+end_src
+
+Window names route namespace access; publication identities remain json-schema,
+aws and so on. Requirements cross windows by those identities, not by importing
+another init. Directory and collection admission, role inventory, selected Graph,
+build projection and test discovery retain their existing owners.
+
+#+begin_src scheme
+(import :clan/poo/object
+        (only-in "./init.ss" yuanxu.init.exports))
+(.all-slots (.get yuanxu.init.exports Modules))
+(.all-slots (.get yuanxu.init.exports Scenarios))
+(.call (.get yuanxu.init.exports Scenarios aws tests) .run)
+(.call (.get yuanxu.init.exports Scenarios aws tests integration) .run)
+#+end_src
+
+There is one directory namespace, not a separately populated Scenario tree.
+Its mounted branches return the existing module views: identity, lazy scope and
+independently lazy tests. Selecting tests does not link the business scope.
+Single-directory and multi-window declarations expose only their native
+source-qualified init export object. Mounts are slots on that object.
+
+* Macro ownership and expansion
+
+The public yuanxu! remains a Gerbil defsyntax using syntax-case. It validates
+the literal declaration through module-init-intent; this same pure parser is used
+by source admission. Window splitting uses match and delegates row/header parsing
+to the existing single-window parser. It does not evaluate author expressions.
+
+The macro derives its sole public name from the enclosing native module
+Context; package identity, prelude identity and window names remain distinct.
+See [[file:13.19-source-qualified-init-exports.org][13.19]] for the exact naming and consumer migration.
+
+#+begin_src scheme
+(defvalues (private-base private-namespace)
+  (yuanxu-init-build init-source init-declaration))
+(def private-value
+  (.+ private-base
+    (.o Modules: (.ref (private-namespace) 'Modules)
+        Scenarios: (.ref (private-namespace) 'Scenarios))))
+(defsyntax yuanxu.init.exports
+  (identifier-rules ()
+    (id (identifier? #'id) private-value)))
+(export yuanxu.init.exports)
+#+end_src
+
+Private identifiers are fresh in the real expansion. Window slots remain lazy
+on the same object; no public mount aliases are retained. Source guards remain
+owned by the selected namespace and the existing explicit build/test operations.
+A captured ordinary object remains a snapshot, not a live filesystem view.
+Native only-in and rename-in preserve the binding's lexical context.
+
+* Selection, conflicts and source bounds
+
+Each window requires its own explicit or auto mode. Explicit windows expose
+declared decisions only; an unrelated automatic window cannot authorize undeclared
+owners in an explicit window. Auto windows enumerate immediate directory metadata
+and locate a requested owner on demand. They do not recursively import every
+module or test suite. Automatic leaf discovery alone is not a guarantee that
+undeclared owners belong to the static selected test Graph.
+
+Case-folded duplicate mounts, duplicate normalized roots, reserved exported
+names, parent-traversing window roots and duplicate declared owner identities
+are refused. A requested undeclared identity found in multiple auto windows is
+ambiguous and refused before publication evaluation. Rename is not an identity
+override. An automatic branch also refuses a read whose identity is explicitly
+owned by another mount; it must not silently return that other mount's object.
+Explicit @ source bindings retain their existing admitted-source rules.
+Feature decisions and disable remain rows in the existing resolver; this change
+does not introduce a second dependency or feature parser.
+
+* Compiler demand versus operational demand
+
+Selecting AWS must not make init.build-spec prepare an external provider
+configuration. The same build Graph now has compiler-inputs/compiler-current for
+ordinary compilation, and lazy external-packages for operational requests.
+The latter retains package source observations and full admit-current checks.
+Reading source-inputs or the operational guard can demand those requests;
+reading compiler entries alone cannot. Failed package preparation refuses reuse.
+No provider/source check is replaced by a compiler-only guard at realization.
+
+The unchanged build entry consumes an ordinary standard-library spec:
+
+#+begin_src scheme
+(import (only-in :std/build-script defbuild-script)
+        (only-in "./init.ss" init.build-spec)
+        (only-in "./core-spec.ss" core-spec))
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+Compiler tools from an installed SDK remain guarded inputs, but are not compiled
+again as contribution-package targets. Locally owned Core compiler sources still
+participate in the Core build closure. This distinction is ownership filtering,
+not an exemption from source-currentness checks.
+
+* Evidence and remaining boundary
+
+[[file:../../../t/module-windows-test.ss][The bounded window control]] exercises real source directories, cross-window
+requirements, the actual macro expansion, one namespace/Graph identity,
+source-only build-spec generation, existing Ops test execution, cold business
+scopes, unselected invalid sources, auto ambiguity and source-change refusal.
+Its scope predicates and deliberate invalid-source probes are test fixtures;
+they do not certify AWS provider behavior or a general compilation benchmark.
+
+The seven focused directory, window, configuration-build, build-Graph, root
+testing, selected-package and real JsonSchema-publication controls passed through
+the heap-fenced =just test-file= entry with MODULE-OK,
+HARNESS-OK, final OK and natural exit zero. The original SDK and the repository's
+pinned POO dependency were used; no timeout or heap allowance was increased.
+The contribution build control initially expected installed SDK tools as build
+targets. Its revised assertions require both their absence from contribution
+targets and actual SDK source reads during compiler-current checking.
+
+The mounted-root AWS integration was also attempted. It hit the unchanged
+60-second Ops deadline after parent publication, Context denial and old-source
+refusal, while processing the second Schema version. The last completed package
+steps were its registration and realization. This is an incomplete integration
+gate, not a passing source/Schema transition control. Earlier passing integration
+receipts are historical and do not certify this mounted-root run. No unchanged
+retry or deadline increase is used as evidence of correction.
+
+The broader contextual-argument and installed-builtin proposals in the original
+directory-window design remain separate. This implementation adds no runtime
+Loader, public macro family, second Graph or compatibility forwarding namespace.
+Post-execution guards refuse acceptance; they do not roll back process effects.

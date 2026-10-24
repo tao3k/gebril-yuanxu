@@ -1,0 +1,247 @@
+#+title: 12.27.39 Closed Location Prefix and Actual Read Reduction
+#+property: DOCUMENT_ID 12.27.39
+#+language: en
+
+* Runtime ownership, beyond the cost recurrence
+
+The preceding [[file:25-outer-stop-and-prefix-guard-cost.org][outer-stop and prefix-cost analysis]] identified four accumulated-prefix
+source barriers per declaration. This change implements ONE closed operation
+on that real call chain. It does not infer purity from a Module name, a CLOS
+style or a source filename, and does not remove the complete Graph guard.
+
+The native directory path previously performed authoring admission during
+location and repeated it during publication preparation. The paired path now
+assigns these responsibilities once:
+
+- Directory location interprets the already parsed inert init, directory
+  snapshots, namespace mounts and literal source bindings; it constructs a
+  SourceRef and does not invoke style/Contract/CLOS authoring callbacks.
+- Publication preparation applies the actual style policy, role rules and
+  authoring Contract before native declaration expansion. That is an opaque
+  boundary and runs OUTSIDE the shared source observation window.
+- A custom source Context or publication reader retains the independent,
+  conservative path, including directory-side source admission.
+
+The internal directory flag =publication-prepares-source?= is set only by
+the native path that constructs BOTH the directory Context and the standard
+publication reader. It is not a contributor-facing opt-out of admission.
+The existing .def interface declaration and init test APIs are unchanged.
+The implementation owners are [[file:../../../../../module-system/source/directory.ss][directory source location]],
+[[file:../../../../../module-system/source/reader.ss][publication reading]], [[file:../../../../../module-system/source/link.ss][Graph linking]], and
+[[file:../../../../../module-system/source/admission.ss][native metadata support]].
+
+* Complete support of the closed prefix
+
+The paired prefix uses the SAME native directory Context and reader as the
+selected Graph. Its support is not a second module namespace or Graph:
+
+1. Original init bytes, negative source lookups, directory names/kinds and
+   package metadata remain owned by the directory's existing observations.
+2. The parser's intent, windows, decision rows and nested selection objects,
+   including their transitive native ancestors, carry FIRST revision support.
+3. The native Context and its ancestors must still have their captured
+   revisions and no MOP protocol. An overridden locator or currentness method
+   selects the ordinary guarded path BEFORE invoking the contributed callback.
+4. SourceRef construction must still use the maintained object-family
+   prototype. Its initial revision is captured at definition, before export.
+   Editing that prototype, including edit-and-restore, selects the ordinary path.
+5. The reader's complete accumulated source/tool support is still checked.
+   Location adds directory observations, not reader guards, code imports or
+   evaluated declaration results.
+6. Already located SourceRefs are actual operation inputs too. Their instances
+   and ancestors carry first-revision support in the EXISTING source-index
+   payload. Both a cached lookup and directory currentness check it before a
+   descriptor getter can execute. Edit-and-restore refuses the old source.
+
+Eligibility for this closed operation now invokes the ORIGINAL directory
+currentness function, not the Context's combined reader/directory guard.
+That is the actual dependency projection: location depends on init/directory
+metadata; the following opaque publication preparation depends on complete
+reader support. The two guards have different domains. Valid metadata never
+authorizes use of an earlier publication's source bytes.
+
+=module-source-object-policy= is a read-only native identity/revision closure.
+It deduplicates actual ancestors and releases the temporary capture index.
+Each invocation compares current revisions; it stores no successful check or
+source bytes. Mutation followed by restoration does not revive the old witness.
+The source-index payload is a compact private value/currentness pair, not
+another cache or namespace tree. Revision-only source identity support can
+preserve an existing opaque protocol on the ordinary path; it does not certify
+that protocol as pure. This is not an arbitrary Scheme mutation sandbox: raw
+alteration of private list spines, mutable string payloads or SDK storage is
+outside the supported native object protocol.
+
+* The exact observation window
+
+The private paired reader continuation performs:
+
+#+begin_src scheme
+;; reader.ss: actual private entry window; source-prefix is supplied only by
+;; the paired Core linker (eligibility followed by inert directory location).
+(call-with-module-source-read-cache
+  (lambda ()
+    (let (source (source-prefix))
+      (parameterize ((current-module-source-phase 'declaration-before))
+        (current!))
+      source)))
+;; Window ended. No approved bytes/result is carried into these operations:
+;; prepare publication -> native import/expand/eval -> declaration-after guard
+;; -> actual public Contract admission -> publication-admitted guard.
+#+end_src
+
+This reuses the EXISTING call-local source observation mechanism. The location
+guard has the eligibility attribution; it no longer invokes a reader-wide
+guard. Reader start/end events report the remaining full reader checks rather
+than pretending a metadata projection performed one. Unknown Contexts,
+custom readers, changed Contexts and changed constructor policy do not enter
+that window. Native expansion, initializers and Contract callbacks never use
+its observations. No cache is added, cleared or reused across those effects.
+The consumed private prefix callback is also released before deferred Build
+resolvers can capture the publication frame. This releases a completed caller
+continuation, not an SDK context, import binding or evaluation cache.
+
+* Native controls and measured reads
+
+The same real declaration fixture is selected by init. Its Module tests .run
+still expands all role bodies and never forces the poisoned business scopes
+or unselected Feature payload. Both comparisons use the same locked POO
+revision, source-only loading, existing heap/growth budgets and observation.
+
+| Graph-ready observation | Sixteen before | Sixteen paired | 256 before | 256 paired |
+|-------------------------+----------------+----------------+------------+------------|
+| Physical source reads | 5548 | 4351 | 576748 | 434671 |
+| Executed reader guard bodies | 68 | 52 | 1028 | 772 |
+| Reader guard start/end events | 68 | 52 | 1028 | 772 |
+| Role parsing passes | 128 | 64 | 2048 | 1024 |
+| Native role bodies expanded/evaluated | 64 | 64 | 1024 | 1024 |
+| Graph-held collected live bytes | 509068944 | 508698704 | 837288736 | 734272136 |
+
+Physical reads fell by 1197 (21.6%) and 142077 (24.6%), respectively. The 256
+collected-byte difference is 103016600 bytes (12.3%). These are whole-process
+live measurements with the SAME Graph retained, not exclusive ownership sizes
+or matched wall-clock speed claims. Compiler/import/GC costs remain separate.
+
+The new native publication controls establish:
+
+- one actual authoring admission per paired declaration;
+- nested selection edits and native ancestor edits refuse old location support;
+- an already located SourceRef edit-and-restore refuses old directory evidence;
+- an edited locator that changes an earlier observed source is rejected by the
+  ordinary reader entry guard BEFORE another declaration initializes;
+- source constructor prototype edit-and-restore disables the closed prefix.
+- a closed locator with stale earlier source bytes still fails the FULL reader
+  entry check before a second declaration initializes. The negative does not
+  confuse a two-value return with an exception.
+
+The locator control first reads one real publication without constructing the
+whole Graph. Warming a scope would resolve both selected declarations and
+invalidate the intended injection boundary. The initial version of that test
+did exactly that and failed; it was corrected to exercise the actual boundary,
+not given a weaker expected result.
+
+* Quint and Lean correspondence
+
+The scoped =SourcePrefix= family explores normal closed location, an overridden
+open locator, opaque declaration effects, Contract admission effects and
+termination. Seven matched controls must expose reuse across an open locator,
+mistaking metadata scope for full source scope, reuse after an effect, omitted
+support, repeated closed-prefix scanning, missing cleanup and genuine successful
+acceptance. Eight expected outcomes
+pass through the existing checker. The native source files, tests and Lean
+source are bound in its receipt.
+
+Lean's existing SourceClosureWork module proves:
+
+- =location_then_reader_current=: complete location-demand coverage by metadata
+  support and a SEPARATE full reader entry check; metadata evidence cannot
+  substitute for the latter;
+- =closed_prefix_preserves_entry=: unchanged complete support preserves a
+  preceding check (a general lemma, not permission to reuse metadata as full
+  reader evidence);
+- =changed_prefix_cannot_reuse=: a changed covered requirement invalidates
+  that reuse;
+- =paired_guard_reads=: the principal four-role recurrence is now
+  =6N^2 + 2N=, versus =8N^2=;
+- =paired_prefix_never_more_reads=: the paired recurrence never exceeds
+  the original one for any natural N.
+
+Quint explores finite mutation/interleaving controls. Lean quantifies over
+arbitrary supported identities and N. Neither proves the native effect audit,
+the operating system's scheduling, GC capacity or external-writer atomicity.
+The closed-prefix audit, native revision fidelity and the existing stable
+pure-window observation contract are explicit correspondence premises.
+
+* Remaining boundary
+
+The principal quadratic term is REDUCED, not eliminated. Declaration evaluation
+and actual Contract admission remain opaque boundaries with complete checks.
+A later optimization must establish their real support or a genuinely closed
+continuation; a cached field, module label or unchanged pathname alone cannot
+certify the callback that computed it.
+
+The sixteen/256 native successes are not a thousand-module capacity claim.
+The prior 684 timeout remains retained. A separate thousand-declaration run
+used the unchanged total budget and heap fence and again exited 124. It
+completed 728 publications, not 1000. At publication 684 it recorded 2911943
+physical reads, compared with 3877064 at that same boundary in the previous
+run: 965121 fewer reads, about 24.9%. Different timing/resource conditions
+prevent a matched wall-clock speed claim.
+
+The last completed publication reported 575541 worker milliseconds, 433943
+CPU milliseconds and 3291443 reads. The next declaration reached its
+declaration-after guard with 3297381 reads before the outer budget fired.
+No completed Graph or final collected heap sample was produced. The remaining
+quadratic barriers and capacity gate are OPEN.
+
+Unlike the retained preceding timeout, TERM reached the fixture owner as
+=Ops execution terminated=. The generated thousand-module fixture root was
+absent after exit, without manual deletion; no owned child process remained.
+This qualifies that real outer-stop resource boundary, not universal cleanup
+of arbitrary native code after SIGKILL.
+
+The larger receipt was taken before adding the explicit SourceRef-constructor
+fallback check and naming the narrower metadata-only guard directly. Their
+default closed path has the same measured physical reads in the final sixteen
+check; native controls and that check are separate evidence. The
+larger run is not relabeled as an exact-final-source thousand-module pass.
+
+The final 256 projection check independently retained the same 434671 reads,
+772 full reader checks, 1024 expansions/evaluations and 734272136 collected
+live bytes. The remaining metadata revision comparisons and directory listings
+are not bounded by the four-role byte-read recurrence; it is not a theorem of
+linear total startup or total filesystem work.
+The subsequent source-index instance revision support was qualified by the
+publication mutation controls and a fresh sixteen-module check with the same
+4351 reads. The 256 collected-byte sample precedes that final holder addition;
+it is not an exclusive or exact-final-source memory attribution.
+
+The final real JsonSchema/Funflow/AWS integration also passed through the
+unchanged init tests object .run: seven MODULE-OK, two HARNESS-OK and two final
+OK markers, natural exit zero, and no error/heap/stack-overflow markers. It
+retains one Graph, cold unselected branches, actual Schema/Contract/Context
+change rejection, stale-evidence rejection, accepted-value preservation and
+fixture cleanup. The framework failure injection cases remain negative
+controls; no assertion or timeout was weakened.
+The final native TERM gate also passed with natural exit zero: nested fixture
+release, directory removal and subsequent fixture reuse remain intact. These
+focused gates use the existing Just heap-fenced entrypoints and Ops execution;
+there is no added runner, upstream edit, full build, cache clearing or push.
+
+* Reflection: what the next optimization must establish
+
+The source of the next repeated full scan is concrete: reader
+=declaration-after= precedes =admit-module-publication!=, whose
+=ModulePublicationContract= shape predicate forces candidate metadata and
+inspects scope Contract descriptors. The next =publication-admitted= check
+follows that admission. A maintained predicate does not make all candidate
+getters or inherited MOP hooks pure. Merely merging their windows would carry
+old source observations across possible contributor code.
+
+The useful next integration point is existing public checked-value/Contract
+support: prove that the admission continuation consumes already checked,
+stable metadata and cannot invoke a new getter, normalizer or Context callback.
+Then a closed continuation can avoid the duplicate traversal. Otherwise it
+keeps the independent full guard. That requires actual constructor/receiver
+support and mutation controls, not a new kind flag, DSL, presumed-pure lambda,
+successful-result cache or deletion of the failure gate. No such second
+optimization is claimed as implemented here.

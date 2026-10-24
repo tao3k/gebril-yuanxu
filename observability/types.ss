@@ -10,358 +10,358 @@
 (import :gerbil/core
         (only-in :clan/poo/object .cc .mix .o .ref .slot? object? object<-alist)
         (only-in :clan/poo/mop define-type element? validate)
-        (only-in "../types.ss"
-                 PooFlowContract.
-                 PooFlowNativeObjectContract.
-                 poo-flow-classification-evidence
-                 poo-flow-contract-admit))
+        (only-in :yuanxu/object-types/contracts
+                 YuanxuContract.
+                 YuanxuObjectContract.
+                 yuanxu-classification-evidence
+                 yuanxu-contract-admit))
 
-(export PooFlowObservabilityDiagnosticContract
-        PooFlowObservationIdentityContract
-        PooFlowObservationProvenanceContract
-        PooFlowObservationContextContract
-        PooFlowObservationFailureContract
-        PooFlowObservationFactsContract
-        PooFlowAdmissionObservationFactsContract
-        PooFlowObservationContract
-        PooFlowAdmissionObservationContract
-        PooFlowObservationSummaryContract
-        PooFlowAuthoringObservationContract
-        PooFlowDebugCallPolicyContract
-        PooFlowDebugCallReceiptContract
-        PooFlowDebugSlotPolicyContract
-        PooFlowDebugSlotReceiptContract
-        PooFlowDebugMemoryPolicyContract
-        PooFlowDebugMemorySampleContract
-        PooFlowDebugMemoryReceiptContract
-        PooFlowDebugDurationReceiptContract
-        PooFlowObservabilityReceiptContract
-        poo-flow-observability-alist?
-        poo-flow-observability-list-of?
-        poo-flow-observability-source-ref?
-        poo-flow-observability-severity?
-        poo-flow-observability-boundary-ref?
-        poo-flow-observability-validator-ref?
-        poo-flow-observability-graph-node-ref?
-        poo-flow-observability-graph-edge-ref?
-        poo-flow-observability-reason?
-        poo-flow-observability-message?
-        poo-flow-observability-repair-target?
-        poo-flow-observability-graph-shape?
-        poo-flow-observability-repair-shape?
-        poo-flow-observability-readiness-shape?
-        poo-flow-observability-diagnostic-contract-evidence
-        poo-flow-observability-receipt-contract-evidence
-        poo-flow-observability-diagnostic-contract?
-        poo-flow-observability-receipt-contract?
-        poo-flow-observability-require-diagnostic!
-        poo-flow-observability-require-receipt!)
+(export YuanxuObservabilityDiagnosticContract
+        YuanxuObservationIdentityContract
+        YuanxuObservationProvenanceContract
+        YuanxuObservationContextContract
+        YuanxuObservationFailureContract
+        YuanxuObservationFactsContract
+        YuanxuAdmissionObservationFactsContract
+        YuanxuObservationContract
+        YuanxuAdmissionObservationContract
+        YuanxuObservationSummaryContract
+        YuanxuAuthoringObservationContract
+        YuanxuDebugCallPolicyContract
+        YuanxuDebugCallReceiptContract
+        YuanxuDebugSlotPolicyContract
+        YuanxuDebugSlotReceiptContract
+        YuanxuDebugMemoryPolicyContract
+        YuanxuDebugMemorySampleContract
+        YuanxuDebugMemoryReceiptContract
+        YuanxuDebugDurationReceiptContract
+        YuanxuObservabilityReceiptContract
+        yuanxu-observability-alist?
+        yuanxu-observability-list-of?
+        yuanxu-observability-source-ref?
+        yuanxu-observability-severity?
+        yuanxu-observability-boundary-ref?
+        yuanxu-observability-validator-ref?
+        yuanxu-observability-graph-node-ref?
+        yuanxu-observability-graph-edge-ref?
+        yuanxu-observability-reason?
+        yuanxu-observability-message?
+        yuanxu-observability-repair-target?
+        yuanxu-observability-graph-shape?
+        yuanxu-observability-repair-shape?
+        yuanxu-observability-readiness-shape?
+        yuanxu-observability-diagnostic-contract-evidence
+        yuanxu-observability-receipt-contract-evidence
+        yuanxu-observability-diagnostic-contract?
+        yuanxu-observability-receipt-contract?
+        yuanxu-observability-require-diagnostic!
+        yuanxu-observability-require-receipt!)
 
-(def (poo-flow-observability-alist? value)
+(def (yuanxu-observability-alist? value)
   (and (list? value) (andmap pair? value)))
 
-(def (poo-flow-observability-list-of? predicate values)
+(def (yuanxu-observability-list-of? predicate values)
   (and (list? values) (andmap predicate values)))
 
-(def (poo-flow-observability-source-ref? value)
-  (or (symbol? value) (string? value) (poo-flow-observability-alist? value)))
+(def (yuanxu-observability-source-ref? value)
+  (or (symbol? value) (string? value) (yuanxu-observability-alist? value)))
 
-(def (poo-flow-observability-severity? value)
+(def (yuanxu-observability-severity? value)
   (and (symbol? value)
        (if (member value '(debug info warning error fatal)) #t #f)))
 
-(def (poo-flow-observability-boundary-ref? value) (symbol? value))
-(def (poo-flow-observability-validator-ref? value) (symbol? value))
+(def (yuanxu-observability-boundary-ref? value) (symbol? value))
+(def (yuanxu-observability-validator-ref? value) (symbol? value))
 
-(def (poo-flow-observability-graph-node-ref? value)
+(def (yuanxu-observability-graph-node-ref? value)
   (or (not value) (symbol? value) (string? value)
-      (poo-flow-observability-alist? value)))
+      (yuanxu-observability-alist? value)))
 
-(def (poo-flow-observability-graph-edge-ref? value)
+(def (yuanxu-observability-graph-edge-ref? value)
   (or (not value) (symbol? value) (string? value) (pair? value)
-      (poo-flow-observability-alist? value)))
+      (yuanxu-observability-alist? value)))
 
-(def (poo-flow-observability-reason? value) (symbol? value))
-(def (poo-flow-observability-message? value) (string? value))
+(def (yuanxu-observability-reason? value) (symbol? value))
+(def (yuanxu-observability-message? value) (string? value))
 
-(def (poo-flow-observability-repair-target? value)
+(def (yuanxu-observability-repair-target? value)
   (or (not value) (symbol? value) (string? value)
-      (poo-flow-observability-alist? value)))
+      (yuanxu-observability-alist? value)))
 
-(def (poo-flow-observability-graph-shape? value)
-  (poo-flow-observability-alist? value))
+(def (yuanxu-observability-graph-shape? value)
+  (yuanxu-observability-alist? value))
 
-(def (poo-flow-observability-repair-shape? value)
-  (and (poo-flow-observability-alist? value)
+(def (yuanxu-observability-repair-shape? value)
+  (and (yuanxu-observability-alist? value)
        (assq 'target-layer value) (assq 'repair-target value) #t))
 
-(def (poo-flow-observability-readiness-shape? value)
-  (and (poo-flow-observability-alist? value)
+(def (yuanxu-observability-readiness-shape? value)
+  (and (yuanxu-observability-alist? value)
        (assq 'state value) (assq 'valid? value) #t))
 
-(def (poo-flow-observability-object-slots? candidate slots)
+(def (yuanxu-observability-object-slots? candidate slots)
   (and (object? candidate)
        (andmap (lambda (slot) (.slot? candidate slot)) slots)))
 
-(def (poo-flow-observability-obligation-failure contract-identity-value
+(def (yuanxu-observability-obligation-failure contract-identity-value
                                                   slot-value expected-value)
-  (.o kind: 'poo-flow.contract.obligation-failure
+  (.o kind: 'yuanxu.contract.obligation-failure
       contract-identity: contract-identity-value
       slot: slot-value
       expected: expected-value))
 
-(def (poo-flow-observability-check-obligation candidate contract-identity
+(def (yuanxu-observability-check-obligation candidate contract-identity
                                                 slot predicate expected)
   (if (predicate (.ref candidate slot))
     '()
-    (list (poo-flow-observability-obligation-failure
+    (list (yuanxu-observability-obligation-failure
            contract-identity slot expected))))
 
-(def +poo-flow-observability-diagnostic-slots+
+(def +yuanxu-observability-diagnostic-slots+
   '(family severity boundary validator node edge reason message repair-target artifacts))
 
-(def +poo-flow-observability-receipt-slots+
+(def +yuanxu-observability-receipt-slots+
   '(family schema source graph diagnostics repair readiness artifacts))
 
-(def (poo-flow-observability-classification identity slots candidate context)
-  (let (accepted? (poo-flow-observability-object-slots? candidate slots))
-    (poo-flow-classification-evidence
+(def (yuanxu-observability-classification identity slots candidate context)
+  (let (accepted? (yuanxu-observability-object-slots? candidate slots))
+    (yuanxu-classification-evidence
      identity candidate accepted?
      (if accepted? '()
-         (list (poo-flow-observability-obligation-failure
+         (list (yuanxu-observability-obligation-failure
                 identity 'object-shape 'POOObject)))
      context)))
 
-(def (poo-flow-observability-diagnostic-classify candidate context)
-  (poo-flow-observability-classification
+(def (yuanxu-observability-diagnostic-classify candidate context)
+  (yuanxu-observability-classification
    'observability/diagnostic
-   +poo-flow-observability-diagnostic-slots+
+   +yuanxu-observability-diagnostic-slots+
    candidate context))
 
-(def (poo-flow-observability-diagnostic-obligations candidate _context)
+(def (yuanxu-observability-diagnostic-obligations candidate _context)
   (append
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
     'family (lambda (value) (eq? value 'observability/diagnostic)) 'observability/diagnostic)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'severity poo-flow-observability-severity? 'ObservabilitySeverity)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'boundary poo-flow-observability-boundary-ref? 'Symbol)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'validator poo-flow-observability-validator-ref? 'Symbol)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'node poo-flow-observability-graph-node-ref? 'GraphNodeRef)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'edge poo-flow-observability-graph-edge-ref? 'GraphEdgeRef)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'reason poo-flow-observability-reason? 'Symbol)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'message poo-flow-observability-message? 'String)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'repair-target poo-flow-observability-repair-target? 'RepairTarget)
-   (poo-flow-observability-check-obligation candidate 'observability/diagnostic
-    'artifacts poo-flow-observability-alist? 'Alist)))
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'severity yuanxu-observability-severity? 'ObservabilitySeverity)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'boundary yuanxu-observability-boundary-ref? 'Symbol)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'validator yuanxu-observability-validator-ref? 'Symbol)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'node yuanxu-observability-graph-node-ref? 'GraphNodeRef)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'edge yuanxu-observability-graph-edge-ref? 'GraphEdgeRef)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'reason yuanxu-observability-reason? 'Symbol)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'message yuanxu-observability-message? 'String)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'repair-target yuanxu-observability-repair-target? 'RepairTarget)
+   (yuanxu-observability-check-obligation candidate 'observability/diagnostic
+    'artifacts yuanxu-observability-alist? 'Alist)))
 
 ;;; Diagnostic contract: classification fixes the kind while obligations validate every diagnostic field.
-(define-type (PooFlowObservabilityDiagnosticContract @ PooFlowContract.)
+(define-type (YuanxuObservabilityDiagnosticContract @ YuanxuContract.)
   identity: 'observability/diagnostic
-  .classify: poo-flow-observability-diagnostic-classify
-  .obligations: poo-flow-observability-diagnostic-obligations)
+  .classify: yuanxu-observability-diagnostic-classify
+  .obligations: yuanxu-observability-diagnostic-obligations)
 
-(def (poo-flow-observability-diagnostic-contract? candidate)
-  (element? PooFlowObservabilityDiagnosticContract candidate))
+(def (yuanxu-observability-diagnostic-contract? candidate)
+  (element? YuanxuObservabilityDiagnosticContract candidate))
 
-(def (poo-flow-observability-diagnostic-contract-evidence candidate)
-  (poo-flow-contract-admit
-   PooFlowObservabilityDiagnosticContract candidate 'observability))
+(def (yuanxu-observability-diagnostic-contract-evidence candidate)
+  (yuanxu-contract-admit
+   YuanxuObservabilityDiagnosticContract candidate 'observability))
 
-(def (poo-flow-observability-diagnostic-list? value)
-  (poo-flow-observability-list-of?
-   poo-flow-observability-diagnostic-contract? value))
+(def (yuanxu-observability-diagnostic-list? value)
+  (yuanxu-observability-list-of?
+   yuanxu-observability-diagnostic-contract? value))
 
-(def (poo-flow-observability-receipt-classify candidate context)
-  (poo-flow-observability-classification
+(def (yuanxu-observability-receipt-classify candidate context)
+  (yuanxu-observability-classification
    'observability/receipt
-   +poo-flow-observability-receipt-slots+
+   +yuanxu-observability-receipt-slots+
    candidate context))
 
-(def (poo-flow-observability-receipt-obligations candidate _context)
+(def (yuanxu-observability-receipt-obligations candidate _context)
   (append
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
     'family (lambda (value) (eq? value 'observability/receipt)) 'observability/receipt)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
     'schema string? 'String)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'source poo-flow-observability-source-ref? 'SourceRef)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'graph poo-flow-observability-graph-shape? 'GraphProjection)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'diagnostics poo-flow-observability-diagnostic-list? 'DiagnosticList)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'repair poo-flow-observability-repair-shape? 'RepairProjection)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'readiness poo-flow-observability-readiness-shape? 'ReadinessProjection)
-   (poo-flow-observability-check-obligation candidate 'observability/receipt
-    'artifacts poo-flow-observability-alist? 'Alist)))
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'source yuanxu-observability-source-ref? 'SourceRef)
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'graph yuanxu-observability-graph-shape? 'GraphProjection)
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'diagnostics yuanxu-observability-diagnostic-list? 'DiagnosticList)
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'repair yuanxu-observability-repair-shape? 'RepairProjection)
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'readiness yuanxu-observability-readiness-shape? 'ReadinessProjection)
+   (yuanxu-observability-check-obligation candidate 'observability/receipt
+    'artifacts yuanxu-observability-alist? 'Alist)))
 
 ;;; Receipt contract: admission requires graph, diagnostic, repair, readiness, and artifact projections.
-(define-type (PooFlowObservabilityReceiptContract @ PooFlowContract.)
+(define-type (YuanxuObservabilityReceiptContract @ YuanxuContract.)
   identity: 'observability/receipt
-  .classify: poo-flow-observability-receipt-classify
-  .obligations: poo-flow-observability-receipt-obligations)
+  .classify: yuanxu-observability-receipt-classify
+  .obligations: yuanxu-observability-receipt-obligations)
 
-(def (poo-flow-observability-receipt-contract? candidate)
-  (element? PooFlowObservabilityReceiptContract candidate))
+(def (yuanxu-observability-receipt-contract? candidate)
+  (element? YuanxuObservabilityReceiptContract candidate))
 
-(def (poo-flow-observability-receipt-contract-evidence candidate)
-  (poo-flow-contract-admit
-   PooFlowObservabilityReceiptContract candidate 'observability))
+(def (yuanxu-observability-receipt-contract-evidence candidate)
+  (yuanxu-contract-admit
+   YuanxuObservabilityReceiptContract candidate 'observability))
 
-(def (poo-flow-observability-require-diagnostic! candidate)
-  (validate PooFlowObservabilityDiagnosticContract candidate))
+(def (yuanxu-observability-require-diagnostic! candidate)
+  (validate YuanxuObservabilityDiagnosticContract candidate))
 
-(def (poo-flow-observability-require-receipt! candidate)
-  (validate PooFlowObservabilityReceiptContract candidate))
+(def (yuanxu-observability-require-receipt! candidate)
+  (validate YuanxuObservabilityReceiptContract candidate))
 
 ;;; Framework foundation: explicit native prototypes, independent of legacy
 ;;; feedback receipts and strict module-system presentation structs.
-(def (poo-flow-observation-scalar-classify identity predicate candidate context)
+(def (yuanxu-observation-scalar-classify identity predicate candidate context)
   (let (accepted? (predicate candidate))
-    (poo-flow-classification-evidence identity candidate accepted?
+    (yuanxu-classification-evidence identity candidate accepted?
       (if accepted? '() '(invalid-observation-field)) context)))
 
 ;;; Invariant: symbolic observation fields remain closed over Scheme symbols.
-(define-type (ObservationSymbol @ PooFlowContract.)
+(define-type (ObservationSymbol @ YuanxuContract.)
   identity: 'observation/symbol
-  .classify: (cut poo-flow-observation-scalar-classify
+  .classify: (cut yuanxu-observation-scalar-classify
                   'observation/symbol symbol? <> <>))
 
 ;;; Invariant: boolean observation fields reject truthy non-boolean values.
-(define-type (ObservationBoolean @ PooFlowContract.)
+(define-type (ObservationBoolean @ YuanxuContract.)
   identity: 'observation/boolean
-  .classify: (cut poo-flow-observation-scalar-classify
+  .classify: (cut yuanxu-observation-scalar-classify
                   'observation/boolean boolean? <> <>))
 
-(def (poo-flow-observation-natural? value)
+(def (yuanxu-observation-natural? value)
   (and (exact-integer? value) (>= value 0)))
 
 ;;; Invariant: counts and budgets are exact nonnegative integers.
-(define-type (ObservationNatural @ PooFlowContract.)
+(define-type (ObservationNatural @ YuanxuContract.)
   identity: 'observation/natural
-  .classify: (cut poo-flow-observation-scalar-classify
-                  'observation/natural poo-flow-observation-natural? <> <>))
+  .classify: (cut yuanxu-observation-scalar-classify
+                  'observation/natural yuanxu-observation-natural? <> <>))
 
 ;;; These owner-local constructors keep dependency primitives out of domain
 ;;; declarations while returning ordinary native POO values.
 ;; : (-> Unit POOObject)
-(def (poo-flow-observation-empty-prototype) (.o))
+(def (yuanxu-observation-empty-prototype) (.o))
 ;; : (-> Alist POOObject)
-(def (poo-flow-observation-contract-shape rows) (object<-alist rows))
+(def (yuanxu-observation-contract-shape rows) (object<-alist rows))
 ;; : (-> POOObject Alist POOObject)
-(def (poo-flow-observation-contract-shape/extends base rows)
+(def (yuanxu-observation-contract-shape/extends base rows)
   (.mix base defaults: rows))
-;; : (-> PooFlowContract POOObject)
-(def (poo-flow-observation-contract-responsibilities contract)
+;; : (-> YuanxuContract POOObject)
+(def (yuanxu-observation-contract-responsibilities contract)
   (.ref contract 'responsibilities))
 
 ;;; Boundary: observable identities bind namespace, name, and revision together.
-(define-type (PooFlowObservationIdentityContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationIdentityContract @ YuanxuObjectContract.)
   identity: 'observation/identity
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((namespace . ,ObservationSymbol)
      (name . ,ObservationSymbol)
      (revision . ,ObservationSymbol))))
 
-(def (poo-flow-observation-identities? value)
-  (poo-flow-observability-list-of?
-   (cut element? PooFlowObservationIdentityContract <>) value))
+(def (yuanxu-observation-identities? value)
+  (yuanxu-observability-list-of?
+   (cut element? YuanxuObservationIdentityContract <>) value))
 
 ;;; Invariant: causal identity lists contain only admitted native identity objects.
-(define-type (ObservationIdentities @ PooFlowContract.)
+(define-type (ObservationIdentities @ YuanxuContract.)
   identity: 'observation/identities
-  .classify: (cut poo-flow-observation-scalar-classify
-                  'observation/identities poo-flow-observation-identities? <> <>))
+  .classify: (cut yuanxu-observation-scalar-classify
+                  'observation/identities yuanxu-observation-identities? <> <>))
 
 ;;; Boundary: provenance records producer, provider, and phase without asserting authority.
-(define-type (PooFlowObservationProvenanceContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationProvenanceContract @ YuanxuObjectContract.)
   identity: 'observation/provenance
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
-   `((producer . ,PooFlowObservationIdentityContract)
-     (provider . ,PooFlowObservationIdentityContract)
+  (yuanxu-observation-contract-shape
+   `((producer . ,YuanxuObservationIdentityContract)
+     (provider . ,YuanxuObservationIdentityContract)
      (phase . ,ObservationSymbol))))
 
 ;;; Invariant: context keeps identity lineage and its bounded disclosure budget in one value.
-(define-type (PooFlowObservationContextContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationContextContract @ YuanxuObjectContract.)
   identity: 'observation/context
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
-   `((identity . ,PooFlowObservationIdentityContract)
-     (source . ,PooFlowObservationIdentityContract)
-     (generation . ,PooFlowObservationIdentityContract)
+  (yuanxu-observation-contract-shape
+   `((identity . ,YuanxuObservationIdentityContract)
+     (source . ,YuanxuObservationIdentityContract)
+     (generation . ,YuanxuObservationIdentityContract)
      (causes . ,ObservationIdentities)
-     (provenance . ,PooFlowObservationProvenanceContract)
+     (provenance . ,YuanxuObservationProvenanceContract)
      (detail-budget . ,ObservationNatural))))
 
-(def (poo-flow-observation-path? value)
-  (poo-flow-observability-list-of? symbol? value))
+(def (yuanxu-observation-path? value)
+  (yuanxu-observability-list-of? symbol? value))
 
 ;;; Invariant: failure paths are structural symbol lists, not presentation strings.
-(define-type (ObservationPath @ PooFlowContract.)
+(define-type (ObservationPath @ YuanxuContract.)
   identity: 'observation/path
-  .classify: (cut poo-flow-observation-scalar-classify
-                  'observation/path poo-flow-observation-path? <> <>))
+  .classify: (cut yuanxu-observation-scalar-classify
+                  'observation/path yuanxu-observation-path? <> <>))
 
-(def (poo-flow-observation-slot-edge? value)
+(def (yuanxu-observation-slot-edge? value)
   (and (pair? value)
        (symbol? (car value))
        (symbol? (cdr value))))
 
-(def (poo-flow-observation-slot-path? value)
-  (poo-flow-observability-list-of?
-   poo-flow-observation-slot-edge? value))
+(def (yuanxu-observation-slot-path? value)
+  (yuanxu-observability-list-of?
+   yuanxu-observation-slot-edge? value))
 
 ;;; Invariant: a slot path identifies each edge by receiver and slot symbols.
 ;;; Equal slot names on distinct guarded receivers are not recursive aliases.
-(define-type (ObservationSlotPath @ PooFlowContract.)
+(define-type (ObservationSlotPath @ YuanxuContract.)
   identity: 'observation/slot-path
-  .classify: (cut poo-flow-observation-scalar-classify
+  .classify: (cut yuanxu-observation-scalar-classify
                   'observation/slot-path
-                  poo-flow-observation-slot-path? <> <>))
+                  yuanxu-observation-slot-path? <> <>))
 
 ;;; Boundary: each failure binds its structural path to a contract and stable code.
-(define-type (PooFlowObservationFailureContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationFailureContract @ YuanxuObjectContract.)
   identity: 'observation/failure
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((path . ,ObservationPath)
      (contract . ,ObservationSymbol)
      (code . ,ObservationSymbol))))
 
-(def (poo-flow-observation-failures? value)
-  (poo-flow-observability-list-of?
-   (cut element? PooFlowObservationFailureContract <>) value))
+(def (yuanxu-observation-failures? value)
+  (yuanxu-observability-list-of?
+   (cut element? YuanxuObservationFailureContract <>) value))
 
 ;;; Invariant: failure collections contain only admitted failure objects.
-(define-type (ObservationFailures @ PooFlowContract.)
+(define-type (ObservationFailures @ YuanxuContract.)
   identity: 'observation/failures
-  .classify: (cut poo-flow-observation-scalar-classify
-                  'observation/failures poo-flow-observation-failures? <> <>))
+  .classify: (cut yuanxu-observation-scalar-classify
+                  'observation/failures yuanxu-observation-failures? <> <>))
 
 ;;; Boundary: this empty responsibility base is the native extension point for fact families.
-(define-type (PooFlowObservationFactsContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationFactsContract @ YuanxuObjectContract.)
   identity: 'observation/facts
-  proto: (poo-flow-observation-empty-prototype)
-  responsibilities: (poo-flow-observation-empty-prototype))
+  proto: (yuanxu-observation-empty-prototype)
+  responsibilities: (yuanxu-observation-empty-prototype))
 
-(def PooFlowObservationFacts.
-  (.ref PooFlowObservationFactsContract 'proto))
+(def YuanxuObservationFacts.
+  (.ref YuanxuObservationFactsContract 'proto))
 
-(def (poo-flow-admission-facts-obligations value _context)
+(def (yuanxu-admission-facts-obligations value _context)
   (if (and (eq? (.ref value 'accepted?)
                 (and (.ref value 'classification-accepted?)
                      (zero? (.ref value 'obligation-count))))
@@ -373,12 +373,12 @@
     '() '(inconsistent-admission-observation)))
 
 ;;; Invariant: admission facts must reconcile their decision, counts, and bounded failures.
-(define-type (PooFlowAdmissionObservationFactsContract @ PooFlowObservationFactsContract)
+(define-type (YuanxuAdmissionObservationFactsContract @ YuanxuObservationFactsContract)
   identity: 'observation/admission-facts
-  proto: (poo-flow-observation-contract-shape/extends
-          PooFlowObservationFacts. '())
+  proto: (yuanxu-observation-contract-shape/extends
+          YuanxuObservationFacts. '())
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((contract . ,ObservationSymbol)
      (accepted? . ,ObservationBoolean)
      (classification-accepted? . ,ObservationBoolean)
@@ -386,51 +386,51 @@
      (failures . ,ObservationFailures)
      (detail-complete? . ,ObservationBoolean)
      (inspected-count . ,ObservationNatural)))
-  .obligations: poo-flow-admission-facts-obligations)
+  .obligations: yuanxu-admission-facts-obligations)
 
-(def (poo-flow-observation-internal? value) (eq? value 'internal))
+(def (yuanxu-observation-internal? value) (eq? value 'internal))
 ;;; Invariant: the initial framework admits only internal disclosure.
-(define-type (ObservationDisclosure @ PooFlowContract.)
+(define-type (ObservationDisclosure @ YuanxuContract.)
   identity: 'observation/disclosure
-  .classify: (cut poo-flow-observation-scalar-classify
-                  'observation/disclosure poo-flow-observation-internal? <> <>))
+  .classify: (cut yuanxu-observation-scalar-classify
+                  'observation/disclosure yuanxu-observation-internal? <> <>))
 
 ;;; Boundary: the event contract binds lineage, disclosure, and native evidence responsibilities.
-(define-type (PooFlowObservationContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationContract @ YuanxuObjectContract.)
   identity: 'observation/event
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
-   `((identity . ,PooFlowObservationIdentityContract)
-     (source . ,PooFlowObservationIdentityContract)
-     (generation . ,PooFlowObservationIdentityContract)
+  (yuanxu-observation-contract-shape
+   `((identity . ,YuanxuObservationIdentityContract)
+     (source . ,YuanxuObservationIdentityContract)
+     (generation . ,YuanxuObservationIdentityContract)
      (causes . ,ObservationIdentities)
-     (provenance . ,PooFlowObservationProvenanceContract)
+     (provenance . ,YuanxuObservationProvenanceContract)
      (disclosure . ,ObservationDisclosure)
-     (evidence . ,PooFlowObservationFactsContract))))
+     (evidence . ,YuanxuObservationFactsContract))))
 
-(def PooFlowObservation.
-  (.ref PooFlowObservationContract 'proto))
+(def YuanxuObservation.
+  (.ref YuanxuObservationContract 'proto))
 
 ;;; Invariant: admission events refine the generic evidence slot with admission facts.
-(define-type (PooFlowAdmissionObservationContract @ PooFlowObservationContract)
+(define-type (YuanxuAdmissionObservationContract @ YuanxuObservationContract)
   identity: 'observation/admission-event
-  proto: (poo-flow-observation-contract-shape/extends
-          PooFlowObservation. '())
+  proto: (yuanxu-observation-contract-shape/extends
+          YuanxuObservation. '())
   responsibilities:
   ;; Evidence is a refinement, not a fallback default.  A default loses to
   ;; the generic evidence responsibility inherited from the base map and lets
   ;; forged admission facts validate as generic observation facts.
-  (.cc (poo-flow-observation-contract-responsibilities
-        PooFlowObservationContract)
-       'evidence PooFlowAdmissionObservationFactsContract))
+  (.cc (yuanxu-observation-contract-responsibilities
+        YuanxuObservationContract)
+       'evidence YuanxuAdmissionObservationFactsContract))
 
 ;;; Boundary: only bounded aggregate scalars enter the default development renderer.
-(define-type (PooFlowObservationSummaryContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuObservationSummaryContract @ YuanxuObjectContract.)
   identity: 'observation/summary
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((accepted? . ,ObservationBoolean)
      (detail-complete? . ,ObservationBoolean)
      (failure-count . ,ObservationNatural)
@@ -439,7 +439,7 @@
 ;;; Authoring observations are structural advice, not executed runtime facts.
 ;;; Their fixed phase and rejection polarity prevent a style diagnostic from
 ;;; being promoted into evidence that a Module or operation actually ran.
-(def (poo-flow-authoring-observation-obligations observation _context)
+(def (yuanxu-authoring-observation-obligations observation _context)
   (if (and
        (or (and (eq? (.ref observation 'form) '.o)
                 (eq? (.ref observation 'phase) 'object-construction)
@@ -462,8 +462,8 @@
                 (eq? (.ref observation 'code) 'build-bootstrap-self-import)
                 (eq? (.ref observation 'recommendation)
                      'declare-package-spec-only))
-           (and (memq (.ref observation 'form)
-                      '(poo-flow-load-modules all-gerbil-modules modules))
+           (and (symbol? (.ref observation 'form))
+                (eq? (.ref observation 'form) (.ref observation 'owner))
                 (eq? (.ref observation 'phase) 'build-bootstrap-admission)
                 (eq? (.ref observation 'status)
                      'build-bootstrap-reimplements-package-projection)
@@ -478,11 +478,11 @@
 
 ;;; Boundary: source inspection retains only symbolic owner and repair facts.
 ;;; It never retains the source datum, expanded syntax, object, or slot value.
-(define-type (PooFlowAuthoringObservationContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuAuthoringObservationContract @ YuanxuObjectContract.)
   identity: 'observation/poo-authoring
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((scope . ,ObservationSymbol)
      (owner . ,ObservationSymbol)
      (form . ,ObservationSymbol)
@@ -492,26 +492,26 @@
      (recommendation . ,ObservationSymbol)
      (accepted? . ,ObservationBoolean)
      (runtime-executed? . ,ObservationBoolean)))
-  .obligations: poo-flow-authoring-observation-obligations)
+  .obligations: yuanxu-authoring-observation-obligations)
 
 ;;; Boundary: traced calls carry an explicit depth budget.  The policy is a
 ;;; native POO value rather than an ambient global tracer setting.
-(define-type (PooFlowDebugCallPolicyContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugCallPolicyContract @ YuanxuObjectContract.)
   identity: 'observation/debug-call-policy
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((label . ,ObservationSymbol)
      (maximum-depth . ,ObservationNatural))))
 
 ;;; Boundary: call tracing retains only structural identities and categories.
 ;;; Arguments, results, receivers, and exceptions never enter this receipt.
-(define-type (PooFlowDebugCallReceiptContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugCallReceiptContract @ YuanxuObjectContract.)
   identity: 'observation/debug-call-receipt
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
-   `((policy . ,PooFlowDebugCallPolicyContract)
+  (yuanxu-observation-contract-shape
+   `((policy . ,YuanxuDebugCallPolicyContract)
      (call . ,ObservationSymbol)
      (depth . ,ObservationNatural)
      (active-path . ,ObservationPath)
@@ -525,26 +525,26 @@
 ;;; from the call policy because resolving a slot may precede procedure lookup.
 ;;; Invariant: the budget is positive.  A zero budget would misreport every
 ;;; first slot lookup as a runtime depth anomaly instead of policy rejection.
-(def (poo-flow-debug-slot-policy-obligations policy _context)
+(def (yuanxu-debug-slot-policy-obligations policy _context)
   (if (> (.ref policy 'maximum-depth) 0)
     '()
     '(non-positive-maximum-slot-depth)))
 
 ;;; Boundary: this Contract owns debug-slot admission configuration only.
 ;;; A separate call policy cannot silently widen or disable its slot budget.
-(define-type (PooFlowDebugSlotPolicyContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugSlotPolicyContract @ YuanxuObjectContract.)
   identity: 'observation/debug-slot-policy
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((label . ,ObservationSymbol)
      (maximum-depth . ,ObservationNatural)))
-  .obligations: poo-flow-debug-slot-policy-obligations)
+  .obligations: yuanxu-debug-slot-policy-obligations)
 
 ;;; Forged slot receipts cannot turn a cycle, excessive depth, or raised
 ;;; resolver into an accepted observation.  Depth always equals the bounded
 ;;; active path retained by the receipt.
-(def (poo-flow-debug-slot-receipt-obligations receipt _context)
+(def (yuanxu-debug-slot-receipt-obligations receipt _context)
   (let* ((policy (.ref receipt 'policy))
          (receiver (.ref receipt 'receiver))
          (slot (.ref receipt 'slot))
@@ -583,12 +583,12 @@
 
 ;;; Boundary: slot receipts retain receiver/slot symbols and an active symbol
 ;;; path only.  The object, computed value, and original exception stay out.
-(define-type (PooFlowDebugSlotReceiptContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugSlotReceiptContract @ YuanxuObjectContract.)
   identity: 'observation/debug-slot-receipt
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
-   `((policy . ,PooFlowDebugSlotPolicyContract)
+  (yuanxu-observation-contract-shape
+   `((policy . ,YuanxuDebugSlotPolicyContract)
      (receiver . ,ObservationSymbol)
      (slot . ,ObservationSymbol)
      (depth . ,ObservationNatural)
@@ -596,16 +596,16 @@
      (outcome . ,ObservationSymbol)
      (accepted? . ,ObservationBoolean)
      (reason . ,ObservationSymbol)))
-  .obligations: poo-flow-debug-slot-receipt-obligations)
+  .obligations: yuanxu-debug-slot-receipt-obligations)
 
 ;;; Boundary: a debug memory policy is an explicit POO value. The process
 ;;; launcher owns the independent Gambit heap ceiling used before this module
 ;;; can be loaded.
-(define-type (PooFlowDebugMemoryPolicyContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugMemoryPolicyContract @ YuanxuObjectContract.)
   identity: 'observation/debug-memory-policy
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((label . ,ObservationSymbol)
      (heap-limit-bytes . ,ObservationNatural)
      (live-growth-limit-bytes . ,ObservationNatural)
@@ -615,11 +615,11 @@
 
 ;;; Boundary: a sample projects Gerbil runtime counters into a native POO
 ;;; value; it never retains heap objects or exposes the runtime statistics row.
-(define-type (PooFlowDebugMemorySampleContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugMemorySampleContract @ YuanxuObjectContract.)
   identity: 'observation/debug-memory-sample
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((phase . ,ObservationSymbol)
      (heap-size-bytes . ,ObservationNatural)
      (allocated-bytes . ,ObservationNatural)
@@ -627,7 +627,7 @@
      (movable-bytes . ,ObservationNatural)
      (still-bytes . ,ObservationNatural))))
 
-(def (poo-flow-debug-memory-receipt-obligations receipt _context)
+(def (yuanxu-debug-memory-receipt-obligations receipt _context)
   (let* ((policy (.ref receipt 'policy))
          (after (.ref receipt 'after))
          (heap-exceeded?
@@ -649,27 +649,27 @@
 
 ;;; Invariant: a receipt binds one policy to two samples and a derived verdict.
 ;;; Negative deltas are normalized to zero by the pure constructor.
-(define-type (PooFlowDebugMemoryReceiptContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugMemoryReceiptContract @ YuanxuObjectContract.)
   identity: 'observation/debug-memory-receipt
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((phase . ,ObservationSymbol)
-     (policy . ,PooFlowDebugMemoryPolicyContract)
-     (before . ,PooFlowDebugMemorySampleContract)
-     (after . ,PooFlowDebugMemorySampleContract)
+     (policy . ,YuanxuDebugMemoryPolicyContract)
+     (before . ,YuanxuDebugMemorySampleContract)
+     (after . ,YuanxuDebugMemorySampleContract)
      (heap-growth-bytes . ,ObservationNatural)
      (live-growth-bytes . ,ObservationNatural)
      (accepted? . ,ObservationBoolean)
      (reason . ,ObservationSymbol)))
-  .obligations: poo-flow-debug-memory-receipt-obligations)
+  .obligations: yuanxu-debug-memory-receipt-obligations)
 
 ;;; Busy loops can exceed a Case duration budget without heap growth.
-(define-type (PooFlowDebugDurationReceiptContract @ PooFlowNativeObjectContract.)
+(define-type (YuanxuDebugDurationReceiptContract @ YuanxuObjectContract.)
   identity: 'observation/debug-duration-receipt
-  proto: (poo-flow-observation-empty-prototype)
+  proto: (yuanxu-observation-empty-prototype)
   responsibilities:
-  (poo-flow-observation-contract-shape
+  (yuanxu-observation-contract-shape
    `((phase . ,ObservationSymbol)
      (policy-label . ,ObservationSymbol)
      (limit-milliseconds . ,ObservationNatural)

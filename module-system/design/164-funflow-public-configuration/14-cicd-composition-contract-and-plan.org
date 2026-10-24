@@ -1,0 +1,412 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: CICD Composition Contract, Cross-Profile Relations and Effective Plan
+#+date: [2026-10-15]
+#+property: STATUS design-source-only-no-runtime-or-loader-integration
+
+* Scope, ownership and definition order
+
+Superseded admission/projection kernel: [[file:15-open-profile-composition.org][module 15]] supplies complete corrected
+Scheme bodies for actual per-Profile admission and arbitrary participants. The
+fixed gerbil/rust checks below are retained as an earlier two-language fixture
+design, not a framework restriction or the current composition algorithm.
+Cross-Profile relation semantics, the smoke example and stage distinctions remain
+useful; the seven-task display is a regression expectation, not the product model.
+
+This completes the composition boundary of [[file:13-independent-profiles-and-scenario-composition.org][module 13]]. Modules remain pure
+feature publications; GerbilCIProfile and RustCIProfile remain independent
+recipes. CICDScenario references both and owns their relationship. A derived
+Scenario may refine that relationship without mutating either Profile publication.
+Native objects, slot inheritance, define-type and named pure functions provide
+the entire design vocabulary. No imports/compose language or runtime scheduler
+is added.
+
+The neutral composition prototype/Contract owner precedes domain relation
+definitions; independent recipe owners depend on feature interfaces; the maintained
+Scenario owner then imports those recipe publications and the domain prototype.
+These excerpts are linked design definitions, not mutually importing Scheme
+files. They add no actual source/build roots. Existing field-contract and
+NonemptyUniqueSymbolsContract bindings come from module 05. Feature Check and
+Pipeline schema comes from module 01; their occurrence guards still need the
+effective-config context migration specified in module 13.
+
+* Explicit relations as ordinary POO values
+
+#+begin_src scheme
+(.def CompositionScenario.
+  composition:
+  (.o participants: '()
+      handoffs: '()
+      failure-policy: (.o mode: 'stop timeout: 300)))
+
+(.def (CICDScenario. @ CompositionScenario.)
+  composition: =>.+
+  (.o participants: '(gerbil rust)
+      handoffs:
+      (list (.o from: '(gerbil funflow package)
+                to: '(rust funflow build)
+                condition: 'success))))
+
+(.def (CICDScenario @ CICDScenario.)
+  gerbil: GerbilCIProfile
+  rust: RustCIProfile)
+#+end_src
+
+The three-symbol paths identify Profile binding, configured feature binding and
+selected Check within this Scenario. They are relative references, not filesystem
+paths, source authority or a new syntax. Structural shape is constrained below;
+endpoints must also resolve to actually selected tasks. The participants list
+selects occurrences and provides deterministic tie preference, not execution
+edges. This exact domain Contract requires gerbil/rust; those names are roles in
+this example, not a global Profile-name taxonomy. Other domain Contracts may
+admit other bindings.
+
+The handoff above is a success-gated ordering dependency. It does not implicitly
+transfer artifacts, outputs, secrets or an executor Session. Such transfers need
+an explicit admitted consumer binding. Whole-Pipeline completion is not a magic
+endpoint: this relation deliberately names package. If package stops being a
+selected task, composition fails rather than guessing a new terminal task.
+
+* Contract declarations and structural predicates
+
+The definitions below are proposed source, not installed Contracts. Nested
+composition records use the existing structural responsibility Contract; the
+Scenario itself retains shared prototype ancestry. Field predicates constrain
+representation without encoding it into public names.
+
+#+begin_src scheme
+(def (composition-object-classify identity-value candidate context)
+  (let ((accepted (object? candidate)))
+    (yuanxu-classification-evidence
+      identity-value candidate accepted
+      (if accepted '() '(expected-composition-object)) context)))
+
+(def (cicd-endpoint? value)
+  (and (list? value) (= (length value) 3) (every named-symbol? value)))
+
+(def (cicd-handoff? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(from to condition))
+       (every (lambda (name) (if (memq name '(from to condition)) #t #f))
+              (.all-slots value))
+       (cicd-endpoint? (.get value from))
+       (cicd-endpoint? (.get value to))
+       (eq? (.get value condition) 'success)))
+
+(def (cicd-handoffs? value)
+  (and (list? value) (every cicd-handoff? value)))
+
+(def (cicd-failure-policy? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(mode timeout))
+       (every (lambda (name) (if (memq name '(mode timeout)) #t #f))
+              (.all-slots value))
+       (eq? (.get value mode) 'stop)
+       (real? (.get value timeout)) (> (.get value timeout) 0)))
+
+(def CompositionObjectContract
+  (field-contract 'composition/object object?))
+(def CICDHandoffsContract
+  (field-contract 'cicd/handoffs cicd-handoffs?))
+(def CICDFailurePolicyContract
+  (field-contract 'cicd/failure-policy cicd-failure-policy?))
+
+(define-type (CompositionStructureContract @ YuanxuResponsibilityContract.)
+  identity: 'composition/structure
+  .classify: (cut composition-object-classify identity <> <>)
+  responsibilities:
+  (.o participants: NonemptyUniqueSymbolsContract
+      handoffs: ProperListContract
+      failure-policy: CompositionObjectContract))
+
+(define-type (CICDStructureContract @ CompositionStructureContract)
+  identity: 'cicd/structure
+  responsibilities: =>.+
+  (.o handoffs: CICDHandoffsContract
+      failure-policy: CICDFailurePolicyContract))
+
+(define-type (CompositionContract @ YuanxuObjectContract.)
+  identity: 'composition/v3
+  proto: CompositionScenario.
+  responsibilities: (.o composition: CompositionStructureContract))
+
+(define-type (CICDCompositionContract @ CompositionContract)
+  identity: 'cicd/composition-v3
+  proto: CICDScenario.
+  responsibilities: =>.+
+  (.o composition: CICDStructureContract
+      gerbil: CompositionObjectContract
+      rust: CompositionObjectContract)
+  .obligations: cicd-composition-obligations)
+#+end_src
+
+CompositionObjectContract only establishes native object shape. It is not deep
+Profile admission. The obligations below require separately admitted, exactly
+correlated Profile occurrences; without them CICDCompositionContract refuses.
+This avoids pretending that the kernel's recursive responsibility traversal,
+which currently forwards one context, automatically creates a new per-Profile
+context. Define deep Profile/configuration Contracts and their migrated guards
+in the owning adapter, not by weakening the structural predicate.
+
+CICDHandoffsContract strengthens the common proper-list requirement with checked
+CICD handoff elements. It does not replace an incompatible base requirement.
+
+* Pure candidate projection: final receivers, qualified nodes and graph order
+
+The following source is a bounded reference algorithm over selected tasks. It
+does not execute commands, register methods or create a runtime scheduling loop.
+Native task references stay attached to current objects, and emitted command
+values come from those objects. The caller must establish the same stable input
+view for projection and admission; retaining object references does not freeze
+arbitrary mutable getters.
+
+#+begin_src scheme
+(def (cicd-selected-nodes scenario)
+  (apply append
+    (map
+      (lambda (binding)
+        (let* ((config (.get (.ref scenario binding) funflow))
+               (pipeline (.get config pipeline))
+               (names (.get pipeline selected-checks))
+               (expected (funflow-selected-checks config names))
+               (actual (.get pipeline checks)))
+          (unless (and (= (length actual) (length expected))
+                       (every eq? actual expected))
+            (error "effective-checks-mismatch" binding))
+          (map
+            (lambda (name check-value)
+              (.o path: (list binding 'funflow name)
+                  check: check-value
+                  after:
+                  (map (lambda (dependency) (list binding 'funflow dependency))
+                       (.get check-value dependency-refs))))
+            names expected)))
+      (.get scenario composition participants))))
+
+(def (cicd-node-at nodes path-value)
+  (yuanxu-find (lambda (node) (equal? (.get node path) path-value)) nodes))
+
+(def (cicd-linked-nodes nodes handoffs)
+  (for-each
+    (lambda (handoff)
+      (unless (and (cicd-node-at nodes (.get handoff from))
+                   (cicd-node-at nodes (.get handoff to)))
+        (error "unselected-handoff-endpoint" handoff)))
+    handoffs)
+  (map
+    (lambda (node)
+      (let ((incoming
+             (map (cut .ref <> 'from)
+                  (filter (lambda (handoff)
+                            (equal? (.get handoff to) (.get node path)))
+                          handoffs))))
+        (.o (:: @ node)
+          after: (delete-duplicates (append (.get node after) incoming)))))
+    nodes))
+
+(def (cicd-ordered-nodes nodes)
+  (for-each
+    (lambda (node)
+      (unless (every (cut cicd-node-at nodes <>) (.get node after))
+        (error "missing-selected-dependency" (.get node path))))
+    nodes)
+  (let loop ((remaining nodes) (completed '()) (result '()))
+    (if (null? remaining)
+      (reverse result)
+      (let ((ready
+             (yuanxu-find
+               (lambda (node)
+                 (every (lambda (dependency) (if (member dependency completed) #t #f))
+                        (.get node after)))
+               remaining)))
+        (unless ready
+          (error "cyclic-composition-dependencies" (map (cut .ref <> 'path) remaining)))
+        (loop (filter (lambda (node) (not (eq? node ready))) remaining)
+              (cons (.get ready path) completed)
+              (cons ready result))))))
+
+(def (cicd-scenario->candidate scenario-value)
+  (unless (equal? (.get scenario-value composition participants) '(gerbil rust))
+    (error "unexpected-cicd-participants" (.get scenario-value composition participants)))
+  (unless (cicd-handoffs? (.get scenario-value composition handoffs))
+    (error "invalid-cicd-handoffs"))
+  (unless (cicd-failure-policy? (.get scenario-value composition failure-policy))
+    (error "invalid-cicd-failure-policy"))
+  (let* ((nodes (cicd-selected-nodes scenario-value))
+         (linked (cicd-linked-nodes nodes (.get scenario-value composition handoffs)))
+         (ordered (cicd-ordered-nodes linked)))
+    (.o scenario: scenario-value
+        tasks:
+        (map (lambda (node)
+               (.o path: (.get node path)
+                   check: (.get node check)
+                   commands: (.get node check commands)
+                   artifacts: (.get node check artifact-outputs)
+                   after: (.get node after)))
+             ordered)
+        failure-policy: (.get scenario-value composition failure-policy)
+        stage: 'projected-unadmitted
+        runtime-executed: #f)))
+#+end_src
+
+Lists of symbols retain path segment boundaries; string concatenation is not an
+identity encoding. A consumer path is qualified by the Scenario input occurrence
+in the candidate; final wire/runtime IDs need the consumer's admitted mapping.
+Do not globally deduplicate two native Checks by name, commands or source digest.
+The algorithm chooses the first ready node in participant/selection order, so
+ties are deterministic. Dependencies dominate that preference. The simple scans
+are a reference design, not a linear-time algorithm or a scale-performance claim.
+Reuse the existing graph owner when adapting this logic; do not install a second
+runtime scheduler. Reject consumer key collisions at the consumer boundary.
+
+* Exact Profile admission evidence before composition acceptance
+
+The planning owner first admits each selected independent Profile under its
+applicable Contract and constructs a native context containing two binding maps:
+profile-contexts and profile-evidence. Each child context carries scenario,
+profile-binding, effective-profile, effective-config, applicable owner/policy and
+configured occurrence path. profile-contracts holds the expected Contract for
+each binding. These are internal planning values, not user configuration or
+fabricated readiness receipts. Source trust and capability availability remain
+separate readiness requirements.
+
+#+begin_src scheme
+(def (cicd-profile-evidence-problems scenario context)
+  (apply append
+    (map
+      (lambda (binding)
+        (let* ((profile (.ref scenario binding))
+               (child-context (.ref (.get context profile-contexts) binding))
+               (contract (.ref (.get context profile-contracts) binding))
+               (evidence (.ref (.get context profile-evidence) binding)))
+          (if (and (yuanxu-validation-evidence? evidence)
+                   (yuanxu-validation-evidence-accepted? evidence)
+                   (eq? (.get evidence contract-identity) (.get contract identity))
+                   (equal? (.get evidence classification type-identity)
+                           (.get contract identity))
+                   (eq? (.get evidence candidate) profile)
+                   (eq? (.get evidence context) child-context)
+                   (eq? (.get child-context scenario) scenario)
+                   (eq? (.get child-context profile-binding) binding)
+                   (eq? (.get child-context effective-profile) profile)
+                   (eq? (.get child-context effective-config) (.get profile funflow)))
+            '()
+            (list (.o code: 'profile-admission-mismatch
+                      path: (list binding) detail: evidence)))))
+      '(gerbil rust))))
+
+(def (cicd-composition-obligations scenario context)
+  (with-catch
+    (lambda (caught)
+      (list (.o code: 'composition-evaluation-failed detail: caught)))
+    (lambda ()
+      (let ((problems (cicd-profile-evidence-problems scenario context)))
+        (if (pair? problems)
+          problems
+          (begin (cicd-scenario->candidate scenario) '()))))))
+#+end_src
+
+Missing context/evidence or projection failure rejects, rather than constructing
+a successful receipt from a Boolean flag. This receipt correspondence is not
+cryptographic verification of an arbitrary caller-supplied Contract. The trusted
+planning owner must select the expected Profile Contracts/policies independently
+of candidate data and retain their revisions in a stable input-view. It must also
+verify per-Profile selected Check/config evidence using migrated guards. The
+Gerbil cleanup policy cannot stand in for Rust's distinct cleanup requirement.
+The function above checks current occurrence correlation; it does not reconstruct
+or authenticate an entire deep admission tree by inspecting its root identity.
+
+Native .admit traversal and the evidence primitives already exist. The corrected
+Profile-context preparation/guards and trusted policy association are proposed
+adapters, not implemented by the context map or these design blocks. Composition
+acceptance is impossible without their actual valid receipts. Field-shape checks
+alone, including native object shape in responsibilities, are insufficient.
+
+* User adds smoke, then extends a cross-Profile relation
+
+Module 13 defines ReleaseCI with a release Gerbil command, Rust artifact append
+and a selected Gerbil smoke Check. Its parents may already have cached both
+Pipelines. The additional relationship is expressed with ordinary native object
+and list refinement:
+
+#+begin_src scheme
+(.def (CoordinatedReleaseCI @ ReleaseCI)
+  composition: =>.+
+  (.o handoffs: => append
+      (list (.o from: '(rust funflow package)
+                to: '(gerbil funflow smoke)
+                condition: 'success))))
+#+end_src
+
+This keeps the upstream Gerbil-package -> Rust-build edge and adds Rust-package
+-> Gerbil-smoke. The local Gerbil package -> smoke edge also remains. A handoff
+does not automatically select an unselected smoke: missing endpoints reject.
+Adding a reverse dependency creating a cycle also rejects, even if each local
+Pipeline alone is acyclic. No Profile source publication is modified.
+
+#+begin_example
+Expected candidate for CoordinatedReleaseCI, not executed output:
+  1 (gerbil funflow build)   gerbil build release        [release-build-log]
+  2 (gerbil funflow test)    gerbil env ./unit-tests.ss  [test-receipt]
+  3 (gerbil funflow package) sh ./ci/package.sh          [dependency-graph-receipt]
+  4 (rust funflow build)     cargo build                [rust-build-log, release-log]
+  5 (rust funflow test)      cargo test                 [rust-test-receipt]
+  6 (rust funflow package)   cargo package              [rust-crate]
+  7 (gerbil funflow smoke)   sh ./ci/smoke.sh            [smoke-receipt]
+  Stage: projected-unadmitted
+  Runtime-executed: false
+#+end_example
+
+Read each configured Funflow through the final Scenario receiver. Its lexical
+effective-config resolves final named Checks, including the appended Rust artifact
+and new Gerbil smoke; pairwise identity checks refuse fixed parent lists. The
+overall graph reads final composition.handoffs, not the original Scenario's list.
+Changing relations invalidates the relevant overall graph/evidence even if local
+Check values can be reused under established conditions. No parent plan receipt
+becomes current merely because some local Pipeline values are unchanged.
+
+* Admission, preview, publication and runtime are distinct
+
+| Boundary | Required result | Does not establish |
+|----------+-----------------+--------------------|
+| Pure candidate projection | Current task values and a dependency-respecting candidate order; stage remains projected-unadmitted | Profile/configuration admission, consumer support or permission to publish |
+| Profile/configuration admission | Accepted current role/source/capability/field/selection evidence for each occurrence | Cross-Profile endpoint/graph validity or successful commands |
+| CICDCompositionContract .admit | Profile evidence correspondence, valid relation endpoints and acyclic combined graph | Consumer wire identity/schema, publication or execution |
+| Consumer-plan admission | Current qualified identities, supported condition/failure/timeout policy and output format; may label admitted-preview | Automatic publication or a running Session |
+| Explicit atomic publication | Complete accepted plan from the same stable input-view | Commands started or artifacts/cleanup available without required readiness |
+| Explicit runtime handoff | Runtime owns scheduling, status/timeout events and actual execution receipts | Configuration code performing the tasks itself |
+
+Only the trusted plan owner may label admitted-preview after retaining both
+configuration/composition and consumer evidence for the same stable view. The
+candidate function never upgrades its own stage. Re-projecting after acceptance
+requires an unchanged-view guarantee or renewed admission; do not validate one
+candidate and publish another after mutable getters change. A blocked operation
+may explain errors but must not partially replace the previous admitted plan.
+
+The proposed mode stop halts new dispatch after a failure; success-dependent
+descendants remain blocked. timeout is a whole-plan runtime budget in seconds,
+starting at runtime execution, not a configuration-evaluation watchdog. On expiry
+the runtime marks timeout and stops new dispatch. Cancellation of in-flight tasks,
+recovery and compensating actions need the runtime/consumer's admitted protocol
+and receipts; no instantaneous cancellation or rollback is promised. No automatic
+retry is specified. Neither failed nor timed-out work satisfies a success edge.
+Preview performs none of these effects and reads no secrets or execution state.
+
+* Evidence and future acceptance
+
+All new declarations, functions and previews here are document-only. The existing
+POO responsibility/admission kernel, native refinement, lexical receiver pattern
+and earlier focused cache probe are foundations, not execution of this composition
+adapter. ContextSlot, ConstructionCache and ContractConsequence impose the reuse
+premises in module 08; they do not certify this Scheme projection automatically.
+Actual Profile/context migration, consumer schema/protocol admission, atomic
+publication, runtime status handling and Loader integration remain unimplemented.
+
+Future controls must cover: two same-named local builds; stale equal-length Rust
+parent list; missing Gerbil smoke in a parent list; wrong Profile evidence context;
+missing/nonselected handoff endpoints; a cross-Profile-only cycle; child relation
+append preserving the base edge; current commands/artifacts in the seven-task
+candidate; consumer output-key collision; unsupported failure/timeout semantics;
+input mutation before publication; and nonexecution during all preview/admission
+paths. No test, new Lean proof or runtime performance receipt is claimed here.

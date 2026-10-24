@@ -1,0 +1,516 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Pipeline Receiver and Lazy Cache Validation
+#+date: [2026-10-15]
+#+property: STATUS isolated-native-source-verified-not-module-integration
+
+* Implemented path-slot adapter regression (2026-10-15)
+
+The historical native probes below remain unchanged. Core now also executes
+actual dotted-path authoring through
+[[file:../../object-syntax/path-slots.ss][object-syntax/path-slots.ss]] and
+[[file:../../t/path-slots-test.ss][path-slots-test.ss]]. Eleven cases pass using the same pinned POO source in an
+isolated package load path. Unlike the historical probe, this suite exercises
+the actual macro binding, prefix trie, source-preserving payloads and diagnostics.
+
+The principal test forces the parent's Pipeline and checks list before declaring
+one child with all four paths:
+
+#+begin_src scheme
+(.def (Child @ Parent)
+  funflow.profiles.gerbil-scheme.build: =>.+ {value: 'child-build}
+  funflow.profiles.gerbil-scheme.test: =>.+ {value: 'child-test}
+  funflow.profiles.gerbil-scheme.package: =>.+ {value: 'child-package}
+  funflow.profiles.gerbil-scheme.pipeline: =>.+ {pipeline-name: 'release})
+#+end_src
+
+The upstream Pipeline uses native lexical =checks: (list build test package)=.
+The suite verifies final values AND eq? identities against the child's effective
+Check slots, Pipeline refinement, unchanged parent caches, sibling isolation,
+warm-cache identity and unforced unrelated payloads. A separate comparison uses
+handwritten native nested =>.+ expansion; a negative control assigns the saved
+parent list and verifies its expected staleness. No synchronization or checks
+list reconstruction is added to the public interface.
+
+Additional controls cover relative dotted paths in braces, interleaved prefixes,
+renamed macro bindings, shadowed implementation identifiers, payload lexical
+scope, native headers/defaults/shared slots, native object matching, primitive
+literal dotted slots, demand-time missing/non-object errors, duplicate paths,
+ancestor/descendant overlaps, empty segments and unsupported operators.
+
+Local source test command (in the existing isolated pinned-source environment):
+
+#+begin_src sh
+GERBIL_PATH=/tmp/agenticailab-core-prototype-specializer/home \
+GERBIL_LOADPATH=/tmp/agenticailab-core-prototype-specializer \
+/opt/homebrew/bin/gxi /tmp/agenticailab-core-prototype-specializer/run-path-slots.ss
+#+end_src
+
+The runner imports :std/test/base and :yuanxu/t/path-slots-test, calls
+=test-suite!= and exits nonzero unless =test-result-ok?= holds. The adapter and
+test module also pass gxc -S source compilation. The existing 56 CLOS declaration,
+dispatch, combination and method-bundle cases pass separately. This is local
+source evidence, not native AOT, installed-package or remote CI qualification.
+No bounded module scope, owner publication, Loader bridge or cycle guard was
+implemented by this change. Those integration and latency requirements remain.
+
+* Bounded scope plus path integration (2026-10-15)
+
+[[file:../../t/module-scope-syntax-test.ss][Nine bounded-scope cases]] now also exercise upstream Profile construction from
+the same native scope's prototypes and downstream Scenario derivation from that
+scope, followed by all four path refinements after the parent checks are cached.
+They verify native source handle identity, alias scope/hygiene, single source/body
+evaluation, unforced unrelated Profile slots, final Check values and warm caches.
+There is no Loader in this fixture. The source binding Funflow is distinct from
+the native funflow: slot; direct conflicts are diagnosed before slot expansion.
+The old unary (.+ ff) example is corrected to (.o (:: @ ff)).
+
+The local runner imports :std/test/base and the module-scope-syntax-test,
+path-slots-test and profile-composition-test suites. It rejects any non-OK test
+result. Those 24 cases pass (9 scope + 11 path + 4 existing Bundle); the 56 CLOS
+cases remain a separate regression gate. Binding preserves the original native
+scope; it does not authenticate its source, load published owners or perform
+Module/Profile result admission. Those Loader/product boundaries remain pending.
+
+* Evidence scope and exact source
+
+Companion to [[file:164-funflow-cicd-user-authoring-design.org][the complete Funflow configuration design]], which embeds the minimal
+program, path-slot specification/native lowering and a runnable stale-list control.
+This appendix preserves the entire executed 32-assertion probe so the receipt
+does not depend on temporary files surviving. This historical probe is documentation; the separate Core adapter test above
+is now an implementation test target. Neither is Loader integration or
+installed-package qualification.
+
+| Item | Recorded value |
+|------+----------------|
+| dependency pin | 099b381588360a8a49fd772f666a1a00351366f5, verified against gerbil.pkg |
+| object source | https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/object.ss |
+| object SHA-256 | 13f43a877db90d9a2aa0df10d7f92be41aecb4be476a63906bbf91b6f6bdf056 |
+| support source | same commit, support/base.ss |
+| support SHA-256 | 2781a40293d491985c887731a883d31f0aa606077bd10800c6af2d9e2c47919d |
+| interpreter | /opt/homebrew/bin/gxi; Gerbil 1cfb032 on Gambit ea114fc |
+| execution mode | direct isolated source loading; no edits to either pinned source |
+| native full probe | exit 0, PASS assertions=32 |
+| minimal probe | exit 0, parent-before-child values and separate stable caches |
+| frozen continuation | exit 0, expected stale parent list detected |
+
+The object source was compared byte-for-byte with a fresh download of the pinned
+commit. The normal installed :clan/poo/object import failed with "Module is
+incompatible (it was compiled with a different C compiler and/or options)" in
+support/base. This was not repaired or counted as a pass. The isolated source
+probe does not qualify that installed artifact or the complete POO package.
+
+* Reproduction without package mutation
+
+From the repository root, prepare only temporary source files:
+
+#+begin_src sh
+mkdir -p /tmp/agenticailab-pipeline-receiver-pin/support
+curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/object.ss -o /tmp/agenticailab-pipeline-receiver-pin/object.ss
+curl -fsSL https://raw.githubusercontent.com/tao3k/gerbil-poo/099b381588360a8a49fd772f666a1a00351366f5/support/base.ss -o /tmp/agenticailab-pipeline-receiver-pin/support/base.ss
+shasum -a 256 /tmp/agenticailab-pipeline-receiver-pin/object.ss /tmp/agenticailab-pipeline-receiver-pin/support/base.ss
+#+end_src
+
+Verify both hashes against the table before loading. Extract the named Scheme
+blocks to the same temporary directory (no generated file is a repository source):
+
+#+begin_src python
+from pathlib import Path
+import re
+root = Path("docs/10-19-design/10.06-poo-module-system")
+out = Path("/tmp/agenticailab-pipeline-receiver-pin")
+def block(filename, name):
+    text = (root / filename).read_text()
+    pattern = r"^#\+name: " + re.escape(name) + r"\n#\+begin_src scheme\n(.*?)^#\+end_src"
+    return re.search(pattern, text, re.M | re.S).group(1)
+main = "164-funflow-cicd-user-authoring-design.org"
+minimal = block(main, "native-pipeline-receiver-minimal")
+negative = block(main, "native-pipeline-receiver-frozen-control")
+(out / "minimal.ss").write_text(minimal)
+(out / "minimal-with-negative.ss").write_text(minimal + "\n" + negative)
+(out / "probe.ss").write_text(block(
+    "164-pipeline-receiver-cache-validation.org",
+    "native-pipeline-receiver-full-probe"))
+lexical = block("164-pipeline-receiver-cache-validation.org",
+                "native-pipeline-lexical-full-probe")
+(out / "probe-implicit-lexical-slots.ss").write_text(lexical)
+(out / "probe-lexical-slots.ss").write_text(lexical.replace(
+    "(.def (Profile @ [])", "(.def (Profile @ [] build test package)", 1))
+(out / "minimal-explicit-baseline.ss").write_text(block(
+    "164-pipeline-receiver-cache-validation.org",
+    "native-pipeline-receiver-explicit-baseline"))
+#+end_src
+
+#+begin_src sh
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/minimal.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/minimal-with-negative.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe-implicit-lexical-slots.ss
+GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /tmp/agenticailab-pipeline-receiver-pin/probe-lexical-slots.ss
+#+end_src
+
+* Test variables versus the shared module object abstraction
+
+parent-checks and child-checks hold observations for assertions; they do not
+assemble or repair a configured Pipeline. Maintained Agentic AI Lab and User Interface
+Modules share the same native object/scope semantics. The Pipeline's computed
+checks slot owns list construction from the effective Profile, and the selected
+plan adapter consumes it internally. Ordinary users only refine target paths.
+The isolated probe validates that native relationship; it does not establish
+the unimplemented common Module scope, path syntax or Loader integration.
+
+* Complete executed native probe
+
+#+name: native-pipeline-receiver-full-probe
+#+begin_src scheme
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
+
+(def assertions 0)
+(def (assert-equal label actual expected)
+  (set! assertions (+ assertions 1))
+  (unless (equal? actual expected)
+    (error "assertion failed" label actual expected)))
+(def (assert-true label actual) (assert-equal label (if actual #t #f) #t))
+(def pipeline-builds 0)
+(def checks-builds 0)
+
+(.def (Profile @ [])
+  build: (.o check-name: 'build value: 'parent-build)
+  test: (.o check-name: 'test value: 'parent-test)
+  package: (.o check-name: 'package value: 'parent-package)
+  pipeline:
+  (let ((profile @))
+    (set! pipeline-builds (+ pipeline-builds 1))
+    (.o pipeline-name: 'default
+        checks:
+        (begin
+          (set! checks-builds (+ checks-builds 1))
+          (list (.get profile build)
+                (.get profile test)
+                (.get profile package))))))
+
+(.def ParentScenario
+  funflow: (.o profiles: (.o gerbil-scheme: Profile)))
+(def (scenario-profile root) (.get root funflow profiles gerbil-scheme))
+(def (scenario-pipeline root) (.get root funflow profiles gerbil-scheme pipeline))
+(def (scenario-checks root) (.get root funflow profiles gerbil-scheme pipeline checks))
+(def (values-of checks) (map (lambda (check) (.get check value)) checks))
+
+;; Force the parent Pipeline AND its checks before defining the child.
+(def parent-profile (scenario-profile ParentScenario))
+(def parent-pipeline (scenario-pipeline ParentScenario))
+(assert-equal 'pipeline-demand-count pipeline-builds 1)
+(assert-equal 'checks-still-lazy checks-builds 0)
+(def parent-checks (scenario-checks ParentScenario))
+(assert-equal 'parent-values (values-of parent-checks)
+              '(parent-build parent-test parent-package))
+(assert-equal 'parent-checks-count checks-builds 1)
+
+;; Native expansion of three shared-prefix path refinements.
+(.def (ChildScenario @ ParentScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+ (.o value: 'child-build)
+              test: =>.+ (.o value: 'child-test)
+              package: =>.+ (.o value: 'child-package)))))
+
+(assert-equal 'child-declaration-does-not-force-pipeline pipeline-builds 1)
+(assert-equal 'child-declaration-does-not-force-checks checks-builds 1)
+(def child-profile (scenario-profile ChildScenario))
+(assert-true 'different-profile (not (eq? child-profile parent-profile)))
+(def child-pipeline (scenario-pipeline ChildScenario))
+(assert-true 'different-pipeline (not (eq? child-pipeline parent-pipeline)))
+(assert-equal 'new-pipeline-receiver pipeline-builds 2)
+(assert-equal 'child-checks-still-lazy checks-builds 1)
+(def child-checks (scenario-checks ChildScenario))
+(assert-equal 'child-values (values-of child-checks)
+              '(child-build child-test child-package))
+(assert-equal 'child-check-order
+              (map (lambda (check) (.get check check-name)) child-checks)
+              '(build test package))
+(assert-equal 'child-check-count checks-builds 2)
+(assert-true 'list-has-effective-build
+             (eq? (car child-checks) (.get child-profile build)))
+(assert-true 'list-has-effective-test
+             (eq? (cadr child-checks) (.get child-profile test)))
+(assert-true 'list-has-effective-package
+             (eq? (caddr child-checks) (.get child-profile package)))
+(assert-true 'child-pipeline-cache
+             (eq? child-pipeline (scenario-pipeline ChildScenario)))
+(assert-true 'child-check-list-cache
+             (eq? child-checks (scenario-checks ChildScenario)))
+(assert-equal 'warm-pipeline-count pipeline-builds 2)
+(assert-equal 'warm-check-count checks-builds 2)
+(assert-true 'parent-pipeline-cache-unchanged
+             (eq? parent-pipeline (scenario-pipeline ParentScenario)))
+(assert-true 'parent-check-list-cache-unchanged
+             (eq? parent-checks (scenario-checks ParentScenario)))
+(assert-equal 'parent-values-unchanged (values-of (scenario-checks ParentScenario))
+              '(parent-build parent-test parent-package))
+
+;; Also refine Pipeline itself, after ChildScenario's Pipeline is cached.
+(.def (ReleaseScenario @ ChildScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o pipeline: =>.+ (.o pipeline-name: 'release)))))
+(assert-equal 'release-declaration-lazy pipeline-builds 2)
+(assert-equal 'release-name
+              (.get ReleaseScenario funflow profiles gerbil-scheme pipeline pipeline-name)
+              'release)
+(assert-equal 'release-values (values-of (scenario-checks ReleaseScenario))
+              '(child-build child-test child-package))
+(assert-equal 'release-receiver-count pipeline-builds 3)
+(assert-equal 'release-checks-count checks-builds 3)
+
+;; Sibling isolation after both parent/child have been forced.
+(.def (SiblingScenario @ ParentScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+ (.o value: 'sibling-build)))))
+(assert-equal 'sibling-values (values-of (scenario-checks SiblingScenario))
+              '(sibling-build parent-test parent-package))
+(assert-equal 'child-values-still-current (values-of (scenario-checks ChildScenario))
+              '(child-build child-test child-package))
+
+;; Negative control: an explicitly frozen parent list really IS stale.
+(.def (FrozenProfile @ Profile)
+  build: =>.+ (.o value: 'should-be-new)
+  pipeline: (.o checks: parent-checks))
+(assert-equal 'frozen-direct-build (.get FrozenProfile build value) 'should-be-new)
+(assert-equal 'frozen-negative-control
+              (values-of (.get FrozenProfile pipeline checks))
+              '(parent-build parent-test parent-package))
+
+(displayln "PASS assertions=" assertions)
+(displayln "parent=(parent-build parent-test parent-package)")
+(displayln "child=(child-build child-test child-package)")
+(displayln "release=(child-build child-test child-package), name=release")
+(displayln "sibling=(sibling-build parent-test parent-package)")
+(displayln "negative-control=frozen-parent-list-is-stale")
+(displayln "pipeline-builds=" pipeline-builds ", checks-builds=" checks-builds)
+#+end_src
+
+Observed complete output:
+
+#+begin_example
+PASS assertions=32
+parent=(parent-build parent-test parent-package)
+child=(child-build child-test child-package)
+release=(child-build child-test child-package), name=release
+sibling=(sibling-build parent-test parent-package)
+negative-control=frozen-parent-list-is-stale
+pipeline-builds=4, checks-builds=4
+#+end_example
+
+The counters instrument native getter demand only. No latency benchmark, source
+Loader test, use-module macro execution, Contract admission, runtime command or
+execution-evidence claim is made. The two failures being distinguished are an
+installed-artifact import failure and an intentionally stale-list negative
+control; neither is silently reclassified as successful module integration.
+
+* Native lexical-slot convergence: additional executed controls
+
+The canonical upstream Pipeline now uses checks: (list build test package).
+These identifiers retain the enclosing effective Profile receiver through native
+POO lexical slot bindings; no new module feature supplies this behavior.
+Both variants below ran on the same pinned sources/runtime and separately
+passed 32 assertions with the same output/counters as the original full probe:
+(1) automatic lexical slot bindings; (2) explicit header bindings
+(.def (Profile @ [] build test package)). This is semantic/demand evidence,
+not a speed or allocation claim. No shadowing/identifier rewrite is permitted
+when moving the body through an authoring macro.
+
+The complete automatic-binding probe is preserved here:
+
+#+name: native-pipeline-lexical-full-probe
+#+begin_src scheme
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
+
+(def assertions 0)
+(def (assert-equal label actual expected)
+  (set! assertions (+ assertions 1))
+  (unless (equal? actual expected)
+    (error "assertion failed" label actual expected)))
+(def (assert-true label actual) (assert-equal label (if actual #t #f) #t))
+(def pipeline-builds 0)
+(def checks-builds 0)
+
+(.def (Profile @ [])
+  build: (.o check-name: 'build value: 'parent-build)
+  test: (.o check-name: 'test value: 'parent-test)
+  package: (.o check-name: 'package value: 'parent-package)
+  pipeline:
+  (begin
+    (set! pipeline-builds (+ pipeline-builds 1))
+    (.o pipeline-name: 'default
+        checks:
+        (begin
+          (set! checks-builds (+ checks-builds 1))
+          (list build test package)))))
+
+(.def ParentScenario
+  funflow: (.o profiles: (.o gerbil-scheme: Profile)))
+(def (scenario-profile root) (.get root funflow profiles gerbil-scheme))
+(def (scenario-pipeline root) (.get root funflow profiles gerbil-scheme pipeline))
+(def (scenario-checks root) (.get root funflow profiles gerbil-scheme pipeline checks))
+(def (values-of checks) (map (lambda (check) (.get check value)) checks))
+
+;; Force the parent Pipeline AND its checks before defining the child.
+(def parent-profile (scenario-profile ParentScenario))
+(def parent-pipeline (scenario-pipeline ParentScenario))
+(assert-equal 'pipeline-demand-count pipeline-builds 1)
+(assert-equal 'checks-still-lazy checks-builds 0)
+(def parent-checks (scenario-checks ParentScenario))
+(assert-equal 'parent-values (values-of parent-checks)
+              '(parent-build parent-test parent-package))
+(assert-equal 'parent-checks-count checks-builds 1)
+
+;; Native expansion of three shared-prefix path refinements.
+(.def (ChildScenario @ ParentScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+ (.o value: 'child-build)
+              test: =>.+ (.o value: 'child-test)
+              package: =>.+ (.o value: 'child-package)))))
+
+(assert-equal 'child-declaration-does-not-force-pipeline pipeline-builds 1)
+(assert-equal 'child-declaration-does-not-force-checks checks-builds 1)
+(def child-profile (scenario-profile ChildScenario))
+(assert-true 'different-profile (not (eq? child-profile parent-profile)))
+(def child-pipeline (scenario-pipeline ChildScenario))
+(assert-true 'different-pipeline (not (eq? child-pipeline parent-pipeline)))
+(assert-equal 'new-pipeline-receiver pipeline-builds 2)
+(assert-equal 'child-checks-still-lazy checks-builds 1)
+(def child-checks (scenario-checks ChildScenario))
+(assert-equal 'child-values (values-of child-checks)
+              '(child-build child-test child-package))
+(assert-equal 'child-check-order
+              (map (lambda (check) (.get check check-name)) child-checks)
+              '(build test package))
+(assert-equal 'child-check-count checks-builds 2)
+(assert-true 'list-has-effective-build
+             (eq? (car child-checks) (.get child-profile build)))
+(assert-true 'list-has-effective-test
+             (eq? (cadr child-checks) (.get child-profile test)))
+(assert-true 'list-has-effective-package
+             (eq? (caddr child-checks) (.get child-profile package)))
+(assert-true 'child-pipeline-cache
+             (eq? child-pipeline (scenario-pipeline ChildScenario)))
+(assert-true 'child-check-list-cache
+             (eq? child-checks (scenario-checks ChildScenario)))
+(assert-equal 'warm-pipeline-count pipeline-builds 2)
+(assert-equal 'warm-check-count checks-builds 2)
+(assert-true 'parent-pipeline-cache-unchanged
+             (eq? parent-pipeline (scenario-pipeline ParentScenario)))
+(assert-true 'parent-check-list-cache-unchanged
+             (eq? parent-checks (scenario-checks ParentScenario)))
+(assert-equal 'parent-values-unchanged (values-of (scenario-checks ParentScenario))
+              '(parent-build parent-test parent-package))
+
+;; Also refine Pipeline itself, after ChildScenario's Pipeline is cached.
+(.def (ReleaseScenario @ ChildScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o pipeline: =>.+ (.o pipeline-name: 'release)))))
+(assert-equal 'release-declaration-lazy pipeline-builds 2)
+(assert-equal 'release-name
+              (.get ReleaseScenario funflow profiles gerbil-scheme pipeline pipeline-name)
+              'release)
+(assert-equal 'release-values (values-of (scenario-checks ReleaseScenario))
+              '(child-build child-test child-package))
+(assert-equal 'release-receiver-count pipeline-builds 3)
+(assert-equal 'release-checks-count checks-builds 3)
+
+;; Sibling isolation after both parent/child have been forced.
+(.def (SiblingScenario @ ParentScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+ (.o value: 'sibling-build)))))
+(assert-equal 'sibling-values (values-of (scenario-checks SiblingScenario))
+              '(sibling-build parent-test parent-package))
+(assert-equal 'child-values-still-current (values-of (scenario-checks ChildScenario))
+              '(child-build child-test child-package))
+
+;; Negative control: an explicitly frozen parent list really IS stale.
+(.def (FrozenProfile @ Profile)
+  build: =>.+ (.o value: 'should-be-new)
+  pipeline: (.o checks: parent-checks))
+(assert-equal 'frozen-direct-build (.get FrozenProfile build value) 'should-be-new)
+(assert-equal 'frozen-negative-control
+              (values-of (.get FrozenProfile pipeline checks))
+              '(parent-build parent-test parent-package))
+
+(displayln "PASS assertions=" assertions)
+(displayln "parent=(parent-build parent-test parent-package)")
+(displayln "child=(child-build child-test child-package)")
+(displayln "release=(child-build child-test child-package), name=release")
+(displayln "sibling=(sibling-build parent-test parent-package)")
+(displayln "negative-control=frozen-parent-list-is-stale")
+(displayln "pipeline-builds=" pipeline-builds ", checks-builds=" checks-builds)
+#+end_src
+
+The original explicit-receiver minimal program remains preserved unchanged:
+
+#+name: native-pipeline-receiver-explicit-baseline
+#+begin_src scheme
+(import "/tmp/agenticailab-pipeline-receiver-pin/object")
+
+(.def (Profile @ [])
+  build: (.o value: 'parent-build)
+  test: (.o value: 'parent-test)
+  package: (.o value: 'parent-package)
+  pipeline:
+  (let ((profile @))
+    (.o checks: (list (.get profile build)
+                      (.get profile test)
+                      (.get profile package)))))
+
+(.def ParentScenario
+  funflow: (.o profiles: (.o gerbil-scheme: Profile)))
+
+;; Fully force the parent before declaring the child.
+(def parent-pipeline
+  (.get ParentScenario funflow profiles gerbil-scheme pipeline))
+(def parent-checks (.get parent-pipeline checks))
+
+;; Native expansion of the three proposed dotted paths.
+(.def (ChildScenario @ ParentScenario)
+  funflow: =>.+
+  (.o profiles: =>.+
+      (.o gerbil-scheme: =>.+
+          (.o build: =>.+ (.o value: 'child-build)
+              test: =>.+ (.o value: 'child-test)
+              package: =>.+ (.o value: 'child-package)))))
+
+(def child-pipeline
+  (.get ChildScenario funflow profiles gerbil-scheme pipeline))
+(def child-checks (.get child-pipeline checks))
+(def (values-of checks)
+  (map (lambda (check) (.get check value)) checks))
+
+(unless (and
+         (equal? (values-of parent-checks)
+                 '(parent-build parent-test parent-package))
+         (equal? (values-of child-checks)
+                 '(child-build child-test child-package))
+         (not (eq? parent-pipeline child-pipeline))
+         (eq? child-checks (.get child-pipeline checks))
+         (eq? parent-checks (.get parent-pipeline checks)))
+  (error "receiver/cache regression"))
+(displayln "PASS: forced parent, effective child, separate Pipeline, stable caches")
+(displayln (values-of parent-checks))
+(displayln (values-of child-checks))
+#+end_src
+
+These controls preserve the fixed-parent-list negative result. The original
+full probe above is historical evidence and is not overwritten by the shorter
+lexical form. Native outer-slot capture, nested shadowing and receiver-local
+cache are separate from module source admission and Generic owner dispatch;
+no new method bundle or module loader was executed by these probes.

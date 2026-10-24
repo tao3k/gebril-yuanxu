@@ -1,0 +1,80 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Module System Design
+#+date: [2026-10-16]
+#+property: STATUS design-only-no-runtime-or-loader-change
+
+* Research and architecture documentation
+
+Independent platform studies now live under [[file:../../docs/20-29-ecosystem-research/README.org][Core docs/research]]. Our
+cross-platform configuration proposals live under
+[[file:../../docs/10-19-design/10-configuration/10.01-index.org][Core docs/design/configuration]]. See [[file:../../docs/README.org][the documentation map]] for the
+scoped migration boundary; this engineering chapter and its style authority
+have not been moved.
+
+* Ownership
+
+This is the owner of shared Module directory Contracts, publication/selection
+protocols, baseline Core versus optional extension boundaries, lazy namespace
+projection and generic selected build contributions. The implementation is not
+changed by these documents. Existing Core mechanism owners remain where they are.
+
+| Design | Owner |
+|--------+-------|
+| Standard published Module source roles | [[file:01-source-roles.org][Source-role Contract and assembly boundary]] |
+| Directory snapshots and native lazy namespace | [[file:02-directory-sources.org][Directory Contract and projection design code]] |
+| interface publication, init selection and Module/Feature boundary | [[file:03-publication-selection.org][Publication and selection protocol]] |
+| Core/product namespaces and generic build ownership | [[file:05-namespace-and-build-ownership.org][Current names, target package and migration boundary]] |
+| Selected module closure and build contribution projection | [[file:04-selected-build-view.org][Pure selected build view design code]] |
+| Multiple directory windows, shared contextual arguments and use-module review | [[file:06-directory-windows-and-context-args.org][Directory windows and shared Module arguments (design only)]] |
+| Research questions and independent platform/paper records | [[file:07-configuration-system-research.org][Configuration system research agenda]] |
+| Platform-owned research, evidence status and growth structure | [[file:../../docs/20-29-ecosystem-research/README.org][Independent research library]] |
+| Cross-platform research and pre-implementation decisions | [[file:08-infrastructure-platforms-and-design-gates.org][Infrastructure platforms, reflection and design gates]] |
+| Guestbook application of the five improvements | [[file:../../docs/10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][Context candidates, dependencies, merge, preview and cache boundaries]] |
+| Human-Agent module authoring and review | [[file:../../docs/10-19-design/10-configuration/10.06-human-agent-module-authoring.org][AI-era framework purpose and evaluation questions]] |
+| JSON/Scheme input to domain objects | [[file:../../docs/10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Data-first Guestbook, Contract sources, functions and placeholders]] |
+| Internal construction and its research rationale | [[file:../../docs/10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Native design code]] and [[file:../../docs/10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][ecosystem evidence, reflection and controls]] |
+
+Core remains independent of Agentic AI Lab, current product-specific adapters, ASP build
+policy and deployment providers. The shared JSON Schema bridge is implemented in
+Core modules/json-schema. Optional-extension and
+build protocols may be implemented by consumers; Core must not import product
+owners to implement a shared primitive. The reusable Feature System is implemented in Core under
+[[file:../../feature-system/design/README.org][its ownership and migration guide]]; no import back into product implementations
+is needed or permitted. Moving documentation is not a source/API
+migration or proof that an adapter has been implemented.
+
+Core owns init selection semantics, directory/source-role Contracts, publication,
+Core/Feature integration and selected build graph design, including their research
+and validation material. Agentic AI Lab retains actual module implementations, source
+policy adapters, concrete Profiles/Scenarios and end-to-end resource qualification.
+Examples from those consumers do not create a Core runtime dependency.
+
+* Complete chapter and migration boundary
+
+The [[file:00-index.org][complete Module System design chapter]] now lives beside this guide.
+The former product chapter contained 694 files, including Scheme/Lean probes,
+diagrams and historical receipts; all were relocated, not replaced by links to
+product-owned design. The 131 non-document files were byte-preserved. Historical
+commands, source identities and measured results remain historical; moving them
+does not establish current acceptance or authorize execution.
+
+Read [[file:ownership-and-migration.org][ownership, remaining source boundaries and validation limits]] before treating an
+old product integration proposal as a current Core requirement. Shared mechanisms
+are maintained here; concrete application integration may remain downstream.
+
+* Existing and pending
+
+Existing: native POO object/slot semantics; [[file:../graph/funs.ss][module-closure]]; Module/source/schema
+values and static Loader mechanisms; bounded scope syntax in profile-composition.
+Pending: the stronger published-Module role shell, hierarchical directory source
+adapter, publication metadata admission, retained disable integration and selected
+build-view protocol. The object Contract's proposed shorter public name still
+requires a separate rename of the existing Core export; no alias is added here.
+
+Use exact source/currentness evidence and selected-demand controls before claiming
+performance, completeness or automatic discovery. No runtime/Loader is implemented.
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.22-migrated-core-guestbook-chain.org][migrated Guestbook chain audit]] records current source/Schema/Feature APIs
+and the still-pending source-to-scope, disable and selected-build integrations.

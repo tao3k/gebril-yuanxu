@@ -1,0 +1,195 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Yuanxu Proof Ownership
+
+The Core-owned proof projects live under =core/dev/proofs/=. Runtime module
+discovery and packaging do not treat this development directory as a Module.
+Product proof consumers retain their own package and depend on this location.
+
+Architecture and verification allocation enter through
+[[file:../README.org][Development and Assurance]] and
+[[file:../sysml/README.org][SysML system organization]]. Proof projects keep their
+own source/dependency ownership; SysML links requirements to them rather than
+copying proofs or treating model constraints as checked theorems.
+
+* Proof projects
+
+Replay structure/currentness separation is tracked in
+[[file:../sysml/10-evaluation/10.03-replay-structure-ownership.org][10.03 Replay Structure Ownership]].
+Its Lean order laws and Quint negative controls qualify reuse premises, not a
+production traversal cache or a cached admission verdict.
+[[file:../sysml/10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
+binds the issuer-payload correspondence to Core's declared gerbil-poo revision
+and records rebuilt-dependency native controls separately from model proofs.
+[[file:../sysml/10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
+records selected-closure reuse, native weak-owner eviction and constructor-route
+fallback, with producer source binding and retained A/B disturbances.
+
+| Package | Scope | Dependency boundary |
+|---------+-------+---------------------|
+| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo PR 13 / =6e6a706= is an exact locked Git dependency |
+| [[file:quint/README.org][quint]] | Graph operations, demand-only test-source admission and semantic Query boundaries | Quint 0.33.0; bounded positive cases and matched negative controls |
+
+Run =just proofs= in Core. =just proofs-quint= checks the finite models separately;
+=just check-core-lean= in the consuming workspace checks the Lean packages only.
+Core file/module paths use =YuanxuProof= to avoid Lake assigning shared
+modules to the product library. Existing theorem namespaces remain unchanged,
+so statements and callers retain their logical identities. Imports target the
+single Core-owned Lake dependency; no forwarding source files are needed. Product Cedar/runtime/FFI, temporal, Context, Funflow and Healthcare
+proofs remain consumer-owned. Core must not acquire those dependencies merely
+because a historical proof collection grouped them together.
+
+* Migration and evidence
+
+53 shared Lean 4.31 models, nine Profile association Lean 4.34 models and the
+NativeSemanticQuery TLA/CFG pair moved from the product proof tree. All 64
+source files retain the same proof statements and bodies. 24 files are byte-identical;
+40 files only change imports to the new Core module paths. Theorems, guards,
+premises and historical theorem namespace names are unchanged. The complete transitive local
+import closure is owned by Core, rather than copied back into the product.
+
+The product's Lake lock now records a local Core dependency. Its Cedar and
+batteries pins are unchanged. The association package retains the exact existing
+LeanPoo revision and toolchain; temporal and Context consumers retain their own
+independent lock. Generated .lake caches are not published source or new evidence.
+
+Native Scheme correspondence remains subject to each theorem's explicit premises.
+These models do not prove Loader integration, source authentication or deployment
+execution. No Loader or module adaptation is implemented by this migration.
+
+* Local migration validation
+
+| Check | Result |
+|-------+--------|
+| Standalone Core Lean 4.31 package | Passed, 55 jobs |
+| Standalone Core association package | Passed, 48 jobs |
+| Product governance and temporal consumers through the Core dependency | Passed, 25 jobs |
+| Complete product AgenticAILabProof aggregate through the Core dependency | Passed, 598 jobs |
+| Relocated NativeSemanticQuery TLC model | Model checking completed without error |
+| Core-only source import closure | All 53 shared models resolve within Core |
+
+These are local migration checks, not remote CI or production acceptance.
+The association build reused the already-installed immutable LeanPoo dependency;
+no dependency revision was upgraded. The first TLC attempt was refused by the
+sandbox's local socket restriction; a bounded rerun with local port permission
+completed. Historical validation artifacts were not rewritten.
+
+Core CI now owns the single Lean proof project build. Product CI initializes Core and
+builds its consumer libraries; the independent product FFI smoke remains covered.
+Publishing this work still requires a coordinated Core commit and product gitlink
+update. Neither is performed by this local migration.
+
+* Current finite-model owner
+
+Test publication reuse is separate from Make target layout. The native cache
+owner remains the receiver-indexed POO publication and closed graph result.
+=TestPublicationReuse.qnt= models private decode reuse with fresh admission;
+its matched variants retain stale-admission and foreign-packet counterexamples.
+=Admission/TestPublicationReuse.lean= binds that model's digest. See
+[[file:../sysml/10-evaluation/10.01-efficient-caching.org][the caching study]] for the actual call chain, measurements and extraction limits.
+
+=SelectionReplay= separately models the private reader's native replay tail.
+Its Lean target reuses LeanPoo's =ConstructionCache.ensureLookup_hit= law:
+retaining a Graph does not retain a source approval. The ordered replay law
+removes only a stable repeated tail; observer effects retain the original tail.
+Matched finite controls reject dropping an observer tail or reordering checks.
+The serial, fixed native checker/metadata-route correspondence is a runtime
+premise; the theorem is not a proof against raw reflection or concurrent writes.
+Its cost extension separates traversal/source work from collector and wait
+cost. =FewerMeansFaster= is a matched expected counterexample, not a runtime
+speed theorem; =matched_work_bound= states the necessary matched-cost premise.
+Raw VM allocation-counter deltas remain unqualified. See the caching study's
+twenty-demand attribution receipts rather than interpreting call counts as time.
+The installed-runtime audit in [[file:../sysml/10-evaluation/10.02-runtime-accounting.org][10.02]] uses native =##exec-stats= corrections
+and signed wall/CPU residuals. The =falseMiss= negative control and cached-false
+Lean law cover the existing source-window lookup reduction; neither claims
+physical allocator correctness or a wall-time speedup.
+
+The historical TLA/CFG pair has been removed. The already-maintained Quint
+NativeSemanticQuery source moved from the product to =core/dev/proofs/quint/=
+without changing its model. Product query checks consume this exact source.
+GraphOperations and five explicit mutants now live beside it.
+The verifier may generate transient backend TLA internally; maintained model
+authoring and checking entrypoints use Quint only.
+
+* Single Lean project
+
+The former =lean-poo/= source project is merged directly into =lean/=.
+Its nine association modules keep their theorem bodies and namespaces. Both
+libraries build under Lean 4.34.0, with LeanPoo as one pinned Git dependency.
+The preceding migration validation table is historical evidence under the old
+separate toolchains, not a result for this consolidation.
+
+* Root/child source-certification boundary
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]] records the proof-only admission responsibility split: internal child
+analysis retains every domain requirement, while root certification independently
+checks complete selected sources after callbacks. Lean reuses source Certificates,
+ContextSlot laws and metadata publication. The focused QNT positive model and
+matched failures constrain any later reduction of whole-closure reads. This does
+not change Scheme admission or Loader behavior.
+
+* State-derived replay entry qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]] separates bootstrap record validity, metadata readiness and callback
+exposure. The new Lean owner derives a closed operation program from actual
+kernel procedure identities, cached metadata or absent selected protocols, and
+absent source observers. It is independent of arbitrary callback bodies only
+because none are invoked. Native snapshot extraction remains unimplemented;
+sealing a root is not a general read-only proof. No Scheme/Loader change or new
+native read-count result follows from the formal qualification.
+
+* Observed MOP snapshot follow-up
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] joins default-runtime MOP extraction tests with SnapshotEntry's concrete
+cut guards. Native field reflection retrieves the checker without modifying
+producer exports. Exact endpoint equality preserves a deterministic projection;
+it does not establish source currentness, absence of ABA or atomicity. Existing
+source/domain/plan authorities remain independent. Production Scheme and Loader
+behavior are unchanged by this test/proof-only work.
+
+* Revision ABA and snapshot lifetime
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] joins actual supported invalidation, restored dynamic binding effects and
+check-to-use tests with SnapshotLifetime's laws/controls. It distinguishes the
+mutation graph from the full demand graph and certification refusal from effect
+rollback. A source cut that changes during qualification still refuses; input
+manifests and any drift details are retained outside Git. No production Scheme,
+new scope epoch or Loader behavior is introduced.
+
+
+* Serial use qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] links actual MOP cold-frame/replay/source controls with Admission/SerialUse
+and the matched Quint catalog. External conditional commit remains an explicit
+provider assumption; no production Scheme or Loader change is made.
+
+* Call acquisition / body qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] connects actual .call cold/warm/body observations with Admission/CallPhases
+and its matched Quint controls. No production Scheme or Loader change is made.
+
+* Actual source admission observation
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] exercises hot and nested bodies using the existing SourceAdmissionContract.
+The qualification does not install another production observer or wrapper.
+
+* Post-replay source-tail gap
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] records actual stale accepted evidence under late observer effects.
+The formal/native gates retain these limitation witnesses without changing
+production SourceAdmissionContract or claiming return atomicity.
+
+
+* Constrained return-tail qualification
+
+[[file:../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] separates a replaceable caller wrapper from a temporary producer-owned
+source-event gate. Opaque observers are refused before invocation; this is not
+a purity declaration or a production fix. An independent writer remains a
+correct-model limitation requiring snapshot/conditional-commit authority.
+
+The final candidate covers both slot-replay (including cache exit) and
+return-currentness. A return-only gate is retained as an unsafe matched control.
+Only source-observer calls are restricted; arbitrary MOP record/checker ownership
+and external snapshot/commit remain separate premises.

@@ -1,0 +1,121 @@
+#+title: 13.08 One Selected Graph and an In-Process Standard Build Entry
+#+property: DOCUMENT_ID 13.08
+#+language: en
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Standard-library composition, not a second build
+
+The source-location problem does not require changing or copying std/make.
+A normal function can contain the existing defbuild-script invocation and
+return main. The source context remains inside that function; no generated
+build script is executed and no second build process is started.
+
+The selected Graph is prepared once. spec, compile and clean consume its same
+ordinary spec list. The compiler's own subprocesses remain owned by the SDK.
+
+The implemented build entry (retired control) is ordinary Scheme. With its optional SDK settings
+omitted below, its central operation is:
+
+#+begin_src scheme
+(def (yuanxu-build-entry spec source current!)
+  (let ((this-source-file (lambda () source)))
+    (defbuild-script spec)
+    (lambda args
+      (current!)
+      (let (result (apply main args))
+        (current!)
+        result))))
+#+end_src
+
+init.build-entry now calls this helper with the existing prepared spec, anchor
+and currentness check. No fixture helper or source-anchor export is retained.
+Optional libdir:, bindir:, parallelize: and optimize: forward SDK settings;
+their production defaults match std/make. The unchanged SDK owns
+command parsing, dependency scheduling, compilation, output identity and clean.
+The checks reuse existing input validity mechanisms. Post-command rejection
+prevents accepting results; it does not roll back compiler filesystem writes.
+
+* Verified controls
+
+The SDK-only control (retired control) places probe.ss exclusively in a temporary prepared
+directory. The returned main prints its spec, compiles package/probe.ssi and
+cleans that output. It also verifies both boundary checks for every command.
+
+The real JsonSchema control (retired control) uses the existing init exports internally:
+
+#+begin_src scheme
+(def targets (spec retained))
+(def run (entry retained libdir: lib bindir: bin
+                        parallelize: 1 optimize: #f))
+(run "spec")
+(run "compile")
+(run "clean")
+#+end_src
+
+The retained roots are utilities/algorithms and types. The selected closure has
+34 targets in this run; it is not the complete Core manifest. The control checks
+identical list identity on a repeated spec request, unique selected/retained
+identities, every canonical core/ output, and removal on clean.
+
+Changed tool input is rejected before dispatch. A deterministic fixture edit
+between the boundary checks tests post-command rejection; it is not a concurrent
+filesystem experiment. Changed init refuses the session even after restoration.
+Negative checks inspect exception messages rather than matching a backtrace
+that could include expected text from the test source itself.
+
+Both controls passed with MODULE-OK, HARNESS-OK, final OK and natural exit 0.
+The SDK-only control used a fresh GERBIL_PATH and empty GERBIL_LOADPATH. The
+JsonSchema control used a fresh source-only Core snapshot, no compiled Core
+cache, and eight freshly compiled public dependency units from the clean locked
+gerbil-poo revision 099b381588360a8a49fd772f666a1a00351366f5.
+
+The integrated run additionally exercises the actual root build.ss with its
+full retained manifest: 169 unique spec targets, clean, and changed-input
+rejection. That root control does not compile those 169 targets. JsonSchema's
+34-target control is the bounded compile/clean qualification. Both the init
+entry and the direct SDK helper now use production Building code rather than
+a duplicate qualification implementation. The source snapshot contains no
+bootstrap.ss or compiled Core library.
+
+The directory/init regression also passes. Its read-trace assertion now checks
+exact publication membership and multiplicity independently of discovery order;
+the separate dependency-order assertion remains exact. Publication metadata
+discovery does not specify execution or link order. The first failing trace
+remains a local test artifact, not a source-controlled log.
+
+* Reproduce and limits
+
+Follow the fresh dependency/source-snapshot setup in
+[[file:13.07-core-build-entry.org][the build-entry qualification]]. Keep the original SDK; do not include an
+experimental SDK directory in GERBIL_PATH or GERBIL_LOADPATH. Run serially:
+
+#+begin_src sh
+just test-file t/module-build-entry-function-test.ss
+just test-file t/module-build-source-snapshot-test.ss
+just test-file t/module-build-dependency-qualification-test.ss
+just test-file t/module-json-schema-build-entry-test.ss
+#+end_src
+
+Use the documented setup transitions between the SDK-only, snapshot, public
+dependency and JsonSchema phases. The unchanged Just recipe fences the heap
+before imports and enforces the existing timeout. No complete Core build or
+independent bootstrap entry is required.
+
+Production build.ss now imports the ordinary init function and defines main:
+
+#+begin_src scheme
+(import (only-in "./init.ss" init.build-entry)
+        (only-in "./core-spec.ss" core-spec))
+(def main (init.build-entry core-spec))
+#+end_src
+
+Keeping defbuild-script literally in the consumer instead still requires its
+source-context binding for relocated compiler input. A plain list cannot supply
+that context to the current macro. These are placements of one SDK entry, not
+two Graphs or builds. Runtime Loader integration remains outside this control.

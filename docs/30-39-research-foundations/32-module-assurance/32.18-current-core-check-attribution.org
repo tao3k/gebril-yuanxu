@@ -1,0 +1,242 @@
+#+title: 32.18 Current Core Reader/Link Admission Attribution
+#+language: en
+
+* Purpose
+
+[[file:32.17-publication-check-callers.org][32.17]] attributed the repaired baseline but explicitly retained its earlier
+reader/link library. This qualification rebuilds the CURRENT Core reader/link
+and their dependencies from a captured working-tree input. It does not alter
+Scheme, connect a Loader, remove a source guard, or overwrite another session's
+changes. The pre-existing source changes are inputs, not this session's edits.
+
+The working tree is dirty; commit identity alone is insufficient. Input capture
+records Core head =80e2e74022c9c4053445475402856c5f369aec48= on
+=refactor/module-feature-ownership= plus per-file SHA-256 digests. The initial capture
+contained 630 Scheme/JSON/package/Nix input files; the final fourth epoch contains
+632 after incorporating concurrent changes. Earlier epochs and their failed or
+stale qualification attempts are retained separately. Verification uses a new empty
+Core library directory, not copied Core reader/link binaries. The declared pinned
+Gerbil POO dependency is reused separately and its source/compile identity is
+checked. There is no compatibility evaluator.
+
+* Qualification gates
+
+1. Compile the captured current module prelude and real service Fixture closure.
+   Every compiled Core module must have a successful source checkpoint matching
+   the captured input. In particular, reader/link must both be present and match.
+2. Run the diagnostic consumer with the rebuilt Core library first on load path.
+   It delegates the real Context calls, preserving registered descriptors and
+   the selected two contribution rows. No observation window spans those calls.
+3. Check the exact six caller positions, parent plan isolation, final child port,
+   client default following, exact plan/config identity, and two contribution keys.
+4. Measure actual publication, graph, direct source and final-return reads. The
+   historical 101-files/718-reads constants are NOT semantic assertions for a
+   changed reader/link. Every observed publication window must still have unique
+   paths and the exact same ordered closure as its peers.
+5. Run maintained Gitea/PostgreSQL publication and SourceAdmission controls to
+   retain conflicting requirements, explicit mismatch, stale parent plan,
+   post-effect refusal and independent return-time checks.
+6. Reconcile successful compile checkpoints, captured inputs, observed source
+   paths and current live source digests. An unrelated edited test does not
+   invalidate a non-consuming test; a changed reader/link or consumed service
+   source DOES make the corresponding current-code claim stale.
+
+All project tests use =just test-file=, a pre-import 1GB heap fence, the existing
+120-second deadline and the mandatory =MODULE-OK= / =HARNESS-OK= / final =OK=
+checks. Error markers or a timeout are failures even if the runner exits zero.
+Compilation keeps its existing 120-second bound and only resumes successful
+source checkpoints; failed or incomplete modules do not receive checkpoints.
+
+* Conditions for converging the first three windows
+
+The proposed optimization is source-certification delegation, not removal of
+PostgreSQL/Gitea validation. For this maintained Scenario, the contextual service
+and Configuration descriptors use =value-contract: #f= after root normalization;
+their classifiers construct evidence and their local obligations inherit
+=yuanxu-contract-empty-obligations=. This avoids a second normalization and
+preserves exact child receivers. Their platform contribution callbacks currently
+perform a full source/provenance check even though they have no platform handler.
+
+Before those full-source passes move to a root-owned final certification:
+
+- Every child classifier and obligation must still run against the final
+  normalized child. A derived descriptor replacing a classifier/obligation
+  invalidates any unqualified assumption that the maintained defaults are pure.
+- Internal analysis cannot escape as a public source-certified receipt, publish
+  configuration, or authorize effects. Independent source-bound child admission
+  keeps its own promised return-time check.
+- Both Scenario contribution rows, exact origins, export paths and payloads
+  must remain covered BEFORE prototype slot precedence can hide a requirement.
+- Observations from all three children must reach the root; source, graph,
+  registration, object revision and plan/config association checks remain.
+- No byte cache can span an obligation, diagnostic callback or other possible
+  effect. Moving a check is not permission to cache a previous acceptance.
+- The root must recheck collected sources after all callbacks and MOP replay,
+  using fresh observations. Concurrent mutation during the read-to-return
+  interval is still outside the stable-window premise.
+
+These are the production premises of =child_sources= and
+=batching_equivalent= in [[file:32.16-root-child-admission.org][32.16]]. They are not inferred merely because a call
+has a child descriptor name. Open native Generic/Context callbacks remain effect
+boundaries until their particular invocation is independently qualified as pure.
+
+* Boundaries that do not disappear
+
+The contribution callback's entry/exit guards retain their distinct roles.
+The replaceable Context currentness callback must execute; root final source
+checking must follow it independently. The source-only collector does not
+replace provenance/coverage/revision checks. Package effects and publication
+callbacks after direct admission require their own checks and are not counted
+as extra independent admissions inside the six-window trace.
+
+The positive path changes PostgreSQL to 5433 after caching the parent's 5432
+plan. Default-following must produce Gitea 5433; explicit Gitea 5440 must reject.
+Two independently published allowed-port sets must both survive, including a
+conflicting pair. None of these domain checks is replaced by a source Certificate.
+
+* Results
+
+Qualification date: 2026-10-18; default runtime Gerbil =1cfb032= on Gambit
+=ea114fc=. All 632 final captured input digests match the live checkout at final
+reconciliation. Ninety-two successful Core compile checkpoints match their
+captured sources, including current reader, link, source admission, publication,
+contributions, diagnostics and service Fixture. Seventy-two observed Core path
+bindings match captured/live source bytes. The observed paths contain NO reference
+to the old =core-source-window-after/core-input= tree.
+
+** Actual current-source attribution
+
+| Window | Active caller | Current physical reads | Decision |
+|--------+---------------+------------------------+----------|
+| W1 | =postgresql/config= | 87 | Internal analysis: candidate for root-owned certification |
+| W2 | =gitea/config= | 87 | Internal analysis: candidate for root-owned certification |
+| W3 | =gitea/configuration-context= | 87 | Internal analysis: candidate for root-owned certification |
+| W4 | =gitea/application= before contribution callback | 87 | Preserve open-callback entry boundary |
+| W5 | =gitea/application= after contribution callback | 87 | Preserve fresh post-callback boundary |
+| W6 | =source-contract-admit= calls Context =admit-current= | 87 | Preserve return-context invocation and provenance checks |
+
+Cold and warm results are identical:
+
+#+begin_example
+CURRENT-READER: 6 guard requests, 6 actual guard executions
+publication-current: 6 × 87 = 522 file reads
+return-currentness:           88 file reads
+source:                       4 file reads
+graph-current:                6 file reads
+TOTAL:                      620 file reads
+UNWRAPPED Context TOTAL:     620 file reads
+#+end_example
+
+Every window contains 87 unique paths in the same order. The unwrapped Context
+control produces the same total as the delegated diagnostic wrappers. The current
+reader's own =publication-guard-run= and start events confirm actual execution;
+this is not only an inference from the configured load path. The source checkpoint
+also binds its current authoring-policy revalidation, not merely an earlier reader
+that happened to emit similar counters.
+
+W6 is NOT the independent 88-file final collector pass. The first three windows
+account for 261 repeated full-closure reads, but none was removed. No number such
+as 359 is a measured optimized result. Source/provenance guards for effectful or
+independently admitted consumers remain separate obligations.
+
+** Checks behind the convergence preconditions
+
+The diagnostic asserts, on all three actual selected internal descriptors:
+
+- =value-contract= is =#f=, retaining the parent's single normalization;
+- =.obligations= is the identical default empty-obligations procedure;
+- configuration/child receipts refer to the exact final normalized objects;
+- both contribution keys, =postgresql-port= and =gitea-port=, remain selected;
+- the cached parent plan remains 5432 while both final child port projections are
+  5433, and =plan.configuration= is the identical final =config= object.
+
+Source inspection of the three maintained declarations confirms their classifiers
+construct classification evidence and do not override =.admit=. These observations
+do NOT constitute a general Scheme purity proof. A user-supplied classifier,
+admit override, obligation, inherited platform handler or different Context must
+be qualified again; the two field assertions alone are not sufficient.
+
+** Effects after accepted admission are checked independently
+
+An additional test uses the REAL selected Gitea/PostgreSQL publication. Only its
+=package-current= callback is replaced for fault injection. The first invocation
+returns normally before admission; the second silently rewrites the selected
+PostgreSQL JSON AFTER accepted admission, also returning normally.
+
+#+begin_example
+POST-PACKAGE-REJECT 2 "selected configuration asset changed"
+receipt = #f
+next = previous Parent (exact identity)
+cached Parent port = 5432
+#+end_example
+
+The dependent publication meaning check detects the change. Refusal is not caused
+by an injected package exception, nor by failed domain admission: the second
+package invocation is reachable only after accepted evidence. This test executes
+no actual Nix build or deployment; its artificial callback performs a real owned
+file write. It establishes the callback-to-publication boundary on the maintained
+service chain, not arbitrary provider/process correctness.
+
+** Focused gates and limits
+
+Nineteen focused cases pass with natural exit zero, =MODULE-OK=, =HARNESS-OK= and
+final =OK=, with no error/overflow markers:
+
+| Gate | Cases | Coverage |
+|------+-------+----------|
+| Current-source attribution | 1 | Both cold/warm sequences, default child fields, exact aliases, unwrapped control |
+| Maintained service publication | 11 | Two-party conflict, explicit client mismatch, parent cache, stale plan, provenance/source rejection |
+| SourceAdmission adapter | 6 | Single inherited admission, child obligation identity, preflight refusal, outer-cache and post-effect rejection |
+| Real service post-package source mutation | 1 | Silent write after accepted admission rejected; previous published state retained |
+
+The earlier qualified library had six 101-file windows and total 718 reads. The
+current observed cut has 87 files and total 620. This is NOT an isolated timing
+comparison or proof that all removed paths were unnecessary for every program.
+Other sessions supplied reader/link/preparation, import-identity and passive
+publication-observation changes. This session did not implement them or remove
+any Scheme source check. Both the source version and observed cut differ from the
+historical run; lower open counts do not establish end-to-end speed or global
+source-observation completeness.
+
+Lean/QNT models were not changed or rerun in this turn. Their conditions still
+apply: complete authoritative contributions and source observations, exact receiver
+and plan association, and a stable final source interval. The current native
+controls substantiate this service chain; they do not prove arbitrary concurrent
+filesystem atomicity or generic callback purity.
+
+** Reproducibility and retained failures
+
+Local artifacts are under =/private/tmp/core-current-admission-attribution/=:
+
+- =current-receipt.json=: final tool version, source epoch, 92 compiled-source
+  digests, 72 observed Core bindings, case results and output digests.
+- =source-manifest.json=: the final 632-file input cut; earlier manifests and
+  =core-input-epoch1/2/3= retain the superseded source cuts.
+- =attribution-current-final.log=, =source-controls-final.log=,
+  =services-final.log= and =package-effect-final.log=: final focused gate output.
+- =attribution-test.ss= and =package-effect-test.ss=: diagnostic-only consumers;
+  no repository test implementation, Fixture family or public API was added.
+- =compile-*.log= and =cost-compile-*.log=: bounded compilation attempts. All
+  120-second timeouts are retained; successful checkpoints permit incremental
+  continuation, not acceptance of an incomplete module. The first stale-epoch
+  attempt was cancelled by targeting only this task's exact process descendants.
+- =attribution-current-01.log=: an aborted unqualified attempt after the source
+  audit identified dynamic role dependencies absent from the static Fixture
+  closure. SourceAdmission and diagnostics were subsequently compiled explicitly.
+- =attribution-current-02.log= and =*-current.log=: earlier successful native
+  results whose final current-source reconciliation was refused when concurrent
+  observability imports changed. They are not relabeled as the final receipt.
+
+The source audit caught real concurrent changes: reader policy revalidation,
+method-bundle syntax extraction, passive publication stages and observability
+import canonicalization. Inputs were refreshed and affected code rebuilt without
+editing or reverting those changes. The macro consumer was also recompiled
+against the refreshed testing macros. No timeout, assertion or freshness gate was
+weakened to turn a stale or incomplete attempt into acceptance.
+
+* Narrow implementation follow-up
+
+[[file:32.19-root-owned-child-analysis.org][32.19 Root-Owned Responsibility Analysis]] implements the qualified W1--W3
+convergence. It preserves this document as the historical model/baseline and
+records matched current-reader controls; it does not turn the Lean premises into
+a proved refinement of arbitrary Scheme callbacks or add Loader integration.

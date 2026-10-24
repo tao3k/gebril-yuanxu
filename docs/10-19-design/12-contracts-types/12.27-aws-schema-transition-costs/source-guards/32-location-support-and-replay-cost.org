@@ -1,0 +1,234 @@
+#+title: 12.27.45 Candidate Location Support And Native Replay Cost
+#+property: DOCUMENT_ID 12.27.45
+#+language: en
+#+property: STATUS location-qualified-capacity-open
+
+* Question and control
+
+The [[file:31-staged-candidate-publications.org][candidate publication boundary]] reduces physical source reads without
+establishing thousand-module capacity. The next control uses its final =void=
+coalescing, the same source-only dependency lock, =init.modules= test object and
+=.run=. The heap, idle watchdog and total budget remain unchanged. No upstream
+source, compiler cache or new result cache is involved.
+
+Physical file reads do not count directory listings, native object revisions,
+token DFS, macro expansion, compilation, initialization or garbage collection.
+A linear read count is therefore insufficient evidence of a linear loader.
+
+* Actual hidden prefix
+
+The paired native reader previously used the directory's full =current?= for
+each candidate's eligibility. That predicate traversed every parser decision,
+every earlier SourceRef and every earlier directory observation. These are
+real native metadata/filesystem operations, even when no source file is read.
+
+The Core change splits this operation's support inside its existing owners:
+
+| Existing owner | Candidate demand | Whole-Graph boundary |
+|----------------+------------------+----------------------|
+| Decision index | Requested row and its selection object; original revision snapshots | All original intent/row/window revisions |
+| Directory snapshots | Observe actual child/interface kinds even on a snapshot hit; retain negative competing-window queries | Full listings and namespace/collision observations |
+| SourceRef index | Requested SourceRef and the actual path observations that produced it | All retained SourceRefs and observations |
+| Reader metadata guard | Recheck this location at native role/admission boundaries | Complete source epoch and actual producer metadata before visibility |
+
+These are changed payloads in the existing indexes, not a second namespace,
+discovery tree or approval cache. A native revision change followed by restoring
+the same value remains stale. The candidate-location function is captured from
+the paired directory factory; custom contexts and readers keep full guards.
+Open callbacks still widen before entry and remain widened at return.
+
+An entire root directory listing is not constant-width support. Candidate path
+checks therefore do not replay the listing or all sibling SourceRefs. They
+check the actual requested ancestor/interface kinds and competing mount paths.
+The listing's original observation remains in the SAME global epoch for full
+commit. This is tentative discovery, not permission to publish a conflicting
+namespace or to execute external effects on behalf of an unadmitted Graph.
+
+The shared pure source window also applies to directory observations through
+=module-source-observe=. The window ends before native initialization and open
+callbacks. No successful check is retained across an effect boundary. Full
+Graph publication still refuses an unrelated earlier source change that the
+current private candidate does not depend on.
+
+* Observation, without retaining the observed graph
+
+The existing ModuleTestingProfile gains closed scalar intervals:
+
+| Counter | Exact scope and limitation |
+|---------+----------------------------|
+| =metadata-replay-visits= | Distinct token identities actually visited by EACH native replay; not root-list width |
+| =metadata-replay-*-microseconds= | Wall/CPU union of native replay intervals, including native tail rechecks |
+| =reader-compile-*-microseconds= | Existing SDK compile hook for actual owned bodies |
+| =reader-eval-*-microseconds= | Existing SDK evaluation hook for actual owned programs |
+| =import-*-microseconds= | Union of private native import intervals; can contain compilation, initialization and source validation |
+| =source-guard-*-microseconds= | Existing guard intervals, including metadata replay |
+
+These are overlapping intervals, not additive independent phase durations.
+Import residual time is NOT a pure macro-expansion measurement: it also includes
+dependency resolution and native import bookkeeping. =reader-body-expanded=
+is a completed-expansion event, not an expansion-start clock. Cold pre-Case
+imports are separately visible in the existing process CPU checkpoint; parent
+and child process clocks must not be subtracted as if they shared an epoch.
+Counters retain no native token, syntax object, program or receiver. Disabled
+observation performs the ordinary native replay without counting visits.
+Every 64 completed publications, the observer emits scalar cumulative wall/CPU
+totals. A later TERM therefore does not erase the last complete phase sample.
+Unique-token visits are NOT dependency-edge attempts: duplicate native edges
+can still cost work. No linear wall/heap theorem is inferred from that counter.
+Fine-grained diagnostic spans use the observer's existing fixed vector family,
+not the Case's 64 domain-counter slots. An intermediate instrumentation draft
+exhausted that category allowance and was rejected. The correction preserves
+the allowance; it does not raise a telemetry, heap or watchdog limit. Footer
+totals use the observer-owned scalars even after the Case counter scope ends.
+
+* Model division
+
+=CandidateLocation.qnt= explores fresh/cached snapshot paths, input changes
+before and after location, final publication, previous-value preservation and
+termination. Controls omit cached path support or the final whole-Graph check;
+an acceptance control must reach publication. It is a finite transition model,
+not a native allocation or time bound.
+
+Lean's =candidate_location_support_current= requires coverage by root, decision
+and path support, and current revisions at the actual boundary. It composes
+with =staged_guard_bound=: the work bound uses ACTUAL support widths, plus full
+commit and open-callback work. It does not assume that a directory listing or
+an init file has constant size. Neither model proves arbitrary Scheme effects
+confined, filesystem transactionality, or correspondence automatically.
+
+* Reproducible focused entrypoints
+
+Use the locked source-only qualification environment and existing native gates:
+
+#+begin_src text
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-test-observation-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+just test-file t/module-reader-effect-support-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/execution-cancellation-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix CandidateLocation --typecheck-scope selected
+#+end_src
+
+From =dev/proofs/lean=:
+
+#+begin_src text
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+Native tests run serially. Qualification requires natural exit zero, MODULE-OK,
+HARNESS-OK and final OK, without harness/heap/stack errors. A timeout or partial
+publication count is not a ready Graph or a completed memory-capacity sample.
+
+* Evidence
+
+The unmodified final-void thousand-module control exited 124 at the unchanged
+600-second outer budget. It completed 784 publications, with the last complete
+publication at Graph wall 556,953 ms / CPU 263,105 ms and 294,307 physical reads.
+There was no ready Graph or completed retained-memory sample. The owned fixture
+directory was absent after termination. Pre-Graph checkpoint CPU was 9,606 ms
+process-total versus 823 ms Case-local; that difference includes cold imports
+and pre-Case setup, not a pure importer measurement.
+
+The location candidate's seven focused native cases pass, as does the existing
+observation test with the new closed timing categories. An early draft failed
+with a lexical slot/self-binding cycle; the factory procedure now has a distinct
+internal name from the POO slot. A mixed snapshot retry is not used as evidence.
+The extra native work control locates another real SourceRef, then compares
+actual filesystem-stat work for the first location before/after. Candidate
+work stays unchanged and nonzero; complete-epoch work grows. This verifies the
+removed prefix traversal at the real directory owner. It is NOT a substitute
+for the thousand-module declaration qualification.
+
+The new thousand-module run also exited 124 at 600 seconds. It completed 741
+publications (2,964 native bodies), not a ready Graph. Its last complete Graph
+record was wall 556,815 ms / CPU 223,828 ms, with 281,147 physical reads. The
+owned fixture directory was absent after termination. The count is LOWER than
+the control's 784, so there is no end-to-end throughput improvement claim.
+Different phase coverage and CPU/wall ratios do not establish a speedup.
+
+The last complete scalar sample at 704 publications was:
+
+| Native interval | Wall seconds | CPU seconds |
+|-----------------+--------------+-------------|
+| Private role imports | 51.576 | 21.097 |
+| Owned compilation | 0.728 | 0.255 |
+| Owned initialization | 2.136 | 0.778 |
+| Metadata replay | 71.154 | 29.589 |
+| Reader source guards, including replay | 100.646 | 43.193 |
+
+Replay had visited 4,640,762 token identities across calls. The 64/192/384/704
+samples grew approximately with completed publications, but do not count
+duplicate dependency edges or prove asymptotic runtime. Private role imports
+exclude the outer interface import; its macro expansion is not isolated by the
+compile hook. That remaining attribution gap is explicit.
+
+Summing complete publication intervals over 741 publications gives wall
+266.753 s / CPU 109.550 s. These contain guards and private imports. The last
+complete Graph record is wall 556.815 s / CPU 223.828 s. The difference is a
+real unclassified interval, not automatically "macro expansion": source
+location, first inert preparation, read recording/projection and linker work
+also occur outside the publication brackets. A next diagnosis must bracket
+those existing calls and the outer interface import before choosing another
+optimization. Repeating this unchanged failed capacity route adds no evidence.
+
+Quint's 15 CandidatePublication/CandidateLocation cases and the focused Lean
+SourceClosureWork target pass against the updated source binding. This proves
+the stated finite schedules and conditional support laws, not capacity or an
+automatic effect-support analysis. Final native invalidation/cleanup and AWS
+publication regressions are recorded separately below.
+
+* Remaining optimization boundary
+
+The reader still validates the demanded interpreter/SDK source closure at
+native effect boundaries and before canonical imports. Collapsing checks across
+an arbitrary macro or initializer would reuse an approval across an effect.
+The current change does not do that. Separating a loaded context's identity
+from its mutable source provenance would require a new explicit correspondence
+argument and source-change controls; it is not implied by a cache hit.
+
+Continue from measured preparation/interface/admission intervals. Avoid either
+dropping those guards based on a module name or assuming that unique replay
+visit counts measure the full cost of native dependency lists. No compiler
+cache, SDK clearing, higher heap or longer watchdog was used.
+
+The subsequent 16-real-module diagnostic control passes through the same init
+test object. Graph construction took 11.933 s wall / 5.206 s CPU. The existing
+first Graph checkpoint was 10.016 s process CPU versus 0.492 s Case CPU; the
+pre-Case difference includes cold imports and setup. Observed call intervals:
+
+| Actual reader call | Wall seconds | CPU seconds |
+|--------------------+--------------+-------------|
+| Directory location | 0.011 | 0.010 |
+| First inert preparation, including preparation support capture | 4.391 | 1.798 |
+| Outer interface import, including role imports/expansion | 3.659 | 1.563 |
+| Unified publication admission | 0.042 | 0.025 |
+| Root identity projection | 0.002 | 0.002 |
+| Native metadata replay, overlapping the above and guard calls | 1.504 | 0.764 |
+
+Private role imports account for 1.583 s wall / 0.698 s CPU within interface
+work. Owned compile/evaluation are much smaller. The next real call sites are
+therefore the first preparation and the interface expansion/import path, not
+root-list projection or re-running value validation. These measurements do not
+identify pure macro time, prove an optimization safe, or close the thousand-
+module budget. The final scalar-footer correction changes observation storage,
+not the candidate guard algorithm; the thousand-module failure remains binding.
+
+* Native regression closure
+
+The focused candidate-stage/work controls, metadata-policy/Contract controls,
+public reader ambient-effect controls, fixed diagnostic-category test and real
+Ops TERM/fixture cleanup gate pass. The selected init qualification object also
+runs the six actual JsonSchema/Funflow/AWS files successfully, sharing the same
+Graph and leaving its owned fixture absent afterwards. AWS covers real Schema
+upgrade, stale evidence refusal, distinct Contract/Context identity and failed
+publication retaining the accepted value. Parent and child harnesses complete
+with MODULE-OK, HARNESS-OK and final OK, without failure/heap/stack markers.
+
+That qualification worker took 153.395 s between the parent launch/return
+checkpoints. This is a semantic/cleanup regression result, not a matched AWS
+performance improvement. No full build, compiler cache, upstream change,
+runtime Loader connection or push was performed. Source-bound Quint validation
+is refreshed after the observer correction; Lean's theorem/model digest is
+unchanged and its focused build passes.

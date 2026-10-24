@@ -1,0 +1,133 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.07 JsonSchema Value Contracts
+#+property: DOCUMENT_ID 12.07
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS local-library-implementation-no-loader-or-push
+
+* Ownership and public entry
+
+=modules/json-schema/contracts.ss= now owns =SchemaContract.=,
+=ProjectionContract.= and =schema-value-contract=. It imports the public
+=:clan/poo/object-contract= protocol from the locally updated gerbil-poo PR 13
+checkout at =308e67f31273df6892ef55d3dfdc2b01ddb4c886=. The public contract
+implementation remains uncommitted there; the installed dependency is unchanged.
+
+Physical location in this Core repository does not imply an admission dependency.
+The value-contract closure imports no =YuanxuContract.=, Core admission,
+observability, receipt generation, type-fact emission or Loader policy. A test
+source path exposes only JsonSchema/OpenTofu and public gerbil-poo, with no
+other Core sources available. Public gerbil-poo does not depend on this repo.
+
+#+begin_src scheme
+(import :clan/poo/object :clan/poo/object-contract
+        (only-in :clan/poo/mop validate)
+        :yuanxu/modules/json-schema/contracts)
+(def PortContract
+  (schema-value-contract 'service/port
+    '((type . "integer") (minimum . 1) (maximum . 65535))))
+(def ServiceContract
+  (.cc ObjectContract. responsibilities: (.o port: PortContract)))
+(def FinalService (.o port: 443))
+(diagnose ServiceContract FinalService) ; ()
+(validate ServiceContract FinalService) ; same object, not a replacement
+#+end_src
+
+The public Type protocol owns =element?= and =validate=. SchemaContract uses
+the existing normalizer and recursive evaluator. Diagnosis keeps the original
+structured diagnostic and its complete instance path. Any normalization
+diagnostics are refused rather than silently dropping unsupported constraints.
+Boolean false schemas now reject values on the pure evaluator path.
+
+ProjectionContract prepares =as-value-contract= on the effective Contract
+receiver and applies =project= to the current candidate on every validation.
+It preserves candidate identity and does not capture a parent's view. Invalid
+projection callbacks raise errors. Neither contract invents defaults, proves
+source identity or issues context-bound admission evidence.
+
+* Single definitions and separate consumers
+
+Structured diagnostics moved to =json-schema-diagnostics.ss=, recursive node
+diagnostics to =json-schema-node-validate.ss= and null recognition to
+=json-schema-values.ss=. These are moved definitions, not duplicate or
+compatibility forwarding implementations. The boolean evaluator no longer
+imports receipts just to read artifacts. Constraints use the existing local
+functional kernel instead of Core utilities.
+
+=json-schema-validate.ss= still owns artifact/receipt validation and its
+aggregate exports. The artifact-specific predicate moved there from the pure
+evaluator. The emitter retains its null export. =json-schema-contract.ss=
+remains an explicit Core admission consumer; generic value contracts do not
+import it. No interface, publication, module scope or Loader was adapted.
+Qualification now imports the real Schema contracts instead of extracting
+another implementation from document blocks. AWS relation and receipt closures
+remain explicit test fixtures.
+
+* Actual AWS inputs and final receiver
+
+The opt-in native suite reuses the previously acquired AWS 5.100.0 export:
+
+- Provider: =registry.terraform.io/hashicorp/aws=; format version =1.0=.
+- Full-export SHA-256:
+  =cb0e8a42f6eaea3983698d70cba213a630c661420f974a7246685d026da32781=.
+- Existing =yuanxu-opentofu-block->schema= converts the complete =aws_vpc=
+  and =aws_instance= blocks to input schemas, excluding computed-only fields.
+- =POO_JSON_SCHEMA_AWS_EXPORT= explicitly selects the local input. No network
+  acquisition is performed. The digest was checked separately, not by the suite.
+  No raw export or log is committed.
+
+#+begin_src scheme
+(def ProfileContract
+  (.cc ObjectContract.
+    responsibilities: (.o network: VpcContract web: InstanceContract)))
+(.def (Parent @ [] config)
+  config:
+  (.o network: (.o cidr_block: "10.1.0.0/16")
+      web: (.o ami: "ami-fixture" instance_type: "t3.small"
+               tags: (.o Owner: "platform")))
+  resource: (.o instance_type: (.get config web instance_type)
+               tags: (.get config web tags)))
+(.get Parent resource instance_type) ; cache parent: "t3.small"
+(.def (Release @ Parent)
+  config: =>.+
+  (.o web: =>.+
+      (.o instance_type: "t3.medium"
+          tags: =>.+ (.o Environment: "production"))))
+(diagnose ProfileContract (.get Release config)) ; ()
+(.get Release resource instance_type)            ; "t3.medium"
+(.get Release resource tags Owner)              ; "platform"
+(.def (Typo @ (.get Release config))
+  web: =>.+ (.o instnace_type: "t3.large"))
+(.get (car (diagnose ProfileContract Typo)) path) ; (web instnace_type)
+#+end_src
+
+Scalar assignment replaces instance_type. Refinement preserves other web fields
+and tags. The cached parent remains unchanged; child lexical references resolve
+the child's final config. Plain AWS data requires no prototype identity.
+ProjectionContract can check a domain-owned provider view without admitting
+domain-only fields into provider inputs. JsonSchema does not own AWS relations.
+
+* Focused evidence and limits
+
+Native =:std/test= runs serially through the existing heap-fenced 120-second
+=just test-file= entrypoint. The new value-contract suite has 7 cases and the
+real AWS suite has 4. They cover mixed responsibilities, exact nested paths,
+primitive constraints, boolean schemas, record arrays/unions, malformed inputs,
+receiver-local prepared constraints, provider/computed fields and cached-parent
+final-child projection. A separate receipt regression (1 case) checks existing
+artifact validation, structured diagnostic identity and emitter exports. Fixture
+preparation (1 case) and the updated AWS-domain qualification (10 cases) passed
+with the real library import, including missing references, stale snapshots,
+fresh final-value admission and an unselected branch that remains unevaluated.
+All suites reported MODULE-OK, HARNESS-OK and final OK with no error-case/check/
+harness or heap/stack-overflow marker. Early harness/import failures were fixed;
+the boolean false regression above remains as a negative control.
+
+The schema cannot prove AMI existence or cloud authorization; =ami-fixture= is
+only a structural value. Provider-specific semantics, sets, deployment and
+authentication remain separate. This is not every JSON Schema draft. Schema
+checking cannot authenticate origin or invalidate old evidence. The separate
+qualification rejects evidence for a different derived object/context through
+its exact-identity fixture policy; that is not a new production receipt system.
+No full build, performance result, Lean theorem or remote CI is claimed.

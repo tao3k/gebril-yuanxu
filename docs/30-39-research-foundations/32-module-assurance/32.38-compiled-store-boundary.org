@@ -1,0 +1,250 @@
+#+title: 32.38 Shared Slot Ownership And Compiler Store Boundaries
+#+language: en
+#+startup: overview
+
+* Result and scope
+
+Follow-up [[file:32.39-precompiled-callback-store-boundary.org][32.39]] independently compiles callback bodies through the same store
+phase and checks them through an unlowered caller. Results below retain the
+historical nine-case / three-route source cut from this experiment.
+
+[[file:32.37-metadata-allocation-and-shared-authority.org][32.37]] reproduced a restored shared specification leaving Cold cached at 5440.
+This experiment places a check below setter APIs: generated setters, SDK
+reflection and constructor-inlined stores share one pre-store policy in an
+isolated compilation. Callers use existing native replay, without an additional
+protection wrapper or a caller-supplied ownership assertion.
+
+All three mediated routes refuse BEFORE their first store. Parent and Hot
+remain 5432; Cold remains unevaluated during replay and later reads 5432.
+A deliberately unlowered precompiled callback still leaves Cold at 5440.
+This retained negative control prevents claiming production-wide protection.
+
+The experiment uses the active Homebrew Gerbil SDK and current compiled POO
+producer. It does not install a replacement SDK, edit dependency source,
+maintain a patch, or substitute =.data= reference sources. The producer base is
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=; execution manifests additionally bind
+actual compiled input bytes. The base SHA alone does not identify the dirty
+concurrent working tree.
+
+* Allocation-derived ownership
+
+[[file:../../../t/qualification/mop-state/store-policy.ss][store-policy.ss]] records actual specification and receiver identities after
+successful native initialization. Both index levels use weak keys. It scans
+=object-slots=, whose payloads are specifications. =object-defaults= contains
+ordinary values and must not be classified as specification storage.
+
+| Actual receiver | Sharing route |
+|-----------------+---------------|
+| Parent | Declared native specification |
+| Hot / Cold | Native inheritance and dependency edges |
+| Copy | =.cc= copies the carrier without a Parent ancestry edge |
+| Merged | =.+= retains the carrier in merged slot metadata |
+| Direct | =make-object slots:= receives the same carrier |
+
+Registration captures direct roots. Identity-based DFS over native weak
+=dependents= edges adds descendants, deduplicates shared paths and terminates
+cycles, without evaluating slots. The test checks all six actual identities,
+including replay selected on Copy itself. This is complete ownership for the
+exercised constructor family, not all runtime metadata allocation.
+
+Rebinding dynamic =:init!= alone failed: optimized =.def= can call the lowered
+initializer directly. The isolated pass also registers after successful direct
+native initialization, checking the actual emitted signature. It does not add
+separate application wrappers to =.cc=, =.+= or individual setters.
+
+* One policy at primitive stores
+
+The qualification module accesses the current producer's private
+=active-read-replays= through an =extern= bridge. Production integration belongs
+inside the producer, without exposing this bridge. Actual policy:
+
+#+begin_src scheme
+(def (before-store! target)
+  (when (pair? (active-read-replays))
+    (when ($slot-spec? target)
+      (unless (hash-get direct-owners target)
+        (error "unregistered specification allocation"))
+      (for-each
+        (lambda (owner)
+          (check-object-edit owner (object-%state owner)))
+        (specification-owners target)))))
+#+end_src
+
+The existing native =check-object-edit= owns refusal and diagnosis. Preflight
+does not invalidate caches or change revisions before refusal. It covers an
+unread specification belonging to a selected receiver as well as the recorded
+specification. Unknown carriers fail closed at their first mediated store.
+Outside replay the owner traversal is skipped; overhead has not been benchmarked.
+
+[[file:../../../t/qualification/mop-state/compile-store-boundary.ss][compile-store-boundary.ss]] derives 234 transitive setter/constructor bindings
+from the ACTIVE SDK's emitted =gerbil/runtime/mop~0.scm= and current producer's
+=clan/poo/object~0.scm=. Temporary renamed functions retain the real class
+descriptors. A compilation-local =apply-generate-runtime= hook rewrites the
+AOT test emission too; this is not a replacement object/type engine.
+
+All occurrences of =##structure-set!=, =##direct-structure-set!= and
+=##unchecked-structure-set!= receive the same pre-store policy. Schematic
+checked-store lowering, preserving the actual primitive's operands:
+
+#+begin_src scheme
+(let ((target actual-target) (value actual-value) (index actual-index)
+      (type actual-type) (caller actual-caller))
+  (before-store! target)
+  (##structure-set! target value index type caller))
+#+end_src
+
+Generated lexical temporaries evaluate operands once, before the check and
+store. Operand side effects are not rolled back. Final emitted code contains
+42 checked, 1 direct and 60 unchecked guarded occurrences: syntactic counts,
+not dynamic performance measurements. Source APIs remain ordinary native calls:
+
+#+begin_src scheme
+($self-slot-spec-fun-set! spec replacement)
+(runtime.slot-set! spec 'fun replacement)
+(struct-instance-init! spec replacement)
+#+end_src
+
+* Executed replacement/restore and controls
+
+[[file:../../../t/mop-store-boundary-test.ss][mop-store-boundary-test.ss]] caches Parent and records Hot before replay:
+
+#+begin_src scheme
+(.def Parent port: 5432 unused: (error "unselected branch forced"))
+(.def (Hot @ Parent))
+(.def (Cold @ Parent))
+(.get Parent port)
+(def roots (record (cut .get Hot port)))
+(def spec (cdr (assq 'port (object-slots Parent))))
+(def original ($self-slot-spec-fun spec))
+(replay-slot-reads! roots
+  (lambda (_owner _key)
+    (dynamic-wind
+      (lambda () (generated-store! spec (lambda (_self) 5440)))
+      (lambda () (.get Cold port))
+      (lambda () (generated-store! spec original)))))
+#+end_src
+
+This deliberately raises =object mutation during read replay= in the before
+thunk. The body and restoration thunk are not entered. No restoration is
+needed because no store occurred. Tests check Cold has no prepared instance
+before its later ordinary read, original function identity and Parent revision
+are unchanged, and the unselected error slot stays unforced.
+
+Actual trace columns: route, owner count, body entries, Parent, Hot, Cold.
+
+#+begin_example
+generated   6  0  5432 5432 5432
+reflective  6  0  5432 5432 5432
+inline      6  0  5432 5432 5432
+#+end_example
+
+The negative control obtains a procedure from an ordinary POO slot in
+[[file:../../../t/qualification/mop-state/unlowered-store.ss][unlowered-store.ss]], compiled before the pass. Its runtime-returned function
+body remains unlowered. Replacement/force/restore completes, leaving
+Parent/Hot at 5432 and Cold at 5440. Hiding exports or introducing a checked
+public wrapper would not close this execution path.
+
+The nine compiler cases also cover nested native frames, original exception
+identity after unwind, exactly-once operand evaluation, an unregistered carrier,
+an unread shared specification and an ordinary default value. The standard
+test driver IMPORTS the AOT test module: directly testing its source would
+interpret it and would not exercise this compiler pass.
+
+* Lean correspondence and Quint controls
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean][StoreLowering.lean]] reuses MetadataAllocation and IdentityDFS, including the
+existing LeanPoo-backed graph reasoning. Four direct allocations plus two
+dependency edges derive the owner list; completeness is not supplied as a list
+field. Key statements:
+
+#+begin_src lean
+theorem mediated_prewrite_refusal (route : Route)
+    (h : mediated route = true) :
+    (attempt route true).writes = 0 ∧
+    (attempt route true).forcedDuring = 0
+theorem fixture_owners_derived : owners = [6, 5, 4, 1, 2, 3]
+theorem direct_copies_are_required : 4 ∈ owners ∧ 5 ∈ owners ∧ 6 ∈ owners
+theorem unlowered_retains_counterexample :
+    (attempt .unlowered true).cold = 5440
+#+end_src
+
+These are theorem signatures from the compiled model; proofs are in the linked
+source. The route model abstracts refusal and does not prove the compiler
+correct. [[file:../../../dev/proofs/lean/StoreLoweringCheck.lean][StoreLoweringCheck.lean]] independently decodes all three actual AOT trace
+rows and compares them to the model. Changing Cold to 5440 makes it fail.
+That bridge covers the observed operations, not arbitrary Scheme execution.
+
+[[file:../../../dev/proofs/quint/StoreLowering.qnt][StoreLowering.qnt]] has nine scoped expected outcomes. The positive model
+preserves Parent/Hot, child plan ownership, both requirements and the unused
+branch. Negative variants expose an unlowered callback, missing copy ownership,
+missing carrier or inline protection, dropping the second requirement,
+reusing Parent's plan, forcing the unused branch, and an acceptance witness.
+The positive graph has 96 distinct states with no pending states. These are
+bounded controls, not universal runtime proofs.
+
+LeanPoo remains pinned to =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+The full Lean build passed 178 jobs and audited 6072 declarations with standard
+Lean axioms only. The scoped Quint receipt binds model, Lean and qualification
+sources. It is not a full-catalog qualification.
+
+* Real service regression and limits
+
+The separate current-Core =issued-read-admission-test.ss= passed two cases
+using real =SourceAdmissionContract.= and the Gitea/PostgreSQL Scenario. It
+retains nested child obligations, both port contributions, default-following
+child values after Parent's plan was cached, explicit mismatch, stale plan
+refusal and changed-source refusal. Its temporary publication environment is
+still a fixture. The seven existing replay-guard cases also passed.
+
+Together with the nine compiler cases these are 18 checks in three processes.
+This does not mean the whole real service admission chain was compiled under
+the pass, or that the raw attack is repaired throughout that chain. No domain,
+source-return or plan-identity checks were removed to obtain these results.
+
+Production obligations remain:
+
+1. Register carriers inside actual producer construction before optimized
+   callers are emitted; reconcile later declaration changes and bootstrap
+   allocations. Dynamic initializer rebinding alone misses optimized calls.
+2. Close the execution domain: precompiled callbacks, later compiler stages,
+   =eval=, FFI and foreign unchecked stores must obey the policy or be excluded
+   capabilities. A model's =mediated= enum is not an unforgeable code certificate.
+3. Cover metadata beyond SlotSpecs: tables, lists/vectors, object-state routes
+   and class metadata are not all protected here. The policy and private-frame
+   bridge remain trusted experiment code, not a reflective-code sandbox.
+4. Qualify transformation semantics across supported compiler/SDK versions.
+   Three observed routes and transitive name selection do not establish full
+   compiler semantics preservation.
+5. Preserve supported mutation/invalidation outside replay. This experiment
+   does not make raw metadata edits safe outside that frame or promote them
+   to public extension APIs.
+6. Keep serial execution and external-source assumptions explicit. Matching
+   the active SDK's SMP ABI is not a concurrency proof or an atomic filesystem
+   snapshot against independent writers.
+
+The demonstrated gain is store-level intervention plus allocation-derived
+sharing. The unlowered callback explains why adding another MOP wrapper alone
+would still fail the user's requirement.
+
+* Reproduction and failed attempts
+
+#+begin_src sh
+just --justfile core/Justfile test-mop-store-boundary /private/tmp/store-check
+just --justfile core/Justfile check-store-lowering /private/tmp/store-check/observations.json
+#+end_src
+
+The recipe uses the existing heap-fenced test entrypoint. It verifies source
+hashes before/after execution, uses the active SDK's Gambit compiler and SMP
+macro feature, and checks the SDK input manifest. Compile steps retain a
+120-second bound; no timeout was enlarged for this experiment.
+
+Local receipts stay outside version control under
+=/private/tmp/core-owned-store-20261018/=: =run-13.log=,
+=candidate-13/observations.json=, =lean-03.log=, =decoder-negative-03.log=,
+=quint-05.log= and =quint-05.ss=. Earlier failed runs remain there: direct-source
+interpretation did not execute lowered code; dynamic initialization missed
+optimized constructors; an apparently unlowered helper was cross-module inlined
+and correctly refused; early Gambit invocations had incorrect SDK macro/option
+settings. The sandbox-denied Quint attempt is retained separately as
+=quint-04.log=; the local-backend retry passed. Failures were not relabeled or
+replaced by a compatibility-runtime success.

@@ -1,0 +1,282 @@
+#+title: Current Core Lean model correspondence review
+
+Every current model is listed below. The inventory currently contains 66 files. Executable checks are distinguished from
+domain policy algebra and native adapter observations. An axiom/shape audit does
+not establish the correspondence by itself. Classification-only laws are never
+counted as native implementation closure. No model was retired into an open
+obligation in this review. Existing supported owners now have concrete checks
+and rejection laws; unsupported native effects are not manufactured as witnesses.
+
+The executable aggregate imports every listed model and requires the critical
+owner theorems. `Controls` and `NativeFixtures` are finite controls, not additional
+universally proved requirements.
+
+* Per-model inspection
+
+| Model | Current owner | Definition / proved behavior | Boundary |
+|-------+---------------+------------------------------+----------|
+| [[file:YuanxuProof/Admission/Contributions.lean][Admission/Contributions]] | =admission/contributions.ss= | Exact contribution rows, reference identity, selected origin and resolved payload | Native reference and export-path observations; no inferred authority |
+| [[file:YuanxuProof/Admission/Decision.lean][Admission/Decision]] | =module-system/design/45-74-governance-decisions-quorum-revocation-and-break-glass.org= | Executable governance equality/quorum/time/revocation checks | Finite decision policy; signature authenticity and effect authority are external |
+| [[file:YuanxuProof/Admission/Federation.lean][Admission/Federation]] | =module-system/design/45-77-cross-domain-federation-contracts-capability-attenuation-and-responsibility.org= | Scope/action intersection, bounded expiry and delegation depth | Capability input authenticity is not inferred |
+| [[file:YuanxuProof/Admission/Publication.lean][Admission/Publication]] | =admission/publication.ss= | Schema/source association certificate and post-return refusal preserving old state | Normalizer output and native references are observed inputs; not filesystem atomicity |
+| [[file:YuanxuProof/Admission/Realization.lean][Admission/Realization]] | =ops/selected-packages.ss= | ALL candidate validators plus post-validator source/package guards | Realization effects may already have occurred; logical refusal is not filesystem rollback |
+| [[file:YuanxuProof/Admission/RootChild.lean][Admission/RootChild]] | =types.ss=, =admission/source.ss= | Implemented exact-reference, one-shot analysis routing; root/child source certificate and finite batching reference | A fresh root may explicitly install a new edge; routing is not source authority or complete interception |
+| [[file:YuanxuProof/Admission/ReturnWindows.lean][Admission/ReturnWindows]] | =admission/source.ss=, =admission/contributions.ss= | Actual check/cache/read-count composition, covered pure deferral, joint requirements and parent rejection | Proposed pure suffix; arbitrary callbacks, native trace extraction and diagnostic equivalence remain unproved |
+| [[file:YuanxuProof/Admission/ReplayBoundary.lean][Admission/ReplayBoundary]] | =admission/source.ss=, =configuration/slot-origin.ss=, pinned gerbil-poo observation producer | Ordered first-error preservation, selected source coverage, first-origin retention and diagnostic-reordering counterexample | Closed structural trace only; producer/metadata/observer closure and cyclic/shared DFS refinement remain native premises |
+| [[file:YuanxuProof/Admission/IdentityDFS.lean][Admission/IdentityDFS]] | gerbil-poo =slot-observation.ss=; Core source observers | Finite identity DFS termination, unique/exact discovery, source coverage and complete final pass | Frozen graph, finite callbacks, injective native identity mapping and exact predicate extraction remain premises |
+| [[file:YuanxuProof/Admission/DFSFrames.lean][Admission/DFSFrames]] | Native recursive =for-each visit= frames | Active frame steps refine DFS exactly; returns stutter; frame termination and final reachable-token coverage | Scheme semantics, exceptions and runtime heap/stack bounds are not extracted |
+| [[file:YuanxuProof/Admission/ReadOnlyEntry.lean][Admission/ReadOnlyEntry]] | Pinned bootstrap/currentness/order paths; Core source observer | State-derived closed entries, callback independence, protected-state preservation and exact ordered first failure | Native snapshot extraction, stable cut, raw identity and filesystem/FFI correspondence remain premises; no arbitrary closure purity inference |
+| [[file:YuanxuProof/Admission/SnapshotEntry.lean][Admission/SnapshotEntry]] | Qualification-only native MOP projection | Exact concrete cut guard, closed-entry preservation, unchanged-revision cache refusal and ABA/source-authority counterexamples | Native projection function and identity/footprint completeness remain explicit premises; no atomic snapshot or filesystem transaction |
+| [[file:YuanxuProof/Admission/SnapshotLifetime.lean][Admission/SnapshotLifetime]] | Native revision/active-frame/dynamic-parameter paths; lifetime qualification tests | Once-per-owner supported invalidation, active closure veto, restored value ABA refusal and scope/check-use limitation laws | Serial supported calls, complete mutation/read closure and native projection remain premises; no atomic snapshot or effect rollback |
+| [[file:YuanxuProof/Admission/SerialUse.lean][Admission/SerialUse]] | Actual cold-frame, external-demand and replay/file controls | Active-root trace stability, external-change counterexamples, complete requirements and conditional-version refusal | Serialized supported calls and complete native projection; atomic compare/commit is an external authority premise, not implemented native behavior |
+| [[file:YuanxuProof/Admission/CallPhases.lean][Admission/CallPhases]] | Actual cold/warm .call and ambient-frame controls | Acquisition/body separation, native mutation commit projection and full-body observation requirement | Native frame/graph projection and serialization; no general lambda purity, concurrency or external atomicity proof |
+| [[file:YuanxuProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] | Actual SourceAdmissionContract hot/nested body tests and real publication | Nested observed-record rejection, root return, source order and independent requirements | Complete native projection/supported reads and serialized calls; no arbitrary I/O purity or external atomicity proof |
+| [[file:YuanxuProof/Admission/ReturnTail.lean][Admission/ReturnTail]] | Actual post-replay source-observer controls and stale real service plan | Historical checks do not entail current return; read-only trace law is conditional | Native tail is not proved read-only; filesystem atomicity and external commit remain separate premises |
+| [[file:YuanxuProof/Admission/ClosedTail.lean][Admission/ClosedTail]] | Temporary source-event producer gate; actual SourceAdmissionContract | Opaque procedures refused before invocation, closed trace preserves selected state and both requirements | Producer ownership, selected serial path and prior replay completeness; external writers still require snapshot/conditional commit |
+| [[file:YuanxuProof/Admission/Source.lean][Admission/Source]] | =admission/source.ss= | Exact-text obligation/certificate and initial/return checks | Actual file reads are external; a certificate does not freeze the filesystem |
+| [[file:YuanxuProof/Admission/SourceWindows.lean][Admission/SourceWindows]] | =module-system/source/admission.ss= | CacheLookup byte reuse, contradictory requirements, read counts and receiver-specific values | Only stable synchronous observation windows permit byte reuse |
+| [[file:YuanxuProof/Composition/Identity.lean][Composition/Identity]] | =composition/lineage.ss= | Identity projections plus computed duplicate/productive lineage analysis | Native identity allocation and evaluator termination are not derived from labels |
+| [[file:YuanxuProof/Composition/Overlay.lean][Composition/Overlay]] | =composition/roles.ss= | First-owner constant-slot overlay equals reference lookup | Applies only after native constant-slot compatibility checks; dynamic slots stay on .mix |
+| [[file:YuanxuProof/Contribution/Qualification.lean][Contribution/Qualification]] | =module-system/design/45-77-cross-domain-federation-contracts-capability-attenuation-and-responsibility.org= | Every declared facet and explicit evidence/authority/responsibility relations | Domain policy algebra; native row provenance is modeled separately in Admission/Contributions |
+| [[file:YuanxuProof/FeatureSystem/DomainCase/Resolution.lean][FeatureSystem/DomainCase/Resolution]] | =feature-system/domain-case/contracts.ss= | Retirement/indexed replacement equals independent filter-and-append reference; constructed winners have unique keys | Key projection and domain values remain explicit inputs |
+| [[file:YuanxuProof/Graph/Operations.lean][Graph/Operations]] | =graph/apply.ss= | Ordered single pass, non-fixed-point control, live edge endpoints | Concrete slot primitives and coalescing are also modeled in Graph/Payload |
+| [[file:YuanxuProof/Graph/Payload.lean][Graph/Payload]] | =graph/contribution.ss= | Stable-distinct append/prepend, value removal, slot frame and adjacent append fusion | Finite list-valued payload projection; no second node/traversal implementation |
+| [[file:YuanxuProof/ModuleSystem/Authoring/Queries.lean][ModuleSystem/Authoring/Queries]] | =module-system/authoring/admission.ss= | Query-name detection, structural raw-initializer rejection and named projection acceptance | Bounded reader datum fragment; not semantic evaluation of arbitrary Scheme |
+| [[file:YuanxuProof/ModuleSystem/Building/Inputs.lean][ModuleSystem/Building/Inputs]] | =module-system/source/build.ss=, =source/reader.ss= | Conflicting observations, compiler collisions, phase-gated Build and exact registered shared-tool contexts excluding publication roles | Native context references, normalized paths, compiler syntax and filesystem kinds are observed inputs |
+| [[file:YuanxuProof/ModuleSystem/Graph/Aggregation.lean][ModuleSystem/Graph/Aggregation]] | =profile-composition/profile-bundle.ss= | Selection union and capability restriction algebra | Policy intersection is mathematical; native requirement LIST aggregation is ProfileComposition/Composition |
+| [[file:YuanxuProof/ModuleSystem/Graph/Cache.lean][ModuleSystem/Graph/Cache]] | =module-system/building/interface.ss= | Certified current closure plus changed-context cache miss | Provider closure computation belongs to discovery/selection, not a freshness flag |
+| [[file:YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ModuleSystem/Graph/ImportCorrespondence]] | =module-system/source/reader.ss= | Current registered inputs, file-kind/text observations and complete discovery admission | Native interception completeness is an explicit bridge boundary |
+| [[file:YuanxuProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission]] | =module-system/building/test-projection.ss= | Demanded worklist coverage, uniqueness and missing/stale/incomplete refusals | The model does not assert the native reader discovered unobserved imports |
+| [[file:YuanxuProof/ModuleSystem/Imports.lean][ModuleSystem/Imports]] | =profile-composition/selection-syntax.ss= | Actual default/explicit instance selection and complete prepared Profile export tuple | LeanPoo prepare owns provider lookup; native symbol/object references are projected |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Construction.lean][ModuleSystem/Schema/Association/Construction]] | =profile-composition/profile-bundle.ss= | Captured inherited/root requirements and checked construction receipts | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Controls.lean][ModuleSystem/Schema/Association/Controls]] | =t/module-schema-native-inheritance-test.ss= | Executable positive/negative controls over real owner definitions | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Correspondence.lean][ModuleSystem/Schema/Association/Correspondence]] | =module-system/schema/validation.ss= | Independent traversal/identity projection to mandatory native checks | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean][ModuleSystem/Schema/Association/NativeFixtures]] | =t/module-schema-native-inheritance-test.ss= | Historical finite native fixtures used as controls, not universal proof premises | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Projection.lean][ModuleSystem/Schema/Association/Projection]] | =module-system/schema/relations.ss= | Native reference identity projection and checked receipt/source binding | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Requirements.lean][ModuleSystem/Schema/Association/Requirements]] | =module-system/schema/validation.ss= | Inherited, derived and RHS requirement accumulation | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Selection.lean][ModuleSystem/Schema/Association/Selection]] | =module-system/schema/validation.ss= | Selected/fixed requirement coverage and final candidate identity | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Semantics.lean][ModuleSystem/Schema/Association/Semantics]] | =module-system/schema/validation.ss= | Finite ancestry, association completeness and certified final receiver checks | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Association/Traversal.lean][ModuleSystem/Schema/Association/Traversal]] | =module-system/schema/validation.ss= | Independent Scheme-style seen/path DFS soundness/completeness | Ancestry/reflection observations and predicate outcomes are explicit; no C4 replacement of native DFS |
+| [[file:YuanxuProof/ModuleSystem/Schema/Contracts.lean][ModuleSystem/Schema/Contracts]] | =module-system/schema/validation.ss= | Owned obligations, repeated requirements and same-factory certified conjunction | Weakening authorization is an explicit external policy input |
+| [[file:YuanxuProof/ModuleSystem/Schema/Demand.lean][ModuleSystem/Schema/Demand]] | =module-system/schema/relations.ss= | Certified semantic-target cache key independent of request/evidence/live labels | Native demand-key projection completeness is not inferred |
+| [[file:YuanxuProof/ModuleSystem/Schema/Query.lean][ModuleSystem/Schema/Query]] | =module-system/authoring/admission.ss= | Checked finite-space query projection requires admitted membership; no native execution flag | Finite read-only domain model; actual implemented source-shape guard is Authoring/Queries |
+| [[file:YuanxuProof/ModuleSystem/Schema/Resolution.lean][ModuleSystem/Schema/Resolution]] | =module-system/schema/validation.ss= | Prepare/certify, authorize, then disclose; runtime denial cannot call disclosure | Authorization verifier/consumer are explicit effect boundaries |
+| [[file:YuanxuProof/ModuleSystem/Selection/Requirements.lean][ModuleSystem/Selection/Requirements]] | =module-system/schema/relations.ss= | Prepared factory origin and checked provider absence | C4 is inheritance only; it is not module dependency scheduling |
+| [[file:YuanxuProof/ModuleSystem/Source/Ownership.lean][ModuleSystem/Source/Ownership]] | =module-system/source/directory.ss= | Duplicate declared root refusal and nearest ancestor owner lookup | Paths are normalized component lists; no lexical-prefix ownership shortcut |
+| [[file:YuanxuProof/ModuleSystem/Workflow.lean][ModuleSystem/Workflow]] | =profile-composition/profile-bundle.ss= | Actual Object declarations, prepared checks, checked Query/Codec, cache and revision discharge | Integration of owner models; not a substitute for individual owner proofs |
+| [[file:YuanxuProof/Modules/Funflow/CausalCut.lean][Modules/Funflow/CausalCut]] | =module-system/design/45-72-event-ingress-causal-cuts-deduplication-and-acknowledgement.org= | Finite cut constructor checks every parent membership | No native event ingress implementation is claimed by the finite policy model |
+| [[file:YuanxuProof/Modules/Funflow/ConclusionRevision.lean][Modules/Funflow/ConclusionRevision]] | =module-system/design/45-73-late-event-correction-retraction-and-incremental-truth-maintenance.org= | Actual ProofObject patch/pending/discharge with retained historical evidence | Domain evidence interpretation remains explicit; no native incremental evaluator claim |
+| [[file:YuanxuProof/Modules/Funflow/Context.lean][Modules/Funflow/Context]] | =modules/funflow/control-plane/policy.ss= | Constructive decidable demand admission and exact owned context certificate | Capability snapshot is implemented; future budget/deadline metering is not inferred |
+| [[file:YuanxuProof/Modules/Funflow/Continuation.lean][Modules/Funflow/Continuation]] | =module-system/design/45-68-distributed-evaluator-delegation-fencing-and-portable-suspension.org= | Executable one-shot finite transition and control/native error separation | No native distributed or portable continuation implementation is claimed |
+| [[file:YuanxuProof/Modules/Funflow/Control.lean][Modules/Funflow/Control]] | =modules/funflow/control-plane/failure.ss= | Pure terminal-effect interpretation and explicit policy attenuation | Native VM safe-point/exception continuation equivalence is not proved |
+| [[file:YuanxuProof/Modules/Funflow/Policy.lean][Modules/Funflow/Policy]] | =modules/funflow/control-plane/runner-support/validation.ss= | Frozen policy, task/frontier capability checks and first-error plan admission | Registry capability/routing observations are inputs; no scheduling/fairness claim |
+| [[file:YuanxuProof/Ops/ProcessScript.lean][Ops/ProcessScript]] | =ops/func.ss= | Argument order, watchdog argv, provider environment overlay and POSIX wait-status fragment | Timeout number formatting is an observed validated string; no watchdog-delivery claim |
+| [[file:YuanxuProof/PooClos/Outcomes.lean][PooClos/Outcomes]] | =poo-clos/dispatch.ss= | Structural erasure of projected native/control outcomes | Native call refinement is PooClos/Dispatch; erasure alone is not evaluator equivalence |
+| [[file:YuanxuProof/PooClos/InstanceStorage.lean][PooClos/InstanceStorage]] | =poo-clos/instance-state.ss= | Surviving cell retention, removed-slot exclusion, allocation and lazy revision gate | Native allocation and mutating hooks are not assumed atomic or failure-free |
+| [[file:YuanxuProof/PooClos/MethodCombination.lean][PooClos/MethodCombination]] | =poo-clos/method-combination.ss= | Qualifier patterns, first-group assignment, required/ambiguous refusal and ordered/short-circuit combinations | Procedure matchers and non-Boolean truthy control values are outside this fragment |
+| [[file:YuanxuProof/PooClos/NextMethod.lean][PooClos/NextMethod]] | =poo-clos/dispatch.ss= | All-chain reference equality for replacement arguments before next-method invocation | Native argument validation/re-resolution are observed results, not promised success |
+| [[file:YuanxuProof/PooClos/Dispatch.lean][PooClos/Dispatch]] | =poo-clos/dispatch.ss= | Actual indexed method selection/reference equality, cache refinement and registration invalidation | Class/eql precedence projection remains native adapter input; opaque ProjectionOps removed |
+| [[file:YuanxuProof/ProfileComposition/BundleIdentity.lean][ProfileComposition/BundleIdentity]] | =profile-composition/profile-bundle.ss= | Selection-key repeat equality, revision/generation conflicts and direct reference conflicts | Reference identity is not a digest or assumed hash injectivity |
+| [[file:YuanxuProof/ProfileComposition/Composition.lean][ProfileComposition/Composition]] | =profile-composition/profile-bundle.ss= | Ordered operand flattening, existing-selection retention, conflict abort and stable union | Stage prototypes use final self; native recursive POO mechanics remain dependency-owned |
+| [[file:YuanxuProof/ProfileComposition/Prototype.lean][ProfileComposition/Prototype]] | =profile-composition/profile-bundle.ss= | LeanPoo ordered prototype chain and preserved final self | Pure prototype semantics; no claim that arbitrary self recursion terminates |
+| [[file:YuanxuProof/ProfileComposition/Revision.lean][ProfileComposition/Revision]] | =profile-composition/profile-bundle.ss= | Complete context-slot miss after profile/root revision change | The model does not authenticate supplied revision identities |
+| [[file:YuanxuProof/ProfileComposition/Syntax.lean][ProfileComposition/Syntax]] | =profile-composition/selection-syntax.ss= | Structural Module/Profile/bounded-body syntax and rejection controls | Gerbil hygiene and source location preservation are tested natively |
+
+* Changes beyond the preceding four groups
+
+The old PooClos =ProjectionOps= record delegated import closure, capability meet
+and bundle digest to opaque callbacks. It is replaced in the existing Dispatch
+model by actual LeanPoo indexed selection, registration, candidate-cache soundness
+and reference-call equivalence. Replacement-argument and slot-cell lifecycle
+models add the missing concrete native behaviors. Class storage is allocated
+once outside computed slots, so subclass metadata cannot reallocate the shared
+class-cell table; the lifecycle counter regression retains its expected value.
+
+Imports now computes the default instance/explicit alias and prepares actual
+export factories. Query projection requires the admitted membership proof;
+its checked factory computes admission, and a pure projection no longer sets a
+native-execution success flag. Context now has a checked constructor and an exact
+ProofObject certificate rather than only a proposition-valued record constructor.
+
+Realization now requires post-validator package/source currentness. Contribution
+coverage checks lengths before zipping and compares exact references, selected
+origin fields and resolved payload. Build inputs reject contradictory snapshots
+and compiler collisions. Directory ownership walks nearest path ancestors, and
+Graph payload proofs model stable-distinct append and value removal rather than
+ordinary list append or deletion of the entire slot.
+
+* Native compiler regression
+
+=source/declaration.ss= generates the same lazy phase-bound Build binding for an
+original interface as the admitted source reader does. Prepared wrappers import
+prepared roles once; the included original source location must not trigger a
+second import of bare config.ss. Build is still checked outside its cached slot
+on every access. =t/module-build-role-test.ss= covers both original compiler input
+and prepared wrappers, non-execution during import, phase refusal before/after
+cache use, source mutation and root re-entry refusal.
+
+The Funflow regressions also exercise shared JSON artifact definitions in the
+explicit SDK bootstrap. A canonical shared library beside a Module is reused
+with its original context identity; the prepared publication's role files,
+including Build, remain forbidden compiler inputs. Current-source checks still
+precede consumption. The model rejects unregistered context substitution and
+role admission. The two local Funflow scenario publications are ordinary Core
+build roots, so their public imports no longer depend on a source-load fallback.
+
+* Local validation, 2026-10-18
+
+The checked working trees are Agentic AI Lab =a74fc2fd= on
+=research/ascent-poo-flow= and Core =80e2e74= on
+=refactor/module-feature-ownership=, including their uncommitted changes.
+These are local receipts, not remote CI results.
+
+| Gate | Result |
+|------+--------|
+| Model inventory | All 54 files explicitly imported and mapped above |
+| Core Lean, Lean 4.34.0 / LeanPoo =6e6a706e14fa6f8199e4f36711440355b42ef335= | 149 jobs; 4185 declarations; standard axioms only; no arbitrary Prop fields |
+| Product Lean | =lake build AgenticAILabProof=; 455 jobs |
+| Shape negative control | Arbitrary Prop shell rejected with the expected diagnostic |
+| Core package | Native =gxpkg build github.com/tao3k/gebril-yuanxu=; natural exit 0 |
+| Root package | Native =gerbil build=; 269 targets; natural exit 0 |
+| Related Scheme | 25 Core files plus root =control-plane-test.ss=; all 26 have natural exit 0, MODULE-OK, HARNESS-OK and final OK |
+| Quint | 30 cases including expected counterexample controls; natural exit 0 |
+
+Scheme checks use the heap-fenced Just recipes serially. Failed cold/in-flight
+attempts were retained locally; affected files were rerun after the fixes. The
+process-script case was also rerun with compilation idle at the unchanged
+timeout, and exited naturally. No failure was relabeled as a pass.
+
+Package and native receipts use an isolated registry with the declared POO
+=ece6f609357ea918038090559ac051a8d9f3e52f=, ASP =v0.1.2.2=,
+parser =78507e68b1275be1be748be465d6354f596d9063=,
+Orgize =8f04aa246290b56b5605f4a38f25c55d0b416268=,
+Ascent =86ad9ae3469565bea6229b71ef1d9197c6a82d63=, and the current
+Core working tree. =GERBIL_PATH= points at that registry and =GERBIL_LOADPATH=
+at its library only. The pre-existing registry's old tags and dirty dependency
+checkouts were preserved; these receipts do not certify that legacy cache.
+Raw logs and source-hash inventories remain outside source control.
+
+* Replay-boundary proof-only follow-up, 2026-10-18
+
+The current inventory adds =Admission.ReplayBoundary=. Its complete Lean build
+passed 150 jobs and audited 4,410 declarations with standard axioms only and no
+arbitrary Prop fields. This is a newer, separate formal receipt; the package,
+Scheme and earlier integration results above were not rerun in this follow-up.
+Native producer downloads match the exact declared gerbil-poo revision. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for ordered-diagnostic counterexamples, QNT qualification and the still-open
+producer/metadata/observer closure correspondence. No Scheme or Loader changed.
+
+The follow-up Quint gate typechecked 47 native sources and completed all 46
+expected outcomes (including the six ReplayBoundary cases). This does not
+replace the earlier native Scheme/package receipts or establish their current
+runtime refinement. Raw qualification artifacts remain outside the repository.
+
+* Identity-DFS proof-only follow-up, 2026-10-18
+
+The aggregate now requires IdentityDFS and DFSFrames, including unique/exact
+reachability, recursive-frame termination and final recheck coverage. The new
+Lean gate passed 152 jobs and audited 4,581 declarations with standard axioms
+only; the shape audit passed. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for QNT receipts, concurrent source-cut
+qualification, native assumptions and retained failures. No Scheme or Loader
+implementation is owned by this proof-only follow-up.
+
+The IdentityDFS current-source QNT run completed 55 expected outcomes after
+56 source typechecks. The earlier receipt was retained when another session
+changed source-admission query-cache scoping. Both final graph/frame owners
+are bound in the new receipt; no native consumer counts or timings were rerun.
+
+* State-derived entry follow-up, 2026-10-18
+
+The current aggregate requires Admission.ReadOnlyEntry's raw-state closure,
+callback-independence, bootstrap readiness counterexample and ordered-error laws.
+It passed 162 jobs and audited 4,918 declarations with standard axioms only;
+the model shape audit passed. The complete current-source QNT gate passed 66
+expected outcomes after 67 source typechecks. The first attempt's dependency
+source-drift refusal is retained. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]] for current pin comparison,
+proof premises and the boundary between closed model operations and unimplemented
+native snapshot extraction. No Scheme consumer change or Loader integration is
+claimed by these results.
+
+* Native snapshot qualification, 2026-10-18
+
+SnapshotEntry is required by the aggregate: exact cut guards, identity/cached-value
+changes, deterministic projection preservation, callback independence and explicit
+ABA/source-authority limits. The final Lean gate passed 163 jobs with 5,027
+audited declarations and the model shape gate. The final QNT receipt binds all
+77 expected outcomes over 78 sources and the qualification Scheme helpers.
+Seven default-runtime extraction cases and eleven real service publication cases
+passed independently. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for compiler-path failures and proof/native
+correspondence limits. This is not atomic extraction or a production byte-cache
+optimization, and the earlier six/76-case receipts are retained separately.
+
+
+* Revision and use-boundary qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] records the seven native lifetime controls and the source-cut
+qualification boundary. SnapshotLifetime passes the aggregate Lean build
+(164 jobs, 5081 declarations, shape/axiom audits) and the full 89-case Quint
+catalog. Its scope-ABA and check-to-use witnesses intentionally refute history
+and fencing claims; they do not refute certification safety. Serial supported
+mutation and complete native state/read projection remain premises. A compiled-interface regression failure is retained alongside its later
+passing rerun; concurrent reader edits prevent a current-workspace integration
+claim. This does not authorize production replay reuse or Loader changes.
+
+
+* Serial-use qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] records 22 native passing controls, the 165-job/5159-declaration Lean
+aggregate audits and the 98-outcome/99-source Quint gate. Active-root protection
+does not freeze independent demands or sources. Conditional-commit theorems
+assume an atomic external authority; no native or provider implementation of
+that relation is inferred. Production Scheme and Loader remain untouched.
+
+
+* Call phase qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] records six actual call controls plus 22 unchanged regressions, the
+166-job/5231-declaration Lean aggregate audits, and the 108-outcome/109-source
+Quint gate. Acquisition and body frames differ; observation must include actual
+body reads. The initially omitted veto-exception outcome was corrected and its
+source-cut failure retained. Successful non-cyclic lookup, complete identity /
+read projection and serialized supported calls remain native-correspondence
+premises. External conditional commit is still a provider premise.
+
+
+* Actual source-admission body qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] records 24 passing native cases (including six new actual-adapter cases),
+167 Lean jobs / 5271 audited declarations, and 118 Quint outcomes / 119 sources.
+The native adapter, not a test replay wrapper, rejects changes made by nested
+obligations before normal return. Revision projection provides a necessary
+condition; unchanged revisions do not replace the native cache/checker/identity
+checks. Complete selected observation and serialized supported calls remain
+premises. External atomic commit remains outside this qualification.
+
+
+* Post-replay return-tail limitation
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] adds real SourceAdmissionContract return-tail controls and a real service
+Scenario witness. A successful earlier replay and individually matched source
+reads do not imply current objects or a coherent source set at return. Lean's
+=ReturnTail.actualReturn= deliberately uses per-read certificates; its read-only
+trace law is conditional and does not qualify arbitrary native observers.
+The final gate completed 168 Lean jobs / 5377 audited declarations and 128 Quint
+outcomes / 129 sources with a stable bound source cut. Three new limitation traces
+on the unchanged algorithm retain stale object, stale source-set and stale plan
+acceptance. Two evaluated requirements and parent isolation remain separate
+controls; they do not repair those limitations. No production fix is claimed.
+
+
+* Constrained verification-segment qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] records 22 native variant-case executions (8 unrestricted, 7 return-only,
+7 segment), 169 Lean jobs / 5452 audited declarations, and eight source-bound
+ClosedTail Quint outcomes after typechecking all 137 model files. The segment
+starts before replay; a return-only gate misses a cache-exit callback that writes
+and removes itself. A producer-owned restriction denies that callback without
+another sweep. Native source cuts and the formal bound cut are recorded separately;
+this is not a latest-working-tree/full-catalog qualification. Native-record
+ownership, complete observation, serial supported execution and trusted intrinsic
+inspection remain correspondence premises. Arbitrary MOP records/checkers are not
+certified read-only. Independent filesystem writers still require snapshots or
+conditional-commit authority; no production Scheme/Loader fix is claimed.

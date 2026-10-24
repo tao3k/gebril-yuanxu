@@ -1,0 +1,315 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.45 Config Languages 44: Real AWS Source and Collection Admission
+#+property: DOCUMENT_ID 11.45
+#+property: STATUS implemented-bounded-no-loader
+
+* Correction and purpose
+
+The earlier process-local candidate records establish neither AWS provenance nor
+provider semantics. Calling them “Evidence” without that qualification was
+misleading. =collections.ss= now names their actual responsibility: preventing
+reuse against a changed candidate, source or field. They remain internal
+explicit collection-check bindings, not user-authored configuration or portable certificates.
+The internal registry uses native weak keys, as in Core verification, so a
+long-lived source does not retain discarded bindings.
+Native Contract admission still returns the existing Core validation evidence;
+there is no second general-purpose evidence protocol.
+
+The earlier literal-string policy is retained as an internal synthetic control,
+not exported by the default module interface.
+It is NOT the AWS policy: AWS =HashString= uses IEEE CRC32. Distinct strings can
+collide and SDK =Set.add= keeps the first value for a key. Structural JSON
+=uniqueItems=, string equality and provider set identity are different semantics.
+
+* Superseded product ownership; retained historical controls
+
+[[file:11.46-package-produced-provider-contracts.org][Chapter 45]] implements the package-artifact boundary. The fixed release object
+formerly in runtime =config.ss= and this chapter's source/binary qualification
+facade now live in product =t/fixtures/opentofu/aws-5.100.0/=. They are not
+public runtime APIs or the package publication mechanism. The source controls
+and historical receipts below remain scoped to those explicit fixture imports.
+Normal product callers bind the public =OpenTofu= object with existing
+=use-module= and use native Contract =.admit=. Artifact directories remain inside
+the module; there are no user source-file lists or manual proofs.
+
+* Maintained source and actual acquisition
+
+The maintained release is =registry.terraform.io/hashicorp/aws= =5.100.0= on
+=darwin_arm64=. Its source commit is
+=f7a3b98da589ab1d52756b0dcee0dbf2de83d635=; its =go.mod= selects plugin SDK
+=2.36.1= at =7b9b1111b68d597dccb33fdc8ac4904d8a122f44=.
+
+Official sources:
+- [[https://github.com/hashicorp/terraform-provider-aws/tree/f7a3b98da589ab1d52756b0dcee0dbf2de83d635][AWS source commit]].
+- [[https://github.com/hashicorp/terraform-plugin-sdk/tree/7b9b1111b68d597dccb33fdc8ac4904d8a122f44][SDK source commit]].
+- [[https://registry.terraform.io/v1/providers/hashicorp/aws/5.100.0/download/darwin/arm64][Official release metadata]].
+
+OpenTofu 1.12.6 acquired this exact release in a temporary directory, produced
+=.terraform.lock.hcl= and exported its Schema. The official checksum signature
+was also checked with GnuPG. The pinned signer fingerprint is
+=C874011F0AB405110D02105534365D9472D7468F=; signing subkey
+=374EC75B485913604A831CC7C820C6D5CD27AB87=.
+
+This is a *pinned historical signature* policy. The key is now expired:
+OpenTofu reported its expired-key warning and GnuPG reported =VALIDSIG= together
+with =EXPKEYSIG=. This receipt must not be presented as current, unexpired
+signer validation or universal approval of expired signing keys.
+
+| Artifact | SHA-256 |
+|----------+---------|
+| Official darwin_arm64 archive | bb64e8aff37becab373a1a0cc1080990785304141af42ed6aa3dd4913b000421 |
+| Acquired executable | 0d25f8f99c202cdf4d9566d3bc5165d518e7ea88de87a3ec4e77b2cf367daac4 |
+| Full actual Schema export | cb0e8a42f6eaea3983698d70cba213a630c661420f974a7246685d026da32781 |
+| Selected two-resource Schema fixture | 30cf1c04c71f30ce3ec366e5ce7e841b333d75d7ce06ae0764a5a22e2fc831b9 |
+
+The selected fixture retains the complete =aws_iam_group_membership= and
+=aws_security_group= resource definitions. It is an extracted publication,
+not a full export or an independent cryptographic attestation of execution.
+The acquisition process binds it to the checked executable/export; Core then
+checks the published bytes against maintained pins. Offline fixture admission
+does not rerun GPG, download a plugin or prove the reproducibility of a Go build.
+
+* Real role ownership
+
+| File | Responsibility |
+|------+----------------|
+| =types.ss= | Provider selection/source/binary request Contracts; authority and binding Types |
+| =config.ss= | The reviewed release, immutable source references, hashes and historical signature policy |
+| =source.ss= | Existing SourcesLock checks, actual Schema decoding and AWS policy publication |
+| =aws-hash.ss= | Pure source-corresponding CRC32, SDK string-set and literal rule-key algorithms |
+| =collections.ss= | Policy x binding-transport multi-dispatch and stale-context rejection |
+| =func.ss= | General cty conversion and shared collection traversal |
+| =objects.ss= | Native Contract publication and selected ConfigurationContract |
+| =interface.ss= | Imports and closed exports only |
+
+=ProviderSelectionContract= is generated through the existing JSON Schema
+Contract adapter. =ProviderSourceRequestContract= and
+=ProviderBinaryRequestContract= constrain boundary request shapes.
+=AwsProviderSourceContract= and =AwsProviderBinaryContract= add actual source
+and binary obligations. =CollectionReceiptType= checks shape only; private
+registration, final-value comparison and source checks decide validity.
+
+The source adapter does not trust a user-replaced lock verifier. It compares the
+selected lock against the maintained root and verifies bytes using the native
+SourcesLock built from maintained entries. A self-consistent replacement lock
+cannot replace those pins. Schema decoding uses the SAME checked bytes. Public
+block access returns a fresh decoded projection rather than aliasing the
+retained authenticated Schema. Signature/lock roots are maintainer-trusted
+Scheme code, not a sandbox against arbitrary mutation of that code.
+
+* Ordinary use: values, not hand-built proof objects
+
+This is the current compiled interface, not a proposed Loader syntax. The
+publisher supplies its artifact reader; ordinary configuration need not know
+about signatures, SourceLock internals, candidate ledgers or =.prove=.
+
+#+begin_src scheme
+(import :yuanxu/modules/opentofu/interface
+        "t/fixtures/opentofu/aws-5.100.0/qualification.ss"
+        (only-in :std/misc/ports read-all-as-u8vector)
+        :clan/poo/object)
+
+(def (read-source id)
+  (call-with-input-file
+    (string-append "t/fixtures/opentofu/aws-5.100.0/" id)
+    read-all-as-u8vector))
+
+(def AWS
+  (yuanxu-opentofu-aws-provider
+    (.o provider: "registry.terraform.io/hashicorp/aws" version: "5.100.0")
+    (yuanxu-opentofu-aws-sources-lock)
+    read-source))
+
+(def Membership (.call AWS .contract 'aws_iam_group_membership))
+(def candidate
+  (.get (.call Membership .normalize
+          (.o name: "example" group: "example" users: '("alice" "alice" "bob")))
+        value))
+(.call Membership .admit candidate #f)
+#+end_src
+
+The last operation performs native exported-shape admission and rechecks source
+integrity. It does not prepare collection bindings, normalize the candidate or
+invoke a Provider. Explicit collection consumers use
+=(.call (.get Membership collection-contract) .admit candidate context)=.
+Their retained contexts reject stale bindings. Neither operation proves every
+unexported SDK validator, AWS account fact or eventual deployment condition.
+
+* HashString, collisions and rule identity
+
+The locked AWS IAM resource explicitly uses =schema.HashString= for =users=;
+the Security Group rule explicitly uses it for =security_groups=. SDK
+=HashString= delegates to CRC32/IEEE. On the pinned 64-bit platform it is an
+unsigned 32-bit value represented as a positive integer. SDK =Set.List= sorts
+its decimal hash-key strings. OpenTofu's later cty/JSON set projection may sort
+values differently: neither ordering is an execution order.
+
+The implementation uses standard =delete-duplicates/hash= with a key function,
+=list-sort=, =map= and =foldl=. The installed standard library exports no CRC32
+primitive, so a small pure IEEE-table implementation owns that operation.
+Rule field flattening uses standard =map= + =append= to preserve each sorted
+child sequence. No Go component, custom transformation DSL or nested user hook
+was introduced.
+
+The real plugin local-plan control used placeholder credentials, disabled
+metadata/credential/account/region checks and =-refresh=false=. No apply was
+performed. It confirmed that the two different inputs
+=utIPHxYsX5E8zVX= and =u3czpzvJxk89nnq= share CRC32 =1403338338= and only the
+first survives alongside =alice=. The normalized membership in the JSON plan
+contains =alice= and =utIPHxYsX5E8zVX=.
+
+Explicit collection checking rejects raw colliding candidates with =provider-set-hash-collision=;
+explicit normalization reproduces the provider's first-wins identity collapse.
+This operation can remove distinct values, so it must not be described as
+ordinary string deduplication. The normalized value can then be admitted.
+
+=securityGroupRuleHash= combines integer ports, canonical protocol, self,
+sorted CIDR/prefix/group sequences and nonempty description, then computes
+CRC32. Its literal key/hash is implemented and tested against the actual planned
+canonical rule and independent checksum controls. That does not implement all
+SDK defaulting, unknown-value handling, CIDR validation, state transitions or
+provider RPC validation. Consequently explicit collection checking of the outer
+rule-object set returns =provider-set-identity-unresolved=; ordinary configuration
+=.admit= accepts Schema-valid rules without requiring that hash. Knowing a hash formula is not permission to
+self-certify the whole object set.
+
+* Rejection boundaries
+
+- Changed provider identity or version: source admission rejects the selected
+  value before loading its Schema or calculating candidate hashes.
+- Changed source bytes or a different lock: source/Schema diagnostics identify
+  the artifact, such as =(source "schema.json")=.
+- A replaced lock's =.verify= returning =valid?: #t= cannot authenticate changed
+  bytes; the maintained native root owns verification.
+- Mutating an exported block cannot mutate the authenticated Schema.
+- Changed candidate with a retained binding: the explicit collection Contract rejects it with
+  =provider-set-evidence-candidate-mismatch= at the concrete field path.
+- The source-qualified configuration Contract rechecks Schema/source even without
+  a retained context. A changed
+  payload after earlier admission produces =provider-source-mismatch=.
+- Explicit outer custom object identity remains unresolved even when its inner
+  string collections have valid source-qualified bindings. This does not reject
+  the ordinary configuration Contract.
+
+* Binary source gate and remaining trust boundary
+
+=AwsProviderBinaryContract= streams the actual executable through standard
+=Digest::sha256= / =digest-from-reader!=. It does not allocate the 649 MiB
+executable as a bytevector. Version mismatch and binary mismatch are separate
+native obligations. Running this explicit gate requires the real acquired
+binary; an offline fixture does not silently substitute for it.
+
+The product Just entrypoint is =just test-opentofu-aws-binary <binary>=. Ordinary
+fixture checks use =just test-file t/opentofu-aws-source-test.ss=. Both use the
+default native runtime and pre-import heap fence. No Loader is connected.
+
+Still separate: generic release acquisition/signature policy, other versions
+or platforms, an automated cryptographic execution attestation from binary to
+export, complete custom-rule admission, and deployment authorization. This
+implementation is one reviewed AWS release, not a general provider trust store.
+
+* Earlier native qualification before admission separation (2026-10-17)
+
+Core was rebuilt with the default installed Gerbil toolchain. The final focused
+run used these existing heap-fenced Just entrypoints serially:
+
+#+begin_src sh
+just test-file t/opentofu-aws-source-test.ss
+just test-file t/opentofu-set-evidence-test.ss
+just test-file t/opentofu-schema-test.ss
+just test-file t/json-schema-contract-bridge-test.ss
+just test-file t/json-schema-native-contract-test.ss
+just test-file t/gerbil-runtime-import-test.ss
+just test-opentofu-aws-binary /path/to/terraform-provider-aws_v5.100.0_x5
+#+end_src
+
+All seven returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK= and no
+failure/overflow markers. Source admission has 27 assertions, the actual-binary
+gate has 3, retained-binding controls have 36 and the existing conversion gate
+has 54. The binding control explicitly performs GC while a context is retained.
+This is focused local native qualification, not full-suite or remote CI closure.
+
+Negative controls include wrong provider version; malformed selection; changed
+Schema/SDK payload; replaced or self-consistently repinned lock; forged lock
+verification behavior; mutation of a public block; CRC collision; stale
+candidate and forged binding; source mutation after earlier preparation; and
+custom-rule identity not discharged by an inner string-field result.
+
+Initial controls exposed two representation/correspondence mistakes. SDK
+=Set.List= and the later cty JSON set serialization have different orderings;
+the final comparison checks the same set identity without treating either as
+execution order. The rule-key comparison remains exact and caught an incorrect
+child flattening order. The implementation now uses =map= + =append= and retains
+the original expected rule preimage/hash. Failed local receipts were not changed
+into passes; the final gates above were rerun after correction. Logs, plugin
+binaries, full exports and raw plans remain local artifacts.
+
+* Configuration admission, export gaps and Provider validation
+
+The executable comparison is maintained in product
+=t/fixtures/opentofu/aws-5.100.0/admission/=. Each =.tf= file pins AWS 5.100.0;
+=controls.json= records selected structured results from the actual plugin's
+=tofu validate -json=. No credentials, AWS calls, refresh or apply were used.
+The local plugin is the previously binary-verified darwin_arm64 executable.
+
+| Configuration | Native exported Contract | Actual Provider validation |
+|---------------+--------------------------+----------------------------|
+| TCP 443, CIDR 10.0.0.0/16 | accepts | accepts |
+| from_port = "wrong" | rejects type at ingress/0/from_port | rejects number type |
+| CIDR 10.0.0.1/16 | accepts string | rejects host bits; suggests 10.0.0.0/16 |
+| rule missing from_port | accepts exported optional child | rejects missing ingress.0.from_port |
+
+The last two rows are deliberate export-gap controls, not weakened tests. The
+bare cty object descriptor contains the port's type but not its SDK Required
+flag; the string descriptor contains no Go CIDR ValidateFunc. Neither fact may
+be reconstructed from a missing hash receipt. A future reviewed provider-specific
+Contract refinement can supplement exported constraints; Provider validation
+and plan remain distinct engine operations. No plan/RPC adapter is implemented.
+
+The pipeline is: Provider exported cty/block Schema -> thin standard JSON Schema
+projection -> existing Scheme Contract compiler -> native configuration =.admit=.
+The original export is valid JSON in a provider-defined Schema format. For
+example ={"type":["set","string"],"required":true}= is not a standard JSON
+Schema node. Standard JSON Schema input already supported by the shared module
+uses that module directly, without this projection.
+
+Ordinary configuration uses only the existing native entry:
+
+#+begin_src scheme
+(def SecurityGroup (.call AWS .contract 'aws_security_group))
+(.call SecurityGroup .admit
+  (.o name: "web" ingress:
+    (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+              cidr_blocks: '("10.0.0.0/16")))) #f)
+;; Accepted exported configuration shape; no .prove/.normalize or manual context.
+#+end_src
+
+=.normalize= and =.prove= remain explicit local collection tools. A successful
+=collection-contract= check is still not Provider plan validation. An unresolved
+custom identity must never be presented as an invalid Security Group config.
+Provider planning also needs engine expression/unknown/default handling, state
+and environment; an offline =validate= pass cannot establish deployability.
+
+The existing expiry, forgery, candidate replay and custom-hash negative controls
+remain at the explicit collection Contract boundary. The standard =.admit= path
+has additional real-Schema positives, spelling/type negatives and live source
+mutation rejection, including a trap proving it invokes neither =.prove= nor
+=.normalize=. No Loader or implicit Provider effect was added.
+
+** Qualification after separation (2026-10-17)
+
+The same seven default-runtime Just gates listed above were rerun serially after
+the layering correction. Every process returned exit 0, =MODULE-OK=,
+=HARNESS-OK= and final =OK=, with no harness/case/check errors or heap/stack
+overflow markers. The source gate now has 37 assertions; the Schema gate has 57;
+collection controls retain 36 and binary verification retains 3. This remains
+focused local qualification, not the complete product suite or remote CI.
+
+To reproduce the independent plugin comparison, initialize the exact locked
+provider once in an external working directory; for each checked-in
+=admission/*.tf= copy that file to =main.tf= in a separate working directory,
+reuse that installed provider and its lock, then run =tofu validate -json=.
+All four controls were actually executed. Only =valid.tf= returns exit 0; the
+other three return exit 1 with the diagnostics recorded in =controls.json=.
+This explicit comparison is not invoked by native Contract admission.

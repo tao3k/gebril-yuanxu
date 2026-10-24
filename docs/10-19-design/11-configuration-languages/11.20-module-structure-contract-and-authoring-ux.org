@@ -1,0 +1,94 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.20 Config Languages 19: Standard Module Structure, Contracts and Authoring UX
+#+property: DOCUMENT_ID 11.20
+#+date: [2026-10-16]
+#+filetags: :config-language:module-system:organization:comparison:design:
+#+property: STATUS agreed-target-organization-no-runtime-or-loader-change
+
+* Shared design belongs to Core; this document evaluates consumer UX
+
+The authoritative [[file:../../../module-system/design/01-source-roles.org][published Module role Contract]] and
+[[file:../../../module-system/design/03-publication-selection.org][publication/selection protocol]] live in the Core submodule. They specify the
+types.ss/objects.ss/config.ss/interface.ss shell with optional func.ss, ownership
+checks and the pending coordinated migration. Agentic AI Lab's current source checker
+still follows its existing interface/config/funs rules; nothing is enforced here.
+
+Agentic AI Lab owns the ecosystem comparison below, its default source/authoring policy,
+Agent/user experience and domain examples. The shell applies to real reusable
+Modules, not every Profile/Scenario/value. Contract bindings should be reused,
+exports and build registration should not be repeated, and selected source
+inspection should not initialize an entire catalog. The shared Core documents
+own those mechanisms; this study tests their usefulness with real consumers.
+
+* What actual ecosystems teach us
+
+** Terraform/HCL: conventions have value without making filenames semantics
+
+HashiCorp's [[https://developer.hashicorp.com/terraform/language/modules/develop/structure][standard structure]] recommends conventional main/variables/outputs
+files, including empty files, for consistent tooling and module consumption.
+Its [[https://developer.hashicorp.com/terraform/language/files][language file model]] treats a directory's top-level configuration files as
+one module; splitting those blocks is an organizational choice rather than a
+change of behavior. The distinction matters: consistency can help tooling, but
+filename presence is not proof of well-typed exports or safe composition.
+
+For Agentic AI Lab, the source-role Contract can make the architectural boundaries
+stronger than a convention. It earns that extra constraint only if it provides
+useful diagnostics, clear navigation and less duplicated author work. There is
+no evidence here that four files alone improve correctness or performance.
+
+** HiveBus/Nix: simple user values and separately owned extension policy
+
+Actual [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/hosts/host-1/meta.nix][host configuration]] assigns deployment.allowLocalDeployment and targetHost.
+Actual [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/nixosModules/boot.nix][boot module]] declares a typed option/default in one small Nix expression.
+The [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/pops/nixosModules.nix][loader extension]] selects the directory through addLoadExtender, while
+[[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/flakeOutputs.nix][export policy]] owns advanced POP renaming separately. Users are not required
+to restate those implementation layers merely to change the host address.
+The [[https://nixos.org/manual/nixos/stable/#sec-writing-modules][NixOS module model]] is a useful control for typed option/configuration
+composition; arbitrary native functions alone do not supply its ecosystem tooling.
+
+For Agentic AI Lab, interface/config/contracts separation should be infrastructure that
+maintainers and Agents can navigate. It should not burden the user changing one
+image. Directory projection should organize the ecosystem, not recursively load
+its whole catalog just because the directory exists.
+
+** Omnibus/Nickel: type reuse plus a maintained business consumer
+
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/types.ncl][The type owner]] defines reusable AWS-related contracts. [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws.ncl][The module assembly]]
+composes domain pieces. [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws-simple-ec2.ncl][The EC2 owner]] connects input constraints/defaults to
+resource elaboration; [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/main.ncl][the user input]] selects business values and references
+a maintained network. It does not mirror our proposed role filenames one-for-one.
+The lesson is preserving the whole typed consumption chain, not copying filenames.
+
+For Guestbook, reuse the existing JSON Schema bridge in types, maintain the actual
+Profiles/defaults in their owners, assemble the Module in interface, and validate
+final Scenario/resource relationships before publication. Do not make every user
+reconstruct that chain or hand-copy Kubernetes properties.
+
+* Research questions and acceptance criteria
+
+| Question | Concrete control |
+|----------+------------------|
+| Does the structure help an Agent? | Locate/edit a Contract, default, method and public export without searching the whole repository; measure wrong-role edits |
+| Is the shell proportional? | Compare small real Modules and large providers; count unique definitions, mandatory imports/files and registration repetition |
+| Can defaults evolve safely? | Reuse the Guestbook image/single-label/whole-label experiment and reject changed mandatory policy correctly |
+| Is discovery bounded? | One selected module among many, retained disabled entries and no unselected implementation effects |
+| Does the graph replace manual lists? | Add a module/feature without duplicating its entry in user init and build.ss; retain for-syntax/FFI/resource dependencies |
+| Does metaprogramming help? | Generated bindings expand to ordinary POO/functional code with source diagnostics; no hidden source loading during expansion |
+| Is the benefit real? | Compare complete user/maintainer tasks and final plans with actual KCL, HiveBus and Omnibus controls, not isolated syntax |
+
+Measure these with real contribution cases before claiming correctness, Agent
+productivity or startup gains. Scheme's functions, Contracts, generic dispatch,
+hygienic macros and MOP can enforce/share behavior behind a simple surface; none
+requires exposing that machinery for ordinary values. Structure provides stable
+ownership; semantics and consumers provide the actual guarantees.
+
+* Conclusion
+
+Adopt a standard role shell for published Modules as the design target, with
+Types/Contracts, objects, configs and interface mandatory and pure func optional.
+Do not spread that shell to every user Profile or compilation unit. Eliminate
+duplicate authorities and qualify the role admission/selected graph as the source
+of assurance. This combines predictable organization with a small user interface.
+Current loader/style enforcement and role filenames are not migrated by this work.

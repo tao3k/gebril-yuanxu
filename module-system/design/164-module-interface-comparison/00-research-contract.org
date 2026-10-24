@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Research Contract: Configuration Experience and Extensible Ownership
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* Purpose and questions
+
+This study asks whether Agentic AI Lab is becoming a usable configuration language
+interface, rather than merely exposing an extensible object kernel. The unit of
+comparison is a configuration authoring task. General implementation languages
+are outside the comparison set.
+
+RQ1: Can upstream maintain thousands of modules and independently reusable
+Profiles without duplicating schemas, publication rules and extension plumbing?
+RQ2: Can an ordinary downstream user select defaults and change business values
+without learning the provider implementation?
+RQ3: When the user becomes an extension author, do defaults, inherited values,
+contracts and output projection retain one coherent meaning?
+RQ4: Which failures are caught, when, and with what explanation? How does a user
+find the supported attributes before making the mistake?
+RQ5: What does laziness defer: field values, object construction, imported source,
+contract traversal, or backend activation? These are separate questions.
+RQ6: Which proposed POO advantages survive comparison with Jsonnet's inheritance,
+Nickel's contracts/merge metadata, Dhall's typed functions and NixOS's options?
+
+* Comparison levels and evidence
+
+| Level | Compared systems | Question |
+|-------+------------------+----------|
+| Language | Nix, Nickel, Jsonnet, Dhall, Gerbil Scheme + native POO | What are the evaluation, typing, merge and abstraction rules? |
+| Framework | NixOS modules, HiveBus/POP consumers, Omnibus NCL interfaces, Agentic AI Lab | What conventions and schemas turn those rules into a usable interface? |
+| Product case | Omnibus sandbox/matrix; HiveBus host/export; Agentic AI Lab Funflow | What does the actual author write, and which output consumer exists? |
+
+An actual Omnibus sandbox is not a performance-equivalent Funflow build. We
+compare shared authoring operations across these cases and use separate small
+semantic probes for genuinely matched field-override questions. A generated
+probe is labelled as such; it is never presented as extracted repository code.
+
+Omnibus NCL is pinned to c5d37eb51961fd7bd32f775843044ca7f8191715. The archive was
+read in the preceding source audit and the excerpts here are copied from it.
+HiveBus excerpts come from git show of edc6095bed63a3c14f9f7147c931378d3e9d1609,
+not from unrelated dirty files in its checkout. Original copyright notices are
+retained where present. File links and exact excerpt ranges identify the source.
+
+Language references are official manuals consulted on 2026-10-15. They describe
+semantics, not a pinned implementation benchmark. POO evidence is the current
+working tree, with local source receipts; it is not a released or clean-CI claim.
+No Loader or runtime code is changed by this research revision.
+
+* How to judge an example
+
+For each case, inspect six costs: the concepts the user must know; the data they
+must repeat; the authority that validates it; the extension that changes it;
+the computation demanded by that change; and the path from the final value to
+a real consumer. A short program can still have an expensive or opaque model.
+
+Keep four evidence labels distinct: extracted code; executed local behavior;
+illustrative semantic comparison; proposed improvement. A proposal is not an
+implemented feature, and an identity assertion is not provenance authentication.
+
+* Initial finding
+
+Our strongest demonstrated property is continuity: native objects are used for
+configuration, inheritance, prototype selection and final Pipeline relationships.
+That continuity is useful. It does not establish better validation, purity,
+termination, package reproducibility, discoverability, or large-catalog costs.
+The rest of this study specifies the work needed to make continuity a user
+advantage rather than simply an implementation preference.

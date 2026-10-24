@@ -1,0 +1,601 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.23 Config Languages 22: Explicit Interfaces and SourceRef-to-Scope Linking
+#+property: DOCUMENT_ID 11.23
+#+date: [2026-10-16]
+#+filetags: :config-language:module-system:publication:guestbook:design:
+#+property: STATUS proposed-link-protocol-no-implementation-no-loader
+
+* Where the file actually is, and what users should see
+
+The current file is [[file:../../../modules/json-schema/interface.ss][core/modules/json-schema/interface.ss]]. Gerbil package
+core makes its module path :yuanxu/modules/json-schema/interface. It exists and
+currently re-exports implementation procedures. The direct imports printed in
+module 21 describe available implementation APIs, not the desired configuration
+interface. The explicit JsonSchema publication below is a proposed change
+to that file, not something already exported by it.
+
+Root init declares source ownership. A module interface publishes its declaration.
+The existing product yuanxu-load-modules name should remain the single consumer
+facade for obtaining selected native scopes; shared source/link Contracts and pure
+composition belong to Core. Core must not import a product's facade, filesystem
+policy, PackageSpec or Kubernetes implementation to realize this protocol.
+
+* Naming rule for this target chain
+
+Core-owned public procedures use yuanxu- and compiler paths use :yuanxu/....
+The package migration is implemented; there are no forwarding aliases to the old
+Core package. The product checkout owns its own APIs. The historical revision
+inspection in [[file:11.22-migrated-core-guestbook-chain.org][11.22]] is not a current import guide; use
+[[file:../13-module-loading/13.16-yuanxu-package-and-prelude.org][13.16]] for the implemented package/prelude boundary. Proposed Guestbook
+provider adaptation remains design work, independently of namespace availability.
+
+* One complete Guestbook authoring chain
+
+The four authored files below form one target example: root init.ss, the Core
+JsonSchema interface, the contribution Guestbook interface and root build.ss.
+Role bodies remain owned by types.ss/objects.ss/configs.ss/optional func.ss as in
+[[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]. There is no second Module declaration in init, no manual compiler
+export and no user-written linking factory. Generated code is explanatory output,
+not another file the author maintains. All source/binding/build adapters here are
+proposed; this chapter does not connect the Loader.
+
+** Root init.ss: selection, sources and retained negative decisions
+
+#+begin_src scheme
+(yuanxu! mode: explicit source: "./modules"
+  :infrastructure
+  (kubernetes)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+source is a directory value, not a preconstructed collection or a lexical module
+alias. The Directory Source Contract admits ./modules relative to this init file,
+checks the selected role directories and projects their module tree. Collection/
+SourceRef values are internal results of that admission. Explicit contribution
+paths are relative to the same init file. External Core/provider roots still need
+admitted package/source policy; a local directory is not authority to search every
+installed package. The directory-source entry, extended mode/disable syntax and
+automatic init publication are pending, not current collection-projector behavior.
+Auto discovery is the alternative policy described in [[file:11.22-migrated-core-guestbook-chain.org][module 21]], not a second
+policy file to maintain alongside this explicit example. Guestbook's declared
+requires selects JsonSchema; init does not repeat that dependency.
+
+* Roles and a single explicit interface declaration
+
+The [[file:../../../module-system/design/01-source-roles.org][standard shell]] keeps types, objects and configs as separate owners and
+func optional. No downstream user restates those files. Full role contents already
+appear in [[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]; this chapter refines publication/linkage, not Schema semantics.
+Do not require a second exports or build-file inventory beside those definitions.
+
+The author writes one declarative Module object. Role imports and the Gerbil
+compilation-unit export are generated from the admitted source-role graph; they
+are not repeated in interface.ss. This is a target source preparation protocol,
+not behavior provided by the current load-modules macro.
+
+#+begin_src scheme
+;; core/modules/json-schema/interface.ss -- proposed author contents
+(.def JsonSchema
+  identity: 'core/json-schema
+  core:
+  (.o requires: (.o)
+      scope-contract: JsonSchemaScopeContract
+      exports:
+      (.o (:: @ JsonSchemaScope.)
+        types: (.o Config: SchemaConfigContract)
+        config: JsonSchemaDefaultConfig
+        from-file:
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
+  features: (.o))
+#+end_src
+
+The .def binding is the Module name: JsonSchema, not JsonSchemaModule. The
+qualified identity is a source/link key, not a second object name. Neither the
+filename nor the binding suffix supplies a Type or admission proof.
+
+core.exports declares the native public scope, not a second flat list of Scheme
+exports. Its procedure/config bindings come from the role graph. The scope
+prototype in objects.ss already publishes compile, contract, validate and admit;
+repeating that mapping here would duplicate its authority. A Module with no such
+prototype can declare its export slots directly here instead.
+
+There is no handwritten build-entries inventory for ordinary role sources.
+Compiler dependencies and generated role wrappers supply that closure. Explicit
+external assets, FFI inputs and generated-source requirements still need owners.
+The examples retain qualified identity to match the linker below. A future local
+identity spelling such as 'json-schema requires a source-owned qualification rule,
+not guessing global identity from a basename.
+
+* Generated compiler boundary, not a second author declaration
+
+The following is the proposed lowering of the declaration above. It is internal
+output shown for review; authors do not maintain both forms. Private identifiers
+are fresh syntax identifiers, represented readably here with a percent prefix.
+
+#+begin_src scheme
+;; Generated compilation unit; not author-written interface.ss.
+(import "types.ss" "objects.ss" "configs.ss")
+
+(def (%link-json-schema %dependencies)
+  (.o (:: @ JsonSchemaScope.)
+        types: (.o Config: SchemaConfigContract)
+        config: JsonSchemaDefaultConfig
+        from-file:
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
+
+(.def JsonSchema
+  identity: 'core/json-schema
+  core:
+  (.o requires: (.o)
+      scope-contract: JsonSchemaScopeContract
+      link: %link-json-schema)
+  features: (.o))
+
+(export JsonSchema)
+#+end_src
+
+The generated link slot is the normalized private representation consumed by the
+reference linker below. It is not another public author requirement. Moving the
+exports expression into this factory must preserve native computed-slot semantics;
+it must not eagerly construct or enumerate every exported value. Required Module
+scopes are admitted before factory invocation; individual exports retain their
+native demand behavior. This does not promise zero compilation or first-use cost.
+
+Source preparation resolves the role graph and supplies syntax plus binding/source
+provenance. A bounded hygienic lowering generates imports, the factory and the
+compiler export. Expansion does not scan directories, run a Loader, compile a
+Schema or mutate a registry. Runtime linking consumes the normalized publication.
+yuanxu-load-modules is the single facade over these phases, not permission to
+collapse them into macro-time I/O.
+
+Do not treat the existing agentic-ai-lab-module constructor as a Type value. A type slot
+would need an actual admitted Type/Contract and a defined consumer; spelling
+/type: agentic-ai-lab-module/ does not provide that. ModulePublicationContract below
+checks the proposed normalized publication. Existing SemanticModuleContract has a
+different shape and cannot silently substitute for it.
+
+For a concrete bounded scope Contract, types.ss can add:
+
+#+begin_src scheme
+(def (no-scope-obligations _candidate _context) '())
+
+(def (procedure-scope? candidate names)
+  (and (object? candidate)
+       (every (lambda (name)
+                (and (.slot? candidate name)
+                     (procedure? (.ref candidate name))))
+              names)))
+
+(def JsonSchemaScopeContract
+  (yuanxu-predicate-contract
+   'json-schema/scope-v1
+   (lambda (value)
+     (and (procedure-scope? value '(compile contract validate admit from-file))
+          (.slot? value 'config) (.slot? value 'types)
+          (object? (.get value config)) (object? (.get value types))
+          (.slot? (.get value types) 'Config)))
+   no-scope-obligations))
+#+end_src
+
+This checks callable shape, not procedure correctness, purity or complete Schema
+coverage. Trusted interface provenance, effect admission, domain tests and protocol
+version qualification remain additional evidence. Reading these procedure slots
+must not invoke them or compile Schema assets. The full-root Schema Contract
+adapter and diagnostic publication policy remain as defined in module 20.
+
+* Guestbook publishes dependencies once, not a manual linking recipe
+
+Dependency scope Contracts are ordinary type-owner bindings, not names the Loader
+invents. Reusing procedure-scope? and no-scope-obligations above, their concrete
+bounded shape definitions are:
+
+#+begin_src scheme
+(def KubernetesScopeContract
+  (yuanxu-predicate-contract
+   'kubernetes/scope-v1
+   (cut procedure-scope? <> '(project admit))
+   no-scope-obligations))
+
+(def GuestbookScopeContract
+  (yuanxu-predicate-contract
+   'guestbook/scope-v1
+   (lambda (value)
+     (and (procedure-scope? value '(admit preview))
+          (.slot? value 'baseline) (.slot? value 'contracts)))
+   no-scope-obligations))
+#+end_src
+
+They belong to their respective types.ss owners. Their implementation imports
+must obey role/phase boundaries. Presence tests do not force baseline/contracts
+contents. Module 20 specifies the final-object/resource protocol, but no complete
+Kubernetes provider implementation exists. Callable shape is deliberately not
+claimed to prove its resource invariant or a function's effect discipline.
+
+#+begin_src scheme
+
+;; contributions/guestbook/interface.ss -- proposed author contents
+(.def Guestbook
+  identity: 'custom/guestbook
+  core:
+  (.o requires:
+      (.o JsonSchema:
+          (.o module-id: 'core/json-schema contract: JsonSchemaScopeContract)
+          Kubernetes:
+          (.o module-id: 'infrastructure/kubernetes contract: KubernetesScopeContract))
+      scope-contract: GuestbookScopeContract
+      exports:
+      (.o baseline: GuestbookDefaults
+          contracts: (make-guestbook-types JsonSchema)
+          admit:
+          (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>)
+          preview: (cut guestbook-preview contracts <> Kubernetes <>))
+      capabilities: (list GuestbookPreviewCapability))
+  features: (.o smoke: GuestbookSmoke))
+#+end_src
+
+The dependency identifiers JsonSchema and Kubernetes are bound only within the
+exports expression by the generated scope factory. Their declaration occurrences
+in requires provide the binding syntax. This is a proposed hygienic binding rule
+of source preparation, not an existing feature of .def or ordinary symbol slots.
+The lowerer must preserve those syntax identifiers rather than convert data symbols
+back into identifiers or textually replace references. Undeclared dependency
+references are expansion errors; bindings do not leak into other role files.
+
+The complete generated Guestbook compilation unit uses ordinary Scheme/POO.
+The compiler owner also supplies the reviewed native syntax support imports;
+these role imports show the module-specific edges, not a standalone runnable file.
+
+#+begin_src scheme
+(import "types.ss" "objects.ss" "configs.ss" "func.ss")
+
+(def (%link-guestbook %dependencies)
+  (with-slots (JsonSchema Kubernetes) %dependencies
+    (.o baseline: GuestbookDefaults
+        contracts: (make-guestbook-types JsonSchema)
+        admit:
+        (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>)
+        preview: (cut guestbook-preview contracts <> Kubernetes <>))))
+
+(.def Guestbook
+  identity: 'custom/guestbook
+  core:
+  (.o requires:
+      (.o JsonSchema:
+          (.o module-id: 'core/json-schema contract: JsonSchemaScopeContract)
+          Kubernetes:
+          (.o module-id: 'infrastructure/kubernetes contract: KubernetesScopeContract))
+      scope-contract: GuestbookScopeContract
+      link: %link-guestbook
+      capabilities: (list GuestbookPreviewCapability))
+  features: (.o smoke: GuestbookSmoke))
+
+(export Guestbook)
+#+end_src
+
+The wrapper imports admitted role bindings, replaces core.exports with
+core.link: %link-guestbook in its private publication, and emits
+(export Guestbook). No author-written import/export or link factory is
+required. Dependency admission, capability evidence and disabled-owner rejection
+remain the linker responsibilities described below. Wrapping syntax alone proves
+none of those properties. A dependency requiring the current interface while its
+publication is still being assembled is rejected as a cycle.
+
+The direct core.requires list in earlier examples and this typed alias map are
+alternative proposed layouts, not simultaneous authorities. This chapter chooses
+the typed map for linking. It still requires a reviewed mapping to the existing
+Module descriptor/import authority before implementation. Required bootstrap/library
+imports remain Module/build metadata, not synthetic Feature descriptors.
+
+* Reuse current source/receipt machinery without calling it admission
+
+Current source owners provide SourceRef and deferred/strict backend receipts.
+The source realization mechanism already exists; this block uses its target
+Core names consistently with the rest of the proposed chain. These renamed
+exports are not available until the coordinated migration:
+
+#+begin_src scheme
+(def (realize-interface-receipt backends source)
+  (yuanxu-lazy-load-plan-receipt
+   (yuanxu-force-lazy-load-plan
+    (yuanxu-make-lazy-load-plan backends source))))
+#+end_src
+
+Existing [[file:../../../module-system/loader/objects.ss][Loader backends]] bind SourceRefs to already available descriptor values;
+this code does not implement dynamic file imports or a directory backend. A
+loaded? receipt identifies a backend result, not an admitted interface, protected
+source snapshot, linked scope or complete build graph. The backend-to-declaration
+adapter is pending and must preserve source/currentness evidence.
+
+* A complete bounded linker reference behind the facade
+
+The following proposed composition algorithm reuses public .admit and native POO.
+It recursively links declared Module requirements and checks dependency scopes.
+It is not installed or executed, and it does not implement filesystem I/O.
+
+The static declaration shape can itself be admitted with a concrete native
+predicate Contract. This bounded design uses the existing Core Contract prototype
+identity to distinguish descriptors from arbitrary objects with a named slot:
+
+#+begin_src scheme
+(def (scope-contract-descriptor? value)
+  (and (object? value)
+       (memq YuanxuContract. (compute-precedence-list! value))
+       (.slot? value 'identity) (symbol? (.get value identity))
+       (procedure-scope? value '(.classify .obligations .admit))))
+
+(def (scope-requirement? value)
+  (and (object? value)
+       (.slot? value 'module-id) (.slot? value 'contract)
+       (symbol? (.get value module-id))
+       (scope-contract-descriptor? (.get value contract))))
+
+(def (module-publication? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(identity core features))
+       (symbol? (.get value identity))
+       (object? (.get value features))
+       (let (core (.get value core))
+         (and (object? core)
+              (every (cut .slot? core <>) '(requires scope-contract link))
+              (object? (.get core requires))
+              (every (lambda (alias)
+                       (and (symbol? alias)
+                            (scope-requirement? (.ref (.get core requires) alias))))
+                     (.all-slots (.get core requires)))
+              (scope-contract-descriptor? (.get core scope-contract))
+              (procedure? (.get core link))))))
+
+(def ModulePublicationContract
+  (yuanxu-predicate-contract
+   'module/publication-v1 module-publication? no-scope-obligations))
+#+end_src
+
+This checks declaration shape and descriptor ancestry, not source trust, arbitrary
+feature payloads or link-function purity. Those are separate source/Feature/effect
+admission gates. The target descriptor mapping still needs Core review; these
+predicates are not implemented product validation.
+
+context is a platform-owned protocol value with these explicit inputs:
+
+| Member | Required meaning |
+|--------+------------------|
+| generation | Immutable source/policy snapshot identity for this whole link session |
+| denied-modules | Qualified owner identities excluded by admitted init decisions |
+| locate | module id -> admitted SourceRef from the selected source policy |
+| read-publication | SourceRef -> Module declaration loaded/checked against that immutable snapshot |
+| publication-contract | ModulePublicationContract above, or an admitted stronger refinement |
+
+locate/read-publication are the source-resolution/backend capabilities that remain
+to be implemented/qualified; naming them does not supply a dynamic Loader. They
+must reject stale sources, ambiguous ids, wrong role files and untrusted effectful
+interface evaluation. The cache below is per session/generation, never a global
+SourceRef-only cache. SourceRef equality currently ignores metadata, so it is not
+a content/currentness proof and cannot alone justify cross-session reuse.
+
+#+begin_src scheme
+(def (admit-link-value! contract candidate context)
+  (let (evidence (yuanxu-contract-admit contract candidate context))
+    (unless (yuanxu-validation-evidence-accepted? evidence)
+      (error "module link admission refused" evidence))
+    evidence))
+
+(def (make-scope-linker context)
+  (let ((cache (make-hash-table))
+        (active (make-hash-table)))
+    (def (link id path)
+      (when (memq id (.get context denied-modules))
+        (error "required module disabled" (reverse (cons id path))))
+      (cond
+       ((hash-key? cache id) (hash-get cache id))
+       ((hash-key? active id)
+        (error "module dependency cycle" (reverse (cons id path))))
+       (else
+        (hash-put! active id #t)
+        (let* ((source ((.get context locate) id))
+               (publication ((.get context read-publication) source))
+               (publication-evidence
+                (admit-link-value! (.get context publication-contract)
+                                  publication context)))
+          (unless (eq? id (.get publication identity))
+            (error "interface owner differs from selected identity" id source))
+          (let* ((core (.get publication core))
+                 (requirements (.get core requires))
+                 (dependency-records
+                  (object<-alist
+                   (map
+                    (lambda (alias)
+                      (let* ((requirement (.ref requirements alias))
+                             (record (link (.get requirement module-id)
+                                           (cons id path))))
+                        (cons alias
+                              (.cc record 'requirement-evidence
+                                   (admit-link-value! (.get requirement contract)
+                                                      (.get record scope) context)))))
+                    (.all-slots requirements))))
+                 (bindings
+                  (object<-alist
+                   (map (lambda (alias)
+                          (cons alias (.get (.ref dependency-records alias) scope)))
+                        (.all-slots dependency-records))))
+                 (scope ((.get core link) bindings))
+                 (scope-evidence
+                  (admit-link-value! (.get core scope-contract) scope context))
+                 (record
+                  (.o generation: (.get context generation)
+                      source publication publication-evidence
+                      dependency-records scope scope-evidence)))
+            (hash-remove! active id)
+            (hash-put! cache id record)
+            record)))))
+    (lambda (id) (link id '()))))
+#+end_src
+
+The publication Contract above is a pending typed source protocol. It validates
+identity, core.requires map entries, link procedure and scope-contract before the
+algorithm accesses them, not merely checking four filenames. The source adapter must
+bind the publication to its admitted SourceRef/generation. No arbitrary callback
+from user config is entitled to assert those facts.
+
+The algorithm checks a dependency against both its own published scope Contract
+and the consumer's requirement Contract. Core.link sees only admitted scopes.
+It does not compile all Schemas: Guestbook's contracts slot and method closures
+remain lazy. On failure abandon the session; do not publish its partially filled
+cache. Requirement checks are retained on the consumer's dependency records,
+without mutating the cached provider record. A production implementation still
+needs failure-safe cleanup, bounded link/demand budgets, complete source/effect
+receipts and currentness qualification. Those are explicit limits of this bounded
+design algorithm.
+
+* One facade; no manual per-application linking steps
+
+Target yuanxu-load-modules delegates source/intent admission, metadata Module
+closure, retained denial checks, linking and selected graph projections to Core.
+It supplies product source/default/provider policy and exposes the consumer entry;
+it does not maintain a second resolver or selected graph. Feature resolution and
+capability binding use the corresponding Core owners. The new invocation is proposed;
+the current collection-to-SourceRef API does not accept this request value today.
+
+The generated init publication retains normalized source/selection decisions and
+a deferred selected graph. It is not a second object the user writes. Both the
+namespace and build adapter consume that publication through the same facade.
+The target application route is:
+
+#+begin_src scheme
+(def Modules (yuanxu-load-modules "./init.ss"))
+
+(use-module (.get Modules custom guestbook) as gb
+  (.def (Development @ (.get gb baseline))
+    frontend: =>.+
+    (.o image: "gcr.io/google-samples/gb-frontend:v5"
+        labels: =>.+ (.o team: "checkout"))))
+#+end_src
+
+Directory/init-source resolution and an admitted namespace returned from this call
+remain proposed; current load-modules only projects collection interface SourceRefs.
+The generated declaration/environment supplies native syntax and dependency binding;
+there are no user-written imports, exports or calls to link factories here.
+
+** Root build.ss: only the init source is project-specific
+
+#+begin_src scheme
+(import (only-in :std/build-script defbuild-script)
+        (only-in :yuanxu/module-system/building/build-projection
+                 yuanxu-build-spec))
+
+(defbuild-script (yuanxu-build-spec "./init.ss"))
+#+end_src
+
+The :yuanxu namespace and yuanxu-build-spec binding are target names;
+Core currently uses package core. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][Core/product namespace boundary]].
+The reusable adapter belongs to Core and does not import the product Loader facade.
+
+This minimal build script retains the native build macro and a proposed functional
+adapter. The imports are fixed build-tool dependencies, not a per-project module
+inventory. The generated init publication exports its graph automatically; authors
+do not add a graph factory, explicit compiler export or repeated build entries.
+The adapter path/spelling is a target API, not currently available.
+
+** Two views, one selection authority
+
+#+begin_example
+init source + admitted source policy + retained decisions
+  -> generation-qualified selected Module/Feature graph
+       -> scope view: realize dependencies, admit scopes, expose native namespace
+       -> build view: selected role roots + Feature contributions + compiler closure
+#+end_example
+
+The views share selection/source identity, not necessarily one process or memory
+object. Cross-process reuse must recheck source content/generation, policy,
+compiler/provider versions and external inputs. A build-only request need not
+construct Guestbook's public scope. Publication metadata/role preparation must
+therefore be available without forcing domain exports or importing the entire
+implementation to discover build roots. This separation remains an acceptance
+requirement for the pending adapter, not a proven property of arbitrary Scheme I/O.
+
+- Module disable is retained with its denying source and normalized identity.
+  Required owner edges check it before realization; denial reports the requester
+  chain rather than silently re-enabling the Module.
+- -smoke is retained as guestbook/smoke = #f, distinct from no decision. Discovery
+  or upstream defaults cannot erase it. A hard request for it is rejected unless
+  an explicitly authorized higher-level policy changes that decision.
+- Unselected implementations, disabled smoke code and unrelated Schema bodies stay
+  cold. Metadata discovery does not imply implementation import or execution.
+- Native slots defer contracts/baseline work; scope-shape admission may demand
+  required procedure slots but must not call those procedures or enumerate every
+  Profile. No claim of zero first-use cost follows.
+- Module dependency cycles are refused with the active requester path. The build
+  tool has an independently available minimal bootstrap/compiler closure; it must
+  not need to build the selected application to discover how to build itself.
+- Macro/for-syntax dependencies can legitimately enter the compiler closure without
+  becoming requested runtime scopes. Compile-time dependency handling follows the
+  compiler's rules, separately from Module dependency-cycle admission.
+
+The [[file:../../../module-system/design/04-selected-build-view.org][selected build protocol]] owns full compiler closure, cache invalidation and the
+bootstrap boundary. Preview never performs deployment; compilation remains an
+explicit build invocation, not a side effect of importing init.
+
+The facade must expose only the policy-admitted scopes at Modules.custom.guestbook;
+not a raw catalog or descriptor requiring the user to call link factories.
+Source/interface metadata and build-view inspection belong to that same generation,
+through the facade's diagnostic/build owner. They must not create a second public
+namespace container or require user reassembly of child scopes/evidence.
+
+* Features, selected build view and final Guestbook graph
+
+Module System owns baseline closure/linking. Feature System owns GuestbookSmoke's
+optional descriptor, requirements, adapter binding and contributions. Existing
+[[file:../../../feature-system/resolver.ss][resolver]], [[file:../../../feature-system/composition.ss][composition]] and [[file:../../../feature-system/adapter-projection-binding.ss][capability binding]] are reused. The facade maps -smoke
+to its qualified identity once and retains the false/source decision. A hard
+request for it fails rather than re-enabling it. Module Core does not become a
+Feature, and technology names do not decide optionality.
+
+#+begin_example
+root source/init policy
+  -> selected Guestbook interface publication
+  -> required JsonSchema and Kubernetes source/interface publications
+  -> admitted dependency scopes under aliases JsonSchema / Kubernetes
+  -> generated scope factory -> admitted Guestbook export scope
+  -> final Development -> Scenario .admit -> pure resource projection/output admission
+
+retained negatives: Sandbox owner disabled; GuestbookSmoke false
+cold: unrelated module interfaces, smoke implementation, unrelated schema bodies
+build: selected interface/import closure + enabled feature contributions + declared assets
+runtime deployment: explicit separate handoff, never a side effect of linking
+#+end_example
+
+Typed core.requires gives automatic Module dependencies. The compiler's admitted
+interface/import graph supplies ordinary Scheme build edges; selected Feature
+projections add only their qualified extras. Required for-syntax/FFI/generated
+assets remain explicit. Existing selected-build-view design composes roots; actual
+PackageSpec/source closure integration is still pending. Do not restore a manual
+build-entries list in every interface as a second authority.
+
+A disabled required Kubernetes/Schema owner refuses the link with the requesting
+chain. A disabled optional smoke descriptor contributes no build entries, while
+its negative policy persists across discovery/default changes. Baseline types,
+objects and configs still build when required by another selected scope. Metadata
+cycles, initialization effects and scope-receiver/cache invalidation need separate
+controls. Binding Core functions is not permission to execute a provider.
+
+* Conclusion and evidence boundary
+
+Existing: actual Core interface file/procedures, SourceRef/lazy receipt objects,
+POO slots, public .admit, bounded scope syntax, Module closure and Feature machinery.
+New: explicit static interface declaration Contract, source-to-publication adapter,
+typed alias requirements, generation-bound dependency linking, retained init policy,
+admitted namespace exposure, generated init graph publication, dual-view identity
+and selected build handoff. The full Guestbook resource
+provider and shorter object-Contract export name remain separate pending work.
+
+The improvement over direct imports is one maintained public module declaration
+and automatic checked dependency wiring. The cost is a precise source/link/phase
+protocol; eager imports or unqualified callbacks can defeat its guarantees. Test
+SourceRef identity mismatch, same id/different generation, disabled required owner,
+consumer scope mismatch, cycles, no partial publication, cold unselected modules,
+negative-feature retention and warmed-parent final-object projection. No runtime
+implementation, Loader connection, build or deployment was performed here.
+

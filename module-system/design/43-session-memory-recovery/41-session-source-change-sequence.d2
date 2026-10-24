@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+trace: "Controlled source change · one admitted trace, not an Agent plan" {
+shape: sequence_diagram
+host: "Configured Host\nAssurance / Governance"
+source: "Provider A / B\nprivate issued identities"
+change: "Change authority\nModule protocol"
+registry: "Registry\ncurrent cut / lease"
+consumer: "Session collection\nQuery / review"
+prepare: "PREPARE · candidate is not active" {
+  host -> source: prepare B as candidate
+  host -> change: propose A → B with exact identities and captured cut
+  host -> change: current evidence + exact-target policy + Core receipt
+}
+publish: "ATOMIC PUBLICATION · stale competitors refuse" {
+  change -> registry: recheck receipt, root, manager, epochs and local revision
+  registry -> registry: "advance A and B epochs + registry cut\nA retired / B selected / leases cleared"
+  registry -> consumer: old collection / Query / review become stale
+}
+refresh: "FRESH CONSUMPTION · selection alone is insufficient" {
+  source -> registry: B report · current epoch / cut / newer external generation
+  host -> registry: separate sync approval · current support / grant / policy
+  registry -> consumer: fresh snapshot cut, still requires current review / permission
+  consumer -> consumer: require current Query + review + authority
+}
+}

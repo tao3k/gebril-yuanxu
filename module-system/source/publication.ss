@@ -1,0 +1,127 @@
+;;; -*- Gerbil -*-
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Source capabilities supply generation-qualified declarations, never user syntax.
+(import (only-in :std/list/list delete-duplicates/hash)
+        (only-in :clan/poo/object .o .ref .slot? .all-slots object?
+                 object-revision object-protocol object-%instance object-%reads
+                 object-%precedence-list object-%all-slots)
+        (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
+        (only-in :clan/poo/mop Type element?)
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract))
+(export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract
+        module-publication? module-scope-context?
+        module-publication-contract-current? module-publication-dependency-projection)
+;; Use the existing closed empty operation, rather than another wrapper which
+;; the unified producer correctly classifies as an open obligation callback.
+(def no-publication-obligations (.ref YuanxuContract. '.obligations))
+(def (has-slots? value names)
+  (and (object? value) (andmap (cut .slot? value <>) names)))
+(def (contract-descriptor? value)
+  (and (has-slots? value '(identity .classify .obligations .admit))
+       (element? Type value)
+       (symbol? (.ref value 'identity))
+       (andmap (lambda (name) (procedure? (.ref value name)))
+               '(.classify .obligations .admit)) #t))
+(def (scope-requirement? value)
+  (and (has-slots? value '(module-id contract))
+       (symbol? (.ref value 'module-id))
+       (contract-descriptor? (.ref value 'contract))))
+(def (contribution-route? value)
+  (and (has-slots? value '(target-owner target-admission export-path))
+       (symbol? (.ref value 'target-owner))
+       (symbol? (.ref value 'target-admission))
+       (let (path (.ref value 'export-path))
+         (and (list? path) (pair? path) (andmap symbol? path)))))
+(def ContributionRouteContract
+  (yuanxu-predicate-contract 'module/contribution-route contribution-route?
+                              no-publication-obligations))
+(def (module-publication? value)
+  (and (has-slots? value '(identity core features))
+       (symbol? (.ref value 'identity))
+       (object? (.ref value 'features))
+       (let (baseline (.ref value 'core))
+         (and (has-slots? baseline '(requires scope-contract link))
+              (or (not (.slot? baseline 'contributions))
+                  (let (routes (.ref baseline 'contributions))
+                    (and (object? routes)
+                         (andmap (lambda (key)
+                                   (and (symbol? key) (contribution-route? (.ref routes key))))
+                                 (.all-slots routes)))))
+              (or (not (.slot? baseline 'admissions))
+                  (let (declarations (.ref baseline 'admissions))
+                    (and (object? declarations)
+                         (andmap
+                           (lambda (name)
+                             (let (entry (.ref declarations name))
+                               (and (has-slots? entry '(export-path contract-path))
+                                    (andmap (lambda (slot)
+                                              (let (path (.ref entry slot))
+                                                (and (list? path) (pair? path) (andmap symbol? path))))
+                                            '(export-path contract-path)))))
+                           (.all-slots declarations)))))
+              (object? (.ref baseline 'requires))
+              (andmap (lambda (alias)
+                        (and (symbol? alias)
+                             (scope-requirement? (.ref (.ref baseline 'requires) alias))))
+                      (.all-slots (.ref baseline 'requires)))
+              (contract-descriptor? (.ref baseline 'scope-contract))
+              (procedure? (.ref baseline 'link))))))
+(def ModulePublicationContract
+  (yuanxu-predicate-contract 'module/publication module-publication?
+                              no-publication-obligations))
+;; Capture at definition, before contributors can extend the descriptor. A
+;; restored method/value Contract is still another native revision and falls
+;; back to guarded public reads. This is not a contributor-supplied pure flag.
+(def publication-contract-revision (object-revision ModulePublicationContract))
+(def (module-publication-contract-current?)
+  (= publication-contract-revision (object-revision ModulePublicationContract)))
+(def (module-publication-dependency-projection value observed?)
+  ;; Read ONLY native cache/token storage. No .ref, MOP query, replay callback
+  ;; or observer delivery may execute after the producer in this probe.
+  (def (observed-value? receiver key value)
+    (and (object? receiver) (object-%instance receiver)
+         (object-%precedence-list receiver) (not (object-protocol receiver))
+         (object-%reads receiver)
+         (let (read (hash-get (object-%reads receiver) key))
+           (and read (observed? read)
+                (= (slot-read-revision read) (object-revision receiver))
+                (eq? (slot-read-instance read) (object-%instance receiver))
+                (eq? (slot-read-value read) value)))))
+  (def (cached receiver key)
+    (and (object? receiver) (object-%instance receiver)
+         (let (value (hash-get (object-%instance receiver) key))
+           (and (observed-value? receiver key value) value))))
+  (and (module-publication-contract-current?)
+       (let* ((core (cached value 'core))
+              (requires (cached core 'requires))
+              (names (and (object? requires) (object-%all-slots requires))))
+         (and (list? names) (observed-value? requires '(names) names)
+              (let ((complete? #t))
+                (let (ids
+                       (map (lambda (name)
+                              (let* ((requirement (cached requires name))
+                                     (id (cached requirement 'module-id)))
+                                (unless (symbol? id) (set! complete? #f))
+                                id)) names))
+                  (and complete? ids)))))))
+(def (symbol-set? value)
+  (and (list? value) (andmap symbol? value)
+       (= (length value) (length (delete-duplicates/hash value from-end?: #t)))))
+(def (module-scope-context? value)
+  (and (has-slots? value '(generation module-ids selected denied-modules
+                          locate read-publication current?))
+       (let (generation (.ref value 'generation))
+         (and (string? generation) (> (string-length generation) 0)))
+       (andmap (lambda (slot) (symbol-set? (.ref value slot)))
+               '(module-ids selected denied-modules))
+       (andmap (lambda (slot) (procedure? (.ref value slot)))
+               '(locate read-publication current?))
+       (andmap (lambda (slot) (or (not (.slot? value slot))
+                                  (procedure? (.ref value slot))))
+               '(eligible? namespace publication-preparation))
+       (andmap (lambda (id) (memq id (.ref value 'module-ids)))
+               (.ref value 'selected)) #t))
+(def ModuleScopeContextContract
+  (yuanxu-predicate-contract 'module/scope-context module-scope-context?
+                              no-publication-obligations))

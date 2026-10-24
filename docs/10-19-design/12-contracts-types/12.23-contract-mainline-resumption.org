@@ -1,0 +1,118 @@
+#+title: 12.23 Contract Mainline: Checked Values and Contextual Responsibilities
+#+property: DOCUMENT_ID 12.23
+#+language: en
+#+property: STATUS source-audit-and-focused-regression-no-runtime-change
+
+* Resume the Contract track
+
+The producer split below is now resolved by
+[[file:12.24-unified-contextual-responsibility-admission.org][unified contextual responsibility admission]]. This audit retains its pre-change
+observations and focused baseline evidence; package/Scenario integration remains
+a separate boundary.
+
+Module selection, build specifications and test entrypoints are separate work.
+Their completion does not establish Contract coverage. Resume from the current
+public value-contract integration, rather than introducing another Type system
+or making package realization a prerequisite for every Contract improvement.
+
+The current dependency declaration selects gerbil-poo =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
+This audit does not claim alignment with a newer remote PR head. The focused
+runs use the existing isolated source namespace; that upstream source copy has
+no Git metadata, so its commit identity was not independently re-established
+by these runs. Source pointers below refer to the current Core working tree.
+
+* One configuration, distinct authorities
+
+The maintained AWS example remains small:
+
+#+begin_src scheme
+;; Maintainer: selected provider Schema supplies the actual field Type.
+(define-type (AWSProfileContract. @ ObjectContract. input-type)
+  identity: 'aws/profile
+  extra-fields: 'delegate
+  constraints: (list input-type))
+
+;; User: replace a value, without pretending to extend the old scalar.
+(.def (Production @ WebProfile) instance_type: "t3.medium")
+(.def (ProductionScenario @ Scenario) profile: Production)
+#+end_src
+
+These are excerpts from [[file:../../../scenarios/aws/types.ss][AWS types]] and the maintained Scenario pattern,
+not a standalone module with invented imports. Public ObjectContract. owns
+field responsibilities, normalization and optional required-prototype checks.
+JsonSchema owns provider field vocabulary and unsupported-constraint refusal.
+Core owns selected Graph/source/Schema freshness and publication evidence.
+Gerbil checked call boundaries do not replace these domain relations.
+
+The ordinary user does not provide a Context, descriptor or Schema list.
+When publishing, Core must retain the checked value returned by validation;
+it must not substitute the original receiver merely because its fields look equal.
+
+* The remaining producer split is a Contract problem
+
+[[file:../../../types.ss][Core types.ss]] currently contains two paths:
+
+| Path | Actual behavior | Consequence |
+|------+-----------------+-------------|
+| YuanxuContract. .admit | Validates value-contract, classifies the checked value, then runs descriptor and Context obligations | Current AWS integration uses this path. |
+| YuanxuResponsibilityContract. .admit | Calls yuanxu-object-admit, traverses child Core contracts and runs descriptor obligations | It bypasses the first path's value-contract validation and Context-obligation dispatch. |
+
+YuanxuObjectContract. inherits the second path. This is an existing
+identifier, not a recommendation to introduce that naming pattern elsewhere.
+The current AWS positive tests do not qualify this legacy path. Do not silently
+attach a public value-contract to it and assume the first producer will run.
+
+The split also requires a semantic distinction before migration:
+
+- Value responsibilities map fields to public Types and belong to gerbil-poo.
+- Contextual child admission can carry selected platform requirements and
+  evidence. It must not be deleted merely because value checking exists.
+- Prototype lineage is an opt-in domain requirement, not the default test for
+  ordinary provider-shaped configuration.
+
+The next implementation slice should first characterize both paths using the
+existing native test harness: a value-contract that returns a changed checked
+receiver, a rejecting Context obligation, and child contextual evidence.
+Then migrate value responsibilities to the public library and route contextual
+admission through the existing producer. Preserve required child evidence and
+refusal diagnostics; do not add a second receipt, validator DFS or public wrapper.
+Removing the old exported base requires a consumer audit, not an alias layer.
+
+* Selected association is partly implemented
+
+[[file:../../../admission/publication.ss][AdmissionPublication. .for-export]] already resolves declared export and Contract
+paths on a selected publication. Its Type traversal follows responsibilities,
+constraints and supported adapter edges to retained Schema associations. It
+does not discover dependencies hidden in arbitrary closures.
+
+[[file:../../../module-system/source/link.ss][Selection .with-packages]] already creates a fresh linking context for the same
+selected build Graph and resolves consumer-qualified realized dependency scopes.
+Therefore the older statement that baseline closed-over scopes cannot consume
+realization is only true of the baseline selection, not this existing operation.
+
+AWS still has empty core.requires and passes config.provider-directory to its
+scope factory. Automatic Scenario package demand and provider/engine binding
+remain a separate integration gap. Do not solve the Contract producer split by
+reintroducing manual SchemaArtifact assembly or a runtime Loader.
+
+* Fresh focused evidence
+
+The following suites ran serially through the existing heap-fenced =just test-file=
+entrypoint, with original Standard Library behavior. All returned naturally with
+exit 0, MODULE-OK, HARNESS-OK and final OK; no harness/error/heap/stack failure
+marker was present. No production source or test was changed for these runs.
+
+| Suite | Scope of evidence |
+|-------+-------------------|
+| t/aws-scenario-contract-test.ss | Five structural cases: Schema-delegated spelling/type diagnostics, optional nominal identity, cached-parent/final-child projection, cold signatures and admission declarations. |
+| t/Modules/json-schema/json-schema-value-contract-test.ss | Public Type/responsibilities composition, diagnostics, projection, supported Schema behavior and explicit unsupported-input refusal; discovered through init tests.qualification. |
+| t/admission-checked-publication-test.ss | Seven completion-checked cases: one root value validation, actual descriptor binding, cached-parent/final-child values, same-name Contract/Context replay refusal, source/Schema changes and failure preserving the previous value. |
+
+The AWS structural suite uses a small Schema fixture. The publication suite
+uses real Core selection/build/Context algorithms with a reduced publication
+and file-backed Schema. Neither run realizes an AWS provider or deploys resources.
+These regressions establish the current producer path; they do not prove that
+the legacy responsibility path enforces the same checks.
+
+There is no new runtime Loader, package realization, full build, upstream edit
+or push in this slice. Existing historical validation records remain intact.

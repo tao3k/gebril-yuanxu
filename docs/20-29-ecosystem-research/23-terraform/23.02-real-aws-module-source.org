@@ -1,0 +1,192 @@
+#+title: 23.02 Terraform Module Research 01: Real AWS Configuration and Source Trace
+#+language: en
+#+property: DOCUMENT_ID 23.02
+#+date: [2026-10-17]
+#+property: STATUS source-audited-not-initialized-planned-or-deployed
+
+* Evidence scope
+
+The primary module is terraform-aws-modules/terraform-aws-vpc at tag v5.21.0.
+The engine source comparison uses Terraform v1.9.8; the local provider-schema
+artifact identifies hashicorp/aws 5.100.0. These are deliberate research pins,
+not a recommendation of current releases or a claim about latest behavior.
+Version labels are not substitutes for a package lock or artifact authentication.
+
+The audit reads the actual example, module variables, resources, outputs and
+version requirements. No terraform init, validate, plan or apply was run. Findings
+below are source observations and explicitly marked analyst-derived cases.
+
+* Actual upstream configuration
+
+Source: [[https://github.com/terraform-aws-modules/terraform-aws-vpc/blob/v5.21.0/examples/simple/main.tf][examples/simple/main.tf at v5.21.0]].
+
+The example supplies a region, queries availability zones, selects three zones,
+calculates private subnet CIDRs, and passes names/tags into a local module call.
+Its module entry includes:
+
+#+begin_src hcl
+module "vpc" {
+  source = "../../"
+  name   = local.name
+  cidr   = local.vpc_cidr
+}
+#+end_src
+
+This is an excerpt: the original also supplies azs, private_subnets and tags.
+The dependency on availability-zone data already exists through the supplied
+expressions. There is no reason to add a whole-module dependency for this edge.
+
+Finding: the ordinary caller works with a small public interface even though the
+module implementation covers many resources. A short surface is an ecosystem
+design achievement, not a property we gain merely by choosing another language.
+
+* Interface and implementation owners
+
+| Source at v5.21.0 | Observed ownership | Module-system consequence |
+|------------------+--------------------+---------------------------|
+| [[https://github.com/terraform-aws-modules/terraform-aws-vpc/blob/v5.21.0/variables.tf][variables.tf]] | Typed inputs and defaults for creation, network parameters and tag scopes | Callers depend on a published input boundary |
+| [[https://github.com/terraform-aws-modules/terraform-aws-vpc/blob/v5.21.0/main.tf][main.tf]] | Resource families, creation conditions, references and tag composition | Private implementation absorbs repeated configuration |
+| [[https://github.com/terraform-aws-modules/terraform-aws-vpc/blob/v5.21.0/outputs.tf][outputs.tf]] | Public projections, including VPC ID and subnet IDs | Consumers need outputs, not access to private resource definitions |
+| [[https://github.com/terraform-aws-modules/terraform-aws-vpc/blob/v5.21.0/versions.tf][versions.tf]] | Terraform >= 1.0; AWS provider >= 5.79 | Compatibility requirements are distinct from selected versions |
+
+variables.tf declares cidr as a string with a default, azs/private_subnets as lists
+of strings, and tags/vpc_tags as string maps. These describe useful interface
+shapes but do not alone prove subnet containment, AWS availability or access.
+The separate tag inputs intentionally expose different override scopes.
+
+Three short main.tf expressions show separate mechanisms:
+
+#+begin_src hcl
+count = local.create_private_subnets ? local.len_private_subnets : 0
+vpc_id = local.vpc_id
+tags = merge({ Name = var.name }, var.tags, var.vpc_tags)
+#+end_src
+
+The first governs instance expansion, the second retains a value dependency,
+and the third orders tag contributions. The file also deliberately routes VPC
+references through local.vpc_id to account for secondary CIDR ordering. Arbitrary
+flattening of a module could lose such maintained behavior.
+
+outputs.tf projects VPC and subnet resource values. Consumers can reference an
+output before its eventual remote ID is known: the expression retains dependency
+information. Output absence when creation is disabled must still be handled by
+the caller; a usable network is not guaranteed by the module call's existence.
+
+Conclusion: source organization, interface design, resource expansion, value
+dependencies and contribution order are different responsibilities already
+present in this real module. Our role directories must make those owners clear,
+not restate the same resource configuration in several files.
+
+* Connected AWS case derived for this audit
+
+The following complete root example is analyst-authored against the observed
+module interface, not copied from examples/simple and not claimed executed.
+It connects that real module to an EC2 instance and its Security Group. It uses
+one public subnet instead of the upstream example's private-only workload.
+AMI and administrator CIDR are required user inputs, not fictitious working
+credentials. The caller supplies AWS credentials through the provider's normal
+credential chain. Local state is an explicit research choice; the Omnibus case
+uses S3 and assume-role configuration and is not byte-equivalent to this case.
+
+#+begin_src hcl
+terraform {
+  required_version = "= 1.9.8"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "= 5.100.0"
+    }
+  }
+  backend "local" { path = ".state/research.tfstate" }
+}
+
+variable "ami_id" { type = string }
+variable "admin_cidr" { type = string }
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
+}
+
+provider "aws" { region = "eu-west-1" }
+data "aws_availability_zones" "available" { state = "available" }
+
+module "network" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.21.0"
+
+  name               = "module-research"
+  cidr               = "10.0.0.0/16"
+  azs                = [data.aws_availability_zones.available.names[0]]
+  public_subnets     = ["10.0.1.0/24"]
+  enable_nat_gateway = false
+  tags               = { Environment = "research" }
+}
+
+resource "aws_security_group" "api" {
+  name_prefix = "module-research-"
+  vpc_id      = module.network.vpc_id
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = [var.admin_cidr]
+  }
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "api" {
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  subnet_id                   = module.network.public_subnets[0]
+  vpc_security_group_ids       = [aws_security_group.api.id]
+  associate_public_ip_address = true
+  tags                        = { Name = "module-research-api" }
+}
+
+output "api_ip" { value = aws_instance.api.public_ip }
+#+end_src
+
+This is infrastructure configuration, not an installed application or an SSH
+login recipe: an authorized instance access mechanism, AMI suitability, quotas
+and credentials must be established separately. No cloud connectivity or runtime
+readiness claim follows from this source listing.
+
+The trace is concrete: module.network's VPC output supplies api.vpc_id; its public
+subnet output supplies the instance subnet; the Security Group output supplies
+the instance group list; the instance produces api_ip. Adding depends_on to each
+node would repeat existing value dependencies and can broaden ordering.
+
+* Relation to the user's actual Omnibus corpus
+
+The local omnibus-ncl checkout was read at
+c5d37eb51961fd7bd32f775843044ca7f8191715. Its aws/main.ncl supplies region,
+backend/assume-role, network, instance and key information. Its aws-simple-vpc.ncl
+and aws-simple-ec2.ncl elaborate resource references. The existing
+[[file:../../10-19-design/11-configuration-languages/11.34-aws-main-source-parity-and-profile-families.org][complete source mapping]] remains the owner of that case.
+
+The important common workload is a maintained network interface consumed by
+maintained machine configuration. Do not equate the raw number of fields in a
+generic VPC library with the number the ordinary caller must configure.
+
+* Reflection and conclusion
+
+Module reuse already handles substantial complexity here. The actual limitation
+to investigate is evolution across a public boundary: if a consumer needs a new
+private resource setting, the module may need to expose another input or be
+changed/forked. POO can offer explicit, contracted extension points, but opening
+every internal slot would destroy the same decoupling that makes this module
+useful. A stable business interface and a maintained extension boundary are both
+required. Proceed to [[file:23.03-arguments-types-and-phase-boundaries.org][arguments and phases]] and [[file:23.04-schema-plan-and-execution.org][Schema/plan/execution]].
+
+* Issues and Engineering Limitations
+
+References and qualified issue records: [[file:23.05-issues-and-user-costs.org][TF-01 through TF-04]]. These are
+source/document explanations and reports, not local reproductions. This article's
+architecture response is a DESIGN-INFERENCE; no new upstream defect is claimed.
+

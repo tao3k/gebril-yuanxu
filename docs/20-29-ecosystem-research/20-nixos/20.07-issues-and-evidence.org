@@ -1,0 +1,116 @@
+#+title: 20.07 NixOS Issues and Engineering Limitations: Independent Evidence Register
+#+language: en
+#+property: DOCUMENT_ID 20.07
+#+date: [2026-10-17]
+#+property: STATUS github-records-refreshed-no-local-reproductions
+
+* Evidence protocol
+
+GitHub issue bodies and API metadata were read on 2026-10-17. Open/closed is an
+observed upstream state, not a correctness verdict. Reported versions belong to
+each report; our historical pinned source baseline is not automatically the
+reporter's environment. No issue was reproduced locally, no service was started,
+and no performance measurement was made. Relevant comments are identified when
+used; this is not a complete review of every discussion comment.
+
+* Issues and Engineering Limitations
+
+** NX-01: merged argument used while deciding module structure
+
+- Source: [[https://github.com/NixOS/nixpkgs/issues/379855][nixpkgs #379855]].
+- Reported: 2025-02-06. Exact affected nixpkgs commit/Nix version: not supplied
+  in the inspected issue body. API state on observation: open, last updated
+  2025-08-05. Marks: ISSUE-REPORTED; SOURCE-CORRELATED; NOT-REPRODUCED.
+- Layer: module collection and merged argument visibility; diagnostic quality.
+
+The root defines test through _module.args and imports another module. That
+module branches at its top level on test; the reporter receives infinite
+recursion. This is narrower and more informative than saying "circular imports".
+The module structure must be available to assemble the configuration that would
+provide the argument. The imported function does not need to write an explicit
+conditional imports list to trigger the early demand.
+
+Source correlation: applyModuleArgs forwards merged arguments lazily, but the
+collector still needs module structure. Official tests at
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/tests/modules.sh#L280][modules.sh]] expect recursion when _module.args is used for imports. That
+is a related upstream test, not our reproduction of this exact issue.
+
+Our decision candidate: classify selection-time inputs separately from effective
+configuration values and show the demand chain on refusal. Counterquestion:
+would forbidding all recursive value dependencies also reject legal deferred
+service relationships? Yes; source-link policy and value-demand policy must differ.
+
+** NX-02: ambient argument growth damages relocatability
+
+- Source: [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix#L71][evalModules maintainer warning]].
+- Revision: the pinned source baseline; observed 2026-10-17.
+- Marks: SOURCE-OBSERVED; MAINTAINER-DESIGN-WARNING; NOT-A-DEFECT-CLAIM.
+- Layer: composition API and submodule reuse.
+
+The library warns that arguments added at the evaluation boundary make moving
+module groups under another submodule harder. Our replacement for public args
+must address actual coupling, not merely hide the same root paths in macros.
+A module should retain a stable required interface when its mount name changes.
+The root selects an instance; the module's lexical alias is local to that binding.
+Cost: interface versioning, collision rules and binding diagnostics remain required.
+
+** NX-03: evaluation overhead despite a lazy language
+
+- Source: [[https://github.com/NixOS/nixpkgs/issues/57477][nixpkgs #57477]], tracking report opened 2019-03-12.
+- Historical measurements in the body compare 14.12 through 19.03 commits.
+  One listed 19.03 commit is a6caed56607d42b9168c3f1054e7d5913060076f.
+- API state on observation: open, last updated 2025-12-09.
+- Marks: ISSUE-REPORTED; HISTORICAL-MEASUREMENTS; NOT-REPRODUCED.
+- Layer: module-system evaluation, distinct from package builds and activation.
+
+The author reported evaluation growth and hypothesized costs in module inclusion
+and enable conditions. An April 2019 comment describes pruning a minimal module
+list and obtaining a lower evaluation time. These are historical observations
+with incomplete matched-host information, not a measured law that module count
+alone determines cost or proof that current NixOS has the same latency.
+
+Our decision candidate: do not require full interface evaluation to enumerate a
+catalogue. Measure catalogue discovery, selected publication, Contract projection
+and resource preview separately. Counterquestion: does the metadata index simply
+move full evaluation to every edit/build? Index generation, freshness checks and
+first-use costs must be counted too. No Scheme speedup follows from this issue.
+
+** NX-04: expected validation may not be forced
+
+- Source: [[https://github.com/NixOS/nixpkgs/issues/191124][nixpkgs #191124: CheckMeta does not work]], opened 2022-09-13.
+- Exact affected revision: not pinned in the inspected body. API state on
+  observation: open, last updated 2026-10-16. Discussion not exhaustively reviewed.
+- Marks: ISSUE-REPORTED; NOT-REPRODUCED; NOT-A-GENERAL-CONTRACT-FAILURE.
+- Layer: package metadata validation/demand, not a demonstrated failure of every
+  NixOS option check.
+
+The reporter expected malformed metadata to fail when checkMeta was enabled.
+The body does not establish the complete forcing path. The inspected type source
+links this issue while warning about deep checks, but that correlation is not
+a confirmed root-cause analysis of the report.
+
+Our decision candidate: label field discovery, projected-unadmitted and admitted
+preview separately. An admitted preview must demand the selected required checks;
+an unused field can remain deferred. Counterquestion: does admission itself force
+the entire catalogue? Its coverage must be selected and explicit, not universal.
+
+** NX-05: lazy presence and conditional absence are different contracts
+
+- Sources: [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix#L681][lazyAttrsOf implementation warning]] and
+  [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/tests/modules.sh#L380][upstream controls]].
+- Marks: SOURCE-OBSERVED; UPSTREAM-TEST-SPECIFIED; DESIGN-TRADEOFF.
+- Not a new GitHub defect claim and not locally executed.
+
+The source/test pair intentionally distinguishes conditional key removal from
+deferred values. Our catalogue needs separate states for declared, disabled,
+selected, effective and admitted. A key-existence test cannot stand in for all
+five. Hiding this behind one POO slot predicate would reproduce the UX ambiguity.
+
+* Conclusion and Onwards
+
+These records motivate phase-aware diagnostics, inspectable contribution and
+demand, and explicit admission coverage. They do not justify rejecting NixOS's
+entire architecture. Reproduce NX-01 at a pinned version before claiming a better
+error; use matched discovery/preview controls before claiming scalability; verify
+actual consumers before claiming effective configuration implies readiness.
+

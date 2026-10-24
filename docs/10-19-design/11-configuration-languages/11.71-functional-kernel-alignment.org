@@ -1,0 +1,135 @@
+#+title: 11.71 Functional Kernel Ownership and Funflow Alignment
+#+language: en
+#+date: [2026-10-17]
+
+* Correction to the migration claim
+
+Moving the old modules/funflow directory did not move the complete functional
+implementation. The existing Category/Arrow/Kleisli semantics and interpreter
+were still in modules/workflow/control-plane, with Store declarations in
+modules/workflow/store.ss. A topological Job-to-process loop alone was not the
+Scheme implementation of Funflow. It is incorrect to equate directory migration,
+DAG receipt projection and functional execution parity.
+
+Those owners now reside in Core under modules/funflow/control-plane and
+modules/funflow/store.ss. Product consumers import their actual Core owners;
+there are no forwarding source files at the former product paths. Concrete
+C-compilation/Tensorflow/Makefile builders and product Scenario adapters remain
+product concerns. The Core imports no product namespace.
+
+* Source-grounded correspondence
+
+Upstream references accessed on 2026-10-17:
+
+- [[https://github.com/tweag/funflow/blob/master/funflow/src/Funflow/Flow.hs][Funflow.Flow]]: input/output Flow, pure and IO tasks, extensible strands,
+  Arrow/ArrowChoice, error effects, Store and Docker task families.
+- [[https://github.com/tweag/funflow/blob/master/funflow/src/Funflow/Run.hs][Funflow.Run]]: interpretation of strands, external-config preflight, Store-backed
+  caching, Docker materialization and parallel interpretation.
+- [[https://github.com/tweag/funflow/blob/master/funflow/src/Funflow.hs][Funflow]]: composition, caching and error operations re-exported to users.
+
+These master links describe an inspected upstream version, not a pinned parity
+or benchmark claim. Upstream uses kernmantle; Scheme need not reproduce Haskell's
+type encodings or syntax to preserve observable composition semantics.
+
+| Capability | Scheme owner and evidence boundary |
+|------------+------------------------------------|
+| Pure lifting and identity | flow-arr, pure-flow, return-flow |
+| Sequential result transmission | flow-then and the existing dependency value index |
+| Fanout and pair operations | flow-fanout, flow-first, flow-second; local interpreter semantics |
+| Value-dependent continuation | flow-bind / flow-kleisli; binder returns another Flow |
+| Choice and recovery | conditional-flow, try-flow and structured error results |
+| Local reuse | cached-pure-flow uses existing memoization; no durable CAS guarantee |
+| Interpreter extension | task/strand/declaration registries and runtime adapters |
+| DAG and audit projection | existing graph owner, receipts and replay controls |
+| Store | maintained request/receipt protocol; physical CAS remains runtime-owned |
+| Ops execution | Job projects external Flow tasks, interpreted by the Ops adapter |
+
+The public Flow/task/branch/try/Kleisli values now use the existing POO object
+family generator, so ordinary POO inheritance/refinement works on compositional
+values. Closed runner state and execution/adapter receipt protocols retain their
+existing private positional representation. This does not claim that every
+legacy kernel type has been redesigned or that symbolic contract metadata gives
+Haskell's compile-time guarantees. Domain values still require actual contracts.
+
+The existing runtime wire identifiers containing plan remain unchanged to avoid
+silently rewriting historical receipt/ABI semantics. The owning source and the
+new Job surface use Graph. No compatibility forwarding files were introduced.
+
+* One interpreter path for Jobs
+
+Job dependency projection remains pure and selected. Its ordered Ops declarations
+become external-flow values inside the existing flow-compose/runner-run path.
+flow-map extracts adapter values while preserving the adapter and nested Flow
+receipts. The former independent process loop has been removed. The legacy
+process-command adapter also delegates to Ops rather than calling run-process
+through another owner.
+
+A Job result contains per-task steps and its functional Flow receipt. Only .run
+executes processes. A parent-cached Graph cannot replace the child's final task
+values; runtime projection is made from the invoked receiver.
+
+Finalizers are explicitly separate after-start edges. They are preflighted with
+the selected closure, cannot introduce hidden dependency work, and execute only
+when their trigger was entered. All attempted finalizers are considered even if
+one fails; primary and cleanup failures remain diagnostic inputs. This is local
+exception/timeout cleanup, not durable recovery after process termination.
+
+* Null and AWS as real consumers
+
+Null declares init -> validate -> plan -> apply -> output and a destroy finalizer
+triggered by apply. AWS selects init -> validate only. They share the same Job
+entry and Ops interpreter. Core admission checks the effective object once;
+forward tasks recheck the existing source/Schema Context. Cleanup may use the
+previously admitted Null command after Context invalidation so that stale
+configuration does not prevent resource removal.
+
+User values stay ordinary Scheme/POO slots. There is no separate user Validation
+object and no handwritten process sequence. Module/package binding is still the
+existing explicit test/platform binding, not a completed runtime Loader.
+
+* Qualification boundaries
+
+The relocated functional kernel and Kleisli gates pass on the Core paths. The
+relocated tutorial gate and the real provider/Job gate are separate executable
+gates. Do not infer physical CAS, Docker parity, distributed scheduling, parallel
+speedup or complete upstream parity from local composition tests. The current
+local interpreter runs ready branches serially; parallel scheduling is still a
+separate runtime capability requiring aggregate resource admission.
+
+The declarative module-test design is tracked independently in
+[[file:../13-module-loading/13.12-declarative-module-testing.org][Module Testing and Benchmark Projection]]. Its proposed init exports are not
+implemented merely because existing native suites now belong to Core.
+
+Focused qualification on the declared Core dependency environment:
+
+- =t/functional-flow-kernel-test.ss=: passed; existing Category/Arrow and strand
+  controls run after relocation and Agentic AI Lab/task-family construction.
+- =t/functional-flow-kleisli-test.ss=: passed; value-dependent composition controls.
+- =t/funflow-tutorial-test.ss=: passed; relocated user-visible tutorial results.
+- =t/funflow-job-test.ss=: passed; selected Core publication, lazy closure, final
+  child tasks, failed validation, finalizer activation and nonactivation.
+- =t/ops-process-script-test.ss=: passed; existing process controls plus separate
+  diagnostic stderr for machine-stdout protocol consumers.
+- =t/opentofu-admission-execution-test.ss=: passed with pinned Nix-produced AWS
+  5.99.0/5.100.0 and Null 3.2.4 packages. Actual Null apply/output/destroy, output
+  failure cleanup, selected-source mutation cleanup, parent-cached Graph/final
+  child message, Schema upgrade, old evidence refusal and AWS validate passed.
+
+Each passing native gate required MODULE-OK, HARNESS-OK, final OK and exit zero.
+The historical Funflow filenames above have since moved under
+=t/Modules/funflow/=. Current module execution uses the automatically
+discovered =tests.qualification= projection; publication/dependency checks now
+share the init Graph in =t/module-testing-isolation-test.ss=. The earlier
+receipts are not re-labelled as measurements of that later selection entry.
+Earlier failed attempts exposed a test-side JSON representation error: current
+Gerbil read-json returns WAList, not HashTable. State inspection now uses waref;
+this was not repaired by changing provider output or weakening cleanup checks.
+Source mutation during execution is an explicit POO test override, not an
+unqualified automatic source watcher. The normal forward-task Context check and
+finalizer execution are actual framework code.
+
+All Funflow process-command paths delegate to Ops. Machine stdout decoders use
+the existing Ops function with stderr-redirection: #f, preserving diagnostic
+stderr separately; ordinary Job process receipts retain merged output by default.
+This prevents an adapter migration from silently treating diagnostics as a
+runtime-response value.

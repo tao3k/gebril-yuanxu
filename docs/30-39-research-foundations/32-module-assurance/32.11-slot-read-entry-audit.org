@@ -1,0 +1,152 @@
+#+title: 32.11 POO read entries and the production guard removal gate
+#+language: en
+#+property: DOCUMENT_ID 32.11
+#+property: STATUS qualification-blocked
+#+date: [2026-10-18]
+
+* Decision
+
+This is the historical pre-implementation audit. See [[file:32.12-mop-read-records-and-source-admission.org][32.12]] for the actual
+gerbil-poo implementation and consumer gates; the blockers below describe this
+audit stage, not a second maintained implementation.
+
+A read observer belongs to the native object/MOP boundary, not a generated field
+catalog or a wrapper around each domain getter. Core joins delivered receiver
+observations to its existing source checks. Contracts still own field selection,
+normalization and child obligations. A replay record is not admission evidence.
+
+This continuation extends [[file:32.10-isolated-slot-read-replay.org][32.10]]. It does not edit installed dependencies, change
+pins, integrate the Loader, or remove production guards before coverage closes.
+The earlier temporary candidate is not evidence that the production MOP already
+provides these entry points. Its Core-owned injection files have been withdrawn;
+the implementation must be owned by gerbil-poo, as recorded below.
+
+* Source and entry inventory
+
+The source authority is gerbil-poo
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=, as pinned in Core gerbil.pkg.
+The original object.ss SHA-256 is
+=8b856fe93ba69033692d83e64e89e9f0d81ae4e02564932b73c7c09c8366e0e6=.
+The temporary candidate keeps the original engine and its cycle detection.
+Core must not own a duplicate MOP patch/include: those experimental files have
+been withdrawn to /private/tmp/core-slot-replay-run06/withdrawn-injection/.
+The actual implementation belongs in a complete gerbil-poo source checkout;
+Core owns only the consumer adapter and regression tests.
+
+| Entry | Native route | Observation / remaining boundary |
+|-------+--------------+----------------------------------|
+| .ref / .get / .@ | .get expands to successive .ref calls | Cold dependencies and warm delivery share qualification-access |
+| Lexical slots, with-slots, def-slots, prefixed bindings | Syntax expands to .ref / .@ | Same receiver boundary; no macro-specific source table |
+| Object matching | .refs/slots calls .ref after presence checks | Structural checks and field values remain distinct |
+| .ref/cached | Originally reads the instance table directly | Hit delivers the existing value trace; miss records cache absence without computing a field |
+| .slot? / .has? | Name membership after native instantiation | Records structural revision; does not force the named field |
+| .all-slots / sorted names | Native cached name enumeration | Records structure, not every field value |
+| .alist / sorted alist / .for-each! | Explicit traversal calls .ref per selected name | Caller explicitly requests traversal; admission does not add one |
+| force-object / hash<-object | force-object calls .ref for every name | Explicit eager operation, not a lazy admission primitive |
+| .call / Type generics / lenses | Native slot lookup through .get / .ref | Same value boundary; function bodies execute only on invocation |
+| ObjectContract responsibilities | Name queries followed by .ref on declared fields | Reuses the existing prepared descriptors |
+| Rebinding and normalization | prepare-rebinding creates a receiver; force-rebinding reads through .ref | No parent computed-cache copying; child receipts refer to final values |
+| Missing-method / fallback-to | Delegate access goes through .ref | Delegate dependency retained in a cached caller |
+| Bootstrap anchors | Explicit self-hosting base bypass | Still outside generic observation; must qualify before a universal claim |
+| object-instance / object-%instance and raw tables | Low-level mutable representation | Not observed as per-field accesses; cannot be silently admitted as instrumented code |
+| Slot defaults and metadata constructors | Defaults may evaluate before slot reads | Existing source wrappers exclude default declarations; read coverage alone does not establish default provenance |
+
+Fixed source references: [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss][object.ss]], [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-contract.ss][object-contract.ss]],
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/validation-rebinding.ss][validation-rebinding.ss]] and [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-contract-validation.ss][object-contract-validation.ss]].
+
+These routes preserve their original evaluation semantics. def-slots performs
+eager extraction; a later closure over that extracted scalar is not a live slot
+reference. Likewise hash<-object explicitly forces fields but returns a mutable
+representation: subsequent raw table reads/writes are not new .ref events.
+This audit must not turn either escape into receiver-aware configuration.
+
+** Installed inline entry is a separate source-identity gate
+
+The current host's generated object.ssi exports .ref/inline and imports
+clan/poo/slot-layout. The generated object~0.scm implements an inline hit with
+slot-cache-read, bypassing .ref. Its miss delegates to .ref. Neither that entry
+nor slot-layout.ss exists in the fixed Core source above. The old local .data
+reference copy and package-directory symlink are not authoritative substitutes.
+
+It would be incorrect to patch an installed binary or invent a layout API in the
+Core pin to claim coverage. The canonical source/pin and generated consumer
+identity must be reconciled first. Inline hits then need the SAME delivered
+receiver/slot dependency token, including an already-warm inline cache. Merely
+instrumenting its miss is insufficient. This is a concrete removal blocker,
+not a performance claim or a reason to retain manual paths permanently.
+
+* Cached absence is a dependency
+
+.ref/cached's default is a thunk, following native hash-ref/default semantics.
+The hook delegates to the original operation on a miss. It must not invoke the
+slot getter or replace the default-thunk convention with a literal-value API.
+A cached false value is distinct from a cache miss.
+
+A consumer can cache the result of a cache-only miss. Later evaluation can fill
+the target cache without changing its object revision. Replay therefore checks
+that the recorded cache absence still holds, and refuses =stale cached absence=
+otherwise. Revision equality alone is insufficient. No automatic recomputation
+of potentially effectful getters is introduced.
+
+Presence and name observations retain a receiver revision/instance and record
+identity. They do not equate a cache miss with a missing declared field. Supported
+mutations invalidate these observations; arbitrary raw hash writes are excluded.
+
+* Admission, provenance and stage ordering
+
+The historical adapter (now replaced by the production consumer described in
+[[file:32.12-mop-read-records-and-source-admission.org][32.12]]) dispatched value observations to the existing
+admit-field-sources! query. Presence/cache-absence observations check their
+actual named slot; name enumeration observes structure without forcing values.
+Metadata inspection suspends observation to avoid observing itself. Nested
+observers fan out, and a fresh final replay runs before admission returns.
+
+SourceAdmissionContract retains its original child admission, contribution
+checks, eager diagnostic decoration and final collected-source currentness.
+The production service preflight remains staged: check envelopes before reading
+nested settings or forcing a derived client/plan. An all-fields diagnosis is not
+a replacement for this ordering on malformed/null intermediate objects.
+
+The experimental Contract bypasses explicit source leaf lists only inside the
+qualified source closure. Production preflight leaf arguments remain until:
+
+1. The deployed dependency and compiled consumers share the qualified source.
+2. Cached, inline, structural, bootstrap and relevant constructor/default routes
+   have coverage or an explicit refusal boundary.
+3. Staged malformed-intermediate diagnosis retains its field error rather than
+   forcing a broken derived getter.
+4. Source checks at actual reads and final replay cover every selected child;
+   no unselected value is forced to populate an artificial dependency inventory.
+
+Do not remove the two production port leaf paths just because .ref/cached now
+has an isolated test. The remaining blockers above would make that unsafe.
+
+* Verification receipt
+
+Results are recorded after the bounded Just gates below complete. Each gate uses
+1 GiB pre-import heap and a 120-second watchdog. Failed launches are retained.
+No raw logs are committed. No claim of production deployment, whole-suite
+closure, weak-cache memory bounds or end-to-end speed follows from this gate.
+
+** Continuation result and withdrawn injection
+
+The extended suite contains fourteen declared cases (including nine value-access
+forms in one case), but it has NOT passed. Two compilation launches hit the
+unchanged 120-second limit while making checkpointed progress. A following
+launch refused to parse the concurrently edited
+module-system/source/directory.ss at line 233, column 123 (exit 70). That file
+was not changed by this task. The failure is retained in
+/private/tmp/core-slot-replay-run06/compile-Gzbdjt.log; it is not a read-protocol
+pass or a reason to edit another session's Loader work.
+
+Two body-only object recompilations passed the existing interface-binding check.
+This establishes interface compatibility only, not the fourteen-case behavioral
+gate. The corresponding logs and earlier timeout records remain in run06.
+
+On review, the repository-owned dependency patch and private implementation
+include were removed, including the two newly staged injection files. The test
+recipe now consumes a complete gerbil-poo candidate source checkout without
+patching it. Core retains tests and the experimental consumer adapter. The
+actual source implementation must be maintained in gerbil-poo and qualified
+before its API/pin can support production guard removal. No production leaf
+guard was removed, and no Loader or dependency pin was modified.

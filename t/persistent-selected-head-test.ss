@@ -1,0 +1,66 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import :std/test :clan/poo/object
+        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (only-in :std/error Error?)
+        (only-in :yuanxu/ops/objects ProcessScript.)
+        (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        "./qualification/build-publication/persistent-head")
+(export persistent-selected-head-test)
+(def persistent-selected-head-test
+  (test-suite "Persistent selected-head transaction"
+    (yuanxu-test-fixture "real domain admission survives process restart as an exact snapshot"
+      (fixture ServicesFixture)
+      (with-slots (root selection publication) fixture
+        (def parent (.get publication value))
+        (def cached (.get parent plan))
+        (def graph (.get selection build-graph))
+        (def generation (.get graph generation))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def path (path-expand "head.sqlite" root))
+        (def owner (persistent-head path))
+        (.call owner initialize generation "parent-5432")
+        (def expected (.call owner inspect))
+        (defvalues (receipt next failure) (.call publication .publish parent Release))
+        (check-equal? failure #f)
+        (check-equal? (.get receipt accepted?) #t)
+        (check-equal? (length (.get publication context contributions)) 2)
+        (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
+        (def plan (.get next plan))
+        (check-equal? (eq? (.get plan configuration) (.get next config)) #t)
+        (def snapshot (call-with-output-string
+          (lambda (out) (write (list (.get plan postgresql port) (.get plan gitea database-port)) out))))
+        (def token (.call owner issue generation snapshot (vector-ref expected 0) (vector-ref expected 1)))
+        (def (worker operation argument)
+          (run-script (.cc ProcessScript. 'command
+            (list "just" "persistent-head-worker" path operation argument) 'timeout 30)
+            stderr-redirection: #f))
+        ;; Both clients open their own native DB; all writer connections are closed.
+        (def committed (worker "commit" token))
+        (check-equal? (.get committed status) 0)
+        (def recovered (worker "inspect" ""))
+        (check-equal? (.get recovered status) 0)
+        (def row (call-with-input-string (.get recovered output) read))
+        (check-equal? row (vector 1 1 generation "(5433 5433)"))
+        (check-exception (.call owner commit token) Error?)
+        (check-equal? (.get cached postgresql port) 5432)
+        ;; External-source currentness is not an operand of this snapshot head.
+        (def again (.call owner issue generation snapshot 1 1))
+        (def source (path-expand "modules/services/postgresql/objects.ss" root))
+        (write-source source (string-append (module-source-read source) "\n; after admission\n"))
+        (check-equal? (vector-ref (.call owner commit again) 3) snapshot)
+        (defvalues (_receipt _next refusal) (.call publication .publish parent Release))
+        (check-equal? (metadata.failure? refusal) #t)
+        (check-equal? (metadata.failure-phase refusal) 'source)))
+    (yuanxu-test-fixture "both domain requirements remain prerequisites of issuance"
+      (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
+      (with-slots (publication) fixture
+        (def parent (.get publication value))
+        (.def (Release @ parent)
+          config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+        (def evidence (.call (.get publication contract) .admit Release (.get publication context)))
+        (check-equal? (.get evidence accepted?) #f)
+        (check-equal? (length (.get publication context contributions)) 2)))))

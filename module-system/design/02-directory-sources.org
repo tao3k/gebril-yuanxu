@@ -1,0 +1,152 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Directory Source Contract and Native Lazy Namespace
+#+date: [2026-10-16]
+#+property: STATUS bounded-design-code-not-implemented-or-executed
+
+* Scope and explicit premises
+
+This design validates resolved one-directory snapshots and creates native lazy
+namespace views. Filesystem/source admission is an explicit protocol dependency,
+not I/O hidden in a pure Contract predicate. The source shell is owned by
+[[file:01-source-roles.org][the published Module source Contract]]. interface.ss publishes Module objects;
+init.ss selects sources and intent under [[file:03-publication-selection.org][the publication/selection protocol]].
+
+The code uses the proposed shorter object Contract name YuanxuObjectContract.
+The current [[file:../../types.ss][Core export]] has not been renamed; there is no alias or runtime change.
+read-child/realize-interface below are explicit admitted source capabilities whose
+production implementations are still pending, not hidden completed helpers.
+
+* Concrete Contract for an admitted directory snapshot
+
+A snapshot contains one directory's immediate metadata. children and exports are
+symbol lists, never recursively instantiated module bodies. exports is the selected
+interface's admitted scope-key declaration; it is not every transitively imported symbol.
+A metadata projector should derive it from the bounded native publication form,
+not require authors to keep a second manual export-name registry.
+
+#+begin_src scheme
+(.def DirectorySnapshot.)
+
+(def (no-directory-obligations _candidate _context) '())
+
+(def (directory-name? value)
+  (and (symbol? value)
+       (let (text (symbol->string value))
+         (and (> (string-length text) 0)
+              (not (member text '("." "..")))
+              (every (lambda (c) (not (memv c '(#\/ #\\))))
+                     (string->list text))))))
+
+(def (directory-names? values)
+  (and (list? values) (every directory-name? values)
+       (let loop ((tail values) (seen '()))
+         (or (null? tail)
+             (and (not (memq (car tail) seen))
+                  (loop (cdr tail) (cons (car tail) seen)))))))
+
+(def DirectoryTextContract
+  (yuanxu-predicate-contract 'directory/text
+    (lambda (v) (and (string? v) (> (string-length v) 0)))
+    no-directory-obligations))
+(def DirectoryNamesContract
+  (yuanxu-predicate-contract 'directory/names directory-names?
+                              no-directory-obligations))
+(def DirectoryBooleanContract
+  (yuanxu-predicate-contract 'directory/boolean boolean?
+                              no-directory-obligations))
+
+(def (directory-snapshot-errors snapshot _context)
+  (let ((children (.get snapshot children))
+        (exports (.get snapshot exports))
+        (interface? (.get snapshot interface?)))
+    (append
+     (if (or interface? (null? exports)) '()
+       (list (.o kind: 'exports-without-interface)))
+     (if (or interface? (pair? children)) '()
+       (list (.o kind: 'empty-nonmodule-directory)))
+     (if (and (not (memq 'source children))
+              (not (memq 'source exports))
+              (not (any (lambda (name) (memq name exports)) children)))
+       '() (list (.o kind: 'directory-export-name-collision))))))
+
+(define-type (DirectorySnapshotContract @ YuanxuObjectContract.)
+  identity: 'module/directory-snapshot
+  proto: DirectorySnapshot.
+  responsibilities:
+  (.o identity: DirectoryTextContract
+      path: DirectoryTextContract
+      generation: DirectoryTextContract
+      interface?: DirectoryBooleanContract
+      children: DirectoryNamesContract
+      exports: DirectoryNamesContract)
+  .obligations: directory-snapshot-errors)
+#+end_src
+
+identity is a source-qualified stable directory identity; generation identifies
+the resolved metadata/content generation. These strings are not authentication.
+The resolver must check root containment, symlinks, regular/readable interface.ss and
+case/normalization collisions, and produce immutable snapshot/provenance evidence.
+A well-shaped self-asserted snapshot cannot prove filesystem facts. This Contract
+intentionally does not certify arbitrary filesystem I/O by checking a boolean.
+An empty root policy can be added explicitly; an explicitly selected empty module
+must not silently disappear. Mixed nodes may publish exports and contain children
+only when their names do not collide. source is reserved by this bounded view.
+
+* Full native projection algorithm over the admitted snapshot protocol
+
+Existing gerbil-poo object<-fun creates a native thunk slot for each supplied
+key. It defers f(key) until the slot is read. This is sufficient for a directory
+view; a new dotted-path evaluator or raw self/super hook is unnecessary.
+
+#+begin_src scheme
+(def (directory-view snapshot read-child realize-interface context)
+  (let (evidence
+         (yuanxu-contract-admit DirectorySnapshotContract snapshot context))
+    (unless (yuanxu-validation-evidence-accepted? evidence)
+      (error "directory snapshot refused" evidence)))
+  (let* ((children (.get snapshot children))
+         (exports (.get snapshot exports))
+         (publication (.o value: (realize-interface snapshot))))
+    (object<-fun
+     (lambda (key)
+       (cond
+        ((memq key children)
+         (directory-view (read-child snapshot key)
+                         read-child realize-interface context))
+        ((memq key exports)
+         (let (scope (.get publication value))
+           (unless (and (object? scope) (.slot? scope key))
+             (error "init export declaration disagrees with scope" snapshot key))
+           (.ref scope key)))
+        (else (error "unknown directory tree slot" snapshot key))))
+     keys: (append children exports)
+     supers: (list (.o source: snapshot)))))
+#+end_src
+
+read-child(snapshot, name) resolves only that immediate selected child and returns
+a DirectorySnapshot. realize-interface(snapshot) checks/adopts the selected interface's native
+publication and returns its export scope; it does not activate other modules.
+Both capabilities must reject stale/changed source generations. An implementation
+must bind them to admitted source resolution, not arbitrary untrusted callbacks.
+They are required I/O/source protocol dependencies, not implementations supplied by
+this design. The exact callback interfaces make the unresolved boundary explicit.
+
+Constructing publication above does not call realize-interface: its native value slot
+is lazy. Reading a child forces only read-child; reading an export forces the
+selected publication once for that view. Reading source needs neither. The initial
+keys list requires immediate child/export metadata; it does not enumerate all
+leaves. Native receiver/cache behavior is reusable, but the generation and lifetime
+of an I/O-backed tree still need new source-adapter qualification. No performance
+measurement is implied.
+
+
+* Conclusion and next controls
+
+Native object<-fun/slot caching supply useful mechanics. Source snapshots, root
+containment/currentness, collision policy and directory/source adapters still need
+qualification. Check missing interfaces, selected one-child traversal, unselected
+module effects, mixed-node collisions, source changes and warm publication reuse.
+No product schema, Profile, build executor or Loader implementation is a dependency
+of this document. No runtime test is claimed.

@@ -1,0 +1,152 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 08 - Testing And Observability
+
+* Testing surface
+
+Tests use Gerbil's native =gerbil test= / =gxtest= lifecycle.  Agentic AI Lab extends
+the ASP Testing Policy through native POO slots; it does not create a second
+test runner.  Per-test memory, performance, debug and trace Profiles are
+declarative values selected by the Testing Interface.
+
+ASP is optional development tooling. Its product pin and policy composition
+belong to =dev/gerbil.pkg= and =dev/testing-api.ss=. The product library build
+uses Core's native source closure and build projection; neither Core nor the
+production testing facade imports the ASP policy interface. Development policy
+trigger/repair tests opt into that dependency explicitly.
+
+Default =just= tests retain a bounded heap so an agent-authored infinite loop
+or leak fails locally.  Build memory and test-runtime memory are different
+concerns: parallel compilation may use available machine resources, while each
+test execution must retain its declared safety envelope.
+
+New Core unit cases use =yuanxu-test-case= from
+=:yuanxu/observability/testing-case=; product tests may use their own public
+testing facade without making Core depend on it.
+This hygienic declaration expands to native =std/test=; it adds the inherited
+POO Case Profile without changing =gxtest= assertions or reporting.  A Case
+that needs a different budget uses =yuanxu-test-case/with= and a native POO
+object extending =yuanxu-testing-case-profile-prototype=.  Do not encode a
+second test runner or duplicate the Testing Interface's managed-heap default.
+The Case monitor may interrupt a non-returning native harness thread and report its span;
+its heap counters are process-wide, not a thread-local heap quota.  Native
+=test-case= declarations that have not migrated still receive the worker-level
+managed-heap cap, but not Case-span observation.
+For a retained-allocation risk, a Case may opt into
+=collect-before-sample?= on its memory-policy slot.  This collects before
+each periodic sample so live-growth limits can stop a real allocation before
+the worker's hard heap cap; it is intentionally not the default because each
+collection has a cost.  The isolated observability suite verifies a bounded
+retained-allocation rejection and a subsequent successful Case.  Its receipt
+proves process-wide live growth during the Case span; it does not attribute
+every byte to that Case alone.
+
+* Test ownership
+
+Core mechanism qualifications (reader/packager internals, MOP metadata copying,
+source-currentness controls and destructive temporary-tree relocation) belong
+in =core/t/=. A real Module or Scenario used as a fixture does not transfer
+ownership of that Core mechanism test into the Module's =tests/= directory.
+
+=modules/<name>/tests/= and =scenarios/<name>/tests/= exercise that owner's
+public configuration, Contracts and behavior. Use the existing declarative
+=yuanxu-test-case= or resource-owning =yuanxu-test-fixture= macros, which
+lower to the native std/test lifecycle. Testing macros are the declaration
+surface; a module's tests are not restricted to macro-expansion assertions.
+Core imports these macros from =:yuanxu/observability/testing-case= and
+=:yuanxu/observability/testing-fixture=, without depending on a product facade.
+There is no parallel module test runner or repeated implementation test list.
+
+Shared Fixtures own preparation, cleanup and reusable fault injection. Atomic
+Cases own distinct public behavior; they must not each rebuild the same support
+library or repeat the native compiler's cold/hot/currentness tests. Native
+=std/make= owns incremental support compilation in the test build phase,
+through the existing root build entry, separate from production targets.
+Testing owns execution and reporting, not a parallel Builder. A test build
+must not initialize unrequested production selection or activate its scopes.
+Reuse existing consumer Cases to qualify
+that wiring rather than introducing another compiler qualification suite.
+
+A cached support library does not cache a test verdict. Report support discovery
+and preparation, harness startup, and Case execution separately. A hot atomic
+Case should exercise its behavior with minimal setup; a source-relocation or
+multi-module publication qualification must be identified as integration work,
+not used to justify slow atomic tests. Investigate repeated source expansion or
+dependency discovery before adding more independent test processes.
+
+* Observability
+
+Observability reports first-event latency, active phase, elapsed time, memory
+and final receipt without becoming execution authority.  A timeout must show
+which admitted owner or Provider is active.  Tests may refine the observability
+Profile for a module, but may not insert ad hoc =display= calls as the only
+diagnostic contract.
+
+Parallel batch heartbeats and per-batch debug-call dumps are off by default:
+they repeat across workers without identifying a Case.  A targeted debugging
+Profile may set =heartbeat-enabled?= or =trace-enabled?=; normal runs retain
+the native batch start, completion and failure phases.
+
+* Evidence order
+
+Compile changed modules directly, run atomic tests, then affected scenarios and
+public consumers.  Keep build wall time, macro-expansion time and runtime test
+time distinct.  A focused green result does not qualify independent closure;
+the completion report names exactly which gate ran and which remains blocked.
+
+* Specialized qualifications
+
+Use =TestingScript.= for native harnesses and refine its ordinary receipt slots
+(=case-count=, =required-lines=, and, for an existing custom aggregator, an exact
+=harness= line).  Keep domain assertions in the suite or its named receipt
+function.  The inherited =.run= owns Ops execution and the source Fixture;
+a specialized =.admit-result= cannot suppress its common failure gate.
+
+Non-Gerbil executable qualifications use Ops and the same Fixture ownership
+rules; they must retain their own result protocol.  A Rust summary, a build
+receipt and a native Gerbil =HARNESS-OK= are different kinds of evidence.
+Keep exact old deadlines, failure diagnostics and input-currentness controls
+when migrating a shell entrypoint.  Test the gate and its failure controls
+before treating its underlying domain qualification as passed.
+
+* Source-only bootstrap progress
+
+The Module bootstrap fixture forwards the actual child transcript through
+=run-script= while retaining the same captured output for assertions. Its
+progress reader relays only native =std/make= compilation and scheduling rows,
+and existing worker progress records. A 60-second idle frame owns that relay;
+forwarding arbitrary text alone does not advance the Harness progress protocol.
+The 60-second child deadline and the outer test budgets remain unchanged.
+
+The nested Harness result must name the exact normalized absolute source file,
+in addition to its =HARNESS-OK= and final =OK=. A relative-path substring is not
+a valid substitute for the native module identity. Compiler progress is not a
+successful test result, and a completed compilation cannot waive Harness failure.
+
+** Current-head CI recovery (2026-10-23)
+
+The default test preparation and the cold bootstrap fixture share
+=make-compiler-progress-reader=. It forwards only actual =std/make= compile,
+invoke and compiler-job rows into the existing Ops progress frame. Preparation
+also streams the captured compiler output to the enclosing owner. Its existing
+120-second preparation limit, 60-second idle limit and final artifact admission
+remain unchanged; neither elapsed time nor a timer produces progress.
+
+Checkpoint wall/CPU accounting is held in two private scalar totals, reported by
+=test-case-timing=. It must not consume the unchanged 64 domain observation
+categories. The full-category regression remains unchanged. An overflow reports
+both the attempted key and the already occupied categories.
+
+Core init selects JsonSchema, Ops and Funflow. Discovery/isolation regressions
+use those real owners and retain an unforced Ops scope while JsonSchema and
+Funflow qualification sources execute. Product OpenTofu operational-round tests
+belong in the product repository, alongside their actual producer, rather than
+importing a removed OpenTofu directory from the Core library.
+
+The pinned Quint backend resolves its distribution relative to =QUINT_HOME=,
+with the same default as the installed Quint CLI. The source cut binds the
+current testing-script controls instead of a deleted execution-progress test;
+this is an executable-input correction, not a new theorem or a replacement for
+the finite model's positive/negative checks.

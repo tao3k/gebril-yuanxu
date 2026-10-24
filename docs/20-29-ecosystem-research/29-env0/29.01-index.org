@@ -1,0 +1,104 @@
+#+title: 29.01 env0: Independent Configuration-System Research
+#+language: en
+#+property: DOCUMENT_ID 29.01
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Research scope
+
+The subject is reusable environment templates, workflow configuration, output mappings, operational status and drift. Separate product UX observations from claims about the underlying IaC engine.
+
+This dossier is the owner of env0-specific observations and conclusions.
+See [[file:../../30-39-research-foundations/30-method/30.01-evidence-protocol.org][the evidence protocol]] for claim classes and completion criteria.
+No platform command, deployment or issue reproduction is claimed here.
+
+* Configuration and scenario baseline
+
+Follow the official network/VPC, DB, Kubernetes and services example. Trace a producer output into a downstream input, then change a label and fail a prerequisite. The exact workflow YAML and resolved inputs still need an independent source fixture.
+
+The current baseline is source/document review. A complete version-pinned
+configuration fixture, resolved result and matched negative control remain
+required before calling this an end-to-end case comparison.
+
+* env0: useful platform organization beyond individual resources
+
+Primary sources:
+- [[https://docs.envzero.com/guides/admin-guide/workflows][env0 workflow overview]].
+- [[https://docs.envzero.com/guides/admin-guide/environments/drift-detection][env0 drift detection]].
+
+The workflow documentation organizes related environments and their dependencies,
+using reusable templates and output-to-input mappings. Its example connects
+network/VPC, database, Kubernetes and services. This is a useful ecosystem-level
+case: the task is not just rendering one infrastructure object.
+
+The drift documentation distinguishes changes in remote infrastructure from the
+IaC definition, and distinguishes drift-detection failures from detected drift.
+Those observations are not the same as source currentness or a completed apply.
+
+Our design implication: independently reusable Profiles can express network,
+machine and access data; Scenarios compose selected occurrences. Keep each
+relationship explicit, retaining producer identity rather than copying parent
+resource objects into a consumer's default configuration. Diagnosis should
+identify the failed connection without exposing internal cache records to users.
+
+Reflection: how should one team publish a stable Profile while another upgrades
+its Scenario? What is the unit of versioning, rollback and ownership? Can an
+Agent inspect the dependency closure without evaluating every sibling service?
+Directory roles organize source, but cannot answer these questions alone.
+
+Conclusion: the platform value includes ownership, reusable environments and
+operational observations. A smaller configuration file is useful only if these
+responsibilities remain visible and independently maintainable.
+
+
+* Issues and Engineering Limitations
+
+Reference marks: documented restrictions are DOCUMENTED-LIMITATION; user
+reports are ISSUE-REPORTED and NOT-REPRODUCED unless stated otherwise. Upstream
+state and report dates below retain their original observation scope. No new
+CONFIRMED-DEFECT classification is made by this editorial update.
+
+No platform-specific GitHub issue has been independently examined in this
+dossier yet. The current observations are based on the specifically cited
+primary documentation. Do not infer that all documented restrictions are bugs,
+or that absence of an issue review establishes absence of user problems.
+
+The source links above remain the authority for each report. Pin missing versions
+and run an isolated reproduction before promoting an issue-reported observation
+to reproduced behavior.
+
+* Independent reflection and questions
+
+1. What is versioned: template, environment, workflow or provider?
+2. Which change invalidates a previously reviewed workflow?
+3. Can drift-detection failure be distinguished from observed drift and a source revision change?
+
+* Onwards and evidence status
+
+| Work item | Current status | Required artifact |
+|-----------+----------------+-------------------|
+| Primary sources cited above | Reviewed in the initial research pass | Preserve source URL, access date and version where available |
+| Configuration corpus | Scenario specified; not reproduced | Upstream files/revision and complete required inputs |
+| Issue evidence | Only specifically cited reports are evidence | Version, reported/confirmed behavior, status date and minimal reproduction |
+| Scheme response | Design inference only | Matched user configuration and explicit failure cases |
+| Runtime/performance comparison | Not performed | Separate reproducible receipt and bounded claim |
+
+Do not create placeholder bug IDs or infer that an unreported limit is an
+upstream bug. If no relevant public issue has been examined, record that gap.
+An official documented restriction can be evidence without being a defect.
+
+Continue this dossier when adding env0-specific source analysis. If it
+grows, extract configuration/source evidence, issue records and reflection into
+separate numbered Org modules under this directory, keeping this file as their
+reading map. Cross-platform documents link conclusions rather than owning copies.
+
+* Conclusion
+
+The reviewed material identifies a concrete design boundary; it does not establish
+Scheme/POO superiority. The questions above and the matched scenario determine
+what must be investigated next. Do not mark this dossier complete merely because
+its organizational structure exists.
+
+Research map: [[file:../README.org][independent dossiers]]. Comparison owner:
+[[file:../../../module-system/design/08-infrastructure-platforms-and-design-gates.org][cross-platform architecture synthesis]].
+

@@ -1,0 +1,145 @@
+#+title: Core Ops Library
+#+language: en
+#+SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Ownership
+
+Ops is a built-in Yuanxu library at =:yuanxu/ops/interface=. Neither Yuanxu nor
+Agentic AI Lab selects Ops in =init.ss=. Module selection concerns optional
+publications; the process primitive used by the Module System, TestingScript
+and Funflow is part of the Core implementation itself. Funflow imports that
+library normally and does not declare a selectable =ops= requirement.
+
+=core-spec.ss= owns the library compilation roots. =ops/= has no nested Module
+package or second source-selection entry. The existing SDK compiler and package
+namespace remain authoritative. This change introduces no alternate Loader,
+Builder, process runner, or cache protocol.
+
+* Functional first, objects when useful
+
+=func.ss= implements pure validation, argument preparation, environment merging
+and preview. Only =run-script= samples the host environment and starts a process.
+=interface.ss= binds those same functions to the =Ops= object; Script's native
+=.run= delegates to =run-script=. The public object retains receiver-local
+configuration and the existing =OpsScopeContract=.
+
+#+begin_src scheme
+(import (only-in :yuanxu/ops/interface Ops)
+        (only-in :clan/poo/object .cc .get .call with-slots))
+(with-slots (preview run) Ops
+  (def Script (.cc (.get Ops prototypes Script)
+                  'command '("printf" "ready") 'timeout 5))
+  (preview Script)                 ; pure value; no process
+  (run Script)                    ; explicit process boundary
+  (.call Script .run))            ; same executor, another explicit invocation
+#+end_src
+
+The two execution calls above are alternatives in ordinary use. Importing the
+library, constructing Script, reading its =.run= slot and previewing it do not
+execute commands. The default Script's empty command cannot pass execution
+admission until its caller supplies a command.
+
+| File | Responsibility |
+|------+----------------|
+| types.ss | Command, environment, configuration and scope Contracts |
+| config.ss | Inert execution defaults |
+| func.ss | Pure preparation and the one explicit execution function |
+| objects.ss | Existing Script and SelectedPackages prototypes |
+| interface.ss | Built-in Ops object and functional slot bindings |
+| process-script.ss | Receiver-local defaults and native .run delegation |
+| progress.ss | Existing process progress, cancellation and watchdog boundary |
+| selected-packages.ss | Selected external-package execution helper |
+
+* Inheritance and execution
+
+A derived Ops object's Script reads the derived lexical =config= even after the
+parent Script has been cached. Parent defaults remain unchanged. Contracts
+validate the final command and options immediately before execution; a preview
+is not authorization or an execution receipt.
+
+Configuration, environment and process-script validation use native Type/Record
+descriptors. =validate-script= returns the checked script; preview and command
+preparation consume that result. The optional progress factory has a native
+Function signature: no arguments, one returned callback accepting a String and
+returning Any. Preview stores its checked wrapper without calling it. Execution
+uses that wrapper, so an invalid factory result or callback argument is refused
+at the actual invocation. Scope admission remains Core's contextual publication
+contract; ordinary value validation does not allocate an empty admission receipt.
+
+Literal argv goes to =std/misc/process#run-process= without implicit shell
+interpretation. Environment overrides are POO string fields. Timeout uses the
+existing owned process group and retains GNU timeout's signal diagnostic.
+Cancellation terminates owned descendants; it never signals a PID merely read
+from an arbitrary file. A configured log streams output to that operation's
+file. Otherwise the result retains captured output, including partial output
+when cancellation raises the original error.
+
+* Build and test boundary
+
+=defbuild-script= and =std/make= own compilation. Ops only executes explicit
+commands. TestingScript retains its current source checks, artifact issuance,
+120-second preparation cap, 60-second idle cap and 600-second test cap. Loading
+Ops does not load the test executor or run a build.
+
+The Core tests cover pure preview, function/native method equivalence, explicit
+execution, parent/child defaults, deadline diagnostics, cancellation and fixture
+cleanup. =ops/tests/atomic-test.ss= remains an ordinary native suite; its location
+does not make Ops a selectable Module. Services have separate lifecycle design
+in [[file:services.org][services.org]] and are not implemented by one-shot Script.
+
+* Built-in ownership qualification (2026-10-23)
+
+Ops belongs to the ordinary Core library closure, not to an =init.ss= selection.
+Both the Core and product declarations omit Ops; Funflow has no selectable Ops
+requirement. The interface exposes the same functional operations and Script
+prototype without executing a command during import or binding.
+
+The clean qualification used the installed Gerbil runtime, Core base
+=10a075938f8820547acca8e915671a5e69dbea73= and its declared gerbil-poo
+=80b590b15c6d4bde7717f5fd85d5b98dbf230bd8=. It ran in an isolated source tree
+because another session was upgrading the working-tree dependency. This receipt
+does not qualify that concurrent dependency upgrade.
+
+The complete Core build compiled 235 entries and finished in 152.638 seconds.
+The built-in scope, Functional API, process Script, authoring, candidate,
+reader-root collection, test preparation, build process, test publication,
+publication isolation and real Gitea/PostgreSQL focused suites passed with
+=MODULE-OK=, =HARNESS-OK= and final =OK=. Scope tests cover loading without
+execution, explicit execution, cached parent defaults and child receiver
+isolation. Existing watchdog limits and negative checks remain enabled.
+
+These are local build and focused-test results, not a complete remote CI pass.
+
+** CI compiler cohort alignment
+
+The previous CI release =2591dcd= exports an executor with only =submit= and
+=close= fields. Inspecting the pinned release's actual =compiler/base.ssi= and
+=base.ss= confirmed that it has no =add-compile-output-job!= or output producer
+registry. Ascent's Darwin build requires that producer registry; a platform
+name cannot establish API availability. CI now uses the published =1cfb032=
+cohort used by the installed qualification runtime, with per-platform immutable
+release tags, SHA-256 checks and manifest revision checks. This changes the
+selected toolchain artifact, not Gerbil compiler sources or admission policy.
+Linux editor-tagging and scale outcomes remain subject to the new CI run.
+
+** Clean CI test-support correction
+
+The Linux scenarios group at =a5fe884= exposed a source/compiled distinction:
+=ops/tests/atomic-test.ss= is test support and is deliberately absent from the
+production library. Its facade now imports it by relative source path, letting
+the existing test preparation closure compile it. A library-name import could
+succeed with a warm local library yet fail in the clean CI artifact. The three
+watchdog controls remain part of the facade; no test support enters =core-spec=.
+
+** Remaining qualification boundary
+
+The completed =a5fe884= contracts job retained two independent failures:
+source-tail snapshot routing refused its own relocated =ops/process-script.ss=,
+and the Linux source-loader authority process exited 139. Neither is a passed
+production protection result. The snapshot compiler now routes the package's
+named prelude and prepares the actual init and delayed TestingScript roots,
+not just the test body's static imports. The loader probe emits scalar lifecycle
+checkpoints around compilation, closure capture and bootstrap to locate the
+native crash. Production reader restrictions and all existing budgets remain
+unchanged; successful qualification of these changes is still required.

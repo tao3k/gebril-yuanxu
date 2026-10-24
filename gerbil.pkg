@@ -1,8 +1,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
-;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(package:
- core
+;; The implementation uses its own language entry. Consumers independently
+;; choose a prelude in their own package metadata.
+(package: yuanxu
+ prelude: :tao3k/yuanxu/prelude
  depend:
- ("github.com/tao3k/gerbil-poo@099b381588360a8a49fd772f666a1a00351366f5"))
+ ("github.com/tao3k/gerbil-poo@43349640384ba0ea4d70aeb2be5e217ab6b56cbe"))

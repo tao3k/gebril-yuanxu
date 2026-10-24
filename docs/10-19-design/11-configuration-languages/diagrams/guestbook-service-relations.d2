@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+direction: right
+scenario: "Effective Development Scenario\nfrontend port=8080, env=dev"
+contract: "Scenario responsibilities + endpoint obligations\ninput admission; not connectivity proof"
+frontend: "Frontend Profile\ncontainer TCP 80; GET_HOSTS_FROM=dns"
+leader: "Redis Leader Profile\ncontainer / Service TCP 6379"
+follower: "Redis Follower Profile\ncontainer / Service TCP 6379"
+scenario -> frontend: final child
+scenario -> leader: final child
+scenario -> follower: final child
+scenario -> contract: final receiver, not cached parent
+frontend -> leader: DNS/client convention; image qualification pending {
+  style.stroke-dash: 4
+}
+frontend -> follower: DNS/client convention; image qualification pending {
+  style.stroke-dash: 4
+}
+follower -> leader: replication behavior assumed by recipe; not proven {
+  style.stroke-dash: 4
+}
+provider: "Kubernetes projection + output admission\nreads admitted effective children"
+contract -> provider: accepted configuration required
+frontend -> provider: final image / labels / ports
+leader -> provider: final Redis values
+follower -> provider: final Redis values
+resources: "Deployment + Service per role\nmatching component selectors and pod labels\nfrontend 8080 -> container 80"
+
+cache_guard: "Provider-local candidate-plan admission\nfinal input + basis + child identity + resource values"
+provider -> cache_guard: candidate record and input evidence
+cache_guard -> resources: accepted candidate only; full output admission still required
+parent_cache: "Warmed parent resources"
+parent_cache -> cache_guard: reject for child input or stale basis {
+  style.stroke-dash: 4
+}

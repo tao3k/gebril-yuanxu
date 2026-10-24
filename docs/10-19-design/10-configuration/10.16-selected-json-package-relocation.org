@@ -1,0 +1,206 @@
+#+title: 10.16 Selected JSON Assets and Relocatable Scenario Source Packages
+#+language: en
+#+property: DOCUMENT_ID 10.16
+
+* Implemented owner and scope
+
+The follow-up [[file:10.17-scheme-field-origins.org][10.17]] adds actual Scheme override token locations alongside the
+JSON baselines below. Its additional Scenario control expands a real relocated
+release.ss and checks source currentness after the child plan is cached.
+
+This closes the selected-source JSON packaging gap recorded in
+[[file:10.15-json-service-construction.org][10.15]] for the maintained Gitea/PostgreSQL Scenario. The executable owner is
+[[file:../../../t/gitea-postgresql-relocation-test.ss][the Core relocation qualification]], using the actual maintained Scenario.
+No product Loader, deployment process, compiler binary bundle or new assets DSL
+is added. The artifact is a relocatable selected Module source package; the
+existing Core runtime/compiler remains a dependency.
+
+* Automatic observation, not an assets manifest
+
+=config-json-file= calls a reader-local observation capability with the actual
+parsed file path and its exact source bytes. The existing declaration reader
+binds that capability during native role evaluation. It admits only regular
+files confined to that Module, including real directory checks on every path
+component. A symbolic-link traversal or escaping path refuses publication.
+Module code is trusted Scheme: this check is not a sandbox for arbitrary IO.
+
+The reader records each observed JSON file as a data input with path,
+owner-relative path, byte snapshot and an =admit-current= capability. Data inputs
+share the existing prepared-publication dependency channel; they never receive
+fake compiler identities or become Scheme compiler targets. Private build-role
+wrapping excludes data from the list of Scheme source wrappers.
+
+The selected build Graph separates =entries= and =assets= and includes both in
+=source-inputs=. Its native =.package= method consumes this same Graph. Users
+maintain neither a second file inventory nor a parallel build manifest.
+
+Only actual =config-json-file= reads are observed. The mechanism does not scan a
+Module for *.json, and it does not claim to intercept arbitrary Scheme file IO.
+The test deliberately puts an unread malformed JSON beside postgresql.json:
+it is neither parsed nor packaged. Disabled module directories also stay absent.
+
+* Scenario source and ordinary data
+
+The upstream data remains ordinary:
+
+#+begin_src json
+{"settings": {"port": 5432}, "allowed-ports": [5432]}
+#+end_src
+
+No =assets= field is added to either service interface or Scenario interface.
+The Scenario still declares the PostgreSQL/Gitea dependencies and the two
+contribution paths described in 10.15. These declarations select the same build
+Graph that supplies the package inputs.
+
+#+begin_src scheme
+(def selection (yuanxu-load-modules root-init))
+(def graph (.get selection build-graph))
+(.get graph assets) ; actual postgresql.json and gitea.json observations
+(.call graph .package output-directory)
+#+end_src
+
+Packaging is an explicit filesystem effect. Merely loading the Module, creating
+the Graph or asking for its compiler specification does not write a package.
+The relocation control belongs in Core =t/= because it qualifies packaging and
+source/linker behavior. It uses the existing =yuanxu-test-case= declaration
+over the native harness. Module =tests/= discovery is reserved for the selected
+module's own public behavior, not these Core implementation controls.
+
+* Package contents and relocation
+
+The package consumer in [[file:../../../module-system/building/package.ss][building/package.ss]] copies only selected owner-confined
+source snapshots and observed assets. Shared Core tool sources remain external
+runtime dependencies. Each owner receives gerbil.pkg metadata preserving its
+native package prefix and interface prelude. Observed private nested package
+metadata is retained. Compiler identities are not replaced with display aliases.
+
+The emitted roles are their admitted source bodies, rather than compiler frames
+containing absolute includes of the original workspace. The package writes an
+explicit init.ss with local relative source bindings, preserving declaration
+order, signed feature decisions and disabled owners. It does not copy a disabled
+owner's directory. Relocated loading prepares fresh native role frames, so
+=this-source-file= resolves inside the relocated package.
+
+The existing =yuanxu-write-module-publication= remains a compiler-input
+materializer that preserves original diagnostic source locations. It is not
+silently redefined as a standalone portable source package. Both consumers use
+the same selected/prepared source authority; JSON discovery is owned only once
+by actual reader observations.
+
+The current package consumer rejects unresolved external-package or other
+projection contributions. It must not silently omit a Provider realization or
+feature output and call the result self-contained. Names outside the supported
+init serialization grammar also refuse rather than being flattened or renamed.
+
+* Publication and failure boundary
+
+All package-relative paths are checked before writes, and inconsistent duplicate
+paths refuse. The output must be fresh. Files are written to a fresh sibling
+staging directory, the original Graph is checked again, and only then is the
+directory renamed to the requested output. A failed staging operation removes
+its private staging tree. An already stale asset refuses before output creation.
+This does not claim a distributed filesystem transaction or protection against
+an adversary replacing trusted Core capability objects.
+
+The original Graph remains associated with original sources. It must not be
+reused after relocation/removing those sources. Loading the artifact creates a
+fresh source generation associated with relocated roles, metadata and JSON.
+
+* Relocation control and final receiver
+
+The suite creates source-isolated copies of the actual maintained roles and
+ordinary migration policies permitting ports 5432 and 5433. It then:
+
+1. Checks that exactly two observed JSON assets enter the selected Graph.
+2. Packages the Graph, moves the completed directory, and deletes the original
+   selected Module tree. A fallback to original roles or JSON can no longer work.
+3. Loads the relocated init, preserving denied owners and the effective feature
+   order of this fixture.
+4. Forces both parent plan ports at 5432, then derives a server port of 5433.
+5. Publishes the child: both child plan ports are 5433; the parent cache stays 5432.
+6. Explicitly sets client port 5440 and checks connection-mismatch, actual 5440,
+   the JSON field path and the exact relocated gitea.json source path.
+7. Rejects an attached cached parent plan.
+8. Edits the relocated postgresql.json and rejects the old publication.
+
+#+begin_src scheme
+(def fresh (yuanxu-load-modules (path-expand "init.ss" relocated)))
+(def publication
+  (.call AdmissionPublication. .for-export
+         fresh 'applications/gitea-postgresql 'Application))
+(def parent (.get publication value))
+(def cached (.get parent plan))
+(.get cached postgresql port) ; 5432, forced before derivation
+(.get cached gitea database-port)
+
+(.def (Release @ parent)
+  config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(defvalues (receipt next failure)
+  (.call publication .publish parent Release))
+;; next.plan.{postgresql.port,gitea.database-port} = 5433
+;; cached.postgresql.port = 5432
+#+end_src
+
+The explicit Scheme override's diagnostic retains the relocated JSON locator
+for the base field/default. It does not invent a Scheme assignment span; the
+provenance precision limitations in 10.15 still apply.
+
+* Currentness and existing controls
+
+Observing JSON now installs a reader-level guard as well as the bound Contract
+snapshot. Consequently .publish can refuse earlier with
+=selected configuration asset changed= instead of waiting for the later
+=admission source input changed= Context check. The existing JSON source-change
+assertion was updated to this earlier, specific failure; it was not broadened
+to accept arbitrary exceptions. Previous failed runs remain local artifacts.
+
+The dedicated second relocation case changes a captured JSON source, then checks
+that =.package= refuses and its requested final output does not exist. The native
+missing/null/explicit distinctions and all domain admission controls remain
+separate regression gates, not effects of packaging.
+
+* Reproduction and qualification limits
+
+#+begin_src sh
+just test-file t/gitea-postgresql-relocation-test.ss
+just test-file t/gitea-json-configuration-test.ss
+just test-file t/gitea-postgresql-publication-test.ss
+just test-file t/module-build-graph-test.ss
+just test-file t/module-publication-test.ss
+just test-file t/contribution-deep-publication-isolation-test.ss
+#+end_src
+
+Use the default host runtime/current source setup and pinned native dependency
+recorded in 10.15. All Scheme runs are serial and retain the existing heap fence
+and 120-second per-file timeout. Raw logs remain local under
+=/private/tmp/json-assets-*= and =/private/tmp/assets-final-*=.
+
+This is source-package relocation evidence. It does not establish compiled
+binary relocation, installed-package/AOT acceptance, Provider artifact packaging,
+nontrivial feature-projection realization, end-to-end service deployment or
+product Loader qualification. The standalone configuration-source qualification
+failure recorded in 10.15 is not erased by these controls.
+
+** Recorded focused result (2026-10-17)
+
+All six files above passed with exit 0, MODULE-OK, HARNESS-OK and standalone OK,
+without ERROR CASE/CHECK/HARNESS or heap/stack overflow markers. The owned
+relocation suite completed two cases, JSON semantics four, service admission
+eight, and retained deep publication ten. The other two regression files were
+Module build Graph and Module publication.
+
+After supporting category-free names in the init serializer, the Scenario,
+JSON and service files were rerun successfully. Their fixture now also carries
+a disabled category-free package name as well as the disabled grouped module;
+both decisions survive relocation without copying either directory. This is not
+proof of arbitrary deep owner-name serialization: the current native init grammar
+supports an optional category and one module name, and deeper identities refuse.
+
+The original Gitea/PostgreSQL roles and JSON are read from the repository; only
+destructive controls use isolated source copies. Failed development attempts
+remain local, including native receiver binding and the initial filesystem-alias
+prefix comparison. The final origin assertion compares the exact normalized
+relocated gitea.json path, rather than relaxing the check to a basename.
+
+The linker blob remained =f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6=.
+This work added no raw logs, staging operation, commit or product Loader adapter.

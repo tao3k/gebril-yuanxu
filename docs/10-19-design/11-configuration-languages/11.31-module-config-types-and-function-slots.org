@@ -1,0 +1,211 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.31 Config Languages 30: Module Config, Types and Function Slots
+#+property: DOCUMENT_ID 11.31
+#+date: [2026-10-16]
+#+filetags: :config-language:modules:config:types:nix:design:
+#+property: STATUS converged-design-only-not-implemented-no-loader
+
+* One native interface, distinct source responsibilities
+
+The [[file:11.32-modular-configurations-core-principle.org][modular-configuration core principle]] explains why this scope exposes
+inspectable config/types alongside callable functions, using Nickel's rationale
+and actual Omnibus modules. This scope design implements neither Nix module
+evaluation nor Nickel merge semantics.
+
+This chapter converges the [[file:11.30-workflow-module-contract-and-simple-user-config.org][Workflow file/Contract example]] and the
+[[file:11.23-source-ref-to-admitted-scope.org][declarative Module/source chain]]. Functions implement behavior; slots expose it;
+interface.ss declares the module's public scope. No JsonSchemaFileScope. proxy
+prototype or repeated core.config/config-contract authority is needed.
+
+| Source role | Owns | Does not repeat |
+|-------------+------+-----------------|
+| func.ss | Named file-to-Contract and validation functions | Module publication/default objects |
+| types.ss | Native Config/Scope/domain Contracts | A copied external Schema field inventory |
+| objects.ss | Reusable prototypes when multiple consumers need their behavior | One-use forwarding objects |
+| config.ss | Maintained default POO configuration | Another copy inside an operation |
+| interface.ss | Public config/types/function slot bindings and dependencies | Algorithm bodies or compiler import/export frames |
+
+config is a public slot. The fixed configuration source role is config.ss (singular),
+regardless of the number of Profiles or Scenarios defined there. Earlier configs.ss
+examples are superseded by this naming decision; no runtime source is renamed. An object family is justified by reuse/behavior, not merely to
+forward one function to the interface. Internal compiler wrappers remain generated.
+
+* JsonSchema: bind the function directly in the interface
+
+The complete function implementation is in module 29; compile-schema and the
+Config Contract/default are defined in [[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]. This is the one authoritative
+interface declaration, repeated there only as an explanatory view:
+
+#+begin_src scheme
+(.def JsonSchema
+  identity: 'core/json-schema
+  core:
+  (.o requires: (.o)
+      scope-contract: JsonSchemaScopeContract
+      exports:
+      (.o (:: @ JsonSchemaScope.)
+        types: (.o Config: SchemaConfigContract)
+        config: JsonSchemaDefaultConfig
+        from-file:
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
+  features: (.o))
+#+end_src
+
+The implementation function accepts a Config Contract, effective config and file.
+The published slot binds the first two through native lexical slot references,
+so callers supply only the resolved file. This is an ordinary Scheme procedure
+value in a POO slot; no method-registration macro or public loader DSL is added.
+Constructing the slot does not read a file. Native demand determines when the
+configured closure is obtained and when its explicit function call performs I/O.
+
+The inherited compile slot also reads types.Config/config, rather than hard-coding
+the original Contract/default. Derived scope behavior must use the derived receiver;
+a closure previously obtained from the parent is still the parent's closure.
+Native receiver controls provide a foothold, but this exact configured operation
+requires a future focused control. Source/coverage admission stays mandatory;
+a config flag cannot certify unsupported Schema semantics or grant file access.
+
+* Same scope for values, Contracts and operations
+
+The selected namespace exposes admitted scopes, not raw core descriptor records:
+
+#+begin_src scheme
+(def JsonSchema (.get Modules core json-schema))
+
+(.get JsonSchema config reject-diagnostics?)
+(.get JsonSchema types Config)
+(.get JsonSchema from-file)
+#+end_src
+
+These accesses are equivalent to conceptual Module.config and Module.types paths.
+No automatic spelling conversion from json-schema to jsonSchema is implied; an
+alias is an explicit local binding. Ordinary consumers can use their existing
+bounded use-module/with-slots bindings for the required names.
+
+A local extension is ordinary native POO:
+
+#+begin_src scheme
+(.def (InspectionSchema @ JsonSchema)
+  config: =>.+ (.o reject-diagnostics?: #f))
+#+end_src
+
+That value does not mutate JsonSchema or the entire Modules namespace. It only
+affects a consumer explicitly wired to this derived scope in its selected
+composition. The source/selection owner must bind final dependency values and
+requalify them; direct access is not automatic global activation. The raw-file
+Contract publication route still refuses conversion diagnostics under its stronger
+coverage floor; the inspection setting only relaxes the in-memory compile route.
+No pre-obtained parent function is silently rebound to the new scope.
+
+* Workflow: config is its maintained template; types.Config is its Contract
+
+The real package asset remains schemas/json/github-workflow.json. The owner
+interface in module 29 publishes:
+
+#+begin_src scheme
+(.o config: (.o on: "push" jobs: (.o))
+    types:
+    (.o Config:
+        ((.get JsonSchema from-file)
+         (path-expand "../../../schemas/json/github-workflow.json"
+                      (path-directory (this-source-file)))))
+    admit:
+    (cut yuanxu-contract-admit (.get types Config) <> <>))
+#+end_src
+
+This is its core.exports body, not another Module to register. The public names
+Workflow./WorkflowContract are removed rather than retained as aliases to config
+and types.Config. The default template may remain incomplete until jobs are
+provided; module scope-shape admission is distinct from completed config admission.
+Demanding the generated Config Contract can read/convert the selected file; the
+module shape check in module 29 currently demands it explicitly. This is bounded
+selected work, not a zero-load claim.
+
+The downstream native configuration is small and contains no schema machinery:
+
+#+begin_src scheme
+(def ProjectCI
+  (use-module (.get Modules ci github-actions) as gha
+    (.o (:: @ (.get gha config))
+      name: "CI"
+      jobs:
+      (.o build:
+          (.o runs-on: "ubuntu-latest"
+              steps:
+              (list (.o uses: "actions/checkout@v4")
+                    (.o run: "gerbil build")))))))
+#+end_src
+
+The published admit operation uses types.Config from its effective scope. Module
+metadata associates that operation/config/Contract for the configured preview or
+export boundary; automatic invocation remains pending. Users do not repeat those
+policies or pass an artifact, source metadata record or evidence object. Config
+assignment remains replacement; transformations of original values use native
+functional refinement. A workflow object does not inherit a Contract descriptor.
+
+* What to learn from Nix config/options, and what differs
+
+The actual reference is [[https://nixos.org/manual/nixpkgs/stable/#module-system-lib-evalModules][lib.evalModules]] and its
+[[https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix][module implementation]], not a presumed lib.nixosModules.lib API. It provides
+config as evaluated values and options as declarations. Module arguments also
+include lib and application arguments; it is not literally a two-parameter API.
+[[https://github.com/NixOS/nixpkgs/blob/master/lib/options.nix][mkOption]] includes type, defaults, description and other metadata, and option
+types participate in merging. Consequently options is not just a boolean type check.
+
+#+begin_src nix
+{ lib, ... }: {
+  options.example.port = lib.mkOption {
+    type = lib.types.port;
+    default = 80;
+    description = "External service port.";
+  };
+  config.example.port = 8080;
+}
+#+end_src
+
+Borrow coherent value/declaration views and source-aware tooling. POO config/types
+slots supply the access surface, with native Contracts, defaults and ordinary
+functions underneath. This does not reproduce Nix option merging, fixed-point
+imports or precedence. Keep such policies explicit and use native POO semantics;
+never claim mkForce/mkDefault equivalence merely because a slot is overridden.
+
+* A shared namespace is not an eager global argument expansion
+
+Other modules can access config/types through their admitted dependency scope or
+selected namespace. They must declare the required owner and expected scope
+Contract so source/dependency/build closure remains explicit. The common namespace
+is a source-generation-qualified lazy view, not a mutable global registry injected
+by a macro into every compilation unit. No flattening all names into lexical scope,
+no enumeration/forcing of every module's types, and no filesystem scan on a field
+read are authorized by this design.
+
+A missing or disabled dependency is rejected through the retained selection policy.
+Reading a type can legitimately demand its selected Schema. A type descriptor
+alone is not authority to load/execute a module. The scope and build views share
+selection identity without requiring every Contract or config to be evaluated.
+Circular value dependencies cannot be resolved by eagerly passing the whole
+namespace as config; retain the Core dependency/cycle policy and bounded demand.
+
+* Reflection and next qualification
+
+Potential UX gain: maintain one small native scope with predictable config/types
+paths and function slots; ordinary users read/change values while advanced users
+extend prototypes and Contracts. This unification still requires field discovery,
+correct defaults, source diagnostics, selected demand and conversion qualification;
+plain getters do not establish a superior ecosystem or remove that work.
+
+Required controls: config/Contract/default declared once; direct from-file callable
+with one public argument; child config/Type changes affect the child's closure;
+parent closures remain unchanged; imported artifact/help share source generation;
+namespace access never bypasses disable or loads unselected modules. Retain KCL
+Guestbook and real Workflow source controls; no runtime comparison was run here.
+
+Current native slot/functional/Contract primitives are reusable. Proposed here:
+from-file publication, config/types protocol integration, generated source-role
+wrappers and selected namespace/build linkage. Existing Core still uses :core and
+legacy function names; target :yuanxu and yuanxu- APIs remain pending.
+Macro governance permits only hygienic lowering/source capture over these native
+values, with no loading, Schema compilation or hidden global registry at expansion.
+This change edits documentation only and does not implement or connect a Loader.

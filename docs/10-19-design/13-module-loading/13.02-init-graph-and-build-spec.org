@@ -1,0 +1,182 @@
+#+title: 13.02 Init Graph and Native Build-spec Integration
+#+property: DOCUMENT_ID 13.02
+#+language: en
+
+Current implementation and focused receipts are specified in [[file:13.06-init-build-spec-adapter.org][05]]. Its complete
+example retains the native source anchor required by prepared inputs.
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Scope and correction
+
+Module selection/building and Contract association/admission are TWO features.
+This document covers only the former. No Schema artifact, Contract receipt or
+evidence producer is required to concatenate compiler specifications.
+
+The earlier proposed procedure-valued build-spec consumer is withdrawn. Native
+list composition is the first choice; do not extend std/build-script with a Core
+producer protocol merely to combine the selected module spec and existing targets.
+The earlier mixed Contract/build document has been separated and renamed.
+
+* Source audit
+
+Inspected the installed Gerbil 0.19 source revision 1cfb032, local package version
+0.19.20261009110849.1cfb032.patch618d76f9eb72. No build was executed.
+
+- std/build-script.ss: defbuild-script has pattern (macro build-spec keys ...).
+  The first argument is an arbitrary Scheme expression evaluated in main. Remaining
+  arguments form a keyword/options list; they are NOT additional module paths.
+- Its build-main already handles meta/spec/compile/clean and forwards to std/make.
+  It derives srcdir from the build script's source location.
+- std/make.ss: make accepts a native list specification and explicit srcdir:.
+  Strings are gxc shorthand. Native gxc entries have a module filename plus options.
+  extra-inputs: in the entry's property list participates in timestamp freshness.
+  It is not a content/currentness callback or provenance check.
+- Native source-path AND library-path derive from the entry's module filename.
+  An absolute generated filename cannot be substituted without also considering
+  output identity. Changing current-directory does not replace explicit srcdir.
+- Current Core build.ss supplies a long literal list. Its JsonSchema and other
+  module entries are candidates for init-derived projection; unrelated explicit
+  targets can remain in the same native list.
+- Current Graph writer relocates generated sources and returns source-root/spec.
+  Those entries cannot simply be appended against the author's different root.
+
+These are local source observations, not a claim about every Gerbil version or
+the ASP bridge. That bridge has a different native dispatcher and needs its own
+compatibility qualification before using a helper there.
+
+* Normal author interface: compose the FIRST argument
+
+The selected Graph is the module-selection and dependency-analysis value. The
+build boundary projects it to an ordinary native list. Concatenating that list
+with retained entries does NOT require inheriting, refining, or extending a POO
+Graph. Do not make authors construct a combined-graph object or a special
+build-spec object merely to use append. Internal source/currentness preparation
+does not change the type expected by defbuild-script.
+
+#+begin_src scheme
+;; init.ss
+(import :yuanxu/module-system/selection/init-syntax)
+(yuanxu! mode: explicit source: "./modules" (json-schema))
+
+;; Bounded actual non-module roots from Core build.ss.
+(def retained '("utilities/algorithms" "types"))
+(def module-spec
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
+    output-directory: output retained: retained))
+
+;; Under the shared source-root anchor; 05 shows the complete native frame.
+(defbuild-script (append module-spec retained))
+#+end_src
+
+Both paths exist in Core and are current build roots. This bounded example is not
+the full retained list. Authors retain their other non-module targets as well.
+This is native Scheme append
+and the existing native build macro, not a new public syntax. By contrast,
+(defbuild-script module-spec "path-a" "path-b") is not the native path-list API:
+the extra strings enter its keys list and are not compiler targets.
+
+This snippet uses the implemented list adapter. Source/output directory bindings
+and the complete native entry are specified in 05.
+The [[file:13.03-core-jsonschema-init-build-case.org][real JsonSchema case]] expands source-root compatibility and shared-unit
+deduplication. The bounded projection is qualified there; migration of the entire
+live Core build.ss remains separate.
+yuanxu-build-spec returns an ordinary
+native LIST with the SAME source-root and output-identity interpretation as the
+other entries. It must refuse an incompatible projection rather than silently
+returning relocated entries or inventing a procedure-valued spec.
+
+* Source-root and lowering gate
+
+There are two physically different situations; do not conceal them behind append:
+
+1. Direct native sources already belong to the author's build root and native
+   package layout. Project owner-relative native filenames, retain native compiler
+   import dependencies and merge them into the ordinary list. Check duplicate
+   filenames/options and compiler identities before passing it to std/make.
+2. Publication source needs generated imports/link wrappers. The current writer
+   places them in another root. The wrapper layout/output identities must first
+   be made compatible with the shared native spec OR all retained targets must
+   be lowered into ONE generated source root. The generated native build entry
+   then executes there; it is an artifact, not a separately maintained bootstrap
+   entry. A mixed-root list is invalid.
+
+The implemented adapter uses the second route with one native package prefix,
+prepared sources and an explicit source anchor. Its bounded JsonSchema controls
+are recorded in 05. No speculative srcdir override through duplicate keyword
+arguments is endorsed.
+
+* Validity checks using ordinary Scheme
+
+Source/selection currentness is a module/build input property here, separate from
+Contract evidence. A check inside the first-argument expression runs before the
+native dispatcher. It does not automatically run after compilation.
+
+If the stronger before/after check is required, ordinary lexical wrapping already
+expresses it without modifying native defbuild-script. The following is design
+code for a SHARED-ROOT spec. It is not a solution for mixed-root entries:
+
+#+begin_src scheme
+(def SelectedModules
+  (yuanxu-load-modules
+    (path-expand "init.ss" (path-directory (this-source-file)))))
+
+;; SelectedSpec must be the validated, shared-root native LIST discussed above.
+(def native-main
+  (let ()
+    (defbuild-script
+      (append SelectedSpec
+              '("utilities/algorithms" "types")))
+    main))
+
+(def (main . args)
+  ((.get SelectedModules admit-current))
+  (let (result (apply native-main args))
+    ((.get SelectedModules admit-current))
+    result))
+#+end_src
+
+The lexical native-main closure preserves the existing native CLI dispatcher.
+It does not redefine native make or add a new specification type. The final check
+detects drift; it cannot undo compiler outputs or establish an atomic filesystem
+transaction. Generated input guards must be joined to the selection guard as well.
+This lexical wrapper pattern is exercised by the focused source-location and
+real JsonSchema controls linked in 05.
+It is an internal expression pattern, not a requirement that every module author
+copy this boilerplate. A platform-generated native entry can carry it.
+
+* Remove the separately maintained bootstrap entry
+
+Reuse the existing expander-import walk in module-system/building/source-closure.ss INSIDE
+build preparation. Discover the actual tool source closure from the adapter's
+compilation context; join its observed source dependencies with selected module
+inputs. Do not introduce a second handwritten target inventory or ask the user
+to invoke bootstrap.ss first. Conflicting tool/application compiler identities
+must be resolved by shared source preparation or rejected, not silently shadowed.
+
+The SDK, package source and dependency resolution must nevertheless be available
+to READ the build adapter. A source-capable Gerbil importer can avoid requiring
+its precompiled binary; this must be tested without cached Core artifacts.
+Missing external package dependencies remain explicit setup failures. No spec can
+calculate itself before its own source is readable.
+
+* Remaining work and independent acceptance gates
+
+- Native list append: supported by the inspected language/macro implementation.
+- init -> selected Graph -> derived entries: existing Core mechanisms are reusable.
+- Init-to-list adapter: implemented for the compatible-prefix Scheme case in 05;
+  whole-Core build.ss migration and broader native target forms remain separate.
+- Before/after currentness: expressible by ordinary Scheme wrapping; not a native
+  callback supplied by extra-inputs: or by a bare append expression.
+- No separate root bootstrap command: exercised in the source-only JsonSchema
+  controls; required public library prerequisites remain explicit.
+- Runtime Loader and Contract-system adaptation: neither implemented nor implied.
+
+The source audit above preceded implementation. The reader correction is recorded
+in [[file:13.05-reader-tool-context-and-cold-build.org][04]] and the adapter implementation/qualification in [[file:13.06-init-build-spec-adapter.org][05]]. Neither implements
+the runtime Loader or merges build projection with Contract-system admission.

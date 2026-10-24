@@ -1,0 +1,442 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Function Types at Module and User Boundaries
+#+date: [2026-10-23]
+
+* Decision for discussion
+
+Every function supplied by a module, user, extension or runtime adapter must
+cross a native gerbil-poo Function Type boundary before Core invokes it.
+Public callable Slots and exported operations declare their real signatures.
+Authors continue to write ordinary functions and POO objects. The declaration
+must make the code easier to read; a second callable framework is unnecessary.
+
+This is a migration proposal and source inventory, not an implementation receipt.
+Earlier partial Ops/JSON Schema work does not establish coverage of Core.
+No implementation, dependency pin or proof is changed by this proposal.
+
+* Upstream reference and semantics
+
+PR [[https://github.com/tao3k/gerbil-poo/pull/13][gerbil-poo #13]] was checked at
+=d87c44e08267256604b586a859beaacc0172817f=. This is newer than the
+=ad206b8= dependency currently selected by this worktree. Implementation must
+update the declared dependency and default installed cohort together, after
+the migration design is agreed. Reading newer examples does not activate them.
+
+| Example at the reviewed revision | What Core should reuse |
+|---------------------------------+------------------------|
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/function-publication.ss][function-publication]] | =Fun Integer Bool <- Integer=; nested returned Function; normalize the whole object before publication |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/signature-service.ss][signature-service]] | One Function descriptor for invocation and generated calls; optional, keyword and default semantics; callback containers |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/object-contracts.ss][object-contracts]] | ObjectContract responsibilities declare shape; independent obligations express domain relations |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/contract-publication.ss][contract-publication]] | checked-action passes the actual checked subject; bind-evidence retains subject/descriptor/context identity |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/polymorphic-services.ss][polymorphic-services]] | Native prototype specialization and finite inference for genuinely parameterized operations |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/row-services.ss][row-services]] | Native structural and recursive descriptors instead of a Core row/signature solver |
+| [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/service-collection.ss][service-collection]], [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/shared-contracts.ss][shared-contracts]], [[https://github.com/tao3k/gerbil-poo/blob/d87c44e08267256604b586a859beaacc0172817f/examples/service-metadata.ss][service-metadata]] | Shared descriptors, recursive callable values and current dependent meaning; no cached approval |
+
+=Function= takes result Types first, then argument Types. =Fun= exposes the
+same direction with =<-= and is preferred for short readable signatures.
+=element?= / =procedure?= recognition cannot check future calls. Consumers must
+invoke the value returned by =validate=, including nested or returned callbacks.
+ObjectContract diagnostic constraints alone do not install Function wrappers.
+
+* What module authors and users should see
+
+** A module operation
+
+The following uses existing upstream syntax. Domain Types stand for maintained
+domain definitions, not labels or new generic wrapper classes.
+
+#+begin_src scheme
+(def Render (Fun RenderedConfiguration <- Configuration))
+(def ServiceScope
+  (.cc ObjectContract. responsibilities:
+    (.o render: Render)))
+
+;; The author supplies an ordinary function.
+(def service (.o render: render-configuration))
+;; Publication/linking carries this result to users and dependants.
+(def checked-service (validate ServiceScope service))
+(.call checked-service render configuration)
+#+end_src
+
+Core publication uses its existing Scope admission and contextual evidence
+around this native value normalization. It must expose =checked-service= through
+both public exports and dependency bindings. Keeping the raw Scope in one path
+would bypass the abstraction.
+
+** A user-supplied operation
+
+Funflow now submits one native signature and one ordinary body:
+
+#+begin_src scheme
+(flow-arr 'render
+  (Fun RenderedConfiguration <- Configuration)
+  render-configuration)
+#+end_src
+
+The former =name proc input-contract output-contract= form has been removed.
+The native signature checks the submitted operation; symbols are not Types.
+The task owns that signature and the checked executor. Input/output views are
+derived from it. There is no additional Core Function class or signature DSL.
+
+For =flow-map=, =flow-bind= and =conditional-flow=, the same operation signatures
+are explicit at submission; composition checks native Types rather than labels.
+A binder declares that it returns a typed Flow with the required input/output
+meaning, rather than merely any object recognized as a Flow.
+
+** A returned runtime callback
+
+#+begin_src scheme
+(def ProgressLine (Fun Any <- String))
+(def ProgressFactory (Fun ProgressLine <-))
+#+end_src
+
+=Any= here describes the one ignored observer result. It does not erase the
+String argument, result count or returned-callable requirement. Runtime adapters
+and decoders need actual request/result Types, not =Any -> Any= placeholders.
+Checking a descriptor does not invoke its callback or authorize its effects.
+
+* Inventory conventions
+
+The tables cover built-in module Scopes, exported operation objects, extension
+protocols and runtime callback submission points in the current Core source.
+Rows group aliases and constructors sharing the same actual callback protocol;
+each named Slot in a group is part of the migration. Source links identify the
+owner, not a second proposed implementation location.
+
+Notation =A -> B= below means a proposed native =Fun B <- A= signature;
+=() -> B= is a zero-argument Function; =?A= allows false; brackets denote lists;
+=A => B= in prose is not a new language operator. Domain names in the tables
+are proposed maintained Type names unless an existing descriptor is identified.
+Optional arguments and keywords must follow the actual source lambda list.
+They must not be flattened into a single catch-all argument list.
+
+Result cardinality matters. Transparent call-with helpers preserve the actual
+zero/one/multiple-value contract of the submitted action. Their Types must be
+specialized to that contract; inventing a single Any result is incorrect.
+Predicate APIs currently accepting truthy non-booleans require an explicit
+semantic decision before imposing Bool. Typed membership predicates should
+return Bool; legacy truthiness must not be silently reinterpreted.
+
+** Built-in module and user-facing operations
+
+| Current owner / exported path | Target Function Type / migration |
+|-------------------------------+----------------------------------|
+| [[file:../../../ops/interface.ss][Ops]].validate | ProcessScript -> ProcessScript; return the normalized Script |
+| Ops.prepare-command | ProcessScript, optional [String] -> [String] |
+| Ops.merge-environment | OpsEnvironment, OpsEnvironment -> OpsEnvironment |
+| Ops.preview | ProcessScript, optional [String], OpsEnvironment; stderr-redirection: Bool -> PreparedProcess |
+| Ops.run | ProcessScript, optional [String]; stderr-redirection: Bool, output-port: ?OutputPort -> ProcessResult |
+| [[file:../../../ops/process-script.ss][ProcessScript.]].run | Rest String arguments -> ProcessResult; retain the receiver's actual script |
+| [[file:../../../ops/selected-packages.ss][SelectedPackages.]].run | () -> selected-package realization result; define its existing result shape |
+| [[file:../../../ops/types.ss][Config/Script]].progress | ?(() -> (String -> one ignored result)); partial native implementation exists |
+| [[file:../../../modules/json-schema/objects.ss][JsonSchema]].read | String -> SchemaSource |
+| JsonSchema.normalize | SchemaSource -> Normalization |
+| JsonSchema.compile | optional SchemaSource -> SchemaArtifact |
+| JsonSchema.contract | Symbol, optional SchemaSource -> native Type |
+| JsonSchema.validate | SchemaArtifact, schema-defined candidate -> Validation; candidate can legitimately be Any |
+| [[file:../../../modules/funflow/objects.ss][FunflowModule]].pipeline-graph | POO Pipeline -> FunctionalDag |
+| FunflowModule.store.put-dir-flow, get-dir-flow | Symbol -> typed Flow; AbsDirectory and CASItem are actual domain Types |
+| FunflowModule.store.store-flow | Name, Operation, Payload, input/output Types -> typed external Flow; migrate symbolic contracts |
+| FunflowModule.flow.flow-arr | Name, native operation signature, matching operation -> typed Flow; replaces four-argument symbolic form |
+| FunflowModule.flow.flow-then | Name, Flow(A,B), Flow(B,C) -> Flow(A,C) |
+| FunflowModule.flow.flow-fanout | Name, Flow(A,B), Flow(A,C) -> Flow(A,Pair(B,C)); retain actual pair representation |
+| FunflowModule.flow.flow-map | Name, Flow(A,B), Function(C <- B) plus matching body -> Flow(A,C) |
+| FunflowModule.flow.flow-bind | Name, Flow(A,B), checked binder B -> Flow(A,C) -> Flow(A,C) |
+| FunflowModule.flow.flow-first, flow-second | Lift Flow(A,B) over the actual ordered pair domain |
+| FunflowModule.flow.conditional-flow | Predicate(A -> Bool), two A -> B operations -> Flow(A,B), with name/signature |
+| FunflowModule.flow.try-flow | Flow(A,B) -> Flow(A,TryResult(B)); existing failure ownership retained |
+| FunflowModule.flow.return-flow | Name, Type A -> Flow(A,A) |
+| FunflowModule.flow.cached-pure-flow | Name, signature B <- A, key A -> CacheKey, operation A -> B -> Flow(A,B) |
+| [[file:../../../modules/funflow/objects.ss][Job.]].run | Workspace -> existing RunResult; validate contained Tasks before execution |
+| Funflow Task. inherited .run, after-start | ProcessScript .run plus optional task-name dependency; after-start is data, not a callback |
+| [[file:../../../scenarios/gitea-postgresql/gitea/interface.ss][Gitea]].application | PostgreSQLConfig, GiteaConfig -> Application; existing config/domain contracts reused |
+| PostgreSQL Scope; GiteaPostgreSQL application Scope | Data/config/Type exports; no fabricated executable operation. Validate nested callable fields if added |
+
+Public prototypes such as Funflow =check= / =pipeline= and JSON Schema =defaults=
+are data-bearing POO values. They receive native structural contracts, not a
+Function wrapper merely because they appear in an exports object.
+
+** Funflow supplied functions and runtime callbacks
+
+| Owner / submission point | Target Function Type / migration |
+|--------------------------+----------------------------------|
+| [[file:../../../modules/funflow/control-plane/task.ss][Task]].executor; make-pure-task, make-scheme-task | A -> B from the task's single native signature; external Tasks have no local executor |
+| [[file:../../../modules/funflow/control-plane/flow.ss][pure-flow, scheme-flow, flow-arr]] proc | Same checked executor; migrate all aliases and callers together |
+| conditional-flow predicate, then-proc, else-proc | A -> Bool; A -> B; A -> B; normalize all three before invocation |
+| cached-pure-flow, cached-scheme-flow key-proc / proc | A -> CacheKey and A -> B; cache hits still return values admitted to B |
+| flow-map proc | B -> C; derive B from the source's actual signature |
+| flow-bind / flow-kleisli; KleisliStep.binder | B -> Flow(A,C); validate the returned Flow and its callable contents |
+| FlowCategory.domain, codomain | typed Flow -> native Type |
+| FlowCategory.compose, identity, arr, map, bind, fanout, first, second | Same parameterized signatures as the corresponding operations above; all replaceable Slots checked |
+| [[file:../../../modules/funflow/control-plane/task.ss][TaskFamily]].adapter-dispatch | Task -> AdapterOperation when callable; false and named-operation alternatives remain explicit data cases |
+| [[file:../../../modules/funflow/control-plane/strategy.ss][Strategy]].planner | typed Flow -> ExecutionPlan; preserve domain/codomain in the Plan |
+| [[file:../../../modules/funflow/control-plane/flow-declarations.ss][FlowDeclaration]].planner | Currently a policy name; keep it data. Validate the actual selected Strategy planner instead |
+| [[file:../../../modules/funflow/control-plane/runtime-adapter.ss][RuntimeAdapter]].submitter | ExecutionRequest -> AdapterResult |
+| RuntimeAdapter.fetcher | RequestId -> AdapterResult |
+| RuntimeAdapter.store-putter | ExecutionRequest -> AdapterResult |
+| RuntimeAdapter.store-getter | ArtifactHandle -> AdapterResult |
+| [[file:../../../modules/funflow/control-plane/runtime-command-invocation.ss][RuntimeCommand]].invoker; make-procedure-runtime-command | RuntimeEnvelope -> RuntimeResponseLike; codec admits wire data to this domain |
+| make-process-runtime-command arguments | Either [String] data or RuntimeEnvelope -> [String]; discriminate once at construction |
+| make-process-runtime-command response-decoder | RuntimeEnvelope, String -> RuntimeResponseLike |
+| runtime-command-read-response / make-stdout-runtime-command | Same decoder contract; retain schema/status/request correlation checks |
+| [[file:../../../modules/funflow/control-plane/runner.ss][runner-run-value-or-recover]] handler | ExecutionFailure -> operation's result Type; exceptions outside that family propagate |
+| [[file:../../../modules/funflow/control-plane/failure.ss][try-control-plane]] thunk / handler | Submitted action's precise results; ExecutionFailure -> same results |
+
+RuntimeAdapter and RuntimeCommand currently expose transparent records. Their
+public extension surface should become ordinary POO objects with these native
+callable fields. Private positional state may remain compact records. This is a
+direct public migration, not a new POO facade over a second public record API.
+The runtime wire envelope remains a codec projection, not the public semantic DSL.
+
+** Source, Loader, selected Graph and Build/Testing operations
+
+| Owner / callable Slot or supplied operation | Target Function Type / migration |
+|---------------------------------------------+----------------------------------|
+| [[file:../../../module-system/loader/objects.ss][LoaderBackend]].load | SourceRef -> ?ModulePublication/descriptor, using the actual existing descriptor protocol |
+| [[file:../../../module-system/loader/load-path.ss][SourceCollection]].locate | SourceCollection, ModuleKey, [EntrypointRole] -> [SourceRef] |
+| [[file:../../../module-system/source/admission.ss][StylePolicy]].validate | StylePolicy, ModuleName, ModuleRoot, SourceReader -> ModuleRoot; SourceReader is Path -> String |
+| Source admission supplied reader/read-datums | Path -> String; Path -> [SchemeDatum]; existing phase and source ownership checks retained |
+| [[file:../../../module-system/source/publication.ss][ModuleScopeContext]].locate | ModuleId -> source location result; define the exact existing false/present variants |
+| ModuleScopeContext.read-publication | SourceRef -> ModulePublication |
+| ModuleScopeContext.current? | Generation -> Bool |
+| DirectoryContext.candidate-current? | Generation, ModuleId -> Bool |
+| ModuleScopeContext.eligible? | ModuleId -> Bool |
+| ModuleScopeContext.namespace | Resolver(ModuleId -> ModuleViewOrScope) -> ?Namespace; specialize to the selection's actual view mode |
+| ModuleScopeContext.publication-preparation / publication-inputs | SourceRef -> Preparation / [ObservedInput] |
+| [[file:../../../module-system/source/publication.ss][ModulePublication]].baseline.link | DependencyBindings -> Scope; bindings contain the actual checked dependency Scopes |
+| [[file:../../../module-system/source/reader.ss][PublicationReader]].read | SourceRef -> admitted ModulePublication |
+| PublicationReader.read-located | (() -> SourceRef) -> (values SourceRef ModulePublication); internal paired continuation, not a new user API |
+| PublicationReader.preparation, inputs | SourceRef -> Preparation / [ObservedInput] |
+| PublicationReader.admit-current | () -> existing guard result; effects/currentness remain owner checks |
+| [[file:../../../module-system/source/link.ss][Selection]].selected-record, prepare-publication | ModuleId -> SelectedRecord / Preparation; the record's Scope is the checked value |
+| Selection.with-packages | RealizedPackages -> Selection; retain exact BuildGraph association |
+| Selection.module-view supplied callback | ModuleId, (() -> checked Scope) -> ModuleView; preserve lazy scope demand |
+| Selection.sources-current, admit-current, package-current | Guard signatures reflect actual result cardinality; no cached approval |
+| [[file:../../../module-system/source/build.ss][BuildGraph]].package | Directory -> package writer's actual result |
+| BuildGraph.compiler-current, admit-current | Optional diagnostic site where supported -> guard result |
+| BuildPublication.restore-build | BuildGraph -> guard result; keep artifact issuance and package guards |
+| ExternalPackageContribution.prepare | ConfigurationRoot, (() -> currentness result), Publication -> ExternalPackageRequest |
+| ExternalPackageRequest.realize | Destination, (() -> currentness result) -> RealizedPackage; admit-current remains a separate fresh guard |
+| [[file:../../../module-system/building/build-projection.ss][BuildProjection]].compile | LibDirectory, typed compiler action -> that action's results |
+| BuildProjection.process | LibDirectory, command/request -> existing process result |
+| BuildProjection.compiler-current, admit-current, admit-artifacts | Existing guard arities/results; preserve pre/post callback checks |
+| [[file:../../../module-system/building/interface.ss][Init Build]].std-make-spec | [BuildRoot] -> SDK BuildSpec; unlike Tests.std-make-spec, this takes roots |
+| call-with-init-build-spec | (() -> BuildSpec), SDKPackageMain, [Argument], LibDirectory -> SDK dispatch results; SDKPackageMain takes BuildSpec, [Argument], and an optional native output prefix; init exposes no separate runner |
+| Init Build.admit-current | () -> guard result |
+| Init Tests.std-make-spec, .run | () -> TestSpec / ProcessResult |
+| Init Tests.select | Optional owners and suite where supported -> TestingSource |
+| Init Tests.for-files | Nonempty [TestPath] -> TestingSource |
+| [[file:../../../observability/testing-script.ss][TestingScript]].run, .admit-result | () -> ProcessResult; ProcessResult -> admitted ProcessResult |
+| TestingScript build accessor / required Build | ?(() -> BuildProjection), preserving lazy build demand |
+| Testing fixture .acquire / .release | () -> Resource; Resource -> release result, specialized to the fixture's actual resource Type |
+| [[file:../../../module-system/building/artifacts.ss][Artifact storage]].available?, .current | () -> Bool / guard result; retain issued-artifact/source association independently |
+| Artifact storage.restore-build, .retain-build | BuildGraph -> guard result; preserve storage/issuance validation |
+| Artifact storage.with-lock | Typed action -> same action results; lock timing and cleanup remain unchanged |
+| [[file:../../../module-system/building/configuration-source.ss][PreparedSource]].source-inputs observer | [ObservedInput] -> observer result; keep precise source ownership |
+| [[file:../../../module-system/source/admission.ss][module-source-checked-operation]] guard/action | Check guard arity and action's precise result contract; do not replace resumable freshness protocol |
+| Source observers, collected-source consumers and public call-with source helpers | Event/amount -> observer result, or typed action -> same action results; keep observers from conferring admission authority |
+| [[file:../../../module-system/building/source-closure.ss][for-each-build-module]] visit / descend? | ModuleContext -> visit result / Bool; compiler contexts stay compiler-owned values |
+
+Some infrastructure callbacks deliberately return differing values that current
+callers ignore. Their exact return descriptors must be resolved from all call
+sites during that subsystem's migration, rather than guessed as Bool or Unit.
+These rows are inventory obligations with identified owners, not claims that a
+complete Type for those results already exists. They may not be marked migrated
+until their concrete Function descriptors and consumer tests exist.
+
+** POO extension, admission, composition and verification protocols
+
+| Owner / extension surface | Target Function Type / migration |
+|---------------------------+----------------------------------|
+| [[file:../../../graph/operation.ss][GraphOperation]].apply | GraphRoot -> GraphRoot; retain receiver dispatch and native prototype extension |
+| GraphOperation.stage | OperationState -> OperationState; validate the actual existing batched-state representation |
+| [[file:../../../profile-composition/profile-bundle.ss][ProfileCompositionStrategy]].compose | [ProfileBundle] -> ProfileBundle |
+| [[file:../../../feature-system/domain-case/contracts.ss][CaseSlotContract]].validator | SlotValue -> Bool with that slot's domain; migrate label-only type-id to a real Type plus diagnostic identity |
+| CaseTypeContract.predicate | CaseInstance -> Bool; native Type predicate owns membership |
+| CaseMethodContract.validator | MethodContext -> Bool; distinguish this from a slot-value validator |
+| CaseMethodContract.compatibility-witness | CandidateContract, InheritedContract -> Bool; identity/refinement claims need actual domain relation |
+| CaseProjection.projector | CaseInstance -> the projection's native schema Type |
+| [[file:../../../contribution/verification.ss][VerificationAdapter]] submitted operation / snapshot | Subject -> verification decision; Subject -> immutable Snapshot; preserve existing snapshot relation |
+| VerificationAdapter.verify | Subject, Instant, Instant -> ?IssuedReceipt |
+| VerificationAdapter.admits? | IssuedReceipt, Subject, Instant -> Bool |
+| VerificationAdapter.admission | [IssuedReceipt], Instant -> Admission with a checked Subject -> Bool admits? Slot |
+| VerificationAdapter.revoke! | IssuedReceipt -> actual revoke result; issuance registry stays private and authoritative |
+| [[file:../../../types.ss][YuanxuType/Contract]].classify | Candidate, Context -> ClassificationEvidence; receiver handled by native generic dispatch |
+| YuanxuContract.obligations | Candidate, Context -> [Obligation] |
+| YuanxuContract.admit | Candidate, Context -> ValidationEvidence |
+| Context.contract-obligations / responsibility-obligations | Contract, Candidate -> [Obligation]; preserve the one-shot analysis boundary |
+| [[file:../../../admission/contributions.ss][Contract]].contribution-obligations | Candidate, [ContributionRow], Context -> [Obligation] |
+| [[file:../../../admission/source.ss][SourceInspectionPolicy]].preflight / locate-diagnostic | Candidate, Path -> [Diagnostic]; Candidate, Diagnostic -> located Diagnostic |
+| [[file:../../../admission/publication.ss][AdmissionPublication]].for-export | Selection, Owner, AdmissionName -> AdmissionPublication |
+| AdmissionPublication.bind-evidence | checked Subject -> native invocation Contract |
+| AdmissionPublication.publish | PreviousState, Candidate -> existing publication results; use actual checked subject through native publish |
+| Native Type.element? / validate protocol overrides | Keep upstream MOP ownership; domain predicates implement native Type APIs. Do not recursively validate Function machinery with itself |
+
+Verification Function Types constrain call shapes and returned values. They do
+not replace producer-owned issuance tables, revocation, expiry or snapshot
+matching. A forged object with matching fields remains unauthenticated.
+
+** Advanced CLOS extension callbacks
+
+| Current owner / callback | Target Function Type / migration |
+|--------------------------+----------------------------------|
+| [[file:../../../poo-clos/objects.ss][ClosMethod]].body | InvocationFrame plus declared method arguments -> declared results; specialize to the method lambda list |
+| make-synthetic-effective-method / poo-clos-make-method thunk | () -> the enclosing method's results |
+| ClosMethodGroup.matchers callable branch | [Qualifier] -> Bool; retain declarative patterns as data alternatives |
+| ClosMethodCombination.operator callable branch | Values required by the combination -> actual combination results; keep named operator alternative explicit |
+| ClosMethodCombination.effective-builder | GenericFunction, [Argument], MethodGroups -> checked EffectiveExecutor |
+| ClosMethodCombination.configurer | Existing option argument shape -> configured combination state; optional false remains explicit |
+| [[file:../../../poo-clos/classes.ss][DirectSlotDefinition]].initfunction | () -> SlotType value; preserve unbound sentinel and lazy timing |
+| DirectSlotDefinition.type-predicate | Value -> Bool; where it represents membership use native Type rather than a second predicate list |
+| ClosClass.default-initargs entries | () -> the argument's Type; validate nested entries recursively |
+| ClosClass.slot-missing-handler | Class, Instance, SlotName, Operation, rest operation values -> operation's result |
+| ClosClass.slot-unbound-handler | Class, Instance, SlotName -> slot's value Type or original failure |
+| ClosClass.redefinition-update-handler | Instance, AddedSlots, DiscardedSlots, PropertyList -> lifecycle result |
+| ClosClass.different-class-update-handler | PreviousInstance, Instance, rest initargs -> lifecycle result |
+| GenericProtocol.no-applicable-method | GenericFunction, [Argument] -> generic's declared results or original failure |
+| GenericProtocol.no-next-method | GenericFunction, Method, [Argument] -> generic's declared results or original failure |
+| GenericProtocol.compute-applicable-methods | GenericFunction, [Argument], [Method] -> [Method]; retain current-applicability/subset checks |
+| GenericProtocol.compute-effective-method | GenericFunction, [Argument], [Method], EffectiveMethod -> EffectiveMethod; retain generation/argument identity checks |
+| EffectiveMethod.executor / InvocationFrame.next | Ground signatures from the current declaration; preserve next-method argument compatibility and declared results |
+| [[file:../../../poo-clos/load-form.ss][make-load-form]] returned creation / initialization functions | Multiple results containing () -> Instance and optional (Reference -> Reference) -> Instance |
+| Native load-form supplied resolver | OldReference -> LoadedReference; preserve two-phase creation-before-initialization rule |
+
+The CLOS lambda-list parser owns source syntax and Common Lisp congruence rules.
+It must project one native Function descriptor for invocation rather than own a
+second argument/result checker. Native declaration machinery should be reused
+where it supports the declared semantics. CLOS next-method, method ordering,
+qualifiers and class lifecycle are not deleted merely because functions become
+typed. Variable result protocols must not be collapsed to one Any result.
+
+** Observability and progress callbacks
+
+| Owner / supplied callback | Target Function Type / migration |
+|---------------------------+----------------------------------|
+| [[file:../../../ops/progress.ss][call-with-execution-progress]] action / clock | ExecutionProgressState -> declared action results; () -> milliseconds |
+| call-with-execution-watchdog / cancellation action | () -> declared results; preserve original exceptions and cleanup |
+| make-test-progress-reader readers / returned reader | String -> ignored observer result; recursively check every reader and returned callback |
+| [[file:../../../observability/testing-case.ss][TestingCaseProfile]].run | Profile, String, typed test thunk -> native test-case result |
+| [[file:../../../observability/memory.ss][Memory span/monitor/watchdog]] thunk | () -> declared results, preserving zero/multiple values |
+| [[file:../../../observability/debug.ss][call-with-yuanxu-debug-trace]] submitted operation | Operation's declared arguments/results; retain trace policy independently |
+| Testing checkpoint/work observers | Phase -> checkpoint result; WorkKey, Natural -> observation result |
+| Fixture/TestingScript progress factories | Same nested ProgressFactory Type as Ops; do not build a second progress checker |
+
+Private =run-process= check-status/coprocess callbacks, thread bodies, hash
+walkers, =map=/=fold= lambdas and compiler-phase parser helpers are internal
+implementation. They do not each need a public Function wrapper. Their outward
+submission points above do. Diagnostic =procedure?= classification and APIs that
+explicitly reject executable Stage data must remain; removing every occurrence
+of =procedure?= would change unrelated semantics.
+
+* Mechanisms to delete or consolidate
+
+| Current mechanism | Replacement and deletion boundary |
+|-------------------+-----------------------------------|
+| Scope checks that only enumerate callable names and call procedure? | Native Record/ObjectContract Function fields; retain independent domain/identity obligations |
+| Function argument/result checks handwritten at individual consumers | The same native Function descriptor at the submission/publication boundary; remove duplicate arity/value checking after matching negative controls pass |
+| Funflow symbolic input-contract/output-contract tuples such as pair/try/abs-dir/cas-item | Native Types and constructors; a task/flow owns one native signature, metadata views derive from it |
+| Runner invoking raw Task.executor after only metadata admission | Runner receives the checked executor; delete the raw bypass |
+| Constructor validates then stores original callback | Store/return the actual validate result, including nested and returned callbacks |
+| Separate Scope copies for public exports and dependency requirements | Both paths carry their applicable actual checked Scope; retain descriptor/context evidence |
+| Duplicate callback signatures in Ops, TestingScript and progress readers | One exported native progress descriptor composed into each owner contract |
+| Domain-case type-id / schema-id labels treated as executable validators | Native Type/Function descriptor owns validation; identifiers remain diagnostic/provenance data |
+| Core callable wrapper classes, invocation registries or local signature solver | Do not introduce them; use upstream Function/Fun and native specialization/declarations |
+| CLOS field predicate walkers used as a second type-validation engine | Native structural Types and normalization; retain CLOS semantic relations only |
+| Transformer Any-as-compatible policy described as subtyping | Remove the claim; use native supported relation evidence or explicit domain compatibility, with refusal for unsupported substitution |
+| Empty contextual receipt producers around ordinary value/function checks | Native Type validation; keep only meaningful Core source/context/publication evidence |
+
+Some listed mechanisms are already partially changed in the dirty worktree.
+They require coherent consumer migration and fresh validation; an isolated
+passing test does not qualify the whole migration.
+
+* Ownership and adoption rules
+
+1. Domain =types.ss= owns reusable value and callable descriptors. =objects.ss=
+   supplies normal function bodies and prototypes. =interface.ss= publishes the
+   checked Scope through Core's existing module publication boundary.
+2. A direct public function export is checked at its exported binding. Internal
+   recursion and private pure helpers remain named functions.
+3. User-supplied functions are normalized when accepted into a maintained
+   Task/adapter/policy object, before the first possible invocation. POO-derived
+   objects must be checked as the actual derived value; a checked parent cannot
+   certify a new override.
+4. Share immutable descriptors. Do not cache current admission, suppress source
+   guards, execute factories during declaration or add wrappers on every getter.
+5. Parameterized Flow signatures use upstream native specialization. Infer only
+   where a real domain needs inference; explicit Types are the readable default.
+   No Core-specific solver or type-expression parser is added.
+6. A Type error is not converted into success, false or an empty receipt. Existing
+   domain failure translation remains explicit and preserves its original cause.
+7. Type validation does not establish purity, rollback, scheduling correctness,
+   historical authenticity or permission to execute an effect. Existing guards
+   and explicit runtime handoff keep those responsibilities.
+
+* Coherent migration order after discussion
+
+| Phase | Deliverable | Required deletion/consumer closure |
+|-------+-------------+------------------------------------|
+| 1 | Agree this public boundary and short authoring examples; select one upstream revision | No implementation fragments while the public call shape remains unsettled |
+| 2 | Ground domain result Types and native signatures; align dependency declarations/cache | Remove signature labels as semantic authority; keep wire/provenance labels |
+| 3 | Funflow operation submission, Task/Flow signatures, binder/cache/conditional callbacks and runner | Migrate all constructors/aliases/consumers together; no raw executor fallback |
+| 4 | Built-in Scopes, Ops, JSON Schema, Build/Testing and Loader/Source | One normalization/publication chain; no raw Scope or callback escape path |
+| 5 | Graph/Profile/DomainCase/Verification and advanced CLOS callbacks | Remove duplicate predicate/signature engines while preserving domain policy |
+| 6 | Complete boundary regressions, corresponding formal models and default workspace acceptance | No untyped public callback rows left without an explicit domain reason |
+
+These phases define reviewable portions of one migration. They are not permission
+to stop after adding one wrapper, example or proof. Public API changes migrate
+directly, with no compatibility constructor, legacy signature interpreter or
+parallel public record/object surface.
+
+* What to test and what to prove
+
+Runtime tests must establish that the ordinary user/module path executes the
+checked function: invalid arguments fail before the body, invalid results fail
+before downstream consumers, and nested callbacks remain checked after being
+returned, inherited, cached or passed through dependency Scopes. Cover actual
+optional/keyword/default/rest forms and zero/multiple results. Declaration and
+preview must remain lazy. Fresh source/context checks remain around open effects.
+
+For Funflow, test a complete submitted function -> Task -> composed Flow ->
+runner/adapter path, including negative binder results, cache hits, substituted
+POO operations and runtime response mismatches. For Build/Testing, keep issuance,
+source currentness, heap fences, harness markers and watchdog budgets unchanged.
+
+Lean models should instantiate LeanPoo's existing Function validation and object
+composition APIs for these actual boundaries. Prove propagation of checked
+values through Scope/linking, Task/Flow composition and returned callbacks.
+Do not substitute Prop fields containing assumptions for these definitions.
+Quint should model finite protocol states and refusal/order behavior with source
+correspondence. Neither model proves arbitrary Scheme function semantics or OS IO.
+
+Final acceptance remains the current workspace's default =just build=, complete
+=just test= and =just proofs=, with focused boundary tests first and all failure
+markers inspected. This document adds no test receipt and makes no green-build
+claim. Earlier receipts predate the proposed broad migration.
+
+** Funflow implementation and verification boundary
+
+The current immutable dependency is declared in [[file:../../../gerbil.pkg][gerbil.pkg]]. The exact revisions
+reviewed above remain historical example-inspection cuts, not competing pins.
+=Flow=, branch and try declarations use upstream =ObjectContract.= and =refine=.
+Their obligations compare real input/output Types along the declared route;
+upstream =Function= still validates values and recursively wraps callbacks.
+Conditional selection composes checked callbacks through native
+=Observation. .bind=. Category methods use the same Function descriptors as
+the Scope exports. Docker and Sandbox constructors accept a single signature.
+
+The runner admits the actual derived Flow, validates its input and final output,
+and preserves native Type errors through recovery. Runtime adapter and command
+slots are native Functions. DAG and Store reports project Type =sexp= values;
+these wire descriptions never replace runtime Type objects. Search evidence
+domain tags remain domain metadata, separate from its handoff signature.
+
+=YuanxuProof.Modules.Funflow.FunctionBoundary= uses LeanPoo's
+=FunctionValidation.wrap= and =Factory.bind= for checked steps, route admission,
+returned callbacks, binder selection, adapter results and recovery. It models
+a concrete terminating scalar fragment; it does not certify arbitrary Scheme
+bodies or external execution. Scheme tests exercise the production boundaries,
+including all 25 native table-style transfers. There is no duplicate finite
+Quint model of these same Function checks. Full workspace acceptance remains
+a separate build/test/proofs result.

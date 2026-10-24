@@ -1,0 +1,184 @@
+#+title: 10.17 Scheme Overrides and JSON Baseline Field Origins
+#+language: en
+#+property: DOCUMENT_ID 10.17
+
+* Implemented boundary
+
+The follow-up [[file:10.18-native-copy-source-boundaries.org][10.18]] audits the native copy/MOP boundary and closes opaque-write
+attribution gaps. Its updated query distinguishes diagnostic visibility from
+conservative source observations without changing the native operators.
+
+The existing [[file:../../../object-syntax/path-slots.ss][authoring .def/.o/brace bindings]] now carry the original slot token's
+file, one-based line and column into its native slot specification. No new
+configuration syntax, Loader entry, field schema, global origin registry or
+user-maintained source table is introduced. The compiler still lowers shared
+prefixes to native ==>.+=. Payloads remain syntax and are never evaluated by
+the macro. Runtime provenance is implemented in
+[[file:../../../configuration/slot-origin.ss][configuration/slot-origin.ss]].
+
+The native =:clan/poo/object= implementation and bindings remain unchanged.
+Callers that bypass the authoring binding do not acquire a fabricated Scheme
+locator. In particular a fresh raw =.cc= assignment cannot borrow the source
+of the inherited field it replaced. Default-only =?= clauses are not relabeled
+as winning direct methods; the existing JSON default locator remains available.
+
+* One source authority per native specification
+
+The macro derives rows from actual syntax objects, including original leaf
+tokens retained by the prefix trie. It emits =source-object-slots= around the
+ordinary native constructor. Rows are lowering inputs, not an independent
+runtime field table. The helper attaches a private subtype of the native
+=$computed-slot-spec= to each direct method. It invokes the original native
+=apply-slot-spec= only when that field is demanded. Metadata is not a public
+value slot and does not enter =.all-slots= or configuration serialization.
+
+The runtime helper captures source observations through the existing
+=module-source-read= channel. It does not perform file IO during expansion.
+Native inheritance retains these specifications. Native =.+= copies the
+right-hand specification, so its source survives even though the right-hand
+object itself is not an ancestor. Read-only lookup follows native checked C3
+precedence and =object-slots=, without forcing unrelated fields. An
+uninstrumented winning method stops source attribution rather than exposing
+an older, misleading location.
+
+There are two different queries. A diagnostic chooses the deepest known
+declaration along its requested field path. A refinement of an ancestor is not
+reported as a write to an untouched descendant. An opaque winning child write
+also blocks fallback to an outer container assignment (the correction in
+10.18); a container's location is not a precise child-field locator.
+Source admission checks every
+traversed prefix as well, so a delayed child constructor cannot replace an old
+ancestor observation with freshly read bytes after an edit.
+
+* Relocated user configuration
+
+The [[file:../../../t/gitea-postgresql-relocation-test.ss][Core relocation control]] packages the actual maintained service and Scenario
+roles, moves the package and removes its original selected sources. It then
+loads the relocated init and caches the parent's plan. Its test-only fixture
+allows ports 5432 and 5433; the maintained production policy is not widened.
+The override file is created inside the relocated directory and read by the
+SDK's =read-syntax-from-file=, then expanded with the real authoring bindings:
+
+#+begin_src scheme
+(def (release parent)
+  (.def (Release @ parent)
+    config.postgresql.settings: =>.+ {port: 5433})
+  Release)
+(def (explicit parent)
+  (.def (Explicit @ parent)
+    config.gitea.database: =>.+ {port: 5440})
+  Explicit)
+#+end_src
+
+The generated native nesting is unchanged in meaning:
+
+#+begin_src scheme
+(.def (Release @ parent)
+  config: =>.+
+  (.o postgresql: =>.+
+      (.o settings: =>.+ (.o port: 5433))))
+#+end_src
+
+The diagnostic does not use the generated ancestor's position for the leaf.
+The actual =port:= token in release.ss is line 3, column 39; the explicit
+client token is line 7, column 34. Both are checked against real macro output,
+not manufactured origin records. The top-level test evaluation context and
+temporary permissive policies are fixtures, not a new production loader.
+
+* Existing Contract and diagnostic channel
+
+=config-field-origin= retains its original three-argument JSON behavior. The
+optional effective object adds Scheme provenance from the same native field:
+
+#+begin_src scheme
+(config-field-origin document '(database port)
+  (.get client database port) client)
+#+end_src
+
+A Scheme result has =kind: scheme-slot=, =source=, =line=, =column=,
+=operation= and the requested field =path=. Its =baseline= is the original
+JSON locator, preserving missing/null/explicit distinctions. Its =derived-from=
+contains the older tracked specifications in native precedence order. No
+source bytes or private specification handles escape into diagnostics.
+
+The existing Gitea ApplicationContract passes the final database/client
+objects into this query. Before admitting a port it checks the source
+observations on that field path. Database admission happens before client
+port demand: invalid/null server settings must reject without evaluating the
+dependent client's default. Source checks are repeated on admission even
+when object values and plans are already cached.
+
+For the example the same =connection-mismatch= diagnostic now reports:
+
+#+begin_example
+path:     config.gitea.database.port
+actual:   5440    source: <relocated>/release.ss:7:34
+expected: 5433    source: <relocated>/release.ss:3:39
+baseline: <relocated>/modules/services/gitea/gitea.json
+          database.port, missing
+#+end_example
+
+Users maintain no source tuples, evidence records or field-origin tables.
+The source locations explain the effective configuration; they do not grant
+execution authority or replace the domain Contract.
+
+* Cache, currentness and laziness controls
+
+The relocation control retains the original JSON modification refusal and
+adds a Scheme edit after a successful child publication. Even with the child
+plan cached, =.publish= refuses with =Scheme configuration source changed=;
+direct =.admit= also refuses. A failed publication keeps the previous object.
+The cached parent remains at 5432, the admitted child follows 5433, and a child
+that reuses the parent's plan is rejected by the existing plan-identity check.
+
+[[file:../../../t/slot-origin-test.ss][Native specification controls]] cover assignment, native functional refinement,
+inheritance and right-hand =.+= source preservation. They also cover a shared
+prefix, one-time payload evaluation and an undemanded sibling. Metadata lookup
+and source admission may demand intermediate objects along the requested
+path; they do not demand its scalar payload merely to inspect the locator,
+nor enumerate or evaluate other branches. The existing path-slot suite checks
+native lexical binding and parent/child cache identity separately.
+
+* Source package versus AOT
+
+The relocated selected source package is the qualified scope. It supplies the
+actual source files before evaluating the overrides. Value construction does
+not require installed sources: unavailable files are retained as unavailable
+observations, and source-bound admission refuses explicitly rather than
+claiming currentness. This is not an AOT source-map/relocation implementation.
+It does not authenticate arbitrary compiled code against files subsequently
+placed at its original compile-time path. Such an AOT claim needs a build-bound
+source manifest and a separate acceptance control.
+
+Ordinary source readers and their existing selected-graph currentness checks
+remain authoritative. The override control uses a trusted, stable file while
+reading/expanding it. No claim is made about adversarial concurrent filesystem
+replacement or sandboxing arbitrary Scheme code. Snapshot allocation and
+source-check costs have not been performance-qualified at thousands of fields.
+
+* Verification
+
+Focused gates use the default host runtime, the pinned native POO dependency
+and the repository's heap-fenced =just test-file= launcher. Raw logs remain
+local rather than committed. The source package/Scenario gate and focused
+provenance controls are distinct from AOT or product Loader qualification.
+
+The initial five focused gates passed on 2026-10-17 (29 cases), with the default host
+runtime and native POO pin =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
+The final acceptance runs were serial, each using the unchanged 1 GiB heap fence
+and 120-second timeout. This is a focused acceptance set, not a full-suite result:
+
+| Gate | Cases | Required result |
+|------+-------+-----------------|
+| =t/slot-origin-test.ss= | 3 | Native source lineage, default/method pair, right-hand copy, lazy sibling, JSON baseline |
+| =t/path-slots-test.ss= | 11 | Existing native lowering, binding, cache and syntax controls |
+| =t/gitea-postgresql-relocation-test.ss= | 3 | Source package relocation, actual override positions, derivation, stale source/plan refusal |
+| =t/gitea-json-configuration-test.ss= | 4 | Missing/null/explicit semantics and JSON currentness |
+| =t/gitea-postgresql-publication-test.ss= | 8 | Actual module publication, joint requirements and final plan admission |
+
+Acceptance requires =MODULE-OK=, =HARNESS-OK=, final =OK= and no error/overflow
+markers, not merely a zero process status. Earlier development failures remain
+local: alias-only utility import, the top-level import/macro context, a fixture
+parenthesis and manually miscounted expected token columns were corrected.
+An eager initial source-check ordering also exposed the null-server control;
+the database-first admission order was restored rather than weakening it.

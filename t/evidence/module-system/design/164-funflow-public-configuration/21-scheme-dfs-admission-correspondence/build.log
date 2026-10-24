@@ -1,0 +1,28 @@
+ℹ [39/45] Replayed PooFlowProfileAssociationProof.Model
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:221:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:222:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:223:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:224:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+ℹ [40/45] Replayed PooFlowProfileAssociationProof.DFS
+info: PooFlowProfileAssociationProof/DFS.lean:144:0: 'PooFlowProfileAssociationProof.DFS.visit_spec' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:145:0: 'PooFlowProfileAssociationProof.DFS.success_membership_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:146:0: 'PooFlowProfileAssociationProof.DFS.successful_dfs_association_iff' depends on axioms: [propext, Quot.sound]
+ℹ [42/45] Replayed PooFlowProfileAssociationProof.Projection
+info: PooFlowProfileAssociationProof/Projection.lean:161:0: 'PooFlowProfileAssociationProof.Projection.dfs_native_path_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Projection.lean:162:0: 'PooFlowProfileAssociationProof.Projection.list_identity_iff' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:163:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_correlated' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:164:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_discharged' depends on axioms: [propext]
+ℹ [43/45] Replayed PooFlowProfileAssociationProof.Bridge
+info: PooFlowProfileAssociationProof/Bridge.lean:57:0: 'PooFlowProfileAssociationProof.Bridge.inherited_root_receipt_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Bridge.lean:58:0: 'PooFlowProfileAssociationProof.Bridge.rhs_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+✔ [44/45] Built PooFlowProfileAssociationProof.NativeFixtures (2.5s)
+Build completed successfully (45 jobs).

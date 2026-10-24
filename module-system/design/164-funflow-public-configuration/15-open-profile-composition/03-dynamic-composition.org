@@ -1,0 +1,294 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Open Profile Composition 03: Dynamic Admission and Whole-Plan Projection
+#+property: STATUS complete-design-source-no-runtime-or-loader-change
+
+* Open participants; complete selected admission
+
+The complete dependencies are [[file:01-feature-admission.org][configured-feature admission]],
+[[file:02-profile-admission.org][Profile admission]] and existing Core/native/list utilities. These declarations
+replace the fixed two-participant Contract from module 14 in this design family;
+do not load both into one namespace. There is no predefined language enum, pair
+of participants or task count. Contract shape covers composition data. Actual
+obligations prepare/admit every selected Profile using independently chosen
+Contract/policy declarations, then check final identities and the combined graph.
+Seven tasks are a fixture outcome only.
+
+* Generic prototype and composition Contracts
+
+#+begin_src scheme
+(.def CompositionScenario.
+  composition:
+  (.o participants: '() handoffs: '()
+      failure-policy: (.o mode: 'stop timeout: 300)))
+(.def (CICDScenario. @ CompositionScenario.))
+
+(def (composition-object-classify identity-value candidate context)
+  (let ((accepted (object? candidate)))
+    (yuanxu-classification-evidence
+      identity-value candidate accepted
+      (if accepted '() '(expected-composition-object)) context)))
+
+(def (cicd-endpoint? value)
+  (and (list? value) (= (length value) 3) (every named-symbol? value)))
+
+(def (cicd-handoff? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(from to condition))
+       (every (lambda (name) (if (memq name '(from to condition)) #t #f))
+              (.all-slots value))
+       (cicd-endpoint? (.get value from))
+       (cicd-endpoint? (.get value to))
+       (eq? (.get value condition) 'success)))
+
+(def (cicd-handoffs? value)
+  (and (list? value) (every cicd-handoff? value)))
+
+(def (cicd-failure-policy? value)
+  (and (object? value)
+       (every (cut .slot? value <>) '(mode timeout))
+       (every (lambda (name) (if (memq name '(mode timeout)) #t #f))
+              (.all-slots value))
+       (eq? (.get value mode) 'stop)
+       (real? (.get value timeout)) (> (.get value timeout) 0)))
+
+(def CompositionObjectContract
+  (field-contract 'composition/object object?))
+(def CICDHandoffsContract
+  (field-contract 'cicd/handoffs cicd-handoffs?))
+(def CICDFailurePolicyContract
+  (field-contract 'cicd/failure-policy cicd-failure-policy?))
+
+(define-type (CompositionStructureContract @ YuanxuResponsibilityContract.)
+  identity: 'composition/structure
+  .classify: (cut composition-object-classify identity <> <>)
+  responsibilities:
+  (.o participants: NonemptyUniqueSymbolsContract
+      handoffs: ProperListContract
+      failure-policy: CompositionObjectContract))
+
+(define-type (CICDStructureContract @ CompositionStructureContract)
+  identity: 'cicd/structure
+  responsibilities: =>.+
+  (.o handoffs: CICDHandoffsContract
+      failure-policy: CICDFailurePolicyContract))
+
+(define-type (CompositionContract @ YuanxuObjectContract.)
+  identity: 'composition/v4
+  proto: CompositionScenario.
+  responsibilities: (.o composition: CompositionStructureContract))
+
+(define-type (CICDCompositionContract @ CompositionContract)
+  identity: 'cicd/composition-v4
+  proto: CICDScenario.
+  responsibilities: =>.+
+  (.o composition: CICDStructureContract)
+  .obligations: cicd-composition-obligations)
+#+end_src
+
+* Dynamic selected occurrence and plan node projection
+
+#+begin_src scheme
+(def (cicd-assert-preparation scenario-value context-value prepared-value)
+  (unless (and (eq? (.get prepared-value scenario) scenario-value)
+               (eq? (.get prepared-value context) context-value))
+    (error "preparation-input-mismatch"))
+  (let ((records (.get prepared-value profiles))
+        (names (.get scenario-value composition participants)))
+    (unless (equal? (map (cut .ref <> 'binding) records) names)
+      (error "prepared-participant-mismatch"))
+    (for-each
+      (lambda (record)
+        (let* ((binding-name (.get record binding))
+               (profile-value (.ref scenario-value binding-name))
+               (association-value
+                (.ref (.get context-value profile-bindings) binding-name))
+               (child-context (.get record admission-context)))
+          (unless (and (eq? profile-value (.get record profile))
+                       (eq? association-value (.get record association))
+                       (eq? (.get child-context scenario) scenario-value)
+                       (eq? (.get child-context effective-profile) profile-value)
+                       (eq? (.get child-context profile-binding) binding-name))
+            (error "prepared-profile-occurrence-mismatch" binding-name))
+          (cicd-checked-evidence (.get association-value contract)
+            profile-value child-context (.get record admission))))
+      records)
+    records))
+
+(def (cicd-selected-nodes scenario-value context-value prepared-value)
+  (yuanxu-append-map
+    (lambda (record)
+      (let* ((binding-name (.get record binding))
+             (profile-value (.get record profile))
+             (association-value (.get record association))
+             (modules (.get association-value plan-modules)))
+        (unless (nonempty-unique-symbols? modules)
+          (error "invalid-plan-module-selection" binding-name modules))
+        (yuanxu-append-map
+          (lambda (module-name)
+            (unless (and (.slot? profile-value module-name)
+                         (.slot? (.get association-value module-policies) module-name)
+                         (.slot? (.get association-value contract responsibilities)
+                                 module-name))
+              (error "undeclared-plan-module" binding-name module-name))
+            (let* ((config-value (.ref profile-value module-name))
+                   (pipeline (.get config-value pipeline))
+                   (names (.get pipeline selected-checks))
+                   (expected (funflow-selected-checks config-value names))
+                   (actual (.get pipeline checks)))
+              (unless (and (= (length actual) (length expected))
+                           (every eq? actual expected))
+                (error "effective-checks-mismatch" binding-name module-name))
+              (map
+                (lambda (name check-value)
+                  (.o path: (list binding-name module-name name)
+                      check: check-value
+                      after:
+                      (map (lambda (dependency)
+                             (list binding-name module-name dependency))
+                           (.get check-value dependency-refs))))
+                names expected)))
+          modules)))
+    (cicd-assert-preparation scenario-value context-value prepared-value)))
+
+(def (cicd-node-at nodes path-value)
+  (yuanxu-find (lambda (node) (equal? (.get node path) path-value)) nodes))
+
+(def (cicd-linked-nodes nodes handoffs)
+  (for-each
+    (lambda (handoff)
+      (unless (and (cicd-node-at nodes (.get handoff from))
+                   (cicd-node-at nodes (.get handoff to)))
+        (error "unselected-handoff-endpoint" handoff)))
+    handoffs)
+  (map
+    (lambda (node)
+      (let ((incoming
+             (map (cut .ref <> 'from)
+                  (filter (lambda (handoff)
+                            (equal? (.get handoff to) (.get node path)))
+                          handoffs))))
+        (.o (:: @ node)
+          after: (delete-duplicates (append (.get node after) incoming)))))
+    nodes))
+
+(def (cicd-ordered-nodes nodes)
+  (for-each
+    (lambda (node)
+      (unless (every (cut cicd-node-at nodes <>) (.get node after))
+        (error "missing-selected-dependency" (.get node path))))
+    nodes)
+  (let loop ((remaining nodes) (completed '()) (result '()))
+    (if (null? remaining)
+      (reverse result)
+      (let ((ready
+             (yuanxu-find
+               (lambda (node)
+                 (every (lambda (dependency) (if (member dependency completed) #t #f))
+                        (.get node after)))
+               remaining)))
+        (unless ready
+          (error "cyclic-composition-dependencies" (map (cut .ref <> 'path) remaining)))
+        (loop (filter (lambda (node) (not (eq? node ready))) remaining)
+              (cons (.get ready path) completed)
+              (cons ready result))))))
+
+(def (cicd-prepared->candidate scenario-value context-value prepared-value)
+  (unless (cicd-handoffs? (.get scenario-value composition handoffs))
+    (error "invalid-cicd-handoffs"))
+  (unless (cicd-failure-policy? (.get scenario-value composition failure-policy))
+    (error "invalid-cicd-failure-policy"))
+  (let* ((nodes (cicd-selected-nodes scenario-value context-value prepared-value))
+         (linked (cicd-linked-nodes nodes (.get scenario-value composition handoffs)))
+         (ordered (cicd-ordered-nodes linked)))
+    (.o scenario: scenario-value
+        tasks:
+        (map (lambda (node)
+               (.o path: (.get node path)
+                   check: (.get node check)
+                   commands: (.get node check commands)
+                   artifacts: (.get node check artifact-outputs)
+                   after: (.get node after)))
+             ordered)
+        failure-policy: (.get scenario-value composition failure-policy)
+        stage: 'projected-unadmitted
+        runtime-executed: #f)))
+
+(def (cicd-composition-obligations scenario-value context-value)
+  (with-catch
+    (lambda (caught)
+      (list (ff-issue 'composition-admission-failed '() caught)))
+    (lambda ()
+      (unless (eq? (.get context-value scenario) scenario-value)
+        (error "composition-context-mismatch"))
+      ;; Demand both preparation and graph projection; neither is a mere flag.
+      (let ((prepared-value (.get context-value preparation)))
+        (cicd-assert-preparation scenario-value context-value prepared-value)
+        (.get context-value candidate tasks)
+        '()))))
+
+(def (cicd-admission-context scenario-value binding-declarations)
+  (.o (:: current-context [])
+    scenario: scenario-value
+    profile-bindings: binding-declarations
+    preparation: (cicd-prepare-profiles scenario-value current-context)
+    candidate:
+    (cicd-prepared->candidate scenario-value current-context
+                             (.get current-context preparation))))
+
+(def (cicd-scenario->candidate scenario-value context-value)
+  (unless (eq? (.get context-value scenario) scenario-value)
+    (error "candidate-context-mismatch"))
+  (.get context-value candidate))
+
+(def (cicd-evaluate-scenario scenario-value binding-declarations)
+  (with-catch
+    (lambda (caught)
+      (.o stage: 'blocked cause: caught runtime-executed: #f))
+    (lambda ()
+      (let* ((context-value (cicd-admission-context scenario-value binding-declarations))
+             (receipt (yuanxu-contract-admit
+                        CICDCompositionContract scenario-value context-value)))
+        (.o context: context-value
+            admission: receipt
+            candidate:
+            (if (yuanxu-validation-evidence-accepted? receipt)
+              (cicd-scenario->candidate scenario-value context-value)
+              #f)
+            stage:
+            (if (yuanxu-validation-evidence-accepted? receipt)
+              'projected-unadmitted 'blocked)
+            runtime-executed: #f)))))
+#+end_src
+
+* Admission, demand and limits
+
+The context owns lazy preparation and candidate slots. Composition obligations
+explicitly demand tasks, so selected Profile/feature Contracts and graph checks
+actually run before acceptance. Re-reading these slots may reuse native getter
+caches on that exact supported context, not an old parent view. New receiver,
+policy or selection requires a new applicable context/evidence; mutable getters
+still require a supported stable-view boundary. No clone of a cache flag proves
+that premise. A failed Profile prevents a successful overall candidate.
+
+The candidate is the configuration/composition result, not a consumer-admitted
+plan. Its stage never becomes admitted-preview automatically: a separate selected
+consumer must check output identity/format, supported failure/timeout policy and
+current evidence, then an explicit owner may publish the complete plan. Runtime
+execution and readiness remain later boundaries. stop, timeout, no implicit retries
+and success-only handoff semantics from module 14 are unchanged.
+
+The projection is bounded to declared compatible plan-modules of selected
+Profiles. It does not pretend a database service is a Check list. New feature
+output families need their own declared projection protocol; a new language
+using the same Funflow protocol needs no composition-kernel change. Relative
+three-segment task paths retain boundaries and distinguish same-named builds;
+consumer serialization must qualify them with Scenario occurrence and reject
+collisions. The pure ordering algorithm is a reference scan, not another runtime
+scheduler or a claimed scale optimization.
+
+All newly introduced helpers in this family have bodies in modules 01-03. Core,
+neutral data constructors and existing list utilities are explicit dependencies.
+This is still documentation only: no macro expansion/integration receipt, no new
+proof, no Getter-effect analysis, no Loader connection and no runtime run.

@@ -1,0 +1,328 @@
+#+title: 32.23 Observed MOP State Extraction and Snapshot Guards
+#+language: en
+
+* Decision and evidence layers
+
+[[file:32.22-state-derived-read-only-entry.org][32.22]] derived sufficient callback-free routes but left native state extraction
+open. This follow-up actually reads current producer state through Gerbil's MOP,
+without changing gerbil-poo, production Core Scheme, exports or a Loader.
+The qualification helpers live under =t/=, not in the runtime implementation.
+
+Three claims remain separate:
+
+1. Native tests observe actual checker/cache/prototype/observer identities and
+   reject changed selected state without invoking an unknown checker/getter/hook.
+2. Lean proves cut-guard and closed-entry laws; QNT tests their finite unsafe
+   variants, including an endpoint-equality limitation witness.
+3. No claim follows that snapshots are atomic, callbacks are generally pure,
+   filesystem bytes cannot change, or production reads are now fewer than 356.
+
+* Actual source and runtime
+
+The default runtime reports =Gerbil 1cfb032 on Gambit ea114fc=. The installed
+source at =/opt/homebrew/opt/gerbil-scheme@0.19/1cfb032/src/gerbil/runtime/mop.ss=
+exports its runtime operations. Its =slot-ref=, lines 787–788, is:
+
+#+begin_src scheme
+(def (slot-ref obj (slot : :symbol) (E : :procedure := __slot-error))
+  (__slot-e obj slot (lambda (off) (unchecked-field-ref obj off)) E))
+#+end_src
+
+Its class metadata resolves the named field offset; the field read does not
+invoke a POO slot computation. This is NOT =.ref= on a domain object. The
+installed source SHA-256 is
+=f869564e0b62d68c245116e5374e39ca26defc40a900bc6faa36d60a5f1c717f=.
+The similarly named source in the reference corpus was checked first but is
+not substituted for this installed-runtime identity.
+
+The actual installed gerbil-poo checkout and Core dependency pin both identify
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. Its private =slot-read-current?=
+accessor is still not exported. However, public Gerbil runtime MOP field
+reflection can inspect the actual record, so missing direct export does not mean
+missing introspection capability. Field names and shapes remain producer internals;
+the test binds the exact producer instead of declaring a stable production API.
+
+* Qualification helper: extraction, not another evaluator
+
+Owners:
+
+- [[file:../../../t/qualification/mop-state/snapshot.ss][snapshot.ss]]: private typed read/object/cut observations and comparison.
+- [[file:../../../t/mop-state-snapshot-test.ss][mop-state-snapshot-test.ss]]: seven native behavioral controls.
+- [[file:../../../t/gitea-postgresql-publication-test.ss][gitea-postgresql-publication-test.ss]]: eleven unchanged domain/publication controls.
+
+The helper compares the runtime class against the class of a value constructed
+by the actual exported =make-slot-read=. It then reads the actual field:
+
+#+begin_src scheme
+(prefix-in (only-in :gerbil/runtime/mop slot-ref object-class) runtime.)
+;; Inside capture-read, after checking the actual runtime class and receiver:
+(runtime.slot-ref read 'current?)
+;; Classification compares the returned FUNCTION VALUE by reference:
+(eq? (read-view-checker row) object-read-current?)
+#+end_src
+
+The class probe supplies no read evidence and is never replayed. An arbitrary
+checker is observed but never called. Correct class identity does not authenticate
+arbitrary contents supplied to =make-slot-read=; the normal positive cases use
+records emitted by =call-with-slot-read-observer= around real native reads.
+
+=selected-ancestors= walks only raw =object-supers=, marks objects by =eq?=
+identity before descending, preserves order, and visits shared ancestors once.
+It does not run =compute-precedence-list!= or force a configuration getter.
+Its finite graph/stack assumptions remain those of the sequential qualification.
+
+Read recording can compute normal values before the snapshot. The no-callback
+claim concerns subsequent extraction/classification, not the recording action.
+The captured selected footprint includes:
+
+| Observation | Actual source |
+|-------------+---------------|
+| Record checker and runtime class | Gerbil MOP field/class reflection |
+| Receiver/key/revision/instance/value/dependency references | Exported slot-read accessors |
+| Current selected table entry and cached value | Existing raw receiver tables, using the demanded key only |
+| Receiver revision and preparation/storage references | =object-revision= and existing =object-%*= accessors |
+| Ordered parents, precedence and bootstrap anchors | Raw metadata; copied list spines and anchor pairs |
+| Specification/default/protocol/declaration/override references | Existing object accessors; no slot-spec application |
+| Source observer identity | =current-module-source-observer=, without calling its value |
+
+No pure flag, caller-maintained field-source inventory, numeric struct offset,
+producer patch or alternate object engine is used. The helper does maintain the
+fixed representation footprint above; this is version-bound MOP qualification,
+not automatic inference of every possible future producer field.
+
+=state-current!= recaptures the same roots and compares both read rows and raw
+selected-object rows. It rejects =MOP snapshot changed= on a mismatch. It is
+MOP-state equality only, not source currentness. =state-closed?= checks exact
+kernel checker identity; it allows a native stale-token rejecting prefix or
+prepared metadata or a conservatively protocol-free selected ancestor closure.
+An installed source observer declines closure. A final recapture guards a
+successful closure classification. Declining reuse does not reject an otherwise
+valid configuration. The =MOP snapshot changed= exception is a qualification
+fixture result, not a new user-facing diagnostic inserted ahead of JSON checks.
+A production fallback must rerun the original fresh-check schedule; a pure
+classification finding a stale token must not report it before an earlier source
+error. The ordered-error theorem applies to a successfully guarded closed trace,
+not to arbitrary early inspector exceptions.
+
+* Seven native cases and what they establish
+
+1. A real multiple-inheritance diamond reads its port, then extraction sees the
+   shared ancestor exactly once. Repeated snapshot/classification does not call
+   the port getter again and never forces an =unused= slot that raises. Editing
+   the shared ancestor's slot makes the old snapshot fail.
+2. Two separately parsed equal large integers have different native reference
+   identities. Deliberately replacing only a selected instance-cache value with
+   the second integer, without revision invalidation, makes the snapshot fail.
+   This is raw-cache fault injection, not a supported user assignment. The
+   qualification uses =eq?= for references, not numeric or structural equality.
+3. A self-hosted =bootstrap-protocol= root supplies real bootstrap read records.
+   After =clear-object-cache!=, the record still passes =object-read-current?=
+   but precedence is absent. The old snapshot fails, the newly captured cold
+   state declines closure, and inspection itself does not increment the hook
+   counter. Explicit native =compute-precedence-list!= then invokes the hook.
+4. An ordinary value record becomes stale after cache clearing. Classification
+   identifies a closed rejecting prefix; actual =replay-slot-reads!= raises
+   =stale slot dependency= before its observer can execute. The getter and cold
+   metadata are not recomputed. This case does not claim a current ordinary
+   record can naturally survive complete cache clearing.
+5. Rebinding the real source-observer parameter makes the old snapshot fail;
+   the new state declines closure without calling that observer. Restoring the
+   original binding makes endpoint comparison equal again. That last result is
+   deliberately not a history certificate.
+6. An actual =make-slot-read= record containing a foreign checker is reflected
+   correctly. Classification declines it without executing its checker.
+7. The real Gitea/PostgreSQL fixture admits a final child with PostgreSQL 5433
+   and default-following Gitea 5433 after parent plan 5432 is cached. Parent
+   identity/value remain isolated. A parent-plan substitution and an explicit
+   incompatible client are rejected. A later JSON edit leaves the MOP snapshot
+   equal but final native =.admit= raises =configuration source changed=.
+
+The unchanged eleven-case publication suite additionally retains both independent
+port policies, conflicting requirements, omitted/substituted origins, contextual
+child evidence, stale plan identity, unavailable/changed JSON and edited Scheme
+source controls. Both effective policies must permit 5433 in the successful
+fixture; the shipped 5432-only defaults are not silently relaxed.
+
+* Lean correspondence and its limits
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SnapshotEntry.lean][Admission.SnapshotEntry]] represents observed roots, record/checker references,
+selected object revisions/cache/specification references, ordered ancestry,
+precedence, anchors and the observer reference as concrete data. IDs project
+native reference identity; they are not port values or user display names.
+The correspondence requires an injective stable identity projection.
+
+#+begin_src lean
+def guard (expected actual : Cut) : Except String Cut :=
+  if expected = actual then .ok actual else .error "MOP snapshot changed"
+
+theorem guard_accepts_exactly (expected actual result : Cut) :
+    guard expected actual = .ok result ↔
+      expected = actual ∧ result = actual := by
+  by_cases same : expected = actual <;> simp [guard, same, eq_comm]
+#+end_src
+
+=guard_rejects_changed= covers any difference in those concrete rows.
+Computed controls separately reject changed preparation with unchanged revision,
+a changed checker, a changed cached value reference, an added ancestor and an observer replacement.
+=guarded_projection= proves a successful guard preserves any deterministic
+cut-to-Frame projection. =guarded_no_callbacks= then reuses 32.22's actual
+=lowering_independent= theorem, rather than assuming arbitrary callbacks pure.
+=ordered_first_failure= reuses exact ordered diagnostics, including source
+message/location and C4 error results, under sound same-window bytes.
+
+The =project : Cut → Frame= argument is an EXPLICIT correspondence seam.
+No theorem here extracts Scheme operational semantics or proves that the native
+helper's footprint contains every semantic dependency. Its read roots come from
+real observations, but complete native collector/exception/primitive correspondence
+remains open. This qualification must not be described as mechanized extraction.
+
+Two negative laws are equally important:
+
+- =equal_cut_not_source_authority=: identical MOP cuts can accompany changed
+  PostgreSQL JSON; the independent source check must still reject.
+- =observer_aba_not_history=: =none → some observer → none= has identical
+  endpoint bindings but contains an intervening observer. Snapshot equality
+  cannot establish that no effect happened in between.
+
+* QNT matched controls
+
+[[file:../../../dev/proofs/quint/SnapshotEntry.qnt][SnapshotEntry]] derives closure from the observed checker/cache/protocol/observer
+state. It represents two independent port requirements and final plan ownership
+separately from the snapshot. No plan or source authority is granted by a
+successful structural guard. The positive finite check preserves both demands;
+the unchanged RootChild controls and real service regression separately check
+their domain meaning.
+
+| Control | Expected counterexample |
+|---------+-------------------------|
+| =revision= | Checking only revision misses cache clearing without revision change |
+| =checker= | Omitting checker identity accepts a changed procedure |
+| =value= | Equating values instead of their cache identities hides a changed reference |
+| =observer= | Omitting observer identity accepts a different dynamic scope |
+| =ancestor= | Omitting selected ancestor state accepts a changed prototype footprint |
+| =source= | Treating snapshot equality as byte authority accepts changed JSON |
+| =prefix= | Skipping the earlier source error changes the first diagnostic |
+| =parent= | Substituting parent plan ownership accepts the wrong candidate |
+| =aba= | Even the correct endpoint guard cannot certify absence of a prior restored observer |
+| =acceptance= | Witness that the positive protocol admits a valid selected configuration |
+
+The finite view compresses selected ancestor state to a stamp; it does not
+prove arbitrary native graph extraction. The native diamond test and earlier
+IdentityDFS/DFSFrames proofs supply separate evidence and retain their own
+correspondence premises.
+
+The ABA wrapper runs the correct algorithm and asks an intentionally too-strong
+history predicate. It is a limitation witness, not a bug in the positive guard.
+The source control rejects external writes independently of MOP equality. No
+source certificate crosses an obligation, contribution callback, scope rebind
+or the independent root-return window. Unselected configuration branches remain
+outside the captured read/prototype closure.
+
+* Remaining production decisions
+
+- Adopt a producer-owned, versioned observation footprint or a reviewed consumer
+  use of native reflection; raw access alone is not a stable publication contract.
+- Restrict the correspondence to well-formed records and supported producer
+  mutations. Raw reflection is a trusted metaprogramming facility, not a sandbox.
+  Arbitrary mutation of opaque nested representation behind an unchanged pointer
+  is not fully observed by this footprint. The explicit selected-cache fault test
+  does not prove all raw-memory tampering detectable.
+- Establish a coherent sequential snapshot interval. Recapture does not prove
+  atomicity, exclude ABA, or prevent another thread/FFI writer from changing state
+  after the last comparison. Existing native revision invalidation is not a
+  universal monotonic history for dynamic parameter bindings or raw escape hatches.
+- Connect selected source coverage and native failure mapping to the formal
+  projection, without forcing arbitrary getters during classification.
+- Keep exact source checks before effectful boundaries and independent return-time
+  certification. These native tests do not authorize removing the two JSON checks
+  or any required domain/contribution/plan check.
+- Measure projection cost before proposing production byte reuse. No timing or
+  reduction of the earlier 356 reads is claimed by this qualification.
+
+* Qualification
+
+Completed source-bound results are recorded below after the aggregate gates.
+Raw compilation/test failures remain in local artifacts. No log is committed.
+
+** Completed gates, 2026-10-18
+
+Default-runtime =just test-file= passed all seven extraction cases and the eleven
+unchanged Gitea/PostgreSQL publication cases. Both logs contain the expected
+=MODULE-OK=, =HARNESS-OK= and final =OK=, with no error-case/check/harness or heap/
+stack-overflow marker. The strengthened seven-case suite includes exact =eq?=
+cache-value identity; the earlier six-case receipt is retained as earlier evidence.
+The model/native source cut recorded below remained unchanged at final checking.
+
+The complete Lean 4.34.0 project passed 163 jobs; model shape and standard-axiom
+audits passed over 5,027 declarations. The current inventory is 60 Core model
+files. LeanPoo remains locked to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. No admitted arbitrary Prop shell,
+=sorry=, =native_decide= axiom or increased recursion limit was introduced.
+
+Final Quint 0.33.0 / Apalache 0.62.1 typechecked 78 QNT files and completed all
+77 expected outcomes: eleven exhaustive positives, fifty-eight unsafe variants,
+one endpoint-history limitation witness and seven acceptance witnesses. All
+existing root/child, shared graph, diagnostic order, contribution, receiver and
+source controls remain in this full run. Positive exhaustion requires an empty
+queue; negative controls require the expected invariant counterexample. Limits
+remain 45 seconds per case, five seconds without real output, five seconds per
+typecheck and a 1GB TLC heap. No deadlock suppression was added.
+
+| New case | Predicate | Generated / distinct / queued |
+|----------+-----------+-------------------------------|
+| =SnapshotEntry= | =safety= | 160 / 124 / 0 |
+| =SnapshotEntry_revision= | =ChangedRejected= | 77 / 77 / 35 |
+| =SnapshotEntry_checker= | =ChangedRejected= | 81 / 81 / 35 |
+| =SnapshotEntry_value= | =ChangedRejected= | 105 / 105 / 35 |
+| =SnapshotEntry_observer= | =ChangedRejected= | 85 / 85 / 35 |
+| =SnapshotEntry_ancestor= | =ChangedRejected= | 89 / 89 / 35 |
+| =SnapshotEntry_source= | =SourcesCurrent= | 132 / 116 / 19 |
+| =SnapshotEntry_prefix= | =OrderedDiagnostic= | 137 / 121 / 19 |
+| =SnapshotEntry_parent= | =ReceiverIdentity= | 112 / 112 / 35 |
+| =SnapshotEntry_aba= | =NoInterveningCallback= | 97 / 97 / 35 |
+| =SnapshotEntry_acceptance= | =RejectAll= | 112 / 112 / 35 |
+
+** Retained failures and scope of isolation
+
+The first invocation used the product Justfile, which has no Core compile recipe.
+The existing full-source isolated compiler path then failed on an unavailable
+import binding; seeding it with current compiled dependencies led to a segment
+fault. Neither attempt is a passing compiler receipt and their root causes are
+not claimed solved by this work. That full-source compiler path remains outside
+this qualification. No compatibility runtime was introduced.
+
+Native evidence instead comes from the unchanged default SDK's heap-fenced
+=test-file= subprocesses, fresh local POO instances and resource-owned temporary
+Scenario trees. Early tests also failed to resolve a new helper as an installed
+library and exposed an illegal internal definition in the helper; the helper now
+uses a relative source import and the corrected native lexical form. Those
+failures are preserved. Only completed passing native runs count above.
+
+The first formal run passed 76 outcomes for its then-current narrower signature.
+A subsequent review tightened reference equality and added the equal-number cache
+fault/control. Its distinct final source-bound receipt passes 77 outcomes. The
+old receipt is neither overwritten nor treated as validation of the new footprint.
+
+Raw artifacts remain outside Git in =/private/tmp/core-mop-state-20261018/=:
+
+- =test-05.log=: final seven-case native extraction suite.
+- =services-regression-01.log=: eleven-case native publication regression.
+- =lean-all-02.log=: complete final Lean aggregate/audits.
+- =quint-all-02-final.log= and =quint-final-receipt.ss=: final 77 outcomes.
+- Earlier =compile-*.log=, =cost-compile-*.log=, =test-01.log= through =test-04.log=,
+  =lean-01.log= and =quint-receipt.ss=: failed/development/earlier-cut evidence.
+- =native-source-cut.json=, =scheme-before.json= and =qualification.json=:
+  watched native/consumer source identities and joined gate output hashes.
+
+The source manifest records inspected source identities; it is not a claim of
+reproducibly recompiling or attesting every installed binary. Default runtime
+observations, source audit and model proofs remain distinct evidence layers.
+No producer or production Core Scheme source was edited, no Loader adaptation
+was connected, and no native performance count was changed by this qualification.
+
+* Follow-up: revision and scope lifetime
+
+[[file:32.24-revision-aba-and-use-boundaries.org][32.24]] exercises supported value/protocol ABA, real active slot frames,
+external read dependencies and observer writes/restoration. It distinguishes
+rejection of stale certification from preventing or undoing an earlier use.
+Production Scheme and Loader remain unchanged.

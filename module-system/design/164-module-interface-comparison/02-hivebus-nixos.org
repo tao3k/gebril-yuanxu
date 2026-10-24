@@ -1,0 +1,251 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: HiveBus and NixOS Modules: Framework Semantics and Two User Interfaces
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* HiveBus ordinary configuration: actual host data
+
+Verbatim extraction: [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/hosts/host-3/meta.nix][hosts/host-3/meta.nix]]. Original repository license: MIT.
+
+#+begin_src nix
+# SPDX-FileCopyrightText: 2024 The omnibus Authors
+#
+# SPDX-License-Identifier: MIT
+{
+  nixos-unstable,
+  lib,
+  self,
+  inputs,
+}:
+{
+  system = "x86_64-linux";
+  customNixOS = {
+    bee.pkgs = import nixos-unstable { system = self.system; };
+    bee.system = self.system;
+    bee.home = inputs.omnibus.flake.inputs.home-manager;
+    imports = [ inputs.omnibus.flake.inputs.disko.nixosModules.default ];
+  };
+  colmenaConfiguration = {
+    deployment = {
+      allowLocalDeployment = true;
+      targetHost = "127.0.0.1";
+    };
+    inherit (self.customNixOS) bee imports;
+  };
+}
+#+end_src
+
+The host author writes a system and deployment policy. self keeps related fields
+coherent; upstream supplies the context. The body looks data-oriented, but it is
+not JSON: functions, imports and self-dependent values are involved.
+
+This is a good first-layer target. The user should not construct each internal
+module descriptor to set a deployment host. Agentic AI Lab currently demonstrates this
+separation for Funflow defaults, not an equivalent host deployment product.
+A field override is not evidence that we already have HiveBus's output adapters.
+
+* HiveBus ownership and extension: actual upstream code
+
+Verbatim extraction: [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/pops/hosts.nix][units/self/pops/hosts.nix]]. Original repository license: MIT.
+
+#+begin_src nix
+{
+  omnibus,
+  inputs,
+  projectRoot,
+  root,
+}:
+omnibus.pops.load {
+  src = projectRoot + /hosts;
+  inputs = {
+    inherit (inputs) nixos-unstable;
+    inputs = inputs;
+  };
+}
+#+end_src
+
+Verbatim extraction: [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/flakeOutputs.nix][units/self/flakeOutputs.nix]]. Original repository license: MIT.
+
+#+begin_src nix
+{ super, eachSystem }:
+let
+  renamerHiveExports = (super.pops.hive.setNixosConfigurationsRenamer "asd").setHomeConfigurationsRenamer "myHm";
+in
+{
+  inherit (super.pops.hive.exports)
+    nixosConfigurations
+    darwinConfigurations
+    colmenaHive
+    homeConfigurations
+    ;
+  inherit (super) pops;
+
+  renamerNixosConfigurations = renamerHiveExports.exports.nixosConfigurations;
+  myHm = renamerHiveExports.exports.homeConfigurations;
+
+  data = super.pops.data.exports.default;
+  overlays = super.pops.eachSystem.packages.x86_64-linux.exports.overlays;
+
+  nixosProfiles = super.pops.nixosProfiles.exports.default;
+  nixosModules = super.pops.nixosModules.exports.default;
+  hosts = super.pops.hosts.exports.default;
+}
+// super.eachSystem
+#+end_src
+
+The source/input boundary is centralized. Ordinary outputs and pops are both
+available, and specialized functions extend the naming policy before exports
+are read. This illustrates progressive disclosure: values for common use,
+object-level extension for uncommon changes.
+
+One more owner shows extension of load inputs:
+
+Verbatim extraction: [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/pops/eachSystem.nix][units/self/pops/eachSystem.nix]]. Original repository license: MIT.
+
+#+begin_src nix
+{
+  eachSystem,
+  super,
+  inputs,
+  lib,
+}:
+lib.mapAttrs (_: v: eachSystem v) {
+  scripts =
+    system:
+    (super.scripts.addLoadExtender {
+      load.inputs = {
+        inputs = {
+          nixpkgs = inputs.nixos-unstable.legacyPackages.${system};
+        };
+      };
+    });
+
+  packages =
+    system:
+    (super.packages.addLoadExtender {
+      load.inputs = {
+        inputs = {
+          nixpkgs = inputs.nixos-unstable.legacyPackages.${system};
+        };
+      };
+    });
+
+  data =
+    system:
+    (super.data.addLoadExtender {
+      load.inputs = {
+        nixpkgs = inputs.nixos-unstable.legacyPackages.${system};
+        inputs = {
+          nixpkgs = inputs.nixos-unstable.legacyPackages.${system};
+        };
+      };
+    });
+}
+#+end_src
+
+The repeated structure is upstream work. Agentic AI Lab can factor structural families
+with private defrules and pure functions; it should not ask each downstream
+user to repeat this machinery. However, these are POP consumers. This study does
+not infer the external POP implementation's caching or scalability from them.
+
+* Nix the language is not NixOS the module system
+
+[[https://nix.dev/manual/nix/latest/language/types][Nix's language values]] are dynamically typed. Nix has runtime checks and
+assertions, but not Nickel-style integrated contract metadata or an opt-in static
+typechecker. [[https://nixos.org/manual/nixos/stable/#sec-writing-modules][NixOS modules]] add a library-level option system: declarations,
+types, defaults, descriptions and definition merging. Its complexity serves real
+composition requirements as well as compensating for language-level gaps.
+
+It would be incorrect to infer that NixOS cannot express rich configuration
+constraints. It would also be incorrect to treat its option types as a static
+type system for arbitrary Nix functions. Similarly, a POO Contract API is not a
+static type system for arbitrary Scheme functions.
+
+* A matched NixOS authoring example
+
+This is an original illustrative module, not an extraction from HiveBus or
+Nixpkgs. It makes the ownership needed for a CI interface visible:
+
+#+begin_src nix
+{ lib, config, ... }:
+let
+  inherit (lib) mkOption mkDefault types;
+  cfg = config.ci;
+  Check = types.submodule ({ name, ... }: {
+    options = {
+      name = mkOption { type = types.str; default = name; };
+      command = mkOption { type = types.listOf types.str; };
+      artifacts = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
+    };
+  });
+in {
+  options.ci = {
+    checks = mkOption { type = types.attrsOf Check; default = {}; };
+    order = mkOption {
+      type = types.listOf types.str;
+      default = [ "build" "test" "package" ];
+    };
+    plan = mkOption { type = types.listOf Check; readOnly = true; };
+  };
+  config.ci = {
+    checks.build.command = mkDefault [ "gerbil" "build" ];
+    checks.test.command = mkDefault [ "gerbil" "env" "./unit-tests.ss" ];
+    checks.package.command = mkDefault [ "gerbil" "build" "release" ];
+    plan = map (name: cfg.checks.${name}) cfg.order;
+  };
+}
+#+end_src
+
+An ordinary downstream module changes values:
+
+#+begin_src nix
+{
+  ci.checks.build.artifacts = [ "release-build-log" ];
+  ci.checks.test.command = [ "gerbil" "env" "./project-tests.ss" ];
+  ci.checks.package.artifacts = [ "release-bundle" ];
+}
+#+end_src
+
+An extension author imports another module or adds option declarations, changes
+the selected order, and supplies a new named Check. The same cfg reference drives
+the projected plan. Our lexical Pipeline relationship therefore has a meaningful
+NixOS counterpart; it is not a capability absent from NixOS.
+
+The NixOS example still needs domain checks for missing order references and
+cross-check obligations. Unknown options, basic field shape and conflicting
+definitions already have a framework-level home. POO's open slots do not yet
+provide those domain diagnostics automatically.
+
+* What complexity should POO avoid, and what must it retain?
+
+Override priority selects competing definitions; ordering priority controls
+merge order. mkDefault/mkForce and mkBefore/mkAfter answer different questions.
+imports is resolved before final config; dependencies cannot flow arbitrarily
+backward through that phase. These distinctions are necessary semantic choices,
+not proof that users need another syntax copied from NixOS.
+
+[[https://nixos.org/manual/nixpkgs/stable/#module-system-lib-evalModules][evalModules/extendModules]] also distinguishes constructing an extension from
+forcing old and new configurations. Limited sharing between those evaluations
+is documented. Our cached-parent probe establishes correct child values, not a
+cross-system speed advantage.
+
+For Agentic AI Lab: keep source binding, effective object configuration, admission and
+execution as separate stages. Keep parent-prototype order separate from task
+execution order. Specify scalar replacement, list combination and object
+refinement separately rather than implying that =>.+ is a universal merge.
+
+* Reflection and decisions
+
+Retain: a small ordinary configuration surface, centralized publication and
+explicit exports. Improve: option-level discoverability, conflict explanation and
+known-field diagnostics. Do not reproduce: large user-visible provider setup or
+implicit whole-catalog forcing. Do not promise: the same deployment coverage,
+package reproducibility or maturity without its consumers and evidence.
+
+The next design work is a public attribute/contract projection and a selected
+composition explanation. That work is needed even if no Loader code is written.

@@ -1,0 +1,94 @@
+ℹ [39/40] Replayed PooFlowProfileAssociationProof.Model
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:221:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:222:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:223:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:224:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+✖ [40/40] Building PooFlowProfileAssociationProof.DFS (595ms)
+trace: .> LEAN_PATH=/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/packages/LeanPoo/.lake/build/lib/lean:/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean /Users/guangtao/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/PooFlowProfileAssociationProof/DFS.lean -o /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/DFS.olean -i /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/DFS.ilean -c /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/DFS.c --setup /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/DFS.setup.json --json
+error: PooFlowProfileAssociationProof/DFS.lean:54:18: unsolved goals
+case cons.error
+parents : Parents
+root : Nat
+step : Nat → List Nat → Except Error (List Nat)
+parent : Nat
+rest : List Nat
+ih :
+  ∀ (initial final : List Nat),
+    Closed parents initial →
+      (∀ (parent : Nat),
+          parent ∈ rest →
+            ∀ (prior next : List Nat),
+              Closed parents prior →
+                step parent prior = Except.ok next →
+                  prior ⊆ next ∧
+                    parent ∈ next ∧
+                      Closed parents next ∧ ∀ (node : Nat), node ∈ next → node ∈ prior ∨ Inherits parents root node) →
+        visitParents step rest initial = Except.ok final →
+          initial ⊆ final ∧
+            (∀ (parent : Nat), parent ∈ rest → parent ∈ final) ∧
+              Closed parents final ∧ ∀ (node : Nat), node ∈ final → node ∈ initial ∨ Inherits parents root node
+initial final : List Nat
+closed : Closed parents initial
+stepSpec :
+  ∀ (parent_1 : Nat),
+    parent_1 ∈ parent :: rest →
+      ∀ (prior next : List Nat),
+        Closed parents prior →
+          step parent_1 prior = Except.ok next →
+            prior ⊆ next ∧
+              parent_1 ∈ next ∧
+                Closed parents next ∧ ∀ (node : Nat), node ∈ next → node ∈ prior ∨ Inherits parents root node
+err : Error
+result : step parent initial = Except.error err
+success :
+  (do
+      let next ← Except.error err
+      visitParents step rest next) =
+    Except.ok final
+⊢ initial ⊆ final ∧
+    (∀ (parent_1 : Nat), parent_1 ∈ parent :: rest → parent_1 ∈ final) ∧
+      Closed parents final ∧ ∀ (node : Nat), node ∈ final → node ∈ initial ∨ Inherits parents root node
+error: PooFlowProfileAssociationProof/DFS.lean:58:12: Type mismatch: After simplification, term
+  success
+ has type
+  @Eq (Except Error (List Nat))
+    (do
+      let next ← Except.ok middle
+      visitParents step rest next)
+    (Except.ok final)
+but is expected to have type
+  @Eq (Except Error (List Nat)) (visitParents step rest middle) (Except.ok final)
+error: PooFlowProfileAssociationProof/DFS.lean:90:22: unsolved goals
+case succ.isFalse.isFalse.error
+parents : Parents
+fuel : Nat
+ih :
+  ∀ (node : Nat) (active initial final : List Nat),
+    Closed parents initial →
+      visit parents fuel node active initial = Except.ok final →
+        initial ⊆ final ∧
+          node ∈ final ∧
+            Closed parents final ∧ ∀ (root : Nat), root ∈ final → root ∈ initial ∨ Inherits parents node root
+node : Nat
+active initial final : List Nat
+closed : Closed parents initial
+h✝¹ : ¬node ∈ active
+h✝ : ¬node ∈ initial
+err : Error
+result :
+  visitParents (fun parent prior => visit parents fuel parent (node :: active) prior) (parents node) initial =
+    Except.error err
+success : List.cons node <$> Except.error err = Except.ok final
+⊢ initial ⊆ final ∧
+    node ∈ final ∧ Closed parents final ∧ ∀ (root : Nat), root ∈ final → root ∈ initial ∨ Inherits parents node root
+info: PooFlowProfileAssociationProof/DFS.lean:144:0: 'PooFlowProfileAssociationProof.DFS.visit_spec' depends on axioms: [propext, sorryAx, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:145:0: 'PooFlowProfileAssociationProof.DFS.success_membership_iff' depends on axioms: [propext, sorryAx, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:146:0: 'PooFlowProfileAssociationProof.DFS.successful_dfs_association_iff' depends on axioms: [propext, sorryAx, Quot.sound]
+Some required targets logged failures:
+- PooFlowProfileAssociationProof.DFS
+error: build failed

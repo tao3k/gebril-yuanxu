@@ -1,0 +1,259 @@
+#+title: 32.47 Conditional Publication And The Deployment Trust Root
+#+language: en
+#+startup: overview
+
+* Question and result
+
+Follow-up: [[file:32.48-nix-profile-effect-boundary.org][32.48]] exercises real Nix Source builds and profile effects across
+fresh client processes. Persistent selection does not itself supply a conditional
+revision/fence commit; the saved-request counterexample is retained.
+
+[[file:32.46-selected-source-build-recovery.org][32.46]] recovers issuance through the selected Module's
+=core.build-publication=. Can that same graph and publication close the gap
+between final admission and use, without another currentness loop?
+
+The minimal experiment separates two answers:
+
+1. A single serial owner can conditionally install the exact admitted candidate
+   and plan against its expected deployment revision. Changed heads, ABA and
+   reused or foreign tokens are refused. No extra source check is added.
+2. That owner does not control arbitrary filesystem writers, remote APIs, or
+   replacement of the initial deployment authority. A real file change AFTER
+   preparation is deliberately accepted by the local comparison. This retained
+   counterexample prevents claiming an external transaction from a local guard.
+
+This is an isolated qualification, not a new public commit API. Production Core,
+Nix and Gerbil sources are unchanged. The prototype reuses the real selected
+Graph, =AdmissionPublication .publish=, domain Contracts, contribution binding and
+Scenario fixture. Its revision cell, token registry and serial scheduling are
+test infrastructure. They do not already exist as a deployed transaction service.
+
+* Existing ownership and reuse
+
+The relevant production boundaries are:
+
+- =module-system/source/build.ss=: selected graph and its selected release Source.
+- =module-system/building/artifacts.ss=: receiver-local retained issuance.
+- =modules/nix/build-publication.ss=: approved derivation and artifact recovery.
+- =admission/publication.ss=: package-before, root Contract, package-after and
+  bound final currentness. This remains the only preparation authority here.
+
+The existing active-head RFC already distinguishes immutable generations,
+proposals, authorized intent and actual conditional commit:
+[[file:../../../module-system/design/45-59-active-head-publication-concurrency-and-reversion.org][45-59 Active Head Publication]],
+[[file:../../../module-system/design/45-61-multi-scope-publication-barriers-and-atomicity.org][45-61 Multi-Scope Atomicity]].
+The existing Lean =SerialUse.conditionalCommit= relation is reused rather than
+inventing another version protocol. Searching these production source boundaries
+found no executable atomic external-head comparison/transition adapter. RFC
+semantics and pure proofs are not evidence that such an adapter is implemented.
+
+* Minimal Scheme experiment
+
+The full executable owner is
+[[file:../../../t/qualification/build-publication/conditional-commit.ss][conditional-commit.ss]]. Its POO operations are qualification-only:
+
+#+begin_src scheme
+;; Capture BEFORE admission, including all callbacks owned by .publish.
+(def expected revision)
+(def previous live-head)
+(defvalues (receipt next failure)
+  (.call publication .publish previous candidate))
+(when failure (raise failure))
+(unless (.get receipt accepted?) (error "configuration admission refused"))
+(def plan (.get next plan))
+#+end_src
+
+An opaque object identifies a private retained tuple of expected revision,
+previous candidate, admitted candidate, plan and selected Graph. The caller
+cannot substitute token fields to invent a new approval. This is an in-memory
+association, not a new signature, disk receipt or persistent authority system.
+
+The commit operation first resolves that issuer-owned tuple, then performs:
+
+#+begin_src scheme
+(unless (and (= revision (vector-ref row 0))
+             (eq? live-head (vector-ref row 1))
+             (eq? live-graph (vector-ref row 4)))
+  (error "selected deployment revision changed"))
+(set! live-head (vector-ref row 2))
+(set! revision (+ revision 1))
+(vector-ref row 3) ; exact admitted plan, no re-projection from mutable sources
+#+end_src
+
+There is no author callback, lazy slot demand, Nix process or source read in this
+comparison/transition. Advancing the revision invalidates all tokens from that
+old epoch. The private registry lasts only for the fixture lifetime; production
+retention and concurrent ownership are intentionally not designed by this helper.
+Ordinary Scheme sequential statements are NOT a multi-thread or multi-process
+CAS. The fixture requires one serial owner; a runtime adapter would need an
+actual atomic operation and failure/recovery semantics.
+
+* Real domain preparation, parent cache and requirements
+
+[[file:../../../t/conditional-build-publication-test.ss][conditional-build-publication-test.ss]] uses the maintained Gitea/PostgreSQL
+Scenario through the existing =ServicesFixture=, which materializes its role
+files and resolves the actual Core publication. It does not substitute a Boolean
+Contract for the real domain admission.
+
+#+begin_src scheme
+(def parent (.get publication value))
+(def cached (.get parent plan))
+(.def (Release @ parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(def owner
+  (serial-publication-owner publication (.get selection build-graph) parent))
+(def token (.call owner prepare Release))
+(def plan (.call owner commit token))
+#+end_src
+
+Controls assert:
+
+| Control | Observed requirement |
+|---------+----------------------|
+| Cached parent, admitted child | Parent remains 5432; child PostgreSQL and Gitea both read 5433 |
+| Effective plan | Its configuration is the exact admitted candidate's configuration |
+| Independent contributions | Both contribution entries remain present |
+| Requirements 5433 vs 5440 | Real domain publication refuses preparation; no head change |
+| Changed head and ABA | Both reject with =selected deployment revision changed= |
+| Changed selected Graph | Old token refuses; the old bound publication cannot prepare for a new selection |
+| Reuse or foreign token | Refused; a token is not portable approval |
+| Unselected branch | =services/unused= remains absent from selected module order |
+
+The experiment checks the selected-order boundary; it adds no new whole-catalogue
+scan. It does not add a new instrumentation proof that every possible lazy slot
+is unforced. Prior 32.46 malformed-unused-interface/JSON controls remain separate
+evidence and are not relabeled as rerun by this experiment.
+
+* Retained external-source counterexample
+
+After successful real preparation, the test edits the actual selected
+=postgresql/objects.ss= file without advancing the private deployment revision.
+The local commit returns the captured 5433 plan. A subsequent preparation through
+the real publisher refuses with native metadata failure phase =source=, whose
+cause is =stale prepared Module publication=.
+
+Thus existing currentness correctly rejects a later admission, while the earlier
+prepared token does not magically acquire authority over that external write.
+This is intentional negative evidence. Adding another file read at commit would
+merely move the same last-read/use gap.
+
+Two legitimate semantics must remain distinct:
+
+- Snapshot publication: consume only the admitted immutable release and captured
+  plan. A mutable source directory changing later does not redefine that release.
+  The selected Nix store publication can supply the immutable release identity;
+  this experiment does not prove all reachable Scheme objects immutable.
+- Live conditional execution: the actual effect owner must compare its version
+  or fence and apply the effect in one transaction. A local plan, a Nix content
+  check and a remote mutation are not one atomic operation. Multi-system effects
+  require the existing partial-commit/reconciliation model.
+
+Source currentness remains in preparation. No production check is removed, and
+no cross-callback success cache is introduced.
+
+* Lean correspondence and finite-model controls
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ConditionalBuildPublication.lean][ConditionalBuildPublication.lean]] composes the existing =CoreApprovedRecovery.finish=
+with =SerialUse.conditionalCommit=. Its checked properties are:
+
+- =commit_keeps_requirements_and_revision=: approval, source, files, both domain
+  requirements and expected/live revision equality are necessary for acceptance.
+- =aba_refused=: an owner revision advancing twice cannot pass the old token.
+- =uses_exact_admitted_plan= and =refusal_preserves_head=: the transition installs
+  the captured payload or preserves the previous head.
+- =child_install_preserves_parent=: installing the child does not mutate the
+  separately retained parent projection.
+- =external_change_not_covered=: the owner relation still accepts equal revisions;
+  it has no premise establishing external-file atomicity.
+
+The last theorem is a limitation, not external safety. Payload identity in Scheme
+and numeric payload projection in Lean are connected by explicit test assertions,
+not by a verified Scheme interpreter or automatic extraction proof.
+
+[[file:../../../dev/proofs/quint/ConditionalBuildPublication.qnt][ConditionalBuildPublication.qnt]] keeps requirements fixed at preparation, then
+permits a head ABA or uncoordinated external write before commit. Six bounded
+simulation controls retain matching outcomes:
+
+| Model / invariant | Expected result |
+|-------------------+-----------------|
+| Normal / =safety= | No counterexample in 1000 traces, 6 steps, seed 43 |
+| Split comparison / =Revision= | Counterexample: expected 0, live 2, accepted |
+| Drop second requirement / =Both= | Counterexample: second requirement false, accepted |
+| Eager unused branch / =Lazy= | Counterexample: unused branch forced |
+| Normal / =External= | Counterexample: external write, unchanged revision, accepted |
+| Normal / =RejectAll= | Acceptance witness; protocol does not reject everything |
+
+QNT simulations are bounded evidence, not an exhaustive proof. The Lean model
+assumes the comparison and transition are one owner action. Neither model proves
+the Scheme scheduler, Nix store protection or remote API atomicity.
+
+Reproduce from Core, using the existing heap-fenced entrypoint and the captured
+32.46 library overlay (or an equivalently rebuilt current Core library):
+
+#+begin_src sh
+just test-build-publication /private/tmp/core-approved-release-20261019/candidate-13 t/conditional-build-publication-test.ss
+cd dev/proofs/lean
+timeout 120s lake env lean YuanxuProof/Admission/ConditionalBuildPublication.lean
+#+end_src
+
+From the repository root, run each QNT row with =quint run=, the corresponding
+model file, =--invariant=<name> --max-samples=1000 --max-steps=6 --seed=43=.
+Negative controls require an actual invariant-violation trace, not just a nonzero
+exit status. =split=, =dropB= and =eager= have their own model files; the other
+three controls use the normal model.
+
+* Deployment authority and next production boundary
+
+The bootstrap package/deployment configuration still decides which selected
+graph and Nix Source are authorized. Nix registration authenticates content
+against its store metadata; it does not approve the operator's choice of release.
+A new process receiving a fully replaced authoritative deployment configuration
+cannot infer that replacement was unauthorized. No file receipt or newly invented
+signature scheme repairs an absent initial authority.
+
+Production integration should reuse the existing selected graph, publication
+receipt, immutable Nix release identity and active-head intent. It still needs
+an existing runtime effect owner's atomic compare/transition capability, including
+durable revision/fence recovery, before claiming live conditional deployment.
+If that capability is unavailable, reject the requested atomic effect; do not
+silently advertise a local check followed by an unrelated remote action as CAS.
+
+Open questions for the actual adapter are whether the deployment is a snapshot
+head switch or live resource mutation, who owns the durable monotonic revision,
+how an unknown commit outcome is reconciled, and whether multiple targets share
+one transaction. These questions must be answered at the effect boundary, not
+hidden in module loading or ordinary user configuration.
+
+* Qualification receipts
+
+Local logs are retained outside Git. Initial runs 01/02 exposed POO lexical slot
+shadowing in the fixture; run 03 exposed native metadata failure objects being
+incorrectly tested as =Error?=. Those failures were not counted as passes.
+The fixture now uses distinct lexical procedure names and checks the actual
+native failure type/phase.
+
+The final Scheme receipt is =core-conditional-commit-07=: natural exit zero,
+=MODULE-OK=, =HARNESS-OK=, final =OK= and no error/overflow markers. All four
+fixture cases pass, including changed selected Graph, foreign-token rejection
+and the deliberate post-preparation external-file acceptance counterexample.
+The captured 32.46 overlay's entire recorded source hash manifest still matches
+the current corresponding Core files (=core-conditional-overlay-currentness-01=).
+The new qualification helper and tests are read from their current source files.
+This does not qualify an unrelated future edit or rebuild the installed compiler.
+
+=core-conditional-lean-03= completes with exit zero. It reuses the existing proof
+dependencies and does not change the LeanPoo revision. An initial proof attempt
+incorrectly dropped the leading =restored= conjunct during simplification;
+that failed result is retained and the corrected proof extracts it explicitly.
+
+The six =core-conditional-quint-*-02= runs match the table: normal safety exits
+zero; each negative/witness run exits one with an actual invariant violation.
+The expected negative exits are not production failures or proofs of stronger
+external atomicity. The Lean file records the model's source digest. There is
+no automatic native-trace decoder for this new serial-owner projection; its
+Scheme assertions and Lean relation are separate, explicitly scoped evidence.
+
+No production Core admission check was removed. No Gerbil source, compiler,
+dependency lock, deployment authority or other session's production edits were
+changed. Raw logs remain local artifacts, not committed research content.

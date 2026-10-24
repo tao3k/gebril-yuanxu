@@ -1,0 +1,372 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.28 Config Languages 27: Synthetic Bridge Controls and Guestbook Source Expectations
+#+property: DOCUMENT_ID 11.28
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:macro:fixture-design:
+#+property: STATUS complete-fixture-design-not-implemented-or-executed-no-loader
+
+* Source correction and scope of the synthetic controls
+
+The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][imported-Schema/native-Contract design and observed-expansion reader]] supersedes
+SchemaV1/SchemaV2 as the main configuration walkthrough. The handcrafted Schemas
+below are isolated proposed bridge unit inputs only, not official resource field
+definitions, user configuration, or a production field registry. Real assets are
+loaded from their pinned original JSON files; public APIs expose native Contracts.
+The observed-origin reader now has a concrete pending protocol in module 28;
+expected data below cannot substitute for actual macro output.
+
+* Read this as fixture source design, not installed tests
+
+This chapter defines the previously symbolic SchemaV1, SchemaV2, RangeProbe and
+origin-row inputs for [[file:11.27-guestbook-macro-admission-and-minimal-controls.org][the four qualification groups]]. All definitions are design
+code in Org only. No .ss test, macro implementation, Loader or module adapter is
+created. Future extraction into a real test source must use the heap-fenced Just
+entrypoint specified in module 26; example source spans then come from that actual
+fixture file, not manually invented line numbers.
+
+Schema data below is an internal JSON-like boundary fixture, not a public alist
+configuration DSL. It follows [[file:11.14-guestbook-module-contract-admission.org][the bounded input Schema]]; discovery must project
+this artifact, never treat the fixture as a second production field table. The
+native value fixtures follow the inspected Guestbook names/images/ports in
+[[file:11.24-guestbook-effective-services.org][the KCL baseline study]], omitting scheduling/resource fields that are irrelevant
+to these four controls. This is not full KCL output or resource-consumer parity.
+
+Target Core procedure names below use yuanxu-. Existing implementations
+still use the old names in the actual [[file:../../../modules/json-schema/interface.ss][Core Schema interface]]. Imports and renaming
+must be qualified before running the future fixture. Native POO and syntax support
+come from the reviewed test compilation environment; users do not maintain them.
+
+* Concrete Schema revisions
+
+Reuse the scalar and map Schema data within one complete Server Schema:
+
+#+begin_src scheme
+(def PortNumberSchema
+  '((type . "integer") (minimum . 1) (maximum . 65535)))
+(def StringMapSchema
+  '((type . "object") (additionalProperties . ((type . "string")))))
+
+(def SchemaV1
+  `((type . "object")
+    (required . ("name" "image" "replicas" "labels" "mainContainer" "services"))
+    (additionalProperties . #f)
+    (properties .
+     ((name . ((type . "string") (minLength . 1)))
+      (image . ((type . "string") (minLength . 1)))
+      (replicas . ((type . "integer") (minimum . 1)))
+      (workloadType . ((enum . ("Deployment"))))
+      (labels . ,StringMapSchema)
+      (schedulingStrategy . ((type . "object")))
+      (mainContainer .
+       ((type . "object") (required . ("ports")) (additionalProperties . #f)
+        (properties .
+         ((name . ((type . "string")))
+          (env . ((type . "object")))
+          (ports .
+           ((type . "array") (minItems . 1) (maxItems . 1)
+            (items .
+             ((type . "object") (required . ("containerPort"))
+              (additionalProperties . #f)
+              (properties . ((containerPort . ,PortNumberSchema)
+                             (protocol . ((enum . ("TCP"))))))))))))))
+      (services .
+       ((type . "array") (minItems . 1) (maxItems . 1)
+        (items .
+         ((type . "object") (required . ("ports")) (additionalProperties . #f)
+          (properties .
+           ((ports .
+             ((type . "array") (minItems . 1) (maxItems . 1)
+              (items .
+               ((type . "object") (required . ("port")) (additionalProperties . #f)
+                (properties . ((port . ,PortNumberSchema)
+                               (targetPort . ,PortNumberSchema)
+                               (protocol . ((enum . ("TCP"))))))))))))))))))))
+#+end_src
+
+The next function is a pure, fixture-only editor over this Schema data. It changes
+one existing path or adds a terminal property, refuses a missing ancestor, and
+returns a new tree. It is not a production overlay API or new configuration syntax.
+
+#+begin_src scheme
+(def (fixture-schema-set tree path value)
+  (if (null? path) value
+    (let* ((key (car path))
+           (old (assq key tree)))
+      (when (and (not old) (pair? (cdr path)))
+        (error "missing Schema fixture ancestor" path))
+      (let (replacement
+             (cons key (fixture-schema-set (if old (cdr old) '()) (cdr path) value)))
+        (if old
+          (map (lambda (entry) (if (eq? (car entry) key) replacement entry)) tree)
+          (append tree (list replacement)))))))
+
+(def SchemaV2
+  (fixture-schema-set
+   (fixture-schema-set
+    SchemaV1
+    '(properties services items properties ports items properties port maximum)
+    32767)
+   '(properties annotations)
+   StringMapSchema))
+#+end_src
+
+V1 remains unchanged. V2 reduces only the exposed Service port bound and adds the
+optional annotations field. The container listener and targetPort bounds remain
+unchanged. annotations is a Schema-discovery control, not an assertion that the
+bounded resource mapper already renders it.
+
+* Concrete native Profile and value fixtures
+
+The small constructor is private fixture code. It returns a native object and
+captures its scalar arguments through ordinary slot punning; it loads nothing.
+
+#+begin_src scheme
+(def (fixture-server name image listener)
+  (.o name image
+      replicas: 1
+      workloadType: "Deployment"
+      labels: (.o)
+      mainContainer:
+      (.o ports: (list (.o containerPort: listener)))
+      services:
+      (list (.o ports: (list (.o port: listener))))))
+
+(def FrontendProfile
+  (.cc (fixture-server "frontend" "gcr.io/google-samples/gb-frontend:v3" 80)
+       'mainContainer
+       (.o name: "php-redis"
+           env: (.o GET_HOSTS_FROM: (.o value: "dns"))
+           ports: (list (.o containerPort: 80)))))
+(def LeaderProfile
+  (fixture-server "redis-leader" "docker.io/redis:6.0.5" 6379))
+(def FollowerProfile
+  (fixture-server "redis-follower" "gcr.io/google_samples/gb-redis-follower:v2" 6379))
+
+(.def GuestbookDefaults
+  frontend: FrontendProfile
+  leader: LeaderProfile
+  follower: FollowerProfile)
+
+(.def (ManualDevelopment @ GuestbookDefaults)
+  frontend: =>.+
+  (.o labels: =>.+ (.o env: "dev")
+      services:
+      (list (.o ports:
+             (list (.o port: 8080 targetPort: 80 protocol: "TCP"))))))
+
+(.def (RangeProbe @ ManualDevelopment)
+  frontend: =>.+
+  (.o services:
+      (list (.o ports:
+             (list (.o port: 40000 targetPort: 80 protocol: "TCP"))))))
+
+(.def (WrongTargetProbe @ ManualDevelopment)
+  frontend: =>.+
+  (.o services:
+      (list (.o ports:
+             (list (.o port: 8080 targetPort: 8080 protocol: "TCP"))))))
+
+(.def (TypoProbe @ ManualDevelopment)
+  frontend: =>.+ (.o lables: (.o env: "dev")))
+(.def (OpenLabelProbe @ ManualDevelopment)
+  frontend: =>.+ (.o labels: =>.+ (.o envr: "dev")))
+(.def (AnnotationsProbe @ ManualDevelopment)
+  frontend: =>.+ (.o annotations: (.o owner: "platform")))
+#+end_src
+
+All probes inherit the same Guestbook root and leave Redis unchanged. Port changes
+explicitly retain targetPort=80 except WrongTargetProbe. This fixture intentionally
+uses replicas=1 and no V2 rollout labels; compare with its own parent, not the
+separate V2 rollout experiment in module 20. The whole resource renderer and rollout
+experiment are not needed to validate these Server-local field controls.
+
+* MG1: direct assignment candidate, comparator and syntax failures
+
+#+begin_src scheme
+;; This candidate requires the pending dotted direct-assignment lowering.
+(.def (Development @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services:
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+
+(def (fixture-frontend-values scenario)
+  (let* ((frontend (.get scenario frontend))
+         (exposed (car (.get (car (.get frontend services)) ports))))
+    (list (.get frontend labels env)
+          (.get exposed port) (.get exposed targetPort)
+          (.get (car (.get frontend mainContainer ports)) containerPort))))
+
+(equal? (fixture-frontend-values Development)
+        (fixture-frontend-values ManualDevelopment))
+;; Expected #t with the pending adapter; also inspect one generated frontend prefix.
+#+end_src
+
+Keep duplicate-leaf and ancestor/descendant forms as separate expansion-failure
+inputs, not declarations in the successful fixture unit:
+
+#+begin_src scheme
+(.def (Duplicate @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.labels.env: "prod")
+
+(.def (Overlap @ GuestbookDefaults)
+  frontend.labels: (.o env: "dev")
+  frontend.labels.env: "prod")
+#+end_src
+
+Those fixtures must fail at original source spans. Do not run all successful and
+intentionally invalid inputs as one compilation unit and treat an early error as
+coverage of the remaining cases.
+
+* MG2: concrete original syntax and expected origin rows
+
+A future real test source owns the syntax literal below. quote-syntax preserves
+its source positions; do not construct it from datum-only strings without locations.
+The proposed test imports syntax-case/stx-source at the appropriate test phase.
+
+#+begin_src scheme
+(def GuestbookUserSyntax
+  #'(.def (Development @ GuestbookDefaults)
+      frontend.labels.env: "dev"
+      frontend.services:
+      (list (.o ports:
+             (list (.o port: 8080 targetPort: 80 protocol: "TCP"))))))
+
+(def (fixture-origin path slot-stx expression-stx)
+  (.o declaration: 'fixture/development
+      path
+      slot-location: (stx-source slot-stx)
+      expression-location: (stx-source expression-stx)))
+
+(def expected-origins
+  (syntax-case GuestbookUserSyntax ()
+    ((_ header label-slot label-value service-slot service-value)
+     (list
+      (fixture-origin '(frontend labels env) #'label-slot #'label-value)
+      (fixture-origin '(frontend services) #'service-slot #'service-value)))))
+
+(def origin-row (car expected-origins))
+(def service-origin-row (cadr expected-origins))
+#+end_src
+
+origin-row is now fully defined, but it is explicitly an expected-source fixture,
+not an observed output from a production macro. Comparing it with itself would
+prove nothing. Actual generated rows must be obtained from the pending private
+publication/source association and compared against both expected-origins entries,
+including declaration generation. No export or fake source-observer procedure is
+invented here to pretend that integration already exists. The observed-row gate
+therefore remains pending, even though its concrete expected data is available.
+
+A failure control should use a generated ancestor span, omit the service row or
+swap declaration/source generations. An enclosing Service-expression origin is
+legitimate; fabricating a targetPort element span for a computed list is not.
+The source rows do not become fields of Development or ordinary preview output.
+
+* MG3: complete demand counter fixture
+
+#+begin_src scheme
+(def service-calls 0)
+(def (observed-services)
+  (set! service-calls (+ service-calls 1))
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+
+(.def (Probe @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services: (observed-services))
+
+service-calls                         ; expected 0
+(.get Probe frontend labels env)
+service-calls                         ; expected 0
+(.get Probe frontend services)
+service-calls                         ; expected 1
+(.get Probe frontend services)
+service-calls                         ; expected 1
+#+end_src
+
+Probe uses pending direct assignment. The manual native comparator substitutes
+frontend: =>.+ (.o labels: =>.+ (.o env: "dev") services: (observed-services))
+inside an inherited declaration, with the counter reset in a separate run. This
+is a counted failure control for accidental duplicated payload evaluation; source
+preparation must not increment it at all. A different derived receiver can demand
+its own value, so this does not impose global once-only execution.
+
+* MG4: explicit Schema bridge, artifacts and observations
+
+The fixture scope below is a native private bridge to known implementation
+functions, not a simulated Loader admission or an installed JsonSchema Module.
+Core names now use the implemented yuanxu- namespace. This private fixture
+remains a qualification bridge, not an alternative public module entrypoint.
+
+#+begin_src scheme
+(.def FixtureSchemaScope
+  compile: yuanxu-json-schema->contract-artifact
+  validate: yuanxu-json-schema-contract-artifact-validate)
+
+(def ArtifactV1
+  ((.get FixtureSchemaScope compile)
+   SchemaV1 '((owner . guestbook-fixture) (source-ref . fixture/schema-v1))))
+(def ArtifactV2
+  ((.get FixtureSchemaScope compile)
+   SchemaV2 '((owner . guestbook-fixture) (source-ref . fixture/schema-v2))))
+
+(def (fixture-valid? artifact scenario)
+  (yuanxu-json-schema-object-contract-validation-valid?
+   ((.get FixtureSchemaScope validate) artifact (.get scenario frontend))))
+
+(fixture-valid? ArtifactV1 RangeProbe)       ; expected #t for field validation
+(fixture-valid? ArtifactV2 RangeProbe)       ; expected #f
+(fixture-valid? ArtifactV1 TypoProbe)        ; expected #f
+(fixture-valid? ArtifactV2 TypoProbe)        ; expected #f
+(fixture-valid? ArtifactV2 OpenLabelProbe)   ; expected #t
+(fixture-valid? ArtifactV1 AnnotationsProbe) ; expected #f
+(fixture-valid? ArtifactV2 AnnotationsProbe) ; expected #t
+#+end_src
+
+Use the proposed schema-fields adapter defined concretely in module 25; no second
+field-help fixture is authored. Node metadata currently contains a constraints
+entry, so the maximum lookup must read that nested metadata rather than assume
+maximum is a top-level node metadata key:
+
+#+begin_src scheme
+(def (fixture-port-maximum artifact)
+  (let* ((view (schema-fields artifact '(services 0 ports 0)))
+         (field (find (lambda (row)
+                        (equal? (.get row path) '(services 0 ports 0 port)))
+                      (.get view fields)))
+         (entry (assq 'constraints (.get field constraints))))
+    (cdr (assq 'maximum (cdr entry)))))
+
+(fixture-port-maximum ArtifactV1) ; expected 65535
+(fixture-port-maximum ArtifactV2) ; expected 32767
+(schema-fields ArtifactV1 '())   ; no annotations candidate
+(schema-fields ArtifactV2 '())   ; includes annotations, no lables candidate
+#+end_src
+
+The existing full-root validator supplies each failure's metadata.path; module 25's
+schema-diagnostic-view joins that path to qualified sources. WrongTargetProbe
+passes Server field validation on both revisions but must fail module 23's
+Scenario guestbook-links against final listener 80. That check is separate from
+fixture-valid?. This chapter does not claim full resource/Scenario admission for
+annotations or an execution result for any listed expectation.
+
+* What is complete, what remains pending
+
+| Item | Defined/source-backed here | Still required |
+|------+----------------------------+----------------|
+| SchemaV1/V2 | Complete JSON-like Schema and pure immutable revision helper | Actual compilation/validation controls under qualified dependencies |
+| RangeProbe and failures | Native inheritance from one concrete three-role baseline | Execute native controls; do not confuse them with direct-assignment coverage |
+| origin-row | Concrete source capture from GuestbookUserSyntax | Actual emitted private rows, publication association and comparison |
+| Prefix/demand candidate | Concrete direct-assignment source and manual comparator | Pending authoring lowering and hygiene/evaluation controls |
+| Discovery synchronization | Same explicit artifacts and maximum projection | Pending schema-fields/diagnostic adapter and currentness qualification |
+| KCL comparison | Same port/Pod-label task retained in modules 24/26 | Matched runtime outputs/errors, no superiority claim from fixture definitions |
+
+Run Schema/native controls independently from pending macro/source controls when
+implementation is authorized. Inability to obtain an actual emitted origin row
+must be reported pending/blocked for that gate, not replaced with expected data.
+Existing mechanisms, new fixture definitions and executed results are three
+separate statuses. No Scheme tests, Loader or production adapters were implemented
+or run by this documentation change.

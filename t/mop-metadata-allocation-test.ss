@@ -1,0 +1,132 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Default-runtime isolation. No producer patch or replacement MOP dispatcher.
+(import :std/test :clan/poo/object
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
+        (only-in :clan/poo/slot-layout make-slot-cache slot-layout-shape)
+        (only-in :gerbil/expander current-expander-context make-top-context
+                 core-import-module module-context-export module-export-name)
+        (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
+        (only-in :std/encoding/json write-json)
+        (only-in :std/error Error? Error-message)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in "qualification/mop-state/reflection-surface"
+                 make-private-cell private-cell-value))
+(export mop-metadata-allocation-test test-cleanup!)
+(def completed 0)
+(def observations '())
+(def (record action)
+  (def roots '())
+  (call-with-slot-read-observer (lambda (read) (set! roots (cons read roots))) action)
+  (reverse roots))
+(def (refuses action)
+  (def result (with-catch values action))
+  (check-equal? (Error? result) #t)
+  (check-equal? (Error-message result) "object mutation during read replay"))
+;; Observe real shared payload identity, hot/cold values and unchanged revisions.
+(def (shared-roundtrip label write)
+  (.def Parent port: 5432 unused: (error "unselected branch forced"))
+  (.def (Hot @ Parent))
+  (.def (Cold @ Parent))
+  (def parent-cache (.get Parent port))
+  (def roots (record (cut .get Hot port)))
+  (def revision (object-revision Parent))
+  (def view-a (object-slots Parent))
+  (def view-b (object-slots Parent))
+  (def entry-a (assq 'port view-a))
+  (def entry-b (assq 'port view-b))
+  (def spec (cdr entry-a))
+  (def original ($self-slot-spec-fun spec))
+  (check-equal? (eq? entry-a entry-b) #f)
+  (check-equal? (eq? spec (cdr entry-b)) #t)
+  (check-equal? (object-%instance Cold) #f)
+  (def observed #f)
+  (def changed? #f)
+  (replay-slot-reads! roots
+    (lambda (_owner _key)
+      (unless changed?
+        (set! changed? #t)
+        (dynamic-wind
+          (lambda () (write spec (lambda (_self) 5440)))
+          (lambda () (set! observed (.get Cold port)))
+          (lambda () (write spec original))))))
+  (check-equal? observed 5440)
+  (check-equal? (.get Parent port) parent-cache)
+  (check-equal? (.get Hot port) 5432)
+  (check-equal? (.get Cold port) 5440)
+  (check-equal? (object-revision Parent) revision)
+  (check-equal? (eq? ($self-slot-spec-fun spec) original) #t)
+  (set! observations (cons (vector label parent-cache (.get Hot port)
+                             (.get Cold port) (($self-slot-spec-fun spec) Parent)
+                             (= revision (object-revision Parent))
+                             (not (eq? entry-a entry-b))
+                             (eq? spec (cdr entry-b))) observations)))
+(def mop-metadata-allocation-test
+ (test-suite "Native metadata allocations, shared payloads and exported capabilities"
+  (yuanxu-test-case "a narrow module export does not conceal metadata from reflection"
+    (def names
+      (parameterize ((current-expander-context (make-top-context)))
+        (map module-export-name (module-context-export
+          (core-import-module
+            (path-expand "t/qualification/mop-state/reflection-surface.ss"))))))
+    (for-each (lambda (name) (check-equal? (memq name names) #f))
+      '(object-%reads object-%reads-set! &object-%reads-set! private-cell-value-set!))
+    (.def Root port: 5432)
+    (def roots (record (cut .get Root port)))
+    (def table (runtime.slot-ref Root '%reads))
+    (def original (runtime.slot-ref table 'ref))
+    (def calls 0)
+    (replay-slot-reads! roots
+      (lambda (_owner _key)
+        (dynamic-wind
+          (lambda () (runtime.slot-set! table 'ref
+            (lambda (self key default)
+              (set! calls (+ calls 1)) (original self key default))))
+          (lambda () (hash-get table 'port))
+          (lambda () (runtime.slot-set! table 'ref original)))))
+    (check-equal? (> calls 0) #t)
+    (set! completed (+ completed 1)))
+  (yuanxu-test-case "opaque final storage with hidden setters is still reflectively writable"
+    (def cell (make-private-cell 5432))
+    (runtime.slot-set! cell 'value 5440)
+    (check-equal? (private-cell-value cell) 5440)
+    (runtime.slot-set! cell 'value 5432)
+    (check-equal? (private-cell-value cell) 5432)
+    (set! completed (+ completed 1)))
+  (yuanxu-test-case "generated setter modifies shared slot payload without receiver invalidation"
+    (shared-roundtrip "generated" $self-slot-spec-fun-set!)
+    (set! completed (+ completed 1)))
+  (yuanxu-test-case "reflective setter has the same shared-allocation escape"
+    (shared-roundtrip "reflective" (lambda (spec fun) (runtime.slot-set! spec 'fun fun)))
+    (set! completed (+ completed 1)))
+  (yuanxu-test-case "supported ancestor replacement preflights children and preserves unselected laziness"
+    (.def Parent port: 5432 unused: (error "unselected branch forced"))
+    (.def (Child @ Parent))
+    (.get Parent port)
+    (def roots (record (cut .get Child port)))
+    (refuses (cut replay-slot-reads! roots
+      (lambda (_owner _key) (.putslot! Parent 'port ($constant-slot-spec 5440)))))
+    (check-equal? (.get Parent port) 5432)
+    (check-equal? (.get Child port) 5432)
+    (.putslot! Parent 'port ($constant-slot-spec 5433))
+    (check-equal? (.get Parent port) 5433)
+    (check-equal? (.get Child port) 5433)
+    (set! completed (+ completed 1)))
+  (yuanxu-test-case "shared shape does not imply shared receiver cells or instance tables"
+    (.def Parent port: 5432 unused: (error "unselected branch forced"))
+    (.def (Child @ Parent) port: 5433)
+    (.ref/inline Parent (make-slot-cache 'port))
+    (.ref/inline Child (make-slot-cache 'port))
+    (check-equal? (eq? (object-%instance Parent) (object-%instance Child)) #f)
+    (check-equal? (eq? (object-%layout Parent) (object-%layout Child)) #f)
+    (check-equal? (eq? (slot-layout-shape (object-%layout Parent))
+                     (slot-layout-shape (object-%layout Child))) #t)
+    (check-equal? (.get Parent port) 5432)
+    (check-equal? (.get Child port) 5433)
+    (set! completed (+ completed 1)))))
+(def (test-cleanup!)
+  (check-equal? completed 6)
+  (let (path (getenv "CORE_ALLOCATION_TRACE" #f))
+    (when path
+      (call-with-output-file (list path: path truncate: #t)
+        (lambda (port) (write-json port (list->vector (reverse observations)))))))
+  (displayln "METADATA-ALLOCATION: 6 cases; shared raw-payload escape retained"))

@@ -1,0 +1,413 @@
+#+title: 10.19 Native POO Fixtures for Core Service Qualification
+#+language: en
+#+property: DOCUMENT_ID 10.19
+
+* Ownership and intent
+
+The source/copy controls in [[file:10.18-native-copy-source-boundaries.org][10.18]] remain Core implementation tests. Their
+repeated temporary-directory, service-publication and relocation setup now lives
+in [[file:../../../t/qualification/service-publication/fixtures.ss][t/qualification/service-publication/fixtures.ss]], a test-resource library with
+no TestSuite or runner. Test files no longer import another test file to acquire
+services, and the callback-shaped =with-services= helper is removed.
+
+This reuses =yuanxu-test-fixture= and =with-yuanxu-fixture= from the existing
+[[file:../../../observability/testing-fixture.ss][Fixture owner]]. Those macros keep the existing native std/test lifecycle and
+POO Case policy. No new fixture DSL, scheduler, product Loader or production
+module loading behavior is added.
+
+* A directory owns acquisition rollback
+
+The common native object has =prefix=, =.prepare=, =.remove-directory=, =.acquire= and =.release=.
+Declaring it or reading its cached acquisition function creates no directory.
+Each explicit acquisition calls that function again and creates a fresh owned
+directory. It does not store a workspace as a cached lazy slot on the Fixture.
+
+#+begin_src scheme
+(.def DirectoryFixture
+  prefix: "core-service-"
+  .prepare: values
+  .remove-directory: clear-temporary-file!
+  .acquire:
+  (lambda ()
+    (def directory (make-temporary-file-name prefix))
+    (create-directory directory)
+    (with-catch (cut rollback-directory! .remove-directory directory <>)
+      (lambda ()
+        (def resource (.prepare (.o root: directory)))
+        (unless (and (object? resource) (.slot? resource 'root)
+                     (equal? (.get resource root) directory))
+          (error "fixture preparation must retain its owned root"))
+        resource)))
+  .release: (lambda (resource) (.remove-directory (.get resource root))))
+#+end_src
+
+The resource's =root= is the owned outer directory. A successful preparation
+must retain it. A failed =create-directory= grants no ownership, so an existing
+path is not deleted by rollback. Once creation succeeds, =.acquire= owns any
+preparation failure: =rollback-directory!= clears that directory and rethrows
+the identical original cause. If rollback itself fails, both causes are kept.
+This is necessary because the shared Fixture lifecycle cannot call =.release=
+for a resource that acquisition never returned.
+
+For a returned resource, the existing =dynamic-wind= lifecycle calls =.release=
+after both normal completion and a body exception. A body plus release failure
+keeps both causes according to the existing shared implementation. Preparation
+is trusted test code, not a sandbox for arbitrary filesystem effects; cleanup
+owns this directory, not every SDK cache or compiler context in the process.
+
+* Service and relocation preparation
+
+=ServicesFixture= derives from =DirectoryFixture=. Its ordinary slots retain
+the old test variations: =postgres-ports=, =gitea-ports=, =client-port= and
+=null-settings?=. Its preparation copies the actual maintained roles, writes
+isolated JSON data and obtains the existing selected graph and publication.
+It preserves the malformed unread JSON and disabled-module controls. A
+separate =RepositoryServicesFixture= selects the actual repository roles and
+their unmodified default data for the production-default control.
+
+Relocation is a native inherited function transformation using standard
+functional composition:
+
+#+begin_src scheme
+(def (relocated-preparation prepare)
+  (compose relocate-services prepare))
+
+(.def (RelocatedServicesFixture @ ServicesFixture)
+  (.prepare => relocated-preparation))
+#+end_src
+
+=relocate-services= packages the selected graph once, renames the artifact,
+removes the original isolated Module tree, then obtains a fresh selection and
+publication at the moved source. The returned native resource retains =root=
+for cleanup, =source= for the relocated path, =selection= and =publication= for
+current work, and =original-selection= / =package-receipt= for frozen inspection.
+The old graph is not reused as current source authority after deletion.
+
+The first relocation case needs to inspect the original asset graph before
+moving it, so it acquires =ServicesFixture= and explicitly calls the same
+=relocate-services= function. The other relocated cases directly acquire
+=RelocatedServicesFixture=. The package/rename/delete/reload sequence has one
+implementation, not one copy per test.
+
+* Case declarations
+
+The service cases now declare resources rather than nesting setup callbacks:
+
+#+begin_src scheme
+(yuanxu-test-fixture "cached parent retains its plan and child reads final port"
+  (fixture ServicesFixture)
+  (with-slots (root selection publication) fixture
+    (def parent (.get publication value))
+    (def cached (.get parent plan))
+    (.def (Release @ parent)
+      config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+    (def evidence
+      (.call (.get publication contract) .admit Release (.get publication context)))
+    (check-equal? (.get evidence accepted?) #t)
+    (check-equal? (.get cached postgresql port) 5432)))
+#+end_src
+
+Exceptional input is an ordinary Fixture refinement, not positional flags:
+
+#+begin_src scheme
+(fixture (.cc ServicesFixture client-port: 'null))
+(fixture (.cc ServicesFixture null-settings?: #t))
+(fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))
+#+end_src
+
+These are the resource clauses of =yuanxu-test-fixture= declarations, not a
+new =fixture= macro. Ordinary JSON value tests and the JSON-baseline origin
+case use =DirectoryFixture= without loading any services. Pure specification
+tests continue to use =yuanxu-test-case=; creating a directory for a pure
+case would add an unnecessary resource dependency.
+
+* Failure and independence controls
+
+[[file:../../../t/service-publication-fixture-test.ss][Ten lifecycle cases]] use the same existing Fixture macro and resource owner:
+
+1. A cached =.acquire= function remains inert until called. Two acquisitions
+   create different roots; releasing the inner one leaves the outer one alive.
+   Both trees, including nested files, are absent after their scopes finish.
+2. A real acquired service environment throws an intentional body exception.
+   The same cause reaches the caller, its directory is absent, and a later
+   acquisition from the same Fixture still admits its real Application.
+3. A native =.prepare= refinement throws after real service preparation and
+   relocation. The original Module tree is already gone and the moved init
+   exists at the injection point. Acquisition rolls the whole outer tree back,
+   the same cause is preserved, and =.release= is correctly not called for an
+   unreturned resource.
+4. Preparation and rollback both fail; both original Error objects survive,
+   and the recorded deletion target excludes the simultaneously live sibling.
+5. Body and release both fail; both original Error objects survive, while the
+   sibling directory and its file content remain intact.
+6. Two verifications on one resource produce independent observations in both
+   phases, despite reusing the same cached verification function.
+7. Two acquisitions of one Fixture retain independent roots and verification
+   state; inner release leaves the outer resource alive.
+8. Verification interruption before recovery preserves its original exception
+   and the outer owner removes all residual paths without touching the control.
+9. A resource whose checkpoint interrupted verification verifies again without
+   consuming the first invocation's residual directory or reusing its state.
+10. The same Fixture is acquired again while the first owner remains alive;
+    recovery and inner release leave the first owner's residual untouched.
+
+Expected faults are caught around =with-yuanxu-fixture= inside an ordinary
+Fixture case, so the outer harness can assert cleanup without registering an
+intentional failing Case as a success. This exercises the same lifecycle used
+by =yuanxu-test-fixture=; it is not a subprocess-crash cleanup claim.
+
+* Retained acceptance boundary
+
+No source-attribution, value or admission assertion is replaced with a cleanup
+check. The six native specification cases retain =.cc= opacity, right-hand =.+=
+identity and undemanded sibling counters. The four relocation cases retain
+precise Scheme locations, JSON baselines, delayed refinement, cached-parent
+identity, stale Scheme/JSON refusal, disabled-module exclusion and unread-asset
+laziness. The four JSON cases retain missing/null/explicit input distinctions
+and database-before-client demand. The eight service cases retain joint
+requirements, final plan admission and source/contribution replacement refusal.
+
+All resource-owning cases in these four files use =yuanxu-test-fixture=.
+Cleanup and preparation are consolidated without modifying the production MOP,
+the public native operators, the shared Fixture lifecycle or the product Loader.
+The new lifecycle suite is registered in Core's existing Justfile test list.
+Logs remain local; source control contains these executable gates and summaries.
+
+** Double-failure controls and cleanup ownership
+
+Both acquisition rollback and returned-resource release call the same native
+=.remove-directory= function slot. Its default is =clear-temporary-file!=;
+only the test-resource Fixture gains this injection point. The shared Fixture
+runner and production Loader remain unchanged. The rollback function preserves
+both exception objects:
+
+#+begin_src scheme
+(def (rollback-directory! remove-directory root cause)
+  (with-catch
+    (lambda (cleanup)
+      (error "fixture preparation and rollback failed" cause cleanup))
+    (lambda () (remove-directory root)))
+  (raise cause))
+#+end_src
+
+Two additional native =yuanxu-test-fixture= cases raise distinct Error objects
+in preparation/body and in rollback/release. They assert the wrapper's exact
+message and exactly two =Error-irritants=, each =eq?= to its original exception.
+A preparation failure never calls =.release=; body failure reaches the existing
+=dynamic-wind= release exactly once. Neither failure is reduced to message text.
+
+Each case acquires a separate sibling Fixture under an outer control Fixture.
+The injected deletion function records its argument before failing. Assertions
+require exactly the failed acquisition's root, an intact sibling directory and
+unchanged sibling file content. The failure is injected before deletion, so the
+failed root intentionally still exists. The test then releases that root through
+the healthy DirectoryFixture and verifies that only it disappears. The outer
+control owns all injected-failure paths, ensuring teardown can reclaim them if
+an assertion interrupts the test. This is a deterministic function-failure
+control, not proof of recovery from process death, an OS deletion failure, or
+arbitrary malicious preparation effects outside the owned root.
+
+*** Reusable failure Fixture
+
+The repeated fault injection and ownership assertions now live in
+=DirectoryFailureFixture= in the same test-resource library. Test declarations
+select one ordinary slot; no macro, patch language or new runner is introduced:
+
+#+begin_src scheme
+(yuanxu-test-fixture "preparation and rollback failures preserve causes and sibling ownership"
+  (probe (.cc DirectoryFailureFixture failure-phase: 'preparation))
+  (.call probe .verify))
+(yuanxu-test-fixture "body and release failures preserve causes and sibling ownership"
+  (probe (.cc DirectoryFailureFixture failure-phase: 'body))
+  (.call probe .verify))
+#+end_src
+
+The Fixture derives acquisition and release directly from =DirectoryFixture=.
+Its preparation returns a native resource retaining the owned root and adding
+an explicit verification function:
+
+#+begin_src scheme
+(.def (DirectoryFailureFixture @ DirectoryFixture)
+  failure-phase: 'preparation
+  .after-failure: values
+  .prepare:
+  (lambda (workspace)
+    (unless (memq failure-phase '(preparation body))
+      (error "unsupported Fixture failure phase" failure-phase))
+    (.cc workspace
+      .verify: (lambda () (verify-directory-failure workspace failure-phase .after-failure)))))
+#+end_src
+
+=verify-directory-failure= owns the shared injection, exception-identity and
+sibling-directory checks. It acquires its sibling with the existing
+=with-yuanxu-fixture= macro. The broken Fixture transforms the inherited
+release function with native =(.release => observe-release)=, preserving the
+real cleanup path while counting zero releases for failed preparation and one
+for failed body execution. The common cleanup function records exactly one
+owned target before raising the secondary exception. The common assertions
+retain both Error identities, the original wrapper message, the surviving
+sibling file content and successful healthy cleanup of the failed root.
+
+Mutable counters, Error objects and directory observations are created afresh
+inside each explicit verification call. They are not cached on the Fixture
+prototype. Merely declaring the Fixture or retrieving its verification function
+does not inject a failure. A successful acquisition still has the same outer
+root cleanup guarantee when verification raises unexpectedly. The helper is
+private test qualification code, not a production configuration interface.
+
+*** Repeated verification, acquisition isolation and interrupted cleanup
+
+Three further lifecycle cases run both =preparation= and =body= phases. They
+compare actual per-call observations returned by =.verify=, rather than infer
+freshness solely from two successful calls. The private observation object
+contains =owner-root=, =failure-phase=, the caught dual-failure wrapper,
+the two original Error objects,
+=failed-directory=, =sibling-directory=, =release-count= and =cleanup-paths=.
+It is created inside the verification function, not stored on its prototype.
+A normal return occurs only after the original dual-failure checks and healthy
+cleanup assertions pass; sibling cleanup runs through the existing lifecycle.
+
+1. Two calls through the same resource's cached =.verify= function produce
+   distinct observations and primary/secondary exception identities. Their
+   failed and sibling directories differ and are absent afterwards. Both calls
+   report exactly one cleanup target and the phase's release count (zero for
+   preparation, one for body). Their owner remains the same acquired root.
+2. Two nested acquisitions from the same Fixture object have distinct roots.
+   Their observations carry the corresponding owner roots and independent
+   exceptions, temporary paths and counters. Releasing the inner acquisition
+   leaves the outer one alive; both owner roots disappear after their scopes.
+3. The test-only =.after-failure= function slot defaults to =values=. It runs
+   after verifying the dual exception but before healthy deletion of the failed
+   directory. An override records the real observation, verifies that the failed
+   directory and live sibling still exist, then raises an interruption marker.
+   After both scopes unwind, the identical marker reaches the caller and the
+   owner root, failed directory and sibling directory are all absent. A separate
+   control directory and its marker file remain intact.
+
+The checkpoint is deliberately after injection and before recovery, so this
+control cannot pass merely because cleanup had already completed. It exercises
+ordinary exception unwinding, not process-death cleanup. Observation objects
+are private test diagnostics, not production receipts, configuration metadata
+or new source authority. No mutable state is cached in the Fixture's lazy slots.
+
+*** Recovery after checkpoint interruption
+
+Two additional cases run both phases with the existing DirectoryFailureFixture.
+They share =check-interrupted-recovery=, with ordinary higher-order functions
+choosing whether to reuse the resource or acquire the same Fixture again:
+
+#+begin_src scheme
+(def (retry-same-resource _fixture resource verify)
+  (verify resource))
+(def (retry-acquired-resource fixture _resource verify)
+  (with-yuanxu-fixture (next fixture) (verify next)))
+#+end_src
+
+The test's =.after-failure= function interrupts only its first call. Its explicit
+checkpoint counter is local to the test control, shared intentionally to select
+one interruption; it is not the verification's release counter. The first
+interruption is a retained Error object and the catch requires =eq?= identity.
+The nested sibling has already unwound, while the failed directory and its
+=partial/input= content remain under the original acquired owner.
+
+The retry must complete normally. Both observations retain their actual caught
+=failure= wrapper, allowing the shared state check to
+reinspect =Error-irritants= after the retry and require the exact original
+primary and cleanup Error objects. The retry must have distinct exception and
+directory identities, the phase's fresh release count, and exactly its own
+cleanup target. Its temporary directories are gone on return. The interrupted
+call's residual marker must still exist with unchanged contents.
+
+For reacquisition the second owner is acquired while the first remains alive.
+Returning from the second owner's scope removes its root without deleting the
+first root or residual marker. Reusing the same resource keeps its owner alive
+until that resource's scope ends. In both cases final outer release removes the
+original root and residual, while the independent control directory and marker
+remain intact. This tests ownership rather than hiding residuals by eager global
+cleanup or moving them into the next verification's cleanup list.
+
+The caught dual-failure wrapper was added only to the private per-call
+observation; no production diagnostic interface, new Fixture protocol or Loader
+behavior is introduced. Recovery here means a later explicit verification, not
+a retry of a failed assertion, automatic retry policy or process-crash recovery.
+
+The existing source/copy, relocation, cached-parent, source-currentness and
+unselected-branch controls remain unchanged and are rerun with this cleanup
+function slot. No retry, source admission bypass or timeout extension is added.
+
+* Verification receipt
+
+On 2026-10-17 the default host runtime passed five focused files serially through
+=just test-file=, with the unchanged 1 GiB heap fence, 120-second worker timeout
+and inherited native Case policy:
+
+| File under core/t | Cases |
+|-------------------+-------|
+| =service-publication-fixture-test.ss= | 3 |
+| =slot-origin-test.ss= | 6 |
+| =gitea-json-configuration-test.ss= | 4 |
+| =gitea-postgresql-relocation-test.ss= | 4 |
+| =gitea-postgresql-publication-test.ss= | 8 |
+
+All 25 cases passed with =MODULE-OK=, =HARNESS-OK=, final =OK= and no
+error/overflow markers. The native POO dependency remains
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=. This is a focused test-resource
+refactor receipt, not a full-suite or product Loader qualification.
+
+** Double-failure follow-up receipt
+
+On 2026-10-17 the five files above were rerun serially using the default host
+runtime and the same =just test-file= heap/timeout fences after adding the
+=.remove-directory= function slot. The lifecycle suite now has five cases;
+the other suites retain 6, 4, 4 and 8 cases respectively: all 27 passed.
+Every file emitted =MODULE-OK=, =HARNESS-OK= and final =OK= without an
+=ERROR CASE=, =ERROR CHECK=, =ERROR HARNESS=, heap or stack overflow marker.
+The earlier 25-case receipt remains historical evidence rather than being
+rewritten. This follow-up verifies deterministic dual exceptions and cleanup
+scope; it does not claim OS-failure recovery, full-suite acceptance or a new
+Loader integration.
+
+** Failure Fixture consolidation receipt
+
+On 2026-10-17 the five focused files were rerun serially after moving the two
+fault scenarios into =DirectoryFailureFixture=. All 27 cases passed through
+=just test-file= on the default host runtime, retaining the 1 GiB heap fence
+and 120-second timeout. Each file emitted =MODULE-OK=, =HARNESS-OK= and final
+=OK= with no harness/check/case error or heap/stack overflow marker.
+The shared implementation checks both original Error identities, exact cleanup
+targets, release counts and sibling content in both phases. The source, cached
+parent, currentness and lazy-branch controls remain intact. This is a focused
+qualification receipt; the existing runner and product Loader were not changed.
+
+** Repeated verification and interruption receipt
+
+On 2026-10-17 the unchanged final Scheme sources passed all five focused files
+serially through =just test-file= on the default host runtime, with the same
+1 GiB heap fence and 120-second timeout. The lifecycle suite now contains eight
+cases; together with the unchanged 6, 4, 4 and 8 cases this is 30 passing cases.
+The three added cases exercise both failure phases. Every file emitted
+=MODULE-OK=, =HARNESS-OK= and final =OK= with no case/check/harness error or
+heap/stack overflow marker. =git diff --check= also passed.
+
+The controls establish invocation/acquisition isolation and ordinary exception
+unwinding at the explicit pre-recovery checkpoint. They retain original dual
+Error identities and source/copy, parent-cache, currentness and unselected
+branch controls. They do not establish crash recovery or concurrent thread
+safety; no product Loader or shared lifecycle implementation was changed.
+
+** Post-interruption recovery receipt
+
+On 2026-10-17 all five focused files passed serially through =just test-file=
+on the default host runtime with the unchanged 1 GiB heap fence and 120-second
+timeout. The lifecycle suite now has ten cases; the other files retain 6, 4,
+4 and 8 cases, giving 32 passing cases. Each file emitted =MODULE-OK=,
+=HARNESS-OK= and final =OK= without case/check/harness errors or heap/stack
+overflow markers. =git diff --check= also passed.
+
+Both added cases cover preparation and body failure. They verify successful
+explicit reuse/reacquisition after interruption, retained interruption identity,
+original dual-error identities after recovery, fresh verification state, and
+residual cleanup only when the owning outer resource exits. Source attribution,
+parent-cache, currentness and lazy-branch controls remain intact. These are
+ordinary exception and ownership qualifications, not automatic retry policy,
+process-death recovery or Loader integration.

@@ -1,0 +1,186 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow CI/CD Historical Source and Native Constructor Reference
+#+date: [2026-10-15]
+#+property: STATUS historical-reference-not-user-interface
+
+* Reference boundary
+
+This file preserves old source payload and low-level owner/import examples for
+migration auditing only. None is the recommended Scenario user interface or a
+second configuration root. In particular the Case binding, config collector,
+manual import/rename and per-language Check reconstruction below are not steps
+users must copy. Some snippets are earlier proposed partial examples, not valid
+complete configurations. Use [[file:164-funflow-cicd-user-authoring-design.org][the current bounded-scope Scenario design]] instead.
+The original implementation remains unchanged.
+
+* Historical direct-constructor route (superseded authoring surface)
+
+The actual [[file:../../../modules/funflow/config-prototypes.ss][funflow-check prototype]] is exported by
+[[file:../../../modules/funflow/config.ss][the Funflow config interface]]. The following earlier Profile/library recipe used normal Gerbil import. It is
+retained for source comparison; the current design uses bounded module scope for
+Profile authors too. Native imports remain a bootstrap implementation mechanism:
+
+#+begin_src scheme
+;; Upstream authoring, not repeated downstream configuration.
+(import (only-in :agentic-ai-lab/modules/funflow/config funflow-check))
+
+(.def GerbilSchemeProfile
+  build:
+  (.o (:: @ funflow-check)
+    check-name: 'build
+    profile-ref: 'ci/build
+    command-vector: '("gerbil" "build")
+    artifact-outputs: '(build-log)
+    cache-intents: '(gerbil-build-cache)
+    result-protocol: '(read :lines)
+    runtime-mode: 'manifest-handoff
+    durable-task-id: 'task/gerbil-build
+    action-class: 'idempotent))
+
+(.def RustProfile
+  build:
+  (.o (:: @ funflow-check)
+    check-name: 'build
+    profile-ref: 'ci/build
+    command-vector: '("cargo" "build")
+    artifact-outputs: '(rust-build-log)
+    cache-intents: '(cargo-build-cache)
+    result-protocol: '(read :lines)
+    runtime-mode: 'manifest-handoff
+    durable-task-id: 'task/rust-build
+    action-class: 'idempotent))
+#+end_src
+
+No use-module call is required merely to obtain the same already imported Check
+prototype again. Those named upstream Profile symbols and publication shape are
+proposed. Their real native values would be exposed in the Module's profiles
+catalog through the existing source/publication owner. Library definitions must
+not become eager import-all facades; production discovery loads precise owners.
+
+A Rust-like identifier modules::funflow::check has no automatic namespace-path
+meaning in Gerbil. It can be an explicitly bound/renamed Scheme identifier;
+otherwise it is unbound. That spelling alone adds no module occurrence identity,
+selection evidence, Contract admission or Loader behavior. No new path reader or
+syntax is proposed here.
+
+Ordinary user configuration selects a configured Module with its defaults, then
+refines existing objects; it does not also reconstruct each Check from its raw
+proto. Advanced native authors may still create new reusable Checks directly.
+That path requires native source imports and admission, but must not require a
+second use-module call whose only job is retrieving the same constructor.
+If use-module is retained publicly, its added responsibility must be actual
+configured-Module binding/selection/provenance, not duplicate Scheme import.
+
+* Source scope must be real, not just visible spelling
+
+A naked funflow-check name communicates no visible source scope by itself.
+Native Gerbil import can bind its actual origin and give that binding an explicit
+scoped local spelling without new syntax:
+
+#+begin_src scheme
+(import
+  (rename-in
+    (only-in :agentic-ai-lab/modules/funflow/config funflow-check)
+    (funflow-check funflow/check)))
+
+(.def (NativeBuild @ funflow/check)
+  command-vector: '("gerbil" "build"))
+#+end_src
+
+This establishes the lexical binding to the named module export, not an
+authenticated runtime Module occurrence or a complete configured Check. The
+example does not fill all required Check defaults. The slash is a conventional
+identifier spelling; the import declaration supplies its actual binding.
+
+If use-module is used instead, it must provide a usable native Module scope,
+not merely a label alongside unrelated imported symbols. The proposed advanced
+authoring protocol would expose admitted prototype objects on that Module:
+
+#+begin_src scheme
+;; Proposed Module object protocol, not current exported fields.
+(def Funflow (use-module funflow))
+
+(.def (ScopedBuild @ (.get Funflow prototypes check))
+  command-vector: '("gerbil" "build"))
+#+end_src
+
+This explicitly obtains the parent from the bound Module. prototypes.check is
+a proposed protocol entry; current Funflow publication does not expose it on a
+use-module result, and the current result is a Bundle. The owner must implement
+that projection/admission before this route is claimed supported. Verify the
+returned prototype belongs to the admitted source/configured Module; a writable
+origin string or an identifier spelling alone is not a proof.
+
+Do not require both routes just to acquire one prototype. Module binding must
+add actual configured scope, instance/selection provenance and Loader ownership;
+otherwise using native import is sufficient and the extra wrapper is redundant.
+Neither form injects arbitrary lexical symbols automatically. Ordinary Scenario
+users refine existing Module Profile values and need neither raw constructor
+reference; scoped prototype access is for deliberate new-object authoring.
+
+* Historical source comparison: existing wrapper, not the target interface
+
+From [[file:../../../user-interface/custom/my-module/cases/funflow-cicd.ss][the existing CI/CD user configuration]]. Its import is
+:agentic-ai-lab/modules/funflow/config. The payload below preserves every Check and
+Pipeline definition, native header binding and body assignment.
+
+#+begin_src scheme
+(def agentic-ai-lab-custom-my-module-funflow-cicd-case
+  (agentic-ai-lab-funflow-configs
+  (.def (funflow/build @ funflow-check
+                       check-name profile-ref command-vector
+                       artifact-outputs cache-intents result-protocol
+                       runtime-mode durable-task-id action-class
+                       artifact-retention)
+    check-name: 'build
+    profile-ref: 'ci/build
+    command-vector: '("gerbil" "build")
+    artifact-outputs: '(build-log)
+    cache-intents: '(gerbil-build-cache)
+    result-protocol: '(read :lines)
+    runtime-mode: 'manifest-handoff
+    durable-task-id: 'task/build
+    action-class: 'idempotent
+    artifact-retention: 'project-retained)
+
+  (.def (funflow/test @ funflow-check
+                      check-name profile-ref command-vector
+                      artifact-outputs result-protocol runtime-mode
+                      dependency-refs durable-task-id action-class)
+    check-name: 'test
+    profile-ref: 'ci/check
+    command-vector: '("gerbil" "env" "./unit-tests.ss")
+    artifact-outputs: '(test-receipt)
+    result-protocol: '(read :lines)
+    runtime-mode: 'manifest-handoff
+    dependency-refs: '(build)
+    durable-task-id: 'task/test
+    action-class: 'idempotent)
+
+  (.def (funflow/package @ funflow-check
+                         check-name profile-ref command-vector
+                         artifact-outputs result-protocol runtime-mode
+                         dependency-refs durable-task-id action-class
+                         compensation-refs artifact-retention)
+    check-name: 'package
+    profile-ref: 'ci/check
+    command-vector: '("gerbil" "env" "./unit-tests.ss")
+    artifact-outputs: '(dependency-graph-receipt)
+    result-protocol: '(read :lines)
+    runtime-mode: 'manifest-handoff
+    dependency-refs: '(test)
+    durable-task-id: 'task/package
+    action-class: 'compensatable
+    compensation-refs: '(cleanup/package-artifacts)
+    artifact-retention: 'release-retained)
+
+  (.def (funflow/default @ funflow-pipeline
+                         pipeline-name checks metadata)
+    pipeline-name: 'default
+    checks: (list funflow/build funflow/test funflow/package)
+    metadata: '((scenario . funflow-cicd)
+                (authoring-style . gerbil-poo-native)))))
+#+end_src
+

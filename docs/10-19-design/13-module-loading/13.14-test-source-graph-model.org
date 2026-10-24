@@ -1,0 +1,155 @@
+#+title: Test Source Demand and Configuration Graph Admission
+#+language: en
+#+property: STATUS model-and-native-correspondence-in-progress
+
+* Question and scope
+
+One init selection owns one lazy configuration Graph. Discovering one module's
+tests must not resolve every selected publication. Conversely, successful test
+source admission does not establish complete configuration validity. These are
+different consumers of the same selection, not two independently maintained trees.
+
+The implementation boundary is in
+[[file:../../../module-system/building/test-projection.ss][test-projection.ss]] and
+[[file:../../../module-system/building/interface.ss][building/interface.ss]].
+The algorithm model belongs to
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean][ModuleSystem/Graph/TestAdmission.lean]];
+the finite transition model is
+[[file:../../../dev/proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission.qnt]].
+This extends the existing proof projects and their check catalog. It introduces
+no runtime Loader, replacement Graph, test runner or public configuration syntax.
+
+* Algorithm and obligations
+
+The reference algorithm maintains only =seen= and =pending= over an immutable
+dependency function. It removes a pending node, discovers its dependencies only
+on the first visit, and otherwise skips it. A bounded discovery retains its
+remaining frontier when fuel runs out; an unfinished frontier cannot authorize
+source admission. Shared dependencies and cycles do not cause repeated discovery
+of the same node. This does not make cyclic Gerbil imports or cyclic Module
+policies legal: their validity remains a separate native/resolver obligation.
+
+| Obligation | Lean result | Scheme correspondence |
+|------------+-------------+-----------------------|
+| No discovery outside requested dependency reachability | =every_discovered_node_is_demanded=, generalized =discover_stays_inside= | Only requested owners enter =prepare-publication=; the native reader supplies their observed imports |
+| No duplicate first discovery | =discover_preserves_unique_reads= | Existing publication/input caches and native context-identity traversal, not cached admission results |
+| Normal completion discovers exactly the requested transitive closure | =completed_discovery_exact=, using =discover_preserves_coverage= | A consumed dependency frontier may not silently omit a scheduled child |
+| Changed observed dependency fails closed | =changed_dependency_rejected= | Reader source guards compare current bytes; the native private-helper mutation test rejects the old source |
+| Missing captured evidence fails closed | =missing_observation_rejected= | A source producer must record every discovered input before returning admission authority |
+| A bounded incomplete traversal cannot certify completion | =unfinished_discovery_rejected= | No truncated source/dependency result may be presented as complete |
+| Test discovery cannot certify full configuration | =missing_selected_root_rejected=, =failed_configuration_obligation_rejected= | Explicit =selected-graph= demand invokes the existing complete resolver |
+
+The cycle/shared-root and two-independent-owner fixtures are computed examples,
+not premises of the generic reachability/uniqueness proofs. Source admission
+checks the discovered observation set. Proving that every native import was
+discovered remains a separate producer-completeness obligation; assigning the
+name =SourceAdmitted= does not prove that obligation.
+
+* Reuse existing certified mechanisms
+
+=ModuleSystem/Graph/Cache= already uses LeanPoo =ContextSlot= with a certified
+closure/result family at an exact semantic context. Its =changedCutCannotHit=
+theorem is reused as the cache requirement; no second freshness/certificate
+system is introduced. Scheme must still map actual source bytes, package/native
+resolution observations and policy identity into that complete context.
+
+=Selection/Requirements= already rejects missing capabilities and proves origin
+through declared providers. The complete configuration Graph must retain that
+requirement resolution, Feature decisions, conflicts and ordering. A test-file
+list or an empty worklist does not replace those proofs.
+
+Discovery order is not composition or execution order. Quint uses sets to explore
+source reachability, while the existing =GraphOperations= model proves ordered
+operation-fold laws. Neither model turns parent order into task execution order.
+
+* Finite interleaving model
+
+The Quint instance contains two selected owners and their independent private
+dependencies. Both test demand and later explicit full demand use the same
+dependency function, observed-source table and Graph identity. Source revisions
+can change before execution or across the external-effect window. The model
+checks source currentness before acquisition and after completion, models both
+successful and failed effects, and requires fixture release on either outcome.
+Full-demand acceptance additionally requires all selected dependencies and the
+configuration-policy obligation.
+
+The edge-role distinction already exists in =ModuleSystem/Graph/Roles=:
+=gerbilModuleImportEdge= and =profileSemanticRequirementEdge= are different.
+The existing =Schema/Association/Traversal= proves successful ordered parent DFS
+closure and rejects cycles/exhaustion for POO contract ancestry. That remains
+the authority for association traversal. The demand worklist here models source
+observation discovery; it neither replaces that DFS nor changes its cycle policy.
+
+| Invariant | Matched defect instance |
+|-----------+------------------------|
+| =NoUnrelatedExpansion= | =TestSourceAdmission_eager=: test discovery starts from all selected roots |
+| =SameGraphIdentity= | =TestSourceAdmission_secondGraph=: later demand creates a different Graph identity |
+| =CurrentEvidence= | =TestSourceAdmission_stale=: successful effects skip return-time source revalidation |
+| =FailureCleanup= | =TestSourceAdmission_cleanup=: completion retains the fixture |
+| =CompleteConfiguration= | Checked in the positive model; source admission alone does not grant configuration authority |
+
+The finite model treats revisions as exact observed identities, not timestamps
+or assumed collision-free digests. Its four-node, two-version domain does not
+prove source authentication, arbitrary cardinality, termination of macro code,
+runtime fairness, deployment authorization or execution performance. Finished
+states represent one completed boundary; later source changes require a new
+currentness decision, not reinterpretation of a historical receipt as current.
+
+* Consequences for the Scheme design
+
+1. Keep =selection.prepare-publication= and its source cache as the single owner
+   of demanded publication inputs. Test discovery must not request the complete
+   Graph just to obtain an enumeration order.
+2. Keep =tests.selected-graph= lazy and return the original selection's Graph.
+   Full demand must still run the existing dependency/conflict admission.
+3. Cache discovery structure only under its source epoch. Revalidate source
+   evidence at independent effect boundaries. Never reuse acceptance across
+   macro initialization, native callbacks, Ops execution or Nix effects.
+4. A narrow =init.test-spec owners= request checks that projection. Explicit
+   =init.test-current!= remains the aggregate epoch check over acquired suites.
+5. Capture source dependencies from the native reader, not a second hand-written
+   import resolver. Arbitrary test-only/dynamic imports beyond the reader's
+   observed publication closure and adjacent helpers remain a documented gap.
+
+The Lean list implementation is a reference algorithm, not a linear-time claim:
+membership and concatenation can be nonconstant. The existing Scheme hash-indexed
+discovery structures are the intended representation. A future cost proof must
+count discovery separately from repeated mandatory source revalidation and must
+state its hash/key-comparison and finite-closure assumptions. Macro expansion,
+IO and full Graph policy costs are outside the present algorithm proof.
+
+* Validation boundaries
+
+Run the focused Scheme gate from the Core root with
+=just test-file t/module-testing-source-admission-test.ss=. It uses the actual
+source reader and verifies a broken selected sibling stays cold, a private helper
+mutation refuses old evidence, missing Module requirements still fail full Graph
+admission, and explicit Graph identity is shared. The existing
+=t/module-testing-test.ss= regression retains package-effect mutation, fixture
+cleanup, test-file edits and real atomic module execution. Both passed at POO
+=ece6f609357ea918038090559ac051a8d9f3e52f= with natural exit zero and complete harness
+markers. The final narrow gate also checks the exact missing-requirement diagnostic.
+
+Typecheck the Quint source with =quint typecheck dev/proofs/quint/TestSourceAdmission.qnt=.
+The existing proof checker includes its positive case and four named mutants;
+the Lean aggregate imports the new module. Focused Lean verification is
+=lake env lean YuanxuProof/ModuleSystem/Graph/TestAdmission.lean= from
+=dev/proofs/lean/=. This turn does not claim a complete aggregate proof/CI run.
+
+The final focused Quint/TLC run completed the entire finite state space:
+2,815 generated states, 1,045 distinct states, zero left on the queue. All four
+mutants produced their specified invariant violation and a counterexample with
+state counts: eager expansion 7 distinct states, stale evidence 221, missing
+cleanup 170 and second Graph identity 187. Negative cases stop at a violation;
+their counts are not complete-space sizes. Each command retained the existing
+45-second limit and 1 GiB backend heap, using automatically available workers.
+The final model digest is bound in the Lean module and checked by the existing
+proof gate. These are focused checks, not an aggregate receipt or remote CI.
+
+The AWS endpoint still fails after explicitly requesting its first complete
+build Graph, before Schema-transition checks. See
+[[file:../12-contracts-types/12.27-aws-schema-transition-costs.org][the retained native qualification results]].
+These model results cannot turn that failure into a native acceptance result.
+The next correspondence layer, actual SDK-context observations and the
+watchdog signal diagnosis are maintained in
+[[file:13.15-import-and-source-guard-correspondence.org][Native Import and Source Guard Correspondence]].

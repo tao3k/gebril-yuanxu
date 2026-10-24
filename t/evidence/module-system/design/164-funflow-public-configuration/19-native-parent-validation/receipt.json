@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-15",
+  "scope": "domain-free-native-POO-probe-no-module-adapter-no-loader",
+  "poo_flow_head": "7ab549d060c98b9a0997f6f1879da3d0eec4b07d",
+  "native_dependency_pin": "099b381588360a8a49fd772f666a1a00351366f5",
+  "reference_corpus_head": "240695a7461ec2d7fbbad4b83cab86508ec9c748",
+  "object_sha256": "13f43a877db90d9a2aa0df10d7f92be41aecb4be476a63906bbf91b6f6bdf056",
+  "support_sha256": "2781a40293d491985c887731a883d31f0aa606077bd10800c6af2d9e2c47919d",
+  "probe_sha256": "74573b1527ca69b2d16ee1176641924b8ed09bec166d36b977d29e1d8477a501",
+  "native_result": {
+    "exit": 0,
+    "assertions": 44,
+    "log": "native-final.log"
+  },
+  "installed_import_result": {
+    "exit": 70,
+    "log": "installed-import.log",
+    "qualification": "failed-compiled-module-incompatible-not-repaired"
+  },
+  "retained_failures": {
+    "draft-incomplete.log": "draft syntax error, corrected before qualification",
+    "native-run-2.log": "wrong nested identity expectation exposed child-receiver recomputation"
+  },
+  "lean_source_head": "fe81ed8e93d01e67e74e2251b0303d608cbf6685",
+  "project_lean_dependency_pin": "d8adf138948c854e7564234bc046387b4a5ee63b",
+  "lean_toolchain": "leanprover/lean4:v4.34.0",
+  "lean_checks": {
+    "ContextSlot": {
+      "exit": 0,
+      "source_sha256": "3ec719ba32990ff946c3216a6616f356a960f87a3006652a6c931f52adec5218",
+      "log": "lean-ContextSlot.log"
+    },
+    "ContractConsequence": {
+      "exit": 0,
+      "source_sha256": "73a30892a81600dab1bd590a09778c94f57c49daf20d91bcd100dcf1596e5243",
+      "log": "lean-ContractConsequence.log"
+    },
+    "ConstructionCache": {
+      "exit": 0,
+      "source_sha256": "5f7b691b6104ab53bc293ccd833df48b0eb8215afa0ddbc323fc60f2a1eddfbc",
+      "log": "lean-ConstructionCache.log"
+    }
+  },
+  "not_claimed": [
+    "full-Core-evidence-admission",
+    "module-interface-association-adapter",
+    "Loader",
+    "Scheme-correctness-proof",
+    "performance",
+    "installed-package-compatibility"
+  ]
+}

@@ -1,0 +1,373 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.05 Config Languages 04: KCL Multi-Environment Server and Scheme Scenario UX
+#+property: DOCUMENT_ID 11.05
+#+date: [2026-10-16]
+#+filetags: :config-language:comparison:scenarios:kubernetes:design:
+#+property: STATUS source-grounded-comparison-proposed-scheme-no-loader
+
+* Real task and evidence boundary
+
+The [[https://www.kcl-lang.io/docs/0.12/reference/lang/codelab/collaborative][KCL 0.12 collaborative configuration codelab]] is the source, inspected on
+2026-10-16. It supplies a Server schema, baseline, dev/prod differences,
+environment build inputs and golden output files. It is an application-level
+Server configuration example; its output is not itself a Kubernetes Deployment
+or Service. Do not attribute the resource projection proposed below to that
+codelab. Its historical image/version values are retained for a matched case.
+
+The comparison uses the same data fields and types: strings for image/protocol,
+integer replicas/ports, string-keyed labels, and a sequence of port records.
+KCL units normalize to byte counts in its displayed output; the Scheme defaults
+below use those integers directly. Both structures retain the complete server
+record. Existing native POO scope/refinement semantics are distinguished from
+proposed field Contracts, direct dotted assignment and Kubernetes projection.
+No examples were executed for this new document; no manifests were applied.
+The platform code is a reviewable design, not a shipping module API.
+
+The actual upstream [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/pkg/server.k][schema]], [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/base/base.k][baseline]],
+[[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/main.k][dev]] and [[https://github.com/kcl-lang/examples/blob/c15aaa191d2ad250a60d86a8508a9c8fa28a3997/codelab/collaborative/appops/test_app/dev/ci-test/stdout.golden.yaml][golden output]] remain fixed-revision external references.
+The examples repository is not a Agentic AI Lab submodule or build dependency. Read
+the linked upstream files for exact source; the doc snippets are explanatory adaptations.
+
+* Upstream ownership: schema/defaults, baseline and consumer
+
+| Concern | KCL source | Scheme design owner |
+|---------+------------+---------------------|
+| Shape and constraints | pkg/server.k: Server/Main/Resource/Port | Platform/library-owned Contracts and responsibilities |
+| Stable application inputs | appops/test_app/base/base.k | Independent ServerProfile |
+| Environment differences | dev/main.k and prod/main.k | Derived Scenario objects |
+| Output/build fixtures | per-environment kcl.yaml and golden YAML | Selected effective configuration/plan preview and future matched fixtures |
+| Kubernetes resource generation | Not supplied by this codelab | Separate proposed platform projection and resource validation |
+
+Key upstream values from the case are replicas 1, image nginx:1.14.2, main
+container name main, label app=test_app, and an HTTP port 80 targeting 1100.
+Resource defaults are CPU 1, memory 1073741824 bytes and disk 10737418240 bytes.
+The source Port constraint restricts protocol to HTTP/TCP, port to 80/443 and
+targetPort to greater than 1024. The Scheme adapter must enforce these same
+constraints before claiming parity; shape checks alone are insufficient.
+
+* Choose by intent, independently of upstream/downstream ownership
+
+Do not turn the first contribution Profile into a class hierarchy. A core agent,
+team or contribution repository normally authors the same simple surface that a
+user would: ordinary named fields containing values. A shared Profile is a useful
+maintained configuration, not evidence that every author needs to extend a default
+prototype or know the platform's Contract/plan implementation.
+
+This is not a rule that upstream authors only write values or that inheritance
+belongs exclusively downstream. A contributor maintaining thousands of Profiles
+will also derive recipe families, refine business policy and maintain new typed
+consumers when justified. Any author can independently construct an object,
+replace a value, transform an inherited value or extend a prototype. The suggested
+80%/90% simple-configuration share is an illustrative expectation, not measured
+evidence or an architectural quota. Separate authoring intent from ownership.
+
+The contributor's complete declaration for this case is:
+
+#+begin_src scheme
+(.def (ServerProfile @ ServerContract)
+  image: "nginx:1.14.2"
+  labels: (.o app: "test_app")
+  mainContainer:
+  (.o ports:
+      (list (.o protocol: "HTTP" port: 80 targetPort: 1100))))
+#+end_src
+
+When maintaining a production family, that same contributor can legitimately
+reuse the Profile rather than repeat its stable fields:
+
+#+begin_src scheme
+(.def (ProductionProfile @ ServerProfile)
+  replicas: 3
+  image: "nginx:1.14.2-prod"
+  labels: =>.+ (.o env: "prod"))
+#+end_src
+
+Here the Profile is inherited to retain its port/resource conventions; replicas
+and image are still ordinary replacements. labels refinement deliberately keeps
+app. This additional production requirement is not claimed to be the original
+KCL codelab's prod output, which only adds an env label. The same user can also
+construct an independent Profile when no reuse is needed.
+
+ServerContract here is the proposed Contract-directed parent interpretation
+specified in [[file:11.09-contract-directed-service-scenarios.org][module 08]], not already supported by native .def. It expands to
+inheritance of that descriptor's proto plus retained Contract association and
+later admission. The author need not write @ ServerDefaults, resource boilerplate
+or =>.+ in this first Profile. .o only constructs record-shaped values. Omitted replicas/resource/name
+are supplied at the platform boundary, comparable to KCL's schema defaults; they
+are not assignments the contributor must copy. This remains the same POO object
+model, not a raw JSON configuration DSL translated into an unrelated class model.
+The small surface remains domain-governed, comparable to KCL's pkg.Server;
+it is not permission to accept an arbitrary record and guess its consumer later.
+
+The platform/publisher separately associates this export with ServerContract and
+installs the Scenario consumer once:
+
+#+begin_src scheme
+;; Platform integration, not repeated inside each contribution declaration.
+(.def (BaseScenario @ ServerScenario.)
+  server: ServerProfile)
+#+end_src
+
+The full internal defaults/Contracts are in [[file:11.06-platform-server-contracts.org][module 05]]; ServerScenario. and the
+concrete server->plan implementation are in [[file:11.07-server-resource-projection.org][module 06]]. That publishing association
+is still proposed. It must not require each user to name an extra publication
+wrapper or repeat responsibilities. Modules own mechanisms; independent Profiles
+own maintained values; Scenarios select/combine them and their consumers.
+
+The contribution also publishes its helper scope; DataOperations is the ordinary
+value-first data library from module 29, already resolved locally:
+
+#+begin_src scheme
+(def (port-key p) (list (.get p protocol) (.get p port)))
+(def (redirect-to-8443 p) (.+ p (.o targetPort: 8443)))
+
+(def (route-443-to-8443 ports)
+  (with-slots (update-by) DataOperations
+    (update-by ports port-key '("TCP" 443) redirect-to-8443)))
+
+(.def KubernetesHelpers
+  data: DataOperations
+  route-443-to-8443)
+#+end_src
+
+Optional command/args/annotations remain absent as in the case. image is required
+by the platform Contract, not silently defaulted. The bounded reference in module
+05 covers these used fields, not every optional KCL field. Contract associations,
+recursive child-object admission and helper publication belong to platform/library
+integration, not declarations repeated by each contributor or downstream user. Bare port
+objects need no user-specified Port prototype: final element shape/constraints
+come from upstream responsibilities. This admission adapter remains proposed.
+
+* Ordinary users: own the differences, not the infrastructure model
+
+KCL dev input below is a compact adaptation of the source's environment example;
+the build also includes base/base.k. The fields alone are not a standalone
+baseline, and file-input selection is part of its complete authoring cost.
+
+#+begin_src python
+import pkg
+server: pkg.Server {
+    image = "nginx:1.14.2-dev"
+    labels.env = "dev"
+    mainContainer.ports += [{protocol = "TCP", port = 443, targetPort = 1100}]
+}
+#+end_src
+
+Scheme matched desired interface:
+
+#+begin_src scheme
+(def Development
+  (use-module KubernetesHelpers as k8s
+    (with-slots (append) (.get k8s data)
+      (.o (:: @ BaseScenario)
+        server.image: "nginx:1.14.2-dev"
+        server.labels.env: "dev"
+        server.mainContainer: =>.+
+        (.o (ports => append
+                   (list (.o protocol: "TCP" port: 443 targetPort: 1100))))))))
+#+end_src
+
+KubernetesHelpers here means an already resolved local native helper scope
+publishing data.append, not a new Loader name or syntax. Image and env are
+assignments; ports intentionally retains the original list. with-slots is existing
+POO syntax, but this helper publication and dotted assignments remain proposed.
+Only append is selected; no function/Module/Profile catalog is enumerated.
+
+The corresponding production difference retains the baseline image and ports:
+
+#+begin_src python
+import pkg
+server: pkg.Server { labels.env = "prod" }
+#+end_src
+
+#+begin_src scheme
+(.def (Production @ BaseScenario)
+  server.labels.env: "prod")
+#+end_src
+
+Ordinary scalar/label edits do not require use-module/with-slots at all. An author
+wanting an exact complete ports list may assign it directly; appending is only
+appropriate when retaining upstream ports is part of the requirement. Do not
+require a generic function tutorial or explicit =>.+ at every path ancestor.
+
+* Native expansion reference: keep machinery out of normal configuration
+
+This is the ordinary POO expansion specified for Development, not captured output
+from an implemented direct-assignment expander. It is supplied so reviewers can
+check preservation of intermediate objects without asking users to author it:
+
+#+begin_src scheme
+(def Development
+  (use-module KubernetesHelpers as k8s
+    (with-slots (append) (.get k8s data)
+      (.o (:: @ BaseScenario)
+        server: =>.+
+        (.o image: "nginx:1.14.2-dev"
+            labels: =>.+ (.o env: "dev")
+            mainContainer: =>.+
+            (.o (ports => append
+                       (list (.o protocol: "TCP" port: 443 targetPort: 1100)))))))))
+#+end_src
+
+The shared server prefix must become one inherited refinement, not competing
+overrides. labels.app, mainContainer.name, replicas and resource defaults remain
+inherited. The final ports list contains two port objects in source order.
+The existing path adapter supports dotted object refinement; direct dotted leaf
+assignment and mixed-prefix lowering shown above still need qualification.
+
+* Complex extension: change a selected existing port without copying its fields
+
+Only now is explicit inheritance justified: a maintained configuration is being
+reused. This is an additional requirement beyond the KCL codelab: a team derives the dev
+configuration and redirects only TCP/443 to 8443, retaining HTTP/80 and any other
+upstream fields. It is not a requirement imposed on ordinary users.
+
+KCL construction using its documented comprehension and right-hand dict union:
+
+#+begin_src python
+# _dev is the effective server value from the dev configuration above.
+assert len([p for p in _dev.mainContainer.ports if p.protocol == "TCP" and p.port == 443]) == 1
+redirected = _dev | {
+    mainContainer = _dev.mainContainer | {
+        ports = [
+            (p | {targetPort = 8443}) if p.protocol == "TCP" and p.port == 443 else p
+            for p in _dev.mainContainer.ports
+        ]
+    }
+}
+#+end_src
+
+This is a derived design example, not code from the codelab, and has not been
+executed. Schema preservation must be checked/re-admitted after this expression;
+dict union alone is not proof of a valid Server. KCL can publish this policy as
+a function instead of requiring each user to repeat the comprehension.
+
+Scheme contribution owns meaningful functions and publishes them in the same
+bounded helper scope. Generic data.update-by remains an internal dependency:
+
+#+begin_src scheme
+(def TeamDevelopment
+  (use-module KubernetesHelpers as k8s
+    (with-slots (route-443-to-8443) k8s
+      (.o (:: @ Development)
+        server.mainContainer: =>.+
+        (.o (ports => route-443-to-8443))))))
+#+end_src
+
+This updates only the selected targetPort. It uses existing native object
+refinement inside a named function, not user-written lambdas or an inline patch
+language. No TLS or ingress behavior is inferred from a port number.
+Missing/duplicate protocol+port identity is rejected by update-by. The contribution uses data.update-by internally and must publish its own
+source-qualified helper association; procedure
+identity is not origin authentication. Final Port/Server admission remains required.
+
+* Effective configuration, proposed resource plan and execution
+
+Expected effective configurations (partial inspection view, not a manifest):
+
+#+begin_example
+Development:
+  server.image: nginx:1.14.2-dev
+  server.labels: {app: test_app, env: dev}
+  server.mainContainer.ports:
+    [{protocol: HTTP, port: 80, targetPort: 1100},
+     {protocol: TCP, port: 443, targetPort: 1100}]
+Production:
+  server.image: nginx:1.14.2
+  server.labels: {app: test_app, env: prod}
+  server.mainContainer.ports:
+    [{protocol: HTTP, port: 80, targetPort: 1100}]
+TeamDevelopment:
+  server.image: nginx:1.14.2-dev
+  server.mainContainer.ports:
+    [{protocol: HTTP, port: 80, targetPort: 1100},
+     {protocol: TCP, port: 443, targetPort: 8443}]
+All inherit replicas=1, mainContainer.name=main and resource defaults.
+#+end_example
+
+A platform library could project those values into Deployment and Service data.
+This is additional Scheme design, not a KCL source output or an implemented
+Kubernetes consumer. A proposed inspection summary for TeamDevelopment is:
+
+#+begin_example
+status: projected-unadmitted
+resources:
+  Deployment/test-app:
+    replicas: 1
+    image: nginx:1.14.2-dev
+    labels: {app: test_app, env: dev}
+    containerPorts: [1100, 8443]
+  Service/test-app:
+    selector: {app: test_app}
+    ports:
+      [{name: p-80, protocol: TCP, port: 80, targetPort: 1100},
+       {name: p-443, protocol: TCP, port: 443, targetPort: 8443}]
+#+end_example
+
+The summary is not a complete Kubernetes manifest. The summary applies an explicit naming policy:
+application identity test_app becomes test-app for resource metadata names while
+the app label retains test_app. That mapping must remain consistent in references.
+HTTP is an application protocol in the codelab, not a Kubernetes Service transport
+enum: the proposed mapper explicitly maps HTTP/TCP to TCP and rejects unsupported
+values. It derives selector labels, named Service ports and unique container ports
+from the same effective server. Defaults for exposure, resource quantity mapping,
+naming, APIs and namespace are platform responsibilities, never silent assumptions.
+
+Read only the selected Scenario's effective server, admit its final fields and
+nested ports, project resources, then validate the resource graph and manifest
+shape. [[file:11.06-platform-server-contracts.org][The concrete Contract code]] and [[file:11.07-server-resource-projection.org][projection/link checks]] now define
+this internal sequence instead of leaving those names as opaque helpers. Cross-resource selector/port agreement and naming/quantity policies require
+separate checks; a Server Contract alone cannot prove them. Only successful
+configuration, linkage and full resource-schema admission permits admitted-preview
+for those exact values. The module 06 reference checks configuration/linkage but
+leaves resource-schema validation unchecked, so its output intentionally remains
+projected-unadmitted. Applying resources is a distinct explicit runtime action, excluded here.
+
+If an upstream projection was previously forced, a derived Scenario must compute
+its own projection from its final server receiver. Do not capture a parent's
+resource list before subclassing. Existing POO receiver/cache tests support the
+semantic requirement, not this unimplemented Kubernetes projector. Mutated inputs,
+changed helpers or source revisions invalidate reuse; no performance claim follows.
+
+* Disclosure boundary and reflection
+
+This single-server case is not an architecture for a thousand-service Scenario.
+See [[file:11.08-profile-families-and-service-composition.org][Profile families and service composition]] for the separate selected-graph,
+dependency, identity and demand obligations. The current code must not be claimed
+to provide automatic inter-service endpoint binding or global graph admission.
+
+| User intent | Visible interface | Keep upstream/internal |
+|-------------+-------------------+------------------------|
+| Change image/label/replicas | Assignment to named fields | Contract definitions, MOP, proto lookup, recursive objectification |
+| Retain ports and add one | One selected data function and record value | Catalog loading, generic helper bindings, context propagation |
+| Modify an existing port by meaning | Named business function, native => | Key traversal/duplicate policy implementation |
+| Maintain a new shared configuration type | Native prototypes and Contracts | Not necessary for ordinary app configuration |
+| Change Kubernetes projection/consumer behavior | A separately admitted platform extension | Not an ordinary image/port field or function injection |
+
+The KCL case already offers a short app-centric interface and tested environment
+organization. Scheme must not claim better UX solely because native POO is more
+general. Current Scheme setup and nested port construction remain longer; the
+projected simpler dotted assignments are not implemented. Field discovery should
+show actual defaults, assignment versus append guidance, valid protocol/port
+values, meaningful helper exports, origin and admission/preview status without
+calling task functions. Exported helpers need documented signatures and cost.
+
+KCL also supports reusable functions, so compare equivalent maintained policies,
+not inline KCL algorithms against prebuilt Scheme helpers. Library authors need
+Contracts, safe extension and maintainable consumers; ordinary users should not
+see specializers, method bundles, obligation plumbing, source records or projection
+assembly. Do not expose those merely to demonstrate language power.
+
+Only the chosen environment and needed helper/field getters should be demanded;
+selection metadata may be read without building every Scenario. Scope capture
+does not invoke helpers. Port list operations traverse the selected list; they
+must not enumerate every Profile or force unrelated configuration branches.
+Pure functions and immutable receiver/generation caches remain premises. The new
+example has no demand-counter or cache qualification yet.
+
+This document adds research/design only. Pending work includes real Contract
+associations, dotted assignment/mixed-prefix support, source-qualified helper
+publication, callable discovery, a complete resource projector, matched environment
+golden tests and final admission/preview integration. No Loader is connected.

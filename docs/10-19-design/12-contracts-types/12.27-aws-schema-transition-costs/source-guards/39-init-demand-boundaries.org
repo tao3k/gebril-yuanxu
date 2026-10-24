@@ -1,0 +1,196 @@
+#+title: Init Import, Namespace Discovery and Publication Demand
+#+language: en
+#+property: STATUS native-demand-qualified-capacity-refused
+
+* Problem and scope
+
+The intermediate 380-publication refusal in [[file:38-live-witness-replay.org][live witness replay]] is a failed
+time-budget qualification, not an established heap capacity. Removing repeated
+DFS suffix work did not reduce total CPU or physical source reads. A scalable
+Module system must also separate importing an init, enumerating its namespace,
+evaluating role declarations and admitting a complete selected Graph.
+
+This change addresses the first two boundaries. It does not claim that forcing
+one thousand real declarations is now cheap or that Reader contexts can be
+discarded. Business scope, test execution and build execution remain separate
+demands over the existing selection.
+
+* Existing mechanisms and concrete changes
+
+** Importing init
+
+=module-system/building/interface.ss= previously statically imported the source
+linker, build projector and build artifact owner. Consequently a consumer that
+only imported the generated init bindings acquired those native dependency
+closures before requesting their values.
+
+The owner now obtains those exact native bindings on demand, using the same
+=delay= / private =make-top-context= / =eval-syntax= pattern already used by
+=testing-executor=. The promises retain functions, not Graphs, source approvals,
+publication results or an additional module registry. Build and clean still
+invoke their existing implementations. The public init surface is unchanged.
+
+The hygienic init expansion ends in =(void)=. Its internal =defvalues= must not
+become the seven-valued result of the native source module's runtime promise.
+This matters for an interpreted module containing only import and =yuanxu!=.
+No user binding, runner or public syntax is added.
+
+** Enumerating a namespace
+
+=source/link.ss= previously constructed =module-publication-reader= before
+constructing the directory Context. That constructor imports SDK bootstrap
+roots and discovers their source support. Thus even a namespace-only consumer
+paid for compiler support which no publication had requested.
+
+The same selection now owns a reader initialized by the first publication
+operation. Directory/init observation and namespace reflection do not create
+it. After creation, every existing reader guard continues to run.
+
+Demanding a namespace still imports the linker and its native dependency
+definitions, including the Reader definition. Deferring that constructor is
+not the same as eliminating every cold import from namespace access. Importing
+init itself excludes those owners from its static dependency closure.
+
+The Context's =publication-inputs= and =publication-preparation= fields are
+forwarding procedures. Merely verifying that these fields are procedures must
+not construct the Reader. An initial implementation left these as computed
+reader references; the native namespace test detected that the shape Contract
+itself forced construction. The test is retained and the procedures defer the
+actual call instead.
+
+* Guard ownership
+
+Before a reader exists, there are no reader-owned publication observations to
+validate. Directory/init currentness remains mandatory. The first reader
+construction is bracketed by that original Context guard because native SDK
+bootstrap can initialize code. A changed location cannot acquire a publication
+through the delayed constructor. Once a reader exists, the original complete
+reader guard precedes the Context guard as before.
+
+The change does not narrow an existing reader's source support. It does not
+replace original read tokens, approve a cached callback result, discard SDK
+contexts or weaken the open callback path. Candidate-local support and the
+complete pre-publication Graph check remain the existing owners.
+
+* Scheme correspondence gates
+
+=t/module-init-import-test.ss= uses native imports and fixture cleanup:
+
+1. Traverse the actual imported init's native Context closure. Reader, linker,
+   build projection, build artifacts and testing execution must be absent.
+   This is an import-closure test, not a claim that those libraries cannot be
+   loaded elsewhere in the host process.
+2. Import an init before its Module directory exists; inert bindings must be
+   available without silently accepting a missing Module on later demand.
+3. Enumerate an auto namespace whose unrequested role bodies deliberately
+   fail if evaluated. Reflect the same namespace and create an inert Module
+   view without compiler-closure requests, publication reads or role execution.
+4. Change init after namespace discovery; the next namespace demand must refuse
+   the old source snapshot. Fixture teardown verifies its directory is absent.
+
+=t/module-declaration-calibration-test.ss= and the thousand-declaration gate
+still execute real role bodies through =init.modules.<owner>.tests= and the
+existing Ops =.run=. Namespace success cannot substitute for these gates.
+
+* Formal correspondence and limits
+
+The existing Quint =TestSourceAdmission= owns finite request, source-change,
+full-Graph demand and failure schedules over one Graph. =ReaderEffectSupport=
+owns the counterexample to treating an arbitrary initializer's imports as its
+complete effect support. Those responsibilities remain distinct from Lean's
+=ImportCorrespondence= support projection and =SourceClosureWork= guard-coverage
+and work bounds.
+
+These models do not prove Gerbil's import timing, module runtime cardinality,
+native initialization effects or heap behavior. The new native gates establish
+the missing correspondence for init import and namespace demand. No model
+receipt is reclassified as a thousand-module performance result.
+
+* Measured qualification
+
+The two native init-demand cases pass with MODULE-OK, HARNESS-OK and final OK.
+The actual init Context closure has 258 contexts and excludes the five eager
+owners asserted by the test. The namespace case performs five physical source
+reads, zero compiler-closure requests and zero role executions. Its immediately
+preceding implementation performed 240 reads and constructed the Reader during
+the shape Contract check. That refused run is not erased or described as a
+successful baseline. This is a namespace-path comparison, not a capacity claim.
+
+The real sixteen-declaration gate also passes through the init tests object's
+=.run=: all 64 bodies expand, compile and evaluate once, the same Graph is
+returned, business scopes remain cold, changed init is refused and the fixture
+is removed. At Graph readiness it records 6374 physical reads, 7030ms Case CPU
+and 46611ms elapsed. The collected process live-byte sample with the Graph held
+is 503625368 bytes. These are process totals, not exclusive Reader retention;
+neither memory nor end-to-end speedup is established by this single run.
+
+The thousand-declaration gate completes 486 publications and begins module-486
+before Ops termination and outer exit 137. Its last completed record is
+532533ms elapsed, 132800ms CPU and 182364 physical reads. There is no heap
+overflow marker, Graph-ready result or final retained-byte sample. The fixture
+directory is absent afterwards and a process query finds no surviving worker.
+The existing budget and heap limit are unchanged. More completed declarations
+than the previous 380 run do not establish a capacity improvement.
+
+At 384 publications, preparation spans charge 46463858 CPU microseconds;
+native body compile spans charge 130679 and eval spans 284990. Spans overlap:
+preparation includes other work and must not be added to replay/guard totals.
+The steady physical-read increment remains 375 per publication. These results
+locate the next investigation in authoring preparation and its metadata
+dependencies rather than establish compilation as the dominant cost.
+
+The eight candidate-stage native cases pass, including source/Contract policy
+changes, the complete final boundary after foreign effects, and full guards
+around open Context calls. Lean's two focused correspondence targets build
+successfully (48 jobs). Quint typechecks the five selected ReaderEffectSupport
+entries; backend verification times out under the unchanged 45-second case /
+five-second output policy. No new complete Quint receipt is claimed.
+
+Seven public admission/publication cases also pass: final child identity after
+parent caching, exact Contract/Context references, Schema/source changes and
+failed publication preserving the prior value. They use the production Core
+producer with small Schema fixtures, not a new real AWS provider integration
+receipt. The independent real TERM test passes and releases both nested
+fixtures; a subsequent fixture still acquires and releases normally.
+The two candidate-metadata cases separately pass: initialization scratch is
+excluded from enduring requirements, while actual authoring policy and Module
+Contract edits refuse an earlier candidate before replacement obligations run.
+
+* Next capacity boundary
+
+The user-facing benefit is cheaper discovery without extra declarations:
+authors still select Modules in init and consumers use the existing namespace
+and tests objects. They do not configure reader factories or maintain source
+guards. The cost of our richer admission must be paid where the checked value
+is needed, not imposed merely because a contribution exists in the catalog.
+
+Complete publication demand still expands actual Scheme roles and retains
+their live native bindings. It still checks the interpreter's real source
+support. The remaining work is to attribute that demanded path and prove which
+shared support can be checked once within a pure operation, without carrying
+approval across initialization or an open callback. Context release requires
+a genuine non-escape/lifetime argument, not a count of receipts or imports.
+
+Compare with the maintained [[file:../../../../20-29-ecosystem-research/20-nixos/20.06-laziness-admission-and-cache.org][NixOS laziness research]]: imported definitions and
+requested configuration values are different costs. A Module catalog's size
+is not a measurement of fully evaluated role bodies, but that distinction does
+not excuse excessive per-declaration work.
+
+* Focused reproduction
+
+Use the repository-locked source environment without installed Core binaries;
+run the native entries serially through the heap-fenced Just recipe:
+
+#+begin_src sh
+just test-file t/module-init-import-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/admission-checked-publication-test.ss true
+just test-file t/execution-cancellation-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+#+end_src
+
+The last command remains a failed capacity gate. Preserve its refused result
+separately from the successful bounded tests. Raw logs and generated model
+outputs are local artifacts, not maintained documentation or committed inputs.

@@ -1,0 +1,204 @@
+#+title: 32.32 Native Read Issuance, Transient Misses and Metadata Routes
+#+language: en
+#+startup: overview
+
+* Question and evidence boundary
+
+[[file:32.30-checker-identity-and-ownership.org][32.30]] demonstrates why checker identity alone is insufficient.
+[[file:32.31-selected-metadata-route.org][32.31]] qualifies the native metadata dispatch route but cannot authenticate
+an unregistered cache miss. This follow-up separates *issuance* from value-cache
+membership. It does not introduce a user purity annotation, Loader integration,
+manual Evidence objects, or a requirement to cache a missing value.
+
+The producer baseline is gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=; the consumer baseline is Core
+=80e2e74022c9c4053445475402856c5f369aec48= plus concurrent changes. LeanPoo is
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. Qualification uses the default Gerbil
+SDK =1cfb032.patch618d76f9eb72= and this workspace's dependencies. Results below
+must distinguish the isolated candidate from installed producer changes.
+
+* One native issuer, two record lifetimes
+
+Persistent reads remain in the receiver's read table. A transient cache-miss
+record remains absent from both that table and the value cache. Both are born
+through the same private native mint, which automatically associates the actual
+record with its original payload-verifying closure.
+
+The raw seven-argument =make-slot-read= remains callable, but does not mint an
+association. The mint, query/bootstrap minting helpers, route checker and
+unchecked native currentness body are not public module exports. Merely hiding
+the bottom constructor while exporting a query mint would leave a signing oracle.
+
+The issuer keeps an identity table with weak keys AND weak values. The record
+strongly retains its birth closure, which captures the original record identity,
+receiver, key, revision, instance, value, checker identity and selected dependency
+identities. Verification compares the table's original closure with the current
+record-carried closure *before invoking it*. A replacement closure that simply
+returns true must never execute. A borrowed closure belongs to another token.
+This avoids treating a reflectively mutable private struct as a trust anchor.
+
+The weak association is not a read cache. Its lifetime obligations require runtime
+GC controls: a live record must retain its authenticator, and an unreachable
+transient record/closure cycle must not keep its receiver alive through a global
+root. Lean's value model does not prove the Scheme collector's implementation.
+
+The native identity gate (inside the issuer's lexical scope) is:
+
+#+begin_src scheme
+(def (issued? read)
+  (and (eq? (read-runtime.object-class read) record-class)
+    (let (birth (read-runtime.slot-ref read 'birth))
+      (and (procedure? birth)
+           (eq? birth (hash-get issued read))
+           (birth read)))))
+#+end_src
+
+The =issued= table is created by the native mint; it is not caller-supplied.
+The ordinary public currentness entry remains:
+
+#+begin_src scheme
+(def (object-read-current? read)
+  (and (object-read-issued? read)
+       (begin (require-object-read-route! read)
+              (object-issued-read-current? read))))
+#+end_src
+
+* Replay and order
+
+Replay authenticates the complete selected identity-based dependency graph
+before its first observer call. It then performs native currentness checking and
+observation in DFS preorder, and revalidates after observers. Each native check
+first authenticates the record and validates the actual metadata route. It never
+invokes a caller-supplied =current?= procedure as an authority.
+
+The route inspection reads runtime metadata directly: exact wrapper and backend
+classes, wrapper =ref= identity, backend hash/equality identities, no backend lock,
+and the bounded key shapes emitted by the audited producer. It executes no
+selected getter and does not reconstruct a cleared cache. Legitimate custom hash
+implementations require separate qualification; this is an explicit supported
+runtime boundary, not inferred purity.
+
+For authentic graphs, the intended currentness/observation order remains DFS.
+Authenticating the whole graph is an additional entry policy: a fabricated child
+can be rejected before an otherwise earlier stale-root diagnostic. No claim of
+universal diagnostic equivalence for malformed fabricated inputs is made.
+
+* Callback gap and limits
+
+A changed checker payload or metadata route must be rejected before the next
+native check; final revalidation catches persistent changes made by an observer.
+It does NOT prove arbitrary observer history read-only. An observer may mutate
+external state and restore it before all endpoint comparisons. The separately
+constrained source-observer boundary and external conditional-commit assumptions
+from [[file:32.29-constrained-return-tail.org][32.29]] remain necessary. No finite number of endpoint checks certifies an
+arbitrary callback's absence of effects. Unsafe access to closure environments,
+issuer internals, runtime hash primitives, concurrent unguarded writes or FFI is
+outside this supported serial trust boundary.
+
+* Actual consumer chain
+
+The Core regression uses the existing ServicesFixture to publish the real
+Gitea/PostgreSQL Scenario. That fixture supplies temporary source files and a
+reader/link environment; it does not sign reads. Both independent port
+contributions remain present. With the parent plan cached at 5432, a child
+configuration changes PostgreSQL to 5433; normal default-following must produce
+both final endpoints at 5433 on cold and warm admission. Responsibility evidence
+must retain both child obligations and the final configuration identity.
+
+An explicit Gitea port 5440 is rejected, as is assigning the cached parent plan
+to the child. The unchanged parent retains its original plan identity and 5432.
+Changing the selected JSON baseline must still fail with configuration-source
+currentness before returning an accepted result. Unselected error-valued slots
+remain unforced. A separate permissive-domain probe injects a fabricated record
+into actual SourceAdmissionContract.; it is a hostile-input fixture, not the
+production Scenario's contract policy.
+
+* Formal correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean][IssuedRead.lean]] proves mint authenticity, rejection of public construction,
+borrowed identity and changed payload, whole-selected-closure authenticity,
+transient issuance independent of cache registration, association identity before
+payload verification, and preservation of route, both requirements and child
+ownership on acceptance. Its explicit private-state-corruption witness records
+the trust limit; it is not a claim that arbitrary record-field edits authorize a
+new native association.
+
+[[file:../../../dev/proofs/quint/IssuedRead.qnt][IssuedRead.qnt]] models source-first diagnostics, persistent/miss issuance,
+borrowed and displaced closures, payload tampering, a forged dependency, route
+replacement, and observer-time changes. Mutants remove issuance, full-closure
+checking, route protection or final checking; force miss registration; drop the
+second requirement; substitute the parent plan; or corrupt issuer-private state.
+A positive acceptance witness prevents vacuous success by rejecting everything.
+
+In the Lean model, =Read.birth= denotes the issuer-private projection, not the
+reflectively writable Scheme =birth= field. The =associated= lemmas establish
+the identity gate required before that projection is authoritative. Connecting
+the two is still an implementation-correspondence obligation, exercised by the
+native forgery/closure-substitution controls; it is not a verified compiler.
+
+This is a correspondence model, not extraction or a proof of the Gerbil compiler,
+GC, arbitrary callbacks, filesystem atomicity or external deployment safety.
+
+* Qualification results
+
+The local producer source changes are installed in the workspace's actual
+=gerbil-poo= checkout. No dependency revision, branch or Loader is changed.
+The exact producer source cut is recorded in
+[[file:32.32-producer-source.sha256][32.32-producer-source.sha256]]; this includes the build graph, the private
+=read-route.ss= kernel module, issuance/replay, unit inventory and documentation.
+This is a local worktree implementation, not a remotely published dependency or
+an exact-head CI claim.
+
+| Gate | Result and boundary |
+|------+---------------------|
+| Initial isolated producer | 10 cases pass, including both weak-GC controls and callback-time route replacement |
+| Existing isolated read suite | 11 cases pass, including bootstrap, cold/hot/inline/cached reads and lazy branches |
+| Initial actual Core consumer | 2 cases pass: hostile-record probe and real two-party Gitea/PostgreSQL admission |
+| Lean | 172 jobs; 5747 declarations audited; standard Lean axioms only; 13 selected IssuedRead theorems |
+| Quint | All 165 model sources typecheck; 10 IssuedRead outcomes, including expected negative/acceptance witnesses |
+| Formal source currentness | 268 bound source/receipt rows inspected after the accepted run; no current file drift |
+| Formal package build | Standard library build exits 0 after the local-class correction and bounded resume |
+| Installed producer | 10 issuance cases and all 11 original read cases pass using its compiled checked inventory |
+| Fresh Core + installed producer | 2 cases pass with only the rebuilt Core closure selected; no isolated producer binaries |
+| Final installed Core consumer | 2 cases pass through the ordinary default workspace path, without temporary load paths |
+
+Every accepted runtime run requires =MODULE-OK=, =HARNESS-OK=, final =OK= and
+natural exit 0 with no harness/heap/stack failure markers. Focused Scheme tests
+run serially through existing heap-fenced Just recipes. No timeout is widened.
+The rebuilt Core consumer closure is also available as isolated compiled
+artifacts; no frozen producer snapshot is substituted for the installed gate.
+
+Earlier failures remain outside Git under
+=/private/tmp/core-issued-read-20261018=:
+
+- the first runtime run exposed the incorrect variadic struct initializer;
+- two Quint aggregate runs rejected bound-source changes during concurrent work;
+- the standard package compilation rejected a local =route= class with
+  =unknown class=. Moving that private struct to a lower kernel module fixes
+  the standard build rather than disabling compiler optimization;
+- the strict interface-reuse gate correctly refused the new import structure.
+  Core compilation checkpoints were invalidated and the consumer chain rebuilt;
+- the installed consumer initially found one stale =module-prelude.ssi= still
+  requesting the old public mint helper. The corresponding actual source was
+  recompiled against the private-mint interface; the helper was not reexported;
+- the default consumer then crashed in the old =source~0.o19= image, while
+  fresh =source~0.o1= had been compiled. Fresh Core plus the installed producer
+  passed both cases. Renumbering that binary failed because Gambit encodes the
+  generation in its entry symbol. Stale generations of this one generated
+  module were quarantined, not deleted or treated as valid current code;
+- bounded compilation/build attempts that timed out are retained as timeouts,
+  not qualified passes. Successful module checkpoints/build outputs support the
+  subsequent bounded resume.
+
+Historical 32.30/32.31 unsafe witnesses remain pinned to their original producer
+and have not been rewritten to accept the repaired behavior. This focused gate
+is not a full Core/producer suite or a benchmark. Source-observer history,
+external atomicity, unsafe reflection and general concurrent mutation remain
+explicit limits; they are not discharged by the new issuer association.
+
+* Follow-up correspondence
+
+[[file:32.33-issuer-projection-correspondence.org][32.33]] derives the Birth input from actual registry/environment inspection,
+adds constructive native/public allocation laws and independently checks native
+Scheme observations with Lean. Its source manifest and runtime receipts supersede
+this section's local implementation cut; the historical results above are retained.

@@ -1,0 +1,410 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Contract and Generic Publication Wiring
+#+date: [2026-10-15]
+#+property: STATUS declarations-implemented-loader-adaptation-proposed
+
+* Local publication update
+
+[[file:164-funflow-local-publication.org][Local Funflow publication]] now exposes prototypes and the complete Gerbil Profile
+through native getters, without the provider/owner crossing below. The real
+local scope has a prototype-only factory view and no domain contracts getter.
+The generic APIs below remain implemented, while their authenticated Loader and
+full domain-admission wiring remains future integration.
+
+* Connection to the complete upstream/downstream design
+
+The [[file:164-funflow-cicd-user-authoring-design.org][complete configuration design]] defines FunflowModule., full Check defaults,
+the lexically bound Pipeline and downstream path-slot refinements. This companion
+specifies the proposed Contract and Generic wiring instead of leaving that
+connection as a responsibility table. The Core declaration APIs below now have
+local source-runtime and source-compilation evidence. The concrete Funflow
+Loader/admission bridge functions remain proposed, so the complete product
+snippet is not yet an executable integration. The native receiver probe is
+separate evidence.
+The governing rules are [[file:44-current-project-programming-style/02-poo-dispatch-and-extension.org][Style 02]], [[file:44-current-project-programming-style/03-functional-kernel-and-runtime-projection.org][Style 03]] and [[file:44-current-project-programming-style/05-macro-phase-and-lowering.org][Style 05]].
+
+Bootstrap/source-role owners supply canonical language/Core bindings internally;
+Profile/Scenario authors continue to use the bounded Module scope. The CLOS
+declaration bindings below come from Core's canonical facade; define-type and native
+slot/Contract generics use their canonical MOP/Core bindings. Do not confuse
+Core CLOS .defgeneric with the native MOP slot .defgeneric that routes through
+a descriptor's .admit/.classify/.obligations slot. No import plumbing is imposed
+on downstream users.
+
+* Publication families and independently extensible resolver axis
+
+These native prototypes are defined before the typed FunflowOwners declarations
+in the main design. They provide nominal publication/resolver identity rather
+than a Class/record alternative to POO. Configuration slots are inherited with
+ordinary native semantics. Provider methods remain owned by integration bundles.
+
+#+begin_src scheme
+(.def Publication.
+  role: #f
+  relative-path: #f
+  exports: '())
+(.def (PrototypePublication. @ Publication.))
+(.def (ProfilePublication. @ Publication.))
+
+(.def SourceOwnerResolver.)
+(.def (LoaderOwnerResolver. @ SourceOwnerResolver.)
+  backends: '())
+#+end_src
+
+SourceOwnerResolver is the provider axis. PrototypePublication/ProfilePublication
+are the publication-kind axis. Resolver providers can vary independently of
+publication kinds; a new provider contributes its own admitted methods rather
+than extending a provider-name switch. LoaderOwnerResolver's configured backends
+reuse existing Loader backend values; an empty template alone does not establish
+runnable loading. Nominal ancestry alone never proves source ownership.
+
+* Declaration-layer convergence: three bounded changes
+
+The target upstream interface uses the existing .defgeneric/.defmethod surface
+and a private defrules frame. Business owners do not hand-maintain specializer
+lists, invocation lambdas or method-registration calls. This section replaces
+the previous loader-owner-export-method function/factory recipe; low-level
+construction below is an expansion reference only, not a competing authoring API.
+
+| Declaration item | Existing kernel | Declaration-layer state |
+|------------------+-----------------+-------------------------|
+| (argument (prototype expression)) | native prototype specializer and C4 dispatch already exist | parser IR and lowering implemented in the current Core working tree; focused validation recorded separately from integration |
+| (protocol expression) on .defgeneric | generic-function protocol and bundle identity admission already exist | implemented grammar/IR/lowering; lexical protocol identity preserved, existing default retained when omitted |
+| .defmethod forms inside .defmethod-bundle | checked method objects and explicit bundle composition already exist | implemented hygienic deferred context; methods remain inert until explicit composition, standalone declarations still register immediately |
+
+This is an extension of existing declarations, not a new DSL. The native
+clan/poo/mop slot .defgeneric remains the one-receiver protocol; Core's CLOS
+.declarations own genuine multi-argument dispatch. Keep their canonical lexical
+bindings explicit in implementation owners; do not overload class/prototype
+identity by guessing from variable names or object shape.
+
+** Implemented declarations: local validation boundary
+
+The Core working tree implements all three declaration changes. Prototype
+annotations reuse native C4 applicability. Generic protocol expressions are
+stored as syntax in declaration IR and evaluated once in generic construction.
+A hygienic syntax parameter lets .defmethod-bundle collect direct or privately
+defrules-expanded .defmethod values without looking up/registering the Generic.
+Method bodies reset that context so declarations explicitly executed inside a
+method keep normal immediate-registration behavior. Inline generic methods also
+retain their existing immediate semantics.
+
+Validation used pinned gerbil-poo source
+099b381588360a8a49fd772f666a1a00351366f5 and the current Core checkout in an
+isolated GERBIL_PATH/GERBIL_LOADPATH. No package installation/repair, dependency
+pin or C4/dispatch kernel change was needed. Final source hashes were unchanged
+across the complete runtime test run. The harness checks test-result-ok? and
+exits nonzero on failure; a printed SUITE-OK alone is not a pass.
+
+| Executed suite | Passed cases |
+|----------------+--------------|
+| CLOS syntax, including class/eql/prototype and inline methods | 18 |
+| native multi-dispatch conformance | 12 |
+| method combinations and protocol | 13 |
+| method bundles, protocol identity and deferred declarations | 13 |
+| total | 56 |
+
+New controls cover protocol expression identity/evaluation count; duplicate and
+malformed protocol options; empty and legacy method-object bundles; direct and
+defrules-generated deferred methods; unchanged generation/call behavior before
+composition; same-label/different-object protocol rejection; activation only at
+explicit composition; next-method chains; class/eql/prototype deferred methods;
+congruence rejection at composition; failed bundle construction without method
+leakage; forward Generic declarations; and non-leaking declaration context in
+an executable method body. Existing standalone syntax and default protocol paths
+run in the same suites.
+
+The three changed declaration modules also passed gxc -S with output only in a
+temporary directory. This checks source compilation to Scheme/SSI, not native C
+or AOT linking. The normal installed POO artifacts were previously incompatible;
+these are isolated source receipts, not installed-package or remote CI results.
+The earlier prototype-only 45-case milestone remains a narrower prior result;
+56 cases qualify the complete declaration changes. None executes the Funflow
+Loader bridge or claims natural-lazy latency bounds.
+
+** Recorded local declaration receipt (2026-10-15)
+
+Core base: e85fd45303b208b23e5957fd316e7004994109a4 plus the working-tree
+changes below; no clean-commit, installed-binary or remote-CI result is implied.
+Runtime: /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc. Source hashes
+were checked before and after the successful 56-case run; generated/compiler
+outputs remained under /tmp/agenticailab-core-prototype-specializer.
+
+| Source | SHA-256 at successful runtime qualification |
+|--------+--------------------------------------------|
+| [[file:../../poo-clos/declaration-ir-core.ss][core/poo-clos/declaration-ir-core.ss]] | 328435fe3a0fda36430d25b9458c39ec4f8c0ac7c1354e1e66c5ed71cf850111 |
+| [[file:../../poo-clos/declaration-ir.ss][core/poo-clos/declaration-ir.ss]] | cf8f88f71de6a9f0c57810a2d76db8f685d88543dc5eb01e6fac86bbcf809515 |
+| [[file:../../poo-clos/syntax.ss][core/poo-clos/syntax.ss]] | 3c3d8a61c0325bc97cdc9fbb556260ecff8161ae0a107f37c5fc066077d097d8 |
+| [[file:../../t/poo-clos-syntax-test.ss][core/t/poo-clos-syntax-test.ss]] | c5950a745b35c5a7034bb49e50b1ed2f3657327620da7f890f8fc276cd0a9a61 |
+| [[file:../../t/poo-clos-method-bundle-test.ss][core/t/poo-clos-method-bundle-test.ss]] | f19d32b0953bbf16fbe0ad48aab654a9a3bdc6f9f505158484e60ca04d5087ae |
+
+** Target complete Generic and deferred method bundle
+
+The three declaration features below are implemented Core syntax. The Module
+publication families and named source/Loader/admission functions are still
+product design; supplying their names does not make that integration complete.
+
+#+begin_src scheme
+(def ModuleOwnerExportProtocol
+  (poo-clos-generic-protocol 'module-system/owner-export))
+
+(.defgeneric resolve-owner-export
+  (resolver source publication export-name)
+  (protocol ModuleOwnerExportProtocol))
+
+;; Private source-local structural frame, not another public authoring language.
+(defrules loader-publication-method ()
+  ((_ publication-proto admit-export)
+   (.defmethod
+     (resolve-owner-export
+       (resolver (prototype LoaderOwnerResolver.))
+       source
+       (publication (prototype publication-proto))
+       export-name)
+     (resolve-native-owner-export
+       resolver source publication export-name admit-export))))
+
+(.defmethod-bundle ModuleOwnerLoaderMethods
+  ModuleOwnerExportProtocol
+
+  (.defmethod
+    (resolve-owner-export
+      (resolver (prototype SourceOwnerResolver.))
+      source
+      (publication (prototype Publication.))
+      export-name)
+    (raise-control-plane-failure
+      'module-system
+      'unsupported-owner-publication
+      "no admitted resolver/publication method supports this crossing"
+      '()))
+
+  (loader-publication-method
+    PrototypePublication.
+    admit-native-prototype-export)
+
+  (loader-publication-method
+    ProfilePublication.
+    admit-native-profile-export))
+
+;; Explicit runtime composition; no registration while declaring the bundle.
+(poo-clos-compose-method-bundle
+  resolve-owner-export$poo-clos-generic
+  ModuleOwnerLoaderMethods)
+
+;; Same facade consumed by FunflowModule.'s receiver-aware native slots.
+(def (module-owner-export source publication export-name)
+  (let ((admitted (require-admitted-owner-source source)))
+    (resolve-owner-export
+      (.get admitted resolver)
+      admitted publication export-name)))
+#+end_src
+
+** Corresponding native lowering and effect boundary
+
+The private frame expands to ordinary .defmethod declarations, for example:
+
+#+begin_src scheme
+(.defmethod
+  (resolve-owner-export
+    (resolver (prototype LoaderOwnerResolver.))
+    source
+    (publication (prototype PrototypePublication.))
+    export-name)
+  (resolve-native-owner-export
+    resolver source publication export-name admit-native-prototype-export))
+#+end_src
+
+Inside the implemented bundle declaration context, this yields a checked method
+object rather than calling generic-binding-add-method!. Its semantic object
+projection is below. The actual .defmethod lowering retains its existing
+hygienic argument destructuring and call-next-method/next-method-p bindings;
+this simplified projection shows the body, specializers and lambda-list facts
+for a method that does not reference either lexical next-method operation.
+
+#+begin_src scheme
+(poo-clos-method
+  'resolve-owner-export
+  (list (poo-clos-prototype-specializer LoaderOwnerResolver.)
+        (poo-clos-any-specializer)
+        (poo-clos-prototype-specializer PrototypePublication.)
+        (poo-clos-any-specializer))
+  (lambda (_frame resolver source publication export-name)
+    (resolve-native-owner-export
+      resolver source publication export-name admit-native-prototype-export))
+  qualifier: 'primary
+  lambda-list: (poo-clos-lambda-list 4 0 #f #f '() #f))
+#+end_src
+
+The generic declaration expands through the existing generic binding owner.
+Its protocol clause reaches the same kernel protocol slot:
+
+#+begin_src scheme
+(def resolve-owner-export$poo-clos-generic
+  (poo-clos-generic-binding
+    'resolve-owner-export
+    (poo-clos-generic-function
+      'resolve-owner-export 4
+      protocol: ModuleOwnerExportProtocol)))
+
+(def (resolve-owner-export . arguments)
+  (apply poo-clos-call resolve-owner-export$poo-clos-generic arguments))
+#+end_src
+
+The real generic lowering retains all its existing lambda-list, precedence,
+combination and declaration metadata; the projection above highlights the new
+protocol wiring. Protocol is a lexical expression evaluated once when the
+generic is defined, never a quoted symbol substituted for the actual object.
+Bundle protocol identity must match that object at explicit composition.
+The existing require-clos-generic accepts a generic binding and reads its current
+generation, so composition can use the generated binding identifier above.
+Do not pass the callable procedure itself as a generic descriptor or invent a
+second registration owner.
+
+** Implemented boundaries and retained integration controls
+
+Prototype declaration parsing preserves class/eql forms and binding-aware
+marker recognition. A prototype target is an expression evaluated at method
+admission; it is never converted into a class or copied by symbol identity.
+Malformed annotations fail in parsing; invalid native targets fail before
+Generic generation changes. Top-level .defmethod keeps its existing immediate
+registration behavior.
+
+Generic protocol support extends declaration IR, parser, inline-method lowering
+and diagnostics without changing generic call shape. Absent protocol
+retains the existing default; duplicate/malformed protocol clauses reject with
+source locations. Local controls cover actual identity matching, wrong-protocol
+rejection and binding generation/currentness, including inline methods.
+
+Deferred bundle declaration uses a hygienic declaration context through which
+both direct .defmethod and privately expanded defrules forms lower to inert
+method objects. Each method IR is parsed once; its declared Generic name is retained
+as method identity, with no eager Generic lookup. Bundles retain the kernel's
+protocol-scoped composition semantics rather than inventing a new target registry.
+Preserve source spans, specializer target expressions, lambda-list congruence,
+qualifiers and lexical next-method operations. Declaration evaluates explicit target/protocol
+expressions and constructs/validates method objects; it is not a guarantee of
+zero user-expression effects. It does not register methods or alter Generic
+generations. Explicit bundle composition remains the registration boundary and performs existing protocol
+and method admission. It is not a claim of atomic whole-bundle rollback: current
+composition admits methods in order, and any stronger transactional semantics
+would need a separate explicit requirement.
+
+Existing (.defmethod-bundle name protocol method-object ...) expressions must
+keep their behavior. Recognition of declarations and private helper expansion
+must follow syntax bindings, not scan arbitrary user expressions for symbols.
+No macro-time source IO, runtime registry mutation, public replacement DSL or
+handwritten class/prototype inference is introduced. The executed tests cover
+empty bundles, direct/defrules-generated methods, no generation change before
+compose, registration at compose, call-next-method, protocol mismatch and
+congruence failures. Integration registration is opt-in and
+must not demand every Module/Profile while constructing the bundle.
+
+The method protocol/factory/bundle/call APIs already exist. The concrete
+ModuleOwnerExport protocol/methods/source-handle connection remain product
+adaptation; no runtime method bundle or Loader invocation was exercised by the
+native Pipeline cache probes. Each source handle needs a validated resolver
+capability; this is not already a field guaranteed by Core source refs.
+
+The following named functions remain proposed, not completed implementations:
+
+- require-admitted-owner-source validates source/revision/currentness and the
+  authorized resolver before dispatch without enumerating Profiles.
+- resolve-native-owner-export reuses existing Loader plans/receipts and product
+  activation: validate publication/path/export, guard owner demand, load the
+  focused owner, obtain its export, call admit-export with source context, and
+  release active state on every outcome. No second evaluator/cache is added.
+- admit-native-prototype-export checks actual native identity/source ownership
+  without demanding the Profile catalog.
+- admit-native-profile-export checks the already-constructed native Profile and
+  its Contract/source facts. The Profile body resolves same-source prototypes;
+  admission must not reenter its own Profile getter during initialization.
+
+Cycle, partial load, stale handle, unsupported crossing and Contract rejection
+must fail without returning a half-initialized Profile. These are requirements
+on the pending bridge, not capabilities created by a declarative method body.
+
+* MOP-native Contract construction against actual source-bound prototypes
+
+The Module's lazy contracts.gerbil-scheme slot passes its actual admitted native
+Check/Pipeline prototypes and Profile value to this proposed pure factory.
+Contract descriptors are not parents of configuration values. No naked
+funflow-check binding or cross-source lookalike is accepted from user config.
+
+#+begin_src scheme
+(def (funflow-profile-contract check-proto pipeline-proto profile-proto)
+  (define-type (CheckContract @ YuanxuObjectContract.)
+    identity: 'funflow/check
+    proto: check-proto
+    responsibilities: (.o)
+    .obligations: funflow-check-obligations)
+
+  (def ChecksContract
+    (yuanxu-predicate-contract
+      'funflow/check-list
+      list?
+      (cut funflow-check-list-obligations CheckContract <> <>)))
+
+  (define-type (PipelineContract @ YuanxuObjectContract.)
+    identity: 'funflow/pipeline
+    proto: pipeline-proto
+    responsibilities: (.o checks: ChecksContract)
+    .obligations: funflow-pipeline-obligations)
+
+  (define-type (ProfileContract @ YuanxuObjectContract.)
+    identity: 'funflow/gerbil-profile
+    proto: profile-proto
+    responsibilities:
+    (.o build: CheckContract
+        test: CheckContract
+        package: CheckContract
+        pipeline: PipelineContract)
+    .obligations: funflow-profile-obligations)
+
+  ProfileContract)
+
+;; Context-preserving pure list admission; no source loading or command execution.
+(def (funflow-check-list-obligations check-contract checks context)
+  (filter-map
+    (lambda (check)
+      (let ((evidence
+             (yuanxu-contract-admit check-contract check context)))
+        (and (not (yuanxu-validation-evidence-accepted? evidence))
+             evidence)))
+    checks))
+#+end_src
+
+The design reuses existing define-type, YuanxuObjectContract., predicate
+Contract construction and slot-based yuanxu-contract-admit. The predicates
+and obligations remain pure. No unconditional empty obligations may stand in
+for a missing check. Concrete proposed obligations must satisfy:
+
+- funflow-check-obligations(candidate, context) returns diagnostic facts for the
+  complete Check configuration: command/name/profile binding, inputs/artifacts,
+  cache/secrets/result protocol/runtime mode, dependencies, durable/action/
+  compensation/retention and inherited fields. Preserve all original defaults;
+  require actual supported bindings and never invent compensation evidence.
+- funflow-pipeline-obligations(candidate, context) checks pipeline-name/metadata,
+  selected order/identity and supported projection facts. ChecksContract admits
+  every list element with the same context, retaining actual rejection evidence.
+- funflow-profile-obligations(candidate, context) verifies that Pipeline checks
+  correspond in order and identity to this effective Profile's build/test/package,
+  and validates dependency closure plus selected-source/qualified occurrences.
+  It must not recursively admit the same Profile or force unrelated Profiles.
+
+These functions are required new domain obligations. Their bodies are not
+implemented here; classification plus a named procedure is not proof that
+business admission has passed. ProfileContract uses the actual published Profile
+as its ancestry base, so descendants qualify for further validation; arbitrary
+same-shaped objects do not. Descriptor reuse, if introduced, must retain actual
+source/prototype/context identity and existing currentness rules.
+
+The existing Contract protocol already routes classify, obligations and admit
+through native behavior slots. It does not need a new CLOS layer merely to walk
+three responsibility slots. CLOS owns the independent provider/publication
+crossing above; pure functions own list/dependency/projection algorithms; native
+lexical slots own Pipeline's receiver and lazy list. None is downstream manual
+assembly. The isolated 32-assertion cache probes establish only the last of
+these behaviors, not the proposed domain obligations or method-bundle wiring.

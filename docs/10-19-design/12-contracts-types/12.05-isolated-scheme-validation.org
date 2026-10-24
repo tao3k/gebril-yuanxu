@@ -1,0 +1,140 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.05 Isolated Scheme Validation of Contract Adaptation
+#+property: DOCUMENT_ID 12.05
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS bounded-native-controls-no-module-adapter-loader-or-push
+
+* Ownership clarification: a public library does not depend on Core
+
+This is the historical isolated-proposal record. See
+[[file:12.06-public-object-contract-implementation.org][the subsequent public-library implementation]] for the local gerbil-poo module
+and the qualification's switch from copied generic definitions to its public API.
+
+gerbil-poo is a public library. Its Type, object contracts, diagnostics, checked
+invocation and reuse mechanisms must work without Agentic AI Lab. In these documents
+"Core consumer" means the yuanxu repository, not Gerbil's compiler,
+runtime or standard library. Gerbil's own core/contract APIs are language tools,
+not the owner of Agentic AI Lab module/source admission policy.
+
+The public structural contract proposal is tested independently. Schema
+adaptation is a consumer/library layered on that protocol. A separate existing
+Core admission consumer is included only to check how its receipts behave; it
+is not a requirement for using gerbil-poo and introduces no upstream dependency
+on Core. Module Graph/source publication policy stays outside the public library.
+
+* Pinned inputs and isolation
+
+| Input | Identity / scope |
+|-------+------------------|
+| gerbil-poo PR 13 | 73daebfe038911bc2df3c8d200aaf53511aa0ce6 |
+| Downloaded upstream archive SHA-256 | aeb612d87b95601e1c3e9afd8ddd2afddab6862dd1e320b99573e7ae7990745f |
+| Existing Schema/Core consumer source | Core commit 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e |
+| Proposed adapter code | Scheme blocks extracted from document 02 into temporary modules |
+| Schema inputs | Small local closed object schemas; not live AWS provider schemas |
+
+The qualification uses an empty temporary GERBIL_PATH and a source path
+containing the pinned PR, not the installed gerbil-poo dependency. The public
+lane passed before Core source was present on that isolated source path. The
+consumer lane then received an immutable Core source snapshot, excluding dirty
+worktree edits. No package install, full build, runtime Loader or dependency
+lock change was needed. This is a source-evaluated control, not AOT qualification.
+
+The actual existing Schema implementation still imports Core schema/receipt
+helpers. That coupling is observed here; it is not a reason to put Core concepts
+into gerbil-poo. Making the Schema adapter a clean reusable library remains work.
+
+* Native tests and preparation
+
+The executable owners are:
+
+- [[file:../../../t/qualification/contract-adaptation/generic-test.ss][generic-test.ss]]: public POO/Type and upstream invocation controls.
+- [[file:../../../t/qualification/contract-adaptation/schema-test.ss][schema-test.ss]]: existing Schema consumer, effective child values and Core admission control.
+- [[file:../../../t/qualification/contract-adaptation/receipt-fixture.ss][receipt-fixture.ss]]: explicit TEST-ONLY immutable-context receipts.
+- [[file:../../../t/qualification/contract-adaptation/prepare.ss][prepare.ss]] and [[file:../../../t/qualification/contract-adaptation/prepare-test.ss][prepare-test.ss]]: native Scheme extraction/copying of private test modules.
+
+Preparation is itself a :std/test suite. The fixtures use :std/test and run
+serially through the existing Core Justfile test-file entrypoint, with its
+heap fence and timeout. No Python preparation/test code, Bash runner or
+additional Justfile is retained. The existing repository test entrypoint is
+unchanged; no replacement process orchestrator was introduced.
+
+The test environment supplies CONTRACT_FIXTURE_DIR, the isolated PR source path
+and the pinned consumer snapshot. prepare-test.ss creates private modules from
+the reviewed Scheme blocks and copies the native test sources there. Tests
+then run as ordinary Scheme test files. None of those generated modules is an
+installed API or a production module adapter.
+
+* Results and evidence boundary
+
+The two contract suites contain 17 cases in total: seven public-library cases
+and ten Schema/consumer cases. Both reported MODULE-OK, HARNESS-OK and final OK,
+with no error-case/check/harness/module, heap-overflow or stack-overflow marker.
+The separate native preparation test also passed. Raw transcripts remain local
+temporary artifacts and are not committed.
+
+| Control | Observed result | What it does not establish |
+|---------+-----------------+----------------------------|
+| String Type in responsibilities | Valid value accepted; wrong Type/missing field rejected with field path | Arbitrary predicate correctness or complete optional/default API |
+| Unknown field | Spelling error refused without demanding that unknown value | Full IDE/source-blame integration |
+| Structural versus ancestry policy | Independent conforming object accepted; explicit wrong ancestor rejected before field demand | Safety of arbitrary implementation behavior |
+| Cached parent responsibility map | Child's changed Type requirement used | General cache invalidation for mutation |
+| Existing PR typed/contract/invoke | Type lifted, good call executes, bad input refused before execution | Full higher-order blame/tail-call/continuation laws |
+| Schema in responsibilities | Existing compiler/node validator accepts final POO data | Live AWS schema conversion or deployment correctness |
+| instnace_type spelling | Unknown field survives provider projection and fails Schema check at web path | Full provider-schema coverage |
+| Missing network-ref versus unresolved target | Distinct missing-field and relation failures | General multi-network/account/region discovery |
+| Parent resource result forced before child | Child uses t3.medium and added production tag; inherited Owner retained | Arbitrary dynamic dependency discovery |
+| Fixed parent-result negative control | Parent result remains t3.small, distinct from child | Automatic correction of an explicitly captured parent value |
+| Existing public Core admit | Valid final child accepted; missing reference refused | Production source authentication or Graph integration |
+| Old receipt versus child/new Schema snapshot | Currentness predicate rejects; fresh child receipt retains exact child | Automatic invalidation or trusted production snapshot construction |
+| Unselected catalog branch | Explicit selected branch validates; unused branch demand counter remains zero | Automatic selected-child discovery or whole-catalog scaling |
+| Unsupported Schema keyword | Construction refused | Support for arbitrary Schema dialects |
+
+The main correctness assertions include:
+
+#+begin_src scheme
+;; Parent consumer was forced before the child override.
+(check-equal? (.get Parent resources web instance_type) "t3.small")
+(check-equal? (.get child resources web instance_type) "t3.medium")
+
+;; Existing Core .admit is exercised by the private document adapter.
+(check-equal? (configuration-evidence-current? parent-evidence child-snapshot) #f)
+(check-equal? (configuration-evidence-current? child-evidence child-snapshot) #t)
+(check-equal? (eq? (.get child-evidence candidate) child-value) #t)
+#+end_src
+
+Here the generation stamps, selected Graph and snapshot are explicitly constructed
+fixture values. Evidence invalidation means that the tested consumer predicate
+refuses an old receipt for those new inputs; no background cache purge occurs.
+The receipt does not become authentic because its shape matches. Automatic
+source capture, complete dependency manifests, association preservation and
+consumer authority are still unqualified integration requirements.
+
+* A failed control improved the example
+
+The first resource-cache fixture used an inner name: name expression, which
+shadowed the intended outer slot and raised CyclicSlot. It was corrected to a
+differently named output slot. This confirms why lexical slot examples must
+respect ordinary shadowing; the correction did not replace native receiver
+semantics with manually extracted parent values. Early preparation attempts
+also exposed an invalid SDK import spelling; the final preparation uses the
+normal Gerbil core prelude and passes its native test.
+
+* What is existing, private, or still missing?
+
+Existing upstream: Type validation, POO object/slot inheritance, receiver-local
+computation, PR Predicate/typed and checked invocation. Existing consumer:
+JSON Schema normalization/validation and Core classification/admission receipts.
+
+Private validated proposal: diagnostic Type wrapping, structural ObjectContract,
+Schema/projection adapters, this bounded AWS factory and the document's explicit
+snapshot-binding adapter. These definitions live only in generated test modules;
+they have not been published in gerbil-poo or installed as Core module APIs.
+
+Still missing: upstream API review, optional/default schema policy completeness,
+clean Schema library dependencies, real provider-input conversion, automatic
+publication/derivation association, production current-snapshot construction,
+dynamic selected-child discovery and corresponding formal/consumer qualification.
+No Lean theorem was added or discharged by these tests. No module adaptation,
+runtime Loader, live cloud call or push was performed.

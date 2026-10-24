@@ -1,0 +1,154 @@
+#+title: 12.20 AWS Alignment, Dynamic Typing and User Cost
+#+property: DOCUMENT_ID 12.20
+#+language: en
+#+property: STATUS implemented-boundaries-with-proposed-authoring-improvements
+
+* Reading rule and vocabulary
+
+This is the current reading entry for the implemented
+[[file:../../../scenarios/aws/README.org][AWS contribution]]. Older listings remain research history, not additional
+contracts that a module author should implement. The implementation record is
+[[file:12.19-selected-publication-contract-resolution.org][selected publication resolution]]; its qualification has a bounded scope.
+
+| Layer | Existing mechanism | Meaning and limit |
+|-------+--------------------+-------------------|
+| Gerbil | Checked arguments, including =using= with =:~= | Checks a demanded call boundary at runtime; an annotation is not whole-program proof. |
+| Public POO Type | =validate= and diagnostic adaptation | Produces the checked value; consumers must retain that result, not substitute the unchecked input. |
+| Public =ObjectContract.= | =:clan/poo/object-contract= | Field responsibilities contain value Types; constraints and obligations check the effective object. |
+| JsonSchema | =SchemaContract.= and =ProjectionContract.= | Reuses public Types for the selected provider Schema or a projected value; it does not authorize deployment. |
+| Core | =YuanxuContract.=, =.admit= and =AdmissionPublication.= | Admits the checked value against selected Context and binds actual Contract references before publication. |
+
+The public =ObjectContract.= name always denotes the public value Type here.
+The older Core prototype-aware admission base has a different protocol. The
+Guestbook construction proposal calls its local binding
+=CoreObjectAdmissionContract.= to prevent confusion. This is documentation
+terminology, not a new exported alias or a completed migration of that proposal.
+Do not install both recursive admission and value validation as duplicate checks
+of the same selected object.
+
+* What the maintained AWS example actually does
+
+The provider module supplies the actual generated resource Type. AWS does not
+copy every provider field into a second hand-maintained options vocabulary.
+The following excerpts are from the contribution's existing Types and scope.
+
+#+begin_src scheme
+(define-type (AWSProfileContract. @ ObjectContract. input-type)
+  identity: 'aws/profile
+  extra-fields: 'delegate
+  constraints: (list input-type))
+
+;; Inside the selected provider scope:
+(aws-scenario-contract
+  (.get selected-provider types resources aws_instance value-type))
+#+end_src
+
+=AWSScenarioContract.= assigns that Profile Contract to both =profile= and
+=resource= responsibilities. Its obligation requires the final projected resource
+to be the actual final Profile object. This identity rule fits this direct EC2
+projection; it is not a general AWS networking or Kubernetes relationship rule.
+Fields require structural checking. Prototype identity is needed only when an
+API intentionally requires a particular prototype lineage; it must not reject
+equivalent ordinary field data merely to demonstrate inheritance.
+
+The publication declares the association once in =interface.ss=:
+
+#+begin_src scheme
+admissions:
+(.o Scenario: (.o export-path: '(Scenario)
+                  contract-path: '(types Scenario)))
+#+end_src
+
+Core resolves these paths on the selected owner's scope. The optional
+=value-contract= is checked by the unified producer; the returned checked value
+is handed to admission and public evidence binding. The AWS classifier adds no
+extra authorization policy. Signature inspection of interface endpoints keeps
+their payloads cold and does not approve those payloads.
+
+Ordinary configuration remains an assignment on a maintained object:
+
+#+begin_src scheme
+(.def (Production @ WebProfile) instance_type: "t3.medium")
+(.def (ProductionScenario @ Scenario) profile: Production)
+#+end_src
+
+No user-maintained Context, Schema list or receipt is required. The enclosing
+module scope supplies these maintained bindings. The sample AMI is a structural
+fixture, not a deployable image recommendation. A caller extending the original
+value uses ordinary POO refinement or a named function only when it needs that
+original value; replacing a scalar does not require a refinement operator.
+
+* Declaration checking is not value checking
+
+| Time | What can be checked | Current boundary |
+|------+---------------------+------------------|
+| Authoring / expansion | Recognized declarations, role associations and hygienic bindings | Existing declaration mechanisms; not evaluation of arbitrary Scheme expressions. |
+| Selection | Required dependencies, selected owners and declared publication paths | Existing Graph/association checks; resolving a path can demand a selected scope. |
+| Before demanding values | A literal field name against available authoritative Type metadata | Proposed tooling. A Schema version must be selected; no current general static field checker is claimed. |
+| Value demand / admission | Computed fields, required fields, scalar Types, unknown names and object relationships | Runtime public value validation, then contextual admission. Transform results need the same final check. |
+| Publication | Actual object/Contract references and current Graph/source/Schema observations | Existing evidence/currentness checks. Changed context or descriptor cannot reuse old evidence. |
+| Provider execution | Live credentials, remote existence and provider-side constraints | Outside these value Types; backend validation and effect authorization remain necessary. |
+
+Scheme's dynamic typing permits useful early diagnostics for a bounded literal
+configuration subset. It does not permit inferring arbitrary callbacks, effects,
+termination or all generated field names from a declaration. Checked function
+boundaries still operate at runtime. A future linter should reuse existing
+declaration metadata and public Types, not introduce a parallel schema DSL or
+claim whole-program static safety.
+
+* Field discovery and source diagnostics: proposed improvements
+
+Discovery should read the selected Contract's field metadata and publication
+provenance. Show field path, expected Type, required/default status, open versus
+closed regions and the selected Schema/source revision. Distinguish a declared
+default from a demanded effective value and an admitted value. Merely listing
+fields must not force every module or candidate value. Do not add another
+hand-maintained registry of options.
+
+For an ordinary scalar, recommend assignment. For preserving an upstream value,
+recommend a named data function or POO refinement. Show prototype requirements
+only where the API actually requires them. New objects and core mechanism
+extensions may expose more POO detail; users editing two fields should not need
+the platform publication protocol.
+
+Diagnostics should distinguish an unknown field, a relationship failure, stale
+evidence and a backend refusal. Include the effective field path, actual expected
+Contract and selected source revision. Include contribution and declaration
+locations when recorded; do not invent a source location from a symbol name.
+Cross-phase source spans, comprehensive field completion and conflict/blame
+explanations remain incomplete. Runtime validation is already real; a complete
+editor-facing discovery and diagnosis experience is not.
+
+* Cached parents, final values and evidence
+
+The maintained Scenario projects =resource= from its lexical =profile= slot.
+Demanding the parent's resource does not justify retaining a fixed parent value
+in a child's publication. Validate the final child and retain the returned checked
+object. Bind evidence to that object, the actual Contract reference and the
+selected Context. A same-name replacement Contract is not the same descriptor.
+A Schema/source change requires fresh selection and admission. Publication
+failure preserves the previous published value; it does not refresh old evidence.
+
+The existing focused AWS controls cover delegated fields, typo diagnostics,
+optional prototype identity, final receiver identity and cold scope signatures.
+The recorded integration gate has 49 assertions, real selected AWS Schema package
+updates and Ops Null execution. Those are earlier executed results, not new
+deployment or full-build claims from this documentation cleanup. Automatic source
+association follows the implemented public Type metadata edges; opaque closure
+dependencies still require an explicit source-aware adapter. The sample does not
+prove complete discovery for arbitrary recursive Contract families.
+
+* Reflection and next design tests
+
+Schema/config separation and ordinary value configuration are established
+ecosystem practice; see [[file:../../20-29-ecosystem-research/25-nickel/25.01-index.org][Nickel research]] and
+[[file:../../20-29-ecosystem-research/20-nixos/20.01-index.org][NixOS module research]]. POO's benefit must be demonstrated through maintained
+Profile evolution, functional transformations, effective references and reusable
+object relationships. Inheritance syntax alone is not a UX advantage.
+
+Ask whether an author can discover a field without reading platform internals;
+whether a typo names the responsible source; whether an upstream default change
+is inherited intentionally; and whether selecting one Profile leaves unrelated
+branches cold. Existing value and publication tests answer only part of these
+questions. The next work is discovery, diagnostic provenance and domain-specific
+relationship coverage, not another foundational Contract system.

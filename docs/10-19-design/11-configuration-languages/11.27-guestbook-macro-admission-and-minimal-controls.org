@@ -1,0 +1,217 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.27 Config Languages 26: Guestbook Macro Admission and Minimal Qualification Design
+#+property: DOCUMENT_ID 11.27
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:macro:governance:validation-design:
+#+property: STATUS validation-design-only-not-implemented-not-executed-no-loader
+
+* Scope and owner
+
+This is the minimal qualification plan for the
+[[file:11.26-schema-discovery-source-lowering-and-macro-governance.org][source-preserving Guestbook macro/discovery design]], governed by the existing
+[[file:../../../module-system/design/45-40-10-poo-constrained-gerbil-macro-governance.org][macro admission owner]] and [[file:../../../module-system/design/44-current-project-programming-style/05-macro-phase-and-lowering.org][phase/lowering style]]. It adds no macro, syntax
+registry, implementation or test file. The user continues to write only the short
+port/label configuration in [[file:11.25-guestbook-field-discovery-and-diagnostics.org][the KCL comparison]]. Internal metadata is visible only
+to maintainers' controls, not normal configuration, JSON output or preview.
+
+* Admission decision before implementation
+
+Admit this surface only for the concrete need to preserve original syntax and
+hygienically lower shared paths into native operations. Native objects/functions
+remain semantic authority. Choose the smallest internal defrules/defsyntax tier;
+new macro names, a public patch DSL and macro-generated public macros are excluded.
+
+| Required artifact | Content needed for admission |
+|-------------------+------------------------------|
+| Owner and phase declaration | Existing path-slot owner, explicit syntax imports and dependency closure |
+| Surface and normal form | Dotted direct leaf assignment; ancestor native =>.+ preservation; one prefix trie |
+| Source policy | Original slot/expression syntax retained before lowering; fresh private association, no user fields |
+| Evaluation law | Initializer appears once; metadata evaluates it zero times; receiver-local demand is native |
+| Resource budget | Explicit configured limits on path depth, total segments, emitted forms and metadata; typed refusal when exceeded |
+| Failure vocabulary | Duplicate/overlap syntax errors; Contract paths and qualified source fallback; unsupported provenance reported honestly |
+| Evidence plan | Four control groups below plus native/manual and negative controls |
+| UX gate | Matched KCL user task, no internal bookkeeping in default help/errors/preview |
+
+No numeric budget is claimed measured here. The implementation review must select
+and document actual limits and run below/at/above-boundary cases before admission;
+an unspecified "bounded" statement alone is not acceptance. Expansion must not
+scan directories, resolve Modules, compile Schemas, mutate runtime registries or
+read environment-dependent policy. Schema help is runtime/tool demand, not work
+hidden in macro expansion.
+
+* Minimal fixture and native comparator
+
+Use the same three-role baseline and the same two edited values throughout:
+
+#+begin_src scheme
+;; Proposed authoring fixture; dotted direct assignment is not implemented yet.
+(.def (Development @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services:
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+
+;; Manual native comparator; no dotted-assignment adapter is needed for this form.
+(.def (ManualDevelopment @ GuestbookDefaults)
+  frontend: =>.+
+  (.o labels: =>.+ (.o env: "dev")
+      services:
+      (list (.o ports:
+             (list (.o port: 8080 targetPort: 80 protocol: "TCP"))))))
+#+end_src
+
+The comparator's independent object identity is not expected to equal Development.
+Compare relevant final values, retained Profile behavior and diagnostics. Inspect
+binding-normalized syntax, not generated textual names. Retain the parent's values
+as a separate control; proving a child value alone does not prove persistence.
+
+* Four minimal control groups
+
+** MG1: shared-prefix merge and native correspondence
+
+Inputs: the fixture above; reversed order of its two disjoint edits; an unrelated
+leader edit interleaved between them; duplicate leaf and ancestor/descendant
+collision variants. Inspect the lowering before full native macro expansion.
+
+Required observations:
+
+- Exactly one generated frontend ancestor refinement; both label and Service edits
+  retained. One edit must not overwrite the other through repeated ancestor slots.
+- Label env=dev and Service 8080 -> 80 equal the manual comparator. Other inherited
+  label keys, frontend listener=80 and both Redis Profile values remain intact.
+- Reversing disjoint edits gives equivalent relevant values, not a promise that
+  arbitrary order-dependent functions or conflicting assignments commute.
+- Duplicate leaf and overlapping ancestor/descendant edits are refused at their
+  original source; no silent last-write policy or invented merge semantics.
+- Literal dotted-slot behavior in primitive gerbil-poo remains unchanged. Only the
+  reviewed authoring binding interprets paths.
+
+Existing trie/refinement controls are a foothold, not proof of the pending direct
+assignment variant. Existing duplicate dotted refinement rejection is not a claim
+that all ordinary native slot/default combinations are duplicates.
+
+** MG2: original locations, hygiene and private metadata
+
+Read a fixture as syntax from a real test source with known line/column spans.
+Assert the retained frontend.labels.env origin equals the original slot/expression
+stx-source, not an emitted ancestor form. After prefix merging, both original rows
+must remain. Resolve them through the proposed private publication association.
+
+Controls:
+
+- User bindings with names resembling native-.o or private temporaries cannot
+  capture generated constructors/source bindings; free lexical references inside
+  user expressions still resolve to their original bindings.
+- Wrong targetPort produces a concrete final path and both local and inherited
+  related origins. Omitted targetPort points to the actual port expression with a
+  fallback explanation, not an imaginary missing-field position.
+- A literal Service list may report only its enclosing expression until exact
+  constructor-span support is qualified. A function-produced list must never be
+  assigned fabricated element-level source positions.
+- Equivalent spelling in different source generations/declarations must not join
+  by symbol name alone. The effective native resolution/source association must
+  select origins; unresolved/ambiguous association is explicit.
+- Ordinary object slots and serialized user resources contain none of the private
+  declaration ids, source rows, basis tokens or evidence records. Do not require
+  a user to write an origin annotation to get correct diagnosis.
+
+** MG3: no duplicate initializer evaluation; selected demand stays lazy
+
+A side-effecting counter is a test-only observation, not user configuration policy:
+
+#+begin_src scheme
+(def service-calls 0)
+
+(def (observed-services)
+  (set! service-calls (+ service-calls 1))
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+
+(.def (Probe @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services: (observed-services))
+#+end_src
+
+Required sequence for an isolated fixture:
+
+| Action | Expected service-calls |
+|--------+------------------------|
+| Expand/prepare source metadata | 0 |
+| Construct Probe without demanding services | 0 |
+| Read Probe frontend labels only | 0 |
+| First read of Probe frontend services | 1 |
+| Re-read the same slot on the same receiver | 1 |
+| Render user diagnostics/source rows without demanding services | Still 1 |
+
+Exercise a shadowed helper binding to ensure native expansion does not capture a
+macro-definition-site value or duplicate the call. An independent derived receiver
+may legitimately evaluate its own slot; do not interpret native open recursion as
+a global singleton requirement. The counter fixture must not be used to justify
+arbitrary effects in production computed slots.
+
+The phase control separately traps source-loader, Schema compiler and runtime
+registry callbacks; expansion must call none. Any trap replaces an actual owner
+entry under an authorized test fixture; missing hooks do not count as a zero-call
+proof. Source inspection and counted execution are separate evidence.
+
+** MG4: imported JSON source drives Contract, help and diagnostics
+
+The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][source-corrected design]] uses the real maintained Workflow JSON file and a
+qualified generated native Contract, rather than requiring users to understand
+synthetic SchemaV1/SchemaV2. Record source/dialect/content pin once. The same
+artifact drives supported field discovery and validation; no separate help table
+is edited. Verify raw-file decoding, coverage refusal and actual malformed-input
+paths before claiming complete imported-schema support.
+
+When a real upstream update is deliberately pinned, regenerate Contract/help and
+check actual changed fields. No second real snapshot was fetched or introduced
+here; do not manufacture an official next revision. The old two-bound Schema
+mutation remains only an isolated bridge unit-control design in module 27.
+
+Guestbook input/relationship Contracts and Deployment/Service output Contracts
+have different candidates. Standard resource fields come from qualified imported
+Schemas; the platform maintains native domain Contracts and relationship policy.
+A numeric field can be valid while targetPort violates the final listener rule.
+The two tests must remain separate. Cached help for an old artifact must not be
+combined with a newly published Contract. SourceRef equality alone is insufficient
+for currentness. This joined publication/discovery control remains pending.
+
+* KCL control and user-facing acceptance
+
+Retain the pinned KCL Guestbook source and renderer entries from module 24. The
+matched port/Pod-label variant is an experiment using actual public fields; it is
+not the original dev/main.k contents. Freeze equivalent defaults, environment
+options and image recipe assumptions before comparing output. No KCL runtime
+execution is performed by this document.
+
+Compare the two ordinary user blocks and real help/errors once available. Record:
+can users predict list replacement versus label-key retention, locate the wrong
+port, repair it without seeing internals, and trust a refreshed final preview?
+The goals are successful edits and fewer misleading repairs, not a macro count
+or inheritance theorem presented to the user. Preserve KCL's actual errors as
+controls; do not assume ours are more precise without running the comparison.
+
+* Future run protocol and evidence boundary
+
+When implementation is authorized, put native controls in the appropriate Core
+test owner and use its heap-fenced Justfile entrypoint, just test-file <path>,
+serially. The test path and new test source do not exist in this design change.
+Require MODULE-OK, HARNESS-OK and final OK with no ERROR CASE/CHECK/HARNESS or
+heap/stack overflow markers; process exit 0 alone is insufficient. Keep raw logs
+as local/CI artifacts, not committed source. Record structured source revisions,
+fixture/schema digests, observation counts, failures and unresolved gates.
+
+Existing: native POO semantics, Schema normalization/validation and diagnostic
+paths, syntax-source primitives and bounded dotted =>.+ lowering. Prior controls
+remain scoped to their recorded revisions. Pending: direct leaf assignment,
+publication-side final-value/source association, discovery/help/diagnostic adapter,
+joined Schema-currentness controls and all new fixtures specified here. Document
+link/delimiter checks are not runtime evidence. No tests, Loader, persistent-cache
+integration or deployment were implemented or executed here.
+
+The [[file:11.28-guestbook-concrete-qualification-fixtures.org][concrete fixture definitions]] now provide SchemaV1/V2, the native baseline,
+RangeProbe/failure variants and original-syntax origin-row construction. The source
+row is expected fixture data; observing actual macro-emitted source associations
+remains a separate pending gate, not a self-comparison accepted as evidence.

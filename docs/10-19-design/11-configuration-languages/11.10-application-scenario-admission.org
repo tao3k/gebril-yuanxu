@@ -1,0 +1,314 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.10 Config Languages 09: Concrete Application Scenario Admission
+#+property: DOCUMENT_ID 11.10
+#+date: [2026-10-16]
+#+filetags: :config-language:contracts:scenarios:design:
+#+property: STATUS unexecuted-reference-design-no-runtime-or-loader-change
+
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+its Core export rename is pending. This example does not introduce an alias.
+
+* Scope and dependencies
+
+[[file:11.09-contract-directed-service-scenarios.org][Module 08]] defines the complete Web/API/Database Profile Contracts, endpoints,
+requirements, prototype defaults, native parent expansion and resolver. This
+module fills the previously undefined ApplicationScenarioContract. Named helpers
+below are defined here, not placeholders for a future graph algorithm. They use
+existing native POO values and public Core admission. They are design code only.
+No new language, Loader, registry resolution or production source is introduced.
+
+Prerequisites from module 05: StringContract and no-obligations/closed-fields.
+From module 06: dns-name?. From module 08: the three Profile Contracts and
+resolve-service-reference. compute-precedence-list! is the existing POO MOP entry.
+Pure list functions and object<-alist construct internal evidence maps; they are
+not a public alist configuration language.
+
+* Concrete Scenario shape and reference shape
+
+#+begin_src scheme
+(.def ApplicationScenario.
+  namespace: "default"
+  services: (.o)
+  connections: (.o))
+
+(def ObjectContract
+  (yuanxu-predicate-contract 'application/object object? no-obligations))
+(def NamespaceContract
+  (yuanxu-predicate-contract 'application/namespace dns-name? no-obligations))
+
+(def (reference? value)
+  (and (object? value) (.slot? value 'service) (.slot? value 'export)
+       (symbol? (.get value service)) (symbol? (.get value export))
+       (null? (closed-fields '(service export) value #f))))
+
+(def ReferenceContract
+  (yuanxu-predicate-contract 'application/reference reference? no-obligations))
+
+;; Shape admission is not complete service/relationship admission.
+(.def (ApplicationShapeContract @ YuanxuObjectContract.)
+  identity: 'application/scenario
+  proto: ApplicationScenario.
+  responsibilities:
+  (.o namespace: NamespaceContract services: ObjectContract connections: ObjectContract)
+  .obligations: (cut closed-fields '(namespace services connections) <> <>))
+#+end_src
+
+ApplicationScenarioContract below inherits that identity and proto. Its .admit
+adds dynamic per-Profile and per-role admission, retaining receipts. ObjectContract
+here is just a preliminary shape check; it never establishes that a service is
+admitted or that a connection requirement is satisfied.
+
+* Bounded association resolution: explicit reference-model limitation
+
+The planned declaration/publication adapter records the exact Contract association
+from WebProfile @ WebProfileContract and preserves it in compatible derivatives.
+That adapter is not implemented. For a concrete three-family design reference,
+context.descriptors contains the three selected library descriptors and matching
+uses native prototype ancestry. Zero or multiple matches fail closed. This does
+not choose the first matching parent or silently discard another requirement.
+
+#+begin_src scheme
+(def (associated-contract candidate context)
+  (if (not (object? candidate)) #f
+    (let* ((parents (compute-precedence-list! candidate))
+           (matches
+            (filter (lambda (descriptor)
+                      (if (memq (.get descriptor proto) parents) #t #f))
+                    (.get context descriptors))))
+      (and (= (length matches) 1) (car matches)))))
+
+(def (refusal identity candidate kind context)
+  (let* ((diagnostics (list (.o kind)))
+         (classification
+          (yuanxu-classification-evidence identity candidate #f diagnostics context)))
+    (yuanxu-validation-evidence identity candidate classification
+      diagnostics #f diagnostics context)))
+
+(def (profile-proof service-key candidate context)
+  (let* ((descriptor (associated-contract candidate context))
+         (receipt
+          (if descriptor (yuanxu-contract-admit descriptor candidate context)
+            (refusal 'application/profile candidate 'missing-or-ambiguous-contract context))))
+    (.o service-key candidate descriptor receipt)))
+
+(def (admit-services services context)
+  (object<-alist
+    (map (lambda (key)
+           (cons key (profile-proof key (.ref services key) context)))
+         (.all-slots services))))
+
+(def (profile-ok? proof)
+  (yuanxu-validation-evidence-accepted? (.get proof receipt)))
+#+end_src
+
+The descriptor list is a tiny bounded example input, not a thousand-module catalog
+scan and not the final publication resolver. A stricter descriptor sharing the
+same proto is ambiguous under this reference and must be rejected; this is why
+ancestry matching cannot replace exact publication/declaration association in the
+product. The context is platform-owned immutable admission input, not a user's
+policy override. All candidate reads refer to the final Scenario's services.
+
+* Required roles, unknown roles and target admission
+
+The role names/protocols come from descriptor.requirements, not from guessed
+consumer field names or a duplicate user-owned policy table. For Web, api must
+connect to HTTP; for API, database must connect to PostgreSQL. Database requires
+no service role in this bounded case. Cycles/readiness/liveness remain distinct
+policies and are not proved by this type compatibility check.
+
+#+begin_src scheme
+(def (edge-refusal consumer role kind)
+  (.o accepted?: #f consumer role kind))
+
+(def (admit-edge scenario proofs consumer role expected reference context)
+  (let ((shape (yuanxu-contract-admit ReferenceContract reference context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape))
+      (edge-refusal consumer role 'invalid-reference)
+      (let ((target-key (.get reference service))
+            (export-key (.get reference export)))
+        (cond
+          ((not (.slot? proofs target-key))
+           (edge-refusal consumer role 'target-not-selected))
+          ((not (profile-ok? (.ref proofs target-key)))
+           (edge-refusal consumer role 'target-not-admitted))
+          (else
+           (let* ((target (.get (.ref proofs target-key) candidate))
+                  (exports (.get target exports)))
+             (cond
+               ((not (.slot? exports export-key))
+                (edge-refusal consumer role 'export-missing))
+               ((not (equal? (.get (.ref exports export-key) protocol) expected))
+                (edge-refusal consumer role 'protocol-mismatch))
+               (else
+                (.o accepted?: #t consumer role reference
+                    consumer-profile: (.get (.ref proofs consumer) candidate)
+                    target-profile: target
+                    target-endpoint: (.ref exports export-key)
+                    reference-evidence: shape
+                    resolved: (resolve-service-reference scenario reference expected)))))))))))
+
+(def (consumer-edges scenario proofs consumer context)
+  (let* ((proof (.ref proofs consumer))
+         (connections (.get scenario connections)))
+    (if (not (profile-ok? proof)) '()
+      (let* ((requirements (.get (.get proof descriptor) requirements))
+             (bindings (if (.slot? connections consumer)
+                         (.ref connections consumer) (.o))))
+        (if (not (object? bindings))
+          (list (edge-refusal consumer #f 'invalid-consumer-bindings))
+          (append
+            (map (lambda (role)
+                   (edge-refusal consumer role 'unknown-role))
+                 (filter (lambda (role) (not (.slot? requirements role)))
+                         (.all-slots bindings)))
+            (map (lambda (role)
+                   (if (.slot? bindings role)
+                     (admit-edge scenario proofs consumer role
+                       (.ref requirements role) (.ref bindings role) context)
+                     (edge-refusal consumer role 'required-role-missing)))
+                 (.all-slots requirements))))))))
+
+(def (append-results function items)
+  (foldr (lambda (item rest) (append (function item) rest)) '() items))
+
+(def (admit-connections scenario proofs context)
+  (let* ((connections (.get scenario connections))
+         (unknown-consumers
+          (filter (lambda (key) (not (.slot? proofs key))) (.all-slots connections))))
+    (append
+      (map (lambda (key) (edge-refusal key #f 'consumer-not-selected)) unknown-consumers)
+      (append-results (lambda (key) (consumer-edges scenario proofs key context))
+                      (.all-slots proofs)))))
+#+end_src
+
+No declared required role is skipped: every valid consumer Contract enumerates
+its requirements, including missing connections. Invalid selected Profiles already
+reject the root and do not produce misleading edge successes. Unknown consumers
+or extra roles also reject it. Target Profile admission happens before export
+resolution; a PostgreSQL endpoint cannot satisfy Web's HTTP requirement.
+
+* ApplicationScenarioContract and public admission entry
+
+#+begin_src scheme
+(def (admit-application descriptor scenario context)
+  (let ((shape (yuanxu-contract-admit ApplicationShapeContract scenario context)))
+    (if (not (yuanxu-validation-evidence-accepted? shape)) shape
+      (let* ((profiles (admit-services (.get scenario services) context))
+             (edges (admit-connections scenario profiles context))
+             (failed-profiles
+              (map (lambda (key) (.get (.ref profiles key) receipt))
+                   (filter (lambda (key) (not (profile-ok? (.ref profiles key))))
+                           (.all-slots profiles))))
+             (failed-edges (filter (lambda (edge) (not (.get edge accepted?))) edges))
+             ;; Honor the descriptor's own extension obligations as well.
+             (extra (yuanxu-contract-obligations descriptor scenario context))
+             (failures (append failed-profiles failed-edges extra)))
+        (.cc (yuanxu-validation-evidence
+              (.get descriptor identity) scenario (.get shape classification)
+              failures (null? failures) failures context)
+             'responsibility-evidence (.get shape responsibility-evidence)
+             'profile-evidence profiles
+             'edge-evidence edges)))))
+
+(.def (ApplicationScenarioContract @ ApplicationShapeContract)
+  .obligations: no-obligations
+  .admit: (cut admit-application @ <> <>))
+
+;; Platform-owned bounded reference context, not a repeated user declaration.
+(def AdmissionContext
+  (.o descriptors: (list WebProfileContract APIProfileContract DatabaseProfileContract)))
+
+;; Public Core entry: expanded native Shop/ReleaseShop inherit ApplicationScenario.
+(def release-receipt
+  (yuanxu-contract-admit ApplicationScenarioContract ReleaseShop AdmissionContext))
+#+end_src
+
+Profile and edge evidence are part of the actual returned receipt, not a separate
+hand-maintained completed list. Shape and final receipts retain the same identity,
+candidate and caller context. New descriptor obligations are explicitly invoked;
+shape/field obligations stay in ApplicationShapeContract. Subtypes changing
+identity or proto need a corresponding shape/admission adapter; this bounded
+implementation does not claim arbitrary meta-Contract substitutability.
+
+* Final-port changes and retained correlations
+
+Concrete design controls below assume the module 08 declarations have been lowered
+to their native proto parents with the exact descriptor associations retained.
+These are not newly executed tests or claims that Contract-parent syntax works.
+
+#+begin_src scheme
+;; Positive: inherit the maintained Scenario and change only its API Service port.
+(.def (PortOverride @ Shop)
+  services.api: =>.+
+  (.o exports.http: =>.+ (.o port: 8081)))
+
+;; Intentional whole-map replacement removes API's required database role.
+(.def (MissingDatabaseConnection @ PortOverride)
+  connections:
+  (.o web: (.o api: (.o service: 'api export: 'http))))
+
+;; Keep the role, but aim HTTP consumer Web at PostgreSQL export.
+(.def (WrongProtocol @ PortOverride)
+  connections.web: =>.+
+  (.o api: (.o service: 'database export: 'postgres)))
+
+(def port-receipt
+  (yuanxu-contract-admit ApplicationScenarioContract PortOverride AdmissionContext))
+(def missing-receipt
+  (yuanxu-contract-admit ApplicationScenarioContract MissingDatabaseConnection AdmissionContext))
+(def protocol-receipt
+  (yuanxu-contract-admit ApplicationScenarioContract WrongProtocol AdmissionContext))
+
+(def (edge-for receipt consumer-name role-name)
+  (car (filter (lambda (edge)
+                 (and (eq? (.get edge consumer) consumer-name)
+                      (eq? (.get edge role) role-name)))
+               (.get receipt edge-evidence))))
+
+;; Inspect only after the positive receipt is accepted.
+(def web-api (edge-for port-receipt 'web 'api))
+(.get web-api resolved port)
+(eq? (.get web-api target-profile) (.get PortOverride services api))
+(eq? (.get web-api target-endpoint) (.get PortOverride services api exports http))
+#+end_src
+
+Expected (not run): port-receipt accepted for bounded config/edges; web-api resolves
+api.shop.svc:8081, targetPort 8080, with both identity comparisons true. Database
+remains at its Shop default 5432. missing-receipt rejects with consumer=api,
+role=database, kind=required-role-missing. protocol-receipt rejects with consumer=web,
+role=api, kind=protocol-mismatch. The failure checks come from descriptor requirements,
+not a hardcoded assumption that every Scenario contains exactly three services.
+
+The separately retained ReleaseShop case also changes namespace/database port:
+
+For ReleaseShop from module 08, all per-Profile .admit calls receive its actual
+services.web/api/database values. Edges retain those same source/target identities,
+the chosen final export object and the actual reference object. API port=8081
+therefore resolves to api.release.svc:8081, targetPort=8080. Database port=5544
+resolves to database.release.svc:5544, targetPort=5432. No Shop endpoint is captured.
+
+Examples that must reject: missing credentials on database; export port=70000;
+Web api role aimed at database.postgres; API database role omitted; a reference
+to an unselected archive instance; connection key databse instead of database;
+and a candidate without a unique recognized Contract association. A positive
+protocol check is not a readiness, network connectivity or database migration proof.
+
+Before resource publication, the consumer must correlate receipt.candidate with
+the current Scenario/context, require profile-evidence keys to equal current
+selected keys, and correlate every receipt/endpoint to the final object identities
+and expected role set. Omitted/forged evidence, producer association and generation
+invalidation still require qualification; native .cc is not evidence authentication.
+The code constructs the complete evidence set but has not been executed or proved.
+
+The [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/README.org][actual scenario-source corpus]] and [[file:../../../../docs/10-19-design/10.08-config-languages/10-source-scenario-research.org][source-to-design study]] supply pinned KCL,
+Omnibus and HiveBus inputs/backends separately from these unexecuted Scheme designs.
+
+The new receipt establishes the bounded configuration/connection checks only.
+It cannot authorize admitted-preview while Web proxy/API DB configuration,
+database persistence/Secret policy, Kubernetes resource schemas and runtime gates
+remain missing. Selected graph indexing and exact descriptor association replace
+the bounded descriptor scan in a future implementation. Unselected catalog entries
+remain outside this reference. Full selected admission necessarily reads selected
+Profiles and required edges; it cannot be skipped by appealing to laziness.

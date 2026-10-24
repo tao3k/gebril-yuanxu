@@ -1,0 +1,285 @@
+#+title: 12.14 Object Contract Alignment: Public Validation, Schema and Core Admission
+#+property: DOCUMENT_ID 12.14
+#+language: en
+#+property: STATUS source-reviewed-design-only-no-build-loader-or-push
+
+* Source authority and dependency gap
+
+Current implementation is recorded in
+[[file:12.17-checked-core-publication-implementation.org][checked Core publication]]: the dependency now pins =26b4b58= and the
+checked-subject handoff is implemented. The source-review-only statements below
+retain their original scope. Do not copy its illustrative validate-then-admit
+sequence around a current descriptor that already declares value-contract.
+
+The subsequent [[file:12.15-checked-object-admission-publication.org][checked-object admission/publication design]] advances the
+source alignment to PR 13 at =26b4b58= and expands the normalized-object handoff.
+Its joint-snapshot discussion supersedes this review's earlier source boundary;
+the original dependency and implementation observations below are historical.
+
+This review supersedes the capability assumptions in the earlier ownership
+sketch, not its historical validation receipts. Sources inspected:
+
+- gerbil-poo PR 13 at =df6a9e50e4071c934665455160d1a8c493b9ce75=:
+  [[https://github.com/tao3k/gerbil-poo/blob/df6a9e50e4071c934665455160d1a8c493b9ce75/object-contract.ss][object-contract]],
+  [[https://github.com/tao3k/gerbil-poo/blob/df6a9e50e4071c934665455160d1a8c493b9ce75/object-contract-validation.ss][object-contract-validation]],
+  [[https://github.com/tao3k/gerbil-poo/blob/df6a9e50e4071c934665455160d1a8c493b9ce75/validation-rebinding.ss][validation-rebinding]],
+  [[https://github.com/tao3k/gerbil-poo/blob/df6a9e50e4071c934665455160d1a8c493b9ce75/recursive-validation.ss][recursive-validation]], and declarative-metadata.
+- Core HEAD =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e= plus its current local
+  changes: [[file:../../../types.ss][types.ss]], [[file:../../../admission/publication.ss][AdmissionPublication.]],
+  [[file:../../../modules/json-schema/contracts.ss][JsonSchema contracts]] and their native Scheme test sources.
+- Installed Gerbil SDK =1cfb032=, its original gerbil/core/contract.ss.
+- Core gerbil.pkg and the installed gerbil-poo checkout both still select
+  =099b381588360a8a49fd772f666a1a00351366f5=. That checkout does not contain the
+  public object-contract module. The PR source is not the installed dependency.
+
+No lock, implementation, build script or upstream checkout is changed. No build,
+test, formal check or Loader activation was run for this review. Existing test
+sources establish intended coverage; they are not fresh passing receipts.
+
+* Revised ownership
+
+| Owner | Existing source capability | Boundary |
+|-------+----------------------------+----------|
+| Gerbil | Checked predicates through :~ / using; class/interface contracts and checked methods | A POO Type value is not automatically a Gerbil class identifier. :- is an unchecked annotation, not admission. |
+| gerbil-poo Type | element? and validate; Function validation supplies checked wrappers | Recognition and value-producing validation differ. Keep the returned checked value. |
+| gerbil-poo ObjectContract | Required responsibilities, unknown-field rejection, optional required-prototype, delegated Schema constraints, obligations and refine | No Core Graph, provider discovery, source authority or deployment permission. |
+| gerbil-poo recursive validation | Receiver-bound checks, container validation, Class/Record initialization and explicitly named finite recursive closure | Not automatic discovery of every installed Module or arbitrary cyclic getters. |
+| JsonSchema library | SchemaContract., ProjectionContract. and existing normalization/diagnostic evaluator | Own Schema vocabulary, optional/required fields and unsupported-keyword refusal; do not copy ObjectContract. |
+| Domain library | AWS provider input conversion, defaults, logical references and resource rendering rules | Provider-shaped fields do not prove live AWS existence, IAM authorization or successful deployment. |
+| Core | Actual .admit descriptor references, Graph/source/Schema Context and publication recheck | Consume public validation; retain platform policy and evidence freshness. |
+
+The new upstream implementation already supplies as-value-contract,
+diagnostic-all, diagnostic-then, refine and checked-action. Core must not
+reimplement these under different names. Existing Core responsibility traversal
+is now an overlap to migrate, not a missing public-library feature.
+
+* What changed materially upstream
+
+1. ObjectContract. defaults to extra-fields: 'reject. Unknown names are inspected
+   without forcing their values. Prototype refusal precedes candidate field demand.
+   extra-fields: 'delegate requires a nonempty constraints list; closure then
+   depends on the delegated Schema, not on that flag alone.
+2. Plain Types adapt through their real membership AND validation methods.
+   Prepared maps belong to the effective descriptor receiver. A cached parent's
+   preparation is not the derived descriptor's preparation.
+3. validate performs structural gating, receiver-bound field normalization and
+   final constraints/refinement. It preserves unchanged identity where possible;
+   changed Function fields can produce a new persistent root. diagnose does not
+   install wrappers or cache approval.
+4. Container and Class validation reuse that machinery. Computed selected fields
+   read checked siblings through ordinary slot composition; old computed caches
+   are not copied. Arbitrary external lexical captures cannot be rebound.
+5. recursive-validation exposes close-validation, Reference-style closure,
+   revision and reconfiguration operations over explicitly registered finite
+   graphs. Reuse that closure when needed; do not add a second Core validator DFS.
+   Mapping the selected domain Graph to this scope remains an integration task.
+
+refine preserves inherited obligations. Directly replacing obligations or
+.diagnose can weaken a contract and is not equivalent to strengthening it.
+Getter/validator effects, arbitrary callback termination, wrapper deduplication
+and automatic discovery remain outside these guarantees. Public evidence binding
+still requires immutable references and consumer-owned revision policy.
+
+* One AWS Profile: provider fields and domain relationships
+
+This is maintainers' design code using existing API names, not installed domain
+definitions. AWS schemas come from the acquired Terraform AWS provider export,
+through the existing yuanxu-opentofu-block->schema conversion. They are not
+handwritten replacements for the full provider schema. The current executable
+source example is [[file:../../../t/json-schema-aws-value-contract-test.ss][the opt-in AWS value-contract test]].
+
+#+begin_src scheme
+;; Domain-library factory; provider-export is an already acquired export value.
+(def (aws-resource-contract provider-export resource-name)
+  (def (ref value key) (yuanxu-contract-object-ref value key #f))
+  (def provider
+    (ref (ref provider-export 'provider_schemas)
+         'registry.terraform.io/hashicorp/aws))
+  (def resource (ref (ref provider 'resource_schemas) resource-name))
+  (schema-value-contract resource-name
+    (yuanxu-opentofu-block->schema (ref resource 'block))))
+
+(def VpcInput (aws-resource-contract provider-export 'aws_vpc))
+(def InstanceInput (aws-resource-contract provider-export 'aws_instance))
+
+(def NetworkProfileContract
+  (.cc ObjectContract.
+    identity: 'aws/network-profile
+    responsibilities: (.o id: Symbol settings: VpcInput)))
+
+(def WebProfileContract
+  (.cc ObjectContract.
+    identity: 'aws/web-profile
+    responsibilities:
+    (.o id: Symbol network-ref: Symbol settings: InstanceInput)))
+
+(def AwsProfileShape
+  (.cc ObjectContract.
+    identity: 'aws/profile
+    responsibilities:
+    (.o network: NetworkProfileContract web: WebProfileContract)))
+
+(def (network-reference-issues value path)
+  (if (eq? (.get value web network-ref) (.get value network id))
+    '()
+    (list (.o kind: 'unresolved-network
+              path: (append path '(web network-ref))))))
+
+(def AwsProfileContract
+  (refine AwsProfileShape network-reference-issues))
+#+end_src
+
+Symbol is the existing public POO Type from type.ss. The field Types in
+responsibilities adapt automatically; no Core primitive wrapper is needed.
+The outer maps close domain fields, while each settings Schema closes provider
+fields according to its actual converted constraints. Optional AWS attributes
+remain Schema-owned, not duplicated as mandatory responsibilities.
+
+The relation above checks a logical Profile reference. It deliberately does not
+invent an aws_instance.vpc_id field. A real renderer must resolve the applicable
+subnet/security-group resources and validate those domain relationships separately.
+The source test covers a particular acquired AWS 5.100.0 export, not all provider
+versions or all external Schema semantics. Unsupported normalization must refuse.
+
+#+begin_src scheme
+(.def AwsDefaults
+  network: (.o id: 'private
+               settings: (.o cidr_block: "10.1.0.0/16"))
+  web: (.o id: 'frontend network-ref: 'private
+           settings: (.o ami: "ami-0123456789abcdef0"
+                         instance_type: "t3.small")))
+
+(.def (Production @ AwsDefaults)
+  web: =>.+
+  (.o settings: =>.+ (.o instance_type: "t3.medium")))
+
+;; Gerbil predicate boundary: recognition, not normalization.
+(using (Production :~ (cut element? AwsProfileContract <>))
+  (diagnose AwsProfileContract Production))
+
+;; A consumer must retain validate's return value.
+(def Checked (validate AwsProfileContract Production))
+#+end_src
+
+The user assigns the instance_type scalar directly. Only the existing containing
+objects are refined to preserve other defaults. No new path-assignment syntax is
+assumed. A plain independently authored object can also conform: inheritance is
+for reusing defaults, not a prerequisite for structural validity.
+
+Expected diagnostics from these definitions:
+
+- settings.instnace_type: provider Schema rejection at the nested field path;
+- missing network: missing-field before the reference obligation runs;
+- web.network-ref naming an unavailable logical network: unresolved-network;
+- wrong scalar representation: the existing Schema Type's diagnostic.
+
+For a genuinely nominal consumer, an explicit additional policy is available:
+
+#+begin_src scheme
+(def ManagedWebContract
+  (.cc WebProfileContract required-prototype: (.get AwsDefaults web)))
+#+end_src
+
+Use this only if the consumer requires that prototype family, not just its fields.
+Neither prototype ancestry nor a user-supplied identity symbol proves Module
+publication origin, source ownership, or authority to execute an effect.
+
+* Projection, final receivers and Core evidence: precise remaining gaps
+
+** JsonSchema recognition already exists; arbitrary write-back does not
+
+The pure contracts.ss API is not currently exported by the JsonSchema Module's
+interface/objects scope. Its current types inventory exposes source/artifact/
+config/scope contracts, not SchemaContract., ProjectionContract. or the pure
+schema-value-contract factory. Consequently the example above uses library API
+bindings; it does not claim those bindings already come from use-module. Adding
+their governed publication and resolving the locked dependency are separate
+static integration gaps, not reasons to invent or connect a runtime Loader.
+
+SchemaContract. delegates membership and diagnostic paths to the existing
+evaluator. For data-only AWS settings its inherited Type validation returns the
+original valid value. It does not need another Schema interpreter in Core.
+
+ProjectionContract. currently defines .element? and .diagnose, but no .validate.
+Its inherited Type validation recognizes the projected value and returns the
+original source object. It does NOT call validate on a delegated ObjectContract
+and install a potentially changed checked projection. The old description that
+projection simply preserves identity is therefore only a recognition/data-only
+boundary, not the new general normalization guarantee.
+
+An arbitrary projection procedure has no automatic inverse. Prefer validating
+the Profile first and composing its returned value with existing POO/lens
+operations. A future writable projection needs an explicit governed setter or
+lens and final-receiver tests; do not silently guess a write-back path.
+
+** Core admission is not yet upstream recursive validation
+
+Current types.ss .admit classifies its input, traverses Core-style .admit
+responsibilities and produces evidence. It does not invoke the new upstream
+validate-object pipeline. Public Schema Types do not automatically implement
+that Core .admit protocol. Repeating the old Core walker or converting every
+field Type into a Core Contract would preserve the duplication.
+
+The target sequence is value validation -> final checked object -> contextual
+admission -> publication recheck. The source-level shape is:
+
+#+begin_src scheme
+;; Target composition, not a newly installed API. The platform must resolve
+;; admission-descriptor to the complete value-contract + contextual-policy
+;; association; current automatic resolution is not implemented.
+(def (admit-aws admission-descriptor platform-context candidate)
+  (def checked (validate AwsProfileContract candidate))
+  (yuanxu-contract-admit admission-descriptor checked platform-context))
+#+end_src
+
+This three-line composition alone does not prove complete evidence binding.
+The full admission descriptor must retain the actual AwsProfileContract and
+policy association; binding only an unrelated policy object is insufficient.
+The platform must publish the exact checked object, not raw candidate, and
+reuse that producer result instead of wrapping the same Function fields again.
+Failure returns no replacement; callback effects are not rolled back.
+
+The current Core evidence producer already records its actual descriptor and
+candidate. The existing public binding remains the correct mechanism:
+
+#+begin_src scheme
+;; Existing public operation, used by Core's publication producer.
+(metadata.bind-evidence Call Checked AdmissionDescriptor Context
+  (lambda (evidence)
+    (.o subject: (.get evidence candidate)
+        descriptor: (.get evidence admission-contract)
+        context: (.get evidence context))))
+#+end_src
+
+AdmissionPublication. currently rechecks selected Graph/source/Schema observations
+before admission and during publication, but its Schema artifact list is supplied
+by its caller. Publication-owned association resolution and completeness checking
+remain design work. A same-named Contract is not the same descriptor. Exact
+reference binding does not detect arbitrary in-place mutation, discover omitted
+requirements or authenticate a freely constructed receipt.
+
+Core should retain Graph selection, Module/export origin, Schema revision policy
+and controlled evidence production. Upstream object revision and explicit graph
+stamps should be reused, not duplicated. The current .+ implementation still
+copies the right operand's slots/parents without retaining that operand itself
+as a parent; right-side requirement provenance is not solved by value validation.
+
+* Reflection and next design decisions
+
+| Question | Alignment conclusion |
+|----------+----------------------|
+| When is Gerbil alone sufficient? | Scalar/API predicates and Gerbil class/interface call boundaries without extensible object relationships or platform freshness claims. |
+| When is public POO needed? | Composable field Types, prototype policies, callable fields, final-receiver validation and governed finite recursive objects. |
+| When is Core justified? | Selected Module/Schema association, current Graph/source versions and controlled publication evidence, not another structural type foundation. |
+| What improves configuration UX? | Contributors publish defaults and Contracts once; users assign ordinary values or inherit maintained defaults. Diagnostics stay path-specific. No requirement to annotate every user object or write Context records. |
+| What is the cost? | Validation can allocate a checked persistent root and demand selected field computations. Boolean checks cannot substitute for it; repeated validation can wrap again. Do not normalize every installed Module eagerly. |
+| How does this compare with Schema-oriented configuration? | Schema/config separation remains valuable. POO adds reusable object behavior and final-receiver checking, but does not replace provider-schema maintenance, field discovery, source diagnostics, resource rendering or deployment safety. |
+
+The next change to discuss is the normalized-root handoff and full admission
+descriptor association, including the recognition-only ProjectionContract
+boundary. Do not implement another field walker, binding registry, recursive
+validator or Loader as a shortcut. First define one authoritative validation
+boundary and tests for raw-versus-checked subject, changed Contract/context,
+cached-parent/final-child behavior, failure preserving old state and unselected
+branch demand. Native source review, executable tests and Lean correspondence
+remain separate evidence levels.

@@ -1,0 +1,175 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Scheme Configuration Language - Existing Cases and Interface Lessons
+#+date: [2026-10-14]
+#+property: SDD_KIND design-research
+#+property: STATUS source-reviewed-not-implemented
+
+* Research question and correction
+
+The user wants a configuration language with the expressive convenience of
+Lisp package declarations and the composition discipline of Nickel/Nix.
+Requiring =(def arbitrary-name (settings ...))= for each module merely wraps
+construction and adds an unnecessary binding. Hiding =.o= is insufficient.
+The ordinary unit should be a domain or Module configuration declaration;
+explicit lexical bindings should appear when reuse or parameterization needs
+them. Complex user configuration does not automatically require Extend.
+
+Configuration language here means an embedded Scheme authoring surface that
+lowers to the existing POO values, functions and Contracts. It permits domain
+syntax and host-language expressions without establishing another object
+model, interpreter or merge authority. New semantic behavior belongs to
+Extend; computing a value or composing existing policies remains configuration.
+
+This research refines [[file:164-core-functional-and-extend-interface-audit.org][the Core surface audit]]. Its per-export classification
+still describes ownership; it does not settle the user's declaration syntax.
+The prior settings example is a current implementation baseline, not the final
+configuration-language design.
+
+* Source identity and method
+
+On 2026-10-14, public GitHub API inventories resolved:
+
+- =tao3k/omnibus-ncl=: =c5d37eb51961fd7bd32f775843044ca7f8191715=;
+- =tao3k/hivebus=: =ef2f0e0eaa5622b5cba72a3a705c447293c69ad4=.
+
+The cases below were read at those commits. External Emacs package documentation
+and Nickel manuals were read online; their moving documentation URLs are
+reference snapshots, not immutable implementation qualification. Cases were
+not executed and no runtime correctness or performance result is inferred.
+Repository style guides are source material for comparison, not instructions
+that override the Agentic AI Lab project contract.
+
+* Emacs: a configuration unit centered on a package
+
+The current [[https://github.com/emacs-mirror/emacs/blob/master/doc/misc/use-package.texi][Emacs use-package manual]] describes declarative package customization,
+loading and integration with installation. =use-package= itself is a package
+configuration/loading facility, not a package manager. It collects a package's
+options, hooks, key bindings, conditions and load dependencies into one unit.
+New keyword authors supply normalization and expansion handlers; ordinary
+users consume those keywords. The important architectural split is user
+declaration versus extension implementation.
+
+Package authors provide useful examples beyond the generic manual:
+
+| Primary example | Observed configuration shape | Lesson for the Scheme surface |
+|-----------------+------------------------------+-------------------------------|
+| [[https://github.com/minad/vertico#configuration][Vertico]] | a short package declaration, optional customization, then enablement; a directory extension declares dependency and local keymap | start with a small usable declaration; disclose integration only when needed |
+| [[https://github.com/minad/consult#use-package-example][Consult]] | a long declaration still organized around one package, with bindings, hooks and package-specific configuration | elegance is coherent scope and intent, not minimum line count |
+| [[https://github.com/minad/corfu#configuration][Corfu]] | initial enablement plus options; alternative configurations combine keymap behavior with customizations | allow a simple start and increasingly rich domain configuration in the same unit |
+
+An abbreviated, adapted example using real Vertico options is:
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :custom
+  (vertico-count 20)
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+#+end_src
+
+The package name already gives the declaration its purpose; a separate =def=
+binding is unnecessary. The option section carries values; the enablement
+section carries executable behavior. Scheme should learn the organization,
+while retaining its explicit admitted runtime handoff. It should not copy
+Emacs load-time effects into inert configuration slots.
+
+* Existing omnibus-ncl cases
+
+| Pinned case | Observed mechanism | Configuration-language requirement |
+|-------------+--------------------+-----------------------------------|
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/web-scraper.ncl][sandbox web-scraper]] | imports a domain interface and user values; supplies command, nested network/filesystem settings and derived paths; projects a profile | one coherent sandbox declaration with natural nested domain settings |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/python-script-runner.ncl][python-script-runner]] | overridable top-level defaults feed command, environment and profile output | expose parameters once; support derived values without repeated constructor plumbing |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/examples/user-config.ncl][user-config]] | an overridable record supplies a root and derived directories | shared lexical/configuration values; the shown source does not itself read environment variables |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/profiles/standard.ncl][standard Profile]] | a named reusable bundle of resource/network/security choices | selecting a maintained bundle should not require its prototype definition |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/backends/interface.ncl][Backend interface]] | contracts describe backend identity, supported features and bounded timeout | the author owns schema; the user supplies values under it |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/main.ncl][AWS main]] | domain paths describe networks/instances, values refer to related domain data, layered contracts validate the result | preserve domain hierarchy and field relationships instead of turning each field into a builder step |
+| [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/github/nix/ci.ncl][GitHub Nix CI]] | imports reusable steps, combines them with local steps, derives matrix jobs and applies an output schema | configuration needs imports, collection transforms and projection, not just scalar settings |
+
+The repository's [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/nickel-interface-style.md][Nickel interface style guide]] explicitly separates Schema from
+config. It also discusses documentation, defaults, contract composition,
+functions and open interfaces. These principles already provide a useful
+author/user split: users compose domain values; maintainers define their
+admission and behavior. Source patterns alone do not establish that every
+example currently evaluates successfully.
+
+* HiveBus: user hierarchy with an explicit output boundary
+
+[[https://github.com/tao3k/hivebus/blob/ef2f0e0eaa5622b5cba72a3a705c447293c69ad4/hosts/host-3/meta.nix][host-3/meta.nix]] configures host system, target configuration and deployment
+under their domain names. It reuses fields from =self.customNixOS= rather than
+repeating every value. [[https://github.com/tao3k/hivebus/blob/ef2f0e0eaa5622b5cba72a3a705c447293c69ad4/units/self/pops/hosts.nix][The hosts loader]] supplies the source and dependencies;
+[[https://github.com/tao3k/hivebus/blob/ef2f0e0eaa5622b5cba72a3a705c447293c69ad4/units/self/flakeOutputs.nix][flakeOutputs]] selects/export targets and exposes the POP entry.
+
+The useful separation is domain configuration, reusable library machinery and
+output projection. A user can author substantial host configuration without
+first defining the library's abstraction. Advanced owners can work with the
+retained POP boundary. This supports a rich default language, not merely a
+minimal selection switch.
+
+* Nickel/Nix semantics to distinguish before choosing syntax
+
+Nickel's [[https://nickel-lang.org/user-manual/modular-configurations/][modular configuration manual]] explains why forcing every configuration
+through a parameterized function can make it harder to inspect and combine.
+Functions remain useful for deriving individual values; composable, inspectable
+configuration values need their own treatment.
+
+The [[https://nickel-lang.org/user-manual/merging/][merge manual]] describes symmetric merging with defaults/priorities and
+field-associated contracts. Native POO inheritance has its own ordering and
+refinement semantics. Nickel's commutative merge is not interchangeable with
+POO C4. Borrow the authoring goals and contract discipline without silently
+claiming identical merge laws. Likewise Nix's [[https://nix.dev/tutorials/nix-language.html][language facilities]] supply
+expressions, functions, lexical bindings and hierarchical attributes; NixOS
+module option semantics are a further layer, not the same as attribute-set
+update. HiveBus's POP layer is another explicit owner.
+
+Derived-field behavior needs particular care: Nickel recursive records can
+recompute dependent fields after overriding their inputs. Ordinary eager
+Scheme lexical bindings do not acquire that property from compact syntax.
+Any promised effective-object dependency must use the native POO computation
+owner, handle cycles and distinguish declaration dependencies from runtime
+effects. This research does not claim that correspondence is implemented.
+
+* Revised requirements for our Config Language
+
+1. The module/domain name gives a declaration its scope and identity. Ordinary
+   cases do not require an arbitrary =def asd=, settings wrapper, named Profile
+   registry or class/instance ceremony. Optional bindings serve actual reuse.
+2. Simple values, nested domain settings, selected POO policies and pure
+   Scheme expressions coexist. Complexity of a configuration is not a reason
+   to force the author into generic dispatch or MOP.
+3. Schema/Contract, defaults, documentation, permitted refinements and source
+   locations are supplied by the Module. Users should be able to inspect the
+   effective value and receive a field-specific diagnostic.
+4. Ordinary Scheme =let=, =if= and named pure functions own calculation and
+   parameterization; declarations own domain shape. Public configurable slot
+   results remain ordinary inert values or native POO objects/prototypes,
+   including Type/Contract. This result restriction does not ban expressions.
+5. Select, compose and refine already published capabilities in default config.
+   Use the existing POO Profile/prototype configuration layer when reusable
+   structure, inheritance or nested refinement is needed. New schema, behavior
+   protocols and Provider crossings are deeper Extend implementation work.
+   More Scheme calculations alone do not provide this abstraction.
+6. Lower hygienic domain declarations to the existing POO objects/functions and
+   preserve identity, provenance and native composition. Never construct a
+   second runtime clause interpreter or hidden patch/merge evaluator.
+7. Package acquisition, source loading and execution remain explicit owners.
+   User syntax may declare intent and dependencies; a config declaration does
+   not itself run a sandbox, install a package or activate a Provider.
+
+The goal is Scheme's own best configuration expression, not translation of
+Nickel or Nix examples. Start with the [[file:164-user-interface-scenario-case-previews.org][downstream Scenario examples]]: choose a
+maintained Scenario, inherit it with native .def, explicitly use-module where
+needed, and refine desired configuration. Defaults stay inherited; selected
+composition reads the modified effective Profile. Module instance names come
+from slots; source exports remain visible through use-module.
+
+The [[file:164-profile-module-targeting-design.org][Scenario design]] puts this user route before internal details. Its later
+specification covers CompositionContract/domain refinement, optional direct
+Contract initialization, dynamic Profile-name resolution, responsibility-driven
+objectification and native expansion. SDLC names are examples, not a generic
+fixed Project Contract. Real Profiles slots and optional Category framing remain
+distinct. Contract-family resolution, contextual construction, collection
+admission and effective evidence projection are explicitly unimplemented design
+behavior; declarations do not start runtime Sessions.

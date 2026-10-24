@@ -1,0 +1,316 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 32.55 Complete Build Costs And Native Worker Budget
+
+* Question and evidence boundary
+
+Why did the complete Core library exceed its unchanged 600-second local gate?
+Distinguish selection/import expansion, duplicate producers, backend compilation,
+and host contention. A dependency setup failure is not compiler performance
+evidence. A completed specification is not a completed library build.
+
+The investigation uses installed Gerbil =1cfb032= / Gambit =ea114fc= and the
+fixed gerbil-poo =c4b647ef66b735360346c0eb0e27c2cc5430cf72=. It does not edit the
+compiler, alter optimization, remove targets, or adopt unissued disk outputs.
+Concurrent working-tree changes are inputs, not permission to overwrite them.
+Parser remains on its current local working tree and is not pushed.
+
+* Native ownership
+
+=std/build-script= supplies the command dispatcher. Installed =std/make=
+normalizes the specification, rejects duplicate source targets, schedules import
+dependencies, checks timestamps, and invokes the compiler. Installed
+=gerbil/compiler/base= owns the backend executor; =GERBIL_BUILD_CORES= controls
+both the native make workers and that executor. Core adds no executor.
+
+Relevant installed source procedures are =make-build=, =gxc-compile=,
+=available-build-cores=, =open-compile-executor= and
+=execute-pending-compile-jobs!=. These references describe the installed source
+examined in this run, not an assertion about every Gerbil release.
+
+Core's =call-with-build-artifact-issuance= deliberately starts an unissued build
+in a private output directory. Only successful native compilation, source
+currentness, complete output enumeration and publication establish issuance.
+Same-process reuse of an already issued graph retains its original checks.
+Across processes, arbitrary writable outputs are not a trusted incremental
+cache. Removing staging would weaken the joint artifact/record replacement
+control; it is not an acceptable performance repair.
+
+* Observations before repair
+
+The earlier two-worker failure expanded 233 distinct source modules and emitted
+353 backend progress lines, 352 with complete producer paths before the log was
+truncated. Neither complete inventory contained a duplicate producer. A module
+can emit runtime and multiple phase files; counting
+those as repeated compilation of the source is incorrect. Its remaining tree
+contained 503 Scheme phase files under =yuanxu/=, excluding the separately named
+prelude family, and only 356 corresponding dynamic outputs.
+
+An independent =build.ss spec= request completed in approximately 97.36 seconds
+wall time, with 17.03 user and 5.48 system CPU seconds. It emitted the complete
+233-entry specification. The sandbox denied one auxiliary =time= system query;
+that command's status is not a clean performance receipt for the complete build.
+
+The host has 12 logical CPUs and 32 GiB RAM. Observed load averages ranged from
+about 58 to 90 during initial diagnosis. This establishes contention as a
+confounder; it does not identify the entire wall/CPU gap as CPU starvation.
+Other sessions and their processes were left untouched.
+
+Two isolated-prefix attempts failed before compilation because the package
+manifest was absent or copied one directory too deep. Both failed receipts are
+retained locally and excluded from compilation comparisons. The dependency
+manifest then came from the already qualified, fixed dependency prefix; no
+dependency was downloaded or silently upgraded.
+
+* Qualification protocol
+
+Use the same working source cohort, fixed compiled gerbil-poo dependency,
+installed compiler, optimization, 2 GiB runtime fence, and 600-second timeout.
+Give each cold run its own empty Core output prefix and the same existing package
+manifest. Timestamp native progress lines outside the compiler; keep raw logs
+outside Git. Record first/last source expansion, unique backend job counts,
+process CPU time and host load. Compare two and four workers serially.
+
+A source digest and Core's own return-boundary currentness checks detect changes
+during qualification. Resource measurements and source counts must accompany
+wall times; one noisy run cannot establish a general speedup percentage.
+
+* Required semantic controls
+
+A successful complete build must precede consumers from that newly built library,
+without substituting the earlier compiled-framework overlay. Retain the real
+Gitea/PostgreSQL controls for both requirements, default following versus an
+explicit client port, stale parent-plan refusal, child obligations, JSON source
+changes and unselected-branch laziness. Native issuance must still reject
+unissued or changed outputs; worker budgeting does not change admission.
+
+* Completed four-worker receipt
+
+The four-worker cold build completed successfully in 469.18 seconds, with
+251.80 user and 87.12 system CPU seconds. Native source compilation began at
+86.163 seconds and the last source expansion began at 183.235 seconds. The last
+backend job started at 451.263 seconds. Successful process exit followed native
+executor drain, complete artifact publication and return-boundary currentness.
+
+There were 233 unique source compilations, 504 unique backend jobs, 233 published
+interfaces and 504 published dynamic outputs. No source or backend producer
+appeared twice. All implementation source digests still matched after the run.
+Maximum reported resident set was 2,063,859,712 bytes; this is the largest
+process RSS reported by =time=, not a measured aggregate process-tree peak.
+
+The host load average rose above 110 near completion. This is a complete-gate
+pass under that observed load, not a guarantee under arbitrary contention and
+not an exact-head GitHub CI receipt. The experiment changed only the explicit
+native worker budget relative to the existing two-worker launch policy; the
+concurrent dirty source cohort was retained rather than reconstructed from HEAD.
+
+* Worker policy and confounders
+
+The local Just environment now defaults to the available CPU count up to four
+workers, instead of unconditionally choosing two. An explicit
+=GERBIL_BUILD_CORES= remains authoritative. On this host the evaluated default
+is four; explicit values two and seven were retained as two and seven. This is
+an input to the installed executor, not another scheduling or caching layer.
+The checked-in CI environment still explicitly requests two and is not silently
+overridden. No timeout or optimization setting was widened or weakened.
+
+The subsequent same-source two-worker control began source compilation only at
+267.077 seconds. A read-only process observation before that point found the
+Gerbil process runnable after 228 seconds but with only 22.16 CPU seconds.
+The one-second stack sample included native expander/runtime and Contract
+evaluation; it did not establish a stuck backend queue. This delay precedes
+parallel compilation, so it cannot honestly be attributed to the backend worker
+count. Preserve the distinction between the bounded worker repair, the observed
+complete-gate pass and a statistically controlled speedup claim.
+
+* Same-source two-worker control
+
+| Native workers | First source | Last source start | Unique sources | Complete backend identities | Wall seconds | Exit |
+|----------------+--------------+-------------------+----------------+-----------------------------+--------------+------|
+| 4              |       86.163 |           183.235 |            233 |                         504 |       469.18 |    0 |
+| 2              |      267.077 |           403.359 |            233 |                         218 |       600.11 |  124 |
+
+The two-worker control reached the unchanged 600-second deadline. Its final
+partial progress line was excluded from producer-identity counts. No interface
+or dynamic output was published to its destination prefix; partial staging did
+not become an issued library. The owned Gerbil/backend processes were confirmed
+gone before consumer tests began. Timeout cleanup did not touch other sessions.
+The timeout's process-tree CPU and memory totals are incomplete and are not used
+as a comparable complete-build resource result.
+
+All implementation source digests matched between and after the runs. Host load
+was materially worse during the second run, reaching approximately 128. Thus the
+table establishes the observed pass/failure and lack of duplicate work, not the
+causal speedup of doubling workers under a fixed load. Serial import/selection
+CPU starvation and bounded backend throughput both matter. The four-worker
+default is qualified by a complete run; no universal sub-600-second promise is
+made for an arbitrarily overloaded shared host.
+
+* Fresh-library consumer result
+
+The real =t/gitea-postgresql-publication-test.ss= suite passed all eleven Cases
+against the newly built Core library and the fixed gerbil-poo library. The old
+compiled-framework overlay was absent from the load path. The receipt includes
+=MODULE-OK=, =HARNESS-OK= and final =OK=, exits zero and contains no forbidden
+harness, heap or stack error marker. This qualifies those consumers, not the
+entire test suite or remote CI.
+
+The first consumer run failed the existing 60-second Ops idle gate. Installed
+=gxtest= imports modules in =prepare-harness= before reporting HARNESS; the
+captured failure alone did not identify the precise silent subphase. Rather
+than widening idle/total limits or adding timer heartbeats, the diagnostic lane
+precompiled the unchanged =t/qualification/service-publication/fixtures.ss=
+with native =gxc -O=, through a heap-fenced temporary Just recipe with the
+existing 120-second compile bound. That compilation succeeded. The subsequent
+unchanged =just test-file= invocation passed with the same 2 GiB, 60-second idle
+and 600-second total bounds. Genuine existing progress records crossed the Ops
+boundary; no synthetic progress was inserted.
+
+Fixture precompilation is an explicit qualification prerequisite of this
+receipt, not a claim that a cold source-only test passed or that production
+builds should compile tests. No Fixture, test assertion, source-admission code,
+cache implementation or native compiler source was changed. The failing cold
+consumer receipt and both build/setup failures remain local artifacts.
+
+The eleven Cases retain cached-parent/child final values, both independently
+published requirements and their conflict, explicit client mismatch, stale
+parent-plan rejection, child obligations, source mutation, forged source-origin
+refusal and unselected-branch laziness. Implementation source digests still
+match the cohort that completed the full build.
+
+* Reflection
+
+** Test ownership correction
+
+An additional =test-support-build-test.ss= was withdrawn before integration.
+It duplicated native make's cold/hot and dependency-rebuild behavior, instead
+of testing a distinct Core responsibility. Its failed local receipt remains
+an artifact; it is not a qualification result. No extra compiler regression
+suite or second Fixture lifecycle is introduced.
+
+The test entry prepares imported support libraries in a separate =test-lib=
+through native make. Runtime receives that library after preparation; production
+build targets remain unchanged. The existing Gitea/PostgreSQL suite is the
+consumer qualification. Its eleven multi-module publication Cases are
+integration controls, not a timing baseline for hot atomic Cases.
+
+Warm support compilation can skip compiler jobs while still paying source
+expansion and dependency-discovery costs. These costs must be measured apart
+from harness startup and Case execution, and must not be described as atomic
+test time or solved by proliferating independent test processes. Do not cache
+test verdicts or bypass native dependency currentness to reduce that overhead.
+
+The automatic-entry consumer rerun completed successfully: default
+=just test-file t/gitea-postgresql-publication-test.ss=, eleven Cases,
+=MODULE-OK=, =HARNESS-OK= and final =OK=, exit zero, without forbidden
+harness/heap/stack markers. Support outputs already existed in =test-lib=;
+this invocation issued zero compile jobs and did not require manual preparation.
+The prior successful cold native support build is a separate receipt.
+
+Whole-entry wall time was 304.97 seconds (81.60 user, 12.47 system) under
+substantial concurrent host load. This is not a seconds-scale atomic-test
+result or a performance improvement claim. Preparation, harness startup and
+individual Case timings were not separately measured in this rerun; repeated
+discovery and expansion remain an open performance question. The 60-second
+idle and 600-second execution limits were unchanged.
+
+** Build evidence
+
+Do not optimize an already deduplicated source graph to compensate for a backend
+worker limit. Conversely, do not publish a higher worker limit from an incomplete
+run or hide an incomplete backend drain behind successful interface generation.
+Choose a bounded native worker default only after the unchanged complete gate
+and consumer controls pass. Explicit caller and CI worker budgets remain
+authoritative; test execution remains serial and heap fenced.
+
+* Phase attribution and removal of the separate test Builder
+
+Status correction: the build-entry experiments described in this section were
+withdrawn after the ownership review. They are historical measurements, not
+the current supported entry. The root =build.ss= is restored; there is no
+separate test Builder or =test-support= dispatcher. The replacement publication
+design is [[file:../../10-19-design/13-module-loading/13.17-init-exports-and-sdk-consumers.org][13.17 Init Exports and SDK Consumers]]. Automatic pre-import preparation
+through that proposed publication has not been implemented.
+
+The opt-in observation rerun used the same eleven Gitea/PostgreSQL Cases,
+installed Gerbil and native build cache. Existing Case observation reports
+entry, Fixture acquisition, successful body return and completed release.
+The checkpoints run inside the cleanup extent: an acquisition checkpoint
+failure cannot abandon an already acquired resource. Body and cleanup errors
+retain the existing two-error handling. Default runs do not emit timing rows.
+
+This rerun passed =MODULE-OK=, =HARNESS-OK= and final =OK=. It is an observed
+361.72-second run, not a decomposition of the earlier uninstrumented 304.97
+seconds. Instrumentation changed the support dependency, so native make
+correctly recompiled the one Fixture target in this attribution run.
+
+| Boundary | Observed wall time | Interpretation |
+|----------+--------------------+----------------|
+| Context setup | 20 s | Original launcher also expanded the relative Ops source |
+| Support command | 32 s | Includes dispatcher/startup and the following two spans |
+| Native import discovery/expansion | 8.078 s | One support target, source projection only |
+| Native make | 12.077 s | Includes the dependency-triggered Fixture rebuild |
+| All eleven Case spans | 251.411 s | Integration work including Fixture lifecycle |
+| Fixture acquisition within those Cases | 227.419 s | Acquisition minus each Case's entry checkpoint |
+| Case bodies | 13.804 s | Assertions, direct admission and publication controls |
+| Fixture release | 3.989 s | Completed body-return to release checkpoints |
+| Remaining entry/harness/policy overhead | approximately 58 s outside Cases | Residual, not an isolated harness-start measurement |
+
+Reader observations locate the dominant acquisition cost: 3,952,920 native
+replay visits, 157.610 s in metadata replay, 33.666 s in source guards,
+22.631 s in imports, 0.150 s in reader compilation and 0.573 s in evaluation.
+These nested reader spans are diagnostic categories, not an independent
+partition to add to the lifecycle table. This evidence rejects the hypothesis
+that the Case assertions or compiler backend alone explain the long run.
+
+** Build and execution ownership
+
+The separate =t/qualification/testing/build.ss= and =build-test-support= recipe
+were removed. An experiment then put a =test-support= phase in the root
+=build.ss=, projecting imports to a native target list. That command was also
+withdrawn: moving orchestration into the root did not establish the right
+publication ownership. No test targets were added to production =core-spec=.
+
+The Just entry obtains package context once. If =GERBIL_PATH= is already
+explicit it does not invoke =gerbil env=; otherwise the installed package tool
+initializes it once. Later commands reuse that root and its bin priority.
+The budget query uses the compiled public Ops identity rather than explicitly
+expanding =./ops/progress.ss=. Native make still decides dependency freshness.
+
+The existing Ops receipt supplies native-command seconds in observed runs;
+subtracting Case spans separates harness import/setup/teardown from Case work
+without introducing another timer or runner. Fine-grained reader counters use
+the existing ModuleTestingProfile. Source replay, child obligations, both port
+requirements, return-time currentness and unselected-branch laziness are not
+removed or cached across effects.
+
+** Remaining cost boundary
+
+The intermediate default consumer invocation passed all eleven Cases with
+=MODULE-OK=, =HARNESS-OK= and final =OK= in 460.05 seconds (81.96 user,
+11.16 system). This was not faster than the earlier 304.97-second receipt
+(81.60 user, 12.47 system). It supplies no end-to-end speedup claim.
+
+The first root-entry experiment needed 58.33 seconds (8.57 user, 1.22 system)
+for a warm support check; native make itself took 98 ms and issued no compiler
+jobs. A subsequent SDK-only/deferred-production experiment took 24.20 seconds
+(2.96 user, 0.80 system), with native make at 92 ms. Those measurements locate
+unrequested initialization, not a verified production-entry replacement.
+An existing isolated source-build entry control subsequently failed the
+unchanged Ops idle gate in 107.80 seconds; it did not qualify that deferred
+production path. The failure remains in local artifacts.
+
+Both root-entry variants were withdrawn in favor of the init-owned export
+design. No passing receipt above qualifies the not-yet-implemented exports
+API. Further performance work must consume that agreed publication rather
+than keep another dispatch path alive.
+
+Repeated authentication across distinct callback/effect boundaries is not
+automatically duplicate work. This change does not reuse a successful MOP
+replay across them. The measured replay graph remains the major open cost;
+reducing it requires preserving original issued records, callback order and
+each protected boundary. Launcher simplification must not be represented as
+having solved that separate problem or made the integration suite an atomic
+seconds-scale test. Concurrent host load also prevents deriving a stable
+speedup from one observed/unobserved pair.

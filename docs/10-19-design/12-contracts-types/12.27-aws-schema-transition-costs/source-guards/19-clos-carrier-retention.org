@@ -1,0 +1,264 @@
+#+title: 12.27.32 POO, MOP, CLOS And Retained Call Values
+#+property: DOCUMENT_ID 12.27.32
+#+language: en
+
+* Choose the extension axis before the mechanism
+
+CLOS is a multi-dispatch style implemented with POO objects, not a replacement
+object system. MOP is the interface for inspecting or customizing object
+mechanisms; it is not an alternative dispatch strategy competing with CLOS.
+Ordinary POO access can use MOP internally without requiring an author to write
+meta-level code.
+
+| Requirement | Default mechanism |
+|-------------+-------------------|
+| Replace a configuration value | Ordinary value/path assignment |
+| Transform an inherited value | Native slot refinement and a named function |
+| Extend behavior on one receiver axis | POO prototype/slot method |
+| Inspect or customize construction, slots or inheritance | Existing MOP |
+| Dispatch across independently extensible argument axes | CLOS |
+| Compute a projection over already supplied data | Pure Scheme function |
+
+Argument count alone does not justify CLOS. Conversely, replacing a genuinely
+open crossing with a closed role switch is not an optimization preserving its
+extension contract. The authoring admission generic has independently extensible
+Executor and SourceRole axes; its public bundles and method combinations remain.
+Interface ancestry is also an existing specializer boundary. This audit does not
+silently reduce that public method space.
+
+* Actual retention paths
+
+The native reader retains prepared bytes/guards and private SDK contexts. SDK
+contexts retain binding tables and runtime/macro bindings. Clearing the completed
+module-context code field does not prove that every program or syntax object
+reachable through those bindings has been reclaimed. No registry, binding,
+promise or SDK state is cleared by this work.
+
+The original reader's private-context count excludes the fresh interface
+wrappers registered with the SDK. The added lifetime count therefore records
+their binding widths at successful evaluation as well. That scalar is not an
+enumeration of all currently reachable bindings: later macro activity can
+change a Context. It must not be used as a complete heap attribution.
+
+CLOS retains the effective generic generation, applicable method groups and
+arguments in its effective method. Each invocation frame retains that effective
+method, arguments, method and optional next-method continuation. In the authoring
+crossing the arguments include an Interface and the inert Scheme datum being
+checked. These are real payload references, not merely receipt labels.
+
+Native slot-read records retain their receiver, instance, value, currentness
+procedure and dependencies. An enclosing lazy selected-graph computation can
+therefore retain completed CLOS calls after their Scheme stack frames return.
+Core's diagnostic observer neither owns nor clears that collector. A reduction
+in Core validation receipts does not imply removal of this root.
+
+* A bounded Core improvement using existing syntax
+
+[[file:../../../../../poo-clos/objects.ss][The two call-carrier constructors]] now use existing lexical-value slot syntax:
+
+#+begin_src scheme
+(def (make-effective-method generic arguments around before primary after
+                           groups: (groups '()) executor: (executor #f))
+  (checked ClosEffectiveMethod
+    (.o (:: @ ClosEffectiveMethod.)
+        generic arguments around before primary after groups executor)
+    'invalid-effective-method))
+
+(def (make-invocation-frame effective-method arguments next qualifier method)
+  (checked ClosInvocationFrame
+    (.o (:: @ ClosInvocationFrame.)
+        effective-method arguments next qualifier method)
+    'invalid-invocation-frame))
+#+end_src
+
+The inputs are already evaluated values. A declaration such as
+=generic: generic-value= creates a self-slot initializer over its lexical
+environment; the native unary =generic= form captures the surrounding value as
+a constant slot specification. It does not introduce a macro, representation,
+cache, new public constructor or unvalidated execution path.
+
+The original prototype relationship is essential. In the locked gerbil-poo
+revision, =.cc= clones direct specifications and supers; it does not inherit its
+receiver. Replacing inheritance with =(.cc ClosEffectiveMethod. ...)= would lose
+the required nominal ancestry. This implementation keeps =.o (:: @ ...)= and
+uses the existing constant lexical slots inside it.
+
+The constructors still validate the completed object. Protocol hooks, malformed
+descriptor rejection, qualifiers and next-method behavior remain checked. The
+native test compares the original independent object shape and payload identity,
+checks that the actual direct specifications are constant, and retains negative
+constructor cases. This is source-level initializer/environment contraction,
+not proof of a byte reduction or argument reclamation. A constant slot can still
+acquire a native getter/read record when accessed.
+
+* Observation must not become another root
+
+The existing test-macro adapter now classifies CLOS values by cached native
+prototype identity, even when their kind slot has never been forced. It inspects
+only existing instances and C4 lists. It never computes a prototype, invokes a
+MOP hook, forces a cold field or loads a business scope to obtain a label.
+
+Receiver/read identity tables for the lifecycle probe have weak keys and scalar
+values. Geometric publication snapshots report effective methods, invocation
+frames, cached argument references and distinct argument lists, authoring
+Interface/datum identities, continuations and read records. Transient payload
+identity tables disappear when a snapshot returns. The observer never prints
+the objects or retains them in output. These are observed weak identities, not
+an exact reachable-byte census; collection timing and diagnostic overhead remain
+part of the measurement boundary.
+
+The reader separately reports existing private binding counts and remaining
+code-body pointers at geometric publication counts. It reads direct SDK table
+metadata without enumerating binding values or changing compiler state. This
+keeps reader roots distinct from CLOS payloads and native read-record roots.
+Disabled/deep-trace-disabled observation does not allocate this census.
+
+* Matched native control and limits
+
+The original and value-slot constructors were compared through the same real
+16-Module fixture and init-owned tests object, with identical tracing and policy.
+The original factory blob is =21f53f5caca41b2f1d8977aa007b904343fbab07=
+at Core =52130d2=, with the same locked gerbil-poo source dependency. The control
+changes only the Core factory source in the isolated qualification copy.
+Both retained 288 effective methods, 288 invocation frames, 2304 argument
+references, 64 continuations and 7488 related read records at Graph completion.
+The completed selected-graph dependency record still had 389830 edge occurrences
+and 23482 distinct tokens. No read event was hidden to manufacture a reduction.
+
+The observation identifies why the carrier change is insufficient on its own:
+the read graph still owns the carriers, which still own their required payloads.
+The previous 200-publication refusal is retained. The new capacity result must
+be reported independently, especially because added weak instrumentation can
+itself affect allocation and GC timing. No end-to-end speedup or thousand-Module
+pass follows from the constructor change or the small comparison.
+
+The instrumented 1000-Module run refused under the unchanged live-growth guard
+after 198 publication returns; the next publication had evaluated but had not
+passed its return boundary. At refusal the weak census observed 3582 effective
+methods and 3582 invocation frames, 3582 distinct argument lists and authoring
+datums, 398 authoring Interface identities, 796 continuations and 93132 related
+read records. Those carriers held 28656 argument references. The retained
+128-publication snapshot had 2304 effective methods/frames and 59904 read records.
+The refusal sample reported 1506130392 live bytes and 1079012824 live-growth
+bytes. These are aggregate process bytes, not bytes assigned to CLOS.
+
+The difference from the preceding 200-publication refusal is not evidence of a
+regression or an improvement: this run includes weak lifecycle instrumentation
+and another GC schedule. It remains a failed thousand-Module qualification.
+No timeout/heap change, dropped source check or success relabeling was used.
+Failure-path code retention remains intentional: the existing native negative
+test requires unadmitted post-evaluation bodies to remain untouched. Only
+successfully source-admitted completed bodies are released; fixture filesystem
+cleanup is a separate obligation.
+
+* Historical controlled cache cut: diagnostic only
+
+An earlier revision of the [[file:../../../../../t/qualification/module-scale/worker-test.ss][native worker]] observed the actual selected-graph read receivers
+while acquiring the Graph, without retaining the read tokens. All ordinary
+identity, expansion-count and cold-scope assertions run first. It then binds the
+original source guard, samples existing Observability live memory with collection,
+drops its local Graph reference and invalidates only those fixture-owned
+selected-graph caches using the public native setter. A second collected sample
+measures the region released by that cut. This is deliberately destructive
+qualification instrumentation, not a production cache strategy or a new API.
+
+The current worker no longer performs this destructive cut. It measures live
+memory while retaining the same Graph and then checks its original source guard.
+The numbers below are historical causal evidence, not the current test path or
+an optimization receipt. See [[file:20-semantic-reads-and-link-records.org][semantic reads and link records]].
+
+The 16-Module control found two such owners. Held live bytes were 567234128;
+after the cut they were 495570032, a difference of 71664096 bytes. The weak census
+then reported zero effective methods, invocation frames, associated argument
+lists/Interface/datum identities, continuations and related read records. Before
+the cut it reported 288/288 carriers and 7488 read records. The original source
+guard subsequently still refused the actual init-file mutation, and the fixture
+removed its directory. Thus this test does not substitute forgetting provenance
+for source validation, nor does the observer become a strong owner.
+
+The effect is the invalidated Graph cache region, including dependent caches;
+it is NOT an exclusive byte attribution to CLOS. Reader/preparation/publication
+state, shared metadata and SDK bindings remain. Their relative byte contributions
+are not derived from the residual 495570032-byte process sample.
+
+At 16 publications the reader reports 208 private role bindings and 3568
+evaluated interface-wrapper bindings, with zero completed private code-body
+pointers. Those counters do not describe every runtime closure or expansion
+object reachable from a binding. The cache-cut result demonstrates that the
+observed CLOS calls are not permanently pinned merely by those SDK bindings;
+the native Graph read records provide a distinct retaining path.
+
+No byte threshold is used to manufacture a pass. The worker still acquires the
+whole selected Graph before this diagnostic cut. A thousand-Module run that
+fails during acquisition never reaches it and remains failed.
+
+* Quint and Lean answer different questions
+
+[[file:../../../../../dev/proofs/quint/CarrierRoots.qnt][CarrierRoots]] models a finite lifecycle: return from a method, retention by
+read records, Graph release, and weak versus strong diagnostic ownership. Matched
+controls reject an observer that becomes a strong owner, dropped payloads and
+forgotten read roots. A separate counterexample rejects clearing canonical SDK
+roots: the shared method remains owned after private call values are released.
+The seven cases include an acceptance witness. Another counterexample disproves the claim that
+payloads disappear merely because the call returned. It is a retention topology
+model, not a native GC or allocation model. Constructor validation is a native
+gate; the modeled lifecycle starts at the completed-call boundary.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
+when a shared initializer environment over supplied field values is replaced
+by individual constant captures. The result deliberately preserves payload
+membership, rather than claiming it is freed. It says nothing about field-read
+order, SDK hooks, continuation environments or bytes. Its native correspondence
+premise is that constructor arguments are already supplied values and are not
+rebound by a receiver-dependent formula; the direct specification test checks
+the actual native lowering in the locked library.
+
+ReaderProjection and ImportCorrespondence retain ownership of current source
+registration/projection and freshness premises. They are not duplicated here.
+Full-source native qualification remains the capacity gate.
+
+* Core boundary still requiring design
+
+The next optimization must separate a Graph's semantic input requirements from
+incidental reads of fresh validation/call carriers. Keeping CLOS where its axes
+are open is compatible with making ordinary data/call carriers lighter. It does
+not justify retaining every incidental operational read as a permanent Graph
+dependency.
+
+The existing Graph index and source/publication guards should remain the owner;
+no second result cache is proposed. Before any input projection is implemented,
+it must preserve actual role-policy, Type/Contract, generic-generation and
+protocol requirements, including mutations that do not change source bytes.
+Open callbacks and MOP hooks cannot be assumed pure merely because a default
+method is pure. Filtering records by CLOS type or disabling observation would
+not establish this completeness property. Production dependency compaction is
+not implemented or claimed by the successful cache-cut experiment.
+
+* Reproduction
+
+Focused native dispatch, method combination, cached-prototype/cold-field
+observation, the complete publication controls and the 16-Module lifecycle
+control pass naturally with MODULE-OK, HARNESS-OK and final OK. The publication
+suite retains macro reuse and the negative control that leaves unadmitted bodies
+untouched. The original init-owned AWS/JsonSchema/Funflow aggregation also passes
+with observation and progress-aware timeouts: Schema upgrades, stale-evidence
+rejection, accepted-value preservation and cleanup remain in the same Case.
+Neither native suite reports an error/overflow marker. These are targeted
+source-only receipts; no full build or complete-checkout qualification is claimed.
+
+CarrierRoots has seven expected outcomes and CarrierCapture's focused Lean
+check passes. Source-projection correspondence remains separate; model passes
+are not a native capacity result. The thousand-Module failure above is retained.
+
+#+begin_src text
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/module-test-observation-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+just test-file t/module-testing-isolation-test.ss
+python3 dev/proofs/quint/check.py --case-prefix CarrierRoots --typecheck-scope selected --receipt .data/qualification/carrier-roots.scm
+#+end_src
+
+Run Scheme gates serially with the unchanged project heap fence, progress-aware
+timeout and cleanup policy. No upstream patch, result cache, heap increase,
+runtime Loader integration or push is part of this investigation.

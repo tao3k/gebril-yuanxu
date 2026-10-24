@@ -1,0 +1,498 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Independent Features, Profiles and Scenarios: Interfaces, Instantiation and Reuse
+#+date: [2026-10-15]
+#+property: STATUS authoritative-ownership-correction-design-only-no-loader-change
+
+* Ownership correction: composition is not containment
+
+[[file:15-open-profile-composition.org][Module 15]] supplies the current complete admission/projection design over
+these independent recipe objects. Its kernel accepts arbitrary selected names
+and counts; Gerbil, Rust and seven tasks below are example publications/results,
+not a required language pair or an upper bound on the user ecosystem.
+
+Modules, Profiles and Scenarios are independently maintained publications.
+Modules expose clean functionality, Feature extension, neutral prototypes,
+Contracts and algorithms. They do not own language/business recipes or Profile
+catalogs. Profiles configure and reuse these features. A Scenario selects and
+composes several independent Profiles and their relationships. The same Profile
+can participate in multiple Scenarios; it is not owned by any one of them.
+
+This supersedes both the earlier Module.profiles organization and the rejected
+proposal to move ownership into Scenario.Profiles. Neither is the target model.
+An ordinary Scenario slot may reference a Profile occurrence; that reference is
+not ownership, registration under the Scenario, or a new configuration container.
+Do not add a mandatory Profiles object layer to express independent publication.
+
+#+begin_example
+Contribution package @ revision
+  Module publications:   Funflow, Sandbox, GitHubActions
+  Profile publications:  GerbilCIProfile, RustCIProfile, GitHubActionsProfile
+  Scenario publications: CICDScenario, ReleaseScenario
+
+Dependency/use relationships:
+  GerbilCIProfile --------> Funflow feature interface
+  RustCIProfile ----------> Funflow feature interface
+  GitHubActionsProfile ---> GitHubActions feature interface
+  CICDScenario -----------> GerbilCIProfile + GitHubActionsProfile
+  ReleaseScenario --------> GerbilCIProfile + RustCIProfile + GitHubActionsProfile
+#+end_example
+
+This is a logical publication graph, not new import/compose syntax or an executed
+multi-provider example. A package may publish several kinds, but a Profile source
+does not become part of a Module's implementation because they share a repository.
+Module discovery must not import every Profile or Scenario owned by the package.
+
+* Paper foundations and limits of the analogy
+
+[[https://plv.mpi-sws.org/backpack/][Backpack: Retrofitting Haskell with Interfaces, POPL 2014]] uses explicit
+dependency interfaces to support separately checked packages and later linking.
+The architectural lesson is to state feature assumptions independently of a
+particular configured use. Our proposal separates feature interface publication,
+Profile configuration and Scenario binding. A POO Contract and native prototype
+are not Backpack signatures, and this design does not establish static separate
+typechecking, applicative identity or recursive-linking guarantees for Scheme.
+
+[[https://www.microsoft.com/en-us/research/wp-content/uploads/2018/03/build-systems.pdf][Build Systems a la Carte, ICFP 2018]], especially sections 4.1 and 4.2,
+distinguishes task scheduling from the decision whether to rebuild. Applied here,
+resolve the selected dependency closure separately from deciding whether its
+construction or validation may be reused. Source/build ordering, native prototype
+precedence and CI task execution edges have different meanings. This is an
+architectural application, not a claim that the paper specifies our Loader or
+that its minimality results apply to arbitrary effectful Scheme getters.
+
+No public package/linking DSL, second scheduler or parallel dependency authority
+is introduced. Use the existing source/build graph and native POO values, with
+typed relation/projection roles for different dependencies.
+
+* Owners, dependencies and identity
+
+| Publication | Owns | May depend on | Must not depend on merely to expose its interface |
+|-------------+------+---------------+--------------------------------------------------|
+| Contribution package | Releases, qualified exports, source/revision policy and metadata | Declared package requirements | Every concrete combination of its exports |
+| Module/Feature | Neutral primitives/prototypes, Contracts, method declarations and pure algorithms | Other explicit feature requirements | Profiles, Scenarios or user recipes |
+| Profile | Reusable configuration, requirements and deliberate prototype refinements | Feature interfaces and explicitly inherited/referenced Profiles | A unique owning Scenario or Module-local recipe catalog |
+| Scenario | Selected Profile occurrences, inter-Profile relations and Composition Contract | Independent Profiles and explicit Scenario parents | The Cartesian product of all available Profiles |
+| User publication | Its differences from maintained objects | Selected upstream publications | Copies of all defaults and internal components |
+
+Keep publication identity (owner/source/revision/export) distinct from configured
+occurrence identity (Scenario occurrence, Profile binding, module binding and
+local object name). A qualified name is not source authentication. Two Scenarios
+can bind the same published Profile and produce different effective descendants.
+Different local bindings to two Profiles each using Funflow do not collide just
+because both contain build. Consumer output identities must retain qualification.
+
+Composition of independent Profiles is explicit native object composition and
+declared relationships. Multiple inheritance is useful when its slot semantics
+are intentional; never flatten all Profiles and silently choose duplicate funflow
+or build slots by parent order. Scenario references do not prescribe execution
+order, which comes from the admitted composition/task relationships.
+
+* Native CI/CD design: pure Module, independently published Profile
+
+The neutral Check/Pipeline defaults and field Contracts remain the reusable
+parts of [[file:02-complete-cicd-case.org][the earlier complete recipe listing]]. Its old ownership/publication and
+context adapter are superseded here. CommandsContract still owns commands shape;
+the base defaults are construction defaults, not a runnable Gerbil recipe.
+The following is target design source, not installed or compiled publication.
+
+#+begin_src scheme
+(.def FunflowModule.
+  source: #f
+  prototypes:
+  (.o check: funflow-check pipeline: FunflowPipeline.)
+  contracts:
+  (.o check: FunflowCheckContract pipeline: FunflowPipelineContract))
+
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.) source: source-handle))
+
+(def Funflow
+  (make-funflow-scope
+    (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+There is no profiles export, language recipe, CI command or Scenario here.
+Existing Module role owners can also publish neutral algorithms/Feature methods;
+these need not be repeated in this illustrative source.
+
+The independent recipe owner defines a Profile containing its configured Funflow
+occurrence. That configuration inherits the pure feature publication; it does
+not mutate the feature publication or make the Profile one of its children.
+
+#+begin_src scheme
+(def (make-gerbil-ci-profile feature-scope)
+  (use-module feature-scope as ff
+    (.o funflow:
+        (.o (:: effective-config ff)
+          build:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'build
+            profile-ref: 'ci/build
+            commands: '("gerbil" "build")
+            artifact-outputs: '(build-log)
+            cache-intents: '(gerbil-build-cache)
+            result-protocol: '(read :lines)
+            durable-task-id: 'task/build
+            artifact-retention: 'project-retained)
+          test:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'test
+            profile-ref: 'ci/check
+            commands: '("gerbil" "env" "./unit-tests.ss")
+            artifact-outputs: '(test-receipt)
+            result-protocol: '(read :lines)
+            dependency-refs: '(build)
+            durable-task-id: 'task/test)
+          package:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'package
+            profile-ref: 'ci/check
+            commands: '("sh" "./ci/package.sh")
+            artifact-outputs: '(dependency-graph-receipt)
+            result-protocol: '(read :lines)
+            dependency-refs: '(test)
+            durable-task-id: 'task/package
+            action-class: 'compensatable
+            compensation-refs: '(cleanup/package-artifacts)
+            artifact-retention: 'release-retained)
+          pipeline:
+          (.o (:: @ (.get ff prototypes pipeline))
+            pipeline-name: 'default
+            selected-checks: '(build test package)
+            checks:
+            (funflow-selected-checks effective-config selected-checks))))))
+
+(def GerbilCIProfile (make-gerbil-ci-profile Funflow))
+#+end_src
+
+* Independent Rust Profile: complete recipe, same clean feature interface
+
+The Rust recipe owner uses the same pure feature publication, not a Gerbil
+Profile parent. It owns its language commands, artifact/cache declarations,
+durable local names and release policy. Neutral runtime/action/default fields
+are inherited from the feature prototypes; no extra module binding or internal
+component inventory is required for every Check.
+
+#+begin_src scheme
+(def (make-rust-ci-profile feature-scope)
+  (use-module feature-scope as ff
+    (.o funflow:
+        (.o (:: effective-config ff)
+          build:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'build
+            profile-ref: 'ci/build
+            commands: '("cargo" "build")
+            artifact-outputs: '(rust-build-log)
+            cache-intents: '(cargo-build-cache)
+            result-protocol: '(read :lines)
+            durable-task-id: 'task/rust-build
+            artifact-retention: 'project-retained)
+          test:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'test
+            profile-ref: 'ci/check
+            commands: '("cargo" "test")
+            artifact-outputs: '(rust-test-receipt)
+            result-protocol: '(read :lines)
+            dependency-refs: '(build)
+            durable-task-id: 'task/rust-test)
+          package:
+          (.o (:: @ (.get ff prototypes check))
+            check-name: 'package
+            profile-ref: 'ci/check
+            commands: '("cargo" "package")
+            artifact-outputs: '(rust-crate)
+            result-protocol: '(read :lines)
+            dependency-refs: '(test)
+            durable-task-id: 'task/rust-package
+            action-class: 'compensatable
+            compensation-refs: '(cleanup/rust-package-artifacts)
+            artifact-retention: 'release-retained)
+          pipeline:
+          (.o (:: @ (.get ff prototypes pipeline))
+            pipeline-name: 'rust-ci
+            selected-checks: '(build test package)
+            checks:
+            (funflow-selected-checks effective-config selected-checks))))))
+
+(def RustCIProfile (make-rust-ci-profile Funflow))
+#+end_src
+
+Both recipes are complete configuration objects under the documented prototype
+defaults. They are not demonstrated runnable projects. Cargo/project metadata,
+scripts, sandbox references, artifact collection and cleanup capabilities still
+require their actual consumer environment and admission. In particular, naming
+rust-crate does not establish an artifact collector, and declaring a compensation
+reference does not implement or execute cleanup.
+
+| Recipe requirement | Gerbil publication | Rust publication |
+|--------------------+--------------------+------------------|
+| Runtime/result support | manifest-handoff and (read :lines) | manifest-handoff and (read :lines) |
+| Sandbox references | ci/build, ci/check | ci/build, ci/check |
+| Retention policies used | project-retained, inherited workflow-retained, release-retained | project-retained, inherited workflow-retained, release-retained |
+| Compensatable package action | cleanup/package-artifacts | cleanup/rust-package-artifacts |
+| Artifact/cache declarations | build-log, test-receipt, dependency-graph-receipt; gerbil-build-cache | rust-build-log, rust-test-receipt, rust-crate; cargo-build-cache |
+
+This is a requirements table, not fabricated readiness evidence or an additional
+schema. Each selected configured occurrence needs its own applicable capability
+context. The earlier narrow Gerbil capability value does not automatically admit
+the Rust cleanup reference; never widen it silently to make composition succeed.
+The planning owner must supply actual compatible policy and later readiness
+receipts. The independent Profile/source Contract adapter remains proposed.
+
+* Independent publication and reuse in several Scenarios
+
+[[file:14-cicd-composition-contract-and-plan.org][Module 14]] defines the domain prototype CICDScenario. and its Composition
+Contract, with an explicit Gerbil-package -> Rust-build success dependency.
+Independent recipe owners do not import the maintained Scenario value. The
+maintained Scenario owner combines their publications with the domain prototype.
+
+#+begin_src scheme
+(.def (CICDScenario @ CICDScenario.)
+  gerbil: GerbilCIProfile
+  rust: RustCIProfile)
+
+(.def VerificationScenario
+  gerbil: GerbilCIProfile)
+
+(.def RustCheckScenario
+  rust: RustCIProfile)
+#+end_src
+
+CICDScenario composes two independent Profiles. VerificationScenario reuses
+GerbilCIProfile, and RustCheckScenario reuses RustCIProfile. These ordinary slots
+refer to configured occurrences, not owned Profile publications or mandatory
+container layers. Neither Profile inherits the other or is exported by Funflow.
+Unrefined references may share a published object; a refined descendant must not
+mutate that object or the references in the other Scenarios.
+
+The Composition Contract selects/admissibly relates these bindings. In this
+example each Profile retains its own local build -> test -> package dependency
+chain. A cross-Profile edge is not implied by these bindings; the inherited
+domain composition explicitly supplies Gerbil-package -> Rust-build. A future GitHub Actions Profile can be
+another independent input. Whole-Scenario scheduling or workflow projection is
+not implemented just by adding another native slot. Prototype order and the
+order of gerbil/rust declarations are not execution order.
+
+| Selected local name | Qualified configured identity |
+|---------------------+--------------------------------|
+| Gerbil build | CICDScenario.gerbil.funflow.build |
+| Rust build | CICDScenario.rust.funflow.build |
+| Gerbil package | CICDScenario.gerbil.funflow.package |
+| Rust package | CICDScenario.rust.funflow.package |
+
+Keep local dependency-refs inside the configured Funflow occurrence. Resolve
+each (build) or (test) there; do not flatten two local namespaces into one task
+map, infer a cross-Profile dependency or let one build replace the other. A plan
+projection must qualify consumer identities and diagnose output-key collisions.
+ReleaseCI in the next section changes both configured Profile occurrences while
+reusing their independent defaults.
+
+Recipe-specific runtime/protocol/retention policy belongs to independent recipe
+owners; neutral Feature construction defaults remain in the Module. No script,
+cleanup availability or successful execution is asserted by these examples.
+
+The lexical effective-config is the configured Funflow receiver inside a Profile,
+not the whole Profile or Scenario. The current helper name funflow-selected-checks
+is retained for reference, but its argument role must be the configured Funflow
+object containing the named Checks. Do not silently pass the enclosing Profile.
+
+* Downstream differences and native lowering
+
+#+begin_src scheme
+(.def (ProjectCI @ CICDScenario))
+
+;; Validation controls only: force both parent Pipelines before refinement.
+(def parent-gerbil-checks (.get ProjectCI gerbil funflow pipeline checks))
+(def parent-rust-checks (.get ProjectCI rust funflow pipeline checks))
+
+(def ReleaseCI
+  (let ((EffectiveFunflow (.get ProjectCI gerbil funflow)))
+    (use-module EffectiveFunflow as ff
+      (.o (:: @ ProjectCI)
+        gerbil.funflow.build.commands: '("gerbil" "build" "release")
+        gerbil.funflow.build.artifact-outputs: '(release-build-log)
+        rust.funflow.build: =>.+
+        {artifact-outputs: => append '(release-log)}
+        gerbil.funflow.smoke:
+        (.o (:: @ (.get ff prototypes check))
+          check-name: 'smoke
+          profile-ref: 'ci/check
+          commands: '("sh" "./ci/smoke.sh")
+          artifact-outputs: '(smoke-receipt)
+          result-protocol: '(read :lines)
+          dependency-refs: '(package)
+          durable-task-id: 'task/smoke)
+        gerbil.funflow.pipeline.selected-checks: '(build test package smoke)))))
+#+end_src
+
+gerbil is an ordinary Scenario binding to a Profile occurrence, not a reserved
+category or built-in stage. The proposed direct-path adapter refines gerbil once,
+then funflow once, then build once with both leaf assignments; pipeline is also
+refined once. smoke is assigned as a genuinely new object. Intermediate native
+inheritance preserves the other slots. The separate rust prefix refines its build
+once and deliberately appends release-log to its inherited artifact list. It does
+not change Rust commands or its three-member Pipeline selection. This is native
+inherited-value transformation, not implicit list merging during assignment.
+The append form's syntax already exists; the other dotted assignments still
+require the proposed adapter. Duplicate/ancestor-overlap rules from module 11
+are unchanged; these examples do not explicitly assign a whole ancestor alongside
+a descendant path for the same branch.
+
+The pure feature Module, GerbilCIProfile, RustCIProfile, CICDScenario,
+VerificationScenario and RustCheckScenario are not mutated by ReleaseCI.
+The configured instance path is now
+ReleaseCI.gerbil.funflow.build, not Module.profiles or Scenario.Profiles.
+
+* Contract association and admission roles
+
+| Boundary | Required check |
+|----------+----------------|
+| Feature interface | Source association, expected prototypes/Contracts and declared neutral protocol compatibility |
+| Profile publication | Requirements on its feature bindings; configured Funflow fields and selected task policy |
+| Scenario composition | Each selected Profile's requirements plus cross-Profile relations and applicable Composition Contract |
+| Effective configured Funflow | Selected names first, then Check/Pipeline field/domain admission, identities and graph |
+| Consumer plan | Qualified output identities, supported order/format and current input evidence before atomic publication |
+
+Dynamic Profile binding names are resolved by the Scenario's Composition Contract
+association, not inferred from names such as gerbil or a fixed SDLC enum. Profiles
+retain their own requirements independently. A Scenario may impose additional
+compatible obligations; it cannot erase a selected Profile/Feature requirement.
+No user needs to restate upstream responsibilities.
+
+The earlier FunflowProfileContract name conflated two roles. Its selected-Check
+container responsibility belongs to a configured-Funflow Contract. The enclosing
+independent Profile needs its own contract over module bindings. This is a direct
+design migration, not a compatibility alias or a new wrapper DSL. Module 07's
+current context helpers are not already adapters for this corrected structure.
+
+The future context must separately carry Scenario, Profile occurrence/binding,
+module occurrence/source and effective-config, with its qualified config path.
+Check/pipeline occurrence checks resolve against effective-config. Profile and
+composition admission resolve the enclosing objects at their own boundaries.
+Unknown fields remain closed at Check level; new named Check positions are
+explicitly open in the configured Funflow object. Prototype identity alone is
+neither domain admission nor source authentication.
+
+* Demand, instantiation and invalidation
+
+Treat metadata publication, feature-source resolution, configured value demand,
+admission and plan publication as separate stages. Profile source owners depend
+on Feature interfaces; Scenario owners depend on selected Profile publications;
+the pure Module never loads a Profile to expose its own prototype. A broad catalog
+operation may enumerate descriptors, but known selection must not instantiate
+every Profile/Scenario or register all methods. Top-level factory bindings in
+this minimal source do not prove selected-only source loading: existing Gerbil
+imports still close source/build dependencies. Future catalog adapter work must
+preserve this distinction and the existing source/build authority.
+
+| Change | Required invalidation/re-admission scope |
+|--------+-----------------------------------------|
+| Navigation-only metadata changes | Refresh affected descriptor views; no automatic semantic proof transport |
+| Feature prototype/Contract/implementation changes | Affected configured uses, evidence and consumer projections, subject to actual dependency coverage |
+| Gerbil Profile default changes | Its affected occurrences and selected dependents; not every possible Scenario combination |
+| Local build commands changes | Current configured task evidence and dependent plan view; runtime artifact-cache policy remains a separate decision |
+| smoke declared but unselected | Availability metadata; selected computation reusable only if absence/presence is not observed and that premise is established |
+| smoke selected | New selected family/graph and current admission; never a same-context parent-list hit |
+| Composition relationships/policy change | Affected Scenario admission and consumer plan, not source reinstallation by default |
+
+This is a dependency policy, not a claim that static analysis can discover all
+Scheme reads. Opaque/mutable/effectful getters require conservative treatment.
+An input digest/revision is an identity aid, not proof of observational equality.
+Cache keys need the supported factory family, effective receiver/context,
+selected inputs and applicable Contract/policy/dependency view. Keys alone do
+not prove that reuse is valid.
+
+The pinned [[file:08-leanpoo-reuse-and-performance.org][LeanPoo study]] supplies distinct conditions: ConstructionCache models
+actual skipped builders under unchanged-resolver premises; ContextSlot binds data
+to the supported factory/context; ContractConsequence transports proof under an
+explicit applicable implication. Changed receiver/selection cannot reuse an old
+ValidationEvidence unchanged. StagedPublication is a relevant atomic publication
+model, not an implemented Scheme transaction. These laws do not prove the new
+Scheme owner/context adaptation or separate static checking of Profiles.
+
+* Parent cache and effective smoke preview
+
+The inherited getter must use ReleaseCI.gerbil.funflow as effective-config, so
+it resolves the refined build and new smoke without replacing the parent's list.
+Compare actual versus expected selected objects pairwise by native identity and
+order. A fixed parent list fails effective-checks-mismatch. Verify the independent
+Profile publication and other Scenario occurrences are unchanged.
+
+Apply the same law independently to ReleaseCI.rust.funflow. Its selection still
+has three names, but the build object has a refined artifact list. Therefore a
+three-member cached parent list is not sufficient merely because its names and
+length match. The actual first object must be the effective child's Rust build;
+the getter must return its final artifacts (rust-build-log release-log). Both
+parent Pipelines remain unchanged. Final occurrence validation is not a blanket
+ban on sharing proven-unaffected component values or proofs under LeanPoo laws.
+
+#+begin_example
+Expected candidate, not executed output:
+  Profile occurrence: ReleaseCI.gerbil
+  Module occurrence:  ReleaseCI.gerbil.funflow
+  build:   gerbil build release       -> release-build-log
+  test:    gerbil env ./unit-tests.ss -> test-receipt
+  package: sh ./ci/package.sh         -> dependency-graph-receipt
+  smoke:   sh ./ci/smoke.sh           -> smoke-receipt
+  Edges: build -> test -> package -> smoke
+
+  Profile occurrence: ReleaseCI.rust
+  Module occurrence:  ReleaseCI.rust.funflow
+  build:   cargo build   -> (rust-build-log release-log)
+  test:    cargo test    -> rust-test-receipt
+  package: cargo package -> rust-crate
+  Edges: build -> test -> package
+
+  Cross-Profile edge from the domain prototype: gerbil/package -> rust/build
+  Stage: projected-unadmitted
+  Runtime-executed: false
+#+end_example
+
+The append preserves rust-build-log and adds release-log exactly once. Gerbil's
+artifact assignment replaces build-log with release-build-log. These outcomes
+illustrate different user intent, not different merge policies inferred from
+the same syntax. The candidate contains four Gerbil tasks and three Rust tasks;
+this alone does not establish a consumer format or global scheduling policy.
+For the coordinated release variant, module 14 appends Rust-package -> Gerbil-smoke
+and shows the full seven-task order, Contract declarations, current evidence
+correlation and the pure candidate projection. VerificationScenario/RustCheckScenario
+remain minimal reuse examples, not instances of this two-Profile CICD Contract.
+
+projected-unadmitted means inspectable candidate values without complete current
+configuration/consumer admission: publication is prohibited. admitted-preview
+requires the applicable Profile, composition, configured-feature and consumer
+checks for the same stable input-view; it still does not execute or automatically
+publish. A refusal retains any previous admitted plan labelled previous.
+
+* Evidence ledger and future qualification
+
+| Claim | Evidence status |
+|-------+-----------------|
+| Interface/linking separation and scheduling/rebuilding separation | Paper-derived design inspiration, not imported implementations or Scheme guarantees |
+| Native inheritance, lexical slots, bounded scopes and dotted object =>.+ | Existing foundations; source/earlier focused tests, not this complete architecture |
+| Parent-cache/child selected-value pattern | Historical domain-free executed probe in module 04; unchanged receipt |
+| LeanPoo reuse laws | Pinned upstream definitions/proofs; no automatic proof of this Scheme projection |
+| Pure Module publication and complete independent Gerbil/Rust recipes above | Corrected design; current runtime still publishes a Module-local Profile; no Cargo/Gerbil commands executed |
+| Multi-Scenario reuse, two cached parents and mixed assignment/append/smoke example | Proposed qualification case; not a new passing test or admitted plan receipt |
+| Direct dotted assignment, commands migration and corrected context/Contract adapters | Proposed; no new implementation or integration tests |
+| Selective source loading, catalog scale and plan publication | Proposed; no Loader connection or performance receipt |
+
+Future controls must bind the same independent Profile in two Scenarios, refine
+one occurrence, and verify isolation, final receiver identity and source retention.
+Cache both parent Pipelines first: Gerbil must yield four final objects after
+smoke selection; Rust must yield three final objects including its refined build.
+Include a Rust negative control with equal names/length but a stale parent build,
+plus the Gerbil missing-smoke parent-list control. Validate per-Profile source,
+capability and cleanup policy rather than borrowing one occurrence's evidence.
+Test several independent Profiles with the same local Check names, explicit
+cross-Profile relations and consumer-key collisions. Repeat parent-cache/smoke,
+typo, dependency and failure controls under the corrected context. At 1000/10000
+descriptors measure metadata, source/build closure, construction, admission and
+warm reuse independently; never materialize the Cartesian product or claim O(K)
+for unsupported dependency discovery. This revision performs none of those tests.

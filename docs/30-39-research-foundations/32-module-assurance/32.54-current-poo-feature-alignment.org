@@ -1,0 +1,190 @@
+#+title: 32.54 Current POO Feature Alignment
+#+language: en
+#+startup: overview
+
+* Revision evidence, not an alignment claim
+
+On 2026-10-21, GitHub PR 13's head was
+=c4b647ef66b735360346c0eb0e27c2cc5430cf72=; both the product and Yuanxu
+working-tree package declarations still selected
+=f956f4c68d7d996ef860a2633f4fb9b4e745bd0b=. The seven intervening commits
+were inspected from Git. Fetching these commits did not change the dependency
+checkout, package declarations or installed runtime.
+
+- [[https://github.com/tao3k/gerbil-poo/pull/13][Current upstream PR]]
+- [[https://github.com/tao3k/gerbil-poo/compare/f956f4c68d7d996ef860a2633f4fb9b4e745bd0b...c4b647ef66b735360346c0eb0e27c2cc5430cf72][Inspected revision difference]]
+
+The earlier [[file:32.51-types-contracts-and-issued-reobservation.org][32.51]] refactoring is partial feature adoption, not qualification
+against this newer head. Dependency coherence, API adoption and consumer
+qualification are separate acceptance conditions.
+
+* Actual adoption and outstanding work
+
+| Upstream capability | Current consumer evidence | Decision |
+|---------------------+---------------------------+----------|
+| ObjectContract responsibilities, IntegerRange, List and refine | Gitea/PostgreSQL types.ss already use these native declarations | Retain; do not replace them with handwritten shape classifiers |
+| Shared types/syntax, types/relation and types/validation organization | Latest upstream moved the implementation; the scoped Scenario/admission search found no direct imports of the old private paths | Compile the dependency closure; do not invent replacement aliases |
+| Intrinsic numeric declarations and finite Function replacement with uninhabited supplied rows | Added upstream after the selected revision | Use where a real exported callable requires them; ports still need IntegerRange 1..65535 |
+| Explicit compact prototype-map storage | Latest upstream defaults to trees and preserves an explicitly selected policy | No automatic compact migration; require matched cold/clone/read measurements first |
+| Qualified declarations and prototype inference | Available upstream; not demonstrated by the domain ObjectContract refactor alone | Audit exported function boundaries before adding local validation wrappers |
+| Issued reads, receiver isolation and admission currentness | Existing Yuanxu consumers depend on these protections | Re-run consumer controls on the new dependency; a source diff is not runtime evidence |
+
+The inspected delta does not modify object.ss or mop.ss. This reduces the direct
+change surface; it does not establish transitive compatibility or preserve
+observable behavior by proof. New type internals and generated compiler metadata
+must be built coherently, without mixing old compiled artifacts with new source.
+
+* Refactoring ownership
+
+** Functional Types are the ordinary path
+
+Types and Contracts are first-class values. Native constructors such as
+=IntegerRange= and =List= compose those values; an ordinary function may return
+an =ObjectContract.= specialization, and =refine= adds a named domain relation.
+This does not require a parameterized prototype family or type inference for
+each fixed application field.
+
+The attempted fixed-port conversion through =capture-type-catalog= and
+=expression-type= was withdrawn: it added token extraction and intermediate
+bindings without removing a domain obligation. Those APIs belong to actual
+dynamic descriptor capture and finite inference requests, not every static
+configuration declaration.
+
+The Gitea candidate now replaces two private parameterized value-contract
+families with ordinary constructor functions. The public contextual admission
+Contract remains an extensible POO object. Its existing child obligations,
+source guard and contribution protocol are not replaced by field validation.
+The focused consumer qualification below validates this candidate. It does not
+stand in for rebuilding and qualifying every production dependency.
+
+#+begin_src scheme
+(def (gitea-value-contract Port)
+  (.cc ObjectContract. identity: 'gitea/config-value
+    responsibilities:
+    (.o database: (.cc ObjectContract. responsibilities: (.o port: Port))
+        allowed-ports: (List Port))))
+#+end_src
+
+** Preserve independent semantic obligations
+
+Field structure and normalization belong to upstream Type/ObjectContract.
+Cross-service port equality, both independently published port requirements,
+source currentness and final-plan subject identity remain real application or
+Core admission obligations. Their presence is not evidence that the native
+type system was ignored. Conversely, a second field table or repeated structural
+classifier needs a concrete justification before being retained.
+
+Keep ordinary configuration as values. Use native functional refinement when
+retaining an inherited value is the user's intent. Neither numeric inference
+nor a storage-policy API belongs in a user's port-setting example merely to
+demonstrate a new feature.
+
+* Qualification boundary
+
+The latest upstream TODO explicitly says that its unified extensible MOP and
+several unrestricted inference/mutation properties remain incomplete. Do not
+treat the TODO as an implemented specification.
+
+Before changing the published dependency cohort, qualify the new revision with
+the real Scenario: cached parent plan, changed child port, default following,
+explicit mismatch, both contribution requirements, source-change refusal and
+an unselected lazy branch. Preserve child contract obligations and the existing
+diagnostic order. Parser/Ascent's targeted dependency migration must use this
+same qualified cohort rather than introducing another historical POO pin.
+
+** Executed qualification
+
+The installed Gerbil was used without compiler/source changes. The dependency
+was built in a separate package prefix at =c4b647e=. The final upstream
+=just build library= completed its unchanged 300-second stage in 209.24 seconds,
+using its default 12-worker budget and 1-GiB expansion fence. All 436 generated
+Scheme phase files had their corresponding loadable artifacts afterward.
+This is one local build receipt, not a comparative performance result.
+
+| Control | Result |
+|---------+--------|
+| Real Gitea/PostgreSQL publication suite | 11 cases, MODULE-OK, HARNESS-OK, final OK, exit 0 |
+| JSON construction and admission suite | 4 cases, MODULE-OK, HARNESS-OK, final OK, exit 0 |
+| Parent plan cached before child changes | Child admission follows 5433; the cached parent remains 5432 |
+| Explicit client port and child policy | Mismatch and the independent child obligation still refuse |
+| Both contribution requirements | Both rows and their origins survive; incompatible requirements refuse |
+| Source edits and unknown fields | Source changes refuse; the unknown field's failing value remains cold |
+
+The consumer lane used the new dependency and the existing Core compiled-library
+view, with the real Scenario roles loaded from current source. This does not
+claim a fresh, complete Core build. The Type factories capture descriptors,
+not parent Config values; the plan still projects the final normalized Config.
+
+The rejected attempts are retained outside Git: a two-worker cold package build
+hit 300 seconds; an all-source consumer hit its existing idle bound; a later
+package incremental command returned zero while interrupted macro-phase outputs
+were incomplete. The consumer rejected the latter with a =multimethod~1= load
+error. Native package clean followed by the upstream bounded build repaired the
+artifact cohort. A package command's zero status alone is not publication or
+consumer qualification. No timeout or test assertion was relaxed.
+
+The Core and product package declarations now select the qualified upstream
+revision. Parser/Ascent dependency publication, their production build closure
+and complete fresh-build qualification remain separate gates. No new Lean proof
+or global performance improvement is claimed by this constructor refactoring.
+
+** Follow-up integration boundary (2026-10-22)
+
+Fresh Core source expansion exposed a separate lexical-binding defect in the
+linker's selected-scope object: legacy =(:: result)= did not bind the bare
+=build-graph= and =selected-graph= references. The declaration now uses native
+=self: result= with the standard automatic slot bindings. Commit =39ed717=
+contains only that one-line source correction; concurrent =realized-scope=
+working-tree edits were excluded from its staged hunk and remain intact.
+
+After that correction the fresh build compiled 233 distinct roots without the
+unbound-reference error, but reached the unchanged 600-second qualification
+deadline during backend compilation. This is a failed complete-build gate;
+temporary outputs are not a qualified replacement for the complete library.
+The earlier consumer results remain the explicitly described compiled-library
+lane, not a claim that this fresh build passed.
+
+Ascent's existing branch was normally merged with seven remote quality commits;
+its native ObjectContract value-membership controls passed after the merge.
+The merge retains producer-owned constant shapes, mutable Contract fallback and
+the original native build/artifact entry. Only the Core dependency/API names and
+redundant literal empty-obligation adapters were changed by this migration.
+
+Parser's local production projection passed without ASP and retained both native
+FFI link declarations. Its module-local public factory/inheritance/type-refusal
+controls passed. The working checkout and the refreshed PR 13 remote have a large
+history divergence (76 versus 736 unique commits, approximately 1,500 changed
+paths). The maintainer selected the current working tree as the local migration
+baseline and explicitly deferred Parser publication. No remote merge, force push
+or Parser push is authorized for this migration. Its original grammar, Rust,
+FFI and benchmark edits remain in the working tree. Production build-ownership
+tests are separated from optional ASP/Rowan tooling tests, so checking the
+production boundary does not itself import the development dependency.
+
+The separated production ownership test passed through the heap-fenced Core
+=just test-file= entry with =MODULE-OK=, =HARNESS-OK= and final =OK=, using the
+compiled-library lane described above. An earlier run was correctly refused
+because the test source changed during execution; that failed receipt is retained
+locally. The optional ASP/Rowan test remains present but was not qualified in
+this dependency-isolated run. No Parser commit or push was made.
+
+PR 19's observed Linux failure at =e5ccb73= occurred in the pre-existing Nix setup
+step: =jq .outPath= was applied to a JSON string. It did not execute the Scheme
+build. That external gate and the local complete-build timeout remain failures,
+not evidence against or qualification of the focused Type behavior.
+
+** Subsequent complete-library qualification
+
+[[file:32.55-complete-build-costs.org][32.55]] records a subsequent complete
+current-working-tree library build: 469.18 seconds, 233 unique source units and
+504 unique backend jobs, exit zero, under the unchanged 600-second limit with
+four native workers. A same-source two-worker control timed out; variable host
+contention prevents treating that pair as a fixed speedup ratio. The local Just
+default is now CPU-bounded up to four; explicit caller/CI budgets remain intact.
+
+The real Gitea/PostgreSQL eleven-Case publication suite passed against that new
+library after bounded native precompilation of its unchanged shared test
+Fixture. The original cold-test idle failure is retained, and the old framework
+overlay was not used for this consumer pass. Historical build/CI failures above
+remain historical failures; this local result is not an exact-head CI pass.
+Parser remains local and unpushed, with its original concurrent edits preserved.

@@ -1,0 +1,182 @@
+#+title: 32.08 Collected source observations in native admission
+#+language: en
+#+property: DOCUMENT_ID 32.08
+#+property: STATUS implemented-focused-qualification
+#+date: [2026-10-18]
+
+* Implemented scope
+
+This implements only the first step of
+[[file:32.07-demand-collected-source-admission.org][32.07]]. SourceAdmissionContract. no longer declares or consumes source-paths.
+Gitea retains its ordered preflight and explicit source guard paths. Its field
+Contracts, contextual child obligations, two independent port policies and plan
+identity rules are unchanged.
+
+The collection point is the existing module-source-admit-current!, rather than
+only admit-origins!. Native slot guards delegate to that function, as do JSON
+input and selected-publication guards. Collecting only at admit-origins! would
+miss a nested SourceAdmissionContract. that declares JSON inputs but does not
+inspect a Scheme field.
+
+The Loader's selection, linking and activation code is unchanged. Its shared
+source-check helper gains scoped observation collection; outside an active
+collector it still performs the same source checks.
+
+* Ownership and data
+
+[[file:../../../module-system/source/admission.ss][Core source admission]] owns call-with-collected-module-sources. Every successful
+source check reports the original path/bytes-or-absence observation and its
+refusal message to all active enclosing collectors. An admission scope keeps
+private source-observation structures, not another field table or public
+configuration object. Observed source strings are copied so the final check
+does not adopt subsequent mutation of a caller-owned pair/string as its baseline.
+
+Deduplication is by path and identical observed contents, without hashing whole
+source texts. Distinct revisions of one path are retained in first-observation
+order. The later revision cannot authorize forgetting an earlier one. This
+conservatively retains absent-file observations too.
+
+The final replay uses the original observations, with fresh reads, not a walk
+through the current candidate. Replay does not enroll new observations or
+re-report itself to outer scopes. Nested *actual checks* already report to
+every enclosing scope when they run. Dynamic parameter restoration prevents
+failed invocations from leaking observations into an independent admission.
+
+* Maintainer surface
+
+Gitea's existing dependency order remains explicit. These are actual maintained
+excerpts, not the proposed native field-access hook:
+
+#+begin_src scheme
+;; Existing preflight retains these source paths once.
+(source-diagnose-at database-type '(config postgresql)
+  '((config postgresql settings port)))
+(source-diagnose-at client-type '(config gitea)
+  '((config gitea database port)))
+
+;; ApplicationContract: no source-paths slot.
+.preflight: (.get value-contract preflight)
+.locate-diagnostic: (config-diagnostic-locator documents '(config))
+#+end_src
+
+The generic .admit implementation wraps the existing lifecycle:
+
+#+begin_src scheme
+(call-with-module-source-fresh-reads
+  (lambda ()
+    (call-with-collected-module-sources
+      (lambda (sources-current!)
+        (def evidence
+          (source-contract-admit @ (inherited) candidate context))
+        (sources-current!)
+        evidence))))
+#+end_src
+
+The inherited admission is still invoked once only after preflight succeeds.
+The shared read cache covers that inherited invocation, not the final replay.
+Root source-inputs are still checked at entry and after contextual currentness;
+they are not replaced by inferred field discovery.
+
+Diagnostic decoration is explicitly materialized inside the collection scope.
+Native .cc is a function with eagerly evaluated arguments; this refactor does
+not repair an alleged lazy-.cc behavior. The explicit local values make the
+collection boundary clear and prevent a future deferred diagnostic projection
+from performing its checks after the collector closes. Original contextual
+child receipts, descriptors and normalized candidate identities remain intact.
+
+The lifecycle is: collect during preflight, inherited admission, diagnostic
+decoration and contextual currentness; check root inputs; then replay the retained
+source set with fresh reads before return. No collect-until-stable loop or full
+candidate scan is introduced.
+
+* What remains unchanged or unproved
+
+- Ordinary domain relationships are still checked by application-issues and
+  port-contributions; neither is replaced by source observations.
+- Native responsibility admission still requires exact normalized child identity.
+- Selected contribution completeness, object revision checks and source binding
+  remain owned by the existing publication protocol.
+- Collection is limited to actual source checks. It does not discover arbitrary
+  .get/.ref reads or hidden dependencies of cached computed slots. The explicit
+  preflight guards must remain until the separate native-access work is qualified.
+- No unselected branch is traversed to construct a manifest. A publication's
+  existing selected-source checks may already read its source closure; this
+  collector rechecks what those checks actually observed. It does not promise
+  fewer file reads or a performance improvement.
+- Observations are dynamically scoped and synchronous. They are not a global
+  dependency graph, atomic filesystem snapshot or sandbox against arbitrary
+  effects. Fault-injection writes in tests are deliberately outside normal pure
+  obligation behavior.
+
+* Qualification ownership
+
+The new source-observation-test.ss uses DirectoryFixture and the existing SDK
+read-overrides helper to expand real temporary Scheme source files. There are
+no hand-built origin rows or supplied observation sets. ObservationContract is
+a domain-free test classifier over the production SourceAdmissionContract.; it
+is not a replacement source collector or evidence producer.
+
+Its five controls cover cached guarded fields and exception cleanup, a JSON-only
+nested child's source changing after child admission, an untouched branch with
+an erroring value and a changed source file, source checks during diagnostic
+decoration, and two different source revisions observed under one path.
+
+The first collected-source-controls.log run is retained as a FAILED fixture run:
+a scalar Range was passed to the object diagnostic entrypoint, and a local path
+variable named unused was shadowed by the native unused slot. The controls were
+corrected to use ObjectContract like the real preflight and distinct path names;
+no production guarantee, timeout or assertion was weakened.
+
+The final focused receipt and its bounded source manifest are recorded below.
+No cross-platform runtime comparison, full-suite or deployment result is implied.
+
+* Final focused receipt, 2026-10-18
+
+| Native gate | Cases | Result |
+|-------------+-------+--------|
+| t/source-observation-test.ss | 5 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/source-admission-test.ss | 5 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-postgresql-publication-test.ss | 11 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-json-configuration-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-postgresql-relocation-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/module-source-admission-test.ss | 9 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+
+These 38 focused cases run serially through just test-file with the existing
+1 GiB heap and 120-second worker fence. The harness markers and natural exit
+zero were inspected; no error/overflow markers occur in the final logs.
+The new test is registered in the existing Justfile test recipe. There is no
+new runner, larger timeout or relaxed assertion.
+
+The maintained service controls cover cached parent plans, final child ports,
+explicit client mismatch, child domain obligations, conflicting requirements,
+contribution omission/substitution and stale plan identity. Relocation controls
+retain exact Scheme override locations, JSON baselines, .cc/ .+ provenance and
+unselected malformed branches. No Fixture or relocation test changes were
+needed for this extraction.
+
+Qualification uses Gerbil 1cfb032 on Gambit ea114fc, native host dependencies
+under /Users/guangtao/.gerbil, current Core libraries compiled under
+/private/tmp/poo-plan-identity-native/lib, and the existing current-source
+fallback. This is not a compatibility runtime, frozen Core snapshot, clean
+default-path build or complete dependency attestation. The dirty Core base HEAD
+is 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e; the
+[[file:32.08-source-manifest.sha256][17-file source manifest]] binds the relevant sources separately from historical
+32.05/32.06 manifests. Concurrent edits and historical receipts were retained.
+
+Local final logs remain outside source control under
+/private/tmp/poo-plan-identity-native/:
+
+- collected-source-controls-02.log
+- collected-source-admission-final.log
+- collected-publication-final.log
+- collected-json-final.log
+- collected-relocation-final.log
+- collected-source-cache-final.log
+
+The initial collected-source-controls.log failure is retained as described
+above. No Loader integration or native field-access/cache-trace implementation
+is part of this receipt.
+
+The design for removing the remaining explicit preflight leaf guards is
+[[file:32.09-contract-demand-and-cache-replay.org][32.09 Contract field demand and receiver-bound cache replay]]. Its native
+read hooks and cache dependency traces are proposed, not covered by this receipt.

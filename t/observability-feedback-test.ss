@@ -7,12 +7,12 @@
 
 (export observability-feedback-test)
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
-        :core/observability/objects
-        :core/observability/types
-        (only-in :core/types
-                 poo-flow-validation-evidence-accepted?))
+        :yuanxu/observability/objects
+        :yuanxu/observability/types
+        (only-in :yuanxu/object-types/contracts
+                 yuanxu-validation-evidence-accepted?))
 
 (def (observability-test-ref row key)
   (cdr (assq key row)))
@@ -21,7 +21,7 @@
   (observability-test-ref (observability-test-ref row outer-key) inner-key))
 
 (def (observability-sandbox-diagnostic severity)
-  (poo-flow-observability-diagnostic-record
+  (yuanxu-observability-diagnostic-record
    severity 'contract 'sandbox-resource-validator 'build #f
    'permission-widening-denied
    "build cannot widen filesystem write scope"
@@ -29,61 +29,61 @@
    '((module . sandbox) (resource . filesystem))))
 
 (def (observability-blocked-receipt diagnostic)
-  (poo-flow-observability-feedback-receipt
-   "poo-flow-observability-feedback/v1"
+  (yuanxu-observability-feedback-receipt
+   "yuanxu-observability-feedback/v1"
    'sandbox-resource
-   (poo-flow-observability-graph
+   (yuanxu-observability-graph
     'sandbox-resource '((nodes . (build)) (edges . ())))
    (list diagnostic)
-   (poo-flow-observability-repair
+   (yuanxu-observability-repair
     'author 'sandbox-resource-declaration '((field . filesystem)))
-   (poo-flow-observability-readiness 'blocked #f)
+   (yuanxu-observability-readiness 'blocked #f)
    '((manifest-preview . #f))))
 
 (def (observability-ready-receipt)
-  (poo-flow-observability-feedback-receipt
-   "poo-flow-observability-feedback/v1"
+  (yuanxu-observability-feedback-receipt
+   "yuanxu-observability-feedback/v1"
    'sandbox-resource
-   (poo-flow-observability-graph
+   (yuanxu-observability-graph
     'sandbox-resource
     '((nodes . (build)) (edges . ()))
     '((preview . ready)))
    '()
-   (poo-flow-observability-repair #f #f)
-   (poo-flow-observability-readiness 'ready #t)
+   (yuanxu-observability-repair #f #f)
+   (yuanxu-observability-readiness 'ready #t)
    '((manifest-preview . report-only))))
 
 (def observability-feedback-test
   (test-suite
    "native POO observability Type and Contract"
 
-   (poo-flow-test-case "constructs a prototype-derived diagnostic and evidence"
+   (yuanxu-test-case "constructs a prototype-derived diagnostic and evidence"
      (let (diagnostic (observability-sandbox-diagnostic 'error))
-       (check (poo-flow-observability-prototype?
-               poo-flow-observability-receipt-prototype) => #t)
-       (check (poo-flow-observability-diagnostic-contract? diagnostic) => #t)
-       (check (poo-flow-validation-evidence-accepted?
-               (poo-flow-observability-diagnostic-contract-evidence diagnostic))
+       (check (yuanxu-observability-prototype?
+               yuanxu-observability-receipt-prototype) => #t)
+       (check (yuanxu-observability-diagnostic-contract? diagnostic) => #t)
+       (check (yuanxu-validation-evidence-accepted?
+               (yuanxu-observability-diagnostic-contract-evidence diagnostic))
               => #t)
-       (check (poo-flow-observability-diagnostic-code diagnostic)
+       (check (yuanxu-observability-diagnostic-code diagnostic)
               => 'permission-widening-denied)))
 
-   (poo-flow-test-case "rejects an invalid diagnostic obligation"
+   (yuanxu-test-case "rejects an invalid diagnostic obligation"
      (check-exception
       (observability-sandbox-diagnostic 'bad-severity)
       true))
 
-   (poo-flow-test-case "projects blocked feedback from the admitted receipt"
+   (yuanxu-test-case "projects blocked feedback from the admitted receipt"
      (let* ((receipt
              (observability-blocked-receipt
               (observability-sandbox-diagnostic 'error)))
             (feedback
-             (poo-flow-observability-agent-feedback
-              'poo-flow-agent-feedback
+             (yuanxu-observability-agent-feedback
+              'yuanxu-agent-feedback
               'accept-sandbox-resource
               'repair-sandbox-resource
               receipt)))
-       (check (poo-flow-observability-receipt-valid? receipt) => #f)
+       (check (yuanxu-observability-receipt-valid? receipt) => #f)
        (check (observability-test-ref feedback 'next-action)
               => 'repair-sandbox-resource)
        (check (observability-test-ref feedback 'family)
@@ -98,15 +98,15 @@
                       (observability-test-ref feedback 'diagnostic-codes))
               ? values)))
 
-   (poo-flow-test-case "accepts ready feedback without diagnostics"
+   (yuanxu-test-case "accepts ready feedback without diagnostics"
      (let* ((receipt (observability-ready-receipt))
             (feedback
-             (poo-flow-observability-agent-feedback
-              'poo-flow-agent-feedback
+             (yuanxu-observability-agent-feedback
+              'yuanxu-agent-feedback
               'accept-sandbox-resource
               'repair-sandbox-resource
               receipt)))
-       (check (poo-flow-observability-receipt-valid? receipt) => #t)
+       (check (yuanxu-observability-receipt-valid? receipt) => #t)
        (check (observability-test-ref feedback 'next-action)
               => 'accept-sandbox-resource)
        (check (observability-test-ref feedback 'diagnostic-codes) => '())))))

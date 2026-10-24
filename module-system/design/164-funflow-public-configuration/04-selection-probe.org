@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 04: Executed Selection/Receiver Probe
+#+property: STATUS domain-free-source-probe-not-product-admission
+
+* Evidence scope
+
+The program below ran on 2026-10-15 using /opt/homebrew/bin/gxi and the isolated
+source environment at /tmp/agenticailab-core-prototype-specializer. Its clan/poo
+source is pinned to 099b381588360a8a49fd772f666a1a00351366f5; its Core path points
+to the current working tree. The result was:
+
+#+begin_example
+PASS: native lexical receiver / selected names design probe assertions=10
+#+end_example
+
+It verifies the native receiver/selection pattern underlying the proposed
+resolver, including a newly added name after parent caching. selected-values is
+only a domain-free map/.ref stand-in. There is no closed schema, prototype
+classification, dependency closure, capability check or source authentication
+in this probe. It does not implement or qualify the Funflow product adapter.
+The last assertion confirms that a frozen parent list stays stale; it does not
+claim that the proposed admission rule already rejects it.
+
+* Complete executed program
+
+#+begin_src scheme
+(import :yuanxu/object-syntax/path-slots
+        (only-in :clan/poo/object .get .ref))
+
+;; Domain-free design probe, not a product selector/admission implementation.
+(def (selected-values receiver names)
+  (map (lambda (name) (.ref receiver name)) names))
+
+(def Profile
+  (.o (:: effective-profile [])
+    build: (.o value: 'parent-build)
+    test: (.o value: 'parent-test)
+    package: (.o value: 'parent-package)
+    pipeline:
+    (.o pipeline-name: 'default
+        selected-checks: '(build test package)
+        checks: (selected-values effective-profile selected-checks))))
+
+(.def Project funflow: (.o profiles: (.o gerbil-scheme: Profile)))
+(def parent-checks (.get Project funflow profiles gerbil-scheme pipeline checks))
+
+(.def (Release @ Project)
+  funflow.profiles.gerbil-scheme.build: =>.+ {value: 'release-build}
+  funflow.profiles.gerbil-scheme.test: =>.+ {value: 'release-test}
+  funflow.profiles.gerbil-scheme.package: =>.+ {value: 'release-package}
+  funflow.profiles.gerbil-scheme.pipeline: =>.+ {pipeline-name: 'release})
+
+(.def (Extended @ Release)
+  funflow.profiles.gerbil-scheme: =>.+
+  {smoke: (.o value: 'smoke)
+   pipeline: =>.+ {selected-checks: '(build test package smoke)}})
+
+(def assertions 0)
+(def (assert! label condition)
+  (unless condition (error "design receiver probe failed" label))
+  (set! assertions (+ assertions 1)))
+(def (values-of checks) (map (lambda (check) (.get check value)) checks))
+(def release-checks (.get Release funflow profiles gerbil-scheme pipeline checks))
+(def extended-checks (.get Extended funflow profiles gerbil-scheme pipeline checks))
+(assert! 'parent-cached (equal? (values-of parent-checks) '(parent-build parent-test parent-package)))
+(assert! 'four-paths-retained
+  (and (equal? (values-of release-checks) '(release-build release-test release-package))
+       (eq? (.get Release funflow profiles gerbil-scheme pipeline pipeline-name) 'release)))
+(assert! 'dynamic-child-selection
+  (equal? (values-of extended-checks) '(release-build release-test release-package smoke)))
+(for-each
+  (lambda (check name)
+    (assert! name (eq? check (.ref (.get Extended funflow profiles gerbil-scheme) name))))
+  extended-checks '(build test package smoke))
+(assert! 'warm-list (eq? extended-checks (.get Extended funflow profiles gerbil-scheme pipeline checks)))
+(assert! 'parent-unchanged (eq? parent-checks (.get Project funflow profiles gerbil-scheme pipeline checks)))
+(.def (Frozen @ Extended)
+  funflow.profiles.gerbil-scheme.pipeline: =>.+ {checks: parent-checks})
+(assert! 'frozen-parent-negative
+  (equal? (values-of (.get Frozen funflow profiles gerbil-scheme pipeline checks))
+          '(parent-build parent-test parent-package)))
+(displayln "PASS: native lexical receiver / selected names design probe assertions=" assertions)
+#+end_src
+
+* Reproduction and remaining gate
+
+Save the source block to a temporary .ss file. Resolve the canonical
+:clan/poo/object and :yuanxu/object-syntax/path-slots modules against the pinned
+POO source and current Core working tree, then run it with gxi. The isolated
+GERBIL_PATH/GERBIL_LOADPATH must not silently resolve another installed POO copy.
+No packages were installed or removed and no runtime repository file was changed.
+
+The ten assertions are a source-runtime result, not native AOT, product
+integration, remote CI or a performance result. Full selected-only domain
+admission and Loader integration remain separate gates. English text, local
+Org links and all Scheme blocks in this design were checked separately; Scheme
+reader success does not prove the proposed domain declarations executable.

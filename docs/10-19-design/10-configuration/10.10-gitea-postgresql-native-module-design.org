@@ -1,0 +1,1120 @@
+#+title: 10.10 Gitea/PostgreSQL: Native Module Binding and Effective Configuration
+#+language: en
+#+property: DOCUMENT_ID 10.10
+#+property: STATUS domain-design-with-implemented-core-boundary-in-10.13
+#+date: [2026-10-17]
+
+* Domain implementation successor
+
+[[file:10.14-gitea-postgresql-publication.org][10.14]] now owns the maintained PostgreSQL/Gitea port-domain Contracts,
+interface declarations and checked connection-plan implementation. Earlier
+fixture-only statements below describe their historical controls. Full service
+rendering, provisioning and product Loader integration remain outside this work.
+
+* Current implementation authority
+
+[[file:10.13-selected-contribution-publication.org][10.13]] supersedes the historical test-local collection/attachment sketches in
+this document. Query, deep collection, coverage and source currentness now live
+in Core .for-export/.publish, with platform Context obligations composed by the
+native .admit producer. The actual domain Contract is preserved, not cloned.
+The earlier requirement-method package sketches remain design alternatives for
+domain interpretation; they are not the installed Core collection protocol.
+
+* Purpose and evidence boundary
+
+This designs the same local-database case studied in
+[[file:../../20-29-ecosystem-research/20-nixos/20.08-real-service-composition-and-design-decisions.org][20.08 Gitea/PostgreSQL]]. It is a bounded port/connection example, not a
+deployment-ready Gitea module: credentials, socket selection, generated app.ini,
+database provisioning, state migration and service supervision are not implemented
+by the snippets. The native object code is a design to review, not a new test receipt.
+
+Use existing native .def/.o/.get, lexical slot bindings, =>.+, ObjectContract.,
+refine and Core's value-contract admission. No imports/compose DSL is added.
+The role wrapper supplies compiler imports/exports. Implementation names shown
+below are proposed domain definitions, not functions already shipped by Core.
+The type-library bindings used here must be supplied by the module package/role
+assembly; this design has not established that the current wrapper imports every
+one of them automatically. That compiler-binding audit precedes implementation.
+
+* Module interface versus configured instance
+
+The published PostgreSQL scope contains Types and defaults; it is not a global
+running database. Gitea declares an interface dependency so its contract can use
+the exact Port Type supplied by that owner. The application Scenario later owns
+the particular PostgreSQL and Gitea instances and their connection.
+
+The code uses String from the native type library, ObjectContract./refine from
+the native object-contract library, validate from MOP, and Core's predicate Type
+and Contract helpers. These are platform/compiler imports, not repeated user imports.
+
+** modules/postgresql/types.ss and config.ss
+
+#+begin_src scheme
+;; types.ss — Type and value Contract, no duplicate Schema interpreter.
+(def (port? value)
+  (and (exact-integer? value) (<= 1 value 65535)))
+(def Port (yuanxu-predicate-type 'postgresql/port port?))
+(def PostgreSQLContract
+  (.cc ObjectContract. responsibilities:
+    (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port)))))
+
+;; config.ss — ordinary maintained configuration values.
+(def Config (.o settings: (.o port: 5432)))
+#+end_src
+
+This small Contract owns this example's fields only. It does not purport to
+replace PostgreSQL's full configuration vocabulary or an upstream supplied Schema.
+
+** Scope shape checks, owned in each module's types.ss
+
+These check declared endpoints without forcing their values. They are interface
+checks, not substitutes for the configuration Contracts above/below.
+
+#+begin_src scheme
+(def (scope-shape identity names)
+  (yuanxu-predicate-contract identity
+    (lambda (scope)
+      (and (object? scope)
+           (every (lambda (name) (.slot? scope name)) names)))
+    (lambda (_value _context) '())))
+(def PostgreSQLScopeContract
+  (scope-shape 'postgresql/scope '(defaults types)))
+(def GiteaScopeContract
+  (scope-shape 'gitea/scope '(defaults types)))
+(def ApplicationScopeContract
+  (scope-shape 'application/scope '(Scenario types)))
+#+end_src
+
+scope-shape is one ordinary internal function, not an authoring macro. In a real
+contribution its shared implementation belongs to the existing scope-shape owner;
+modules own their actual endpoint declarations. A richer interface Contract may
+check the demanded type endpoint when used, without forcing every catalogue value.
+
+** modules/postgresql/interface.ss
+
+#+begin_src scheme
+(.def PostgreSQL
+  identity: 'postgresql
+  core:
+  (.o requires: (.o)
+      scope-contract: PostgreSQLScopeContract
+      exports:
+      (.o defaults: Config
+          types: (.o port: Port config: PostgreSQLContract)))
+  features: (.o))
+#+end_src
+
+** modules/gitea/types.ss, config.ss and interface.ss
+
+The resolved Contract requires a port. Raw maintained defaults intentionally
+omit it: the Scenario supplies the local connection default before admission.
+Do not admit the partial input as a complete configured service.
+
+#+begin_src scheme
+;; types.ss — supplied Port is the bound PostgreSQL owner's actual Type.
+(def (gitea-contract Port)
+  (.cc ObjectContract. responsibilities:
+    (.o database:
+      (.cc ObjectContract. responsibilities:
+        (.o host: String port: Port name: String user: String)))))
+
+;; config.ss
+(def Config
+  (.o database: (.o host: "127.0.0.1" name: "gitea" user: "gitea")))
+
+;; interface.ss — existing dependency/publication shape.
+(.def Gitea
+  identity: 'gitea
+  core:
+  (.o requires:
+      (.o PostgreSQL:
+        (.o module-id: 'postgresql contract: PostgreSQLScopeContract))
+      scope-contract: GiteaScopeContract
+      exports:
+      (.o defaults: Config
+          types: (.o config: (gitea-contract (.get PostgreSQL types port)))))
+  features: (.o))
+#+end_src
+
+Current declaration.ss lower-core binds PostgreSQL lexically around core.exports;
+it generates core.link. This example deliberately stays within that existing
+scope, rather than assuming the alias is injected into every role file. The
+scope Contract and native bindings must be compiler-resolved according to the
+current role/import mechanism; arbitrary role-wide dependency Type injection is
+not established by this example. In particular the required scope Contract must
+be available before the alias exists; it belongs to the dependency interface API,
+not to a value obtained by recursively loading that alias.
+
+* Independent application recipe and its native lexical construction
+
+The reusable recipe belongs to scenarios/application/objects.ss, not inside
+the pure PostgreSQL module. The maintained factory receives bound interfaces;
+the constructed object then reads final instance slots.
+
+#+begin_src scheme
+(def (application-scenario PostgreSQL Gitea)
+  (.o (:: @ [] config)
+    config:
+    (.o (:: @ [] postgresql)
+      postgresql: (.get PostgreSQL defaults)
+      gitea:
+      (.o (:: @ (.get Gitea defaults))
+        database: =>.+
+        (.o port: (.get postgresql settings port))))
+    plan:
+    (.o postgres-port: (.get config postgresql settings port)
+        gitea-host: (.get config gitea database host)
+        gitea-port: (.get config gitea database port)
+        database: (.get config gitea database name)
+        user: (.get config gitea database user))))
+#+end_src
+
+The root binds config; its nested configuration binds postgresql. Inside Gitea's
+database, postgresql is that native outer lexical slot. It is not an eagerly
+extracted parent database. Parent interfaces/default recipes may be shared;
+receiver-dependent instance values and plans may not be substituted across children.
+The native database refinement preserves maintained host/name/user defaults while
+installing the relationship. Users do not repeat this construction for each port edit.
+
+The small plan is a pure connection preview, not a generated systemd unit or an
+executable deployment. Fields named database/user are provisioning intent only.
+Runtime ordering and readiness would need explicit domain consumers and Contracts;
+neither dependency declaration nor prototype precedence supplies them.
+
+* Local connection and projection Contract
+
+Responsibilities check field Types; one native refinement checks relationships
+against the final object. An explicitly external database would use a different
+connection policy. Do not silently apply local equality to an external endpoint.
+
+#+begin_src scheme
+(def (local-application-obligations value path)
+  (let* ((config (.get value config))
+         (server (.get config postgresql settings port))
+         (client (.get config gitea database port))
+         (host (.get config gitea database host))
+         (plan (.get value plan)))
+    (append
+      (if (and (equal? host "127.0.0.1") (= server client)) '()
+        (list (.o kind: 'local-database-connection-mismatch
+                  path: (append path '(config gitea database))
+                  server-port: server client-host: host client-port: client)))
+      (if (and (= (.get plan postgres-port) server)
+               (= (.get plan gitea-port) client)
+               (equal? (.get plan gitea-host) host)
+               (equal? (.get plan database) (.get config gitea database name))
+               (equal? (.get plan user) (.get config gitea database user))) '()
+        (list (.o kind: 'stale-connection-preview
+                  path: (append path '(plan))))))))
+
+(def (application-contract PostgreSQL Gitea)
+  (def Port (.get PostgreSQL types port))
+  (refine
+    (.cc ObjectContract. responsibilities:
+      (.o config:
+          (.cc ObjectContract. responsibilities:
+            (.o postgresql: (.get PostgreSQL types config)
+                gitea: (.get Gitea types config)))
+          plan:
+          (.cc ObjectContract. responsibilities:
+            (.o postgres-port: Port gitea-host: String gitea-port: Port
+                database: String user: String))))
+    local-application-obligations))
+
+(define-type (ApplicationAdmissionContract. @ YuanxuContract.
+              contributions requirement-dispatch requirement-methods requirement-port-type)
+  identity: 'application/local-gitea
+  contributions: #f
+  requirement-dispatch: #f
+  .classify:
+  (lambda (candidate context)
+    (yuanxu-classification-evidence identity candidate #t '() context))
+  .obligations:
+  (lambda (candidate _context)
+    (collected-port-obligations @ candidate _context)))
+#+end_src
+
+The classifier adds no new authorization claim. Core's existing .admit producer
+first validates its value-contract and then produces contextual evidence. Failed
+Type validation refuses before contextual classification. Consuming evidence.candidate
+is essential: normalization may produce a different checked object. Do not
+require eq? between that checked object and the original raw author object.
+
+** scenarios/application/interface.ss
+
+#+begin_src scheme
+(.def Application
+  identity: 'application
+  core:
+  (.o requires:
+      (.o PostgreSQL: (.o module-id: 'postgresql contract: PostgreSQLScopeContract)
+          Gitea: (.o module-id: 'gitea contract: GiteaScopeContract))
+      scope-contract: ApplicationScopeContract
+      admissions:
+      (.o Scenario: (.o export-path: '(Scenario) contract-path: '(types Scenario)))
+      exports:
+      (.o Scenario: (application-scenario PostgreSQL Gitea)
+          types:
+          (.o Scenario:
+            (application-admission PostgreSQL Gitea))))
+  features: (.o))
+#+end_src
+
+The automatic collection design below replaces the earlier Requirements config
+binding. The platform attaches a complete selected contribution batch to this
+actual descriptor before admission; a missing batch must refuse.
+
+core.requires admits interfaces; core.admissions associates a published Scenario
+with its actual contextual descriptor. These are separate checks. Existing
+AdmissionPublication. .for-export follows this association through the selected
+record; it need not reconstruct a Contract from its name. See
+[[file:../12-contracts-types/12.19-selected-publication-contract-resolution.org][12.19 existing selected-publication resolution]].
+
+* User intent and precise native expansion
+
+Root init selects postgresql, gitea and application explicitly; for example, the
+same root source tree may contain both service modules and an application entry
+mounted from ./scenarios/application. They must not be silently loaded around
+explicit selection or a disabled decision. The user obtains the maintained
+Scenario through the selected application scope.
+
+Target direct-path authoring below is still a proposed lowering. It means complete
+replacement of the port, not an inherited-value transformation:
+
+#+begin_src scheme
+(.def (Production @ ApplicationScenario)
+  config.postgresql.settings.port: 5433
+  config.gitea.database.name: "forge"
+  config.gitea.database.user: "forge")
+#+end_src
+
+The same-prefix merge must produce ONE config, ONE gitea/database and ONE
+postgresql/settings refinement. The actual native spelling is:
+
+#+begin_src scheme
+(.def (Production @ ApplicationScenario)
+  config: =>.+
+  (.o postgresql: =>.+
+      (.o settings: =>.+ (.o port: 5433))
+      gitea: =>.+
+      (.o database: =>.+ (.o name: "forge" user: "forge"))))
+#+end_src
+
+Every intermediate =>.+ retains the upstream object and its other fields. The
+leaf port/name/user slots are ordinary assignments. The Gitea port dependency
+is inherited, so it now reads 5433; the user did not write a second port.
+
+The platform's selected-publication path uses its actual descriptor/context:
+
+#+begin_src scheme
+;; Internal coordinator, not repeated user configuration.
+(def publication
+  (.call AdmissionPublication. .for-export selection 'application 'Scenario))
+(def ApplicationScenario (.get publication value))
+;; Production is declared as above after obtaining ApplicationScenario.
+(def descriptor (.get publication contract))
+(def evidence (.call descriptor .admit Production (.get publication context)))
+(when (yuanxu-validation-evidence-accepted? evidence)
+  (.get (.get evidence candidate) plan))
+#+end_src
+
+Alternatively, the normal coordinator uses checked publication, which performs
+the admission itself rather than running both paths:
+
+#+begin_src scheme
+(defvalues (published next failure)
+  (.call publication .publish ApplicationScenario Production))
+#+end_src
+
+These are ALTERNATIVE demonstrations, not two validations to run in sequence.
+A successful published result is checked;
+preview reads next.plan only after failure is absent. Do not present direct
+.admit alone as a source-current, authorized deployment. The automatic user-facing
+association of authored Production with this coordinator remains domain integration.
+
+Expected pure preview, not an observed execution:
+
+#+begin_example
+postgres-port: 5433
+gitea-host:    127.0.0.1
+gitea-port:   5433
+database:     forge
+user:         forge
+state:        admitted-preview (only after checked publication succeeds)
+#+end_example
+
+* Automatic collection from selected publications, before value composition
+
+This replaces the earlier hand-maintained Requirements examples. An application
+user supplies configuration and derives .def objects; there is no Requirements
+argument or contributor/source list in that interface. Maintainers publish typed
+policy objects once. The platform retains their independent publication edges.
+
+** What was checked, and what MOP cannot recover
+
+Current Core source owners inspected: source/selection.ss, source/link.ss,
+source/publication.ss, admission/publication.ss, contribution/objects.ss and the
+CLOS declaration/bundle/dispatch implementation. The dependency was inspected at
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=, the version in gerbil.pkg.
+
+| Mechanism | Observed capability | Consequence |
+|-----------+---------------------+-------------|
+| Selected Graph nodes | Retain separate owner/publication records | Collect from these before merging a candidate's business slots |
+| .selected-record | Checks selection, links/admit scope and retains SourceRef/evidence | Resolve a contribution from its actual owner, not a caller's source string |
+| Native :init! | Tracks supers/protocol and clears receiver caches | Not an event containing every original .+ operand |
+| Native .+ / .cc | Copy direct declarations/protocol; .cc does not inherit its operand | Useful metadata retention, not universal derivation identity |
+| reflect-slots | Reflects EFFECTIVE declarations, most-specific names win | Cannot reconstruct two independently overwritten declarations |
+| object-revision / inherited dependencies | Track supported object/prototype changes | Additional observation guard; not a file digest or arbitrary closure read-set |
+| .defgeneric/.defmethod-bundle | Protocol identity, prototype dispatch and delayed registration | Reuse for domain interpretation after bounded selection |
+| CLOS method composition | Mutates method ownership/generic generation | New selected dispatcher needs detached methods; no global registry reuse |
+
+Pinned native sources: [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object.ss][object]],
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/reflection.ss][reflection]],
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/inheritance-hooks.ss][inheritance hooks]] and
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/generalized-declaration.ss][generalized declaration]]. The last supports explicit sources and revision guards
+for fragments; it does not infer every captured value or authenticate a module.
+Do not add a hook that calls next and then scans the winning requirement slot.
+By that point a losing independent declaration may already be invisible.
+
+** Maintainer publication, not user-maintained requirement metadata
+
+PostgreSQL's objects role publishes one orthogonal policy prototype:
+
+#+begin_src scheme
+(.def PortRequirement.)
+;; Additional ordinary endpoint in PostgreSQL's existing core.exports:
+(.o prototypes: (.o PortRequirement: PortRequirement.))
+#+end_src
+
+The existing defaults/types endpoints remain. This is a published prototype,
+not a second PostgreSQL instance. Each policy module's dependency alias is bound
+by the existing core.exports lowering. One complete Operations publication is:
+
+#+begin_src scheme
+(.def Operations
+  identity: 'operations
+  core:
+  (.o requires:
+      (.o PostgreSQL:
+        (.o module-id: 'postgresql contract: PostgreSQLScopeContract))
+      scope-contract: PortPolicyScopeContract
+      contributions:
+      (.o database-port:
+        (.o target-owner: 'application target-admission: 'Scenario
+            export-path: '(database-port)))
+      exports:
+      (.o database-port:
+        (.o (:: @ (.get PostgreSQL prototypes PortRequirement)) value: 5433)))
+  features: (.o))
+#+end_src
+
+Security is a separate publication, not an override of Operations:
+
+#+begin_src scheme
+(.def Security
+  identity: 'security
+  core:
+  (.o requires:
+      (.o PostgreSQL:
+        (.o module-id: 'postgresql contract: PostgreSQLScopeContract))
+      scope-contract: PortPolicyScopeContract
+      contributions:
+      (.o database-port:
+        (.o target-owner: 'application target-admission: 'Scenario
+            export-path: '(database-port)))
+      exports:
+      (.o database-port:
+        (.o (:: @ (.get PostgreSQL prototypes PortRequirement)) value: 5440)))
+  features: (.o))
+#+end_src
+
+The shared scope shape Contract is concrete:
+
+#+begin_src scheme
+(def PortPolicyScopeContract
+  (scope-shape 'postgresql/port-policy-scope '(database-port)))
+(def (symbol-path? value)
+  (and (list? value) (pair? value) (every symbol? value)))
+(def ContributionRouteContract
+  (.cc ObjectContract. responsibilities:
+    (.o target-owner: Symbol target-admission: Symbol
+        export-path: (yuanxu-predicate-type 'module/export-path symbol-path?))))
+#+end_src
+
+core.contributions is a PROPOSED ordinary POO publication field, not new syntax.
+Current lowering preserves extra ordinary core fields, but route validation,
+indexing and collection are not implemented. Source owners are determined by
+selection, never supplied as origin claims in this field. Root init must select
+operations/security explicitly when explicit mode is used; collection must not
+activate them by discovering arbitrary directory contents. Declaring a route does
+not imply a dependency on the target module's configured result or create a
+source-link cycle. Unselected target routes remain inert.
+
+** Index metadata once per selected Graph
+
+This proposed pure-index construction reads only selected Core declarations,
+not contribution payloads or the full catalogue. The resulting private tables
+are graph-owned and not exported to user scopes.
+
+#+begin_src scheme
+(def (index-contribution-routes nodes)
+  (def index (make-hash-table-eq))
+  (def route-observations '())
+  (for-each
+    (lambda (node)
+      (when (eq? (.get node kind) 'module-core)
+        (let (core (.get node publication core))
+          (set! route-observations
+            (append (map observe-contribution-object
+                         (list node (.get node publication) core)) route-observations))
+          (when (.slot? core 'contributions)
+            (set! route-observations
+              (cons (observe-contribution-object (.get core contributions))
+                    route-observations))
+            (for-each
+              (lambda (key)
+                (let* ((raw-route (.ref (.get core contributions) key))
+                       (before (observe-contribution-object raw-route))
+                       (route (validate ContributionRouteContract raw-route))
+                       (target (.get route target-owner))
+                       (name (.get route target-admission))
+                       (bucket (or (hash-get index target)
+                                   (let (table (make-hash-table-eq))
+                                     (hash-put! index target table) table)))
+                       (edge (let ((selected-node node) (declaration-key key) (checked-route route))
+                               (.o node: selected-node key: declaration-key route: checked-route))))
+                  (set! route-observations (cons before route-observations))
+                  (hash-put! bucket name
+                    (cons edge (or (hash-get bucket name) '())))))
+              (.all-slots (.get core contributions)))))))
+    nodes)
+  (.o routes: index observations: route-observations))
+#+end_src
+
+At the existing selected Graph constructor, add a receiver-cached internal slot
+=contribution-routes: (index-contribution-routes ordered)=. Querying a target
+reads its bucket, not all payloads. Index construction is O(selected route
+metadata); repeated demands reuse the same immutable-generation index. Distinct
+owners may both use database-port. Identity is the pair (owner, declaration key),
+not the target slot name. Duplicate selection of one owner is already deduplicated;
+duplicate declaration keys must be refused during source admission rather than
+allowed to disappear through object<-alist or prototype precedence.
+
+This first adapter covers Core contributions. Selected Feature contributions need
+the analogous projection from existing feature-manifest contributions; disabled
+Features must not enter it. Do not pretend a Core route becomes conditional merely
+because some unrelated Feature has been disabled.
+
+** Resolve each incoming edge independently and retain actual provenance
+
+The following proposed functions belong inside admission/publication.ss and
+reuse its EXISTING private scope-path/copy-inputs helpers. They do not require new
+public import/export factories. Observation pairs are private implementation data.
+
+#+begin_src scheme
+(def (observe-contribution-object value)
+  (cons value (object-revision value)))
+
+(def (collect-contribution-edge selection edge)
+  (def node (.get edge node))
+  (def selected-owner (.get node owner))
+  (def selected-record (.call selection .selected-record selected-owner))
+  (unless (eq? (.get selected-record publication) (.get node publication))
+    (error "contribution publication differs from selected node" selected-owner))
+  (def prepared ((.get selection prepare-publication) selected-owner))
+  (unless (and (eq? (.get prepared identity) selected-owner)
+               (equal? (.get prepared generation) (.get selected-record generation)))
+    (error "contribution preparation differs from selected record" selected-owner))
+  ((.get prepared admit-current))
+  (def scope (.get selected-record scope))
+  (def path-observations '())
+  (def path (.get edge route export-path))
+  (def selected-payload
+    (foldl (lambda (name receiver)
+             (unless (and (object? receiver) (.slot? receiver name))
+               (error "unresolved contribution export" selected-owner path name))
+             (set! path-observations
+               (cons (observe-contribution-object receiver) path-observations))
+             (.ref receiver name))
+           scope path))
+  (unless (object? selected-payload)
+    (error "published contribution must be a native object" selected-owner path))
+  (def selected-origin
+    (.o owner: selected-owner key: (.get edge key)
+        record: selected-record publication: (.get selected-record publication)
+        source: (.get selected-record source) export-path: path
+        generation: (.get selected-record generation)))
+  ((.get prepared admit-current))
+  (let (selected-edge edge)
+    (.o edge: selected-edge payload: selected-payload origin: selected-origin
+      source-inputs: (copy-inputs (.get prepared source-inputs))
+      observations:
+      (append path-observations
+        (map observe-contribution-object
+          (list edge (.get edge route) selected-record (.get selected-record source)
+                (.get selected-record publication) selected-payload selected-origin))))))
+#+end_src
+
+The collector captures scope revision BEFORE reading its export. The selected
+route index must separately retain revisions of original publication/core/route
+objects before route validation normalizes them; normalized routes cannot be
+used as the sole observations of their original declarations. The batch includes
+those index observations as well as the rows above. Direct declarations are not
+recovered by scanning the composed Scenario. No policy value is demanded until
+its actual target admission is requested.
+
+A source here is the actual SourceRef/interface endpoint. Preparing the publication
+also observes role sources. Exact config.ss line/column diagnostics still require
+the existing source-preserving compiler association to be connected; do not
+invent them from the export name. A local source snapshot is not a signature or
+an authentication claim about arbitrary remote code.
+
+The concrete incoming-row query is:
+
+#+begin_src scheme
+(def (incoming-contribution-edges graph target name)
+  (def bucket (hash-get (.get graph contribution-routes routes) target))
+  (reverse (if bucket (or (hash-get bucket name) '()) '())))
+
+(def (collect-incoming-contributions selection target name)
+  (def graph (.get selection selected-graph))
+  ((.get graph admit-current))
+  (map (lambda (edge) (collect-contribution-edge selection edge))
+       (incoming-contribution-edges graph target name)))
+#+end_src
+
+Reversing preserves declaration traversal for stable diagnostics only. It is NOT
+execution order or a winning priority. Require one collected row for EVERY indexed
+incoming edge. Skipping an unsupported export, missing source or failed scope is
+refusal, never a filter that makes admission appear successful.
+
+* Native multi-dispatch interprets a contribution; it does not discover it
+
+Two independently extensible axes justify CLOS here: the receiving domain
+admission and the contributed policy family. The real prototype identities and
+one canonical Generic protocol are shared through the module/package mechanism.
+Methods are inert declarations until the selected platform assembles a dispatcher.
+
+#+begin_src scheme
+(def RequirementProtocol (poo-clos-generic-protocol 'module/requirement-projection))
+(.defgeneric project-module-requirement (admission payload origin)
+  (protocol RequirementProtocol))
+
+(def (application-requirement-methods PortRequirement Port)
+  (def ValueContract
+    (.cc ObjectContract. responsibilities: (.o value: Port)))
+  (.defmethod-bundle Methods RequirementProtocol
+    (.defmethod (project-module-requirement
+                  (admission (prototype ApplicationAdmissionContract.))
+                  (payload (prototype PortRequirement)) selected-origin)
+      (def checked (validate ValueContract payload))
+      (list (.o path: '(config postgresql settings port)
+                value: (.get checked value) origin: selected-origin))))
+  ;; Private dependency observations for this factory's captured native Types.
+  (.cc Methods source-objects: (list ValueContract Port PortRequirement)))
+#+end_src
+
+Unsupported domain/policy pairs hit native no-applicable-method and refuse; they
+are not silently ignored. Domain code uses .defgeneric/.defmethod, not handwritten
+specializer lists or self/super hooks. The method emits ordinary native constraint
+objects and retains the exact platform origin record. It cannot authorize a new
+owner by returning a similar symbol.
+
+The revised maintainer factory has NO Requirements argument:
+
+#+begin_src scheme
+(def (application-admission PostgreSQL Gitea)
+  (.o (:: @ ApplicationAdmissionContract.)
+    requirement-port-type: (.get PostgreSQL types port)
+    value-contract: (application-contract PostgreSQL Gitea)
+    requirement-methods:
+    (list (application-requirement-methods
+            (.get PostgreSQL prototypes PortRequirement)
+            (.get PostgreSQL types port)))))
+#+end_src
+
+Use native inheritance here deliberately: .cc of the bare prototype creates a
+sibling with its direct parents and would not establish ancestry to specialize
+on ApplicationAdmissionContract. .cc of the resulting INSTANCE retains that
+prototype parent. Descriptor clones made by the platform therefore remain valid
+for the declared prototype specializer. This is not an extra user object layer.
+
+Existing bundle composition owns methods and mutates Generic generation. The
+private dispatcher must detach methods before registering them in a fresh Generic,
+following the existing generic-evolution.ss copying pattern:
+
+#+begin_src scheme
+(def (detach-requirement-bundle bundle)
+  (poo-clos-method-bundle (.get bundle identity) (.get bundle protocol)
+    (map (lambda (method)
+           (poo-clos-method (.get method identity) (.get method specializers)
+                            (.get method body)
+             qualifier: (.get method qualifier)
+             lambda-list: (.get method lambda-list)))
+         (.get bundle methods))))
+
+(def (selected-requirement-dispatch bundles)
+  (admit-bundle-signatures! bundles)
+  (poo-clos-compose-method-bundles
+    (poo-clos-generic-function 'project-module-requirement 3
+      protocol: RequirementProtocol)
+    (map detach-requirement-bundle bundles)))
+#+end_src
+
+This copies EXISTING specializers/body metadata; it does not recreate an ad hoc
+lambda protocol. It leaves global project-module-requirement and original bundle
+ownership unchanged. The bounded example supplies one domain bundle. With multiple
+bundles, identical specializer/qualifier signatures must be admitted for conflict
+BEFORE composition: current poo-clos-add-method otherwise replaces an agreeing
+method. That collision gate remains new integration, not an existing guarantee.
+It must not be confused with two independent VALUES using the same lawful method.
+
+The proposed private gate belongs next to the existing CLOS method owner and
+reuses its actual method-agrees? comparator and clos-fail condition. It is not
+a new public authoring interface:
+
+#+begin_src scheme
+(def (admit-bundle-signatures! bundles)
+  (def seen '())
+  (for-each
+    (lambda (bundle)
+      (for-each
+        (lambda (method)
+          (when (any (lambda (old) (method-agrees? method old)) seen)
+            (clos-fail 'conflicting-selected-methods
+              generic: 'project-module-requirement
+              method: (.get method identity)))
+          (set! seen (cons method seen)))
+        (.get bundle methods)))
+    bundles))
+#+end_src
+
+The private snapshot assembler below uses that CLOS-side adapter, rather than
+pretending method-agrees? is already a public application import. This signature
+gate and its wiring remain proposed code.
+
+* Batch currentness and obligations over the final candidate
+
+A proposed batch is a platform-created native object with graph, rows,
+source-inputs and observations. It retains an explicit empty row list when there
+are no contributions; a missing batch is a refusal, not an implicit empty set.
+Its source-inputs reuse unique-build-inputs over every row's copied observations.
+Its observations include the original route index objects, scope/payload objects,
+selected method bundles, detached methods, Generic and protocol/target objects.
+
+#+begin_src scheme
+(define-type (CollectedContributions. @ [] graph rows source-inputs observations)
+  .admit-current:
+  (lambda (context)
+    (unless (and (eq? (.get context selected-graph) (.get graph selected-graph))
+                 (equal? (.get context graph-generation) (.get graph generation)))
+      (error "contributions belong to another selected Graph"))
+    ((.get graph admit-current))
+    (module-source-admit-current! source-inputs "contribution source changed")
+    (unless (every (lambda (entry)
+                     (equal? (cdr entry) (object-revision (car entry))))
+                   observations)
+      (error "contribution or method object changed"))
+    ((.get graph admit-current))
+    #t))
+
+(def (contribution-context base batch)
+  (.o (:: @ base)
+    admit-current:
+    (lambda ()
+      ((.get base admit-current))
+      (.call batch .admit-current @))))
+#+end_src
+
+The concrete assembler below checks coverage against the same indexed incoming
+edge set and binds method observations before returning. It is proposed adapter
+code, not an implemented API. Source reads may be shared in one stable phase, but file/MOP guards
+must still run at publication boundaries. They do not discover untracked external
+reads in arbitrary Scheme closures. Dynamic policies must declare those sources
+or stay outside reusable pure admission; supported MOP writes are not a sandbox
+against raw mutation, foreign memory, mutable strings or arbitrary IO.
+
+The method result is itself checked with native Contracts. The origin Type is
+an identity predicate over the actual platform-created origin, not a symbolic
+owner-name check. The field path is fixed for this bounded policy:
+
+#+begin_src scheme
+(def (check-requirement-projection Port projected expected-origin)
+  (unless (and (list? projected) (pair? projected))
+    (error "required contribution emitted no constraints"))
+  (def Result
+    (.cc ObjectContract. responsibilities:
+      (.o path: (yuanxu-predicate-type 'postgresql/requirement-path
+                  (lambda (path)
+                    (equal? path '(config postgresql settings port))))
+          value: Port
+          origin: (yuanxu-predicate-type 'module/selected-origin
+                    (lambda (value) (eq? value expected-origin))))))
+  (map (lambda (value) (validate Result value)) projected))
+#+end_src
+
+A normalizing validator must retain the checked origin identity for this opaque
+field. No code should restore a caller's unvalidated origin after validation.
+The scalar Port Type used here has no normalizing Function/Schema dependency.
+If this interface accepts Schema-backed policy Types later, contract-schemas must
+also traverse their retained public Type association; current custom descriptor
+slots are not automatically all traversed by that existing function.
+
+The pure joint policy retains EVERY constraint and reports both origins:
+
+#+begin_src scheme
+(def (collected-port-obligations descriptor candidate context)
+  (def batch (.get descriptor contributions))
+  (.call batch .admit-current context)
+  (def dispatcher (.get descriptor requirement-dispatch))
+  (def projected-constraints
+    (append-map
+      (lambda (row)
+        (check-requirement-projection (.get descriptor requirement-port-type)
+          (poo-clos-call dispatcher descriptor (.get row payload) (.get row origin))
+          (.get row origin)))
+      (.get batch rows)))
+  (def actual-port (.get candidate config postgresql settings port))
+  (def diagnostics
+    (cond
+      ((null? projected-constraints) '())
+      ((not (every (lambda (row) (= (.get row value) (.get (car projected-constraints) value)))
+                   (cdr projected-constraints)))
+       (list (.o kind: 'conflicting-port-requirements
+                 path: '(config postgresql settings port)
+                 constraints: projected-constraints)))
+      ((not (= actual-port (.get (car projected-constraints) value)))
+       (list (.o kind: 'unsatisfied-port-requirement
+                 path: '(config postgresql settings port)
+                 actual: actual-port constraints: projected-constraints)))
+      (else '())))
+  (.call batch .admit-current context)
+  diagnostics)
+#+end_src
+
+This is deliberately the PostgreSQL-port policy, not a universal path evaluator.
+Additional policy families need their own lawful grouping/admission methods. A
+method may not emit constraints for another path and have them interpreted as
+ports: the projection result Contract must enforce this path and Port Type before
+this joint policy runs. The concrete projection validator above enforces this boundary. Implementing and
+validating the adapter and coverage checks remains pending.
+
+* Extend the existing .for-export boundary, not user code
+
+The existing .for-export already obtains the selected owner, actual descriptor,
+build Graph and Context. Proposed additions happen INSIDE that platform boundary:
+
+1. Resolve the actual owner/descriptor as today. Read the graph's cached incoming
+   route bucket, independently resolve every selected contributor and check exact
+   coverage; do this before candidate value composition.
+2. Construct a fresh dispatcher from the descriptor's admitted method packages;
+   capture method/source observations and form CollectedContributions.
+3. Derive the descriptor with contributions/requirement-dispatch. Extend the
+   existing Context with contribution-context. Return the ordinary
+   AdmissionPublication. with that descriptor/context; do not expose a second
+   user publisher, another evidence format or an assembly command.
+4. .publish calls the inherited .admit once. value-contract checks final fields,
+   local connection and plan; .obligations checks complete contributions. Existing
+   checked-subject binding and the extended final currentness guard fence the result.
+
+The concrete proposed assembly lives inside the existing .for-export owner.
+It receives the ordinary publication that today's resolver has already admitted.
+No caller provides origins, complete-row lists or an approval flag.
+
+#+begin_src scheme
+(def (method-observation-sources bundle)
+  (append (list bundle (.get bundle protocol))
+    (if (.slot? bundle 'source-objects) (.get bundle source-objects) '())
+    (append-map
+      (lambda (method)
+        (append (list method) (.get method specializers)
+          (filter object? (map (lambda (specializer) (.get specializer target))
+                              (.get method specializers)))))
+      (.get bundle methods))))
+
+(def (admit-contribution-coverage! selection edges rows)
+  (unless (= (length edges) (length rows))
+    (error "incomplete incoming contribution collection"
+           (length edges) (length rows)))
+  (for-each
+    (lambda (edge row)
+      (def owner (.get edge node owner))
+      (def origin (.get row origin))
+      (def record (.call selection .selected-record owner))
+      (unless (and (eq? (.get row edge) edge)
+                   (eq? (.get origin owner) owner)
+                   (eq? (.get origin key) (.get edge key))
+                   (eq? (.get origin record) record)
+                   (eq? (.get origin publication) (.get edge node publication))
+                   (eq? (.get record publication) (.get origin publication))
+                   (eq? (.get origin source) (.get record source))
+                   (equal? (.get origin generation) (.get record generation))
+                   (equal? (.get origin export-path) (.get edge route export-path))
+                   (eq? (.get row payload)
+                        (scope-path (.get record scope) (.get origin export-path))))
+        (error "contribution coverage or origin mismatch" owner (.get edge key))))
+    edges rows))
+
+(def (bind-publication-contributions selection owner name publication)
+  (def selected-graph (.get selection selected-graph))
+  (def index (.get selected-graph contribution-routes))
+  (def edges (incoming-contribution-edges selected-graph owner name))
+  ;; Collect the exact edge list just captured, not a second query.
+  (def collected-rows (map (lambda (edge) (collect-contribution-edge selection edge)) edges))
+  (admit-contribution-coverage! selection edges collected-rows)
+  (def descriptor (.get publication contract))
+  (def bundles (.get descriptor requirement-methods))
+  (def method-before
+    (map observe-contribution-object
+         (append-map method-observation-sources bundles)))
+  (def dispatcher (selected-requirement-dispatch bundles))
+  (def batch
+    (.o (:: @ CollectedContributions.)
+      graph: (.get selection build-graph) rows: collected-rows
+      source-inputs:
+      (unique-build-inputs
+        (append (.get selection build-graph source-inputs)
+                (append-map (lambda (row) (.get row source-inputs)) collected-rows)))
+      observations:
+      (append (.get index observations)
+              (append-map (lambda (row) (.get row observations)) collected-rows)
+              (map observe-contribution-object collected-rows)
+              method-before
+              (map observe-contribution-object
+                (append (list selection selected-graph index publication descriptor
+                              (.get publication context)
+                              dispatcher (.get dispatcher protocol) bound-descriptor)
+                        (.get dispatcher methods))))))
+  (def bound-descriptor
+    (.cc descriptor contributions: batch requirement-dispatch: dispatcher))
+  (def bound-context (contribution-context (.get publication context) batch))
+  ;; Force the observation baseline before this private result can escape.
+  ;; bound-descriptor above is defined before batch.observations is demanded.
+  (.call batch .admit-current bound-context)
+  (def bound-publication
+    (.cc publication contract: bound-descriptor context: bound-context))
+  bound-publication)
+#+end_src
+
+Coverage is a positional bijection with the captured private edge list, not a
+set of caller-asserted owner symbols. The platform checks the actual record,
+publication, SourceRef, generation, export path and demanded payload identity.
+Missing, duplicated or substituted rows refuse. It observes every path receiver
+before demanding its next slot; mutation of a nested export container must not
+escape a top-level scope-only fence. Row/origin objects also have revision fences.
+Native revision tracking does not cover mutation of raw lists, strings or private
+hash tables; these remain platform-owned snapshots, never user-editable inputs.
+
+Replace the EXISTING .for-export body with this proposed integration (the other
+AdmissionPublication. slots remain unchanged):
+
+#+begin_src scheme
+.for-export:
+(lambda (selection owner name)
+  (def record (.call selection .selected-record owner))
+  (def publication
+    (module-admission-publication (.get selection build-graph)
+      (.get record publication) (.get record scope) name))
+  (def descriptor (.get publication contract))
+  (cond
+    ((.slot? descriptor 'requirement-methods)
+     (bind-publication-contributions selection owner name publication))
+    ((pair? (incoming-contribution-edges (.get selection selected-graph) owner name))
+     (error "selected admission has contributions but no interpreting protocol" owner name))
+    (else publication)))
+#+end_src
+
+The existing publisher calls yuanxu-contract-admit on this bound descriptor and
+uses its evidence.candidate, which may be a normalized object, as the checked
+preview subject. It never presents the unvalidated caller value as admitted.
+Contribution Context guards run before admission and at checked publication;
+the batch additionally fences projection before/after policy dispatch. A failed
+preparation has no new publication; a refusal inside .publish retains its supplied
+previous value without claiming that previous value is newly current.
+
+Native batch slots are lazy: observations captures bound-descriptor only after
+that binding exists. The final guard forces the baseline before return. Original
+method bundle observations are captured BEFORE detaching/composing their methods;
+the final guard rejects an edit between those phases. Detached methods and the
+private dispatcher are observed after their intentional registration mutations.
+That separation preserves source freshness without treating registration itself
+as an unauthorized edit to a source method bundle. This remains design code,
+not a completed concurrency proof.
+
+source-objects is private proposed bundle metadata supplied by the maintainer
+factory above, not an inferred closure read set or another user declaration.
+It includes the captured ValueContract and Port Type. Their supported native
+mutations invalidate this snapshot. Arbitrary IO or mutable foreign values in
+a policy body require a separate tracked source association or prohibit reuse;
+MOP cannot discover them from a lambda. Schema-backed Types additionally require
+the existing Schema source traversal to be extended as described above.
+
+The .for-export integration invokes this coordinator only for a descriptor that
+declares requirement-methods. Other publications retain today's path. All indexed
+incoming edges still require an interpreting receiver: if a target has routes but
+no contribution protocol, .for-export must refuse instead of dropping them.
+Binding is before candidate composition. A new selected source/policy set creates
+a fresh selected publication and dispatcher; it does not mutate the parent's
+cached descriptor or reuse its old policy approval.
+
+* Final .admit, cached parent refusal and effective preview
+
+ApplicationAdmissionContract.'s .obligations delegates to
+collected-port-obligations. The user still only derives a configuration:
+
+#+begin_src scheme
+(def ParentPlan (.get ApplicationScenario plan))
+(def cached-parent-port (.get ParentPlan gitea-port)) ; force parent leaf: 5432
+(.def (Release @ ApplicationScenario)
+  config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(.def (WrongClient @ Release)
+  config: =>.+ (.o gitea: =>.+ (.o database: =>.+ (.o port: 6000))))
+(.def (FrozenPlan @ Release) plan: ParentPlan)
+
+;; Normal internal path, with the selected contributor batch already attached:
+(def publication
+  (.call AdmissionPublication. .for-export selection 'application 'Scenario))
+(defvalues (evidence next refusal)
+  (.call publication .publish previous Release))
+(if refusal
+  (.o state: 'refused previous: next failure: refusal)
+  (.o state: 'admitted-preview plan: (.get next plan)))
+#+end_src
+
+Use separate selected snapshots for zero policies, Operations alone, and both
+Operations/Security. Native inheritance still predicts the child port correctly
+with either policy set; admission determines whether that effective value is allowed.
+
+| Selected policy inputs / candidate | Expected outcome, NOT executed |
+|------------------------------------+--------------------------------|
+| No policy or Operations=5433; Release | Checked preview server/client 5433; parent remains 5432 |
+| Operations=5433; WrongClient | value-contract refuses local connection 5433 versus 6000 |
+| Operations=5433; FrozenPlan | value-contract refuses parent preview 5432 versus final 5433 |
+| Operations=5433 and Security=5440; Release | .admit accepted? #f, both origins retained; no new admitted preview |
+| Security=5440 alone; Release | unsatisfied-port-requirement, not a default override |
+| Any omitted incoming edge or unrecognized policy | Refuse before publication; never silently collect a subset |
+| Correct owner/key but substituted record, export, source or payload | Refuse coverage/origin binding; a matching label is insufficient |
+| Prepared role file changed, including an observed missing file becoming present | Source currentness refusal; rebuild the selected publication |
+| Policy source, payload or method changes during publication | Currentness refusal; old checked approval cannot authorize new inputs |
+
+Requirement conflicts normally return native obligation evidence. Invalid Type
+inputs/relations can raise TypeError. Existing publication preserves the supplied
+previous value for refusals inside its boundary, not a global last-good state or
+rollback of effects. Preparation errors before that boundary can still propagate.
+A previous value is not newly current under a changed policy.
+
+A self-consistent parent candidate/plan can pass local equations; identifying it
+as the wrong intended child still requires authored-instance/revision association.
+Equal port numbers alone cannot prove provenance. This remains distinct from
+rejecting a visibly stale parent plan attached to the actual changed child.
+
+* Coverage and limits of automatic preservation
+
+The guarantee proposed here is for ALL incoming SELECTED PUBLISHED contributions.
+.def/multiple inheritance/=>.+ on business configuration cannot remove those
+independent graph records. A .cc policy value remains associated with the export
+actually read from its selected source. A .+ right-side published policy is retained
+through its independent route, not by guessing that it became a prototype parent.
+
+An anonymous .+ operand with an undeclared policy cannot be authenticated or
+recovered universally from its final result. It must use a selected contribution
+publication before claiming independent contractual authority. A typed policy
+carrier without that association must refuse; a plain value override is not
+magically reclassified as an independent requirement. Detecting and rejecting all
+unassociated policy carriers at domain boundaries is also pending integration.
+Do not claim that one universal :init! hook already solves this distinction.
+
+* Existing, implemented and still proposed
+
+The original audit reused selected records, source preparation, native
+revision/receiver semantics, CLOS protocols and Core checked admission. Its
+10.11/10.12 receipts remain historical.
+
+Implemented in [[file:10.13-selected-contribution-publication.org][10.13]]: the core.contributions route Contract/index, complete
+deep incoming-edge collection, source association, coverage/currentness checks,
+.for-export attachment and composition of Context policy inside native .admit.
+The actual domain Contract is retained. These are no longer test-local helpers.
+
+Still proposed in this domain chapter: complete deployable Gitea/PostgreSQL
+modules, universal policy carriers, projection-result families and per-snapshot
+domain method packages/collision gates. The earlier wrapper/dispatcher sketches
+are not the installed Core policy protocol. Product Loader integration remains
+outside scope. Existing contribution/objects.ss owns identity/capability and
+duplicate export checks; verification.ss is separate host-verification authority,
+not a provenance flag to set on a collected row.
+
+The benefit is small user configuration with independently maintained policy and
+inspectable refusal. The cost is a maintained completeness/source protocol, not
+just a macro. Preserve NixOS's integration and conflict diagnostics; do not replace
+those semantics with C4 winner selection. Existing issue evidence remains owned
+by [[file:../../20-29-ecosystem-research/20-nixos/20.07-issues-and-evidence.org][20.07]]. POO/MOP cannot infer policy intent, prove arbitrary function purity,
+recover erased origins or establish runtime readiness. The bounded implemented controls are listed in 10.13. Shared-root/right-side
+policy carriers and general domain method collisions still require their own
+controls before broader preservation claims.
+
+* Native isolation result and corrected capture semantics
+
+[[file:10.11-contribution-publication-isolation.org][10.11]] records the executable bounded control, dependency identity, failures and
+production boundary. Collection/coverage is test-local; native MOP, CLOS dispatch,
+selected/build Graph, source currentness, .admit and checked publication are real.
+Do not promote that result to an implemented .for-export contribution adapter.
+
+The run exposed native CyclicSlot from =record: record=: .o installs lexical
+slot bindings, so this does not capture the outer record. The design above now
+uses distinct capture names for edges, records, payloads, origins, rows and policy
+constraints. Ordinary constructor arguments are another internal capture option.
+Neither approach adds user Requirements or hidden public metadata fields.
+
+* Architecture authority: module ecosystems, not MOP alone
+
+MOP's historical basis includes Kiczales, des Rivieres and Bobrow's
+[[https://mitpress.mit.edu/9780262610742/the-art-of-the-metaobject-protocol/][The Art of the Metaobject Protocol (1991)]], which specifies a CLOS MOP.
+This is conceptual background, NOT a claim that gerbil-poo implements every AMOP
+operation or that AMOP supplies our module selection/provenance protocol. The
+actual object semantics used here are the pinned gerbil-poo implementation above.
+
+For organization and maintained user cases, the primary references remain
+[[file:../../20-29-ecosystem-research/20-nixos/20.04-discovery-and-dependency-injection.org][NixOS official module discovery]],
+[[file:../../20-29-ecosystem-research/20-nixos/20.05-contributions-types-and-merge.org][definition/Type/merge semantics]] and
+[[file:../../20-29-ecosystem-research/21-devenv/21.02-composition-and-postgres.org][devenv's maintained service modules]].
+Devenv's [[https://devenv.sh/extending/][extension guide]] demonstrates centrally maintained opinionated modules,
+per-project activation and replacement; its [[https://devenv.sh/composing-using-imports/][composition guide]] combines independently
+maintained environments. Those are ecosystem/authoring properties, not consequences
+of having inheritance or multiple dispatch.
+
+| Architectural concern | Direction and acceptance requirement |
+|-----------------------+--------------------------------------|
+| Maintainer organization | Fixed module roles own reusable functionality and published Contracts; independently published Profiles carry defaults; Scenarios select and combine Profiles. Do not put every application case into a Module or require a new Module for each Profile. |
+| User interface | Plain JSON/Scheme values and assignments remain ordinary configuration; native refinement is exposed when a maintained value must be extended. Internal source rows never become user configuration. |
+| Selection versus activation | Catalogue metadata, selected Core/Feature contributions and effective service configuration are different sets. Disabled branches contribute neither requirements nor effects. |
+| Dependency kinds | Source/scope dependencies, independent policy routes and runtime service ordering remain distinct edges; collecting a policy must not demand its target's final result and create a linking cycle. |
+| Completeness at scale | Build a generation-scoped index from selected metadata; query the target bucket and load only demanded payloads. This fixture does not establish the index cost or per-export linker laziness. |
+| Evolution and diagnosis | Preserve owner/file provenance before merge, report all incompatible requirements, and invalidate affected views when source or supported native state changes. C4 precedence is not a conflict resolution policy for independent obligations. |
+| Real cases | Maintain service/Profile/Scenario conformance cases, including disable, missing dependencies, upgrades, conflicting contributions and preview changes. Measure cold discovery, demanded loading and hot reuse separately before scale claims. |
+
+Reflection: MOP can make the chosen object operations extensible and observable;
+it cannot choose a sound catalogue organization, discover erased policy intent,
+validate arbitrary effects or provide operational readiness. The port fixture
+closes one semantic risk. The next architecture review must ask whether the same
+publication contract remains comprehensible across independently maintained
+packages, whether dependency kinds prevent cycles, and whether disabled/unrelated
+branches remain unevaluated. Those questions come from real module maintenance,
+not a goal of showcasing more object machinery.
+
+* Deep selected-record follow-up
+
+[[file:10.12-deep-selected-publication-controls.org][10.12]] now exercises four-segment exports through real source role files,
+the default Core publication reader, .selected-record, prepare-publication and
+.for-export. Five native controls pass: exact deep identities, intermediate
+receiver mutation with unchanged leaf, omission/substitution and route removal,
+source-role currentness, and cached-parent/final-child preview. Disabled module
+parsing and unused sibling export evaluation remain absent in these controls.
+
+The original follow-up used a frozen staged Core snapshot while another session
+was changing link.ss. 10.12 now also records the unchanged five controls passing
+against current working link.ss blob f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6,
+with thirteen named inputs stable before/after the run. This qualifies the ordinary
+selected-record/.for-export path; it does not qualify package realization or every
+opt-in export binding. The contribution coordinator remains test-local; no product
+Loader integration or production contribution-index implementation was added.
+10.11 remains the separate historical CLOS/conflicting-value control.

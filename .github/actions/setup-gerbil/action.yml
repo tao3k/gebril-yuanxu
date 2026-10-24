@@ -1,0 +1,88 @@
+name: Set up Gerbil prerequisites
+description: Activate the immutable gerbil-bazel release and required tools.
+runs:
+  using: composite
+  steps:
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential ca-certificates git jq libsqlite3-dev libssl-dev openssl pkg-config sqlite3 zlib1g-dev
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: 1
+        HOMEBREW_NO_INSTALL_CLEANUP: 1
+      shell: bash
+      run: |
+        brew list --formula ghostscript >/dev/null 2>&1 && brew unlink ghostscript || true
+        brew install coreutils gcc jq openssl pkg-config sqlite zlib
+        echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+        gcc_prefix="$(brew --prefix gcc)"
+        gcc_bin="$(find "$gcc_prefix/bin" -maxdepth 1 -type f -name 'gcc-[0-9]*' | awk -F- '{print $NF "\t" $0}' | sort -n | tail -n 1 | cut -f2-)"
+        test -x "$gcc_bin"
+        echo "GERBIL_GCC=$gcc_bin" >> "$GITHUB_ENV"
+        openssl_prefix="$(brew --prefix openssl@3 2>/dev/null || brew --prefix openssl)"
+        echo "PKG_CONFIG_PATH=$openssl_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+    - name: Install the supported Just CLI
+      uses: taiki-e/install-action@a4d3f3f761dcd95cce1b72cb61cb6d1963438177 # v2
+      with:
+        tool: just@1.56.0
+        checksum: 'true'
+        fallback: none
+    - name: Record the selected Just CLI
+      shell: bash
+      run: |
+        just --version
+        test "$(just --version)" = 'just 1.56.0'
+    - name: Install immutable Gerbil release
+      shell: bash
+      run: |
+        set -euo pipefail
+        release_root="$GITHUB_WORKSPACE/.ci/gerbil-release/v0.19-1cfb032"
+        revision=1cfb032c7a1612637da6205f5f8a15683eba3ba0
+
+        case "$(uname -s)-$(uname -m)" in
+          Linux-x86_64)
+            release_os=linux
+            release_arch=x86_64
+            tag=gerbil-v0.19-1cfb032c7a1612637da6205f5f8a15683eba3ba0-linux-x86_64-portable-full-single-host-unlimited-multiple-vms-patch9599b09b82f8
+            sha256=143c691fee5af4f9f631fd339f69a66f562e42e0bfc1d4ee2cda5fa8d35c35ee
+            ;;
+          Darwin-arm64)
+            release_os=darwin
+            release_arch=aarch64
+            tag=gerbil-v0.19-1cfb032c7a1612637da6205f5f8a15683eba3ba0-darwin-aarch64-gcc16-arm64-aot-tools-single-host-unlimited-multiple-vms-patch618d76f9eb72
+            sha256=0e18d063f888a73d9f9692d441fb3776898114e8440eada6876937d289578183
+            ;;
+          *)
+            printf 'unsupported Gerbil release host: %s-%s\n' "$(uname -s)" "$(uname -m)" >&2
+            exit 64
+            ;;
+        esac
+
+        archive="$tag.tar.gz"
+        download="${RUNNER_TEMP:?}/$archive"
+        mkdir -p "$release_root"
+        curl --fail --location --retry 3 --output "$download" \
+          "https://github.com/tao3k/gerbil-bazel/releases/download/$tag/$archive"
+        echo "$sha256  $download" | shasum -a 256 --check
+        tar -xzf "$download" -C "$release_root" --strip-components=1
+
+        jq -e --arg revision "$revision" --arg os "$release_os" --arg arch "$release_arch" \
+          '.schema == "gerbil-bazel.toolchain-release.v1" and
+           .upstreamRevision == $revision and
+           .platform.os == $os and .platform.arch == $arch' \
+          "$release_root/gerbil-toolchain-release.json" >/dev/null
+
+        source "$release_root/activate"
+        echo "$GERBIL_PREFIX/bin" >> "${GITHUB_PATH:?}"
+        {
+          echo "GERBIL_PREFIX=$GERBIL_PREFIX"
+          echo "GERBIL_HOME=$GERBIL_HOME"
+          echo "GAMBOPT=$GAMBOPT"
+        } >> "${GITHUB_ENV:?}"
+
+        "$GERBIL_PREFIX/bin/gerbil" --version
+        "$GERBIL_PREFIX/bin/gerbil" interactive -e '(displayln "gerbil-ready")'

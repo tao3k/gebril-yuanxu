@@ -1,0 +1,130 @@
+#+title: 13.09 User-Owned Build Script with Direct Repository Source Targets
+#+property: DOCUMENT_ID 13.09
+#+language: en
+
+This is the historical manual-import control. Requiring these imports in the
+author's interface was rejected; [[file:13.10-automatic-role-projection.org][09]] replaces it with automatic role association.
+Use the automatic-role overlay and current source-spec tests for reproduction.
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Consumer boundary
+
+The required consumer remains the standard library invocation:
+
+#+begin_src scheme
+(import (only-in :std/build-script defbuild-script)
+        (only-in "./init.ss" init.build-spec)
+        (only-in "./core-spec.ss" core-spec))
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+Module infrastructure must not replace main, supply a source alias to the
+consumer or modify the SDK to support this interface. The current production
+entry from [[file:13.08-in-process-build-entry.org][the preceding integration]] still returns main; this note records a
+subsequent isolated alternative, not a completed production migration.
+
+* Actual source gap and isolated correction
+
+JsonSchema's types, config, func and objects files already contain ordinary
+Scheme imports and exports. Its interface.ss omits the imports and depends on
+the reader's publication frame. The isolated correction makes that file a
+compilable module as well as an admitted publication declaration:
+
+#+begin_src scheme
+(import (except-in :clan/poo/object .def)
+        (only-in :yuanxu/module-system/source/declaration .def)
+        "types.ss" "config.ss" "func.ss" "objects.ss")
+(.def JsonSchema
+  ;; Existing identity, core and features fields remain unchanged.
+  ...)
+#+end_src
+
+The existing declaration macro supplies publication exports and deferred link
+semantics. No new macro is introduced. The publication reader continues using
+its confined role projections for declaration evaluation; those interpreter
+frames are not relocated compiler targets.
+
+The isolated spec projection reuses the existing selected Graph, retained-source
+admission, merge-build-entries and native-build-name. It verifies that each
+compiler identity maps to the actual repository-relative source path, then
+returns ordinary gxc: specs. No compiler input files, package copy or generated
+build.ss are written. No process-wide directory or importer mutation is added.
+
+The cached projection object uses spec: build-value. A binding named spec in
+that expression can become a same-named POO slot reference; the initial control
+was interrupted before compilation and corrected. The build-value binding names
+the value's responsibility. The failed run remains a local artifact.
+
+* Verified scope
+
+[[file:../../../t/module-source-spec-test.ss][The executable control]] evaluates the actual isolated build.ss and invokes its
+SDK-generated main in the current process. It does not define an alternative
+main or wrap the SDK command entry. It checks identical list identity on repeated
+spec requests, unique target identities, original source existence, canonical
+core/ outputs, and their removal by clean.
+
+The isolated retained manifest contains utilities/algorithms, types and core-spec.
+The extra manifest target makes its bytes an observed input. The real JsonSchema
+closure and these retained roots produce 35 targets. This bounded spec compiled
+and cleaned with MODULE-OK, HARNESS-OK, final OK, no failure markers and natural
+exit 0 under the unchanged heap-fenced 120-second recipe. There was no compiled
+Core cache before the run. Eight public dependency units were freshly compiled
+from the clean locked gerbil-poo revision
+099b381588360a8a49fd772f666a1a00351366f5. The SDK was neither edited nor copied.
+
+The control confirms that .gerbil/module-build and bootstrap.ss do not exist.
+It rejects edits to the user's build.ss, the retained manifest and tool input
+before the next command; changing init refuses the selection session even after
+restoration. Diagnostics are matched against exception messages, not backtraces.
+
+* Acceptance is a separate operation
+
+#+begin_src scheme
+(run "compile")
+(current!)                 ; explicit acceptance-time input recheck
+#+end_src
+
+The spec expression is evaluated for every SDK command, so its admission checks
+run before compile or clean. The unchanged SDK macro does not call current!
+after the command. A completed command followed by a module source edit is
+rejected by the later explicit check. This is not automatic concurrent-change
+detection or publication authority, and rejection does not undo compiler writes.
+
+* Reproduce without changing the checkout or SDK
+
+Follow the fresh source-only snapshot and locked-dependency setup from
+[[file:13.07-core-build-entry.org][the repository qualification]], inserting the Core-only overlay before loading
+any Core source in the new process:
+
+#+begin_src sh
+just test-file t/module-build-source-snapshot-test.ss
+just test-file t/module-source-spec-prepare-test.ss
+just test-file t/module-build-dependency-qualification-test.ss
+just test-file t/module-source-spec-test.ss
+#+end_src
+
+The setup test applies the bounded Core overlay (retired control) with zero fuzz to the unmanaged
+snapshot named by CORE_QUALIFICATION_ROOT. It rejects the active repository and
+any Git-managed checkout. The test itself narrows only the snapshot's retained
+manifest before importing build.ss. The overlay changes Core files only and
+never copies or patches std/make or std/build-script. Run all phases serially,
+with fresh GERBIL_PATH and source-only GERBIL_LOADPATH as documented.
+
+* Remaining integration boundaries
+
+This is not qualification of every role file or generated contribution.
+JsonSchema's selected sources are ordinary compilable modules after the import
+correction. Modules relying on implicit Config preludes/exports or Build bindings
+need their own source-compilability decision. The isolated projector explicitly
+rejects external packages and other projections instead of silently dropping
+their work. Those consumers remain outside this control.
+
+Production migration must preserve these source and contribution boundaries
+without reintroducing consumer aliases, hidden compiler hooks, a command parser
+or an SDK fork. No runtime Loader or full Core compilation is involved here.

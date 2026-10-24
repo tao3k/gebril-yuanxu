@@ -1,0 +1,183 @@
+#+title: 13.06 Init to Ordinary Build-spec Adapter
+#+property: DOCUMENT_ID 13.06
+#+language: en
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Implemented boundary
+
+yuanxu-build-spec in module-system/building/build-projection.ss now accepts a
+real init source and returns an ordinary native Scheme list. Selection and
+dependency resolution still belong to yuanxu-load-modules. The build adapter
+does not inherit or refine that Graph. Native std/build-script and std/make own
+dispatch, import dependencies, scheduling, compile and clean.
+
+The existing build-entry writer now accepts retained Scheme roots, their source
+root and a native package prefix. It prepares selected and retained inputs in
+one source directory without manufacturing another Graph. An internal prepared
+artifact retains the original Graph by identity and provides guarded reuse of
+the ordinary module-spec list. It is not a new build-spec type.
+
+* Internal adapter expression and the native source anchor
+
+The following bounded qualification frame uses actual retained Core roots.
+It explains the internal SDK bridge; authors do not repeat this frame in
+build.ss. The maintained root entry now delegates to Module System Building,
+as described in [[file:13.07-core-build-entry.org][06]].
+
+#+begin_src scheme
+(import :std/build-script
+        (only-in :std/source this-source-file)
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-build-spec))
+
+(def source-root (path-directory (this-source-file)))
+(def output (path-expand ".gerbil/module-build" source-root))
+(def retained '("utilities/algorithms" "types"))
+(def module-spec
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
+    output-directory: output
+    retained: retained))
+
+(def main
+  (let ((this-source-file (lambda () (path-expand "build.ss" output))))
+    (defbuild-script (append module-spec retained))
+    main))
+#+end_src
+
+The adapter infers the native package prefix from the SDK reader's identity for
+init.ss. For Core that prefix is core. Prepared filenames are owner-relative,
+such as modules/json-schema/types and types. Generated gerbil.pkg carries the
+same package prefix. Native output identities remain core/modules/json-schema/types
+and core/types; no temporary-directory component becomes a library identity.
+
+The lexical source anchor is still necessary because the unmodified SDK macro
+derives its source directory from this-source-file. Returning a list cannot
+change the caller's source location. The outer main above returns the native
+dispatcher closure; it is not another dispatch protocol. A bare append executed
+under the original source root would be wrong for prepared interface sources.
+The generated build.ss is a compiler artifact, not an independently maintained
+or separately invoked bootstrap.ss.
+
+This example is a bounded two-retained-root entry, not migration of the whole
+live Core build.ss. Source-capable SDK/package imports and the public library
+dependencies remain prerequisites; no precompiled Core cache is required.
+
+* Deduplication and refusal before compilation
+
+retained is supplied once as a value and reused by native append. The adapter
+uses it to prepare files and reserve their native identities, not to introduce
+a second source inventory. A selected target also present in retained is omitted
+from module-spec only when its original path, native identity and options agree.
+Its already prepared input is reused, preserving the compiler-tool preparation
+boundary. Other identity/source collisions fail closed.
+
+The adapter currently accepts the retained forms actually used by this case:
+native Scheme target strings and (gxc: "target" "option" ...). It rejects path
+traversal, symlink/non-regular source components, mismatched native identities,
+conflicting options and duplicates within retained itself. Silently repairing a
+duplicate in the caller's tail list would be impossible for a function returning
+only the head list; refusal preserves native append semantics. Selected/retained
+overlap, by contrast, is deduplicated automatically.
+
+Relative init paths can leave ./ components in the retained root. Retained
+source components are checked before path normalization; only then is the
+normalized path compared with selected inputs. This makes ./init.ss and an
+absolute init path agree without admitting a symbolic-link target or treating
+two distinct files with the same declared compiler ID as one source.
+
+Non-Scheme native target forms and a Graph spanning incompatible native package
+prefixes are not generalized by this adapter. They require explicit source/output
+normalization; the function must not silently miscompile them.
+
+* Currentness and command lifecycle
+
+The writer's existing currentness boundary now includes retained source and
+package observations, generated package metadata, all prepared inputs and the
+generated native entry. A prepared artifact can be passed to
+yuanxu-build-spec to obtain the same module list while rechecking that
+boundary. It cannot be reconfigured with another output or retained list.
+
+The focused test calls native defbuild-script directly:
+
+#+begin_src scheme
+(let ((this-source-file (lambda () (.get artifact build-entry))))
+  (defbuild-script
+    (append (yuanxu-build-spec artifact) retained)
+    libdir: lib bindir: bin parallelize: 1 optimize: #f)
+  main)
+#+end_src
+
+The test uses the existing artifact guard before AND after dispatch. The list
+adapter itself checks currentness when called; it does not promise an atomic
+filesystem transaction or an automatic post-compile hook. The simple author
+example captures a list before dispatch and therefore does not by itself supply
+that stronger before/after guard. Native extra-inputs timestamps are not a
+substitute for the observed-byte checks. Contract evidence remains separate.
+
+The compiler-epoch boundary from [[file:13.05-reader-tool-context-and-cold-build.org][04]] still applies: source reader construction
+and compilation must not accidentally mix original and generated Context epochs.
+
+* Focused acceptance
+
+The real JsonSchema gate (retired control) exercises the init-path API and compares its plain
+list with the prepared-artifact API. It asserts that the original selected Graph
+is retained by identity; no combined-graph extension or test-side input merging
+remains. It then appends the retained native list directly under the SDK macro.
+
+The gate checks native source/output identities, selected/retained deduplication,
+conflicting options, invalid retained paths, duplicate retained targets, source
+and generated-entry drift, and SDK spec/compile/clean. The cold source snapshot
+has no root bootstrap.ss/build.ss and the isolated dependency cache has no Core
+binaries. Qualification uses serial heap-fenced Justfile recipes; results must
+include clean harness markers AND natural exit 0 under the unchanged timeout.
+
+The focused [[file:../../../t/module-build-spec-test.ss][adapter boundary controls]] additionally cover relative init,
+package-prefix preservation and mismatch, generated metadata drift, attempted
+reconfiguration, a symbolic-link retained source, and distinct physical sources
+claiming one compiler identity. No native compilation is needed by that suite.
+
+The first native-list test attempt assumed all spec entries were gxc pairs and
+failed when inspecting a valid retained string. Its assertion now handles both
+native forms; that unsuccessful attempt did not reach compilation. The relative
+path control subsequently found a real path-spelling conflict, fixed by the
+post-admission normalization described above. Neither failure was reclassified
+as a pass or bypassed by weakening identity checks.
+
+No full package build, runtime Loader integration, Contract-system change or push
+is part of this work. Final focused results follow below.
+
+* Recorded result: source-only qualification on 2026-10-17
+
+The final real JsonSchema gate uses a fresh source-only Core snapshot. The live
+adapter and the qualified copy share SHA-256
+=3719dfa812b6a713b0f59e95d942bd1767950fabed76c297a2bd12f5fd69fa1c=.
+The existing nine-unit public library cache is the explicit local PR dependency
+override described in 04; it is not validation of the gerbil.pkg pin. No Core
+binary cache is present before or after the gate.
+
+The init selected 33 entries; reserving the two actual retained roots and using
+ordinary append produced 34 unique native targets. The final run completed native
+spec, all 34 compiled .ssi identity checks, native clean and all 34 removal checks,
+then rejected post-dispatch input drift. Its last assertion completed 86.76 seconds
+after test-module loading. MODULE-OK, HARNESS-OK, final OK and natural exit 0 were
+all observed under the unchanged 120-second recipe, without error/heap/stack markers.
+
+The separate no-compilation adapter controls also passed with natural exit 0,
+including relative init, package metadata drift, a symlink target, incompatible
+prefixes and distinct physical sources with the same declared ID. Neither
+source normalization nor deduplication broadened the accepted source authority.
+The existing eleven-case selected-build Graph suite and the three tool-source
+confinement controls also passed against the final source epoch, with clean
+harness markers and natural exit 0. All focused tests ran serially.
+
+At this recorded source epoch the live Core build.ss had not yet been migrated.
+The later integration in [[file:13.07-core-build-entry.org][06]] keeps both spec owners explicit
+at the root; Building captures source context and returns the standard SDK main
+through an ordinary init.build-entry function, with checks around each command.
+The receipt above remains
+bounded adapter evidence, not qualification of every Core target or native form.

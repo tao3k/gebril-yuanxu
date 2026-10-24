@@ -1,0 +1,163 @@
+#+title: 12.25 AWS Profile: Public Values, Contextual Children and Publication
+#+property: DOCUMENT_ID 12.25
+#+language: en
+#+property: STATUS implemented-focused-real-schema-test-no-runtime-loader
+
+* Actual chain and ownership
+
+The direct-directory fixture described here is superseded by
+[[file:12.26-selected-packages-and-owned-aws-tests.org][selected packages and init-owned AWS tests]]. This record retains its earlier
+execution evidence; it is not the current fixture's implementation listing.
+
+[[file:../../../t/aws-context-publication-test.ss][The native integration test]] now connects the maintained AWS contribution to
+the unified producer through the existing selected publication. It acquires the
+real AWS 5.99.0 and 5.100.0 provider Schema packages from
+[[file:../../../t/fixtures/opentofu/versioned-schemas.nix][the existing versioned fixtures]], using declarative Ops ProcessScript objects
+and their .run methods. It does not invoke AWS deployment, OpenTofu apply or a
+second test runner.
+
+The fixture copies the maintained AWS role sources and selects their package
+directory through config.ss, as the earlier provider gate does. The production
+package-demand/binding gap is not hidden: this acquisition input remains fixture
+preparation. The positive path has no manually assembled SchemaArtifact, schemas
+list, value descriptor, admission path or replacement publication declaration.
+Descriptor copies appear only in explicit negative controls.
+
+#+begin_src scheme
+(def selection (yuanxu-load-modules init))
+(def publication
+  (.call AdmissionPublication. .for-export selection 'aws 'Scenario))
+
+(def WebProfile (.get selection modules aws Profiles Web))
+(def Scenario (.get publication value))
+;; Force the maintained parent's resource before deriving the user configuration.
+(def parent-cached (.get Scenario resource))
+(.def (Production @ WebProfile) instance_type: "t3.medium")
+(.def (Release @ Scenario) profile: Production)
+(defvalues (receipt next failure)
+  (.call publication .publish Scenario Release))
+#+end_src
+
+The reader supplies the real provider value Type. AWS's public
+AWSScenarioContract. validates profile/resource through AWSProfileContract.,
+whose constraints delegate to that Type. The public relationship obligation
+checks that the direct resource projection is the final Profile object.
+AdmissionPublication. follows the maintained interface's existing association
+and retains the actual Contract and three published Schema input observations
+(manifest, resource index and selected EC2 input). Users do not declare them.
+
+* Context-only child admission
+
+The maintained AWS factory now adds one contextual requirement:
+
+#+begin_src scheme
+(define-type (AWSProfileAdmissionContract. @ AWSAdmissionContract.)
+  identity: 'aws/profile-context)
+
+(def (aws-scenario-contract input-type)
+  (.cc AWSAdmissionContract.
+    'identity 'aws/scenario-admission
+    'value-contract (.cc AWSScenarioContract. 'input-type input-type)
+    'responsibilities (.o profile: AWSProfileAdmissionContract.)))
+#+end_src
+
+The child's inherited value-contract is #f. It neither recompiles the provider
+Schema nor validates fields again. It requests the actual selected Context's
+freshness/requirements check and records the effective Profile as its subject.
+The resource slot is the same Profile projection; a second identical contextual
+child admission for that alias is unnecessary.
+
+The integration asserts the root evidence candidate is the published checked
+root and the child evidence candidate is exactly next.profile. The child retains
+the actual requirements-map descriptor and exactly publication.context. The
+parent's cached resource stays t3.small while the child's resource is t3.medium.
+
+* Two integration defects repaired
+
+The earlier isolated producer tests did not cover these publication adapters:
+
+1. [[file:../../../admission/contributions.ss][bind-publication-contributions]] previously allowed only the root descriptor in
+   its Context method. It rejected the real child's contextual dispatch even
+   though the root's responsibilities selected that exact child.
+2. [[file:../../../admission/publication.ss][Schema association traversal]] followed value-contract: #f on a context-only child
+   as if it were a malformed public Type.
+
+Context binding now snapshots the exact descriptor references reachable through
+the root's contextual responsibilities, including revisions of each descriptor
+and requirements map. It is identity bookkeeping for the existing publication,
+not another field validator or user-maintained registry. Shared references are
+visited once. Currentness checks still reject source/object changes. A same-label
+copy of a child is refused because it is not the selected reference.
+
+Every permitted child dispatch runs the existing Context currentness check and
+any inherited Context policy. Root contribution rows are evaluated only for the
+root descriptor: they describe the whole selected composition and must not be
+reapplied to a child candidate of a different shape. No new per-child contribution
+routing protocol is introduced.
+
+This control uses distinct root and child descriptors. A recursive domain that
+uses the same descriptor at both root and nested positions would need an explicit
+position-aware contribution policy; descriptor identity alone cannot distinguish
+those positions. That case is not qualified by the AWS example.
+
+Schema traversal skips only the explicit optional value-contract: #f edge.
+Other malformed Type edges, missing publication metadata and mismatched source
+associations still refuse. The traversal still does not infer dependencies
+hidden in arbitrary procedures.
+
+* Refusal and update controls
+
+| Control | Verified relationship |
+|---------+-----------------------|
+| Cached parent, derived instance_type | Parent stays t3.small; published resource and contextual child use t3.medium. |
+| Same-label foreign child descriptor | Platform Context rejects a copied descriptor rather than trusting its identity symbol. |
+| Contextual requirements map changed after capture | The recorded map revision refuses the old publication rather than authorizing the replacement. |
+| Child Context policy refusal | A test probe extends the actual platform Context method, calls its original checks, then refuses the selected child; publication returns the previous object by eq?. |
+| Package update 5.99.0 to 5.100.0 | The old selection refuses publication; a fresh .for-export resolves the new actual Schema/Contract/Context. |
+| Old receipt replay into the fresh publication | Public bind-evidence refuses the old descriptor/Context binding and preserves the previously accepted value. |
+| Fresh admission after update | The same user configuration passes with fresh evidence and its final Profile child. |
+| Misspelled instnace_type | The real provider input Schema rejects the field before accepting a new publication. |
+| Schema bytes changed after capture | A disposable copy retains the original manifest/index digests; changing the EC2 input bytes refuses publication and old-receipt reuse, preserving the previous object. |
+
+The policy rejection callback is a test probe, not an AWS authorization policy.
+The Schema copy is a mutation control, not a fabricated input Schema. The package
+versions and provider download hashes come from the existing fixtures; nixpkgs
+is the test environment's resolved package set. This does not claim deployment
+validity for ami-fixture, live AWS access, IAM authorization or whole-provider SDK
+constraint coverage.
+
+* Reproduce and evidence boundary
+
+Use the repository dependency environment and an available local Nix daemon:
+
+#+begin_src sh
+just test-aws-context-publication
+#+end_src
+
+This recipe reuses the existing heap-fenced test-file entrypoint and original
+std/test harness. Package acquisition uses the existing 30/60-second Ops bounds;
+the outer test keeps its existing 120-second bound. No full build or runtime
+Loader is used. The provider fixture currently targets aarch64-darwin.
+
+The completed AWS test returned naturally with exit 0, MODULE-OK, HARNESS-OK and
+final OK, without an error/heap/stack marker. Its fixture releases the temporary
+project and mutable Schema copy. Raw output is not committed.
+
+The following focused regressions also passed serially through the same bounded
+native harness with all required completion markers and natural exit 0:
+
+| Suite | Existing behavior preserved |
+|-------+-----------------------------|
+| t/aws-scenario-contract-test.ss | Public AWS fields, final projection identity, optional nominal requirements and cold interface inspection. |
+| t/gitea-postgresql-publication-test.ss | Eight completed real-module controls for root contribution requirements, conflicts, final receiver values, origin substitution and source changes. |
+| t/admission-publication-test.ss | Existing platform Context, Schema/source invalidation and publication refusal behavior. |
+
+Initial acquisition failed because the execution sandbox could not connect to
+the local Nix daemon. The same native test then ran with permitted daemon access.
+The first actual publication run exposed the optional value-contract edge defect;
+that failed run is not a pass. The corrected test and the same-label negative
+control subsequently passed without changing timeouts or substituting a Schema.
+
+See [[file:12.24-unified-contextual-responsibility-admission.org][the unified producer record]] for counted one-call normalization controls.
+This AWS gate establishes the real provider/publication handoff; it does not
+claim to count every internal diagnostic pass of the public ObjectContract.

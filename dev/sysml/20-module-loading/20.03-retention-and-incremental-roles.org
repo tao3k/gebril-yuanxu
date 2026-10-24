@@ -1,0 +1,285 @@
+#+title: 20.03 Retention Owners and Incremental Role Evaluation
+#+filetags: :modules:incremental:retention:lean:quint:
+
+* Problem and hard boundaries
+
+A change to one of ten thousand Modules must not unconditionally recompile all
+Modules. It may nevertheless affect all of them if they genuinely depend on the
+changed interface. The guarantee is reuse outside the affected closure, not an
+unconditional promise that exactly one node executes.
+
+The user retains the full CI gate, including scale, before production Loader
+integration. This investigation changes tests and models only. It does not wire
+the metadata projection into the Loader, increase two-GiB limits, remove source
+checks, alter observer delivery, cache admission conclusions, or rerun the known
+failing ten-thousand-module workload.
+
+* What the failed run actually counted
+
+At commit =07a4e912c422cbbe2154d12cee17315261ded80a=, the existing
+[[https://github.com/tao3k/gebril-yuanxu/actions/runs/40078161584/job/120828164694][Linux scale job]]
+reported =reader-lifetime= 2102 and =reader-body-expanded= 8408 before Heap overflow.
+The latter is FOUR BODIES per publication: interface plus types, objects and
+config. It is not evidence of four business scopes or four optional Features.
+The fixture's exports and unused Feature are error tripwires and remain unforced.
+
+* Actual retention owners
+
+| Owner in current source | Retained objects | Safe conclusion / limit |
+|-------------------------+------------------+-------------------------|
+| =reader.ss:kernel-contexts= | Native private role contexts and imported shared source contexts | Context count is not retained bytes; table aliases can point at the same object |
+| Context bindings, imports and runtime state | Exported Types, Scope objects, Config values and interpreted closure environments | Cleared =module-context-code= does not prove all AST/closure paths are gone |
+| =reader.ss:preparations= | Native identity, guarded original source snapshots, package/prelude association | Share an identical immutable input only within its authority/context; never share a successful currentness result across effects |
+| =kernel-inputs=, =dependencies= and =guards= | Prepared input references, closure associations and guard procedures | Preserve every input/edge; repeated index entries are not automatically duplicate allocations |
+| Native receiver =%reads= and publication guard closures | Original issued records, dependencies and issuer payloads | Do not reconstruct records or deduplicate by receiver alone |
+| =poo-clos/objects.ss:make-invocation-frame= | Fresh native POO frame with effective method, arguments, next continuation, qualifier and method | Equal method identity alone cannot justify sharing frames from different calls |
+| =make-effective-method= | Checked call carrier, arguments and selected method groups | Immutable definitions may be shared; argument/continuation-bound instances require their own semantic context |
+
+The existing =release-reader-expansions!= only clears the exact evaluated wrapper
+body after its successful native compile/evaluate pair. It preserves contexts,
+imports, bindings and runtime promises. This is intentional, not permission to
+unload arbitrary SDK state. The scalar reader telemetry measures these owners;
+a weak native-read census below distinguishes surviving observed receivers.
+
+* Diagnostic method and its limits
+
+=t/module-retention-census-test.ss= reuses DeclarationFixture and the REAL init,
+source reader and selected graph for 16 and 32 Modules. It does not invent a
+publication bundle or alternative module evaluator. Existing source observers
+are delegated; only counts and existing scalar retention rows are reported.
+
+The test uses the EXISTING =ModuleTestingProfile.= with =emit?= and
+=trace-enabled?=, rather than adding another read census. Its weak native
+ledgers and =reader-clos-roots=/=slot-issuer-storage= reports keep the original
+observations. The test only samples GC while holding the real selected graph.
+The issuer-storage inspection already belongs to that diagnostic Profile; no
+new heap walker, arbitrary callback inspection or public tracing protocol is added.
+
+An exploratory weak-ledger control, subsequently replaced by this existing
+Profile, observed 153/297 invocation frames at 16/32 Modules, all attributed to
+=module-authoring-admit=. These are 9*(N+1) actual source datums; equal Generic
+identity is NOT equal invocation identity. SDK tool contexts stayed 375; private
+role contexts increased 48→96. These preliminary counts do not establish
+per-class retained bytes or a safe frame-sharing optimization.
+
+This is NOT a full heap ownership proof. Survivors can be held by other live
+runtime roots. The observer and its table change allocation, and the second
+case shares a process with the first. Absolute live bytes are diagnostic samples,
+not per-class byte attribution or a capacity result. Never sum overlapping root
+counts or infer that fewer events imply fewer live bytes. A matched plain run
+and physical closure/global-root attribution remain necessary before selecting
+a production memory optimization.
+
+* Incremental relations and identities
+
+Keep four relations distinct:
+
+1. Module =requires= decides availability and contract scope.
+2. Compiler imports and actual compiler inputs decide artifact rebuilding.
+3. Native slot/value reads decide semantic invalidation and re-evaluation.
+4. Plan dependencies and handoffs decide execution order.
+
+A JSON/runtime value edit is different from editing Scheme =config.ss=. The
+former need not compile unchanged Scheme. The latter is a source edit and may
+recompile that role and its real compiler dependents. The finite QNT fixture's
+node 2 explicitly denotes runtime/JSON data, not edited Scheme source.
+
+Existing POO mutation tracks prototypes, protocol objects and declaration
+associations. The minimal Scheme test proves a prototype specification edit
+recomputes a descendant while an unrelated receiver retains its cached value.
+A child refinement leaves a cached parent unchanged.
+
+The same test exposes a necessary boundary: a plain Consumer slot reading a
+separate Provider can still return its old cached value after Provider mutation.
+Native replay rejects that stale dependency support. Rejection is NOT automatic
+incremental recomputation. Do not claim that arbitrary cross-module value reads
+are already an incremental module evaluator.
+
+* Proof correspondence and reuse boundary
+
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/IncrementalRoles.lean][IncrementalRoles.lean]]
+uses LeanPoo =ConstructionCache.redefine_unchanged= and =Cache.retain= directly.
+The transitive Dirty relation proves an unaffected node has no changed source
+or affected demanded dependency. It is instantiated separately for compiler
+imports and semantic reads.
+
+Unchanged resolver code is insufficient for equal output. The =unchangedValue=
+theorem additionally requires exact dependency agreement and locality. These
+are semantic premises, not author-supplied purity labels. Production extraction
+of a complete support set from issued reads, revision/source association, and
+locality for open Scheme hooks remain correspondence obligations.
+
+[[file:../../proofs/quint/IncrementalRoles.qnt][The finite QNT model]] separates
+code imports and value reads, includes a shared dependent, unrelated code and an
+unselected role, and checks exact compile/evaluation partitions. Matched faults
+include global recompilation, an omitted dependent, collapsed observer events,
+a cached admission after an effect, parent contamination, and a missing second
+requirement. An acceptance counterexample establishes non-vacuity. It is a small
+two-edge-depth graph, not proof of arbitrary native graph extraction or heap use.
+
+=t/module-incremental-make-test.ss= invokes the installed =std/make= on three
+real Scheme source files and checks actual =.ssi= and =~0.o1= outputs. It does
+not replace compiler decisions, issue Core publications or add a build cache.
+Cross-process publication remains owned by existing build issuance/currentness. An unchanged artifact
+must still be authenticated; an old Contract or plan approval is never the
+incremental cache entry. Receiver identity, role/phase, semantic inputs, source
+revision, compiler options and package identity must remain properly bound.
+
+* Actor / green-thread decision
+
+Actor or green-thread scheduling is not a replacement for incremental invalidation.
+First determine demanded affected roles and reuse valid unchanged data. The
+current native object-state implementation explicitly assumes serialized mutation
+and evaluation. Parallelizing it without a new correctness argument is unsafe.
+
+If bounded workers are later qualified, one owner keeps the graph and native
+cache; messages identify demanded work rather than copying graphs or scopes.
+Workers may process admitted immutable inputs, with a GLOBAL memory budget and
+bounded in-flight work. Dynamic observation/admission scopes, cancellation,
+source changes and result publication require explicit isolation and validation.
+No Actor runtime, thread-safe native mutation, throughput gain or atomic external
+commit is established here. Sequential incremental execution is the initial
+correctness baseline.
+
+* Reflection and next decision
+
+The architectural target is not "parallel compile everything faster". It is
+"do not construct or compile unrelated work, and do not retain unnecessary call
+instances after proving that their complete semantics survive". Reuse native
+POO immutable structure and std/make's existing artifact model; do not add a
+second Core cache protocol, restore API or Builder.
+
+Before production changes, obtain retained-owner measurements, complete native
+dependency extraction and classify cold/open callbacks. Preserve diagnostics,
+all issued edges and observer occurrences. Keep the full CI gate visible: the
+known capacity failure cannot be hidden by relabeling a small model as scale
+acceptance.
+
+* Actual reads to native invalidation: correspondence and limits
+
+=object.ss:depend-on-object!= registers the consumer's state with the provider's
+native dependent set. =object-state.ss:invalidate-state!= visits the affected
+identity closure once, checks the entire closure before mutation, then increments
+revisions and clears derived caches. This is OBJECT-granular invalidation, not
+minimal individual-slot invalidation. Other cached slots on the same receiver
+may be cleared. No stronger slot-level guarantee is claimed.
+
+The isolated =enroll-issued-edges!= probe in
+[[file:../../../t/module-incremental-cache-test.ss][module-incremental-cache-test.ss]]
+uses public =reobserve-slot-reads!= and =call-with-slot-read-observer=. The
+original issuer-authenticated records supply each consumer and dependency
+receiver. Same-receiver edges require no extra registration. All other edges
+call the existing =depend-on-object!=. It neither rebuilds read records nor
+suppresses existing observers, and introduces no persistent cache or dependency
+registry. The first attempted probe used private =call-with-issued-reads= and
+was correctly rejected as an unbound public identifier; the final probe uses
+only public entries. The failure receipt remains local.
+
+Lean =RegisteredRead= is defined FROM read edges and receiver identity, not a
+second author-maintained list. =extractedRegistrationComplete= establishes
+coverage modulo same-receiver identity. =actualReadInvalidates= proves that
+every transitively dirty read key maps to an affected native receiver. The
+arbitrary-path induction covers shared/cyclic relations; it does not prove a
+Scheme graph extractor or finite-runtime termination by itself. Existing native
+DFS supplies identity deduplication in the tested runtime.
+
+The correspondence premises remain explicit:
+
+- Every dependency is an authentic original record and its complete dependency
+  list is traversed. No edge or observer occurrence may be dropped.
+- Mutation, enrollment and evaluation are serialized; this is not a concurrent
+  transaction. The test does not address a mutation in an external process.
+- Captured reads describe the ACTUALLY demanded branch. Branch selectors must
+  themselves be tracked. Open effectful getters cannot obtain locality from a
+  hand-written purity flag.
+- Weak registration cannot substitute for source authentication. External source
+  changes still require currentness checks at the existing admission boundary.
+- Retained registrations may conservatively include older branches; exact edge
+  removal and an optimal memory bound are not established here.
+
+The finite QNT fixture now derives native invalidation from =registeredEdges=
+separately from expected =valueEdges=. Its dropped-registration control rejects
+an incomplete projection. The final representation stores exactly the same
+finite edges as data instead of repeatedly expanding neighbor-dispatch calls. The graph has maximum path length two, deliberately
+unrolled twice; this finite closure is not an arbitrary-graph theorem. Receiver
+coarsening is modeled separately in Lean. An earlier attempt qualified seven
+controls then hit the existing watchdog on the non-vacuity control; that failed
+run is retained, and no timeout was increased.
+
+* Small-scale qualification (installed runtime, no Loader change)
+
+| Gate | Observed behavior | Boundary |
+|------+-------------------+----------|
+| Issued-read projection | Parent result 5432; database mutation to 5433 recomputes Client and Application once each; repeated hot access adds no work; unrelated computation stays at one; unselected slot remains cold | Isolated enrollment probe, not automatic Loader integration |
+| Native diamond | Joined revision increments once; Left/Right/Joined each compute twice over cold+edit+hot; old signed support refuses replay | Existing native identity invalidation |
+| Cached parent / derived child | Child reads 5433 while parent retains its original cached 5432 object | Receiver isolation, not a cross-process cache |
+| Installed std/make | Cold 3, hot 0; edit Provider compiles Provider and Consumer (2), Unrelated keeps its artifact timestamp; next hot 0 | Actual files/compiler output; std/make is timestamp-based |
+
+The Make fixture edits actual Scheme source, not runtime JSON data. It crosses
+one filesystem timestamp tick because native =std/make= compares mtimes. This
+is not a new digest cache, an increased test watchdog or a claim that timestamps
+alone authenticate source content. Existing Core currentness and build issuance
+must remain in front of publication; the regression below exercises that real
+boundary rather than claiming a successful native Make is an admission verdict.
+
+The changed native read relation and compiler import relation are intentionally
+not forced to be equal. Reading data may invalidate a cached value without
+requiring compilation. A compile-time import may require recompilation even if
+no runtime value was read in the current branch. Any production integration
+must preserve both relations and the root's fresh two-party admission checks.
+
+* Final qualification receipt
+
+Qualification date: 2026-10-24. Core baseline:
+=07a4e912c422cbbe2154d12cee17315261ded80a=. Runtime dependency:
+gerbil-poo =40c61fe6afc8313f297599da0e511f96e3a23dcf=;
+LeanPoo =5d4587a30e2333fc5f935dac6163aa56ff16a2dc=.
+Installed Gerbil reports =1cfb032= on Gambit =ea114fc=. The installed
+=src/std/make.ss= SHA-256 was
+=b98f5892b045d916961bbc122dfd4703833796b72fbfdf542165a29b1f549d8f=.
+Neither installed Gerbil nor native POO source was edited by this qualification.
+
+- =lake build=: 205 jobs, 7375 declarations; standard Lean axioms only.
+- Native-source-bound =check.py --case-prefix IncrementalRoles
+  --typecheck-scope selected --producer-source ...=: eight cases qualified,
+  including the acceptance/non-vacuity counterexample. The receipt binds the
+  producer's object/state/observation sources and the Core tests/proof sources.
+  Hash binding identifies the tested files; it is not a proof of the Scheme
+  implementation's complete operational semantics.
+- =just test-file t/module-incremental-cache-test.ss=: five cases passed.
+- =just test-file t/module-incremental-make-test.ss=: one actual compiler case
+  passed, with 3/0/2/0 native compile events as described above.
+- =just test-file t/gitea-postgresql-publication-test.ss=: all eleven maintained
+  service controls passed, including stale parent plan refusal, both independent
+  requirements, JSON/source changes, typed port rejection and unused branches.
+- =just test-file t/module-retention-census-test.ss=: two real-init controls
+  passed with the existing diagnostic Profile. All Scheme receipts contain
+  =MODULE-OK=, =HARNESS-OK= and final =OK= without harness/overflow failures.
+
+The existing census reports the following independently defined quantities:
+
+| Real Modules | Actual body expansions | Authoring datum identities | Total observed invocation frames | Root-reachable issued records | Dependency edges | Issuer closure cells | Private contexts |
+|--------------+------------------------+----------------------------+----------------------------------+-------------------------------+------------------+----------------------+------------------|
+| 16 | 64 | 153 | 154 | 9170 | 22394 | 73360 | 48 |
+| 32 | 128 | 297 | 298 | 18034 | 42458 | 144272 | 96 |
+
+The SDK tool context count stays 375. Total observed frame counts include the
+existing Profile's wider scope; they are not the exploratory authoring-only
+classification above. Distinct roots, edges, closure cells and live bytes are
+not interchangeable memory units. Live samples were 192677144 / 220575520 bytes,
+including observation overhead and shared process state; they do not establish
+a per-Module memory slope or a ten-thousand-Module capacity result.
+
+The final QNT edge-data representation qualified under the original deadlines.
+A prior run stopped after SanyParser with the fixed 5-second real-output deadline;
+host load was around 59. This does not establish that load alone caused the
+failure. Failed receipts were retained locally; budgets and assertions were
+unchanged. No raw logs are committed.
+
+At the checked baseline, PR #19 still has failing scale and module jobs. These
+focused receipts do not override the user's full-CI gate before Loader
+integration. No ten-thousand-Module test was manually launched or retried.
+The production next step remains gated: enroll actual support through the
+existing native ownership boundary, without caching admission results, dropping
+edges, forcing unused roles, or pretending object-level invalidation is
+slot-minimal invalidation.

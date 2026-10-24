@@ -1,0 +1,286 @@
+#+title: Core Lean models
+
+=Admission/ReplayOwnership.lean= models the selected receiver-frame and affected
+invalidation-closure boundary described by [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.35-replay-receiver-ownership.org][32.35]]. Its pure laws require complete
+identity membership and native parameterize/unwinding correctness. Runtime cases
+must independently establish those premises. The retained raw-write history law
+does not claim that receiver frames mediate SDK structure setters.
+
+The =Admission/RouteMutation.lean= follow-up is documented in
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.34-metadata-write-boundary.org][32.34]]. It proves endpoint indistinguishability and conditional rejection
+under complete monotonic write tracking. The current SDK does not provide that
+tracking: the raw restoration counterexample is preserved, not discharged by
+an assumed purity annotation or a generated Birth.
+
+One =YuanxuProof= Lake library owns all Core models and their axiom audit.
+LeanPoo is a dependency, not another local proof implementation. The dependency
+is pinned at =6e6a706e14fa6f8199e4f36711440355b42ef335=, using Lean 4.34.0. The parent Lean consumer uses the same toolchain.
+Its Cedar pin is the upstream Lean-4.34 upgrade commit
+=acb0db7daa838249d894d2af64c850e1c9bf0d7d=; Batteries is v4.34.0.
+
+* Organization follows source ownership
+
+All source modules and theorem namespaces live under =YuanxuProof=.
+Directory names correspond to the Core owner; filenames describe the local
+subject rather than a project-wide slogan or an unrelated inheritance algorithm.
+
+| Proof directory | Core owner and model subject |
+|-----------------+------------------------------|
+| =Composition/= | =composition/=; lexical/runtime/content identity and constant-slot overlay |
+| =ProfileComposition/= | =profile-composition/=; ordered prototypes, bundles, revision and syntax |
+| =ModuleSystem/Selection/= | =module-system/selection/=; explicit capability requirements |
+| =ModuleSystem/Schema/= | =module-system/schema/=; contracts, staged resolution, demand and queries |
+| =ModuleSystem/Schema/Association/= | Schema ancestry/admission semantics, traversal, correspondence and native fixtures |
+| =ModuleSystem/Graph/= | =module-system/graph/=; aggregation, demand worklists and certified cache |
+| =ModuleSystem/Source/= | =module-system/source/=; declared directory ownership and nearest-ancestor lookup |
+| =ModuleSystem/Building/= | =module-system/source/build.ss= and =building/=; observed inputs, compiler collisions and phase-bound Build |
+| =ModuleSystem/Authoring/= | =module-system/authoring/=; structural query-source checks |
+| =ModuleSystem/Imports.lean= | Default and explicit module instance identity |
+| =FeatureSystem/DomainCase/= | =feature-system/domain-case/=; indexed resolution |
+| =Graph/= | =graph/=; ordered operations on the shared node/edge representation |
+| =Modules/Funflow/= | =modules/funflow/=; control transitions, context, finite causal cuts, certified conclusion revision and one-shot continuations |
+| =Admission/= | =admission/=; source admission, concrete governance/quorum checks, capability attenuation and portable payload shape |
+| =Contribution/= | =contribution/=; contributor qualification |
+| =Ops/= | =ops/=; process arguments, environment overlay and wait status |
+| =PooClos/= | =poo-clos/= and its Gerbil/Gambit boundary; dispatch, method combination, storage and outcome erasure |
+
+Domain predicates describe projected inputs and explicit external contracts. They
+are not certificates of native execution, signature authenticity, MOP completeness
+or filesystem stability. Unsupported admission-closure records and runtime
+atomicity witnesses have been removed rather than counted as verification.
+The old =PooC4= catch-all, separate Profile proof namespace and forwarding modules
+are gone. C4 appears only where inheritance actually needs it.
+
+Publication atomicity, rollout, retirement, retention, distributed-worker admission,
+scheduling fairness, key lifecycle and observation-consistency tag tables are not
+current executable models. Their unused hypothetical witness records and
+classification-only modules have been removed. The old composition receipt fixture
+that merely set five success flags and the hypothetical digest-based source identity
+record were also removed; neither computed the claimed facts from current source. Their RFC obligations remain open;
+a label such as “runtimeAtomicityWitness” is not an implementation proof.
+
+* Complete remaining-model review
+
+The per-model current-source correspondence, proved operations and explicit
+native boundaries are in [[file:MODEL-CORRESPONDENCE.org][MODEL-CORRESPONDENCE.org]]. Every current model is listed,
+including the finite domain policy models and historical fixture controls.
+The review replaces the old opaque PooClos projection callbacks with actual
+LeanPoo dispatch/cache semantics and adds constructive checks for the remaining
+implemented source, compiler, contribution, realization and lifecycle owners.
+
+* Implemented behavior restored as executable models
+
+Deleting a hypothetical witness does not complete verification of its implemented
+owner. The following models reconstruct current code as functions and prove facts
+from their computed results. None accepts the desired conclusion as a record field.
+
+| Source function | Model / derived property | LeanPoo API |
+|-----------------+--------------------------+-------------|
+| =profile-bundle.ss:yuanxu-compose-profile-bundles= | =ProfileComposition/Composition=: ordered flattening, grouping equivalence, conflict-prefix abort, retention of existing selections, stable-union membership and final self | =Prototype.composeAll=, =Factory=; shared =BundleIdentity.insert= |
+| =control-plane/strategy.ss=, =policy.ss=, =runner-support/validation.ss= | =Modules/Funflow/Policy=: frozen metadata, strategy-before-adapter refusal, accepted task capability, frontier capability, all-or-error plan validation | =Factory.map=, =Validation.traverse= and its first-error law |
+| =admission/publication.ss:schema-observations= | =Admission/Publication=: actual node/normalization equality, diagnostics, absolute nonempty inputs, source checks jointly certify the publication; mismatches refuse | =ProofObject.withObligation= and =Certificate= over =Admission/Source= |
+| =admission/publication.ss:publish-current= | =Admission/Publication.stale_return_keeps_previous=: accepted output with changed return-time bytes cannot publish tentative state | =DeclarativeMetadata.Contract.invoke/publish= |
+| =poo-clos/method-combination.ss= | =PooClos/MethodCombination=: proper/dotted qualifier patterns, first group wins, original qualifier retained for ambiguity, required groups, ordered list/progn and Boolean and/or short circuit | =MethodCandidate.select=, =Factory.sequence/fold/bind/choose=, =Validation.traverse= |
+
+Native controls are =t/profile-composition-test.ss=,
+=t/admission-publication-test.ss=, =t/poo-clos-method-combination-test.ss=
+and the product's =t/control-plane-test.ss=. Executable Lean controls include
+positive cases and distinct revision/node/schema/capability/qualifier refusals.
+The aggregate explicitly requires the restored semantic theorems as well as the
+axiom and model-shape audits.
+
+These are models of the indicated functions, not blanket closure of their RFCs.
+Schema parsing is an external normalization observation; native object references
+are projected identities; Scheme procedure matchers and non-Boolean truthy
+short-control values remain outside the declarative/Boolean fragment. Filesystem
+atomicity, arbitrary callback completeness and runtime scheduling are not inferred.
+
+* Mechanisms belong to LeanPoo
+
+| Model | Public dependency mechanism |
+|-------+-----------------------------|
+| =ProfileComposition/Prototype= | =Prototype.Chain=, =composeAll= and =Generator.applyProto=; declared operand order and final self |
+| =ModuleSystem/Schema/Contracts= | =ProofObject.withObligation=, =Certificate.withObligation= and =Certified.conjoin=; actual checked obligations and same-family contract joins |
+| =ModuleSystem/Schema/Resolution= | =prepareCertified= and =Certified.consume=; preparation, analytic contract, then explicit authorization/disclosure |
+| =ModuleSystem/Selection/Requirements= | =prepare_origin= and =AbsenceCertificate=; actual declared providers or checked absence |
+| =ModuleSystem/Graph/Cache= | =ContextSlot= and =Snapshot=; current closure/result contracts at the complete semantic context |
+| =ModuleSystem/Graph/TestAdmission= | Demand worklist reachability/uniqueness, incomplete discovery and missing/stale observation rejection; preserves the existing exact-context cache boundary |
+| =ProfileComposition/Revision= | The same context slot with explicit profile/root revision coordinates |
+| =ModuleSystem/Schema/Demand= | =ContextSlot.readAlong=; certified semantic target separated from request labels |
+| =Modules/Funflow/ConclusionRevision= | =ProofObject=, =Patch=, =pending= and =closePending=; cut-aligned conclusions, fresh discharge and retained history |
+| =ModuleSystem/Schema/Association/= | Typed requirements, certified context caching and contract consequence; independent Scheme traversal correspondence |
+| =Admission/Source= | =Obligation= and =Certificate= over exact source text; initial and return-time checks, including changed-source rejection |
+| =Admission/SourceWindows= | =ConstructionCache.ensureLookup= and repeat laws, dependent =ContextSlot= and =ProofObject=; checked requirements and bounded byte reads within an explicit stable window |
+| =ModuleSystem/Workflow= | Integration of these models with public POO declarations and =Codec= |
+
+LeanPoo usage references are in =.lake/packages/LeanPoo/Examples/=:
+=SpecificationComposition.lean=, =PreparedViews.lean=, =CertifiedContextCache.lean=,
+=IncrementalWorkflow.lean= and =ProofReuse.lean=.
+
+Removed local mechanisms include the projection/cache/codec framework, predicate
+ContractSet accumulation, eight generic phase wrappers, assumed candidate/update
+lists, identity-injectivity schemes, shape/entrypoint tag substitutes for typed prototypes, and generic cache entries with unrelated
+freshness flags, and hard-coded historical case counts presented as current models. Ordinary domain values, pure predicates and explicit evidence
+or authority premises remain domain-owned; they are not another object runtime.
+
+The remaining domain checks compute from data: quorum counts deduplicate actual
+principal lists; delegation intersects scopes/actions and bounds expiry/depth;
+causal cuts check every listed parent; ProfileBundle repeats compare the actual
+selection key, revision/generation or native reference identity. The latter
+replaces the hypothetical digest and assumed permutation-normalizer model.
+Stored claims of immutability, identity stability, completed implementation,
+closure and authority are not admissible substitutes for these checks.
+
+The PooClos Dispatch file now models actual LeanPoo indexed method selection,
+registration, candidate-cache soundness and reference-call equivalence.
+The Outcomes file separately describes projected outcome data.
+=MethodCombination= additionally computes qualifier matching, first-group assignment,
+group order, required/ambiguous refusals and ordered method combinations. It uses
+LeanPoo method-candidate selection, not another dispatch engine. These finite
+semantics do not prove refinement of the complete native evaluator or termination.
+
+The total object-plan resolver is the proof-facing semantics; the partial
+memoized reader is checked separately by executable controls. C4 is inheritance,
+not a workflow SCC scheduler. The Scheme ancestry traversal remains independent
+because replacing it with C4 changes the native admission semantics.
+
+* Validation
+
+From Core run =just proofs-lean= (or =lake build= here). =YuanxuProof.lean=
+imports every model and rejects =sorryAx= and project-specific axioms throughout
+the imported Core closure. Only =propext=, =Classical.choice= and =Quot.sound= are
+allowed. The aggregate also rejects arbitrary =Prop=-valued structure fields;
+concrete predicates, dependent proof fields and external policy parameters remain
+distinct. This shape audit is a regression guard, not a proof of runtime refinement.
+Declaration counts are not counts of independently proved requirements.
+
+Run =just proofs-quint= for finite transition controls. The Graph Lean model binds
+the Quint source digest. Its operation result is a completed ordered pass, not a
+fixed-point claim. Native graph/source-projection and schema inheritance tests
+run serially through the heap-fenced =just test-file= entrypoint. Native receipts,
+conditional Lean laws and finite-model controls are distinct evidence.
+
+The historical Profile association receipts and source correspondence are in
+[[file:../../../module-system/design/164-funflow-public-configuration/20-lean-profile-association.org][the association reference receipt]] and
+[[file:../../../module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence.org][the Scheme admission correspondence receipt]].
+
+* Source-window optimization model
+
+=Admission/SourceWindows= uses LeanPoo CacheLookup, ContextSlot and actual
+source Obligations/Certificates. It separates byte reuse from value reuse and
+checks work counts with independent requirements intact. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.15-source-window-model.org][32.15]] for exact revisions, Quint mutants and remaining native premises.
+The earlier v0.1.1 receipts are historical, not evidence for this dependency
+upgrade. Whole-project axiom/shape audit remains mandatory.
+
+* Root/child admission projection
+
+=Admission.RootChild.Routing= models the implemented analysis edge in =types.ss=
+and =admission/source.ss= through LeanPoo =Factory.choose=. Contract, candidate
+and context references must all match; the edge is consumed before callbacks.
+Inherited producer re-entry receives no old edge, while an owned responsibility
+creates its own child edge. This permission is not a source certificate.
+
+The finite port/contribution reference reuses =Admission.SourceWindows= and
+LeanPoo =DeclarativeMetadata.Contract=. It proves root source certificates project to
+selected child source obligations; independent port requirements, exact candidate
+association and post-effect refusal are retained. Stable-world batching is not a
+Scheme optimization or a proof of observation completeness. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]] for the proposed responsibility boundary and native premises.
+
+* Remaining admission source windows
+
+=Admission.ReturnWindows= reuses SourceWindows/LeanPoo CacheLookup and the
+RootChild domain predicate. It proves operational check composition, sound
+covered reuse, complete-predicate deferral and preserved joint requirements/
+receiver identity. It does not classify arbitrary callbacks as pure or implement
+Scheme optimization. The aggregate imports the module and requires its critical
+laws. The source-bound Quint catalog contains 40 cases. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]].
+
+* Replay projection and diagnostic order
+
+=Admission.ReplayBoundary= imports the existing ReturnWindows/LeanPoo cache
+owners. It proves exact first diagnostic under sound, same-order byte reuse,
+complete successful observations, branch union and first-origin collector
+coverage. Computed counterexamples show that deferring a JSON check past a
+stale token, or substituting a different first origin, changes the diagnostic.
+This does not prove arbitrary MOP callbacks or cold metadata hooks pure. The
+aggregate requires these theorems; the QNT runner checks the source digest.
+See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for the native producer audit and unproved extraction premises.
+
+* Identity DFS and native traversal frames
+
+=Admission.IdentityDFS= specializes LeanPoo C4's finite pending/unseen-weight
+argument to dependency-before-sibling DFS with identity HashSet membership.
+=Admission.DFSFrames= proves recursive empty-frame return stuttering, active
+step refinement, finite termination and exact reachable identities. Complete
+final checking accepts only when every enumerated reachable token matches its
+final binding. A shared diamond/cycle example reduces through HashSet lemmas
+in the kernel; no native_decide axiom or larger recursion limit is used.
+The aggregate requires these owners and preserves existing domain/source/cache
+controls. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for limits of the native Scheme correspondence.
+
+* State-derived entry closure
+
+Admission.ReadOnlyEntry reuses LeanPoo MetaBootstrap/C4 and the existing replay
+models. Exact kernel checker identity, cached order or absent selected ancestor
+protocols, and absent source observers yield a closed operation program without
+user purity flags. It proves independence from all callback implementations and
+exact same-order diagnostics. Bootstrap validity does not imply readiness;
+sealed roots do not prove purity. Native extraction is not implemented. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]].
+
+* Actual MOP snapshot qualification
+
+SnapshotEntry adds exact observed-cut guards and composes them with the existing
+ReadOnlyEntry callback-independence and ordered-diagnostic laws. Native MOP
+reflection is tested separately; its operational correspondence is not extracted
+by Lean. Equal cuts do not imply unchanged sources or no intervening observer.
+See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] for native observations, proof premises and retained failures.
+
+* Snapshot lifetime and supported revision ABA
+
+SnapshotLifetime proves membership-based invalidation, affected active-owner
+veto and supported revision ABA laws. Restored dynamic scope/source writes and
+comparison-to-use delivery have explicit negative laws. It reuses the exact
+ordered-error owner and does not assume an invented native scope epoch.
+See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.24-revision-aba-and-use-boundaries.org][32.24]] for actual native entry evidence and correspondence limits.
+
+* Serial computation versus external conditional use
+
+Admission/SerialUse extends SnapshotLifetime with actual cold-frame protection,
+independent demand/source counterexamples, complete requirement retention and
+external conditional-commit laws. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.25-serial-computation-and-conditional-use.org][32.25]] for native controls and the unimplemented atomicity premise.
+
+* Call phase correspondence
+
+Admission/CallPhases reuses the existing invalidation commit and requirement /
+ordered-diagnostic laws to distinguish acquisition frames from ambient body
+frames. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.26-call-lookup-body-and-observation.org][32.26]] for the six native controls and unproved execution boundaries.
+
+* Production admission body correspondence
+
+Admission/AdmissionBody models the actual root/child observation union, stale
+nested records, requirements and ordered refusal. See
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.27-source-admission-body-observation.org][32.27]] for native evidence and remaining correspondence assumptions.
+
+* Post-replay return qualification
+
+Admission/ReturnTail distinguishes historical checks from applicable current
+return. Its closed-inspection law does not certify arbitrary observer callbacks.
+See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] for the actual native counterexamples and production gap.
+
+
+* Constrained return-tail qualification
+
+[[file:../../../docs/30-39-research-foundations/32-module-assurance/32.29-constrained-return-tail.org][32.29]] separates a replaceable caller wrapper from a temporary producer-owned
+source-event gate. Opaque observers are refused before invocation; this is not
+a purity declaration or a production fix. An independent writer remains a
+correct-model limitation requiring snapshot/conditional-commit authority.
+
+The final candidate covers both slot-replay (including cache exit) and
+return-currentness. A return-only gate is retained as an unsafe matched control.
+Only source-observer calls are restricted; arbitrary MOP record/checker ownership
+and external snapshot/commit remain separate premises.

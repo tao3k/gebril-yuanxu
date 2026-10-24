@@ -1,0 +1,23 @@
+#+title: Core Standards
+#+language: en
+#+property: STATUS draft-partial-conformance
+
+* Purpose and ownership
+
+Standards define the public meanings of project context, module paths and
+operations. Implementations remain in Module System, Ops and their consumers.
+This directory does not contain a second resolver, runner or configuration DSL.
+
+| Standard | Scope | Implementation owner |
+|----------+-------+----------------------|
+| [[file:project-context.org][Project context]] | Root, configuration and cache conventions | Source preparation and Ops execution boundaries |
+| [[file:module-operations.org][Module operations]] | Discovery, scope demand, test demand and explicit execution | Existing namespace, test projection and Ops |
+
+The distinction matters for contributors and Agents: a familiar method name
+must retain an explained effect boundary, while a directory convention must
+not silently change a publication's source identity.
+
+These are draft standards with explicit conformance limits. Passing the narrow
+module tests does not qualify every module, PRJ environment resolver or runtime
+Loader. Research and implementation evidence live in the linked design records,
+not in competing copies of these standards.

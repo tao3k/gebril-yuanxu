@@ -1,0 +1,156 @@
+#+title: 12.27.22 Package Entry Prefix
+#+property: DOCUMENT_ID 12.27.22
+#+language: en
+#+property: STATUS source-only-qualified
+
+* The closed interval on the actual AWS path
+
+The before-guard audit left 19205 physical reads open. A new experiment first
+tried handing the native resolver's final check directly to its immediately
+following cold link. That candidate passed the scope tests but changed neither
+AWS physical reads nor its before subtotal. It was removed. A fixture-only or
+other-phase improvement is not the result reported below.
+
+The retained change is in SelectedPackages.current! and the native Nix
+publication it calls. Immediately before the FIRST package, sources-current!
+has already called inputs-current! and checked the generated guard entry. The
+native package's entry then calls the exact same inputs-current! procedure
+again. The intervening operations are private list access and inspection of
+already prepared native metadata. They need not include a public callback.
+
+#+begin_src text
+Before:
+  enclosing sources-current! -> inputs-current! -> Graph.admit-current
+  native entry              -> inputs-current! -> Graph.admit-current
+  package action, including possible Nix effects
+  native tail               -> inputs-current! -> Graph.admit-current
+  enclosing sources-current! -> inputs-current! -> Graph.admit-current
+
+After, only for an exactly matched native FIRST operation:
+  enclosing sources-current! -> inputs-current! -> Graph.admit-current
+  pure cache-only method/guard identity probe
+  native continuation: package action; unchanged native tail
+  unchanged enclosing sources-current!
+#+end_src
+
+No source-read window crosses the package action. Its realization, derivation
+query, post-query check and enclosing return check are unchanged. Later
+packages still use their full entry: an earlier package is an open effect
+boundary, even when its current implementation happens to be read-only.
+
+* Construct the prefix rather than infer callback purity
+
+The source admission owner factors one ordinary higher-order operation into
+paired procedures. The compact final struct and its constructor remain private;
+Core's internal functions expose construction and the paired procedure only.
+This is execution structure, not another evidence type, source receipt, registry
+or currentness cache. It retains no bytes, fingerprints or accepted result.
+
+#+begin_src scheme
+(def (module-source-checked-operation guard action)
+  (unless (and (procedure? guard) (procedure? action))
+    (error "source operation requires a guard and an action"))
+  (def (resume) (action) (guard))
+  (make-source-checked-operation guard (lambda () (guard) (resume)) resume))
+#+end_src
+
+Nix's existing phase object stores this operation in its receiver-local lazy
+%source-operation slot. Its ordinary admit-current is the paired full procedure.
+It is still a normal POO publication, not a new wrapper around a publication.
+Standalone calls retain their original guard order: four checks on the tested
+cold realization path and two on its warm path.
+
+The internal resume probe declines unless ALL of these hold:
+
+- The receiver is already instantiated; checking readiness uses the existing
+  native object-%instance accessor and never initializes it.
+- There is no custom object protocol and no active slot-read frame/observer.
+  Such reads keep their ordinary MOP demand and callback semantics.
+- Both %source-operation and admit-current are already cached. A miss never
+  forces a getter. There is no fallback to an author-supplied purity flag.
+- The private final operation record contains the exact guard procedure passed
+  by SelectedPackages, and its full procedure is eq? to the cached method.
+
+A replaced method, different guard, cold metadata or custom MOP therefore
+falls back to the original full .call. Invalidation clears native instance
+state; the probe does not preserve an old method through mutation. The probe
+inspects readiness and callable structure, not whether a previous check passed.
+The CALLER establishes freshness by immediately executing sources-current!.
+Calling the internal resume API without that preceding guard violates its
+precondition; the returned function is not an admission authority.
+
+The existing synchronous source guards and Observability adapter must remain
+effect-free/passive, as in the existing read-window model. Package bodies,
+domain validators and native imports are not assigned that premise. No observer
+event grants reuse, and no time-to-live or cross-invocation approval is stored.
+As with the existing synchronous read windows, this assumes sequential native
+object mutation and stable source inputs within the pure interval; it does not
+provide an atomic filesystem snapshot against arbitrary concurrent writers.
+
+* Exact before-stage result
+
+The same observation-enabled init-owned tests object selected JsonSchema,
+Funflow and AWS and called .run. Its progress-aware idle policy, total budget,
+two-GiB fence and source-only dependency revision were unchanged.
+
+| Physical-read measure | Before | Retained candidate | Reduction |
+|-----------------------+--------+--------------------+-----------|
+| build-admit-before only | 19205 | 16533 | 2672 |
+| All phases | 46813 | 43981 | 2832 |
+| Read windows | 514 | 498 | 16 |
+| Publication guard bodies | 253 | 237 | 16 |
+| File requests | 118412 | 109396 | 9016 |
+
+The before reduction is exactly 16 times 167 files. The other 160 physical
+reads saved are NOT counted as before savings. The exclusive enclosing-stage
+decomposition is:
+
+| Enclosing stage | Before | Candidate | Before reads saved |
+|-----------------+--------+-----------+--------------------|
+| Publication package-before | 4676 | 3507 | 1169 |
+| Publication package-after | 3340 | 2505 | 835 |
+| Outside package/admission attribution | 2839 | 2171 | 668 |
+| All other before stages combined | 8350 | 8350 | 0 |
+| Total | 19205 | 16533 | 2672 |
+
+In particular, root contract-admit, meaning-current, entry-current,
+post-package-current and contribution binding are unchanged. The initial
+SelectedPackages publication-current stage is unchanged too: cold method
+metadata declines the shortcut. Counts do not imply a wall-time speedup.
+
+* Executable controls and evidence boundary
+
+The aggregate exited naturally with seven MODULE-OK, two HARNESS-OK and two
+final OK markers, without error/overflow markers. The same AWS Case retained
+real Schema upgrades, exact Contract/Context binding, stale-evidence rejection,
+the cached-parent/final-child checks, failed-publication previous-value retention
+and fixture cleanup. The original init tests .run is still the execution owner.
+
+Targeted tests exercise the production phase object and SelectedPackages with
+inert external-command probes. They cover a warm native composition with three
+fresh source passes instead of four; mutation during the query; replacement of
+the public method; cold metadata; mismatched guard identity; active MOP read
+observation; and a custom object protocol. Those probes are controls, not
+substitutes for the real AWS/Nix aggregate. The existing warm callback and
+validator-time provenance mutation controls remain in place.
+With two native packages, the focused test requires five source passes: the
+second package retains its full entry after the first package's effect.
+
+The matched old-call control restores only SelectedPackages' original loop,
+keeping the operation decomposition and the same test. It fails the native
+prefix assertion with result 4, expectation 3. This is the intended specific
+counterexample, not an accepted test pass or a broad error? assertion.
+
+The current working-source module-nix-publication-test.ss and
+ops-selected-packages-test.ss (including the two-package assertion) also passed
+with MODULE-OK, HARNESS-OK, final OK and natural exit zero. Their source setup
+uses one current Core namespace and the pinned POO sources. An initial mixed
+Core-source-root attempt was correctly refused by the owner import policy;
+that failure is not a pass, and no source policy was relaxed to rerun it.
+
+The source-only aggregate excludes the concurrent compiled-build publication
+integration, as before. It does not qualify that entire integration. No upstream
+code, test budget, runtime Loader, extra cache or test runner was changed.
+The remaining 16533 before reads are still an open hotspot.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and retained historical receipts]]

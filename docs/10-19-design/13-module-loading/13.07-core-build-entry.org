@@ -1,0 +1,131 @@
+#+title: 13.07 Repository-Owned Standard Build Script
+#+property: DOCUMENT_ID 13.07
+#+language: en
+
+* Current consumer
+
+The library inventory and the init-selected Module inventory have distinct
+owners. =core-spec.ss= is an ordinary native library target list. It neither
+imports =init.ss= nor lists =init= as a target. =init.ss= lazily publishes the
+selected Module specification through =yuanxu.init.exports=. =build.ss= imports
+both and is the existing SDK consumer; removing that import would disconnect
+selected role compilation rather than separate the inventories.
+
+#+begin_src scheme
+;; core-spec.ss: ordinary library targets, no "init" target
+(export core-spec)
+(def core-spec '("prelude" "core-spec" ...))
+
+;; build.ss: imports retained here, not moved into core-spec.ss
+(import (only-in "./module-system/building/script.ss" defbuild-script)
+        (only-in :clan/poo/object .get)
+        (only-in "./init.ss" yuanxu.init.exports)
+        (only-in "./core-spec.ss" core-spec))
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
+#+end_src
+
+The excerpt omits the existing source-package bootstrap and output-directory
+binding, which remain in the executable entry. The native dispatcher receives
+the admitted spec at this boundary. Library roots do not become module-selection
+declarations: =std-make-spec= projects the selected Graph and checks any overlap
+by source, native identity and options. A conflicting overlap is refused. A
+single SDK invocation may schedule both inventories; separation means distinct
+ownership, not a second Builder or two competing native dispatchers.
+
+The init file is a checked build input, not a compiled library output. Its
+selection/source currentness remains enforced even though =init.ssi= and
+=init~0.o1= must not be emitted by the retained library specification. Selected
+role frames and their guarded compile/publication boundaries remain unchanged.
+Root package metadata supplies identities; directory-level package workarounds
+are not restored.
+
+* One selected source epoch
+
+The existing yuanxu! macro exports init.build-spec and init.build-current!.
+Importing init does not prepare a Graph. The first spec call prepares one Graph
+and caches its ordinary spec list; repeated equal retained roots reuse that same
+list. Different roots require a new init source epoch. The imported init
+statement must still match its source before first preparation.
+
+Each SDK command reevaluates the spec expression and validates init, selected
+roles, package/prelude inputs, compiler tools, retained sources and build.ss.
+Changed init latches refusal of that selected session. Source restoration does
+not authorize reviving a refused selection.
+
+The Standard Library has no post-command hook. A successful command alone is
+not an acceptance receipt. An executor or publisher must call
+init.build-current! after completion and before accepting outputs. The control
+makes that explicit call and verifies rejection after subsequent source drift.
+This check does not roll back filesystem writes or prevent concurrent edits.
+No after-command guarantee is claimed for a user who calls only the SDK main.
+
+Currentness guards share source observations only inside one synchronous pure
+validation boundary. The cache ends before compiler effects; a later command
+or acceptance check reads inputs again. It is not a persistent validity cache.
+
+* Role association and build ownership
+
+[[file:13.10-automatic-role-projection.org][Automatic role association]] keeps interface.ss declarative. The actual package
+root supplies package metadata. =yuanxu!= owns the selected role projection;
+reader publication and the SDK spec adapter consume its prepared role inventory.
+Native compilation redirects selected roles through the same hygienic frames
+without editing author files or adding directory-level package metadata.
+See [[file:13.20-init-owned-role-compilation.org][13.20]] for native compiler integration and qualification.
+
+Building is SDK-imported Module System infrastructure under module-system/;
+it is not selected through its own Module Graph. Its observed public dependency
+closure is sufficient to start preparation from source, without a Core binary
+cache or independent bootstrap.ss. Graph construction remains separate from
+runtime Module activation.
+
+The direct-source adapter currently rejects external-package and other
+non-source projections requiring a dedicated consumer. Their existing Graph
+representations remain intact; they cannot silently disappear from a successful
+spec. Config implicit exports and Build-phase formats outside the qualified
+JsonSchema path need separate compiler controls.
+
+* Reproduce with locked public dependencies
+
+Run from Core with the installed Gerbil SDK. Use a new scratch directory and
+the revision locked in gerbil.pkg. Paths below are repository-relative or
+computed at execution time. No pre-existing compiled Core cache is used.
+
+#+begin_src sh
+git clone --no-checkout https://github.com/tao3k/gerbil-poo.git .gerbil/qualification/dependencies/gerbil-poo
+git -C .gerbil/qualification/dependencies/gerbil-poo checkout --detach 099b381588360a8a49fd772f666a1a00351366f5
+git -C .gerbil/qualification/dependencies/gerbil-poo diff --exit-code HEAD
+mkdir -p .gerbil/qualification/state/lib .gerbil/qualification/sources/clan
+ln -s ../../dependencies/gerbil-poo .gerbil/qualification/sources/clan/poo
+export GERBIL_PATH="$(pwd)/.gerbil/qualification/state"
+export GERBIL_LOADPATH="$(pwd)/.gerbil/qualification/sources"
+export GERBIL_BUILD_CORES=1
+export CORE_QUALIFICATION_ROOT="$(pwd)/.gerbil/qualification/snapshot/core"
+export CORE_QUALIFICATION_BUILD_ENTRY=1
+just test-file t/module-build-source-snapshot-test.ss
+ln -s ../snapshot/core .gerbil/qualification/sources/core
+just test-file t/module-build-dependency-qualification-test.ss
+export GERBIL_LOADPATH="$CORE_QUALIFICATION_ROOT:$GERBIL_PATH/lib:$(pwd)/.gerbil/qualification/sources"
+just test-file t/module-build-spec-test.ss
+just test-file t/module-source-spec-test.ss
+just test-file t/module-build-process-test.ss
+#+end_src
+
+The source-spec control narrows only the snapshot's retained core-spec to three
+roots, then compiles and cleans the real JsonSchema closure serially. It never
+runs a whole-Core compile. To exercise the actual retained manifest with spec
+and clean only, use a second fresh snapshot/state and run core-build-entry-test
+instead of module-source-spec-test. The rebuild regression deliberately keeps
+the same state across processes. One process-test invocation now includes the
+second compile after clean and the native input-change controls; repeating the
+test manually is not required. [[file:13.12-build-owned-source-registration.org][Building-owned registration]] establishes Core
+source priority in normal init startup. The launcher-only fix in [[file:13.11-same-state-source-reimport.org][10]] is historical;
+normal process controls remove both source environment variables in each child.
+Standard clean is not proof that every compiler auxiliary file was removed.
+
+The old init.build-entry export, returned-main helper, generated preparation
+script and overlay setup tests are removed. Their bounded compile/clean and
+source-identity controls are superseded by module-source-spec-test; conflict,
+symlink and currentness controls remain in module-build-spec-test and
+module-build-graph-test. Earlier experiments remain historical documentation,
+not alternate consumer APIs.

@@ -1,0 +1,111 @@
+#+title: 13.03 Real Core JsonSchema Init and Build Case
+#+property: DOCUMENT_ID 13.03
+#+language: en
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Actual maintained inputs
+
+Core init.ss selects json-schema from ./modules. The selected publication is
+modules/json-schema/interface.ss, with real types.ss, config.ss, func.ss and
+objects.ss roles and their observed private dependencies. This is not an
+invented module fixture or a hand-maintained JsonSchema gxc list.
+
+The bounded retained list uses utilities/algorithms.ss and types.ss, both in
+the top-level core-spec.ss inventory. It is not the complete retained inventory.
+Contract-system implementation and runtime Loader integration are separate work.
+
+* Ordinary list composition
+
+The maintained Core build.ss names the top-level Core spec explicitly and asks
+the init-owned function to combine it with selected Module targets. Its native
+source-context import is in [[file:13.07-core-build-entry.org][06]]; the consumer expression is:
+
+#+begin_src scheme
+(defbuild-script (init.build-spec core-spec))
+#+end_src
+
+Preparation and deduplication are Module System functions. The top-level
+core-spec.ss and native defbuild-script remain visible in build.ss. Execution
+and publication checks are separate consumer duties. Building is not a selectable Module under
+modules/. init.ss does not load Building through its own selection Graph.
+The SDK/source importer reads the tool implementation first. See [[file:13.07-core-build-entry.org][06]] for
+the actual root-entry qualification, separate from the bounded case below.
+
+The implementation in [[file:13.06-init-build-spec-adapter.org][05]] replaces the former combined-graph preparation sketch.
+Source discovery and dependencies retain their original selected Graph. The
+adapter prepares compiler inputs and returns a plain module list:
+
+#+begin_src scheme
+(def retained '("utilities/algorithms" "types"))
+(def module-spec
+  (yuanxu-build-spec (path-expand "init.ss" source-root)
+    output-directory: output
+    retained: retained))
+
+;; Inside the shared source-root binding; see 05 for the full frame.
+(defbuild-script (append module-spec retained))
+#+end_src
+
+The native macro consumes only its first expression as the build list. Following
+arguments are native build settings, not additional module paths. No Graph
+inheritance, user-authored .o build wrapper, additional dispatcher or new spec
+protocol is involved.
+
+* One source root and stable output identities
+
+The SDK reader gives init.ss the identity core/init. The adapter projects native
+entry filenames relative to that prefix, prepares all selected/retained sources
+under output, and writes matching (package: yuanxu) metadata there. Native
+defbuild-script must use that source root through its ordinary lexical
+this-source-file binding. Its complete closure expression is in 05.
+
+For example, prepared modules/json-schema/types.ss still compiles to the library
+identity core/modules/json-schema/types, and prepared types.ss to core/types.
+The temporary output directory does not become part of either identity.
+Includes preserve original source locations. Core compiler-tool sources use the
+exact observed Context and native include correction qualified in [[file:13.05-reader-tool-context-and-cold-build.org][04]].
+
+The retained list also reserves its target identities. When a retained root is
+already selected with the same physical source and options, its prepared input
+is reused and it is omitted from the module list before ordinary append.
+Different physical sources with one compiler identity, conflicting options,
+case-colliding targets and invalid retained paths are refused. A duplicate in
+the caller's retained tail is rejected, not silently repaired by the head list.
+
+* Currentness and cold-start boundary
+
+The production writer guards the original selected sources, retained sources,
+native package observations, prepared inputs and generated entry. The focused
+test checks before and after native command dispatch. The list itself carries
+no effect authority, Contract evidence or automatic transaction semantics.
+
+The original bounded receipt in 05 excludes root build.ss and root bootstrap.ss; its
+isolated dependency cache contains the separately qualified public gerbil-poo
+tool closure and no Core binaries. The internal SDK-only helper at
+module-system/building/source-closure.ss remains an imported implementation dependency.
+It is not an independent root bootstrap command and is not moved into a
+cyclic build-projection/reader dependency.
+
+The real qualification compares the init-path and prepared-artifact list APIs,
+then runs native spec, compile and clean for the derived JsonSchema/retained
+closure. It also rejects changed init, private source, retained source and
+generated entry, including drift after native dispatch. Current results and
+precise remaining integration limits are in 05; the historical reader-cycle
+failure remains in [[file:13.04-isolated-init-build-validation.org][03]].
+
+* Deliberately bounded claims
+
+This case qualifies the existing native Scheme retained forms and one compatible
+native package prefix. Arbitrary retained roots may have additional private or
+external dependencies; naming them does not prove their complete build closure.
+General native target kinds and heterogeneous prefixes must be normalized or
+rejected explicitly. The bounded gate does not qualify a whole-Core compile,
+implement a runtime Loader, or qualify external package realization during
+spec/meta. No full package build or independent bootstrap invocation is required
+for this focused case.

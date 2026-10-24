@@ -1,0 +1,135 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.17 Registry Generation Joint Verification
+:PROPERTIES:
+:ID: agentic-ai-lab-context-registry-verification-20261014
+:STATUS: local-registry-joint-pass-durable-host-open
+:END:
+
+* Results and scope
+
+[[file:16-live-registry-generation.org][The registry protocol]] passed the final joint gate with exit 0 and stable
+inputs before/after. All 51 Quint Cases passed; six Context Lean roots built
+in 77 jobs (49 laws / 50 guards); ASCENT passed 23 checks; the existing ORG
+executable passed 90 regression checks; the newly compiled Module consumer
+passed 69 Scheme checks (20 added to the previous 49). Overlapping harness
+counts are not independent obligations. LeanPOO remains v0.1.1.
+
+The new controls reject old collection, Query and real review after identical
+Session unbind/rebind, reject copied objects and mutation of returned stamp
+data, require a fresh generation review, withdraw stale ASCENT candidates,
+retain independently accepted target knowledge and reject invalid replacement
+without retiring the current set. Actual ORG Elements/Contract, Session and
+Core/Assurance/Governance objects are used. No effect delivery is invoked.
+
+The first joint run was rejected because source/compiled inputs changed while
+the detached-stamp correction was applied. It is not a successful receipt.
+The final unchanged-input run alone supplies the identities below. Earlier
+heap/elaboration/socket failures remain documented in 10.06.43.16.
+
+* Reproduction and input identities
+
+From the repository root, select existing installed Scheme package roots:
+#+begin_src sh
+CONTEXT_ASCENT_GERBIL_PATH="$ASCENT_PACKAGE_PATH" \
+CONTEXT_SCHEME_PACKAGE_PATH="$POO_SCHEME_PACKAGE_PATH" \
+python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+No host-local absolute path or temporary SDK is an input contract.
+TLC retains 60s/12s silence, one worker/512 MiB; Lean 120s; Scheme 120s/5s
+silence/1 GiB. The compiled pool is bound as actual verification input:
+=CONTEXT-SCHEME-CUT inputs=30831 sha256=2af410a21d605b3d75988bfad2b85242d02bf30bce7940a9735c5714cda58bc5=.
+
+Original ORG executable SHA256:
+=8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+This statically compiled historical consumer is regression evidence, not
+qualification of the newly added registry checks. New handoff library
+interface SHA256:
+=be88f0bb78c8f2ee0d9872dab445f9b6644e6bc422bcd866523e744b6571a5ab=.
+The library is qualified with the whole compiled pool, not its interface alone.
+
+All 68 declared local source inputs were stable:
+| Input | SHA256 |
+|-------+--------|
+| =packages/proofs/context-lifecycle/ContextLifecycle.qnt= | =1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46= |
+| =packages/proofs/context-lifecycle/ContextComposition.qnt= | =18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503= |
+| =packages/proofs/context-lifecycle/GraphContext.qnt= | =cd6353cb8204494b637765bd121583861a8e37bf2a24f2036efeb68d41e45195= |
+| =packages/proofs/context-lifecycle/GitContext.qnt= | =a8cfb43931ba6051409d512b1964aa31a4796016ce7e6781dfa42ba03bd8a963= |
+| =packages/proofs/context-lifecycle/ContextHandoff.qnt= | =412111ba64a26348c8754a571ba155dd4723fb9aa716080d0d0381e312d265eb= |
+| =packages/proofs/context-lifecycle/relations.ss= | =81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f= |
+| =packages/proofs/context-lifecycle/check_quint.py= | =3e177bd37c9fbb0e31c47c0b7eed1fea9cbfdfd0548b51c986ad3705726316a3= |
+| =packages/proofs/context-lifecycle/verify.py= | =d17f206ce29515c7a0367c941280af048b8f7ed80f0207df9eca7b541a99dff4= |
+| =packages/proofs/context-lifecycle/tlc-config.json= | =080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1= |
+| =packages/proofs/lean-poo/lakefile.lean= | =089464bebe88e7cfb9011ffc69ad9b2e293be636581d5139da06e48233e09b44= |
+| =packages/proofs/lean-poo/lake-manifest.json= | =56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc= |
+| =packages/proofs/lean-poo/lean-toolchain= | =8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean= | =2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean= | =434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean= | =ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean= | =708948b0ff7a4aec56de1dfc49a03d3f67e2a052a0ff1c1b4e28cc786a0d1630= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean= | =4bc0f3062529655354fe3c7af26f59d784317f4a64746477cf881696bf798f43= |
+| =scripts/temporal/run_with_progress.py= | =07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611= |
+| =gerbil.pkg= | =b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2= |
+| =modules/ai-agentic-context/admission.ss= | =ac0fc95d6877aab458a095d0538df68d2aae60a336ebc10ee597be7d9321211b= |
+| =modules/ai-agentic-context/consumers.ss= | =715b2f920a2fae087449fd28bff0dcad2a6decbdf08c1a2f9a52952d812f15d9= |
+| =modules/ai-agentic-context/contracts.ss= | =b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072= |
+| =modules/ai-agentic-context/funs.ss= | =e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9= |
+| =modules/ai-agentic-context/interface.ss= | =5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca= |
+| =modules/ai-agentic-context/objects.ss= | =c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d= |
+| =modules/ai-agentic-context/reasoning.ss= | =3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312= |
+| =modules/ai-agentic-context/source.ss= | =56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3= |
+| =packages/proofs/context-lifecycle/org-context.ss= | =a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629= |
+| =packages/proofs/context-lifecycle/context-source.org= | =b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1= |
+| =packages/proofs/context-lifecycle/handoff-controls.ss= | =9c4c6d09ef369e6cb0be65d1c89591cbf28d8db38c76e9dd23a0af54167ac600= |
+| =packages/proofs/context-lifecycle/run_handoff.py= | =dfdaa4c61b6c18c0bad21b8ca22ac9a64597940f254b006262a9b046522e895d= |
+| =src/policy/authorized-effect-token.ss= | =ef9abd5335f478d15b5b5a782be5ece07380995b009f504c3d5ae41a618281fb= |
+| =src/graph/types-core.ss= | =316e922bcb1cdd1ffcb30b2fb20f168938b65c0574c9ec6d27950d0eaff15a00= |
+| =packages/proofs/context-lifecycle/admission-controls.ss= | =83d451bf8642a0c9e38a7eb4388db78ea506067add2011a397f9ebcb189744f9= |
+| =packages/lambda-aitia/modules/assurance/context-consumer.ss= | =a38f4537be4e70c8c364e8e326139307596acd253f1a81178b8aa65072a92453= |
+| =packages/lambda-aitia/t/formal/lifecycle-fixture.ss= | =6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd= |
+| =core/contribution/verification.ss= | =e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c= |
+| =modules/governance/types.ss= | =633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1= |
+| =modules/governance/objects.ss= | =c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7= |
+| =packages/lambda-aitia/modules/assurance/types.ss= | =ea13ca72b85ac4c7635d0192242ac82771f82d75c6abcba27ba8c73f64c50419= |
+| =packages/lambda-aitia/modules/assurance/objects.ss= | =56f76d0ab65c1bee10524bc59944890df3c2e334a80b528a2ab1933c484f0e35= |
+| =packages/lambda-aitia/modules/assurance/funs.ss= | =9f70e669e21fd349343539bea5b150362c799004f8c895ede62bf2b39e3200e2= |
+| =packages/lambda-aitia/modules/assurance/evidence-admission.ss= | =a63a9b357d213f0273541744dff31b75f6a90b790a984efb0224c5b2e946b263= |
+| =packages/lambda-aitia/modules/assurance/host.ss= | =116b0d743f481d2cfde27e409b6719cee788f74d11d379f98bebf7d3f5a4ab26= |
+| =packages/lambda-aitia/modules/assurance/effect-host.ss= | =a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569= |
+| =packages/lambda-aitia/modules/assurance/config.ss= | =6badb8eabcb67c64725623019f8e4b1cd1c2e17aaac82b39db2bd7bdeeed6d3e= |
+| =src/graph/algorithms-list-support.ss= | =c549a62b7d5d164ffea0a97bae9d4824e9197c29ce7a4d545f6d08b3ae7a0b9b= |
+| =src/graph/algorithms.ss= | =7dbcabe5d125ff292ae3cf709e3b5519c06ee35e0f5082b2533bac8d4df75f6a= |
+| =src/graph/types-contracts.ss= | =25c7d63a39a9ce4372213fea7d9d249c3061bf4035631e0ff4a3ee02be6e3af5= |
+| =modules/temporal-causality/types.ss= | =70f2e2fc5dba0250ebf533b2cc356877a2db18e2655249442b810a45a4f765db= |
+| =modules/temporal-causality/objects.ss= | =8dabf9c3655aa2ce59fb92d8a7dfbfb1ac2ea1ee16ea52d09d6898b986f35c63= |
+| =modules/temporal-causality/funs.ss= | =42a16245370476cef379c85805320384831b379cf9068c0b5fdd394af45004f4= |
+| =packages/lambda-aitia/modules/assurance/invalidation-projection.ss= | =3f8499f1ff93a70b040e58c63229fc2a36009c5d4b7233e9da77daa42817d2d5= |
+| =packages/lambda-aitia/modules/assurance/verification-projection.ss= | =7b65ebde0aa33b7f2861797b41d125c3e2a1ee2e4385e8d9d6f945c53e9286d1= |
+| =src/core/roles.ss= | =f2cbe4e4c7aa60f7a4ec9953b185e74db835fbc8a2f9d337edcb4d746b4846d0= |
+| =src/utilities/functional.ss= | =c6d7c71cadaa1fe54efe211d5d0b93e7fe7203c1060696c2116443dee0d3e8d1= |
+| =src/feature-system/model.ss= | =44d4b37e5baf1eda31af58b74629964b4039b7a9dffc40538e5b21ee2f04deb8= |
+| =src/feature-system/source-lock-feature.ss= | =3b480b232c28ac9ef1932fe66115841e3eb82f26174dd31927014d6dbaeb62bd= |
+| =modules/authorization/providers/cedar/objects.ss= | =4f157fc03c7ca233bc566c44fd76b25130251d3ff783d46805998c70f1aee24d= |
+| =modules/authorization/types.ss= | =34416b636b699e75a5e99ff54e91ea3edb737d378e5f455ae23989cbc6b3f7d6= |
+| =modules/authorization/objects.ss= | =421c3dcec6c22419fc1ff65a7bea6fbc2ad8e909ebfdf0f879e12fefb6a05b43= |
+| =modules/authorization/providers/cedar/config.ss= | =7617f1219f9ffc3e5a25b9a6273aceeeee26b1a591db83a54ce73477618ab77c= |
+| =modules/authorization/contracts.ss= | =d878cb9c5e954074db574a777e04263f5692e1341e165a7442a1b5a308003039= |
+| =modules/authorization/providers/cedar/contracts.ss= | =1dc971992ebc7fe767c7af65bce98dd99b83347ad787c21c2f3d896be2dfda18= |
+| =modules/authorization/providers/cedar/funs.ss= | =1a84b41c34b8914321098d5bd544cd8b3cffab62a8bdb281845e021ba13a2bdd= |
+| =modules/authorization/providers/cedar/decision.ss= | =30a79e4c41df665c41e9db52617364d77ba8476da1ef7d1f1dccbd5815c5b29c= |
+| =packages/proofs/context-lifecycle/ContextRegistry.qnt= | =faa99e7356b6c3f164ae1f224637c540c6e449bab5854212c58789be4dd6d1c3= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Registry.lean= | =4595145078bb104a1c95bd192f76a7bc781ebd15cea6258feae0787ba9cab6e1= |
+
+* Open boundaries
+
+This is a serialized process-local issuer and conditional formal protocol,
+not a durable/concurrent Host implementation or cross-language bisimulation.
+External Session retirement must call explicit registry replacement.
+Persistent identity, reconciliation, issuer-history reclamation, complete
+unified Query/GQL result adaptation, source availability/disclosure and
+Project promotion execution remain open. Independent target knowledge still
+requires its own current source/Contract/review/permission premises.
+Storage executors, bindings and old Memory are unchanged; no CI or remote
+head qualification, deployment or performance improvement is claimed.
+

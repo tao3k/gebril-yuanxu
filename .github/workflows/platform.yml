@@ -1,0 +1,81 @@
+name: Platform
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build and bootstrap
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 120
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+      GERBIL_BUILD_CORES: '2'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/setup-gerbil
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        # Only the pinned POO dependency namespace crosses CI runs. Archiving
+        # lib itself would recursively include test approvals; a negative
+        # top-level glob does not remove descendants of an archived directory.
+        with:
+          path: |
+            .gerbil/pkg
+            .gerbil/lib/clan
+            .gerbil/bin
+          key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-1cfb032-${{ hashFiles('gerbil.pkg') }}
+      - name: Install pinned dependencies
+        run: |
+          echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
+          GERBIL_BUILD_VERBOSE=1 gerbil deps --install
+      - name: Check Yuanxu package namespace
+        run: just check-package-namespace
+      - name: Build Yuanxu
+        run: just build
+      - name: Test public Yuanxu prelude
+        run: just test-yuanxu-prelude
+      - name: Qualify source-only selected build bootstrap
+        run: just test-bootstrap
+      - name: Check complete disjoint test partition
+        run: just check-test-groups
+      - name: Preserve dependency and library tree
+        # Test products are local to the checkout whose native Make timestamps
+        # produced them. A shard's fresh checkout must issue its own test build;
+        # do not restore either half of an earlier test product/approval pair.
+        run: >-
+          tar --exclude=.gerbil/test-lib
+          --exclude=.gerbil/lib/.yuanxu-test-publications
+          -czf "$RUNNER_TEMP/yuanxu-package.tar.gz" .gerbil
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
+          path: ${{ runner.temp }}/yuanxu-package.tar.gz
+          retention-days: 2
+          if-no-files-found: error
+  tests:
+    name: Test ${{ matrix.group }}
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        group: [bootstrap, modules, scale, contracts, objects, scenarios, runtime]
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/setup-gerbil
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
+          path: ${{ runner.temp }}
+      - name: Restore same-head artifacts
+        run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
+      - name: Run complete group with serial 2 GiB workers
+        run: just test-directory '${{ matrix.group }}'

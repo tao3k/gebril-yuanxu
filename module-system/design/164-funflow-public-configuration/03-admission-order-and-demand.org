@@ -1,0 +1,267 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 03: Admission, Composition Order and Lazy Demand
+#+property: STATUS design-and-acceptance-requirements-not-implementation-receipt
+
+* Admission is explicit and scoped to the selected effective value
+
+The [[file:05-field-contracts-and-capabilities.org][field Contract declarations and capability policy]] and
+[[file:06-admission-algorithms.org][selector/obligation/guard algorithms]] now supply the concrete design behind
+this lifecycle. The complete case retains its upstream defaults and both user
+layers in [[file:02-complete-cicd-case.org][module 02]]. These domain definitions are still proposed, not installed.
+The [[file:07-admission-source.org][complete native Scheme design source]] now expands every obligation,
+inherited adapter and internal helper; no algorithm table substitutes for a
+missing function body. It remains unexecuted domain design code.
+
+Construction does not prove validity. The future Scenario planning boundary
+selects an effective module/Profile/Pipeline, determines its owner-associated
+Contract, collects evidence and only then projects it to the existing consumer.
+Downstream users do not attach the same ApplicationProfile/Check Contract at
+every slot. Merely declaring responsibilities does not automatically validate
+arbitrary POO reads or all loaded objects.
+
+The desired admission sequence is:
+
+1. Check the selected module's expected source association and compatible
+   prototype family. Local SourceRef metadata cannot satisfy authenticated
+   source admission by itself. Record that boundary as unresolved when required.
+2. Profile .admit verifies the effective selection context and invokes inherited
+   responsibility admission. Pipeline .admit prechecks selection names/roles
+   before the inherited traversal can demand checks. Check .admit rejects
+   unknown names before ordinary field admission. Name inspection does not
+   force unknown getters; dynamic Profile/Check names differ from closed fields.
+3. Resolve selected-checks against the effective Profile, then admit each
+   selected Check using the owner-associated Contract. The inherited traversal
+   establishes field shapes before obligations use their values. A structural
+   list Contract alone does not establish a supported payload or result decoder.
+4. Check dependency closure, cycles, identity uniqueness, policy compatibility,
+   sandbox reference resolution and compensation references. Distinguish pure
+   config validity from unresolved external/handoff capabilities.
+5. Produce a plan/list projection bound to the final receiver and applicable
+   Contract/version/source context. Only admitted selected values reach a
+   runtime handoff. Plan construction still does not execute anything.
+
+Core currently passes the supplied context through responsibility admission.
+The planning boundary therefore supplies the effective Profile before entry;
+the Profile guard verifies it. Domain guards/obligations derive qualified paths
+and child contexts, preserve the original receipt inputs and require staged
+capability evidence. Core does not supply those adaptations automatically.
+
+A partial inspection of build can admit build's shape/value fields while
+leaving sibling Checks and external references pending. It must not return
+"the Scenario is valid". A complete selected plan forces its selected closure.
+An optional full-catalog audit is a separate, intentionally broader operation.
+
+* Typos must produce actionable errors
+
+Current examples use the independent Profile occurrence from
+[[file:13-independent-profiles-and-scenario-composition.org][module 13]], not a Module-owned Profile catalog. Earlier context algorithms
+need the role migration specified there.
+
+#+begin_src scheme
+;; Proposed direct path syntax; closed-field admission must still reject it.
+(.def (BrokenCI @ ProjectCI)
+  gerbil.funflow.build.commmands:
+  '("gerbil" "build"))
+#+end_src
+
+Native construction may succeed: the object still inherits commands and
+has an additional commmands slot. The proposed closed Check preflight
+operates after the proposed assignment lowering; the current dotted parser does
+not yet accept this form. Once lowered, domain admission
+rejects it before inherited field traversal/projection. It never ignores it or guesses
+which command should win. Example target diagnostic:
+
+#+begin_example
+unknown-attribute
+  path: BrokenCI.gerbil.funflow.build.commmands
+  contract: funflow/check-v2
+  suggestion: commands
+  source: authored definition, when available
+  result: no admitted plan
+#+end_example
+
+Suggestions are advisory and never rewrite the configuration. Exact source
+locations and inherited definition origins require preserved expansion/MOP
+provenance; current bounded scope/path lowering alone does not implement an
+NixOS-like explanation view.
+
+A typo in a dynamic Check name cannot always be inferred. A newly declared
+buid that is a valid Check named buid may be intentional. Missing selection
+targets fail; available but unselected Checks can warn. A strict audit can
+reject unused entries by Scenario policy. Do not claim that a closed field
+schema can detect every semantic naming mistake.
+
+* Composition order: separate four meanings
+
+| Meaning | Authority and rule |
+|---------+--------------------|
+| Prototype precedence | native C4 and native slot operators; inspectable ancestry, not execution order |
+| Field refinement | =>.+ inherits the nested object; ordinary leaf assignment replaces a value; => performs an explicit pure transformation |
+| Selected Check list | selected-checks is an ordered unique value, not all available Check slots and not an inheritance-side effect |
+| Execution dependency | dependency-refs determines the DAG; selection position is only a stable tie-break among otherwise ready nodes |
+
+The default graph is build -> test -> package, extended to smoke after package.
+Reordering selected-checks to '(package build test) does not make package run
+first. The planner obeys dependencies. Duplicate names, missing dependencies
+and cycles reject admission. This ordering policy must be implemented/qualified
+in the future adapter; it is not a claim about every current scheduler.
+
+When two Profiles own the same nested module slot, native multiple inheritance
+does not automatically deep-union both subtrees. Upstream must publish explicit
+native nested refinements that preserve the intended contributions. Check
+membership is always explicit in the selected Pipeline. For the general
+Gerbil/Rust case, keep distinct paths gerbil-scheme.build and rust.build;
+flatten only with qualified identities, never both as an unqualified build.
+
+An explicit descendant override is an intentional native choice. Two peer
+contributions with incompatible source identities at the same module binding
+must fail source admission; C4 cannot authenticate one as the winner. A future
+composition audit should report competing peer definitions of an ordinary
+business leaf unless the descendant explicitly resolves it. This requires
+origin data and is proposed policy, not a change to C4 or a proven detector.
+Until that adapter exists, document native precedence honestly rather than
+claiming Nickel-like equal-priority conflict detection.
+
+At projection the canonical identity is a tuple including selected Scenario
+instance, actual module source/occurrence, Profile name and Check slot name.
+Local check-name/durable-task-id values remain visible in the native objects.
+The adapter must qualify or reject collisions before flattening into today's
+symbol-based consumer protocol. Symbol concatenation, an alias named ff, or a
+user-editable metadata key cannot establish that identity. The exact wire-name
+encoding remains an adapter decision with collision/round-trip tests required.
+
+* Native receiver, caching and final effective Checks
+
+[[file:11-direct-path-assignment-and-refinement.org][Module 11]] adds the proposed ordinary dotted-assignment surface and native
+shared-prefix lowering. It changes no admission rule here. The existing adapter
+accepts dotted =>.+ only; the new assignment surface remains unimplemented.
+
+The existing [[file:../164-pipeline-receiver-cache-validation.org][receiver/cache validation]] demonstrates the following for fixed
+lexical checks: (list build test package): force the parent Pipeline and its
+Check list, then derive a child with three Check refinements and a Pipeline
+refinement. The child's list contains the child's final Check objects; parent
+and sibling caches remain independent. The [[file:../../../../t/funflow-native-publication-test.ss][real local publication tests]] cover
+those effective values and eq? identities through the current list adapter.
+
+The proposed generalized form retains the same native receiver relationship:
+
+#+begin_src scheme
+;; Inside the native Profile with explicit receiver effective-profile:
+pipeline:
+(.o (:: @ (.get ff prototypes pipeline))
+  selected-checks: '(build test package)
+  checks: (funflow-selected-checks effective-profile selected-checks))
+#+end_src
+
+effective-profile is lexically bound by the outer native object declaration,
+and selected-checks by the nested Pipeline. They are evaluated for that effective
+receiver. A cached parent Pipeline is not a shared mutable accumulator into
+which a child is patched. The child's inherited getter computes with the child
+receiver; the child's checks getter resolves the child's selected values.
+
+The product resolver is proposed. In this design turn a domain-free native
+probe also passed ten assertions: an explicitly named outer receiver, a nested
+selected-checks slot, four grouped path refinements, an added smoke name,
+effective eq? identities, warm repeats, unchanged parent cache and a frozen-list
+negative control. It used a simple map/.ref stand-in, not the proposed product
+resolver, field Contracts, dependency validator, admission adapter or plan cache.
+Those domain behaviors still need the controls below. A fixed list saved from
+the parent remains the negative control:
+
+#+begin_src scheme
+(def saved-parent-checks
+  (.get ProjectCI funflow profiles gerbil-scheme pipeline checks))
+
+;; Incorrect owner implementation: captures parent values permanently.
+(.def (FrozenCI @ ReleaseCI)
+  gerbil.funflow.pipeline: =>.+
+  {checks: saved-parent-checks})
+#+end_src
+
+That is legal native authoring but fails the proposed Pipeline identity
+obligation. It cannot become correct through lazy registration or by validating
+the saved Checks individually. A future plan cache must key the effective
+receiver, selection, schema/protocol association and source revision context,
+not just pipeline-name. Do not introduce a global cache to defeat native
+receiver-local semantics.
+
+* Demand boundary and cost
+
+| Step | Permitted work | Remains deferred |
+|------+----------------+------------------|
+| Source/bootstrap availability | current static definition imports | no claim of lazy source-file imports |
+| Bounded use-module | evaluate source value once, object? check, lexical alias | all module slot values, Profile factories, field admission |
+| Scenario construction/refinement | native object declarations and path-prefix lowering | Checks, Pipeline values, Contract traversal and execution |
+| Read one known Profile | its factory/prototype view | sibling Profiles and leaf Check fields |
+| Inspect declared field names | schema/MOP slot metadata | unrelated getter values; computed defaults only if explicitly requested |
+| Select Pipeline members | requested name list and those Check objects | unrelated modules, Profiles and unselected Checks |
+| Admit selected closure | selected fields, contracts, graph and required capability evidence | commands, secret resolution, runtime Session |
+| Project admitted plan | final selected objects and consumer data | execution until explicit handoff |
+
+Full native responsibility admission may force every responsibility it visits.
+That is intentional at a selected complete boundary. Metadata-only inspection
+must use a different pure inspection path rather than call full admission and
+label it lazy. User-defined getters can still diverge or perform effects:
+source-role governance, trusted owners and effect tests are needed. POO laziness
+alone is not totality, effect isolation or a latency guarantee.
+
+For thousands of modules, measure source-import costs separately from native
+slot demand. A 10000-entry catalog must not be enumerated to resolve one known
+selected path. First selected-plan admission costs at least its K selected
+Checks/edges and demanded attributes. It is impossible to promise zero initial
+cost; the goal is bounded selected work with explicit warm-up/inspection when
+needed, not a deferred whole-catalog spike.
+
+* Delivery boundary and acceptance before implementation
+
+| Item | Current state |
+|------+---------------|
+| Native inheritance, receiver-local caching and lexical slots | existing; fixed-list controls executed previously |
+| Generalized selected-name receiver pattern | domain-free ten-assertion probe executed; [[file:04-selection-probe.org][full source and evidence boundary]] |
+| Bounded use-module and grouped dotted path lowering | implemented locally; aliases do not become global names |
+| Prototype/Profile local getter split | implemented locally; static imports remain |
+| Core native responsibilities/obligations and CLOS declarations/bundles | available; declaration alone is not domain integration or registration |
+| Closed Funflow Check schema and field metadata discovery | designed here; not implemented |
+| Structural field predicates and narrow recipe capabilities | concrete declarations in module 05; not installed or consumer-qualified |
+| FunflowProfile., selected-checks and named pure resolver | designed here; not implemented |
+| Three obligations and inherited .admit preflight | normative algorithms in module 06; no product execution receipt |
+| Complete obligation/adapter/helper Scheme bodies | module 07 documentation source only; reader checks are not execution |
+| Selected-only admission, qualified diagnostics and identity projection | designed here; not implemented |
+| Complete input/report/decoder capability Contracts | consumer audit and domain definitions still required |
+| Native user-root source-role policy alignment | unresolved; current gates must be reconciled explicitly before product claims |
+| Authenticated publication, Loader cycle detection and lazy file loading | outside this change |
+
+Required future controls:
+
+- Compare four simultaneous path refinements with their grouped native
+  expansion; assert effective object identities as well as values.
+- Cache parent checks first, extend the child with smoke, then select it. Assert
+  child identities, unchanged parent/sibling values and warm-repeat identity.
+- Reject the saved-parent-list counterexample at Pipeline admission.
+- Reject unknown Check/Pipeline fields, malformed argv, wrong field types,
+  name mismatches, reserved metadata, unsupported handoff/result protocols and
+  false runtime-executed claims; include full qualified diagnostics.
+- Prove missing/duplicate/non-Check selections fail before the checks getter is
+  demanded. Prove an unknown Check field is rejected without forcing its getter,
+  including when a separate known field is also invalid.
+- Verify Profile occurrence context before inherited Pipeline traversal, child
+  diagnostic paths, and unchanged candidate/context correspondence in evidence.
+- Separate proper-list shape success from unsupported result/payload failure;
+  exercise the recipe's explicit empty/false payload policies and missing
+  source/reference/capability evidence without fabricating runtime readiness.
+- Add a valid unselected Check and prove it is not projected/executed. Reject
+  selection of a missing/non-Check slot, incomplete dependency closure,
+  duplicates, cycles and unresolved compensation capability.
+- Demonstrate a derived Contract that strengthens the schema without dropping
+  base obligations; reject an object attempting to authorize its own schema.
+- Compose Gerbil and Rust: retain two distinct build identities; qualify before
+  the current consumer, or reject if it cannot preserve identity faithfully.
+- Count factory/getter/consumer demands at each boundary. Vary catalog N and
+  selected K independently; record first/warm latency, memory and source-import
+  cost. Never infer scale results from the current fixed-list cache proof.
+
+This document changes design only. It introduces no module adapter, Loader,
+runtime handler, executable schema, source-role exception or new validation
+receipt for the proposed behavior.

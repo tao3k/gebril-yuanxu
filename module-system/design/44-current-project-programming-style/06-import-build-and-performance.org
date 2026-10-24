@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 06 - Import Build And Performance
+
+* Import ownership
+
+Normal consumers import =modules/<name>/interface.ss=.  Module roles use
+relative imports for their own owners.  Cross-domain implementations import a
+precise public owner and use =only-in= for a bounded symbol set.  Global
+facades deliberately export a stable surface and never wildcard-reexport
+concrete Profiles, Scenarios or test owners.
+
+* Build roots and laziness
+
+A production ASP PackageSpec root is a separately required bootstrap artifact,
+not a source inventory.  Native Gerbil imports close dependencies.  Do not list
+both facade and internals, or production and test owners, as independent roots.
+Profiles, Scenarios, contribution modules and advanced authoring owners remain
+lazy until an explicit consumer demands them.
+
+Use the ASP Build API and upstream =std/make=.  Do not add a scheduler,
+currentness cache, source expander or duplicate graph.  Diagnose root count,
+compile count, first-event latency, wall time, peak process-tree memory and
+saturation separately.
+
+* Performance law
+
+Avoid repeated list scans and repeated closure/index construction.  Reuse
+stable prototypes and derived indexes.  Do not lower concurrency to hide a
+regression.  Performance changes require an A/B scenario with the same source
+and semantic result; an optimization without a receipt is not project style.
+
+** Built-in library ownership
+
+Ops is an ordinary Core library, not an optional Module selected through root
+init. Import its published Ops object from =:yuanxu/ops/interface=; functions
+and native Script methods share one executor. Core owns compilation through
+its ordinary library roots. Module =core.requires= lists selectable Module
+publications, not built-in library imports. No bootstrap selection or second
+interface registry is required to execute an explicitly declared Script.
+
+A Module must publish the inert vocabulary that its public consumers need.
+Funflow's runtime vocabulary is part of its default object facade; consumers
+need not import an implementation file that is absent from the compiled public
+closure. Scope acquisition and vocabulary reads never start a runtime.

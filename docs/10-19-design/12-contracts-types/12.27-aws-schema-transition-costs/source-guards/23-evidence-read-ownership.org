@@ -1,0 +1,190 @@
+#+title: 12.27.36 Evidence Read Ownership In Real Declarations
+#+property: DOCUMENT_ID 12.27.36
+#+language: en
+
+* Actual holder, rather than receipt counts
+
+The previous thousand-declaration run refused after 331 publication returns.
+Completed Reader programs and expanded bodies had already disappeared from
+the weak observations. That did not establish that the remaining SDK bindings
+or Graph read dependencies were small. Counts alone could not attribute bytes.
+
+The actual source path is =role-authoring-validate! -> module-interface ->
+ModuleAuthoringProfileContract validation -> classification/validation receipts
+-> role CLOS admission=. The previous owned-call region began at each CLOS
+datum. Interface/Profile validation happened BEFORE that region, so the Graph's
+native read trace could strongly retain its temporary evidence and their
+dependency graphs even after their only semantic use had finished.
+
+[[file:../../../../../module-system/source/admission.ss][Source admission]] now begins the existing region before constructing that
+Interface. [[file:../../../../../module-system/authoring/admission.ss][Authoring admission]] supplies its existing exact maintained method
+body identities and carrier-policy guard. It does not add another method
+registry, skip Profile admission, reuse an acceptance result, or suppress reads.
+
+* One construction lifetime, unchanged semantic payloads
+
+[[file:../../../../../object-family/read-projection.ss][The shared ownership implementation]] moved from CLOS to object-family;
+there is no forwarding implementation. CLOS and Core receipt producers use the
+same dynamic region. Only an actual maintained constructor may enroll a fresh
+receiver. A kind symbol, nominal Type or contributor's ancestry is insufficient.
+
+[[file:../../../../../types.ss][The two receipt producers]] retain their original lazy slot formulas and
+actual candidate, Contract, Context, classification and child references:
+
+#+begin_src scheme
+(owned-read-leaf!
+  (.o kind: 'yuanxu.contract.validation-evidence
+      ;; Original producer fields and formulas remain unchanged.
+      admission-contract: contract-value
+      candidate: candidate-value
+      context: context-value))
+
+;; Only a copy of a receiver enrolled in THIS region inherits that permission.
+(owned-read-copy! evidence
+  (.cc evidence 'responsibility-evidence children))
+#+end_src
+
+This excerpt describes the lifetime boundary, not a replacement producer.
+The actual producer retains every existing field and value check. Enrollment
+requires a bare factory object without parents, declarations or a MOP protocol.
+The first native revision is retained and checked at region completion; an
+edit followed by restoration is still a change. Borrowed copies open the full
+trace. Read observers inspect only already-demanded receivers and never force
+a cold scope to inspect its protocol.
+
+An owned read is crossed until its original external-token frontier. That
+frontier remains strong with every original dependency suffix. Only temporary
+receiver/token witnesses become weak. A still-live receipt must replay its
+original tokens; a missing token refuses. Contract, policy and source reads do
+not disappear when a temporary receipt is collected. Returned evidence remains
+usable with its original actual identities; this change does not shorten its
+semantic lifetime or certify old evidence under a new Contract or Context.
+
+Unknown CLOS bodies, custom descriptor MOP, Context callbacks and nonempty
+custom obligation procedures retain the complete original trace. Exceptions,
+failed initial replay and generation changes also take that conservative path.
+The guard does not infer callback purity from its return value or a Type name.
+
+* Retained-byte experiment
+
+The matched runs use the same locked gerbil-poo revision
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=, source-only import environment,
+2 GiB heap, 1 GiB live-growth guard, observation, fixture, init selection and
+Module =tests .run=. No cache is cleared or introduced. Each fixture writes
+actual types/objects/config/interface role sources and retains the selected
+Graph while existing Observability collects the live-memory sample.
+The isolated projection contains the owned changes and locked dependencies;
+it excludes unrelated concurrent build-artifact work. This is focused native
+qualification, not an exact-head CI result or a full-checkout build claim.
+
+| 256 real publications, same fixture | Graph-held live bytes |
+|------------------------------------+-----------------------|
+| Shared prelude and CLOS-only region | 1280511576 |
+| Constant-field receipt experiment, rejected | 1286901280 |
+| Original receipt formulas, producer lifetime in region | 956248632 |
+
+The retained-byte reduction is 324262944 (25.32% of the first whole-process
+sample). It is not an exclusive byte size for evidence, a wall-clock benchmark,
+or proof that SDK bindings are no longer significant. The Graph, SDK registry,
+semantic payloads and external native token suffixes remain held. The complete
+256-declaration native gate passed, including cold business scopes, unchanged
+Graph identity, actual init-source mutation refusal and fixture cleanup.
+
+The retained native trace gives an independent holder attribution:
+
+| Selected-Graph direct dependency census | Before | Producer lifetime region |
+|----------------------------------------+--------+--------------------------|
+| Edges / distinct token identities | 604412 / 111610 | 53244 / 23844 |
+| Distinct classification / validation receivers | 2048 / 2048 | 256 / 256 |
+| Cached module-source-role Contract receipts | 1280 | 0 |
+| Cached module-authoring-profile Contract receipts | 256 | 0 |
+| Other actual Contract receipts | 256 | 256 |
+
+These are observations of original dependency records, not an estimate of bytes
+per record or permission to drop the remaining 256 semantic admission receipts.
+The combination of changed holders and collected process bytes supports the
+specific temporary-evidence explanation. It does not attribute all remaining
+memory to the SDK or all saved bytes exclusively to receipts.
+
+The constant-field experiment was reverted: changing field storage alone made
+this sample worse, and its thousand-module run refused after 328 returns.
+The previous 331 refusal remains recorded in the preceding topic. Neither
+failure is relabeled as a capacity pass. The sixteen-module producer-lifetime
+sample was 515947136 bytes versus the previous shared-prelude sample 536060696;
+the larger matched comparison is the relevant retention evidence.
+
+* Thousand-declaration follow-up: still a refused capacity gate
+
+With the same init-owned fixture, observation, source-only library revision and
+unchanged limits, the producer-lifetime implementation completed 578 publication
+returns, then refused at 1501550104 live bytes / 1074253992 growth bytes. The
+original 1 GiB growth boundary was exceeded. This is a failure, not a thousand-
+declaration pass, and the refusal position is not a statistical capacity bound.
+
+At failure, the weak diagnostics reported no surviving effective methods,
+invocation frames, argument lists, authoring Interfaces/datums, continuations
+or related CLOS read records. Each role retained 578 SDK contexts: interface
+4046 local bindings, types 2890, config and objects 2312 each. Tracked programs,
+expanded bodies and code-body pointers were all zero. This rules out the
+observed completed code bodies as the remaining holder; it does NOT assign
+exclusive bytes to SDK contexts or prove that unobserved syntax is absent.
+
+The next ownership question is the support retained by those Reader/SDK bindings
+and the remaining semantic Graph dependencies. They cannot be removed simply
+because temporary CLOS/receipt counters have reached zero. No SDK table, binding
+registry, accepted Graph or read cache was cleared to obtain either result.
+
+* Model division and remaining premises
+
+[[file:../../../../../dev/proofs/quint/OwnedReads.qnt][Quint OwnedReads]] explores bounded finish, mutation, collection and publish
+orders, including shared/cyclic owned reads. Its nine expected outcomes cover
+frontier omissions, shared policy, missing live tokens, unknown execution,
+borrowed constructor authority, changed constructor generation and acceptance.
+These checks reuse the existing model rather than create another Graph.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] proves arbitrary-identity frontier coverage using the existing
+worklist theorem, original-replay requirements for live values and refusal of
+borrowed/mutated construction certificates. It does not repeat finite schedule
+search or prove a GC implementation, heap bound or SDK capacity.
+
+Native assumptions remain: weak values preserve strongly reachable receivers;
+original replay checks original dependencies; the Core DFS implements the
+completed cut traversal; audited wrappers do not leak their call frames; and
+native sequential revisions report edits. Arbitrary Scheme continuations and
+concurrent mutation are not certified. Unknown callbacks keep full dependencies.
+
+* Focused executable gates
+
+#+begin_src text
+just test-file t/evidence-read-ownership-test.ss true
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/module-publication-test.ss true
+just test-file t/contract-analysis-test.ss true
+just test-file t/module-declaration-retention-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+just test-file t/module-testing-isolation-test.ss
+python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/evidence-owned-reads.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
+#+end_src
+
+The receipt test checks actual identity payloads, collected temporary versus
+escaped live evidence, external-policy refusal, unknown obligation/Context/MOP
+fallback, borrowed copies and a changed generation. The init-owned aggregate
+is the independent regression gate for real Schema transitions, stale evidence,
+accepted-value preservation and cleanup; a retention sample does not replace it.
+
+The final focused native runs passed naturally with exit zero, MODULE-OK,
+HARNESS-OK, final OK and no error/overflow marker: evidence-read ownership,
+CLOS dispatch, module publication, Contract analysis, and the init-owned
+JsonSchema/Funflow/AWS aggregate. The aggregate retained its observed,
+progress-aware Ops execution, real Schema transition, stale-evidence refusal,
+failure preserving the accepted value, source refusal and fixture cleanup.
+Its seven module, two harness and two final-OK markers qualify that bounded
+run. They do not override the failed thousand-declaration capacity gate.
+
+Quint's nine expected outcomes passed against the final bound ownership source,
+including the deliberately failing omission/construction/generation controls.
+The targeted Lean OwnedReads build passed. These results establish the stated
+conditional/model and native regression boundaries, not arbitrary callback
+purity, exclusive object byte sizes or complete Core capacity.

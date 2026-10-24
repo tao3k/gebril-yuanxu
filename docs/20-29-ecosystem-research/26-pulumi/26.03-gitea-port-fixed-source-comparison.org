@@ -1,0 +1,163 @@
+#+title: 26.03 Gitea/PostgreSQL Port Changes: Pulumi Source and Preview Boundaries
+#+language: en
+#+property: DOCUMENT_ID 26.03
+#+date: [2026-10-17]
+#+property: STATUS pinned-sdk-source-reviewed-no-engine-run
+
+* Version, references and evidence
+
+The inspected release is Pulumi v3.197.0, resolved through the GitHub commit
+API to =d89552a06391618eee1a9455cd4bcd701810a940=. Source references below
+use that commit, not a mutable release alias. This matches the version in
+#20536; it does not imply we reproduced that issue. No installation or engine
+execution was performed for this article.
+
+- [[https://github.com/pulumi/pulumi/blob/d89552a06391618eee1a9455cd4bcd701810a940/sdk/nodejs/config.ts#L197-L230][Config numeric parsing and optional bounds]].
+- [[https://github.com/pulumi/pulumi/blob/d89552a06391618eee1a9455cd4bcd701810a940/sdk/nodejs/output.ts#L369-L389][Output.apply propagation]] and [[https://github.com/pulumi/pulumi/blob/d89552a06391618eee1a9455cd4bcd701810a940/sdk/nodejs/output.ts#L487-L522][applyHelperAsync knownness handling]].
+- [[https://www.pulumi.com/docs/iac/concepts/config/][Official Config manual]], [[https://www.pulumi.com/docs/iac/concepts/inputs-outputs/][Inputs/Outputs]] and [[https://www.pulumi.com/docs/iac/concepts/inputs-outputs/apply/][apply preview guidance]]. These moving
+  documents explain the interface; they are not proof of a fixed engine result.
+
+* Same known-port user action
+
+This is analyst-written code using the inspected API, not an official Gitea
+component or a complete deployable Stack:
+
+#+begin_src typescript
+const config = new pulumi.Config();
+const port = config.getNumber("postgresqlPort", { min: 1, max: 65535 }) ?? 5432;
+const giteaPort = config.getNumber("giteaDatabasePort") ?? port;
+if (!Number.isInteger(port) || giteaPort !== port)
+  throw new Error("Invalid PostgreSQL/Gitea connection ports");
+#+end_src
+
+Changing the one stack setting to 5433 changes the derived client default.
+Explicit mismatch can be checked in the component. The SDK already supplies
+numeric parsing and optional range checks; application-specific integer and
+relationship checks are a separate concern. This source reasoning is sufficient
+to reject the claim that only our language can express the relationship. It is
+not a measured preview, full port Contract or provider correctness result.
+
+* Unknown endpoints change the problem
+
+For an endpoint produced by a resource, the value carries dependency information.
+The pinned apply implementation propagates allResources, isKnown and isSecret
+into the derived Output. When the value is not known and the callback has not
+requested unknown handling, applyHelperAsync does not run the callback. This is
+existing SDK behavior, not an alleged missing feature.
+
+A known local Scheme port equality check cannot demonstrate equivalent unknown,
+secret or resource-edge handling. The official manual warns against creating
+resources inside apply when their absence from preview would hide changes.
+Native lazy POO slots alone do not solve this; an external-value protocol and
+appropriate admission phases remain our design obligations.
+
+* Four questions and what a fair comparison can claim
+
+| Mutation | Pulumi finding from inspected material | Our bounded response |
+|----------+---------------------------------------+----------------------|
+| Two independent requirements conflict | A component can collect and check them; no impossibility follows from using a general language | Core has a maintained domain obligation over retained rows; relative integration cost is unmeasured |
+| Contributor omitted | Expected composition membership needs an explicit owner/specification | Our selected-publication coverage is tested for its declared rows, not an oracle for undeclared desired modules |
+| Source changes after preview | A claim about saved-plan/engine revision behavior needs its own source audit | Our local source-currentness refusal does not establish superiority over Pulumi saved plans |
+| Parent projection reused | A component can recompute or validate its outputs; a plain stale JS object is not proof of a Pulumi cache defect | Core final-object/plan checks are locally verified only within the selected protocol |
+
+* Issues and Engineering Limitations
+
+[[https://github.com/pulumi/pulumi/issues/20536][#20536]], reported 2025-09-22, specifies Pulumi 3.197.0, AWS 7.7.0 and Python
+3.13.7. It reports nested component configuration validation interacting with
+a resource transform and Output values across the component-package boundary.
+ISSUE-REPORTED, NOT-REPRODUCED here; no resolving PR was verified. The report
+contains a linked reproduction but is not a Gitea port example or evidence that
+all transforms fail. Our local known-value case does not fix that interaction.
+
+The documented apply preview restriction is a phase boundary, not proof of a
+new platform defect. Engine saved-plan enforcement, provider lifecycle, secrets
+and real readiness remain outside this article's inspected code.
+
+* Reflection and conclusion
+
+The useful improvement target is preserving independently published requirements
+and source associations through compositional transformations without making
+ordinary users assemble evidence. Our internal candidate/plan association is
+one implemented part. Unknown-value semantics, diagnostics across foreign
+component boundaries and lower maintainer burden are still design goals, not
+advantages established by the current controls.
+
+Can a late endpoint resolution re-enter admission without losing source or secret
+information? Can the preview distinguish known-admitted from deferred checks?
+Does simplifying a local interface just hide a missing engine protocol? These
+are the questions raised by the real evidence. Shared design: [[file:../../10-19-design/10-configuration/10.20-module-system-assurance.org][10.20]];
+Core evidence owner: [[file:../../30-39-research-foundations/32-module-assurance/32.01-gitea-postgresql-evidence.org][32.01]]. No platform installation is required to record
+these source-supported boundaries.
+
+* Maintainer code: application envelope versus existing engine plan
+
+** Existing fixed-source mechanisms
+
+The pinned SDK already owns Config parsing/bounds and Output dependency,
+knownness and secrecy. The pinned engine also has a real plan protocol:
+[[https://github.com/pulumi/pulumi/blob/d89552a06391618eee1a9455cd4bcd701810a940/pkg/resource/deploy/plan.go#L35-L47][Plan inputs/operations constraints]] and
+[[https://github.com/pulumi/pulumi/blob/d89552a06391618eee1a9455cd4bcd701810a940/pkg/resource/deploy/step_generator.go#L364-L389][validateSteps enforcement]]. The [[https://www.pulumi.com/docs/iac/operations/stack-management/update-plans/][official Update Plans manual]] documents:
+
+#+begin_src sh
+pulumi preview --save-plan=plan.json
+pulumi up --plan=plan.json
+#+end_src
+
+These commands are reference excerpts, not commands executed by this research.
+The manual describes incremental enforcement as operations progress, not an
+all-or-nothing validation of every effect before any execution. The pinned plan
+source also permits unknown planned inputs to match later values. Neither is
+equivalent to freezing all source bytes or checking a local POO plan receiver.
+It would be false to say Pulumi requires maintainers to invent plan enforcement.
+
+** Analyst-written known-data application guard
+
+This function addresses our extra JSON-like application envelope, not Pulumi's
+engine plan. It is unexecuted analysis code, not an upstream component or a
+requirement on ordinary users. Its route/source inputs have the same bounded
+meaning as the Nix adapter in 20.10; their trusted collection is still a separate
+maintainer responsibility.
+
+#+begin_src javascript
+const { readFileSync } = require("node:fs");
+const { createHash } = require("node:crypto");
+const { isDeepStrictEqual } = require("node:util");
+function admitApplication({ candidate, rows, requiredRoutes, sources }) {
+  const key = r => JSON.stringify([r.owner, r.exportPath]);
+  const actual = rows.map(r => key(r.origin));
+  const expected = requiredRoutes.map(key);
+  if (actual.length !== expected.length ||
+      !expected.every(id => actual.filter(x => x === id).length === 1))
+    throw new Error("application: incomplete or substituted contribution routes");
+  for (const s of sources) {
+    const digest = createHash("sha256").update(readFileSync(s.path)).digest("hex");
+    if (digest !== s.digest) throw new Error("application: observed source changed");
+  }
+  const port = candidate.config.postgresql.settings.port;
+  const client = candidate.config.gitea.database.port;
+  if (!Number.isInteger(port) || port < 1 || port > 65535)
+    throw new Error("config.postgresql.settings.port: invalid port");
+  if (!rows.every(r => r.payload.allowedPorts.includes(port)))
+    throw new Error("config.postgresql.settings.port: conflicting requirements");
+  if (client !== port) throw new Error("config.gitea.database.port: connection mismatch");
+  if (!isDeepStrictEqual(candidate.plan.configuration, candidate.config) ||
+      candidate.plan.postgresql.port !== port || candidate.plan.gitea.databasePort !== client)
+    throw new Error("plan: stale projection");
+  return candidate;
+}
+#+end_src
+
+The function accepts already-known, correctly shaped ordinary data. It does not
+preserve Output dependencies or secrets, defer unknown checks, authenticate
+routes, capture transitive inputs, make checks atomic, or implement an engine
+transaction. Do not apply it directly to an unresolved Output or claim this is
+all code needed for a production Pulumi policy system. A component or policy
+library could centralize equivalent domain checks.
+
+Reflection: our candidate difference is centralizing collection and binding of
+selected obligations before domain admission. Pulumi's existing engine plan is
+counterevidence against a broader exclusivity claim. Source-bound requirement
+coverage across native object derivation, external Output adaptation and the
+relative authoring cost require distinct evidence. Responsibility comparison:
+[[file:../../30-39-research-foundations/32-module-assurance/32.02-maintainer-publication-comparison.org][32.02]]. The reported #20536 interaction is not fixed by either synchronous
+guard shown here; no related resolving PR was verified.

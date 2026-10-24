@@ -1,0 +1,209 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.55 Config Languages 54: Repeatable Nix Phase Controls and Flake Sources
+#+property: DOCUMENT_ID 11.55
+#+property: STATUS implemented-local-native-no-loader
+
+* Purpose and measurement correction
+
+The objective is bounded work per effective configuration, not a claim that a
+cached POO value authenticates mutable files. The selected Core graph, Nix
+publication and OpenTofu Contract remain separate owners. This change does not
+connect the product Loader.
+
+The single-run chapter 53 counter had an incomplete boundary: resolving the
+published OpenTofu scope occurred outside the timed build. That scope captured
+=.get publication artifact= on the base publication; native derivation gave the
+result object a different receiver-local cache. The expanded counter detected
+one additional instantiation and realization while resolving that scope.
+The old structured receipt is retained as history, not rewritten as a complete
+end-to-end process count.
+
+The repair uses native lexical slots on the FINAL derived receiver:
+
+#+begin_src scheme
+(.+ publication
+  (.o (:: @ [] artifact admit-current)
+    scope: (.cc base-module 'config
+             (.cc (.get base-module config) 'artifact artifact))
+    configuration: (.get configuration-input value)
+    admission:
+    (begin (admit-current)
+      (.call (.get scope types configuration) .admit configuration #f))))
+#+end_src
+
+The derivation, realization, scope and lazy first admission now agree on one
+receiver. A positive observation must count scope resolution too. A future
+change that reinstates the base-publication reference must fail the phase
+process budgets; it must not be hidden by moving scope resolution after timing.
+
+* Two native Source prototypes
+
+Update: [[file:11.56-configuration-selected-flake-builds.org][chapter 55]] implements the automatic OpenTofu selected-graph
+FlakeSource adapter and string arguments through native =--apply=. The argument
+restriction and expression-only adapter boundary below describe the earlier
+qualification, not the current implementation. Historical receipts are retained.
+Chapter 55 also corrects the lock flags: native Nix 2.34 requires
+=--no-update-lock-file= alone to reject in-memory lock changes; adding
+=--no-write-lock-file= weakened that rejection in the measured environment.
+
+=NixSource.= owns an expression plus string arguments; =NixFlakeSource.= inherits
+its native preparation/realization/cache protocol and specializes instantiation
+and serialized guard production. There is no mode switch in the Core graph and
+no replacement scheduler. The declarative Nix Module publishes both through
+=types.Source / types.FlakeSource= and =prototypes.Source /
+prototypes.FlakeSource=. Source prototypes inherit the effective Module config.
+
+#+begin_src scheme
+(.def (ProviderArtifacts source NixFlakeSource.)
+  reference: "path:/absolute/project"
+  attribute: "packages.aarch64-darwin.default")
+;; Maintainer/build-tool boundary; ordinary users still fill their config role.
+(def publication (.call ProviderArtifacts .build check-current!))
+#+end_src
+
+The native argv path evaluates one selected derivation:
+
+#+begin_example
+nix --extra-experimental-features 'nix-command flakes' eval --raw \
+  --no-update-lock-file --no-write-lock-file \
+  path:/absolute/project#packages.aarch64-darwin.default.drvPath
+nix-store --realise <that-exact-derivation>
+#+end_example
+
+Flake output selection is not =--argstr=. The FlakeSource Contract rejects
+nonempty inherited arguments, embedded =#= fragments in the reference, and
+unsupported attribute-path syntax. The present attribute surface is an explicit
+unquoted dotted name; quoted attributes and multi-output installables are not
+claimed. CLI flags are owned by the native function, not interpolated into a
+shell command. Runtime evaluation neither writes nor updates a lock, and does
+not enable impure evaluation. Explicit package setup creates/updates the lock.
+This follows the native [[https://nix.dev/manual/nix/2.32/command-ref/new-cli/nix3-eval][Nix eval and lock options]], not a new config DSL.
+
+Both prototypes return a candidate phase from =.prepare=. Core can materialize
+its entry before realization and final admission. Standalone =.build= retains an
+eager checked publication boundary. A native =.guard-form= method owns replay
+serialization for each Source prototype. Runtime and generated guards both
+perform a new instantiation when independently checking currentness; they do not
+reuse the initial derivation as evidence that dependencies are unchanged.
+
+A local mutable flake root is evaluated again; its existing lock pins inputs.
+Accepting a remote reference does not turn a moving branch into an authenticated
+immutable root. The real controls below qualify local locked flakes. Remote
+transport, registry policies, signatures and organizational pinning remain
+separate package-source concerns.
+
+* Reproducible serial qualification
+
+#+begin_src sh
+just test-opentofu-selected-graph-rounds /private/tmp/selected-rounds 5
+# Also exercise pure locked local flakes against a real Provider collection:
+just test-opentofu-nix-rounds /private/tmp/nix-rounds /nix/store/REAL-opentofu-artifacts 5
+#+end_src
+
+Output directories must be new; failures and partial runs are retained.
+=t/qualification/opentofu/opentofu-rounds.ss= uses the native POO declarations published by
+=ops/interface.ss= through the Core Loader and bounded use-module to orchestrate serial Just recipes and compute statistics.
+The former Python coordinator is removed. Native Scheme owns process/type budgets, configuration
+admission, field paths, source rejection and cache-identity assertions. Every
+round launches the existing heap-fenced =just test-file= entry in a fresh Gerbil
+process, retaining its timeout. No compatibility runtime is introduced.
+
+The runner observes source hashes before, between and after rounds, and fixes
+the already-installed Nixpkgs store path for the entire run through the fixture
+package environment. Source drift aborts qualification. It records the Nix
+version, package-set path, every raw sample, median/min/max and completed/failed
+status. Exit zero alone is insufficient: MODULE-OK, HARNESS-OK and final OK must
+be present, with no harness/check/case or heap/stack failure marker.
+
+For BOTH AWS-only and the new AWS+Null generation, each round measures:
+
+| Phase | Evaluator starts | Realizer starts | Successful type reads/compiles |
+|-------+------------------+-----------------+--------------------------------|
+| Fresh build including published scope | 2 | 1 | 0 / 0 |
+| First effective configuration admission | 1 | 0 | 1 / 1 or 2 / 2 |
+| Five cached admission/Contract accesses | 0 | 0 | 0 / 0 additional |
+| Independent currentness | 1 | 0 | 0 / 0 additional |
+
+The expression evaluator is =nix-instantiate=; the flake evaluator is =nix eval=.
+Counts represent actual direct CLI starts at the owned argv boundary, not all
+builder descendants. Type counters represent selected indexed-input reads and
+successful Contract compilations, not every manifest/index byte read. The build sample is the Core build-entry handoff plus demanded scope observation;
+selected-graph preparation and process startup are not timed in that sample.
+Cold means a new Scheme process/receiver/Contract cache with existing store artifacts.
+Neither the control nor its wall times claim download-cold or remote build
+performance. Hot access time is near timer precision; no speedup ratio is inferred
+from microsecond samples. A cached admission is an immutable prior result, not
+fresh currentness.
+
+Fixture construction, explicit lock creation and tool lookup are separate setup
+costs, outside runtime Source samples. Every round includes its raw setup log;
+the control does not claim these costs disappear. The flake fixture is deliberately
+a minimal real Provider-artifact publication with locked shell/tools/artifact
+inputs. Its available artifact collection already contains AWS and Null. It tests
+selected runtime Contracts and Source/lock behavior, NOT proof that flake input
+fetch/build demand excludes Null. Package-demand exclusion is covered by the
+separate existing expression/catalog selected-graph lane. The OpenTofu automatic
+selected-graph adapter still uses that expression builder; this change does not
+invent dynamic arguments for flake packages or silently alter that adapter.
+
+* Rejection and isolation controls
+
+Each expression round retains the real AWS-only -> Null source update, stale
+Graph/artifact/generated script and direct-source rejection, indirect Nix catalog
+change, request-byte tampering, a generated entry modified during realization,
+late first-admission rejection, exact field paths, unselected awscc/resource
+laziness, and immutable parent Contract identity.
+
+Each flake round checks the same two effective resource configurations against
+real generated Provider Contracts, parent identity and namespace isolation,
+no implicit lock mutation, and rejection after an indirectly imported Nix file
+changes the selected derivation. The serialized flake guard is executed through
+the native expander too. Adding a previously unlocked input must fail; a failed
+evaluation must leave the lock bytes unchanged. Merely editing a relative input
+inside its parent tree need not require a lock rewrite, so that is not used as a
+false lock-failure expectation.
+
+* Retained performance failure and scope of claims
+
+The first pure-flake fixture used all of Nixpkgs as a local =path:= input. It
+exceeded the existing native Case duration budget; a measured build alone took
+about 32 seconds. That failed route is retained, not converted to a pass by
+increasing a timeout or adding =--impure=. The final isolated publication control
+locks only the small tools required to link already-produced Schema artifacts.
+It therefore does NOT qualify a large path-input Nixpkgs flake workload. Source
+materialization and hashing cost of large mutable/local path inputs remain an
+explicit performance risk to measure in a production flake package design.
+
+Expression and flake wall times are not a head-to-head language speed test: their
+fixtures and input graphs differ. Repeated direct process/type budgets and
+negative controls are the acceptance criteria; timings describe this shared host
+and store state, including outliers. This does not requalify the full Core build,
+prove arbitrary macro/IO dependency closure, or qualify a thousand-Provider fleet.
+
+* Qualified five-round local results
+
+The final uninterrupted serial group completed five expression rounds and five
+flake rounds: 300 expression assertions and 160 flake assertions. Four additional
+native phase/publication/configuration/build-graph regression gates passed.
+Source hashes stayed unchanged throughout the group. Raw logs and partial runs
+remain local; =t/fixtures/opentofu/nix-rounds-control.json= contains structured
+samples, hashes, provenance and acceptance boundaries.
+
+| Lane / effective config | Build median s | First admission median s | Independent currentness median s |
+|-------------------------+----------------+--------------------------+---------------------------------|
+| Expression / AWS-only | 2.196 | 1.017 | 1.103 |
+| Expression / AWS+Null | 2.453 | 1.016 | 1.080 |
+| Flake fixture / AWS-only | 0.329 | 0.181 | 0.126 |
+| Flake fixture / AWS+Null | 0.313 | 0.172 | 0.142 |
+
+Every round satisfies the process/type budget table above. Hot reads add zero
+CLI starts and zero type reads/compilations; microsecond elapsed samples are kept
+but are not treated as a reliable latency benchmark. The flake fixture has a
+smaller different input graph, so its lower wall times are not evidence that
+flakes themselves accelerate the automatic OpenTofu adapter.
+
+An earlier five-round group also passed but briefly overlapped project regression
+processes near its end; it is retained separately and excluded from this timing
+table. Shared-host load and the observed large-path-input failure remain visible;
+no slow or failed trial is rewritten into a successful performance sample.

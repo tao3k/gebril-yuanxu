@@ -1,0 +1,365 @@
+#+title: 32.29 Constrained Return Tail: Dispatch Ownership Before Purity Claims
+#+language: en
+
+Follow-up: [[file:32.30-checker-identity-and-ownership.org][32.30]] tests the remaining checker-authenticity premise. Native
+checker identity is insufficient for transient-token issuance and for raw
+mutation of runtime metadata interface methods. This section's source-observer
+gate does not establish either property.
+
+* Question and scope
+
+[[file:32.28-post-replay-source-tail.org][32.28]] found stale acceptance after the last MOP replay, both for selected
+objects and for an earlier file changed by a later file's observer. This chapter
+tests excluding the effectful callback from that interval, rather than adding
+another replay or file sweep. Production Scheme and the installed dependency
+remain unchanged. There is no Loader integration or deployment effect.
+
+The experiment distinguishes three mechanisms:
+
+1. The actual MOP guards writes affecting an actively computing receiver through
+   =check-object-edit=. A returned/warm function body and independent dependency
+   are not thereby a general read-only sandbox. A file write is not an object
+   invalidation operation at all.
+2. A caller-owned observer wrapper can reject opaque callbacks during the final
+   phase, but an earlier Contract callback can replace that dynamic parameter.
+   Wrapper ownership is therefore an additional unproved premise, not a solution.
+3. A temporary candidate places rejection in the source event producer's own
+   =observe-source= dispatch for the entire =slot-replay= and =return-currentness=
+   verification segment. Rebinding the observer parameter changes the procedure
+   being checked, not that gate. No foreign observer procedure may enter this
+   segment; no procedure effect inference is claimed.
+
+No user-maintained purity flag, source path list or callback whitelist is used.
+The deliberately severe compatibility cost is part of the result: an innocent
+custom observer is also denied in that phase. This is not a proposed public API.
+
+* Native audit: existing protections and final-call boundary
+
+Pinned gerbil-poo producer: =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+Core HEAD: =80e2e74022c9c4053445475402856c5f369aec48= plus the existing dirty worktree.
+LeanPoo remains =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+The MOP =check-object-edit= walks the affected invalidation closure and rejects
+an active construction or slot computation. Its =replay-slot-reads!= visits the
+recorded graph and checks all visited records again after its callbacks. Neither
+operation covers arbitrary code executed later by the source observer. Sealing
+all Profiles would change their extension semantics, and manually manufacturing
+active frames would not establish a native read-only-tail protocol. Neither is
+used here.
+
+The real [[file:../../../admission/source.ss][SourceAdmissionContract.]] owns the transition to =return-currentness=.
+Its final collector calls the source reader synchronously. Enrollment copies
+paths and expected texts into private cons cells held by final source-observation
+records. The final pass traverses those records, not candidate slots, Context
+methods or arbitrary =module-source-observe= query procedures. Comparisons use
+plain strings and intrinsic file operations. This is why excluding the actual
+observer dispatch can close this specific in-process path without another field
+table. File observation happens before the corresponding actual read. Source-type and source-byte
+inspection use the source event dispatcher; no second callback is intentionally
+scheduled after it. This audit is specific to that selected serial path, not a
+theorem about every exported source query, =.call= body or arbitrary future hook.
+
+* Caller-wrapper experiment and its necessary negative control
+
+[[file:../../../t/source-admission-closed-tail-test.ss][source-admission-closed-tail-test.ss]] installs a fixed private integer counter
+and refuses the captured foreign procedure when the real final phase arrives.
+Its counter has no POO-dispatched behavior, caller-provided operation, key hashing
+or deferred callback flush. It does not claim all arbitrary procedures are pure.
+
+The important counterexample is an existing replaceable Context callback:
+
+#+begin_src scheme
+(def context
+  (.o admit-current:
+      (lambda () (current-module-source-observer attack))))
+
+;; The real adapter invokes context before replay. The replacement ignores early
+;; events and writes External.port only during return-currentness/file-read.
+(def result (closed-admit Contract candidate context))
+(check-equal? (.get result outcome accepted?) #t)
+#+end_src
+
+The wrapper is no longer the event receiver, so it cannot veto the late write.
+Restoring the dynamic parameter on exit does not undo it. This is retained as a
+limitation witness; it is not relabeled a safe run or solved by an identity check
+after the effect. A subsequent identity equality would also require an ABA
+argument. The experiment instead moves the decision to the event producer.
+
+* The cache-exit counterexample: a return-only gate is still insufficient
+
+The native =call-with-module-source-read-cache= wrapper emits =check-seconds=
+from its =dynamic-wind= exit action. This happens after =replay-slot-reads!= has
+completed its final record checks, but while the phase is still =slot-replay=.
+The new native control performs:
+
+#+begin_src scheme
+(when (and (eq? (current-module-source-phase) 'slot-replay)
+           (eq? key 'check-seconds))
+  (.putslot! dependency 'port ($constant-slot-spec 5433))
+  (current-module-source-observer #f))
+#+end_src
+
+The observer removes itself before the source-only final phase. A producer gate
+that checks only =return-currentness= now sees no observer, so it cannot reject
+the earlier late write. The matched return-only binary accepts this control;
+the segment binary refuses before invoking the callback. The test expectation
+flag selects which result to assert, never which behavior the dispatcher uses.
+Both binaries are actually compiled from their respective temporary sources.
+[[file:../../../t/qualification/mop-state/refine-tail-policy.ss][refine-tail-policy.ss]] also builds the unrestricted baseline by restoring the
+exact original dispatcher definition in that same captured package. Only the
+producer and the selected test module are recompiled for each matched policy;
+unchanged dependency binaries stay within their already captured source cut.
+Each test runs in a fresh process. No binary relocated to a different source
+root is used to claim AOT/source-origin equivalence.
+
+The restriction therefore begins before replay, not just at the final file pass.
+This also avoids trying to veto an exit callback while a different native error
+is already unwinding: a new exception from =dynamic-wind= cleanup could mask that
+original diagnostic. With no opaque observer, the existing replay/source order
+is unchanged. With an opaque observer, the new policy refuses entry to the
+verification segment; it does not claim to reproduce diagnostics from executing
+a callback it has prohibited.
+
+* Temporary producer-owned gate
+
+[[file:../../../t/qualification/mop-state/compile-tail-gateway.ss][compile-tail-gateway.ss]] requires exactly one match of the audited dispatch
+definition in the current source. It snapshots the current runtime source/data
+roles into one coherent temporary Core package, then changes only that dispatch
+definition. It compiles the candidate and native consumer contexts into a private
+library. This is a captured qualification file set with a coherent package
+namespace, not an atomic snapshot of the changing live worktree. The actual selected Core import closure is compiled with the normal
+SDK, including SourceAdmissionContract, the reader, ServicesFixture and the
+Scenario's configuration diagnostics dependency. Source discovery therefore sees
+compiled SDK contexts instead of an incoherent mixture of relocated/live sources
+or interfaces without executable objects. The qualification test declares the
+dynamic Scenario's diagnostics import explicitly; this is test bootstrap, not a
+new user-facing loading protocol. It neither writes
+the production file nor replaces the admission algorithm,
+Contract, MOP replay, reader confinement or currentness checks.
+
+The only semantic candidate in that temporary module is:
+
+#+begin_src scheme
+(def (observe-source kind (amount 1))
+  (when (current-module-source-observer)
+    (when (memq (current-module-source-phase) '(slot-replay return-currentness))
+      (error "opaque source observer in return tail"))
+    ((current-module-source-observer) kind amount)))
+#+end_src
+
+With no observer installed, the unchanged reader performs its normal final
+comparisons. With an opaque observer installed, the first verification-segment event rejects
+before calling it, even if its desired mutation was scheduled for the second
+file. The candidate does not execute that second callback and then detect its
+effects; it refuses entry to the callback altogether.
+
+The real adapter's two parameterized phases establish the protected segment,
+including replay's cache-exit action. Once there, this
+selected path invokes no foreign observer that could reset that phase or replace
+the dispatch procedure. Unsupported mutation of runtime bindings, arbitrary FFI,
+another Scheme thread and outside filesystem writers are not confined by this
+test. Source readers and the intrinsic comparisons remain part of the trusted
+implementation. There is no claim that Gerbil has acquired a general effect
+system or process sandbox.
+
+The qualification consumes read records produced by actual native access routes.
+It does not establish authenticity or read-only behavior for hand-constructed
+=make-slot-read= records with arbitrary currentness closures passed to low-level
+MOP delivery APIs. The current MOP reexports =make-slot-read= and low-level
+observation delivery; this candidate does not turn that surface into a private
+or capability-authenticated constructor. Full supported-record ownership, complete observation and
+trusted intrinsic metadata inspection remain premises. This is not a sandbox
+against arbitrary mutation of runtime bindings or arbitrary Scheme globals.
+
+* Gitea/PostgreSQL selected Scenario
+
+The test uses the existing =ServicesFixture= to publish the actual maintained
+Scenario through the current reader/linker. It retains the named
+=postgresql-port= and =gitea-port= contribution rows, delegates to the original
+Contract analyzer and uses its actual normalized candidate. The fixture isolates
+destructive source tests; it does not replace the service Contracts.
+
+#+begin_src scheme
+(def cached (.get Parent plan)) ; 5432, forced before Release
+(.def (Release @ Parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+
+;; Normal admission, with no opaque final observer:
+(check-equal? (.get evidence accepted?) #t)
+(check-equal? (.get analyzed config postgresql settings port) 5433)
+(check-equal? (.get analyzed plan postgresql port) 5433)
+(check-equal? (.get analyzed plan gitea database-port) 5433)
+#+end_src
+
+The retained attack tries to mutate that normalized PostgreSQL port to 5440
+during final =file-read=. The producer gate refuses before invoking it; neither
+the write nor an accepted stale receipt should occur. The child remains at
+5433 and the cached parent plan at 5432. Actual child responsibility evidence and
+both named requirements are checked, not replaced by a positive classifier in
+this service case. An explicit Gitea database port 5440 against PostgreSQL 5433
+must still return rejected domain evidence.
+
+* Ordering, laziness and compatibility
+
+An =admit-current= callback that changes a source and an object before replay
+still produces =configuration source changed= at the existing earlier boundary.
+The experiment does not substitute a later denial or stale-object error for it.
+The new denial is an entry-policy error for a not-yet-invoked tail callback; it
+cannot reproduce the source error that executing a prohibited callback might
+have caused. Those are different executions and must not be conflated.
+
+No extra MOP traversal, source sweep or all-branch walk is added. An unselected
+probe slot raises if forced. Parent plan identity is checked after child admission;
+later supported edits remain possible because no object was permanently sealed.
+These are semantic/laziness controls, not measured performance improvements.
+
+A future design may preserve read-only telemetry by providing fixed internal
+event storage, but must not dispatch a user-supplied writer, formatter, clock,
+POO method or queued callback before return. Replaying arbitrary callbacks after
+the checks but before returning reopens the same gap. No such telemetry API is
+introduced by the candidate.
+
+* Lean and Quint correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean][Admission/ClosedTail]] reuses the earlier LeanPoo-backed admission closure.
+=Observer= is an absent observer or an opaque identity. In the latter case,
+=run= refuses without invocation; the former uses the structurally closed
+=InspectEvent= algebra. There is no Boolean claim of arbitrary closure purity.
+
+The required laws include =return_only_misses_cleanup=, reusing the native
+late-external-state projection to distinguish a successful earlier replay from
+return-time validity. They cover refusal before invocation, preservation of the complete
+selected state in the closed trace, zero foreign calls, preservation of both
+requirements and child owner, earlier MOP validity, and the earlier source error.
+They describe the isolated producer gate, not the replaceable caller wrapper.
+The =returnOnly= Quint counterexample requires acceptance with a changed external
+dependency after the cache-exit observer removes itself. An observer's absence
+at return is therefore not a history or ownership certificate.
+They do not automatically extract a Scheme procedure's effects. Serial execution,
+trusted producer/reader code and complete prior native observation remain
+correspondence premises.
+
+[[file:../../../dev/proofs/quint/ClosedTail.qnt][ClosedTail]] models the same placement: early callbacks, entry to the restricted MOP
+verification segment, the cache-exit self-removal, two source reads and return.
+Five unsafe variants remove the producer gate, protect only the return phase,
+drop the second requirement, substitute parent identity or alter diagnostics. A separate acceptance witness
+prevents vacuous rejection. An explicit independent =outsideWriter= transition
+changes the first file between reads without calling the observer. The stronger
+=SourcesCurrent= predicate must have a counterexample even with the correct gate.
+The positive predicate covers internally closed sources, not a filesystem atomicity
+claim disguised as observer purity.
+
+* Reflection: what this can and cannot close
+
+The useful change in reasoning is ownership: effectful source observation cannot
+become execution authority in the final assurance interval. A producer-owned
+entry restriction covering both verification phases is stronger than either a
+dynamically replaceable caller wrapper or a return-only producer gate.
+It can exclude these in-process callback attacks without another recheck loop.
+
+The cost is substantial: ordinary custom counters are procedures too and are
+denied. The experiment establishes a conservative closed case, not a ready public
+observability protocol. It must not silently drop observers, defer their effects
+before return, freeze every configurable object or weaken independent admissions.
+
+Neither this candidate nor POO can make multiple filesystem reads atomic against
+another writer. That requires immutable source artifacts, a coherent snapshot,
+or external conditional commit/fencing. The earlier source checks remain needed
+for changes before entry. Source acceptance also does not grant runtime execution
+authority or promise that an accepted plan stays valid indefinitely after return.
+
+* Qualification
+
+Actual gates, retained failures and the exact source boundary are recorded below
+after completion. Production Scheme is not repaired by this experiment.
+
+
+** Final semantic controls
+
+The final matched runs use the same captured Core package and the default Gerbil
+SDK/runtime, with C objects for the selected import closure. They run serially
+through the heap-fenced Just entrypoints. Each run exits naturally with status 0,
+MODULE-OK, HARNESS-OK and final OK, without ERROR CASE/CHECK/MODULE/HARNESS or
+heap/stack overflow markers.
+
+| Compiled producer policy | Case executions | Result |
+|--------------------------+-----------------+--------|
+| Exact original unrestricted dispatcher | 8 | Caller wrapper loses ownership; cache-exit self-removal accepts stale dependency; real service checks retained |
+| Return-only producer gate | 7 | Final source callbacks refused, but cache-exit self-removal still accepts |
+| Whole verification segment gate | 7 | Object/file attacks and observer replacement refused before invocation; real service checks retained |
+
+These are 22 variant-case executions, including deliberately unsafe acceptance
+witnesses. They are not 22 universal safety claims. The real service checks cover
+cold/warm admission, both named contributions, two actual child receipts, explicit
+client-port rejection, final configuration/plan at 5433 and parent plan identity
+at 5432. The segment does not add another graph replay or file sweep.
+
+The caller probe and the compiled return-only producer both actually execute the
+cache-exit write/removal control. The segment's callback count is zero. The
+protected interval must start before replay: observer absence at the final file
+pass cannot certify what happened during the preceding cache exit.
+
+** Formal gates and exact scope
+
+The final Lean gate completes 169 jobs and audits 5452 declarations, using only
+standard Lean axioms. Eight ClosedTail laws are required by the aggregate gate.
+The final scoped Quint receipt names =case-prefix: ClosedTail= and records eight
+outcomes; all 137 model sources are typechecked. It is not a claim that all 136
+catalogue outcomes were qualified on this final cut.
+
+The positive closed-segment model exhausts 240 distinct states (280 generated,
+zero queued). Expected counterexamples cover five unsafe variants, one correct-
+model external-writer limitation and one acceptance witness. The return-only
+counterexample has =accepted= true, =a=b=true=, =owner=2=, =external=1=,
+=observer=false= and matching source comparisons. It retains the parent at 5432.
+The independent-writer counterexample retains per-read matches but changes the
+already checked first file. No invariant, watchdog or backend resource budget is
+weakened to obtain those results.
+
+The earlier seven-model receipt and read-only event theorem are retained, but do
+not establish native closure of the cache-exit path omitted from that first model.
+The final model adds that path and the separate return-only unsafe policy.
+
+** Retained failures and source-cut limitations
+
+All raw logs and manifests remain under
+=/private/tmp/core-closed-tail-20261018/=, outside source control.
+
+- The first caller probe used a local =outcome= name colliding with a native POO
+  slot binding. It raised CyclicSlot; =result-value= fixes the lexical alias, not
+  an expected result. The failed source/log are retained.
+- The first Lean attempt used an unquoted reserved constructor name in a case
+  pattern. Quoting it fixes syntax without changing the proposition.
+- Partial/relocated Core libraries were refused by the real reader's Module/
+  package confinement. Metadata-only output also failed to load executable macro
+  code. Neither reader checks nor source authority were relaxed. The coherent
+  captured package compiles its actual import closure, including the dynamic
+  Scenario diagnostics dependency. This is test bootstrap, not Loader adaptation.
+- One full cold compilation command reaches the artifact-complete marker but
+  exits under its unchanged 120-second watchdog (status 124). It is not a passing
+  cold-build gate. Execution of those produced artifacts is checked separately;
+  subsequent matched producer/test recompilations and the semantic runs exit 0.
+- The default live-registry partial-helper caller launch remains a failed import/
+  confinement attempt. Successful native results above use the captured package;
+  they do not certify the live registry's complete bootstrap health.
+- Complete-catalog Quint attempts are retained: one is cancelled as superseded;
+  another obtains expected outcomes but rejects a changed bound compiler source;
+  a later attempt is superseded when the harness dependency changes. Only the
+  final explicitly scoped, stable-cut receipt is counted for this chapter.
+
+Production =admission/source.ss=, source-observer implementation and installed
+MOP are not edited by this task. The Justfile and qualification/proof/docs files
+are the authored changes. Concurrent work changed the live publication and test
+instrumentation sources after the native package was captured; those edits are
+preserved. Native results refer to the recorded captured source manifest, while
+Quint records its own source-bound qualification cut. They are not presented as
+one all-green validation of the latest shared working tree. The source/MOP
+components of the tested tail retain their pinned identities, but full automatic
+extraction/refinement between Scheme and the formal model remains unproved.
+
+The package namespace is coherent; the source copy itself is not claimed to be an
+atomic snapshot of concurrently edited live files. AOT relocation and external
+conditional commit remain outside this gate. Low-level forged read records,
+foreign checkers, other threads and outside writers still require a stronger
+ownership/effect boundary before a general production read-only guarantee.

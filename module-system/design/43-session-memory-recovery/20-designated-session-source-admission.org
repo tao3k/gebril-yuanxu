@@ -1,0 +1,133 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.20 Designated Session Source and Admission
+:PROPERTIES:
+:ID: agentic-ai-lab-context-designated-session-source-admission
+:STATUS: source-admission-joint-pass-external-authentication-open
+:END:
+
+[[file:22-source-binding-natural-exit-receipt.org][10.06.43.22]] closes the subsequent joint gate with natural process exit,
+exit 0 and stable source/compiled inputs. Historical failures below remain
+failures; sampled Darwin dynamic-module unloading is distinguished from
+unproven business deadlock and permanent teardown-latency repair.
+
+[[file:21-source-binding-verification.org][10.06.43.21]] records resumed verification. All 71 Quint checks, Lean
+roots and real assertion suites completed, but the Scheme process completion
+watchdog failed after its final 123-check output. This is not a joint pass;
+the process-exit gate remains open and no final stable-input receipt is claimed.
+
+* Ownership and threat
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context; [[file:18-concurrent-registry-session-retirement.org][10.06.43.18]] supplied CAS and retirement ingress.
+This extension closes the local consumer-admission gap where a request could
+replace the designated source with an unbound or newly issued source after
+retirement. Module issuance proves exact local construction, not source approval.
+Public Session IDs, matching schemas and copied POO properties are not credentials.
+
+Semantics remain in =Modules/ai-agentic-context=. The optional AITIA Assurance
+consumer is downstream; the parent imports no AITIA module. Proofs only
+constructs inputs and consumes these Module boundaries. RFC 0015 is a Case.
+
+* Configured binding, not a claimed field
+
+Both =org-context-admission-profile= and the named
+=assurance-context-admission-profile= require =authority:= and =governance:=.
+The designated source must be an exact issued Session source handle and the
+Governance configuration must be a real POO Governance Profile.
+The parent binds that tuple privately to the exact verification adapter,
+under a configuration mutex. The same adapter cannot be rebound to another
+source or Governance referent. Configuration is host-trusted bootstrap,
+not an operation available through submitted ORG facts or ASCENT relations.
+Issuing a new source alone does not change any existing configured binding.
+
+Profile presentation slots retain those values for inspection, but acceptance
+does not trust them. Ordinary POO extension retaining the adapter continues
+to work; overriding displayed source/Governance cannot change its private pin.
+Changed approved source or Governance requires explicit trusted configuration
+with a new adapter and new review, not silent request-side replacement.
+This does not authenticate a remote principal or authorize arbitrary bootstrap.
+
+=org-context-consumer-source-current?= atomically checks exact issued source,
+current collection/generation and equality to its privately recorded owner.
+An unbound collection can still represent structural/history data, but it
+cannot be admitted by a configured Session consumer. Raw selection is not
+protected disclosure or consumer authority; full unified Query/GQL adaptation
+and pre-I/O authorization remain separate obligations.
+
+* Assurance and Governance crossing
+
+Parent admission checks the private source pin and configured Governance
+referent before support/review/permission callbacks, then rechecks after them.
+Real Governance assessment, Context cut, scope, current Core review and
+configured permission are still required. Source authentication does not
+replace them, turn eligible into authorized, or issue an effect grant.
+
+The Assurance review operation independently checks the same captured source
+and Governance, before and after its Host checks. Calling =yuanxu-verify=
+directly with an unbound/foreign-source or copied-Governance request therefore
+cannot bypass the consumer wrapper and mint a review. Core retains exact
+private adapter/seal issuance. A seal or raw valid-evidence observation alone
+is not admission: the current binding is checked again at consumption.
+
+Trusted callbacks and source/adapter bootstrap remain control-plane premises,
+not untrusted claim predicates. Remote source provenance, authenticated event
+delivery and authorization to perform bootstrap are not implemented here.
+
+* Retirement and target knowledge
+
+Retirement advances all collections attached to the designated source.
+Rebuilding with no source, a copied source, or another issued source sharing
+the retired Session ID cannot satisfy the original consumer Profile.
+Rebuilding against the original retired source also fails membership checks.
+Remaining Sessions need fresh collection review; a fresh survivor review passes.
+
+Independent Project knowledge retains its own approved target source and
+review premises. The real handoff Case now uses a surviving target Session
+and separately configured target source/Profile, rather than representing
+knowledge retention as renewed access for the retired producer Session.
+No Project storage/disclosure or Session reincarnation is implemented.
+
+* Proof roles and focused evidence
+
+| Owner | Evidence | Limit |
+|-------+----------+-------|
+| Quint | Designated/other/unbound/fabricated source, Governance substitution, retirement and direct-verifier faults | Finite transition model, not private-pointer issuance |
+| LeanPOO | Conditional source/Governance equality, liveness, review/permission and claim-insensitivity laws | Assumes trusted identity projection, not credential validation |
+| Scheme Modules | Exact issued source, immutable adapter pin, real ORG Contract, Core seals and Assurance/Governance checks | Local trusted bootstrap, not remote authentication |
+| ASCENT | Recomputed admission observations; denied source withdraws candidate facts | Cannot mint source approval, review or grant |
+
+Focused Quint passed ten Cases. Safe exploration generated 1061 states,
+found 180 distinct states and exhausted its queue. Three reachability witnesses
+found 135/4/35 distinct states. Six injected faults found 48/88/141/85/139/88
+distinct states with checked failure exit and actual counterexamples.
+LeanPOO v0.1.1 supplies Focus; eight new theorems/six guards built with the
+other Context roots: 79 jobs, 64 theorems/62 guards, no sorry or added axiom.
+The real Scheme replay passed 123 checks (28 new, 95 reused). These harness
+counts are not independent new obligations or end-to-end authentication claims.
+
+New controls include approved-source acceptance, unbound candidate/review
+refusal, different issued owner, copied/fabricated/missing source, self-reported
+fields, Profile extension/override, immutable adapter rebinding, copied
+Governance, direct verifier calls, retirement bypass, ASCENT withdrawal and
+fresh survivor acceptance. Initial downstream compilation read the previous
+producer interface while it was rebuilding; producer-first recompilation
+resolved the unbound export. No dependency or verification policy was changed.
+
+* Remaining integration
+
+This closes designated-source enforcement at the tested Module admission
+and optional Assurance review boundary. It does not qualify every external
+Session entry point, authenticate network events, implement source-owner
+bootstrap authorization, or prove a whole-framework refinement. Durable
+identities/recovery, multi-process ownership, source reconfiguration/reincarnation,
+issuer-state reclamation, protected Query/disclosure and actual external adapters
+remain open. Storage executors, bindings, old Memory and delivery are unchanged.
+
+The interrupted joint run is not a receipt. Its resumed attempt passed all
+71 Quint checks and Lean roots but failed the original five-second watchdog
+during cold ASCENT facade loading. An initial partial phased loader also
+hit the same bound. The repaired private harness loads actual canonical
+ASCENT dependency modules and emits milestones only after completed imports;
+the focused 23-check replay passed without padding or limit changes.
+TLC retains 60s/12s silence, one worker/512 MiB; Lean 120s; Scheme 120s/5s
+silence/1 GiB. No timeout, heap or failure expectation was relaxed.

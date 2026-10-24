@@ -1,0 +1,138 @@
+#+title: 12.27.18 One Complete Check at the Context Assembly Boundary
+#+property: DOCUMENT_ID 12.27.18
+#+language: en
+#+property: STATUS source-only-qualified
+
+* The redundant check and its owner
+
+The selected publication path constructs a base admission Context and then
+immediately derives its contribution Context. The contribution binder already
+checks that complete Context before returning the publication. Its check calls
+the base Context's full currentness procedure, then checks contribution
+coverage, Contract observations, prepared sources and the selected source epoch.
+
+Previously the base Context also ran that full procedure before returning to
+the binder. Between these two checks the platform only constructed its own
+Context object and retrieved its native obligation closure. The base Context
+has no user-supplied inheritance protocol and does not escape this assembly.
+No package operation, domain obligation or author getter lies in this gap.
+
+The existing =.for-export= path now lets the enclosing binder own the complete
+return check. This is a private construction option on =admission-context=,
+not a new exported Graph method, builder, admission receipt or user setting.
+Ordinary Context construction still checks before returning.
+
+#+begin_src scheme
+;; The selected publication assembler derives its internal base normally.
+(.o (:: @ base graph schemas configuration-inputs)
+  context: (admission-context graph schemas configuration-inputs #t)
+  package-current: package-guard)
+
+;; The existing binder consumes it and checks the complete derived Context.
+(def base (.get publication context))
+;; Construct native Context fields and obligation closures.
+(def platform-obligations (.get context .contract-obligations))
+(current! context)                 ; includes base.admit-current
+(.cc publication context: context)
+#+end_src
+
+The sketch shows the owning boundary; the complete implementation remains in
+[[file:../../../../../admission/publication.ss][publication.ss]] and
+[[file:../../../../../admission/contributions.ss][contributions.ss]]. The latter's return check is unchanged.
+There is no reuse of an approval across two independently invoked operations.
+The initial Graph check before resolving Schema associations also remains.
+Lazy or effectful Schema getters still run outside the final check's read window.
+
+* Boundaries that remain independent
+
+- Package currentness still brackets realization and Nix identity queries.
+- Publication still checks Context after the package callback and at its
+  dependent meaning boundary. Checked subject, actual Contract and actual
+  Context binding are unchanged.
+- The complete contribution-bound check still precedes publication escape.
+  Source changes during Schema association must be refused there.
+- Direct Context construction and independent later =admit-current= calls
+  retain their original checks. The option is not carried into later calls.
+- Managed artifact gates in the working checkout remain in place. No read
+  window is extended through restoration, imports or package callbacks.
+
+* Native controls
+
+The two assembly cases in
+[[file:../../../../../t/admission-publication-test.ss][admission-publication-test.ss]] use the real selected Graph,
+public Schema/Projection Contracts, publication assembler and contribution binder.
+Only a Schema getter is replaced for the explicit source-mutation negative case.
+
+The positive case observes actual source opens in =build-admit-before=.
+Selected assembly requires three passes for its one-file fixture: export entry,
+Context entry and the complete bound return check. The previous implementation
+requires four. Direct standalone Context construction still requires its two
+passes. These are work assertions, not elapsed-time expectations.
+The matched prior implementation fails the unchanged three-pass assertion
+with four observed reads; restoring the candidate passes. The focused suite
+also passes against the working Core source with its artifact gates present,
+using the same locked gerbil-poo source. No compiled artifact is issued in
+this focused source-only fixture.
+
+The existing =admission-checked-publication-test.ss= also passes against the
+working source. Its seven cases retain checked-value normalization, child
+Context evidence, actual Contract identity and failed-publication value
+preservation. Both focused runs finish with MODULE-OK, HARNESS-OK and final OK,
+without failure markers, using the project's serial =just test-file= entrypoint.
+
+The negative case changes an observed source from the Schema artifact getter,
+after the Context entry guard. The binder must refuse before returning the
+publication. Its assertion matches the exact source-staleness error rather
+than accepting arbitrary harness exceptions. The existing checks for mutation
+during admission, stale Schema/Contract/Context evidence, parent-cache identity
+and preserving the previous published object remain in the same test suite.
+
+* Same init-owned AWS workload
+
+The observed aggregate still selects JsonSchema, Funflow and AWS through
+=init.tests.qualification= and invokes its existing =.run=. It retains the
+same Case, 2 GiB heap fence, progress-aware inactivity and total budgets,
+source guards and fixture cleanup. No suite was split to obtain a pass.
+
+| Actual AWS work | Previous receipt | Assembly-owned return check | Reduction |
+|-----------------+------------------+-----------------------------+-----------|
+| Physical source reads | 48199 | 47841 | 358 |
+| build-admit-before reads | 19873 | 19539 | 334 |
+| File requests | 122129 | 120911 | 1218 |
+| Read windows | 522 | 520 | 2 |
+| Publication guard bodies | 261 | 259 | 2 |
+
+Two intermediate checks disappear, one for each Schema-version publication.
+The 334-read decrease is two 167-file Graph traversals; the remaining 24-read
+decrease belongs to their other source observations. Existing Graph identity
+is retained within each selection. A Schema-version change still creates its
+own selection and invalidates the previous evidence; selections are not merged.
+
+The aggregate exits naturally with seven MODULE-OK, two HARNESS-OK and two final
+OK markers, without failure or overflow markers. It passes the real Schema
+transition, old-evidence refusal, previous-value preservation and cleanup.
+This is a physical-work reduction, not an endpoint latency claim. The remaining
+19539 before-guard reads are retained as this receipt. The subsequent\n[[file:06-context-source-entry.org][source-entry check]] reduces that count to 19205; this table remains historical.
+
+* Evidence limits and rejected candidates
+
+Qualification uses the existing isolated source environment and gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. It does not qualify the concurrent
+compiled-artifact issuance integration or the complete dirty working checkout.
+No compiled cache, query cache, new runner, upstream change or full build was
+introduced. Raw diagnostic and test output stays outside source control.
+
+Cached-data inspection showed that the two AWS Context constructions resolve
+cold Schema metadata; a warm-copy shortcut was therefore inapplicable. A
+cached-empty-request Graph guard candidate also left the AWS physical work
+unchanged and was removed. Neither diagnostic nor empty-request candidate is
+part of the retained implementation. The qualified change instead removes a
+specific intermediate check already subsumed by the enclosing native producer.
+
+Earlier diagnostic attempts failed on an invalid cached-slot fallback thunk
+and on the existing observation category bound. A first synthetic fixture also
+exposed a cyclic lexical slot reference; its local path/publication variables
+were renamed without changing expectations. These failures are not counted as
+passes. Observation limits, heap limits and time budgets were not increased.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and qualification limits]]

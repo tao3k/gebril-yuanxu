@@ -1,0 +1,320 @@
+#+title: 10.20 Module-System Assurance: Final Configuration, Admission and Publication
+#+language: en
+#+property: DOCUMENT_ID 10.20
+#+date: [2026-10-17]
+#+property: STATUS source-reviewed-existing-focused-controls-no-new-runtime-integration
+
+* Design purpose and bounded claim
+
+A configuration system should explain why a particular composed configuration
+is acceptable, which inputs and requirements that decision depends on, and
+which plan belongs to that configuration. Calling the whole system trustworthy
+without naming these guarantees hides the engineering problem.
+
+The candidate distinction is a coherent module-owned chain: ordinary JSON or
+Scheme values, maintained domain objects, independently retained requirements,
+final-instance admission, and guarded plan publication. Native POO makes this
+chain expressible; neither POO nor Scheme automatically proves it correct.
+This is a design differentiator to substantiate, not a claim of superiority
+across all platforms or proof that every infrastructure consumer is safe.
+
+This document changes no Fixture, service implementation or Loader. It connects
+the existing maintained Gitea/PostgreSQL Scenario to independently owned
+research rather than replacing platform dossiers with a comparison paragraph.
+
+* Guarantees, counterexamples and current evidence
+
+| Guarantee | Required property | Counterexample to reject | Existing owner/control |
+|-----------+-------------------+--------------------------+------------------------|
+| Input and requirement association | Admission uses the selected publication, observed sources and complete contribution paths | Omitted/replaced requirement or edited JSON/Scheme source is silently accepted | admission/publication.ss; contribution, publication and relocation controls |
+| Composition validity | Every participating requirement constrains the final candidate; precedence does not erase a requirement | One contributor permits 5433 and another permits only 5440, but one requirement disappears | Gitea ApplicationContract contribution obligations; conflicting-port control |
+| Final-value consistency | Field Contracts and cross-service relationships inspect effective values | PostgreSQL and Gitea ports are individually integers but disagree | application-issues; connection-mismatch control |
+| Cache applicability | A derived plan is tied to its effective configuration and endpoint values | A stable cached parent plan is reused for changed child configuration | plan.configuration identity and port checks; stale-parent-plan control |
+| Failure isolation and resource ownership | A failed qualification does not mask causes or consume another invocation's resources | Cleanup overwrites the first error or a retry consumes another owner's directory | Core Fixture controls in 10.19; test-infrastructure evidence only |
+| Effect boundary | Admission and plan inspection do not authorize or establish successful deployment | An accepted object is described as a running, reachable service | Pure maintained plan; actual execution/readiness consumer remains separate |
+
+Source association here means an observed module/source relationship, not a
+cryptographic assertion that an author or package is benign. Module code,
+Contract implementations and Core source capabilities remain trusted code.
+Selected-source checks are not a sandbox for arbitrary Scheme effects.
+
+* The maintained service chain
+
+** JSON baseline and defaults
+
+These are the actual checked-in files, not a hypothetical deployment template:
+
+#+begin_src json
+{"settings": {"port": 5432}, "allowed-ports": [5432]}
+#+end_src
+
+#+begin_src json
+{"database": {}, "allowed-ports": [5432]}
+#+end_src
+
+See the real
+[[file:../../../scenarios/gitea-postgresql/postgresql/postgresql.json][PostgreSQL JSON]] and [[file:../../../scenarios/gitea-postgresql/gitea/gitea.json][Gitea JSON]]. Their role files use the existing
+=config-json-file= and =config-defaults= functions. The Module interfaces publish
+=config=, =document=, domain Types and policies; consumers do not reconstruct
+source records. Missing Gitea database.port is defaulted from the effective
+PostgreSQL instance. Explicit values, including null, are not silently replaced.
+
+The real [[file:../../../scenarios/gitea-postgresql/gitea/objects.ss][object constructor]] retains that dependency with native lexical binding:
+
+#+begin_src scheme
+(def (gitea-application database client)
+  (.cc Application.
+    config:
+    (.o (:: @ [] postgresql)
+      postgresql: database
+      gitea:
+      (.o (:: @ client)
+        database:
+        (let (supplied (.get client database))
+          (if (object? supplied)
+            (.o (:: @ supplied)
+              (port ? (.get postgresql settings port)))
+            supplied))))))
+#+end_src
+
+The reusable service modules own field semantics. The maintained
+[[file:../../../scenarios/gitea-postgresql/interface.ss][Scenario interface]] owns dependency bindings and two contribution declarations,
+both targeted at its Application admission. The Scenario's application-scope
+binds PostgreSQLConfigContract and the real JSON documents into the Gitea
+ApplicationContract. Native scope publication supplies them once, rather than
+asking an ordinary user to provide requirements or evidence manually.
+
+** Ordinary user edit versus policy permission
+
+The existing authoring binding supports the following path refinement:
+
+#+begin_src scheme
+(.def (Release @ BaseScenario)
+  config.postgresql.settings: =>.+ {port: 5433})
+#+end_src
+
+The leaf is an ordinary value assignment. The =>.+ operations preserve its
+existing intermediate objects; they do not mean that the user must transform
+the old numeric port. The current dotted syntax requires an explicit =>.+ at
+the addressed object. A dotted direct assignment such as
+=config.postgresql.settings.port: 5433= is not implemented in this binding;
+its proposed shorter surface must not be presented as shipped behavior.
+
+Crucially, the repository baseline permits only 5432. A valid integer such as
+5433 can produce a consistent projected plan and still violate both parties'
+allowed-ports requirements. That candidate must not be published as admitted.
+The successful 5433 controls use isolated JSON policies allowing both 5432 and
+5433. A production Profile with that policy has not been added by this change.
+Neither a user field assignment nor prototype precedence grants permission to
+weaken a contributor's requirements.
+
+** Plan construction and public admission
+
+The existing plan reads the final receiver's config, not a list captured from
+the parent during publication:
+
+#+begin_src scheme
+(.def (Application. @ [] config)
+  plan:
+  (.o configuration: config
+      postgresql: (.o port: (.get config postgresql settings port))
+      gitea: (.o database-port: (.get config gitea database port))))
+#+end_src
+
+The following is the current platform/test boundary, not extra setup that the
+ordinary user should copy. A selected graph already supplies publication:
+
+#+begin_src scheme
+(def publication
+  (.call AdmissionPublication. .for-export selected
+    'applications/gitea-postgresql 'Application))
+(def BaseScenario (.get publication value))
+(def parent-plan (.get BaseScenario plan))
+(.def (Release @ BaseScenario)
+  config.postgresql.settings: =>.+ {port: 5433})
+(def evidence
+  (.call (.get publication contract) .admit
+    Release (.get publication context)))
+(defvalues (receipt published failure)
+  (.call publication .publish BaseScenario Release))
+#+end_src
+
+.for-export binds the selected admission declaration and collects published
+contributions with source associations. .admit checks the candidate through
+that bound descriptor/context. .publish repeats the guarded decision and
+returns the previous value on refusal. Reading Release.plan by itself is not
+admission; reading a plan does not start PostgreSQL or Gitea.
+
+For the already-tested permissive policy control, the effective preview values
+are:
+
+#+begin_example
+parent-plan.postgresql.port       = 5432
+parent-plan.gitea.database-port   = 5432
+published.plan.postgresql.port    = 5433
+published.plan.gitea.database-port = 5433
+published.plan.configuration is published.config
+#+end_example
+
+This is a presentation of verified object fields, not a new preview command or
+implemented UI renderer. Under the checked-in strict policy the 5433 edit is
+refused instead; the retained published plan remains the 5432 plan.
+
+** Contract refusals protect a concrete user action
+
+[[file:../../../scenarios/gitea-postgresql/gitea/types.ss][application-issues]] validates database configuration before demanding the client
+default, then checks client types, endpoint agreement, plan shape, configuration
+identity and projected ports. Contribution obligations independently check the
+final database port against every retained allowed-ports requirement.
+
+#+begin_src scheme
+(.def (Mismatch @ Release)
+  config.gitea.database: =>.+ {port: 5440})
+;; connection-mismatch at (config gitea database port)
+
+(.def (Frozen @ Release)
+  plan: parent-plan)
+;; stale-parent-plan at (plan), even though parent-plan is unchanged
+#+end_src
+
+These comments name existing diagnostic kinds, not newly executed examples.
+The source-backed controls also exercise exact override-token locations,
+JSON baseline/derived origins, copied right-hand .+ sources, opaque .cc writes,
+source changes after child-plan caching and unselected malformed branches.
+A field's known source is reported; an opaque replacement is not attributed to
+a convenient but incorrect ancestor. General unknown-field/spelling rejection
+is not provided by these narrow service predicate Contracts.
+
+* Immutable artifacts and applicability are different guarantees
+
+Nix Store objects preserve published object identity/content and references
+under normal Store operations. That helps retain stable inputs and old versions.
+It cannot establish that a particular Gitea endpoint matches PostgreSQL, that
+an omitted requirement was considered, or that an unchanged old plan applies
+to a newly derived configuration. NixOS has option types, merges and assertions
+in addition to the Store; it would be wrong to compare our full admission design
+only with Store immutability and conclude that NixOS lacks validation.
+
+Likewise, an immutable plan containing 5432 is still the wrong child plan after
+an effective port change to 5433. Immutability preserves the old value; receiver
+binding and admission determine whether that value is applicable. Source
+currentness detects observed input changes, not arbitrary external world drift.
+The source-based channel is not an immutable artifact store or an atomic
+filesystem snapshot across execution. A checked source can change after a
+check; execution needs a separate stable-input and authorization boundary.
+
+See [[file:../../20-29-ecosystem-research/20-nixos/20.09-immutability-and-assurance-boundaries.org][20.09]] for the Nix-specific comparison and primary references.
+
+* Differentiation through guarantees, not language slogans
+
+The research comparison has separate owners:
+
+- [[file:../../20-29-ecosystem-research/20-nixos/20.08-real-service-composition-and-design-decisions.org][NixOS real Gitea/PostgreSQL]] already demonstrates a final-config port default
+  and maintained lifecycle integration. Preserve that ordinary user experience;
+  qualify our explicit contribution and publication boundary against it.
+- [[file:../../20-29-ecosystem-research/26-pulumi/26.02-assurance-and-final-value-boundaries.org][Pulumi assurance comparison]] asks how dependency-bearing, unknown and secret
+  values constrain preview. Native lazy slots do not replace Pulumi Outputs.
+- [[file:../../20-29-ecosystem-research/23-terraform/23.04-schema-plan-and-execution.org][Terraform planning]] already separates validation and execution phases. Its
+  blocking preconditions differ from advisory check blocks; our API must be
+  equally explicit about whether a refusal actually blocks publication.
+- [[file:../../20-29-ecosystem-research/25-nickel/25.01-index.org][Nickel and Omnibus]] provide prior art for composable field contracts and
+  introspection. Our opportunity is to carry obligations through selected
+  native-object publication and final plan admission, not merely add contracts.
+
+The user's unconfirmed name "Plumr" is not treated as another researched product;
+Pulumi is the independently documented platform used for this comparison.
+No comparative deployment or performance experiment was run in this change.
+
+* Reflection: what makes the proposed difference useful?
+
+Why should a user care? A maintainer can improve a Profile while a user edits
+one ordinary field, and the system should either produce the compatible final
+plan or explain the exact conflicting requirement. Users and Agents should not
+manually track parent caches, assemble provenance rows or supply evidence.
+
+Why does the module system matter? A field Contract alone cannot know whether
+all independently published requirements were retained. The selected module
+publication owns dependency identities, contribution coverage and source guards;
+the domain Contract owns the meaning of ports and connections. Mixing those
+owners recreates manual wiring under a different syntax.
+
+Why is this not established superiority? Other platforms have validation,
+provenance, dependency graphs and operational tooling. Our focused controls
+cover one small maintained pure Scenario. A trustworthy design requires a map
+from every claim to its scope, negative control and missing consumer evidence.
+
+What should improve next, without expanding Fixtures?
+
+1. Keep simple assignments simple. Complete the proposed direct path-assignment
+   boundary only after specifying prefix merging and source preservation.
+2. Derive field discovery and spelling diagnostics from the same published
+   Contract, not a second schema table; these service predicates are not enough.
+3. Specify immutable/stable input generations and effect authorization for the
+   future execution consumer, including source changes between checks.
+4. Preserve external unknown/secret/dependency information; do not encode an
+   unresolved provider endpoint as null, false or an ordinary lazy value.
+5. Reproduce matched platform cases and add real service/readiness consumers
+   before claiming deployment correctness or cross-platform advantage.
+
+* Evidence status and next acceptance boundary
+
+Existing evidence is the previously recorded 32-case focused Core run in
+[[file:10.19-service-publication-fixtures.org][10.19]], together with the linked maintained implementation and earlier
+publication/relocation controls. It was not rerun for this documentation-only
+change. The 5433 success uses isolated permissive policies; current repository
+defaults remain strict. Fixture controls support confidence in the test harness,
+not a proof of the production module system or all infrastructure.
+
+Still unqualified here: a production permissive release Profile; general direct
+path assignment; complete unknown-field discovery; arbitrary custom slot origin
+coverage; source-authenticated AOT packaging; concurrent edits without snapshot
+pinning; external asynchronous values; real database startup, credentials,
+migrations, readiness, rollback and remote effects. Existing selected Core
+mechanisms were inspected; no new product Loader integration was performed.
+
+* Evidence-backed comparison: what has actually been established?
+
+The stronger engineering target is to remove demonstrated user costs, not merely
+to reproduce another syntax. An advantage claim requires the same workload,
+version identity, a negative control and an observed difference. The current
+record does not prove that NixOS or Pulumi cannot implement our domain checks.
+
+| Claim | Concrete source | Evidence class and limit |
+|-------+-----------------+--------------------------|
+| NixOS Gitea defaults its port from final PostgreSQL configuration | 20.08 pinned study; refreshed [[https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/misc/gitea.nix][master source excerpt]] has pg = config.services.postgresql and the same port default | SOURCE-OBSERVED; master excerpt is unpinned corroboration, not a refresh of the historical SHA or a local evaluation |
+| NixOS permits separately contributed validation | [[file:../../20-29-ecosystem-research/20-nixos/20.05-contributions-types-and-merge.org][20.05 merge/type study]] and Gitea assertions in the current excerpt | SOURCE-OBSERVED; do not claim independent constraints are impossible in NixOS |
+| Merged arguments can be demanded before module structure is available | [[https://github.com/NixOS/nixpkgs/issues/379855][nixpkgs #379855]] | ISSUE-REPORTED; exact report not reproduced here; not a port-cache defect |
+| Pulumi component transforms can interact with nested Output validation | [[https://github.com/pulumi/pulumi/issues/20536][Pulumi #20536]] | ISSUE-REPORTED, Pulumi 3.197.0 / AWS 7.7.0; no local reproduction or fixed PR verified |
+| Our final endpoint, joint requirements and stale-plan checks reject their matched local controls | [[file:../../../t/gitea-postgresql-publication-test.ss][publication tests]], [[file:../../../t/gitea-postgresql-relocation-test.ss][relocation tests]], 10.19 receipts | LOCALLY-VERIFIED focused Core mechanism; no real service execution or matched platform run |
+| Our framework is simpler, faster or more reliable across platforms | No matched result yet | DESIGN-TARGET, not an established conclusion |
+
+The current NixOS excerpt also selects a Unix socket for an automatically created
+local database. A port-field comparison must explicitly select the TCP branch
+(database.socket = null), otherwise endpoint construction may bypass the port.
+Its current ROOT_URL assertion and credentials must also be satisfied in a real
+run. Our pure port plan does not simulate that operational coverage.
+
+For Pulumi, the same known port can be read from Config, reused in both service
+inputs and checked inside a reusable component. That is not an inability of the
+platform. Unknown provider outputs, cross-language component RPC and transforms
+are separate experiments; the linked report motivates them but does not show
+that our known-value Scheme case solves them.
+
+Reflection: the prospective distinction is making retained contribution coverage,
+source-currentness and effective-plan association framework obligations rather
+than conventions repeated in each application. Demonstrate it by removing or
+replacing one contributor, reusing a parent plan, and editing a source after
+preview. Compare what maintainers must implement in all three systems. Only a
+matched result can establish lower integration cost or a stronger guarantee.
+The Nix phase issue needs a separate selection-time experiment; the Pulumi report
+needs a separate unknown/RPC experiment. Neither should be presented as fixed by
+our successful port-change test.
+
+* Fixed-source research owners
+
+The same-case comparison is now owned by [[file:../../20-29-ecosystem-research/20-nixos/20.10-gitea-port-source-comparison.org][NixOS 20.10]], [[file:../../20-29-ecosystem-research/26-pulumi/26.03-gitea-port-fixed-source-comparison.org][Pulumi 26.03]] and
+[[file:../../30-39-research-foundations/32-module-assurance/32.01-gitea-postgresql-evidence.org][Core evidence 32.01]]. The fixed nixpkgs source was retrieved through the
+GitHub connector after earlier web-reader failures; Pulumi v3.197.0 was resolved
+to d89552a06391618eee1a9455cd4bcd701810a940. No new platform execution or
+implementation is claimed. These dossiers distinguish existing capabilities,
+reported issues, local controls and future improvement targets.

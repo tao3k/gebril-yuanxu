@@ -1,0 +1,225 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.49 Config Languages 48: One Configuration, Three Provider Families
+#+property: DOCUMENT_ID 11.49
+#+property: STATUS implementation-and-default-runtime-qualification-no-loader
+
+* Purpose and ownership
+
+The [[file:11.50-configuration-driven-contract-discovery.org][configuration-driven resolver]] supersedes the user-maintained SelectedTypes
+interface below. This chapter remains the explicit finite-selection control;
+it does not describe the current ordinary user path.
+
+The [[file:11.48-real-provider-family-publication.org][three actual Nix-produced Provider exports]] now form one selected
+ConfigurationContract. Package integration owns artifact injection. Modules own
+publication. Resource authors supply ordinary configuration objects and call
+native =.admit=. No Loader, provider acquisition on demand, RPC, plan or apply
+is introduced here. This is configuration admission, not a deployable plan.
+
+The executable consumer is Agentic AI Lab's
+=t/opentofu-configuration-families-test.ss=. It requires the actual AWS 5.100.0,
+awscc 1.77.0 and Null 3.2.4 artifacts from =family-schemas.nix=; no synthetic
+schema or fallback artifact replaces them.
+
+* Package integration and type selection
+
+These paths are supplied once by the existing package integration, using the
+three Nix output directories recorded in chapter 47. They are not resource
+author input and do not cause package acquisition:
+
+#+begin_src scheme
+(.def (AWS @ OpenTofuModule.)
+  config: (.o provider-artifact: aws-path))
+(.def (AWSCC @ OpenTofuModule.)
+  config: (.o provider-artifact: awscc-path))
+(.def (Null @ OpenTofuModule.)
+  config: (.o provider-artifact: null-path))
+
+(def SelectedTypes
+  (use-module AWS as aws-scope
+    (use-module AWSCC as awscc-scope
+      (use-module Null as null-scope
+        (.o
+          provider: (.o aws: (.get aws-scope types provider)
+                        awscc: (.get awscc-scope types provider)
+                        null: (.get null-scope types provider))
+          resource:
+          (.o aws_security_group: (.get aws-scope types resources aws_security_group)
+              awscc_ec2_security_group: (.get awscc-scope types resources awscc_ec2_security_group)
+              null_resource: (.get null-scope types resources null_resource))
+          data:
+          (.o aws_region: (.get aws-scope types data aws_region)
+              awscc_ec2_security_group: (.get awscc-scope types data awscc_ec2_security_group)
+              null_data_source: (.get null-scope types data null_data_source)))))))
+
+(def ConfigurationContract
+  (yuanxu-opentofu-configuration-from-types SelectedTypes))
+#+end_src
+
+All aliases are bounded by the existing hygienic =use-module=. The selection
+is a native POO object containing native Contracts, not a raw Schema DSL.
+Aliases deliberately use =aws-scope/awscc-scope/null-scope= rather than the
+names of the inner =aws:/awscc:/null:= slots. Native POO lexical slot binding
+can shadow an identically spelled enclosing alias: the initial =aws= example
+recursed when demanding its Provider Contract and was rejected by the memory
+policy. The failed run is retained locally. Hygiene does not remove deliberate
+lexical shadowing. This fix changes alias names, not native slot semantics.
+Defining it leaves Provider slots unforced; constructing ConfigurationContract
+then demands exactly its listed Contracts. This finite selection is maintained
+by the configuration publisher rather than an automatic directory scanner.
+
+* Complete ordinary configuration
+
+#+begin_src scheme
+(def Configuration
+  (.o
+    provider: (.o aws: (list (.o region: "us-east-1"))
+                  awscc: (list (.o region: "us-east-1"))
+                  null: (list (.o)))
+    resource:
+    (.o aws_security_group:
+        (.o web: (.o name: "web" ingress:
+                  (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+                            cidr_blocks: '("10.0.0.0/16")))))
+        awscc_ec2_security_group:
+        (.o web: (.o group_description: "web" security_group_ingress:
+                  (list (.o ip_protocol: "tcp" from_port: 443 to_port: 443
+                            cidr_ip: "10.0.0.0/16"))))
+        null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))
+    data:
+    (.o aws_region: (.o current: (.o name: "us-east-1"))
+        awscc_ec2_security_group: (.o existing: (.o id: "sg-1234"))
+        null_data_source: (.o release: (.o inputs: (.o name: "smoke"))))))
+
+(.call ConfigurationContract .admit Configuration #f)
+#+end_src
+
+Provider values are lists because this follows the existing OpenTofu JSON
+configuration block representation. Resource and data values map type names to
+instance names. The =existing= ID is a structural input, not an assertion that
+a cloud resource exists. No data-source read or Null provisioner executes.
+
+Every =.o= here creates an ordinary object. No inheritance is necessary to
+supply these values. A later user can reuse this maintained Configuration and
+override only a desired value through the existing native object operators.
+
+* Composition boundary
+
+=yuanxu-opentofu-configuration-from-types= composes the selected generated
+input schemas with the shared JSON Schema compiler. The existing lower-level
+=yuanxu-opentofu-configuration-contract= still serves raw-block conversion
+controls; ordinary module consumers need not retrieve those blocks.
+
+The new function rejects a selection with the wrong provider/resource/data
+kind or resource/data name. Every selected resource/data Contract must have
+the same Provider address, version and Schema digest as a selected Provider
+configuration Contract. The resulting native Contract retains =selected-types=
+as the original object, preserving each member Contract and its provenance.
+
+Published Contracts now carry =kind=, =name= and the same native =source=
+SourceRef used by their module. This supplements existing =provider=, =version=
+and =schema-digest= slots. It does not create a second Provider trust root.
+
+This function is specifically structural composition of generated Provider
+input Contracts. It does not claim to aggregate arbitrary descendant =.admit=
+overrides or extra user obligations, collection-identity authorities, Terraform
+expression evaluation or cross-resource runtime requirements. Those need their
+own explicit composition protocol; retaining metadata alone is not admission.
+
+* Equal names and failures
+
+All three selected configuration nodes are named =provider=. Their native
+Contract identities remain distinct. The awscc resource and data nodes are both
+named =awscc_ec2_security_group=, but have distinct kinds, cache keys, identities
+and input requirements. The overall root has separate =resource= and =data=
+slots, so these types do not overwrite one another.
+
+The executed negative candidates preserve their complete root-relative paths:
+
+| Change | Rejected path |
+|--------+---------------|
+| AWS ingress from_port = "wrong" | resource.aws_security_group.web.ingress.0.from_port |
+| awscc ingress from_port = "wrong" | resource.awscc_ec2_security_group.web.security_group_ingress.0.from_port |
+| Null trigger release = 42 | resource.null_resource.smoke.triggers.release |
+| Null Provider receives region | provider.null.0.region |
+| awscc data receives resource fields | data.awscc_ec2_security_group.existing.id |
+| awscc resource receives data fields | resource.awscc_ec2_security_group.web.group_description |
+| Unselected AWS resource type | resource.aws_s3_bucket |
+
+Native inherited modifications in the controls preserve unrelated fields; for
+example this changes only the Null Provider entry:
+
+#+begin_src scheme
+(.def (WrongProvider @ Configuration)
+  provider: =>.+ (.o null: (list (.o region: "us-east-1"))))
+
+(.call ConfigurationContract .admit WrongProvider #f)
+#+end_src
+
+The resource/data cross-input tests assert required-field rejection rather than
+assuming that equal spelling means interchangeable types. Unknown input fields
+are also closed by the generated input object schemas.
+
+Selection-time controls also reject a mismatched kind, resource name, Provider
+address, version or Schema digest, and a non-object selection section. These
+are publisher errors before candidate admission, not cloud execution failures.
+
+* Demand and validation boundaries
+
+Constructing the overall Contract reads/decodes each selected Provider export
+once and compiles its selected Contracts. It does not compile every catalog
+member. The final native =.admit= checks the candidate against that finite input
+schema, retaining full error paths.
+
+AWS S3 resource and Security Group data Contracts remain uncached after both
+successful and failed whole-configuration admissions. awscc S3 resource/data
+Contracts also remain uncached. Null has only one resource and one data type;
+both are selected in this case, so no nonexistent second type is claimed as a
+lazy control. Unknown candidates fail without compiling an unselected type.
+
+This is Contract compilation laziness, not per-resource schema IO or a
+zero-first-use-cost claim. Provider-export omissions, including unexported CIDR
+validation and securityGroupRuleHash behavior, remain outside configuration
+admission. No Provider RPC is invoked to discharge them here.
+
+* Default-runtime reproduction
+
+#+begin_src sh
+just test-opentofu-configuration-families AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+just test-opentofu-provider-families AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+just test-file t/opentofu-schema-test.ss
+#+end_src
+
+The recipes use the normal pre-import heap fence and require MODULE-OK,
+HARNESS-OK, final OK, exit 0 and absence of harness/error/overflow markers.
+Raw output remains a local artifact, never a committed log.
+
+On 2026-10-17 the default runtime completed all three focused gates with exit 0
+and the required harness markers: 36 assertions in the new whole-configuration
+control, 64 in the three-family publication regression, and 57 in the existing
+Schema conversion regression (157 total). These used the already-built actual
+Nix outputs; this run did not rebuild or repin those immutable packages.
+The structured consumer receipt is
+=t/fixtures/opentofu/configuration-admission-control.json=.
+
+The first attempt had an unbound standard-library list helper, repaired with
+an explicit import. The second exposed the scope/slot alias collision described
+above. Neither failed attempt counts as a passing control.
+
+* Reflection
+
+The improvement is an actual end-to-end configuration admission boundary:
+users write domain values while publishers select the generated types once.
+Contract origins remain inspectable and equal names cannot silently collapse.
+
+The current UX still requires a publisher to state its finite type selection.
+An automatic selection mechanism must preserve the same closed-field errors,
+source identities and demand boundaries. It must not scan/compile all Provider
+types merely to shorten this declaration. Provider aliases and cross-resource
+expression validation are separate work, not implied by this structural test.
+Source-aware authoring diagnostics for scope/slot name collisions are also
+pending; the passing example is not evidence of automatic collision detection.
+The overall =opentofu/configuration= identity names a Contract family; it is not
+a unique cache key for every selection. No cross-selection admission-result
+cache was added. Such reuse would need the selected member identities and the
+effective candidate, rather than this family symbol alone.

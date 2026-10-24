@@ -1,0 +1,11 @@
+#+title: Historical Verification Evidence
+
+Machine-readable receipts and raw logs belong to test evidence, never to design
+or documentation directories. The files below are relocated historical records,
+not a newly executed test run. Their bytes, source hashes and negative results
+are retained. Documentation links refer to this owner.
+
+Old fixture runners elsewhere may describe their original checkout or output
+layout. They are historical controls, not supported test entrypoints after this
+relocation. Use the current native Core test and proof commands for new checks;
+new run output belongs in CI artifacts or a temporary evidence directory.

@@ -1,0 +1,121 @@
+#+title: 23.03 Terraform Module Research 02: Arguments, Types and Evaluation Phases
+#+language: en
+#+property: DOCUMENT_ID 23.03
+#+date: [2026-10-17]
+#+property: STATUS primary-source-and-document-analysis-no-runtime-reproduction
+
+* HCL is not the Terraform engine
+
+[[https://github.com/hashicorp/hcl/blob/v2.23.0/eval_context.go][HCL v2.23.0 EvalContext]] carries variable values, callable functions and a
+parent context. This is a host-supplied expression environment. It does not define
+Terraform resource addresses, provider instances, state locking or apply behavior.
+The host decides which expression contexts and functions are available.
+
+Consequently, neither "HCL cannot use functions" nor "HCL has no types" is an
+adequate explanation. Terraform offers expressions, collection operations, typed
+module variables and provider functions, but its public language is not a general
+Scheme-like function/module authoring environment. Greater host-language freedom
+does not imply that a deployment graph can be determined from arbitrary unknowns.
+
+The module-system question is which definitions cross a public boundary, at what
+phase, with what information. A different parser cannot answer that question.
+
+* Module arguments are dependency inversion
+
+[[https://developer.hashicorp.com/terraform/language/modules/develop/composition][Terraform's module-composition guide]] recommends passing dependencies to a
+module rather than making it detect/create everything itself. Its network example
+allows the same consumer to receive IDs from newly created resources or data
+sources. This is a concrete engineering strength worth preserving.
+
+In the [[file:23.02-real-aws-module-source.org][AWS case]], a compute consumer needs a network interface, not permission to
+search the whole configuration tree. The planned uniform args must allow the root
+to provide that dependency without a consumer reloading init. Convenience names
+must remain views over admitted requirements, not an unbounded service locator.
+
+Provider requirements and configured provider instances are distinct. The
+[[https://developer.hashicorp.com/terraform/language/modules/develop/providers][provider-within-modules reference]] separates module requirements, inherited
+default configurations and explicitly passed aliases. Root-owned credentials
+and region can be injected without each child owning its own credential setup.
+Legacy child provider blocks constrain compatibility with module-level expansion
+and dependencies; this is a module/provider design issue, not HCL punctuation.
+
+Our conclusion: distinguish library identity, module instance, configured provider
+instance and resource address. A namespace rename should not quietly change all
+four. Root injection is useful precisely because a reusable child does not need
+to know the root directory, deployment environment or credential implementation.
+
+* Type constraints: useful structure with an open-conversion tradeoff
+
+The [[https://developer.hashicorp.com/terraform/language/expressions/type-constraints][type-constraint reference]] describes structural object conversion: required
+attributes must exist, while additional attributes may be discarded. Module
+arguments outside the declared top-level inputs and extra keys inside an object
+input therefore need not have the same diagnostic behavior.
+
+An analyst-authored illustration of the object boundary is:
+
+#+begin_src hcl
+variable "machine" {
+  type = object({ instance_type = optional(string, "t3.micro") })
+}
+# Caller input:
+machine = { instnace_type = "t3.small" }
+#+end_src
+
+This illustrates the specified conversion policy, not a reproduction run here.
+The misspelled extra key can be discarded while the optional field receives its
+default. The issue evidence is recorded in [[file:23.05-issues-and-user-costs.org][the independent issue register]].
+
+An extensible module system needs two separate decisions: whether an interface
+accepts larger objects for independent evolution, and whether an authored config
+silently drops likely mistakes. A strict authored configuration Contract can
+coexist with a deliberately open dependency interface. Uniformly rejecting every
+extra field would impede compatible module evolution; uniformly accepting them
+would weaken ordinary configuration UX.
+
+* Phase restrictions and their owner
+
+| Example | Actual owner | Established boundary |
+|---------+--------------+----------------------|
+| Supply a value to a module input | Module interface/evaluator | Accepted against that input's type and checks |
+| Compose maps/lists and compute CIDRs | Expression functions plus module logic | Available operations can compute ordinary configuration values |
+| Dynamically generate nested resource blocks | Terraform dynamic-block decoder | Resource block schema defines legal generated content |
+| Dynamically generate lifecycle meta-blocks | Terraform graph/lifecycle phase | Not supplied by dynamic blocks |
+| Expand resources/modules from unknown keys | Terraform instance expansion | Required instance identities must be known |
+| Validate real CIDR/provider-specific combinations | Provider validation and possibly remote API | Exported type information is not the entire validator |
+
+The [[https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks][dynamic-block reference]] explains that lifecycle/provisioner meta-blocks are
+processed before the arbitrary expressions that generate ordinary nested blocks.
+The [[https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle][lifecycle reference]] explains the associated early processing. This is a
+semantic phase choice; it is not a parsing inability to represent a boolean.
+
+In [[https://github.com/hashicorp/terraform/blob/v1.9.8/internal/terraform/eval_for_each.go][Terraform v1.9.8 eval_for_each.go]], ensureKnownForResource distinguishes an
+unknown map's keys from known keys with unknown values, and places stronger
+knownness requirements on a set whose elements determine identities. This
+explains why a future VPC ID may be a value inside an established machine entry,
+while a future list of machine identities cannot simply be expanded immediately.
+
+* Reflection: what Scheme changes, and what it does not
+
+A Scheme function can prepare concrete configuration before handing it to the
+engine, and a POO object can retain maintained defaults and expose deliberate
+extension points. This can reduce wrappers and duplicated field forwarding.
+It does not make an unknown instance set known, authorize deletion, or establish
+the correctness of the resulting AWS operation.
+
+The engineering design should therefore specify a declarative module interface
+and contextual instantiation protocol independently of the surface macro. The
+protocol must say which dependencies are needed to publish an interface, which
+values can remain delayed, and how dynamic dependencies are declared or rejected.
+Inferring every free reference as an eager module dependency would be too coarse
+for deferred function relationships and could reject useful modular programs.
+
+Conclusion: adopt explicit phase and interface semantics first. Use macros to
+remove repeated binding code after those semantics are settled. A short args
+binding is an expression convenience, not the definition of a sound module system.
+
+* Issues and Engineering Limitations
+
+References and qualified issue records: [[file:23.05-issues-and-user-costs.org][TF-01 through TF-04]]. These are
+source/document explanations and reports, not local reproductions. This article's
+architecture response is a DESIGN-INFERENCE; no new upstream defect is claimed.
+

@@ -1,0 +1,117 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.35 Recovered Controller Activation And Session Source Handoff
+:PROPERTIES:
+:ID: agentic-ai-lab-context-recovered-controller-session-handoff
+:STATUS: module-protocol-local-verification
+:END:
+
+* Distinct subjects, distinct approvals
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context semantics. [[file:33-human-source-recovery-interleavings.org][33]] qualifies final recovery publication
+against Human source replacement/retirement. This protocol continues from that
+publication, not from an editable claim that recovery succeeded.
+
+A recovery ticket identifies an issued installation generation, predecessor,
+exact successor configuration and current root. It is not an active controller,
+a Session source binding, a consumer review or an effect grant. Activation
+consumes that ticket once. A source proposal then identifies the exact Session
+authority and, optionally, the current collection whose source is to be rebound.
+The configured source policy and actual Core/Assurance authorization still apply.
+The recovered controller does not inherit its predecessor's source receipt.
+
+* One existing declaration surface
+
+The existing proposal gains an optional =consumers:= argument. No second DSL,
+unstructured patch or public callback protocol is introduced. With configured,
+issued inputs, the declaration/authorization/commit shape is:
+
+#+begin_src scheme
+(def proposal
+  (org-context-source-proposal recovered-controller session-source payload
+    consumers: current-collection))
+(def receipt (org-context-source-authorize recovered-controller proposal deadline))
+(def binding (org-context-source-commit! recovered-controller proposal receipt))
+;; Only after a non-false binding: its consumers slot is the newly issued cut.
+#+end_src
+
+Omitting =consumers:= retains source-binding-only behavior; its =consumers= slot
+is false. It does not claim to invalidate an unrelated collection. Supplying it
+explicitly authorizes rebinding that exact issued collection, not every registry
+sharing a Session source. Copied proposals cannot substitute another collection.
+Its stable registry identity/generation is included in the Core snapshot. The
+target source revision is also bound, even when active Session names are unchanged.
+The configured policy must approve the selected collection/Project scope as
+well as the target source. A stamp binds what was approved; it does not itself
+prove the operator owns that Project or implement cross-tenant authorization.
+
+* Module publication boundary
+
+=source-control.ss= owns proposal, receipt, binding and control-generation checks.
+=installation.ss= pins the activated installation and live root during final
+publication. =consumers.ss= owns the exact registry, Session membership and Query
+issuer. The final lock order is controller -> installation -> registry. Existing
+Human recovery publication uses installation -> Human; no reverse acquisition
+is introduced. Host/policy callbacks run before this final publication, not
+inside its private callbacks. The internal accept functions are not exported
+through the Module interface and are not user compute hooks.
+
+For a collection-bearing proposal, successful publication checks and updates:
+
+| Input / check | Successor |
+|---------------+-----------|
+| Exact issued controller, current activated ticket/root and source receipt | Binding belongs to this controller, not the old one |
+| Captured control generation | Advance once; consumed receipt cannot replay |
+| Exact current collection and captured registry stamp | Same registry identity, next generation; old set/proposal/Query becomes stale |
+| Exact target Session authority and captured revision | New collection pins that authority, not a same-name reconstruction |
+| All existing slices covered by the target's active Sessions | Preserve composition and slices; no silent content/membership dropping |
+
+Target revision, membership and registry CAS share the registry lock. Root
+revocation cannot interleave inside final installation publication. A stale
+collection, target revision or uncovered Session refuses publication without
+advancing the control generation or replacing that collection. A fresh proposal
+and approval are needed; stale approval is not automatically retargeted. A
+concurrent ordinary registry update may itself change that registry, but a
+failed source handoff does not add another publication.
+
+* Knowledge versus consumer currency
+
+Rebinding preserves the exact Project Context objects, composition and slices;
+it changes consumption provenance, not already accepted Project knowledge.
+An independently admitted Project view remains usable under its own current
+authority/review/grant. The retiring controller's Profile does not regain validity.
+The successor needs a fresh consumer Profile/request/review and current permission.
+Shared evidence or the successful Query is never effect authorization.
+
+Old sets and Queries from the rebound registry cannot serve the new cut. A copied
+Query with its =consumers= slot changed is still unissued. Old review seals and
+old source/recovery receipts cannot become successor authorization. Missing fresh
+review reopens the consumer obligation. Later revocation of the successor root
+withdraws admission and reopens that obligation without deleting Project knowledge.
+
+Raw structural Query currency is not live controller authority. In particular,
+revoking a controller alone does not globally erase every independently created
+registry/Query. Explicit handoff replaces the selected registry; final admission
+always checks its source binding and installation again. Historical inspection
+and an unaffected Project registry are not an authorization bypass.
+
+* Proof correspondence and remaining boundary
+
+=ContextReactivation.qnt= explores one recovered controller, one activation,
+registry replacement, membership-preserving target revision, pending authorization,
+handoff, fresh Query/review and successor revocation. Genuine receipt/root/Human
+issuance is a premise qualified by the earlier models, not inferred from names.
+Faults omit activation, use old controllers/permits/Queries/reviews, replay an
+activation/permit or erase knowledge. Negative controls must yield TLC violations.
+
+=Reactivation.lean= consumes LeanPOO Focus to prove conditional activation,
+captured-generation/revision refusal, registry advancement, stale-view/review
+refusal and knowledge retention. Its initial binding abstraction does not replace
+the separately qualified ordinary source-rotation protocol or private issuers.
+=reactivation-controls.ss= imports Modules and actual ORG/Assurance/Governance
+objects; no second binding or acceptance evaluator is maintained in Proofs.
+ASCENT remains candidate/support inference, not a controller or grant issuer.
+
+No storage executor, bindings, old Memory, protected disclosure, remote Human
+identity or distributed recovery is implemented or qualified here.
+[[file:36-controller-session-handoff-verification.org][36 records local executable outcomes and identities]].

@@ -1,0 +1,308 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Discover Selected Responsibilities from Final Values, Not User Completion Lists
+#+date: [2026-10-15]
+#+property: STATUS scheme-design-and-checked-reference-laws-no-module-adapter-no-loader
+
+* Decision and existing Core limitation
+
+completed-checks is removed from the TARGET interface. Module 25 keeps it only
+as a historical negative-control input. Users write .def and their business
+selection; they do not report what has been admitted.
+
+The upstream schema owns fixed responsibilities, a maintained Check family
+Contract, optional per-name stricter Check Contracts and protected role names.
+The admission owner reads the FINAL pipeline.selected-checks and builds a fresh
+native Contract projection. Public yuanxu-contract-admit then walks the
+projected responsibilities. Actual child receipts, not user names, are the work
+result. No public selection/completion DSL or per-child publication wrapper is
+introduced.
+
+selected-checks controls Pipeline business ordering; Contract-map enumeration
+does not establish execution order. The final identity obligation still checks
+Pipeline.checks against that ordered selector.
+
+Source finding: core/types.ss:302--346 enumerates EVERY slot of descriptor-owned
+responsibilities, reads that child on the candidate and delegates via public
+agentic-ai-lab-contract-admit. It does not accept a dynamic selection parameter. Own
+obligations execute only after classification and responsibility success. Putting
+all possible Checks in that map would eagerly admit all of them; calling an
+obligation afterwards cannot undo that demand.
+
+Therefore fixed required roles belong in the upstream fixed map; optional Check
+members live under a maintained family Contract and optional name-to-Contract
+index. Only final selected names are projected into the per-admission map.
+An upstream build responsibility that is intentionally unconditional remains
+fixed and is always admitted. It cannot be silently reclassified as optional
+by a downstream selector. Upstream must make that distinction explicitly once.
+
+* User code is unchanged
+
+#+begin_src scheme
+(.def (Release @ UpstreamProfile)
+  build: =>.+ (.o commands: '("gerbil" "build" "--release"))
+  smoke: MySmoke
+  pipeline: =>.+
+  (.o selected-checks: '(build test package smoke)))
+#+end_src
+
+UpstreamProfile, MySmoke and their field Contracts are normal upstream/user POO
+objects. New Check creation follows the existing module-scope prototype design;
+this document does not reintroduce its construction boilerplate. Users may change
+selected-checks as a business choice. They never supply completed-checks or
+claim that a receipt exists. The future composition/admission boundary invokes
+the internal function below; .def alone does not run admission today.
+
+* Upstream schema and native Contract projection: design code
+
+All code in this section is a proposed internal adaptation, NOT installed module
+code or a new executed result. It uses public Core APIs and native .cc/.+/
+object<-alist. Canonical imports also provide ordinary list every, filter and foldr, plus
+:std/list/list delete-duplicates/hash with an explicit eq?-keyed table. This
+uses the supported list library rather than assuming delete-duplicates is a
+bound primitive in the current interpreter. Runtime scale remains unqualified.
+
+The following uses Root and final-obligations from module 25's complete fixture
+to keep the example grounded. CheckPolicyContract is that fixture's actual
+Check policy. A real Funflow publication replaces it with its full Check field/
+capability Contract; object? alone is not sufficient domain validation.
+
+#+begin_src scheme
+(def (selection-obligations pipeline context)
+  (if (and (.slot? pipeline 'selected-checks)
+           (let ((names (.get pipeline selected-checks)))
+             (and (list? names)
+                  (every symbol? names)
+                  (= (length names)
+                     (length (delete-duplicates/hash names table: (make-hash-table-eq)))))))
+    '()
+    (list (.o kind: 'invalid-selected-checks))))
+
+(def PipelineSelectionContract
+  (yuanxu-predicate-contract
+    'funflow/pipeline-selection object? selection-obligations))
+
+;; Only fixed roles here; do not enumerate optional Check values.
+(.def (ProfileShapeContract @ YuanxuObjectContract.)
+  identity: 'funflow/profile-shape
+  proto: Root
+  responsibilities: (.o pipeline: PipelineSelectionContract)
+  .obligations: empty-obligations)
+
+;; This descriptor retains native proto checking and final identity obligations.
+(.def (SelectedChecksContract @ YuanxuObjectContract.)
+  identity: 'funflow/profile-selected
+  proto: Root
+  responsibilities: (.o)
+  .obligations: final-obligations)
+
+;; Maintained once upstream, not repeated in user declarations.
+(.def ProfileAdmissionPolicy
+  shape: ProfileShapeContract
+  selected: SelectedChecksContract
+  check-contracts: (.o)              ; optional stricter per-name Contracts
+  default-check-contract: CheckPolicyContract
+  reserved-slots: '(pipeline responsibilities .admit .type))
+#+end_src
+
+The per-name index is NOT a set of all Check objects to load. Lookup only the
+selected entries; a newly named smoke uses default-check-contract. A reserved
+role cannot be selected as a Check, and a stricter per-name Contract cannot be
+weakened to the family default. Unsupported Check kinds still fail the family
+Contract. Schema/source conflicts must refuse rather than pick a descriptor
+merely because it was later in a list.
+
+The projection's full discovery functions are:
+
+#+begin_src scheme
+(def (selection-name-errors policy names)
+  (let ((protected
+         (append (.get policy reserved-slots)
+                 (.all-slots (.get policy shape responsibilities))
+                 (.all-slots (.get policy selected responsibilities)))))
+    (foldr
+      (lambda (name failures)
+        (if (memq name protected)
+          (cons (.o kind: 'reserved-check-name name: name) failures)
+          failures))
+      '() names)))
+
+(def (project-selected-contract policy names)
+  (let* ((template (.get policy selected))
+         (overrides (.get policy check-contracts))
+         (selected-map
+          (object<-alist
+            (map
+              (lambda (name)
+                (cons name
+                  (if (.slot? overrides name)
+                    (.ref overrides name)
+                    (.get policy default-check-contract))))
+              names))))
+    (.cc template 'responsibilities
+      (.+ (.get template responsibilities) selected-map))))
+#+end_src
+
+Validate names before projection so selected entries cannot overwrite fixed
+roles. The fresh descriptor preserves the template's proto, identity and own
+obligations; the shared template is not mutated. Its public identity denotes
+the selected-admission policy, not ProfileShapeContract's distinct identity.
+The sealed policy/view must bind that identity and the exact projection; equal
+symbols alone do not authenticate a schema or its source.
+
+A missing selected slot is deliberately not read during projection. It remains
+a required slot in the map, and the EXISTING Core walker produces a rejected
+missing-responsibility receipt. A typo such as smkoe must not disappear through
+filtering to existing slots.
+
+* Receipts determine completed work; reject an omitted child
+
+receipt-ok? below is the complete existing module-25 checker: evidence type,
+accepted flag, Contract identity, final candidate/context and classification
+identity/candidate/context must all correlate. It is reused, not replaced with
+a boolean mock. The new coverage check extracts work ONLY from Core evidence:
+
+#+begin_src scheme
+(def (covers-responsibilities? descriptor candidate context evidence)
+  (and
+    (receipt-ok? descriptor candidate context evidence)
+    (.slot? evidence 'responsibility-evidence)
+    (let* ((contracts (.get descriptor responsibilities))
+           (required (.all-slots contracts))
+           (entries (.get evidence responsibility-evidence))
+           (actual (map (lambda (entry) (.get entry responsibility)) entries)))
+      (and
+        (= (length required) (length actual))
+        (= (length actual) (length (delete-duplicates/hash actual table: (make-hash-table-eq))))
+        (every (lambda (name) (memq name required)) actual)
+        (every
+          (lambda (entry)
+            (let ((name (.get entry responsibility)))
+              (and (.slot? candidate name)
+                   (receipt-ok? (.ref contracts name) (.ref candidate name)
+                                context entry))))
+          entries)))))
+#+end_src
+
+Malformed/foreign receipts must be rejected before field extraction. This
+reference body assumes Core's well-formed responsibility entries; general
+custom .admit methods need an explicit structural evidence Contract first.
+The protocol does not accept arbitrary externally supplied evidence lists.
+
+The adapter uses public evidence construction for a boundary refusal:
+
+#+begin_src scheme
+(def (selection-refusal descriptor candidate context failures)
+  (yuanxu-validation-evidence
+    (.get descriptor identity) candidate
+    (yuanxu-type-classify descriptor candidate context)
+    failures #f failures context))
+
+(def (admit-selected-profile policy candidate context)
+  (let* ((shape (.get policy shape))
+         (shape-evidence (yuanxu-contract-admit shape candidate context)))
+    (if (not (covers-responsibilities? shape candidate context shape-evidence))
+      (selection-refusal shape candidate context
+        (list (.o kind: 'profile-prerequisite-refused evidence: shape-evidence)))
+      (let* ((names (.get candidate pipeline selected-checks))
+             (errors (selection-name-errors policy names)))
+        (if (pair? errors)
+          (selection-refusal (.get policy selected) candidate context errors)
+          (let* ((descriptor (project-selected-contract policy names))
+                 (evidence
+                  (yuanxu-contract-admit descriptor candidate context)))
+            (if (covers-responsibilities? descriptor candidate context evidence)
+              (.cc evidence
+                'prerequisite-evidence (list shape-evidence)
+                'effective-contract descriptor
+                'required-checks names)
+              (selection-refusal descriptor candidate context
+                (list (.o kind: 'selected-responsibility-refused
+                          evidence: evidence))))))))))
+#+end_src
+
+The final accepted receipt belongs to the projected selected Contract. It does
+not pretend to be a direct receipt for the distinct shape Contract. Both shape
+prerequisite and projected responsibilities must be checked at the publication
+boundary. Retained required-checks is a derived snapshot, never an input or a
+completion claim. Revalidate it against final selection under the same sealed
+view before reuse. Core checks each projected child through public .admit;
+there is no second hand-written child validator or private Core walker call.
+
+Native responsibilities may recurse for static child Contracts. A nested family
+with its OWN dynamic selectors needs its own upstream projection rule at that
+admission boundary; this document does not infer arbitrary dependencies from
+function bodies. Current Core passes the same context to responsibility children;
+it does not automatically rebind context.target for a nested Profile. A deeper
+projection rule must derive and correlate the context its Contract requires.
+This concrete example qualifies one selected Check family, not arbitrary-depth
+context derivation. The composition owner/protocol must dispatch this named
+adaptation automatically. That dispatch and the module adapter are PENDING;
+plain .admit on an unprojected static descriptor does not gain this behavior.
+
+* Laziness, final receiver and omission boundaries
+
+- Reading pipeline.selected-checks demands that selected final Pipeline, not
+  cached values extracted from its parent. The existing lexical-slot rule and
+  final-obligations remain mandatory for Pipeline.checks identity/order.
+- Discovery reads schema slots and selected symbols. It does not scan or force
+  every Check value. Native .slot? may initialize object/slot metadata; this is
+  not a claim of zero metadata cost or constant-time discovery.
+- Core reads every fixed role and every selected Check. Unselected optional
+  business thunks remain untouched unless a declared Contract explicitly needs
+  them. An unconditional upstream responsibility always remains a demand.
+- Missing slot, invalid selector, duplicate selector, protected-role collision,
+  failed child Contract or incomplete/corrupt receipt coverage refuses admission.
+  Selecting smkoe does not silently omit it; removing smoke from selected-checks
+  is instead a deliberate business selection change, subject to upstream policy.
+  Typos in arbitrary UNSELECTED open-family fields are not detected merely by
+  selection discovery; their admission follows the separate upstream field/
+  openness schema. Selection discovery is not a whole-object spelling checker.
+- A malicious/custom selector or Contract may read hidden state. Complete
+  dependency reporting, stable immutable generations and source policy binding
+  are still qualification premises. A concurrent selection change invalidates
+  projection/receipts/preview; no new general invalidation engine is implemented.
+
+* Corresponding checked Lean properties
+
+[[file:../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Selection.lean][Selection.lean]] models fixed ++ final-selected demand IDs.
+Contracts and candidates are resolved PER SLOT, so two Checks sharing one
+Contract still require two differently correlated receipts. A demand ID is
+scoped to its receiver/view, not a globally ambiguous Check name.
+
+#+begin_src lean
+def required (fixed selected : List Nat) : List Nat := fixed ++ selected
+
+def gate (fixed selected performed : List Nat) (contract candidate : Nat → Nat)
+    (context : Nat) (receipts : Nat → Receipt) : Except (List Nat) Unit :=
+  compositionGate (required fixed selected) performed
+    (fun slot => receiptGate (contract slot) (candidate slot) context (receipts slot))
+#+end_src
+
+Five theorems are checked: discovery_exact, selected_receipt_checked,
+missing_selected_refused, unselected_not_discovered and accepted_candidate_is_final.
+Two controls show omitted smoke refuses, and an unselected optional slot is not
+discovered. performed is an INTERNAL model of actual receipt work, not another
+user-maintained completed-checks input. Publication recomputes required from the
+final selector and compares real correlated receipt coverage.
+
+The proofs establish exact demand membership and refusal/final receipt laws.
+The modeled gate permits extra performed entries when they also pass; the
+Scheme coverage guard is stricter and rejects extra/duplicate responsibility
+entries. This strengthening is not a proved native implementation correspondence.
+They do NOT prove native projection fidelity, discovery of hidden/transitive
+dependencies, immutable generations, scheme interpreter equivalence or thunk
+non-evaluation. In particular, unselected_not_discovered is a membership theorem,
+not a runtime performance theorem. No new native execution is claimed. Module
+25's 30-assertion receipt remains historical evidence for a hand-fed closure
+fixture and must not be relabeled as a test of this new automatic projection.
+
+The Scheme design, selected-family adapter/dispatch, metadata trust and plan
+publication integration remain unimplemented. No Loader or production module
+code is changed.
+
+Validation on 2026-10-15: the new Lean file checks directly, and the existing
+YuanxuProof.ModuleSystem.Schema.Association target builds successfully (48 jobs). Five new
+theorems and two controls use no sorry or custom axioms. See
+[[file:26-selected-responsibility-discovery/lean-build.log][build/axiom output]] and [[file:26-selected-responsibility-discovery/receipt.json][source-bound receipt]].

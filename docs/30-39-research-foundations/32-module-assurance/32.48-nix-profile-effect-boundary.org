@@ -1,0 +1,273 @@
+#+title: 32.48 Real Nix Profile Effects And The Missing Conditional Commit
+#+language: en
+#+startup: overview
+
+* Question and finding
+
+Follow-up: [[file:32.49-persistent-selected-head-transaction.org][32.49]] qualifies an actual persistent selected-head transaction
+with the installed Scheme SQLite library. It does not claim that a separate Nix
+profile switch or remote provider effect joins that database transaction.
+
+[[file:32.47-conditional-build-publication.org][32.47]] qualified a serial in-memory owner, not an external transaction. This
+step exercises maintained Core publication, Nix Source and Ops process execution
+against a real temporary Nix profile. No simulated revision owner is involved in
+the native profile operations.
+
+The present boundaries can preserve an admitted immutable snapshot across new
+client processes. They do not provide one operation combining an application
+expected revision, a durable fence and the profile mutation. A saved =--set=
+request can overwrite a later selection. Therefore these existing calls cannot
+be advertised as conditional deployment merely by adding another freshness read.
+
+This is executable negative qualification of existing production paths, not the
+implementation of a new durable commit service. No signature system, state
+database, user-facing syntax or Gerbil source modification is introduced.
+
+* Entry-point audit
+
+| Maintained entry | Existing responsibility | Missing from that boundary |
+|------------------+-------------------------+----------------------------|
+| =AdmissionPublication. .for-export / .publish= | Selected graph, source/package checks, actual Contract and contributions | Durable effect-owner revision and transaction |
+| =NixSource. .prepare / .build= | Evaluate selected derivation, realize artifact, check source/derivation currentness | Expected profile revision/fence comparison |
+| =ProcessScript. .run / run-script= | Explicit process start, timeout, failure/output handling | Semantic authority for arbitrary command effects |
+| =run-opentofu-task= | Guard before/after each forward task, then Ops handoff | Atomic combination of a Core source guard and provider apply |
+| =nix-env --profile PATH --set STOREPATH= | Actual persistent profile selection | Caller-supplied application expected revision/fence |
+
+Code references:
+[[file:../../../admission/publication.ss][admission/publication.ss]],
+[[file:../../../modules/nix/objects.ss][modules/nix/objects.ss]],
+[[file:../../../ops/func.ss][ops/func.ss]],
+[[file:../../../modules/opentofu/execution.ss][modules/opentofu/execution.ss]].
+The current Funflow runtime adapter exposes request/submission plumbing; its
+Scheme-side request-only and Rust handoff stubs do not establish an implemented
+conditional-head transaction. This audit does not infer the behavior of some
+external runtime implementation from a Scheme request shape.
+
+The checked native binary identifies itself as =Nix 2.34.4+1=. The official
+[[https://nix.dev/manual/nix/2.34/command-ref/nix-env/set.html][2.34-series --set manual]] documents its selection operation, and
+[[https://nix.dev/manual/nix/2.34/command-ref/files/profiles.html][profile layout documentation]] explains the persistent generation links. Those
+online pages currently identify 2.34.9, not the exact tested patch build. Native
+results below are evidence for the installed binary; the manual is supporting
+documentation, not an exact-build source audit or proof of internal locking.
+The attempted exact-tag source retrieval was unavailable and is not counted as
+reviewed source. No whole-platform installation was performed.
+
+* Native experiment: real publication to immutable release
+
+[[file:../../../t/nix-profile-effect-boundary-test.ss][nix-profile-effect-boundary-test.ss]] uses the real Gitea/PostgreSQL publication
+created by the existing =ServicesFixture=. The fixture owns only temporary role
+sources and cleanup; the Contract, contribution binding, Source realization,
+Ops execution and Nix profile mutation use maintained implementations.
+
+#+begin_src scheme
+(def parent (.get publication value))
+(def cached (.get parent plan))
+(.def (Release @ parent)
+  config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(defvalues (receipt next failure)
+  (.call publication .publish parent Release))
+#+end_src
+
+The test asserts successful admission and the two independent contributions.
+It separately checks that requirements =5433= and =5440= cause real Contract
+refusal. The unused service remains outside the selected graph. The parent plan
+stays at 5432 and the child's effective PostgreSQL/Gitea ports are both 5433.
+
+A bounded packaging helper projects ONLY these admitted plan ports into
+=plan.json=. It builds two actual local derivations through =NixSource. .build=.
+The derivation copies the selected JSON input into its immutable output; it does
+not re-read a mutable user workspace at consumption time. This helper is domain
+qualification packaging, not a newly implemented general-purpose plan serializer
+or distribution service. It contains no credentials and performs no cloud apply.
+
+* Fresh client recovery and saved request counterexample
+
+The actual effects are ordinary existing Ops calls:
+
+#+begin_src scheme
+(def (profile-command profile . arguments)
+  (.cc ProcessScript.
+    'command (append (list "nix-env" "--profile" profile) arguments)
+    'timeout 30))
+
+(.call (profile-command profile "--set" old-artifact) .run)
+(def saved (profile-command profile "--set" old-artifact))
+(.call (profile-command profile "--set" new-artifact) .run)
+#+end_src
+
+Every =.run= starts and waits for a separate native process. A later
+=--list-generations= process observes generation 2. An independent, heap-fenced
+Gerbil reader starts through the Justfile, reads =profile/plan.json= and reports
+=(5433 5433)=. It inherits neither the parent POO plan nor the issuer registry.
+The earlier writer processes have exited. The supervising test process and Nix
+daemon remain running; this is client-process restart, not machine power-loss or
+daemon-crash durability qualification.
+
+The retained old request is then executed:
+
+#+begin_src scheme
+(.call saved .run) ; returns status 0
+;; Reading the actual profile now observes PostgreSQL port 5432 again.
+#+end_src
+
+There is no expected revision or fence operand to reject here. This is not a
+forged Core issuance token: the tested native interface has no such token. It is
+an intentionally stale saved command with write permission to this temporary
+profile. Core admission does not grant or revoke that operating-system write
+permission. Nix profile locking/atomic link replacement, even where provided,
+does not imply rejection of an application request based on an older selection.
+
+The profile's real generation identifiers are not promoted to durable monotonic
+fences. This experiment does not establish their behavior after generation
+deletion, rollback, profile recreation or database restoration.
+
+* External source change: snapshot and live semantics
+
+After building the child, the test changes its real =release.nix= source:
+
+#+begin_src scheme
+(write-source new-expression
+  (string-append (module-source-read new-expression) "\n# changed\n"))
+(check-exception ((.get new-publication admit-current)) Error?)
+(.call (profile-command profile "--set" new-artifact) .run)
+#+end_src
+
+The maintained Source guard refuses the changed source. Nevertheless, selecting
+the already captured immutable artifact succeeds, and its Gitea port remains
+5433. These are different semantics:
+
+- Snapshot use consumes the previously admitted bytes. The source edit does not
+  rewrite those bytes. This can be a valid snapshot operation under an approved
+  release policy; it is not automatically unauthorized.
+- A live deployment policy requiring the latest source must reject this request
+  at its authoritative effect boundary. An arbitrary stored command does not
+  carry or enforce that policy. Another preflight check only moves the gap.
+
+No source guard or root-return check is weakened or removed by this test.
+Generation persistence and immutable payloads can be reused, but neither is a
+fence preventing a stale authorized writer from acting later.
+
+* Lean and QNT
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/NixProfileEffect.lean][NixProfileEffect.lean]] projects the actual =--set= operation as a snapshot
+replacement without an expected-revision operand. Its properties include:
+
+- =stale_request_is_not_refused=: an older target can overwrite a newer target.
+- =target_aba_does_not_restore_revision=: two transitions differ from no transition
+  in the MODEL counter, even if the selected target is the same again.
+- =conditional_adapter_would_refuse=: reuse =SerialUse.conditionalCommit= to state
+  the missing owner obligation; it does not assert Nix implements that relation.
+- =preparation_retains_both=: workflow preparation retains both domain requirements.
+- =source_change_cannot_rewrite_snapshot=: an already captured payload is unchanged
+  by a source-currentness Boolean changing.
+- =child_switch_preserves_parent=: the independent retained parent projection remains.
+
+The numeric model counter is not Nix's actual generation number or an extracted
+native fence. The model does not prove Nix locking, crash recovery, GC retention
+or filesystem protection. Its source digest is bound to the QNT input. Native
+assertions and the formal projection remain separate evidence; there is no new
+automatic native-trace extraction theorem.
+
+[[file:../../../dev/proofs/quint/NixProfileEffect.qnt][NixProfileEffect.qnt]] separates workflow preparation, another writer/source
+change, a fresh client and the actual unconditional effect. Bounded runs use
+1000 samples, 7 steps and seed 48:
+
+| Control | Expected result |
+|---------+-----------------|
+| Normal =safety= | No violation: both requirements, captured snapshot, parent and laziness |
+| Normal =StaleRefused= | Counterexample: expected 0, used revision 1, accepted |
+| Normal =LiveSource= | Counterexample: source changed, captured snapshot still accepted |
+| =dropB= / =Both= | Counterexample: missing second requirement can pass |
+| =eager= / =Lazy= | Counterexample: forcing unused work breaks laziness |
+| Normal =RejectAll= | Acceptance witness |
+
+The first two negative controls describe the CURRENT effect boundary, not bugs
+introduced into a claimed production CAS implementation. =dropB= and =eager=
+are intentionally broken workflow controls. Domain checks belong to preparation;
+raw =nix-env= is not claimed to understand their meaning.
+
+* Design consequence
+
+Reuse the existing selected graph, root publication, immutable Nix artifact and
+Ops execution. Do not invent a second artifact authority or repeat currentness
+until it appears atomic. However, these calls alone cannot implement a durable
+expected-revision/fence transaction over a live external effect.
+
+A production adapter must first identify the actual effect:
+
+1. For an application deployment-head switch, an authoritative store/owner must
+   compare the complete expected head and fence while committing the new head.
+   All writers must use that boundary. Persisting a receipt beside a mutable
+   symlink is insufficient, and introducing a separate local DB would not make
+   a later Nix profile update part of the same transaction.
+2. For OpenTofu/provider operations, backend/state locking or remote version
+   preconditions are a separate adapter capability. No cloud transaction or
+   provider fencing claim follows from this local profile experiment.
+3. For coupled effects, use the existing runtime partial-commit and reconciliation
+   model. A Core plan does not create cross-system atomicity.
+
+Until that capability is implemented and qualified, an atomic-deployment request
+has no justified fallback to raw =--set=. Existing snapshot operations should
+remain labeled as snapshot operations. The bootstrap/deployment authority,
+filesystem permissions and approved Nix tools remain trusted premises.
+
+* Validation and reproducibility
+
+The executable is =t/nix-profile-effect-boundary-test.ss=. It changes only a
+fixture-owned temporary profile; it does not change the user's default profile.
+Temporary profile links are removed by the existing Fixture cleanup. Normal
+registered build outputs remain ordinary Nix store artifacts; no GC or global
+cleanup is invoked. There is no claim of protection against a concurrent GC
+between realization and the first profile registration.
+
+The independent reader is
+[[file:../../../t/qualification/build-publication/nix-head-reader.ss][nix-head-reader.ss]], invoked through =just nix-head-reader= with the existing
+pre-import heap fence and a 30-second process limit. No timeout was widened.
+
+From Core, use the existing owned-overlay compiler and test entrypoints:
+
+#+begin_src sh
+just compile-build-publication /private/tmp/core-nix-head-20261019
+just test-build-publication /private/tmp/core-nix-head-20261019 t/nix-profile-effect-boundary-test.ss
+cd dev/proofs/lean
+timeout 120s lake env lean YuanxuProof/Admission/NixProfileEffect.lean
+#+end_src
+
+QNT rows use =quint run= with their named invariant and the bounded arguments
+above. =dropB= and =eager= have separate files; other rows use the base model.
+Expected negative results require an actual invariant-violation trace, not an
+arbitrary nonzero exit status. Raw logs remain local, outside source control.
+
+Early failures are retained: run 01 could not access the Nix daemon in the
+restricted sandbox; run 02 completed real build/profile effects before exposing
+an incorrect HashTable assumption about native JSON WAList values; run 03 found
+the required =waref= default parameter missing; run 04 exposed the reader's
+stderr warning being mixed into its exact stdout protocol. The final reader uses
+the maintained Ops stderr separation rather than weakening the output assertion.
+
+During qualification another session changed =admission/publication.ss=. The old
+overlay failed the source-manifest comparison and is not relabeled as current.
+A separate owned overlay rebuilds the current production files with the existing
+compiler. Their changes are preserved; no shared installation is overwritten.
+The final receipt is =core-nix-head-05= against the newly compiled owned overlay:
+natural exit zero, =MODULE-OK=, =HARNESS-OK= and final =OK=, without error-case,
+error-check, error-harness or heap/stack overflow markers. Both test cases pass.
+The independently executed reader returns exactly =(5433 5433)= on stdout;
+stderr remains a separate channel. The saved old request demonstrably restores
+the actual profile to 5432, and Source refusal does not prevent a raw snapshot
+switch to the captured child artifact. These are retained limitations, not
+conditional-commit successes.
+
+=core-nix-head-compile-01= completes within the existing 120-second bound. Its
+per-file before/after compilation observations and the subsequent source-manifest
+check qualify the rebuilt production closure. =core-nix-head-lean-02= exits zero.
+The six =core-nix-head-quint-*-01= runs match the table: normal safety exits zero;
+the five negative/witness controls exit one with actual invariant violations.
+The model source digest matches the Lean binding.
+
+These receipts do not test host/daemon restart, power loss, concurrent GC, a
+malicious store writer or running PostgreSQL/Gitea service reconfiguration.
+The actual local effect tested is profile selection. The projected port plan is
+not misrepresented as a completed database migration or cloud deployment.
+No Gerbil source, installed compiler, shared build cache, dependency lock or
+other session's production code was modified.

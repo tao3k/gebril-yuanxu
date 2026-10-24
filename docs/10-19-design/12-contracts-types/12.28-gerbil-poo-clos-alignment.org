@@ -1,0 +1,214 @@
+#+title: gerbil-poo and Core CLOS Alignment
+
+* Source boundary
+
+This is a source audit, not a dependency upgrade or an implementation receipt.
+The inspected Core checkout is =80e2e74= with local changes. Its =gerbil.pkg=
+pins gerbil-poo =ece6f609357ea918038090559ac051a8d9f3e52f=.
+The inspected [[https://github.com/tao3k/gerbil-poo/pull/13][gerbil-poo PR 13]] head is
+=798804132ffd9ac69df7bcf062911db48321a9a2= (2026-10-18).
+No dependency revision was changed by this audit.
+
+The five commits after the pin refine native formal forwarding, combined
+generic argument-row construction, prototype suffix reduction and OpenSSL
+link discovery. Method declarations and combination adapters also exist at
+the inspected head; they must not all be presented as additions in those five
+commits.
+
+* Ownership before refactoring
+
+| Operation | Owning abstraction | Alignment decision |
+|-----------+--------------------+--------------------|
+| Select behavior from one receiver's inherited slot | gerbil-poo =.defgeneric= | Prefer the public upstream mechanism; do not import all of CLOS |
+| Accumulate inherited method fragments | upstream =MethodDeclaration.= and =method-fragment= | Evaluate replacing local single-receiver fragment assembly |
+| Interpret standard/simple/forwarding/inner contributions | upstream method-combination functions | Reuse where invocation semantics match; names alone are insufficient |
+| Select methods across independently extensible arguments | Upstream also has a typed sparse =multimethod.ss= engine | Retain Core CLOS behavior until identity, evolution and continuation semantics have a qualified adapter |
+| Class/eql/prototype specializers and argument precedence | Core CLOS | Retain the semantic delta; use upstream object precedence for prototype ancestry |
+| CLOS replacement =call-next-method= arguments | Core CLOS invocation frame | Retain applicable-method-set validation |
+| Graph, package/source/Schema currentness and publication policy | Core admission | Keep separate from generic selection and public value contracts |
+
+The two =.defgeneric= bindings have different grammars and semantics. A native
+receiver generic is not a drop-in replacement for a CLOS generic merely
+because a particular call currently has one specialized parameter.
+
+Correction to the initial audit: the documented limitation concerns the
+receiver generic bridge, not the complete library. Upstream =multimethod.ss=
+already provides multiple dispatch, a persistent sparse index, guarded
+applicability and bounded candidate/effective-method caches. Its symbolic
+prototype names require a stable injective identity mapping from the caller.
+Core class/eql identities, argument precedence, lambda-list congruence,
+generic mutation and replacement-next checks are not automatically provided
+by replacing a Core call with =multimethod.call=.
+
+* Concrete consumers
+
+=admission/contributions.ss= already uses upstream =:clan/poo/mop=
+=.defgeneric= to select =.contribution-obligations= from a contract. Preserve
+that ownership; adding a CLOS registry here would be a regression.
+
+=module-system/authoring/admission.ss= dispatches on executor strategy and
+source role, with interface specialization also represented in its method
+signatures. Preserve independent extensibility. The local implementation now
+uses existing Core =.defgeneric=, =.defmethod= and deferred method bundles,
+with an internal =defrules= for the common signature. This consumer no longer
+contains handwritten specializer lists or invocation-frame lambdas.
+
+=modules/opentofu/collections.ss= dispatches on provider collection policy and
+evidence transport. Replacing that crossing with receiver-only dispatch would
+remove an extension axis. Its import should reach only the required generic
+declarations, without class evolution, reflection and load-form publication.
+
+* Semantic obstacles to blind reuse
+
+Upstream standard contributions receive a zero-argument next thunk retaining
+the original argument row. Upstream forwarding permits validated payload
+replacement while retaining dispatch. Core CLOS permits replacement arguments
+only when the complete ordered applicable method groups remain unchanged
+(=poo-clos-call-next-method= in =poo-clos/dispatch.ss=). These are different
+protocols. Sharing a combination evaluator requires a demonstrated adapter
+that preserves this check, no-next behavior, auxiliary restrictions, errors,
+multiple values and effect order. No such adapter is claimed here.
+
+Upstream =call<-formals= now delegates Gerbil formal projection to core
+signature mechanisms. Core's =&optional=, =&key=, supplied-p bindings and
+lambda-list congruence describe CLOS syntax. Keep that grammar where required;
+do not independently parse ordinary Gerbil optional/keyword formals. Audit
+the lowering boundary before replacing either representation.
+
+Upstream method-fragment merging is inherited receiver-slot assembly. Core
+method bundles also enforce generic protocol object identity and defer
+registration until explicit composition. Reusing fragments must preserve
+both properties, rather than registering at declaration/import time.
+
+* Implemented local convergence
+
+** Single-receiver policy uses the upstream generic
+
+Qualifier admission belongs to the effective combination object. Core now
+uses the public upstream generic:
+
+#+begin_src scheme
+;; .defgeneric is imported from :clan/poo/mop.
+(.defgeneric (poo-clos-method-combination-admits-qualifier? combination qualifier)
+  slot: .admits-qualifier?)
+#+end_src
+
+The default policy method lives on the existing combination prototype. Its
+lexical =kind= and =identity= slots retain built-in CLOS rules. That small
+classification remains a pure policy, not a second method selector. A derived
+combination refines the method through ordinary POO slots; registration uses
+the same generic. Core's standard/short/long execution is not delegated to an
+incompatible interpreter.
+
+=ClosMethodCombination= now requires the policy slot to hold a procedure, so
+typed construction cannot accept a non-callable policy. A custom method still
+owns its semantic obligations; refining qualifier admission does not install
+a new standard/short/long execution engine or alter CLOS applicability.
+
+The control forces a parent's callback, derives a short combination with
+another identity and checks that qualifier admission follows the child while
+the parent's result remains intact. A refined standard policy rejects a
+primary before registration, proving the consumer reaches the native slot.
+
+** Authoring keeps independent axes without manual construction
+
+#+begin_src scheme
+(.defgeneric module-authoring-admit (executor role interface datum)
+  (protocol ModuleAuthoringAdmissionProtocol))
+
+(defrules authoring-method ()
+  ((_ role-prototype admit)
+   (.defmethod (module-authoring-admit
+                 (executor (prototype ModuleAuthoringExecutor.))
+                 (role (prototype role-prototype))
+                 (interface (prototype yuanxu-module-interface-prototype))
+                 datum)
+     (admit interface role datum))))
+
+(.defmethod-bundle ModuleAuthoringCoreMethods ModuleAuthoringAdmissionProtocol
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-admit/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-admit/config))
+#+end_src
+
+The exported =ModuleAuthoringAdmissionGeneric= is the generated binding's
+current generic, not another generic. Explicit composition remains the
+registration boundary. Methods retain one owner: replaying already registered
+descriptors into another generic is not valid reuse. Another owner requires
+fresh method declarations. Protocol identity still matters even when labels
+are equal.
+
+** Upstream controls stay outside the CLOS grammar
+
+=t/poo-clos-upstream-alignment-test.ss= calls upstream modules directly. It
+covers Gerbil optional/keyword/rest forwarding (false values and a private
+rest spine), local method-fragment merging with inherited methods, and
+two-axis multimethod selection retaining the parent definition. Gerbil's
+keyword-first call row and =#!rest= marker are preserved, rather than parsed
+through CLOS =&key=. Symbolic dispatch names and method bodies are fixtures;
+the generics, declaration expansion and dispatch are actual upstream calls.
+This does not qualify a Core-to-upstream CLOS dispatch adapter.
+
+* Ordered refactoring gates
+
+1. Qualify the exact upstream revision in an isolated dependency environment.
+   Do not silently change the repository pin or mix revisions within a run.
+2. Classify actual consumers by extension axes. Route single-receiver behavior
+   through upstream slots and retain genuine multi-argument crossings.
+3. Keep generic declaration imports independent from class lifecycle and
+   reflection. The local =generic-syntax.ss= extraction is an import-boundary
+   change, not evidence that upstream CLOS alignment is complete.
+4. Replace redundant declaration construction with existing declarations.
+   Preserve protocol identity, declaration-time non-registration and explicit
+   composition. Do not leave parallel registration mechanisms.
+5. Consider sharing combination execution only after differential tests cover
+   next-method replacement, qualifier order, exceptions, multiple values,
+   optional/key forwarding and generic evolution. Retain unsupported semantic
+   cases rather than weakening them to fit an adapter.
+6. Measure cold imports and first Graph construction through the original Ops
+   entry. An import split or a passing syntax test alone establishes neither
+   AWS acceptance nor a performance improvement.
+
+* Evidence boundary
+
+The latest revision was downloaded into an isolated source namespace. Core
+sources were copied into that same namespace with an empty package state;
+no installed dependency was changed, and no compiled Core or POO artifacts
+were added to make these source checks pass. Tests use the existing heap-fenced
+=Justfile= entry, serially, with its unchanged deadline. No alternate runner
+was introduced. The repository dependency pin remains unchanged.
+
+The following source-mode checks have passed on
+=798804132ffd9ac69df7bcf062911db48321a9a2= with the local refactoring:
+
+| Focused file | Boundary exercised |
+|--------------+--------------------|
+| =t/poo-clos-upstream-alignment-test.ss= | Gerbil call rows, isolated rest spine, upstream fragment inheritance and independent multimethod axes |
+| =t/module-authoring-test.ss= | Declarative production bundle, derived executor/role dispatch, equal-label foreign protocol refusal and port/batch diagnostics |
+| =t/poo-clos-method-combination-test.ss= | Effective qualifier policy, inherited child values, existing standard/short/long combinations and protocol behavior |
+| =t/poo-clos-method-bundle-test.ss= | No declaration-time registration, explicit composition, protocol identity and lexical next-method declarations |
+| =t/poo-clos-syntax-test.ss= | Existing declarations, prototype/class/eql syntax and lexical phase bindings |
+| =t/poo-clos-dispatch-test.ss= | Multi-argument specificity, class/eql/prototype specializers, terminal behavior and replacement-next checks |
+| =t/opentofu-set-evidence-test.ss= | Actual policy/evidence crossing, Schema mutation refusal and set-evidence authority |
+
+Each listed pass required natural exit zero, =MODULE-OK=, =HARNESS-OK= and final
+=OK=, without error/overflow markers. This is focused dependency qualification,
+not a complete package upgrade, AWS acceptance or a performance measurement.
+
+Two fixture assumptions were corrected during qualification: =.declare='s
+second argument is declaration context, not an inherited base (the runtime
+declaration constructor takes =supers:=); and a composed Core method is owned
+by its generic, so a production bundle is not replayed into another owner.
+Gerbil keyword call rows also retain their native =#!rest= boundary. These
+corrections changed the fixtures, not upstream implementation or test limits.
+
+The subsequent [[file:../13-module-loading/13.15-import-and-source-guard-correspondence.org::#post-clos-source-graph-reuse-and-aws-acceptance][AWS source Graph reuse qualification]] passes the original Ops endpoint on
+the repository-locked dependency. A separate fully source-loaded latest-REV AWS
+candidate still raises =Heap overflow=; the focused CLOS checks above do not
+close that candidate's acceptance. No runtime Loader, upstream patch,
+compilation-cache workaround or timeout increase is part of this alignment.
+
+Primary references at the inspected revision:
+- [[https://github.com/tao3k/gerbil-poo/blob/798804132ffd9ac69df7bcf062911db48321a9a2/doc/method-declarations.md][Method declarations and generic invocation]]
+- [[https://github.com/tao3k/gerbil-poo/blob/798804132ffd9ac69df7bcf062911db48321a9a2/method-combination.ss][Combination and continuation implementations]]
+- [[https://github.com/tao3k/gerbil-poo/blob/798804132ffd9ac69df7bcf062911db48321a9a2/multimethod.ss][Typed sparse multiple dispatch]]
+- [[https://github.com/tao3k/gerbil-poo/blob/798804132ffd9ac69df7bcf062911db48321a9a2/support/syntax.ss][Formal argument projection]]

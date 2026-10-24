@@ -1,0 +1,306 @@
+#+title: 32.21 Identity DFS, Final Rechecks and Read-Only Boundaries
+#+language: en
+
+* Question and decision
+
+[[file:32.20-remaining-read-boundaries.org][32.20]] proved coverage for a tree-shaped replay projection but explicitly left
+native sharing/cycles open. This follow-up supplies a finite identity-graph DFS,
+a correspondence from recursive for-each frames, and a complete final-token
+pass. It does not change Scheme, connect a Loader, or authorize deleting the
+two JSON checks. The 356-read count is earlier native evidence, not a new
+measurement or a qualification of concurrently changed Scheme consumers.
+
+Owners:
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean][Admission.IdentityDFS]],
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/DFSFrames.lean][Admission.DFSFrames]], and
+[[file:../../../dev/proofs/quint/IdentityDFS.qnt][IdentityDFS.qnt]]. The dependency remains LeanPoo
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. The graph termination argument
+specializes its =C4.ReachabilityInvariant= pending/unseen-weight method. That
+owner implements BFS; its traversal order is NOT substituted for native DFS.
+The new owner imports the dependency's proof module and uses Std HashSet laws;
+its private BFS-specific lemmas are not presented as reusable public theorems.
+
+* What native identity means
+
+The audited producer remains gerbil-poo
+=ece6f609357ea918038090559ac051a8d9f3e52f=. Its =replay-slot-reads!=:
+
+1. starts with =make-hash-table-eq=;
+2. marks a read record seen BEFORE checking it and invoking the observer;
+3. visits that record's dependencies before its pending siblings;
+4. rechecks every key in the final seen table after the traversal.
+
+The model's Nat IDs project READ-RECORD reference identity. They are not receiver
+names, slot names, source paths, port values or structurally equal payloads.
+Correspondence requires an injective, stable identity projection for this run.
+Two records with equal payloads may carry different dependencies; they remain
+distinct. Deduplicating their source bytes never merges their semantic demands.
+
+The dependency adjacency is finite and fixed during the projected traversal.
+Callbacks must return or raise finitely. The result does not prove termination
+of an arbitrary callback, nor of a callback that grows an infinite record graph.
+There is no new user purity flag or manually enumerated requirement list.
+
+* DFS termination, sharing and exact reachability
+
+The executable step is a direct work-stack projection:
+
+#+begin_src lean
+def step (edges : Edges) (s : State) : State :=
+  match s.pending with
+  | [] => s
+  | id :: rest =>
+    if s.seen.contains id then { s with pending := rest }
+    else ⟨edges id ++ rest, s.seen.insert id, s.order ++ [id]⟩
+#+end_src
+
+The observer/currentness operations are not hidden inside this graph step.
+Their ordered trace is generated separately and checked by ReplayBoundary.run;
+an exception stops before later operations. The order list is a proof trace,
+not a proposed production allocation or a new module protocol.
+
+The decreasing potential is:
+
+#+begin_example
+pending.length + sum(unvisited record's dependency-list length)
+#+end_example
+
+Popping a duplicate consumes one pending item. A fresh visit consumes that
+record's unvisited edge weight while pushing exactly those dependencies. Thus
+the potential strictly decreases. =walk_drains= proves that the structural
+budget suffices; it is not a chosen timeout or a runtime fuel workaround.
+The finite closed universe in the proof can be the selected dependency closure;
+no production enumeration or loading of all ecosystem modules follows from it.
+
+| Lean theorem | Result |
+|--------------+--------|
+| =measure_decreases= / =walk_drains= | Termination for finite fixed closed graphs, including cycles and repeated edges |
+| =discover_nodup= | Each identity has at most one first-visit body |
+| =discover_exact= | Discovered identities are exactly those reachable from the chosen roots |
+| =accepted_reachable_source= | A successful ordered run records every source request attached to every reachable identity |
+| =graph_ordered_diagnostic= | Same-order sound byte reuse preserves the first diagnostic of the graph trace |
+
+A computed theorem covers a shared cyclic graph, not only a tree:
+
+#+begin_example
+roots = [0, 0]
+0 -> [1, 2]
+1 -> [3]
+2 -> [3]
+3 -> [1]
+4 -> []       (unselected)
+
+first-visit order = [0, 1, 3, 2]
+pending pops <= 7; pending ends empty; record 4 is never visited
+#+end_example
+
+This fixture is an adversarial graph projection. It is not a claim that the
+recorded Gitea/PostgreSQL production trace contains that cycle.
+
+* Correspondence to recursive native for-each
+
+DFSFrames retains nested lists as actual traversal frames. An empty frame
+returns without a check. A nonempty frame either skips a seen identity, or
+marks the new identity and pushes its dependency frame before the remaining
+sibling frame.
+
+#+begin_src lean
+theorem enter_refines (edges : Edges) (id : Nat) (tail : List Nat)
+    (rest : List (List Nat)) (seen : Std.HashSet Nat) (order : List Nat) :
+    flatten (advance edges ⟨(id :: tail) :: rest, seen, order⟩) =
+      step edges (flatten ⟨(id :: tail) :: rest, seen, order⟩)
+#+end_src
+
+=return_stutters= proves the empty-frame case. The frame potential
+=2 * graphPotential + frameCount= strictly decreases, including returns.
+=frames_drain= and =replay_exact= establish termination and exact reachability
+for the recursive-frame projection itself; =replay_nodup= preserves identity
+uniqueness. This is stronger than asserting that two traversals visit the same
+set: each active frame transition retains the native dependency-before-sibling
+schedule, and returns introduce no diagnostic operation.
+
+The Scheme interpreter, Gerbil pointer hashing, heap/stack limits and native
+exception payloads are not mechanically translated by this proof. The source
+audit relates their control flow to these frames; an executable extraction
+or full language-level refinement is still outside the established result.
+
+* Complete final recheck is not an earlier cache hit
+
+The model takes the ACTUAL final hash-key enumeration as an order parameter;
+it does not sort IDs. The enumeration must be a permutation of the seen IDs.
+
+#+begin_src lean
+theorem final_check_exact (order : List Nat)
+    (recorded current : Nat → Binding) (world : World) :
+    firstIssue (finalOps order recorded current) world = none ↔
+      ∀ id ∈ order, recorded id = current id
+#+end_src
+
+=final_covers_reachable= and =final_covers_frames= combine this result with exact
+reachability. =final_rejects_changed_record= rejects a record invalidated AFTER
+its first visit. The second pass compares final bindings; it never reuses an
+earlier Boolean currentness result.
+
+These Binding coordinates project receiver, revision, instance, record and value
+identity. Bootstrap/cache-miss variants still need their exact native predicate
+mapping. Under a stable closed structural checker, the final pass covers every
+reachable identity. If a =current?= callback checks itself and THEN changes a
+previously checked record, coverage alone is insufficient to certify return.
+The =finalWrite= QNT counterexample demonstrates that missing assumption.
+
+Hash enumeration order is not claimed deterministic across runs. Preserve the
+actual order within the compared execution. The JSON-before-token first-error
+counterexample from 32.20 is still applicable: graph completeness does not
+justify moving a JSON error past a stale-token error.
+
+* Cold metadata and source observer audit
+
+The exact pinned =object.ss= and =slot-observation.ss= bytes match the source
+hashes recorded in 32.20. The current Core consumers are
+=configuration/slot-origin.ss=, =module-system/source/admission.ss= and
+=admission/source.ss=. No Scheme changes are made here.
+
+- Native =object-read-current?= is a structural checker. Public low-level read
+  construction/delivery still permits procedure-valued checks in reachable
+  dependencies; native roots alone do not close that producer set.
+- Core's singleton source path avoids the deep =.ref= path walker, but
+  =slot-origins= still calls =compute-precedence-list!=. A cached precedence
+  list returns directly; a cold one can invoke a replaceable MOP hook.
+- Ordinary supported invalidation advances revision and clears derived state.
+  However =clear-object-cache!= itself clears precedence without advancing that
+  revision, and is also used in construction-error cleanup. Therefore revision
+  equality alone does not prove metadata readiness. The exact normal-record
+  table/instance checks reject many such states; bootstrap checks take a
+  distinct branch and must be qualified separately. This is an audited proof
+  gap, not a newly executed bootstrap failure trace.
+- =same_revision_does_not_imply_prepared= captures the concrete cache-clear
+  projection: equal revision and absent precedence can coexist. It does not
+  classify a callback pure and does not weaken the full token checks.
+- =current-module-source-observer= defaults to #f. With no observer, that call
+  site invokes no callback. When bound, it executes arbitrary Scheme. Existing
+  counter-only test observers update private totals/hash tables; this source
+  inspection does not prove all replaceable observers passive. Slot
+  =without-observation= does not suppress this separate parameter.
+
+A future closed adapter must derive readiness and producer/observer closure
+from actual native state and supported operations, including failure cleanup;
+it cannot infer them from revision equality, a method name or a user marker.
+Present JSON checks and fresh post-callback/return checks remain unchanged.
+
+* Gitea/PostgreSQL: guarantees retained
+
+The existing Scenario keeps two independently published allowed-port policies.
+The isolated service fixture permits 5432 and 5433; the shipped JSON defaults
+allow only 5432. A user changing the server to 5433 must satisfy BOTH effective
+policies. Do not present that edit as admitted against unchanged 5432-only
+policies.
+
+With policies permitting 5433, the existing default Gitea client follows the
+final PostgreSQL port. An explicit incompatible client port fails the domain
+relation. Parent-plan identity cannot substitute for the final child candidate.
+If selected JSON or Scheme sources change during a callback, the independent
+fresh source check rejects them. The existing RootChild/ReturnWindows domain,
+contribution, receiver and source controls all remain in the qualification.
+
+The graph proof adds selected dependency coverage, not replacements for those
+domain obligations. Unselected record 4 remains unvisited in the finite model;
+no schema, contract or configuration branch outside the selected demands is
+forced by the proof traversal.
+
+* Quint controls and evidence
+
+The model includes duplicate roots, diamond sharing, a cycle, two independent
+port requirements, parent receipt identity, source writes through metadata and
+observer callbacks, late record invalidation, and nondeterministic final hash
+order. The final structural checker itself is read-only in the positive case;
+the matched =finalWrite= environment executes a write after a check.
+
+| Case | Predicate | Generated / distinct / queued |
+|------+-----------+-------------------------------|
+| =IdentityDFS= | =safety= | 450 / 188 / 0 |
+| =lateMark= | =TerminationBound= | 195 / 57 / 7 |
+| =payload= | =CompleteCoverage= | 263 / 113 / 7 |
+| =noFinal= | =RecheckedCurrent= | 205 / 67 / 7 |
+| =dropFinal= | =FinalCoverage= | 295 / 121 / 7 |
+| =finalWrite= | =RecheckedCurrent= | 1664 / 482 / 87 |
+| =sourceReuse= | =SourcesCurrent= | 440 / 186 / 7 |
+| =parent= | =ReceiverIdentity= | 439 / 185 / 7 |
+| =acceptance= | =RejectAll= witness | 439 / 185 / 7 |
+
+The last eight stop at expected invariant counterexamples. Positive exhaustion
+has an empty queue; no control is accepted because it crashes or times out.
+The finite model caps a deliberately broken looping control at eight pops;
+its seven-pop invariant is violated first. The positive program never reaches
+that cap. The general Lean termination theorem has no fixed graph-size cap.
+
+The finite model establishes selected schedules, not arbitrary callback purity,
+dynamic graph closure, native source/exception extraction or wall-time bounds.
+No source currentness result is carried across its modeled effects.
+
+* Qualification and concurrent-source boundary
+
+The complete Lean aggregate passed 152 jobs. Its shape audit rejects arbitrary
+Prop-valued shells, and its axiom audit covered 4,581 declarations using only
+standard Lean axioms. No =sorry=, =native_decide= axiom, larger recursion limit,
+new runtime or Scheme patch was introduced.
+
+The first full QNT qualification typechecked the 56 native sources and completed
+all 55 expected outcomes. After that receipt, another session updated
+=module-system/source/admission.ss=: pure-query keys now include the enclosing
+source-collector scope. This retains distinct nested enrollment demands rather
+than conflating them merely because query/arguments match. Observer invocation
+and cold metadata preparation remain open as described above.
+
+That external change is preserved. The first receipt remains evidence for its
+original source cut. The current-source rerun additionally binds DFSFrames and
+its forwarded IdentityDFS projection digest. Its result is recorded separately
+below; it must not overwrite or retroactively refresh the old receipt.
+
+The new frame proof was built after the first QNT run and is required by the
+final Lean aggregate. The source-bound current QNT receipt binds both graph and
+frame sources; the joined qualification records their hashes and independent
+Lean output. No module consumer tests, native read counts or timings were rerun.
+
+The current-source rerun completed all 55 expected outcomes after typechecking
+all 56 native QNT sources. It retained the 45-second case deadline, five-second
+real-output watchdog, five-second per-source typecheck limit and 1GB TLC heap.
+No deadlock suppression or larger limit was introduced. Its nine new case
+counts match the table above. The watched Scheme source cut remained stable
+through this final qualification.
+
+Artifacts stay local at =/private/tmp/core-identity-dfs-20261018/=:
+
+- =quint-receipt.ss= / =quint-all-01.log=: original source cut, preserved.
+- =quint-current-receipt.ss= / =quint-all-02-current.log=: current-source cut,
+  both graph/frame owners bound, all 55 expected outcomes.
+- =lean-all-03.log=: final aggregate, including recursive frames.
+- =concurrent-source-change.json=: the external source-cut change.
+- =audited-dependencies.json=: pinned native and LeanPoo source hashes.
+- =qualification.json=: joins exact source/output hashes, gate results and
+  remaining assumptions. It does not replace the native Scheme proof receipt.
+
+Earlier proof elaboration/launcher failures are retained in this directory;
+they were resolved without admitted axioms or raised resource limits. The
+successful gates above refer to the final files, not those failed attempts.
+Raw logs, compiled outputs and receipts are not committed.
+
+* Reflection: what is closed and what is not
+
+The tree-only limitation is removed for the finite frozen identity graph and
+its recursive-frame projection. Sharing/cycles do not require duplicated user
+requirements, manual completion lists or payload-based merging. The final pass
+covers all reachable seen identities even when a later visit invalidates an
+earlier record. Check order remains explicit throughout the projection.
+
+This does not close the whole native optimization. We still need a supported,
+producer-derived account of metadata readiness, custom read-record checks and
+source observers, plus exact Scheme predicate/exception correspondence. A
+currentness callback that mutates AFTER checking defeats a mere coverage proof.
+Consequently no JSON check is removed, no byte window crosses an open callback,
+and no new claim of a lower native read count or faster execution follows.
+
+* Follow-up: actual entry qualification
+
+[[file:32.22-state-derived-read-only-entry.org][32.22]] audits cold hook, bootstrap-token and source-observer entry state.
+It adds a conservative raw-state closure model without changing the Scheme
+consumer or weakening the native correspondence premises retained here.

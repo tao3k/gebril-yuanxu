@@ -1,0 +1,143 @@
+#+title: 12.27.23 Composing Operation Boundaries
+#+property: DOCUMENT_ID 12.27.23
+#+language: en
+#+property: STATUS source-only-qualified
+
+* From one prefix exception to a composition rule
+
+[[file:09-package-entry-prefix.org][The preceding implementation]] removed the first native package's duplicate
+entry check, but every enclosing caller still repeated the package's final
+check. It also treated a native predecessor as opaque when entering the next
+package. The root problem is ownership of COMPOSED boundaries: each wrapper
+independently emits guard, action, guard, without interpreting its neighbors.
+
+The retained change uses the SAME checked-operation constructor, SelectedPackages
+loop, selected Graph and guard procedures. There is no additional protocol,
+cache, receiver tree, runner or user syntax. A sequential operation chain now
+normalizes equal boundaries as a whole. Write g for the exact inputs-current!
+procedure and A for an action extracted from a matched operation:
+
+#+begin_src text
+Uncomposed: g ; (g ; A1 ; g) ; (g ; A2 ; g) ; ... ; g
+Normalized: g ;      A1 ; g ;      A2 ; g  ; ...
+#+end_src
+
+For n warm, matched operations whose metadata remains compatible, this changes
+2n+2 complete source passes to n+1. The earlier first-prefix exception needed
+2n+1 for a nonempty chain. Each actual action still has its own fresh tail
+guard. This is boundary composition, not byte reuse across effects.
+
+* The bit is local control flow, not evidence
+
+The loop's inputs-checked? variable has one-call lifetime. Initially it is true
+only AFTER sources-current! has run. For a package it means the immediately
+preceding closed interval ended with g. It is never stored on the Graph or
+publication, returned to a user, or derived from a callback's return value.
+
+The existing cache-only probe checks readiness, no custom MOP protocol/read
+observer, the private constructed operation, exact guard identity, and exact
+cached full-method identity. When a preceding boundary is known and this probe
+matches, the paired resume procedure omits just its own entry g. Otherwise the
+ordinary full .call executes. Native full and resume procedures both END in g.
+
+After returning, the loop carries that fact only if the method matched BEFORE
+the call and the no-demand metadata probe still matches AFTER it. A custom
+callback installing native-looking metadata before returning cannot acquire
+this fact. Cold metadata, replacement, mutation or MOP observation conservatively
+ends the segment. The next operation then uses its full entry.
+
+At the end, a known native tail already covers inputs-current!. The caller
+still freshly checks entry-observation: the generated guard.ss is a separate
+obligation NOT covered by the package's guard. An opaque last callback retains
+the complete enclosing sources-current!. No source-read cache spans a callback,
+realization, query or validator.
+
+The executable owner is [[file:../../../../../ops/selected-packages.ss][SelectedPackages.current!]]. The native operation
+constructor and its conservative identity probe remain in
+[[file:../../../../../module-system/source/admission.ss][source admission]], without changes in this step. Ordinary standalone Nix
+publication calls still own their complete entry/action/tail behavior.
+
+* Actual AWS result, with the before subtotal isolated
+
+The unchanged observation-enabled init tests object selected JsonSchema,
+Funflow and AWS and called .run. It retained the source-only dependency revision,
+2 GiB fence, progress-aware idle policy and total budget.
+
+| Measure | First-prefix implementation | Boundary composition | Reduction |
+|---------+-----------------------------+----------------------+-----------|
+| build-admit-before physical reads | 16533 | 14028 | 2505 |
+| All-phase physical reads | 43981 | 41326 | 2655 |
+| Read windows | 498 | 483 | 15 |
+| Publication guard bodies | 237 | 222 | 15 |
+| File requests | 109396 | 100968 | 8428 |
+
+The before reduction is 15 complete passes of 167 files; the other 150 saved
+reads are NOT counted toward it. Exclusive before attribution is:
+
+| Enclosing stage | Before | After | Before reads saved |
+|-----------------+--------+-------+--------------------|
+| Publication package-before | 3507 | 2338 | 1169 |
+| Publication package-after | 2505 | 1670 | 835 |
+| Outside package/admission attribution | 2171 | 1670 | 501 |
+| All other before stages | 8350 | 8350 | 0 |
+| Total | 16533 | 14028 | 2505 |
+
+Root contract-admit, meaning-current, entry-current, post-package-current,
+contribution binding and initial SelectedPackages publication-current are
+unchanged. No Nix query, Schema admission or evidence-binding step was removed.
+The result is a work-count reduction, not a wall-time speedup claim.
+
+The aggregate exited naturally with seven MODULE-OK, two HARNESS-OK and two
+final OK markers and no error/overflow markers. It kept Schema upgrades,
+old-evidence refusals, cached-parent/final-child values, failed-publication
+previous-value retention and fixture cleanup in the same Case.
+
+* Correspondence and negative controls
+
+[[file:../../../../../t/ops-selected-packages-test.ss][The atomic Scheme test]] uses the production Nix phase and package consumer;
+only external commands are inert probes. It checks 0/1/2/4/8 native operations
+with 1/2/3/5/9 complete source passes, rather than a one-pair-only assertion.
+Its negative cases retain mutation during a native query and add:
+
+- An opaque callback writes after checking. The next native query must be
+  refused BEFORE it executes, not merely detected on its return.
+- The last opaque callback installs a valid native operation/method pair,
+  warms that metadata, and writes sources. The caller must still refuse it.
+- A native action changes guard.ss. The separate enclosing entry observation
+  must refuse, although native inputs-current! alone does not cover that file.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/Admission/BoundaryComposition.lean][BoundaryComposition]] reuses SourceWindows.World and its fresh byte-check
+model. composition_equivalent proves the original and normalized classified
+chains have equal results, including failure, for arbitrary actions and lists.
+changed_after_action_rejected retains a fresh post-action refusal. A computed
+counterexample shows why an opaque return must clear the local bit: otherwise
+even a later action restoring the old bytes could run and hide the violation.
+
+The focused Lean check uses the locked LeanPoo revision from lake-manifest.json
+and Lean 4.34.0. The two theorems report only the foundational propext axiom,
+with no sorry or local admission axiom. They are included in the existing proof
+root's declaration audit. The complete proof project was not rebuilt.
+This standalone algebra check is not a new Quint three-part receipt or a claim
+of complete source-to-model formal closure.
+
+This proves the classified sequence law, not the Scheme interpreter, IO system
+or arbitrary callback purity. Runtime correspondence still requires the exact
+method/guard extraction, source guards that are passive deterministic predicates
+of their observed world, sequential mutation, and a stable pure interval. Those
+are not inferred from a user pure? flag. The Scheme negatives test extraction
+boundaries; the real AWS Case tests publication behavior.
+
+The prefix-only matched control fails the new count assertion with result 3,
+expectation 2. A separate isolated mutant using only the POST-call metadata
+match accepts the opaque-last promotion/write: the strict stale? assertion
+correctly fails because no source exception was raised. A harness TestError
+cannot satisfy that predicate. Neither mutation is retained in production.
+After restoring the candidate, the focused Scheme test passed again, including
+all five chain lengths and the mutation cases. The same test also passed
+against the working Core source through its normal heap-fenced test entrypoint.
+
+The source-only qualification still excludes the concurrent compiled-build
+publication integration. The remaining full-closure cost is discussed in
+[[file:11-graph-cost-and-ownership.org][Graph cost and ownership]]; boundary normalization does not solve it by itself.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and historical receipts]]

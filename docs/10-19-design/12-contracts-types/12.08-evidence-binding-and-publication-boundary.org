@@ -1,0 +1,177 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.08 Evidence Binding Through Existing Contracts and Publication
+#+property: DOCUMENT_ID 12.08
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS local-public-binding-and-core-producer-no-module-adapter
+
+* Decision and inspected mechanisms
+
+Use the existing gerbil-poo invocation Contract to check the relationship between
+the current input and the existing admission result. Do not introduce another
+evidence hierarchy, ledger, receipt constructor, approval cache or user-owned
+=fixture-current?= callback.
+
+Inspected gerbil-poo PR 13 checkout HEAD:
+=308e67f31273df6892ef55d3dfdc2b01ddb4c886=. Its public object-contract additions
+remain local. Relevant source owners are:
+
+- =declarative-metadata.ss=: =Contract.=, =typed=, =with-meaning=, =both=,
+  =atom=, =invoke= and =publish=. The wrapper checks input, output and their
+  interpreted relationship, preserving exact result/state on success.
+- =contract-family.ss=: reuse requires identical source and equal closed inputs;
+  wrapper reuse additionally requires identical execution. A reused wrapper is
+  called with the current view. Reusing preparation is not reusing admission.
+- =cyclic-publication.ss=: =finish= admits the exact constructed version before
+  returning it; refusal returns the previous version. =invoke= uses readmission
+  on the actual successor, when configured. That readmission is optional, so it
+  must not be described as unconditional protection for every caller.
+- =staged-publication.ss=: default admission remains complete; selective
+  readmission must justify stability of omitted checks. New publication still
+  runs admission.
+- =core/types.ss=: existing =.admit= owns classification, obligations and
+  validation evidence. It checks classification candidate/context consistency
+  using =equal?=. The earlier receipt stored only a symbolic contract identity;
+  the local implementation now also records the descriptor reference, as
+  described below. It still does not supply a complete freshness protocol.
+  Accepted evidence is not automatically current evidence.
+
+These source properties were reviewed. The binding-specific native controls are
+recorded in [[file:12.09-isolated-evidence-binding-validation.org][the isolated validation record]]; no production implementation was changed.
+
+* Minimal generic design: specialize the existing invocation Contract
+
+The public invocation-contract module now implements this ordinary Scheme
+function locally; see [[file:12.10-public-binding-and-core-producer-implementation.org][the implementation record]]. Qualification imports that API,
+not a copied function extracted from this document. The
+projection exposes three references from an existing consumer-owned receipt;
+the temporary view is not another receipt and is never an authority.
+
+#+begin_src scheme
+(import :clan/poo/object
+        (prefix-in :clan/poo/declarative-metadata metadata.))
+
+;; Existing invocation input/output/formula remain effective.
+(def BoundAdmission
+  (metadata.bind-evidence AdmissionCall Release AWSAdmission context
+                         core-evidence-view))
+#+end_src
+
+This preserves the caller's input/output predicates and existing formula.
+The private generated atom cannot collide with the caller's atoms. Existing
+formula refusal short-circuits before evidence projection. =with-meaning #f=
+avoids forcing invariant preparation; the changed rule is also detected by the
+existing input/output/rule identity stamps. Rebinding for a derived subject,
+descriptor or context constructs a fresh specialization. It does not retain a
+parent's successful decision.
+
+No dispatch DSL or new macro is required. The checks happen through existing
+=invoke= / =publish= input, output and logic phases. A mismatched binding is a
+normal logic refusal. Malformed projections remain errors; they are not success.
+
+* Core adoption: retain the existing evidence, expose the real descriptor
+
+Core's existing admission-result constructor now receives the descriptor and
+records =admission-contract= alongside its symbolic identity. Its evidence Type
+requires the reference and consistent identity. Ordinary, responsibility and
+missing-responsibility results use the same constructor. A symbolic identity
+cannot reconstruct this reference. No module adaptation is included.
+
+For the example below, =AWSAdmission= is the complete immutable admission
+descriptor: it fixes the Schema/field Contract and all applicable obligations.
+Binding only the Schema Type while omitting changed admission obligations is
+insufficient. =context= is an immutable Core-produced selection snapshot.
+=Release= is the final receiver, after any parent resource cache demand.
+
+#+begin_src scheme
+;; The domain supplies only the selected contract/context and next state.
+(def (admit-aws candidate)
+  (values
+    (yuanxu-contract-admit AWSAdmission candidate context)
+    candidate))
+
+(def (core-evidence-view evidence)
+  (.o subject: (.get evidence candidate)
+      descriptor: (.get evidence admission-contract)
+      context: (.get evidence context)))
+
+(def AdmissionCall
+  (metadata.contract
+    (metadata.typed "AWS configuration" ScenarioContract)
+    (metadata.predicate "accepted Core evidence with descriptor"
+      (lambda (evidence)
+        (and (yuanxu-validation-evidence-accepted? evidence)
+             (.slot? evidence 'admission-contract))))
+    (lambda (_atom _request _result) #t)
+    metadata.truth))
+
+(def BoundAdmission
+  (metadata.bind-evidence AdmissionCall Release AWSAdmission context
+                 core-evidence-view))
+
+(defvalues (evidence next refusal)
+  (metadata.publish BoundAdmission PreviousScenario admit-aws Release))
+#+end_src
+
+On success, evidence is the existing Core validation result and next is Release.
+Metadata refusal returns the old state and a failure. The checked wrapper also
+turns source exceptions into source-phase refusal while preserving their cause;
+exceptions outside this refusal protocol propagate. This is value publication;
+external effects are not rolled back.
+The example's leaf =admit-aws= is internal platform glue, not user configuration.
+Only the existing Core evidence constructor records the reference. The former
+fixture producer has been deleted; domain code does not attach or reconstruct it.
+
+The short output predicate above checks the existing evidence shape and the
+presence of the reference; the generic relationship check then verifies exact
+reference equality. The trusted producer/projection remain explicit premises.
+Public POO fields can be constructed or copied by callers, so these checks do
+not authenticate an arbitrary externally supplied receipt. Publication must use
+its controlled producer, not accept an unrelated user receipt as authority.
+
+* Core policy, mutation and publication boundaries
+
+Generic code knows only the exact subject, complete descriptor and context
+references. Core determines which Graph, source revisions/digests and Schema
+revisions/digests belong to context and which publication Contracts are mandatory.
+It must also bind the projector/validator implementations where their changes
+can change the result. A changed relevant input produces a new immutable context
+or descriptor and a new admission. Users do not assemble this context.
+
+=eq?= is a conservative process-local guard. It is not a content hash, a portable
+certificate or a proof of immutable contents. Retaining the same object while
+mutating a nested value defeats an identity-only policy. This design therefore
+requires immutable admitted subjects/descriptors/contexts, or a separately
+validated revision mechanism; it does not claim the latter exists. External
+files and providers also require current revisions, even if the POO object did
+not change. Equal-but-distinct objects are conservatively re-admitted.
+
+At publication, the controlling selection must still be current. If its revision
+changes during validation, reject/retry before publication; a reference check
+alone does not close that time-of-check/time-of-use boundary. The existing
+publication version and readmission mechanisms are the integration points.
+Do not add an independent configuration publication transaction around them.
+
+* Scope, acceptance questions and deferred work
+
+Already available: public Type/diagnostic checking, invocation relations,
+formula composition, checked preparation reuse, staged refusal and configured
+successor readmission. The public binding helper and Core exact-reference
+producer are now locally implemented and tested. Live immutable version-policy
+integration and publication concurrency remain pending. Existing receipt
+acceptance does not prove those policy mechanisms exist.
+
+Required controls before adoption: different subject; different descriptor with
+the same symbolic name; different context; retained preparation with a current
+view; parent resource cached before child refinement; old accepted receipt
+returned by the producer; mutation/revision refusal; failed relation preserving
+the previous publication; and successor readmission configuration. Diagnostic
+projection must not force unselected branches. A mandatory Contract change must
+not be hidden by selecting a weaker user descriptor.
+
+This design intentionally provides no old-evidence cache. Every new effective
+subject is admitted; existing preparation may be retained under its own premises.
+Any future result reuse needs an additional explicit stability argument through
+the existing publication protocol, not another =fixture-current?= implementation.
+No module adaptation, runtime Loader, dependency update or push is included.

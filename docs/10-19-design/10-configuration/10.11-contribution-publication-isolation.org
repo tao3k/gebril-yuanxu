@@ -1,0 +1,155 @@
+#+title: 10.11 Selected Contributions: Isolated Native Publication Controls
+#+language: en
+#+property: DOCUMENT_ID 10.11
+#+date: [2026-10-17]
+#+property: STATUS bounded-native-fixture-not-production-loader-integration
+
+* Question and executable owner
+
+Does independently collecting two selected port requirements preserve both
+origins through native dispatch and Core admission, while rejecting incomplete
+collection, substituted provenance, changed sources and stale parent previews?
+
+Executable owner: [[file:../../../t/contribution-publication-isolation-test.ss][Core isolated contribution/publication test]].
+Design owner: [[file:10.10-gitea-postgresql-native-module-design.org][10.10 Gitea/PostgreSQL]]. This is a qualification
+fixture, not another public configuration API. Users do not maintain its records,
+source snapshots, edge lists or publication coordinator.
+
+* Inputs and isolation
+
+- Core base HEAD: =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e=, with current
+  uncommitted consumer sources. This is NOT a clean-HEAD qualification.
+- gerbil-poo: exact =core/gerbil.pkg= pin
+  =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
+- Upstream codeload archive SHA-256:
+  =b1718c8d0ebe5ddf40b5f4f55bdc60032c802a8d8124285d8583a1615a7e5eda=.
+- Native runtime and Core Justfile heap-fenced launcher; no dependency patch,
+  compatibility shim, Loader connection, Nix build or service execution.
+- Empty temporary GERBIL_PATH; GERBIL_LOADPATH maps =clan/poo= to the pinned
+  source and =core= to this checkout. Concurrent sources are not overwritten.
+
+The preparation directory used locally is
+=/private/tmp/poo-contribution-publication-20261017=. Raw attempts stay there;
+source control retains this structured account and the executable Scheme test.
+The baseline =t/admission-publication-test.ss= passed under the same isolation.
+
+Reproduction after unpacking the verified archive and making the two source
+links described above, from the Core directory:
+
+#+begin_src sh
+GERBIL_PATH=/private/tmp/poo-contribution-publication-20261017/state \
+GERBIL_LOADPATH=/private/tmp/poo-contribution-publication-20261017/source \
+just test-file t/contribution-publication-isolation-test.ss
+#+end_src
+
+* Native path and fixture path
+
+| Layer | Exercised implementation | Qualification limit |
+|-------+--------------------------+---------------------|
+| Object semantics | Pinned .def, lexical slots, =>.+, .cc, .put!, object-revision | No universal closure read-set inference |
+| Selected/build graph | Production select-module-graph and module-build-graph | Source publications/preparation are small fixtures |
+| Contribution collector | Test-local exact edge/record/export coverage and revision fences | Not production core.contributions indexing or .selected-record linking |
+| Domain dispatch | Real .defgeneric/.defmethod-bundle and explicit fresh Generic composition | One policy family; no method collision or dynamic method-update control |
+| Admission | Public native .admit backed by Core YuanxuContract. | Small connection/plan classifier, not complete service field Contracts |
+| Checked publication | Production AdmissionPublication. .publish and source Context | No new .for-export adapter is installed |
+| File currentness | Real module-source-admit-current! on temporary source bytes | Local observations, not remote publisher authentication |
+
+The test constructs private metadata through ordinary .cc constructor arguments
+where lexical values must be captured. Receiver-dependent application config,
+plan and admission behavior retain native .o declarations. This is not an extra
+user-facing object layer or an inheritance requirement for plain configuration.
+The fixture resolves a one-segment export path; the multi-segment receiver walk
+in 10.10 remains proposed and needs its own mutation controls.
+
+* Eight controls and their exact interpretation
+
+| Control | Required result |
+|---------+-----------------|
+| Operations=5433, Security=5440 | Native .admit refuses; obligation constraints retain BOTH ordered diagnostic origins and values; .publish preserves supplied previous subject |
+| Omitted row and duplicated row | Exact coverage raises the expected incomplete/substituted-origin error before a publication can be created |
+| Same-labelled replacement SourceRef | Identity-bound coverage refuses; post-assembly replacement also refuses checked publication |
+| Source file edited after assembly | Production source guard rejects publication |
+| Payload changed through .put! | Native revision fence rejects the old batch |
+| Parent plan leaves forced before fresh child definition | Child admitted preview is 5433/5433, evidence.candidate is the published subject; parent remains 5432 |
+| Cached parent plan explicitly attached to child | Connection/plan classifier refuses stale projection |
+| Final Gitea port 6000 versus server 5433 | Final connection classifier refuses |
+
+A source preparation refusal and a policy obligation refusal are different
+boundaries. The latter returns Core evidence; errors inside checked .publish
+become publication failures. The caller's previous subject is retained, not
+newly re-admitted or certified current under the changed source/policy.
+
+* Failures retained during development
+
+1. Core's unconfigured local test path could not resolve :clan/poo/object.
+   A separate verified pinned source path fixed test discovery; no global install
+   or runtime compatibility implementation was substituted.
+2. The first fixture used an unavailable :std/srfi/1 path; it now uses the
+   runtime's :std/list/list library.
+3. Duplicate fixture compiler identities were correctly refused by the REAL
+   build graph; each owner now has its own compiler identity.
+4. =record: record= in .o raised native CyclicSlot: the slot binding shadows
+   the outer name. This exposed a real flaw in the previous 10.10 design snippets.
+   Metadata capture names were corrected there; the fixture uses ordinary native
+   constructor arguments for captured metadata. MOP is not a substitute for
+   checking the actual declaration semantics.
+5. A mechanical constructor edit incorrectly moved =>.+ outside declaration
+   syntax and was rejected during expansion; receiver refinements were restored.
+6. A root-directory invocation used the wrong test path and did not run controls.
+7. The old Gambit error-exception? predicate did not recognize Gerbil Error.
+   Negative controls now check Error? AND the expected Error-message. This retains
+   the actual refusal rather than loosening the test to accept any exception.
+
+* Recorded result
+
+Final tightened run: exit 0, eight completed cases, MODULE-OK, HARNESS-OK and
+standalone OK, with no ERROR CASE/CHECK/HARNESS or heap/stack overflow marker.
+A std/net/request deprecation warning remains unrelated to these controls.
+Source and MOP mutation controls inspect the underlying Gerbil Error-message;
+merely observing some publication failure would not prove the intended guard.
+The conflict evidence contains exactly the operations/security origins and
+5433/5440 requirements. The fixture file SHA-256 is
+=f3532ae6a688540f8012cdadc0c63ee490721efb30ea524d293a8e5c98613553=.
+The retained final log SHA-256 is
+=101f3332d737a10450491de4514b67bd8b6266158ca7ec2c3b1fd8ec75e98116=.
+
+Before/after hashes matched for admission/publication.ss, types.ss,
+source/{selection,build,admission}.ss, poo-clos/{syntax,objects}.ss and the fixture.
+This is a check of those observed inputs, not a complete transitive closure audit.
+No timeout was enlarged and no negative assertion was removed to obtain the pass.
+
+The receiver control creates the child AFTER forcing both parent plan leaves:
+
+#+begin_src scheme
+(check-equal? (.get Parent plan server) 5432)
+(check-equal? (.get Parent plan client) 5432)
+(.def (FreshRelease @ Parent)
+  config: =>.+
+  (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(def view (platform paths '(5433 5433))) ; test-local selected source inputs
+(defvalues (receipt next failure)
+  (.call (.get view publication) .publish Parent FreshRelease))
+(check-equal? failure #f)
+(check-equal? (eq? (.get receipt candidate) next) #t)
+(check-equal? (.get next plan server) 5433)
+(check-equal? (.get next plan client) 5433)
+(check-equal? (.get Parent plan server) 5432)
+#+end_src
+
+This targeted refinement exists to verify receiver semantics. An ordinary user
+replacing a value need not expose these test records or the internal publisher.
+
+* What remains outside this result
+
+No production route-index adapter, all-Feature collection, method-source mutation
+fence, source-location diagnostic association, Loader integration, concurrency
+proof, remote source authentication, thousand-module benchmark or Lean transcript
+correspondence is established. The fixed fixture record scopes do not authenticate
+an arbitrary origin supplied by a caller. Production must obtain these associations
+from admitted selected records and source preparation, as 10.10 requires.
+
+* Follow-up
+
+[[file:10.12-deep-selected-publication-controls.org][10.12]] replaces manual selected records with actual source reading/linking and
+exercises deep export receivers on a frozen staged Core snapshot. This does not
+change the narrower scope or historical source identity of the result above.

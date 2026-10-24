@@ -1,0 +1,82 @@
+#+title: Modular Developer Entrypoints
+
+* Ownership
+
+The root Justfile imports these recipe files into one command namespace.
+Imports preserve the root working directory, shared variables and existing
+command names.  They do not create another module loader or test language.
+
+- =environment.just=: compiler concurrency and pre-import VM limits.
+- =build.just=: compiler preparation and build gates.
+- =testing.just=: native test selection and ordinary test commands.
+- =source-admission.just=: opt-in MOP, source and replay qualifications.
+- =checks.just=: package and partition checks.
+- =proofs.just=: formal assurance entrypoints.
+
+* Shared test agreement
+
+=just test-file PATH [false|true|trace]= delegates to
+[[file:../../t/qualification/testing/run.ss][the native TestingScript projection]].
+The projection declares a source, observation policy and runtime options, then
+calls =TestingScript. .run=.  The existing Ops implementation owns process
+execution; =admit-testing-result= owns exit status, exact module/harness
+completion and failure-marker checks.  Native =std/test= owns assertions.
+The source guard runs before and after execution through the existing Fixture.
+
+Just retains the pre-import heap fence and finite outer watchdog.  The total
+budget still comes from =ops/progress.ss=.  These controls apply before the
+Scheme driver can import the test policy.  Driver and child VMs retain separate
+heap fences; concurrent workers still require an aggregate memory budget.
+
+Other historical qualifications still contain specialized launch logic.  Moving
+those recipes does not establish that they already share this execution path.
+Migrate each only with its failure, currentness and resource controls preserved.
+
+* Evidence
+
+The initial split was checked against Just's parsed JSON: recipe bodies,
+parameters, dependencies, assignments, aliases and settings were identical.
+The subsequent =test-file= change intentionally replaces its shell log gate
+with the existing Scheme gate.  Both product and Core use that same projection;
+their existing runtime and total budgets remain distinct.
+
+* Focused verification
+
+The Core TestingScript regression passed through both =just test-file= entrypoints
+with the installed Gerbil and the existing compiled Core dependency environment.
+Both runs completed with exit zero, exact =MODULE-OK= and =HARNESS-OK= lines,
+a final =OK=, and no harness/heap/stack failure markers.  Core's existing seven
+test partitions remained complete and disjoint (172 files).  This is a focused
+runner verification, not a claim that every relocated qualification was run.
+
+* Specialized receipt admission
+
+Specializations inherit =TestingScript. .run=.  They configure ordinary POO
+slots rather than copying spawn, capture, status checks or Fixture cleanup:
+
+#+begin_src scheme
+(.def (Qualified @ TestingScript.)
+  source: selected-source
+  command: selected-native-command
+  profile: =>.+ (.o max-duration-milliseconds: 45000)
+  case-count: 9
+  required-lines: '("CASE-OK domain-specific obligation"))
+#+end_src
+
+=case-count= defaults to =#f=.  =required-lines= defaults to an empty list.
+=harness= defaults to =#f=, which retains the exact native
+=HARNESS-OK (FILES ...)= receipt.  A custom native aggregator may specify its
+exact existing harness line; every =MODULE-OK= from =source.spec= is still
+required.  A specialization can refine =.admit-result= for a distinct protocol,
+but inherited =.run= always enforces the common status/error/completion gate
+before calling it.  Replacing =.run= itself is outside this inherited policy.
+
+The receipt callback executes inside the existing source Fixture.  A receipt
+failure does not skip the final currentness check; if both fail, the original
+error objects survive in the existing dual-failure exception.  Logs remain
+Ops receipts or caller-owned artifacts, not new shell-managed temporary files.
+
+The product owns ASP batch completion and foreign-runtime receipt semantics.
+Core does not reinterpret a Rust test summary as a native Gerbil harness.
+Original total budgets, external watchdogs and artifact requirements belong to
+the specialization and must remain explicit.

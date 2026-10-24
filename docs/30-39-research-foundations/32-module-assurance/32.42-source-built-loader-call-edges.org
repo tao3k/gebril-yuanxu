@@ -1,0 +1,197 @@
+#+title: 32.42 Source-Built Loader Call Edges
+#+language: en
+#+startup: overview
+
+* Current implementation decision
+
+[[file:32.43-core-build-publication-authority.org][32.43]] supersedes this experiment as the implementation route: use installed
+Gerbil unchanged and enforce Core build/publication authority in Core. The
+SDK-wide rebuild obligations below apply only to the stronger hypothetical
+requirement of intercepting arbitrary native loads; they are not a prerequisite
+for Core publication admission and are not the current implementation plan.
+
+* Question and bounded experiment
+
+[[file:32.41-issuer-bound-native-loading.org][32.41]] retained an actual bypass: an original SDK procedure value returned a
+cached module without visiting the later installed issuer. Changing a global
+binding cannot rewrite a compiled procedure's internal call edge.
+
+This experiment compiles the installed SDK's actual =src/gerbil/runtime/loader.ss=
+in an isolated namespace BEFORE capturing procedure values. No installed SDK
+source or global loader binding is modified. The transformation is a local
+qualification input, not a production SDK patch or alternative public API. It
+keeps the native cache, mutex, condition variable, resolver and reload logic.
+
+* Native source and build ownership
+
+The pinned SDK is =0.19.20261009110849.1cfb032.patch618d76f9eb72=.
+
+| Native source | SHA-256 |
+|-
+| =runtime/loader.ss= | =87e14478890476614890a7306100493ced6aa89bf366ce16f4b3cd3109b2be6e= |
+| =compiler/compile.ss= | =ab7afcabfcf89c8ca635779c200e27edc3abdf18debad3fdec1745c074ac9720= |
+| =compiler/driver.ss= | =07a175646c90b16c690cf32d670b8368d534963966bbc84d89896f9bb8e5e300= |
+
+The real =loader.ss:32= checks the cache inside =load-module=. Its =:75=
+=reload-module!= also has an early cached return when the resolved path has not
+changed. Reload needs its own entry check even though its fallback calls load.
+
+The compiler has further ownership obligations:
+
+- =compile.ss:1083,1147=: runtime import generation emits =load-module= calls.
+- =driver.ss:803=: generated loader code calls =load-module= for its runtime unit.
+- =compile.ss:1272,1293,1482=: phase/runtime blocks emit the same binding.
+- =runtime.ss= includes/reexports the loader; =runtime/init.ss= owns evaluator,
+  import bootstrap and raw load integration.
+
+Recompiling one facade does not replace these edges. A production SDK build must
+bind its own native implementation at every owned entry and qualify bootstrap,
+compiler products and dependency closure together. This is not that SDK rebuild.
+
+* Checks compiled into the native bodies
+
+[[file:../../../t/qualification/mop-state/compile-store-boundary.ss][The existing compiler job]] copies native source into an isolated module, changes
+package/prelude/import locations, inserts authorization before BOTH cache-entry
+locks, and redirects its single primitive load expression to the already
+qualified byte-consumption function. It requires exactly two entry insertions
+and one load site; SDK source drift fails compilation. No patch file is saved.
+
+The entry insertion is an ordinary function call:
+
+#+begin_src scheme
+(core/t/qualification/mop-state/artifact-authority#authorize-request! modpath)
+#+end_src
+
+Observed emitted Scheme places this in the internal typed implementation.
+Its wait/retry and reload branches directly call the same compiled entry:
+
+#+begin_src scheme
+(core/t/qualification/mop-state/source-loader#__load-module modpath)
+#+end_src
+
+The full copied SDK bodies are compiled by native =compile-module=, optimization
+and GSC. Retained source/runtime hashes join =RESOURCE-ISSUANCE= on the compiler
+child's pipe. Bootstrap loads verified =source-loader~0.o1= from the private
+pool and sets its own native load path; it never assigns the SDK loader globals.
+
+* Native controls and domain consumers
+
+[[file:../../../t/source-loader-authority-test.ss][The focused test]] captures the compiled entry BEFORE loading its target:
+
+#+begin_src scheme
+(prepare-source-authority! state)
+(core/t/qualification/mop-state/source-loader#set-load-path! (load-path))
+(def saved core/t/qualification/mop-state/source-loader#load-module)
+(saved entry)
+(saved entry) ; hot authorization, no new consumption
+#+end_src
+
+The attack replaces the callback binary with the real unlowered binary and
+recomputes a structurally coherent record. Saved, direct and reload entries must
+refuse =issued source or record changed= without another completed consumption.
+Restoration must permit the same saved procedure again. Expected issuance is
+never refreshed from the changed files. SDK =load-module= identity is unchanged.
+
+The genuinely loaded callback retains the Parent/Hot/Cold control: Parent is
+cached at 5432; Hot supplies replay observations; Cold is unforced. A shared
+specification write of 5440 must fail before storage; all final values remain
+5432 and the unused error slot is never forced.
+
+The actual =SourceAdmissionContract.= consumer remains separate: BOTH port
+contributions, child obligations, final child plans, explicit mismatch and
+changed-source rejection still apply. Loader authorization is not domain policy.
+
+* Lean, actual observations and QNT
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean][SourceLoader.lean]] proves =changed_cache_refused=, =stable_cache_allowed=,
+=saved_edge_independent_of_rebinding= and =both_requirements=. Its explicit
+=old_edge_counterexample= distinguishes an old unchecked procedure from the
+rebuilt checked one. These are call-edge protocol theorems, not compiler proofs.
+
+[[file:../../../dev/proofs/lean/SourceLoaderCheck.lean][The independent decoder]] consumes actual error messages, authorization event
+deltas and completed-consumption deltas. It requires four ordered observations,
+positive authorization and zero new consumption on each hot request. Changed
+cases must agree with the Lean decision and the exact native refusal.
+
+[[file:../../../dev/proofs/quint/SourceLoader.qnt][SourceLoader.qnt]] has eight scoped outcomes: positive safety plus old saved
+edge, missing reload check, unchecked retry, dropped second requirement, parent
+corruption, eager unused work and acceptance controls. Negative controls must
+produce counterexamples. Retry coverage is source inspection plus a finite
+call-edge model, NOT a native concurrent condition-variable test.
+
+* Production gaps and reflection
+
+1. Integrate into the actual SDK source/build/bootstrap. The copied native module
+   demonstrates the strategy; the original SDK remains unchanged and retains
+   the 32.41 bypass.
+2. Rebuild or reject old clients and runtime units. Compiler-emitted imports and
+   phase blocks still reference SDK globals; this experiment does not silently
+   retarget the entire dependency closure.
+3. Protect issuer bootstrap, metadata and private bytes. Compiler child, host and
+   authority implementation remain trusted; no hostile-Scheme sandbox or remote
+   publisher authentication has been established.
+4. Keep fixed-byte loading separate from current external state and conditional
+   publication, as demonstrated by 32.41's late public-path change.
+5. Qualify threads, issuer revocation, shared cache ownership and exception paths
+   against a rebuilt SDK. Serial fixtures do not establish concurrency safety.
+
+Capturing a procedure no longer defeats a check compiled into that procedure's
+own cache entry. Complete build/capability closure remains the real production
+burden; another runtime rebinding layer would not solve it.
+
+* Reproduction and evidence lifetime
+
+#+begin_src sh
+just --justfile core/Justfile test-source-loader-authority /private/tmp/source-loader-check
+just --justfile core/Justfile check-source-loader /private/tmp/source-loader-check/source-loader-observations.json
+just --justfile core/Justfile test-file t/issued-read-admission-test.ss
+#+end_src
+
+Raw logs stay outside source control. Fixture-owned compiler outputs and private
+copies are cleaned. Existing heap and stage timeout fences remain unchanged.
+Exact results and failed attempts are recorded below after completion.
+
+** Completed local evidence
+
+- =/private/tmp/core-source-loader-04.log=: natural exit zero, =MODULE-OK=,
+  =HARNESS-OK= and final =OK=. One native case exercises four recorded hot
+  requests and the Parent/Hot/Cold mutation control. Actual rows are:
+
+  #+begin_src scheme
+  ;; label, native error message, authorization-event delta, consumption delta
+  #("saved-hot-valid" "" 2 0)
+  #("saved-hot-changed-record" "issued source or record changed" 2 0)
+  #("direct-hot-changed-record" "issued source or record changed" 2 0)
+  #("reload-hot-changed-record" "issued source or record changed" 2 0)
+  #+end_src
+
+  =candidate-04/source-loader-observations.json= under
+  =/private/tmp/core-source-loader-20261018/= retains these actual measurements.
+  Event delta two is a request event plus its source/unit observation; it does
+  not mean two independent full checks or two loads.
+- =/private/tmp/core-source-loader-decoder-01.log=: the independent Lean decoder
+  accepts the four measured decisions and zero completed hot consumption.
+  The matched negative run =core-source-loader-decoder-negative-01.log= changes
+  one recorded refusal to acceptance and exits nonzero with
+  =native cached decision/model mismatch=.
+- =/private/tmp/core-source-loader-domain-01.log=: real SourceAdmission consumer,
+  two cases, all harness markers and natural exit zero. Both domain contributions,
+  child obligations, parent-cached child plans and source rejection are retained.
+  This consumer is separate from the isolated native loader process.
+- =/private/tmp/core-source-loader-regression-01.log=: all nine 32.41 native
+  controls reran with the extended compiler resource issuance; natural exit zero
+  and all harness markers. Its saved original-SDK measurement remains
+  =[true,false]= (cached return, no authority event). The source-built result
+  has not erased or retroactively repaired the older procedure counterexample.
+- =/private/tmp/core-source-loader-lean-02.log=: 181 build jobs; 6175 declarations,
+  standard Lean axioms only, and no arbitrary Prop-valued model fields.
+- =/private/tmp/core-source-loader-quint-02.ss= and its log: eight expected scoped
+  outcomes, 377 bound source files. The post-run source-cut comparison matched.
+  First QNT startup failed because loopback binding was sandbox-denied; the
+  permitted local-backend run succeeded. This is not a model counterexample.
+
+Native runs 01/02 retain generator reader/output failures. Run 03 retains a
+failed negative control: it rewrote the SAME code-facts record without changing
+the underlying code, so the issuer correctly did not reject. Run 04 replaces
+both the actual binary and its coherent record. The failed expectation is not
+relabelled as a rejected attack or a safety success.

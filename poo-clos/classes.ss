@@ -15,8 +15,7 @@
 
 (export ClosDirectSlotDefinition ClosEffectiveSlotDefinition ClosClass
         poo-clos-standard-object-class poo-clos-direct-slot-definition
-        poo-clos-class poo-clos-class-precedence-list
-        poo-clos-class-precedence-position
+        poo-clos-class
         poo-clos-find-class poo-clos-set-find-class! poo-clos-resolve-class
         poo-clos-class-effective-slots poo-clos-find-effective-slot
         poo-clos-class-subclass? poo-clos-class-specializer
@@ -383,7 +382,11 @@
   (unless (or (not different-handler-value)
               (procedure? different-handler-value))
     (clos-fail 'invalid-different-class-update-handler class: identity-value))
-  (let (candidate
+  ;; Mutable storage belongs to this class identity. Allocating it inside a
+  ;; computed slot recreates it when unrelated class metadata invalidates the
+  ;; receiver cache (for example when registering a direct subclass).
+  (let* ((class-storage-value (make-hash-table-eq))
+         (candidate
         (.o (:: self ClosClass.)
             identity: identity-value
             direct-superclasses: superclass-values
@@ -397,7 +400,7 @@
             redefinition-update-handler: redefinition-handler-value
             different-class-update-handler: different-handler-value
             documentation: #f metaclass: 'standard-class
-            class-storage: (make-hash-table-eq)
+            class-storage: class-storage-value
             instance-prototype: (make-instance-prototype self)
             class-precedence-list:
             (compute-class-precedence-list
@@ -406,7 +409,7 @@
             (poo-clos-position-index/identity
              (.ref self 'class-precedence-list))
             effective-slots: '()
-            effective-slot-index: (make-hash-table-eq)))
+            effective-slot-index: (make-hash-table-eq))))
     (let (class-value
           (initialize-direct-class-slots!
            (refresh-effective-slots!
@@ -541,19 +544,6 @@
     (.put! class-value 'metaclass metaclass-value)
     (hash-put! poo-clos-class-registry identity-value class-value)
     class-value))
-
-;; : (-> ClosClass [ClosClass])
-(def (poo-clos-class-precedence-list class-value)
-  (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
-  (.ref class-value 'class-precedence-list))
-
-;; : (-> ClosClass ClosClass (Maybe Natural))
-(def (poo-clos-class-precedence-position class-value target-value)
-  (unless (and (element? ClosClass class-value)
-               (element? ClosClass target-value))
-    (clos-fail 'invalid-class))
-  (hash-get (.ref class-value 'class-precedence-index)
-            target-value))
 
 ;; : (-> ClosClass [ClosEffectiveSlotDefinition])
 (def (poo-clos-class-effective-slots class-value)

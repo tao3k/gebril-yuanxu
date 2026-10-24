@@ -1,0 +1,210 @@
+#+title: 13.17 Init Exports and SDK-Owned Build/Test Consumers
+#+language: en
+#+date: [2026-10-22]
+#+property: STATUS implemented-interface
+
+* Decision and correction
+
+Init owns the selected source epoch and publishes its projections through one
+POO object, =yuanxu.init.exports=. Build and testing consume those projections using
+the installed Gerbil SDK. They do not independently rediscover Modules or
+introduce another Builder, scheduler, freshness cache or test harness.
+
+The experimental =build.ss test-support= dispatcher and its deferred
+production dispatcher were withdrawn. The separate test Builder file and
+recipe were also removed. They are not alternate APIs to preserve. The root
+build entry is restored to its pre-experiment form pending this redesign.
+The current implementation and focused preparation gates are described in
+[[file:13.18-guarded-test-precompilation.org][13.18]]; source-qualified export naming supersedes the unqualified spelling
+in [[file:13.19-source-qualified-init-exports.org][13.19]]. Complete product CI remains a separate gate.
+
+* What exists today
+
+=module-system/selection/init-syntax.ss= formerly generated seven flat
+build/test bindings. The migration implemented in [[file:13.18-guarded-test-precompilation.org][13.18]] now publishes one
+=yuanxu.init.exports= object. =module-system/building/interface.ss= already owns their
+single selection, prepared build, test-source cache and guarded reuse:
+
+| Former binding | Preserved responsibility | Current placement |
+|-----------------+-------------------------+------------------|
+| =init.build-spec= | Native target-list projection, retained roots, currentness | =yuanxu.init.exports.std-make-spec= |
+| =init.build-run= | Before/after native-dispatch boundary | Private SDK spec consumer; no export |
+| =init.tests= | Inert executable test/source facade | =yuanxu.init.exports.tests= |
+| =init.test-spec= | Selected test-file list | Through the tests projection |
+| =init.build-current!= | Prepared build epoch check | =yuanxu.init.exports.admit-current= |
+| =init.test-current!= | Aggregate test/source epoch check | =yuanxu.init.exports.tests.admit-current= |
+
+The named Module windows remain views over the same selection. This proposal
+does not require renaming those windows or creating a second module tree.
+The old flat build/test bindings are removed on migration, not retained as
+compatibility aliases alongside the object.
+
+The SDK =std/build-script= already owns =spec=, =compile=, =clean= and native
+option parsing. =std/make= already owns dependency scheduling, timestamp-based
+rebuild decisions, compilation and backend completion. =gxtest= already owns
+test import, registration and execution. These remain their responsibilities.
+
+* Export object: laziness with a precise value model
+
+The following shows the replacement for the factory's flat
+return values. The function names refer to the current implementation's
+closures, rather than new helper algorithms:
+
+#+begin_src scheme
+;; Inside yuanxu-init-build, after defining its existing closures.
+(def exports
+  (.o std-make-spec: build-spec
+      admit-current: current!
+      tests: test-source-value))
+
+(values exports module-namespace)
+#+end_src
+
+The init macro publishes the one object and keep namespace access private:
+
+#+begin_src scheme
+;; Hygienic expansion shape; the namespace getter remains private.
+(defvalues (private-base private-namespace-getter)
+  (yuanxu-init-build init-source init-declaration))
+(def private-value
+  (.+ private-base (.o Modules: (.ref (private-namespace-getter) 'Modules))))
+(defsyntax yuanxu.init.exports
+  (identifier-rules ()
+    (id (identifier? #'id) private-value)))
+(export yuanxu.init.exports)
+#+end_src
+
+=std-make-spec= is a function returning an ordinary native Make specification.
+Getting that function does not expand sources, select every Module, compile,
+or execute a process. Calling it demands the selected build projection and
+checks the current source epoch. Retained ordinary package roots remain an
+argument, as in the current =build-spec=; Core's =core-spec= must not be silently
+converted into selected business Modules or copied into a second inventory.
+
+=tests= is the existing POO test facade. Getting it must not discover all test
+directories or force the production build projection. Selection, explicit-file
+projection and execution remain separate demands on that facade.
+
+Putting a value under =exports= does not by itself make it lazy. The factory
+must return inert closures/POO objects; it must not first evaluate build/test
+projections as arguments to their construction. Conversely, changing the
+guarded function to a cached plain-list slot is unsafe: an ordinary warm slot
+does not automatically observe later filesystem changes. Independent demands
+and execution boundaries must retain the existing currentness checks.
+
+* Thin native build consumer
+
+The substantive target consumer is the existing SDK dispatcher, not a new
+command branch. The current package/prelude bootstrap stays in its owner;
+the following shows the changed consumer portion only:
+
+#+begin_src scheme
+(import (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in :clan/poo/object .get)
+        (only-in "./init.ss" yuanxu.init.exports)
+        (only-in "./core-spec.ss" core-spec))
+
+(def modules-spec (.get yuanxu.init.exports std-make-spec))
+(defbuild-script (modules-spec core-spec))
+#+end_src
+
+The public build entry is the native Make specification. The Core adapter
+preserves SDK dispatch and the prepared projection's currentness and role
+lowering without publishing another execution slot. Ordinary package compilation
+does not issue publication authority; explicit projection =.compile= retains
+that separate issuance boundary. Spec identity and stale-source refusal remain
+checked at the internal handoff.
+
+There is no custom =test-support= command and no hand-written argument parser
+in this consumer. Test-only targets do not enter the production specification.
+
+* Test publication and native Make reuse
+
+Extend the existing test facade, rather than creating a test Builder:
+
+| Demand | Result | Must not do |
+|--------+--------+-------------|
+| Get =exports.tests= | Inert test facade | Scan all tests, import test bodies, run processes |
+| =.select= eligible owners | Existing guarded Module test projection | Re-resolve a second selected Graph |
+| =.for-files= explicit files (proposed) | Existing explicit-file source projected to the same test protocol | Discover unrelated tests or take ownership of foreign packages |
+| Demand that projection's =spec= | Native harness input files | Compile or execute |
+| Call that projection's =std-make-spec= (proposed) | Native test-build target list | Implement dependency scheduling or cache a passing verdict |
+| Explicit =.run= | Existing TestingScript/Ops execution and receipt | Execute at import or bypass source/result admission |
+
+The public Module use is a relocation of the existing operation:
+
+#+begin_src scheme
+(def tests (.get yuanxu.init.exports tests))
+(def ops-tests (.call tests .select '(ops)))
+(.call ops-tests .run)
+#+end_src
+
+The existing file entry would internally obtain the same kind of projection:
+
+#+begin_src scheme
+;; Proposed internal projection, not a sequence users must write.
+(def selected
+  (.call (.get yuanxu.init.exports tests) .for-files
+         '("t/gitea-postgresql-publication-test.ss")))
+#+end_src
+
+The existing execution owner now has a complete proposed integration in
+[[file:13.18-guarded-test-precompilation.org][13.18 Guarded Test Precompilation]]. Obtain this projection once; its existing
+=.run= delegates to TestingScript, which consumes support through the existing
+=.compile= issuer before starting the native Harness. The Just entry does not
+call bare =make= and does not maintain another import graph. Users continue to
+call =just test-file= without a manual preparation step.
+
+The specification must be derived from actual native imports, using the
+existing source-closure projection. Root identity, native package prefix and
+source directory come from the admitted owner, not a hard-coded =yuanxu=
+prefix in a generic test runner. Shared support outputs belong to the existing
+test-only library. The SDK decides whether their sources/dependencies require
+recompilation. Output lookup must not let an old helper SSI hide a new source
+dependency. This is an acceptance requirement, not a solved cache assertion.
+
+Installed =gxtest= imports tests in =prepare-harness= before invoking their
+setup callbacks. A =test-setup!= hook is therefore too late to precompile an
+imported Fixture. The proposed hook is in the existing =run-testing-script=
+preparation phase, outside and before the native Harness. This is an explicit
+Core adaptation, not an SDK hook claimed to exist. The design also addresses
+product-scoped issuance, positive admission and runtime output-directory binding;
+the current graph-only issuance index cannot safely be reused unchanged.
+
+* Shared state and freshness
+
+One init generation owns the selection and its projection caches. Structural
+discovery may be reused within that generation; source admission and successful
+execution are not cached as reusable approvals. Build and test demands retain
+their independent guards. A build-source or init revision change refuses the
+old generation and requires a fresh one.
+
+Changing the namespace must preserve both independently published port
+requirements, source identity/currentness, child obligations, parent/child
+cache separation and unselected-branch laziness. It must not coalesce checks
+across callbacks or effects. Native MOP replay remains independent of SDK
+timestamp currentness; neither substitutes for the other.
+
+Keep the existing 120-second preparation bound, 60-second execution idle bound,
+600-second execution total bound and pre-import heap fence. Loading exports
+starts no process. A test-source list is not a passing test receipt; a Make
+specification is not an admitted plan or a successful build publication.
+
+* Verification and evidence boundary
+
+Use existing projection, namespace, build-entry, Fixture and Gitea/PostgreSQL
+consumer tests. Add a Case to its existing owner only for a new semantic
+boundary; do not repeat SDK cold/hot compilation tests in an independent suite.
+
+Acceptance requires: import and getter laziness, one shared selection identity,
+unchanged native specification semantics, no test targets in production,
+incremental shared-support reuse, independent freshness checks and unchanged
+negative admission controls. A direct migration removes the old flat exports
+after callers move; no dual entrypoints remain.
+
+The earlier observations are recorded in
+[[file:../../30-39-research-foundations/32-module-assurance/32.55-complete-build-costs.org][32.55]]. They show that the Case bodies were small and Fixture acquisition
+was dominated by issued-read replay. This publication redesign fixes ownership
+and needless initialization; it does not prove a reduction in that replay
+graph or an end-to-end speedup. That optimization requires its own semantic
+argument and unchanged negative controls.

@@ -1,0 +1,224 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Reflection and Improvement Plan: A Configuration Interface Built on Scheme and POO
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* What this research changes in our design position
+
+The subsequent [[file:../164-funflow-public-configuration/09-consolidation-and-ecosystem-gaps.org][ecosystem-grounded consolidation decision]] uses actual Omnibus
+CI/matrix and HiveBus POP publication call sites to specify six remaining gaps:
+field discovery, merge conflicts, extension versus typos, release evolution,
+evaluation cost, and configuration admission through plan publication. It also
+maps all 31 reference functions to safe consolidation and LeanPoo reuse premises.
+Those acceptance requirements are design work, not new runtime or Loader support.
+
+The first concrete follow-through is the
+[[file:../164-funflow-public-configuration-contract-design.org][Funflow public-configuration redesign]]. It separates defaults from native
+field Contracts, gives the same CI/CD case at both user layers, and specifies
+closed Check fields, dynamic Check selection, ordering and scoped admission.
+It is a design result, not a completed validator or Loader improvement.
+
+The previous comparison treated extensibility as a sufficient argument for our
+interface. The extracted cases refute that shortcut: Nickel functions and merge,
+Jsonnet inheritance, Dhall typed functions and NixOS options already provide
+substantial extensibility. Our product must make an actual extension task easier
+without weakening ordinary configuration correctness or demanding more concepts.
+
+The current POO advantage is conditional. A single object model can connect
+business values, inherited strategies, native contracts and final consumers.
+It becomes an advantage when users can discover that model, obtain good errors,
+and extend a declared boundary without rebuilding the framework. Today several
+of those connections are incomplete.
+
+* Axis one: maintaining thousands of modules and Profiles
+
+** Ownership has to be finer than a default interface file
+
+A module owns a public value family, defaults, contracts and projections. A
+Profile is independently reusable configuration; a Scenario owns selected
+relationships. Package presence, module binding, Profile selection and execution
+are distinct facts. A default interface may close exports, but importing every
+implementation through it is not a scalable publication strategy.
+
+The local Funflow split establishes separate prototype and factory owners. It
+still imports both definitions statically. Maintaining a thousand similar files
+could therefore impose source/compile costs before any Profile is forced.
+Future catalogs need source/version/owner metadata and bounded selected demand;
+no performance claim follows merely from wrapping the catalog in POO getters.
+
+** Extension should not multiply representations
+
+The same public attribute should not be described independently in a UI schema,
+a validator table, a loader manifest and an output adapter. A canonical native
+Contract/slot model should own its shape and obligations, with documentation and
+inspection as projections. Source authority is a separate fact attached by an
+admission boundary, not inferred from a nominal prototype or alias spelling.
+
+Use named functions for algorithms: selection, qualification, ordering and
+projection. Use a replaceable native slot for one receiver behavior axis. Use
+Core CLOS only when independent axes actually vary, such as provider and
+publication kind. Declare method bundles without registering them, then compose
+only the selected bundle at an explicit boundary. Do not install thousands of
+methods as an incidental consequence of importing declarations.
+
+Private defrules can generate genuinely repeated declaration families. Hygiene,
+source locations and ordinary native expansion are requirements, not reasons to
+invent another public configuration language inside Scheme.
+
+** Scale acceptance must separate legitimate enumeration from accidental work
+
+Listing every available module legitimately costs work proportional to that list.
+Reading one known Check should not perform the same enumeration. Measure source
+imports, metadata index construction, scope creation, prototype/Profile demand,
+contract traversal, projection and warm repeats separately. Count factories and
+backend calls as well as elapsed time and retained memory.
+
+The test workload should contain 1000 and 10000 module descriptors, select a small
+K and vary K independently of catalog size. Include wrong-source, duplicate-name,
+missing-dependency and cyclic-input controls. Distinguish a module registered in
+a catalog from a service enabled in a configuration. No such scale comparison
+has been executed in this study.
+
+* Axis two: first-layer configuration and second-layer native extension
+
+** First-layer success criteria
+
+A user selecting a maintained Scenario should normally edit business values.
+They should not repeat a Check prototype, runtime protocol, component inventory,
+instance alias and internal collector to change a command. The upstream owner
+must publish an actual complete default object, not a name that only exists in
+a design example. POO local Funflow now does this for its three default Checks.
+
+However, even a short path refinement exposes .def, inheritance and =>.+. The
+user still needs to know that the target exists and is an object. We should
+teach this as one consistent refinement rule, provide attribute discovery and
+show focused errors. A macro that merely hides those obligations is not enough.
+
+** Second-layer success criteria
+
+An existing strategy or Check is refined with =>.+. A new object obtains its
+prototype through the current module scope. Higher-order data transformations
+remain normal Scheme functions; they do not require a class or Generic wrapper.
+The expanded configuration is the same object graph consumed by contracts and
+projection, rather than an alternate extension representation translated back
+into ordinary configuration later.
+
+The extra power has a cost: extension authors can introduce new slots, effects
+or recursion. Native object openness and domain admission must remain distinct.
+A source-role policy cannot establish purity of arbitrary higher-order code by
+looking for a few function names. Our Scheme host does not inherit Dhall's total
+language guarantees or a restricted evaluator's effect policy automatically.
+
+* Prioritized improvements: design work, not new implementation in this revision
+
+** P0: one public-attribute and contract view
+
+Problem: SourceRef and object? are weaker than a published configuration contract.
+A nominal Check can still contain an invalid command or a misspelled unused slot.
+
+Design direction: project public fields, defaults, descriptions and extension
+roles from the authoritative native model. Identify which boundary checks field
+shape and which evaluates cross-field obligations. Ordinary value fields and
+native POO object/type fields should be distinguishable in that description;
+users should not repeat the upstream responsibilities declaration.
+
+Acceptance: an author can discover commands and its domain constraints
+without reading the implementation; a misspelling reports the selected Profile,
+source declaration and suggested public field. Tests must prove the actual
+consumer invokes the Contract, including negative values. Do not claim this is
+implemented merely because a define-type form exists.
+
+** P0: define selection and ordered composition before claiming arbitrary checks
+
+Problem: current checks = (list build test package) follows refined values, but
+adding smoke does not add a fourth task. Multiple modules can also publish build.
+
+Design direction: a Scenario's explicit native relationship should select
+qualified Check identities and ordering. Defaults belong upstream; a business
+user edits the relevant relationship as data. Derivation computes the effective
+list from that relation. This is a proposed model requirement, not a new syntax
+or an implemented pipeline.order API.
+
+Acceptance: adding an unrelated slot does not change execution; selecting smoke
+includes it exactly once; two modules' build values remain distinct; missing
+references and dependency/compensation errors identify their owners. Prototype
+parent order never becomes implicit execution order.
+
+** P0: resolve the source-role mismatch
+
+Problem: authoring examples use native .def/.o, while the existing ordinary
+user-root policy restricts reopening those forms. Implemented syntax is not
+universal source-role authorization.
+
+Design direction: identify the admitted Scenario/configuration owner route for
+bounded inheritance and data refinements, while keeping unrestricted provider,
+MOP and method declarations in their proper upstream roles. Decide the boundary
+explicitly; do not add a wrapper DSL simply to conceal the conflict.
+
+Acceptance: the same documented first-layer example passes the intended owner
+admission, and a provider-method declaration in the ordinary user route fails
+with a targeted repair. This revision changes no admission policy.
+
+** P1: remove ambiguity from the front-door explanation
+
+Problem: as names a Bundle instance in one use-module grammar and a lexical
+alias in another. Funflow versus funflow: is only a naming discipline.
+
+Design direction: make the bounded native scope the documented route for these
+configuration examples, and describe indexed Bundle selection separately.
+A future migration decision should be explicit; do not silently reinterpret
+identifier tails or introduce another compatibility wrapper. Keep native lexical
+semantics and diagnose direct source/slot collisions rather than hidden lookup.
+
+Acceptance: a new user can state whether a form returns a Bundle or evaluates a
+body, and where ff is in scope. An escaped alias and an unbound source get useful
+errors. A configured value retains its source handle, without claiming trust.
+
+** P1: explain conflicts and effective values
+
+Problem: C4 ordering selects prototype behavior; it does not define a domain
+policy for two independent owners' same-named fields. Current equality checks do
+not explain a value's history.
+
+Design direction: preserve source/version/owner, inherited definition and local
+refinement locations in inspection projections. Make replacement, list
+transformation and object refinement explicit. Reject ambiguous source claims
+before projecting a plan; do not choose a business definition by accidental
+parent order. Trust evidence must be independently admitted.
+
+Acceptance: inspection answers why release-build-log is effective, where its
+base came from, and which contribution changed it. A conflicting second owner
+produces two source locations and a concrete repair.
+
+** P1: constrain effects and evaluation cost honestly
+
+Problem: delayed Scheme code may still read files, mutate state, recurse or
+perform large computations when demanded. A macro preserving hygiene does not
+prove any of those computations safe or cheap.
+
+Design direction: keep configuration-time algorithms pure by API ownership,
+constrain admitted capabilities at real boundaries and leave command execution
+to explicit runtime handoff. Retain watchdog failures as evidence. Avoid scope
+checks that recursively validate every available Profile on each field access.
+
+Acceptance: reading one field does not activate unrelated Profiles; admission
+forces only its required dependency closure; cold and warm measurements include
+source/metadata costs. Purity and termination claims require stronger mechanisms
+than this revision implements.
+
+* How Scheme and POO earn their place
+
+Use lexical closures to preserve bounded dependencies instead of global symbol
+injection. Use map/fold and named functions to transform configuration without
+inventing an object for each intermediate value. Use native slots where the
+behavior must remain dependent on the effective receiver. Keep the existing
+=>/=>.+ algebra rather than layering an Override DSL over it. Use MOP/Generic
+machinery upstream to maintain open protocol families, not as mandatory concepts
+for the person changing a command.
+
+The outcome sought is fewer concepts per ordinary task and a reliable path to
+extension when needed. More metaprogramming is not itself that outcome. Nickel's
+contract-carrying data, NixOS's option discovery, Jsonnet's receiver semantics and
+Dhall's explicit typed functions are concrete challenges our design must meet.

@@ -1,0 +1,239 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.04 Reflection: Why Contracts, Which Layer, and What Must Be Demonstrated?
+#+property: DOCUMENT_ID 12.04
+#+language: en
+#+property: STATUS research-and-design-questions-not-implementation-evidence
+
+* Research purpose
+
+The purpose is to support evolving configuration libraries and independently
+maintained contributions: ordinary value edits, reusable Profiles, related
+services, callable extensions and large selected module graphs. Possessing a
+MOP is not by itself a reason to expose one to every author. A proposed Contract
+layer earns its place only by resolving an actual boundary more clearly and
+with less duplicated author work than existing mechanisms.
+
+Read [[file:12.03-object-contract-schema-adapters-and-aws-admission.org][the concrete AWS design]] alongside these questions. The proposed Scheme is
+not a proof or an implemented comparison result. Research below supplies
+concepts and counterexamples to investigate, not certificates for this code.
+
+* When should each mechanism be used?
+
+| Actual need | Prefer | Why the next layer is unnecessary or necessary |
+|-------------+--------+-----------------------------------------------|
+| Helper requires a string, integer or known class/interface | Gerbil checked contract / using | Local checked boundary is enough; do not allocate a module receipt |
+| A POO slot holds a String, parameterized List or refined scalar | Existing gerbil-poo Type | Reuse element?/validate; no Core identity requirement |
+| A module exports a callable extension with input/output/relational checks | Existing POO Function or PR invocation Contract, chosen to match required semantics | Do not confuse procedure membership with a checked invocation |
+| Independently authored objects must provide valid named fields | Structural ObjectContract responsibilities plus Schema adapters | An extensible diagnostic object contract adds value; common ancestry is not required |
+| A consumer depends on inherited behavior or MOP invariants | Explicit prototype requirement AND field checks | Shape alone does not establish implementation behavior |
+| A Schema defines provider input | Existing JsonSchema compiler/validator via a Type adapter | Reuse authoritative field rules; no handwritten duplicate AWS schema |
+| References connect selected resources from contributions | Domain relation over the final effective configuration | Checking each scalar separately is insufficient |
+| Selected publication sources, Schema versions and dependencies must match the checked configuration | Core contextual admission | Generic value membership does not establish current module/source association |
+| Multiple independently checked endpoints must be published together | Evaluate upstream joint publication against the actual requirements | Do not add a transaction layer to a simple immutable value edit |
+
+"Hybrid" describes internal cooperation between these mechanisms. It should
+not require an ordinary user to learn several simultaneous declaration systems.
+The default edit stays image/address/port/value assignment. Profile inheritance
+is disclosed when upstream reuse matters; original-value transformation appears
+only when retaining the original is part of the requirement. No fixed user
+percentage is assumed.
+
+* Question 1: why retain anything called a Core Contract?
+
+** Working answer
+
+The retained semantic responsibility is contextual module admission: effective
+candidate, publication association, selected dependency graph and source/Schema
+revisions. It is not ownership of a second String, List, function or object type
+universe. Existing YuanxuContract mixes generic checking and evidence adaptation;
+its present existence does not establish that the whole hierarchy should remain.
+
+Generic structural contracts and Type adaptation should be proposed upstream.
+AWS/Kubernetes/CI/CD field and relationship contracts belong to their libraries.
+Core may retain an admission adapter over those descriptors and existing receipts.
+The final public names and whether the current base class survives are migration
+decisions, not assumptions frozen by these examples. Do not add Native to names.
+
+** Counter-question and acceptance criterion
+
+If every caller of a proposed Core class can be expressed by upstream Type or
+invocation Contract without losing context/provenance semantics, remove that
+class. Before retaining an operation, name a real consumer and the information
+it requires beyond boolean membership. Reject implementations that introduce
+parallel registries or permanent compatibility forwarding layers.
+
+* Question 2: what do we learn from Nickel?
+
+Nickel explicitly separates reusable typed code from configuration protected
+by contracts. Its record-contract machinery accommodates delayed field checks;
+merging retains constraints on the final field value. These address real library
+evolution needs, not just syntax convenience. See [[https://nickel-lang.org/user-manual/types-vs-contracts/][types versus contracts]],
+[[https://nickel-lang.org/user-manual/contracts/][contracts]] and [[https://nickel-lang.org/user-manual/merging/][merging]].
+
+** Design consequence and possible advantage
+
+POO can reuse the same descriptor through field discovery, value validation and
+callable module services. Scheme functions can transform maintained values
+without a new overlay language. Those are integration opportunities, not unique
+capabilities that Nickel lacks or demonstrated UX wins.
+
+** Unresolved risk and test
+
+POO slot replacement must not silently discard mandatory field/child contract
+requirements. Merely following the final value's prototype cannot establish
+that preservation. Test a wrong typed override, right-side composition that
+carries additional requirements, dynamic selected children and changed Schema
+revisions. Validation must inspect the final receiver. Until these pass, do not
+claim Nickel-equivalent contract-preserving composition.
+
+Delay evaluation of unselected branches, but require complete checking of the
+selected deployment input before reporting admitted-preview. Delayed field
+contracts are not a proof that no work or allocation occurs before a field is
+forced; measure setup, first demand and repeated demand separately. Nickel's
+[[https://www.tweag.io/blog/2022-09-20-optimizing-nickel-array-contracts/][array-contract optimization study]] is a concrete warning about setup costs.
+
+* Question 3: what does NixOS already solve?
+
+Nix has runtime data types; saying it has "no type system" obscures the actual
+design comparison. NixOS options add declarations, checking and type-specific
+merging, including source locations and override/order priorities. The system
+also supports assertions and custom checks. This is not the same interface as
+a Scheme higher-order contract, but it is a substantial validation mechanism.
+See [[https://nix.dev/manual/nix/2.34/language/types.html][Nix data types]] and the [[https://nixos.org/manual/nixos/stable/][NixOS manual: option declarations and types]].
+
+** Design consequence and possible advantage
+
+POO gives libraries explicit prototype reuse, functions and open dispatch
+without encoding every change as an option-merge rule. Yet C3 precedence is not
+a substitute for definition-conflict diagnosis, ordering or mandatory constraints.
+Contract validity does not decide which of two valid conflicting values the
+user intended. An Option-like metadata view can be derived from Contracts and
+publication information without creating a parallel semantic registry.
+
+** Unresolved risk and test
+
+Specify the winner/rejection policy independently from type checks. Test two
+contributions that choose different valid instance types, two contributions that
+add independent tags, and a late override that drops required metadata. Diagnostics
+must name competing definitions and their sources. Field discovery should show
+accepted values, default origin, required/optional status and how to edit the
+field without forcing every value. A shorter Scheme snippet without these
+facilities is not yet a better configuration experience.
+
+* Question 4: what does KCL already solve?
+
+KCL separates schema from config and supports defaults, constraints, schema
+inheritance, mixins and protocols. Its check blocks express validation beyond
+primitive field types. Consequently neither inheritance nor relational checks
+alone distinguish our proposal. See [[https://www.kcl-lang.io/docs/0.12/reference/lang/spec/schema][KCL Schema specification]] and
+[[https://www.kcl-lang.io/docs/reference/lang/tour][KCL Tour]].
+
+** Design consequence and possible advantage
+
+Our target is one extensible object/type boundary spanning data configuration,
+module APIs and executable services, with context-bound admission of selected
+contributions. An AWS Profile can be consumed by ordinary functions and refined
+as a POO object while its constraints remain discoverable. Native higher-order
+functions, macro hygiene and the MOP can reduce library maintenance work; they
+must not require simple configuration authors to write metaprograms.
+
+** Unresolved risk and test
+
+KCL has domain schemas and real configuration consumers. Our existing JSON
+Schema compiler is an asset, not a missing foundation. What still needs
+qualification is the exact provider-input mapping, descriptor adaptation,
+association propagation, source-aware diagnostics and final resource consumers.
+Use the same Guestbook or AWS inputs and schema revisions for comparisons;
+count both user code and maintained library code, including diagnostics and
+preview steps. Do not compare a complete KCL scenario with an unnamed Scheme
+helper or an unimplemented Schema adapter.
+
+* Question 5: what does contract research justify?
+
+[[https://users.cs.northwestern.edu/~robby/pubs/papers/ho-contracts-icfp2002.pdf][Findler and Felleisen, Contracts for Higher-Order Functions (ICFP 2002)]]
+explains why functions require monitoring at call boundaries and why blame
+must follow which component supplied an invalid value. This informs callable
+module extensions and source-attributed diagnostics. It does not prove our
+current Function wrapper, exception adapter or Core provenance implementation
+has that paper's guarantees.
+
+** Concrete questions to discharge
+
+- Does an exported callback remain checked after being stored, passed through
+  another module and invoked later? Membership as procedure? is insufficient.
+- Is a violation attributed to the contributing producer, the calling consumer
+  or the configuration override that supplied the invalid value?
+- Are expected contract violations distinguished from callback bugs, provider
+  refusal and source exceptions, preserving phase and cause?
+- Does repeated composition accumulate wrappers or duplicate validation?
+
+Reuse the PR's existing invocation and refusal mechanics first. Any stronger
+blame, tail-call or continuation property requires its own model and executable
+control. It must not be inferred from the existence of an input/output wrapper.
+
+* Question 6: when is cached admission reusable?
+
+[[https://www.microsoft.com/en-us/research/wp-content/uploads/2018/03/build-systems-final.pdf][Mokhov, Mitchell and Peyton Jones, Build Systems a la Carte (ICFP 2018)]]
+separates dependency scheduling from rebuilding decisions. The relevant design
+inference is to separate selected-object demand from evidence/result reuse.
+Caching a parent value is not an invalidation policy. This paper does not
+specify our configuration admission or prove that our observations are complete.
+
+** Concrete questions to discharge
+
+The proposed Core adapter conservatively binds one immutable snapshot. A more
+incremental adapter must record every relevant source, Schema, descriptor and
+selected-child dependency. Changed inputs require recomputation; unchanged
+complete observations may justify reuse. An omitted dependency is a correctness
+failure, not an optimization. PR ContractFamily's closed-input reuse and check
+template sharing are reusable mechanisms, but not automatic final-result reuse.
+
+Test a cached parent resource projection followed by a changed instance field,
+added tag, new selected child, Schema update and missing reference. Also test
+an unrelated unselected Profile change. Record both correctness and demanded
+work. Immutability, faithful dependency discovery and pure callbacks remain
+premises until separately established.
+
+* Decisions to validate before implementation
+
+The initial proof/model obligations should be narrow and explicit:
+
+- For well-formed descriptors, diagnose returns no issues exactly when element?
+  accepts the same immutable value. This does not establish higher-order
+  behavioral correctness from procedure membership.
+- Required constraints from every selected contribution remain conjunctive
+  after value composition. Descriptor inheritance alone does not prove this.
+- Removing a library-owned reference before provider validation preserves all
+  other names, including misspellings; no bad field disappears in projection.
+- Evidence accepted for a parent snapshot is not current for a distinct child;
+  sharing check templates does not imply sharing accepted results.
+- Unselected catalog entries are not demanded, while every required selected
+  child is checked before publication of admitted-preview.
+
+Existing LeanPoo models may supply reusable structures and lemmas, but their
+application requires a faithful mapping of these Scheme descriptors, demand
+observations and immutable snapshots. None of these statements has been newly
+proved by writing this document. A finite fixture does not establish arbitrary
+recursive-domain termination or complete dependency discovery.
+
+| Decision | Evidence required | Failure changes the design by |
+|----------+-------------------+-------------------------------|
+| Generic mechanisms belong upstream | Match actual upstream APIs and independent non-Core consumers | Removing redundant bases/adapters |
+| Structural and ancestry checks are separate | Independent conforming object accepted; behavior-only consumer rejects wrong ancestor | Revising object-contract policy |
+| Final values retain required constraints | Wrong override, multiple-parent and right-side-requirement negative controls | Revising construction/association propagation |
+| Ordinary authors see simple configuration | Same-case authoring and error-repair comparison against ecosystem examples | Reducing exposed POO/metadata ceremony |
+| Demand is bounded | Unselected branches never prepared; selected required children fully checked | Revising selected dependency discovery |
+| Reuse is current | Changed receiver/schema/source negatives and unchanged-input controls | Weakening or removing cache reuse |
+| Domain output is valid | Rendered resource validation plus relation checks against locked inputs | Repairing projection/consumer boundaries |
+
+* Conclusion
+
+The reason to pursue this design is the joint maintenance problem: many
+independent libraries, reusable defaults, evolving interfaces and related final
+resources. Other configuration ecosystems already solve important parts of it.
+Our opportunity is to integrate those requirements with Scheme functions and
+POO objects while retaining a simple data surface. The cost is more responsibility
+for constraint propagation, diagnosis, evaluation boundaries and evidence
+currentness. These questions are design tools: an unfavorable answer should
+change or remove an abstraction, not produce another slogan about extensibility.

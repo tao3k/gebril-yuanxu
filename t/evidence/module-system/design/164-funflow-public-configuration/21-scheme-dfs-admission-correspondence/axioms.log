@@ -1,0 +1,50 @@
+'PooFlowProfileAssociationProof.ancestors_sound' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.ancestors_complete' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.association_sound' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.shared_root_keeps_both' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.plus_keeps_left' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.plus_omits_right' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.gate_accepts_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PooFlowProfileAssociationProof.accepted_keeps_right_requirement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.missing_right_requirement_refused' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.composition_accepts_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.cached_value_passes_final_gate' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.consequence_keeps_factories' does not depend on any axioms
+'PooFlowProfileAssociationProof.DFS.visitParents_spec' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.DFS.visit_spec' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.DFS.closed_inherits' does not depend on any axioms
+'PooFlowProfileAssociationProof.DFS.success_membership_iff' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.DFS.successful_dfs_association_iff' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.Projection.identity_iff' does not depend on any axioms
+'PooFlowProfileAssociationProof.Projection.list_identity_iff' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.native_path_projects' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.Projection.projected_path_lifts' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.Projection.path_iff' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.Projection.dfs_native_path_iff' depends on axioms: [propext, Quot.sound]
+'PooFlowProfileAssociationProof.Projection.receipt_gate_iff' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.accepted_receipt_correlated' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.accepted_receipt_discharged' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.stale_candidate_refused' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.stale_context_refused' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.Projection.responsibility_success_checks_children' depends on axioms: [propext,
+ Quot.sound]
+'PooFlowProfileAssociationProof.Bridge.inherited_root_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.Bridge.inherited_root_receipt_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.Bridge.rhs_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

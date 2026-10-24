@@ -1,0 +1,195 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.32 Config Languages 31: Modular Configurations as a Core Design Principle
+#+property: DOCUMENT_ID 11.32
+#+date: [2026-10-16]
+#+filetags: :config-language:modularity:nickel:comparison:design:
+#+property: STATUS design-requirements-no-implementation-no-loader
+
+* Design decision
+
+Modular configuration is a core requirement of the configuration interface, not
+just a packaging or Loader concern. A published configuration must support
+inspection, reuse, ordinary value replacement and deliberate extension without
+requiring consumers to reconstruct its implementation. This applies to both
+maintained contribution libraries and downstream user configurations.
+
+We borrow selectively from ecosystems. We do not reproduce the Nix module system,
+equate native POO composition with Nickel merge, or add a parallel evaluator.
+The existing [[file:11.31-module-config-types-and-function-slots.org][config/types/function-slot design]] supplies the public scope;
+the [[file:../../../module-system/design/03-publication-selection.org][publication and selection protocol]] supplies module ownership and eligibility.
+
+* External rationale: Nickel Modular Configurations
+
+The primary reference is the official
+[[https://nickel-lang.org/user-manual/modular-configurations/][Modular Configurations manual]]. Its argument is practical: making an entire
+configuration a function hides its fields until application and creates argument
+forwarding work. Partial recursive records remain inspectable, combine without
+that forwarding, and preserve dependencies when fields change. Field metadata
+adds Contracts, documentation and export control. The manual's inputs/local/output
+layout is a convention, not a built-in module taxonomy.
+
+This motivates our decisions below; it does not establish equivalent semantics
+or implementation completeness in Agentic AI Lab Core.
+
+* Ecosystem evidence: actual Omnibus NCL
+
+The inspected contribution is pinned at
+=c5d37eb51961fd7bd32f775843044ca7f8191715=. These are source observations, not a
+fresh deployment or performance result.
+
+** AWS: simple inputs, maintained translation and final output Contract
+
+The following are separate excerpts from
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/main.ncl][aws/main.ncl]]:
+
+#+begin_src nickel
+aws.simple.ec2.instances = {
+  test = {
+    ami = ami-id aws.region,
+    type = "t2.micro",
+    network = aws.simple.networks.test,
+    public_key_name = "${resource.aws_key_pair.ssh_key.key_name}",
+  },
+},
+#+end_src
+
+#+begin_src nickel
+    | Aws.Simple
+    | Aws.S3Backend
+) | Tf.Config
+#+end_src
+
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws-simple-ec2.ncl][aws-simple-ec2.ncl]] declares input fields and a default instance, then computes
+=config.resource.aws_instance= and its security group from those inputs.
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws.ncl][aws.ncl]] assembles Aws.Simple from partial module records. The user configures a
+domain object; the library maintains resource translation. The final Tf.Config
+check is distinct from the high-level input declarations. Terraform interpolation
+strings in this source are also distinct from evaluated cloud resource values.
+
+For our design, this is a concrete reason to keep Profile input Contracts,
+Scenario relationship admission and output resource Contracts separate. A native
+Schema-derived output Contract does not by itself validate the high-level input
+or prove that generated references identify a live resource.
+
+** Sandbox: explicit functions still have a useful boundary
+
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/sandbox/seatbelt/interface.ncl][sandbox/seatbelt/interface.ncl]] publishes NetworkConfig/FsConfig, a =build=
+function that merges caller configuration with defaults, and =to_profile= that
+renders a Seatbelt policy. Its usage example is:
+
+#+begin_src nickel
+Sandbox.build {
+  id = "my-app",
+  backend = 'seatbelt,
+  cmd = ["/bin/bash"],
+  network = { enabled = false },
+  fs = { mode = 'ro, allowed_paths = ["/tmp"] },
+} |> Sandbox.to_profile
+#+end_src
+
+This is not evidence that every useful interface must be a partial record.
+An explicit function is appropriate for a bounded transformation or renderer.
+However, consumers should not have to invoke a renderer merely to discover the
+configuration fields it accepts. We must provide that discovery through the
+published native Contract/config scope, rather than invent another field table.
+
+* Requirements for our POO configuration interface
+
+** Keep configuration inspectable; keep algorithms callable
+
+Publish config, types and named function slots as one native scope. A module's
+whole public configuration must not become an opaque factory with a growing
+parameter list. Functions such as from-file, data transformations and resource
+projection remain explicit operations. Callable values are not inherently bad;
+forcing all configuration through them is the design risk.
+
+Incomplete configuration may be inspected and refined. Missing required values
+must be reported at the selected admission/publication boundary, without forcing
+unrelated modules. We still need to qualify which Contract metadata can be read
+without demanding field values; laziness must not be assumed from object syntax.
+
+** Expose POO according to intent, not author position
+
+Both contributors and users may assign ordinary values, reuse existing Profiles,
+or maintain complex inherited families. Neither group is restricted to one level.
+
+#+begin_src scheme
+;; Replace the complete value: ownership of this command moves downstream.
+(.def (LocalCI @ PublishedCI)
+  commands: '("gerbil" "build" "--release"))
+
+;; Preserve the maintained command and add a flag using native field refinement.
+(.def (ReleaseCI @ PublishedCI)
+  (commands => append '("--release")))
+#+end_src
+
+Here PublishedCI is the same maintained Profile in both examples, with commands
+initially ='("gerbil" "build")=. =append= is the ordinary Scheme function in
+the first argument position after native =>; no overlay DSL is introduced.
+If upstream changes that command, LocalCI retains its replacement; ReleaseCI
+transforms the inherited command. Whether the added flag remains valid is a
+domain compatibility question, not something list typing can prove.
+
+** Preserve dependencies through the final receiver
+
+Maintained Pipeline and resource consumers must read the effective Profile or
+Scenario. They must not capture a materialized parent Check list or parent
+resource plan as the child's input. Parent cache hits cannot certify a child.
+Use native outer lexical slots where the native receiver relationship applies;
+explicit pure projections must receive the final object.
+
+The [[file:11.24-guestbook-effective-services.org][Guestbook study]] specifies port/label/selector correspondence and stale-parent
+rejection. Prior native Pipeline controls are useful evidence, not verification
+of the proposed Kubernetes consumer or cross-generation cache invalidation.
+
+** Compose independently maintained units without hiding policy
+
+Modules own reusable functionality; Profiles own reusable configurations;
+Scenarios combine selected Profiles and their relationships. A Module does not
+need to contain Profiles. Contribution packaging may publish all three without
+collapsing their identities. Combining unrelated units should not require
+repeating their complete argument or component inventories.
+
+Native parent order resolves inheritance; it does not define task scheduling or
+guarantee conflict detection. Distinct Profile namespaces preserve identically
+named Checks. Same-path writes need documented resolution and origin diagnostics.
+Do not describe .+ as symmetric merge, or add Nickel force/default keywords as
+aliases for operations with different semantics.
+
+** Project public output explicitly
+
+Contracts, helper functions and source metadata belong to the native scope; they
+are not automatically JSON deployment fields. A selected resource projection
+chooses output fields and admits the resulting values against output Contracts.
+This separation does not require a new public export-control syntax. Scope
+publication, wire serialization and runtime authority are separate decisions.
+
+* Reflection: benefits, costs and next design questions
+
+The [[file:11.33-aws-contract-composition-and-local-dependencies.org][AWS Contract-composition and local-dependency study]] extends this principle
+with Tweag's module discussion: selected contributions must retain both config
+and mandatory Contract requirements. It specifies direct assignment, final-value
+resource reads and actionable field/dependency diagnostics for the Omnibus case.
+
+Our intended benefit is one extensible object model for configuration, domain
+relationships and maintained behavior, with ordinary Scheme transformations
+available when useful. The cost is that POO alone does not deliver an accessible
+configuration product: field discovery, diagnostic origins, merge policy and
+consumer correctness must be designed and tested explicitly.
+
+| Question | Required next design/qualification result |
+|----------+-------------------------------------------|
+| Can a user inspect a partial Profile without supplying unrelated values? | Contract-driven discovery over the selected scope, with demand counters |
+| Does a changed upstream default reach only consumers that retained inheritance? | Matched replacement/refinement examples across an upstream revision |
+| Can independent Profiles combine without losing a same-named Check? | Qualified identities, real conflict paths and final-value admission |
+| Does a warmed parent plan contaminate the derived Scenario? | Fresh child identity and resource/Check correspondence checks; reject stale evidence |
+| Do function boundaries remain useful without hiding accepted fields? | Published Contract/default discovery plus explicit transformation calls |
+| Can thousands of eligible modules stay cold? | Selected-closure and first-demand measurements, including disabled dependencies; no scaling claim yet |
+
+The [[file:11.26-schema-discovery-source-lowering-and-macro-governance.org][field/source design]], [[file:11.27-guestbook-macro-admission-and-minimal-controls.org][macro admission controls]],
+[[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][real Schema and observed expansion design]], and
+[[file:11.23-source-ref-to-admitted-scope.org][selected source/scope/build design]] own these outstanding adaptations.
+This chapter adds design requirements and ecosystem reasoning only. It neither
+implements the Loader nor treats proposed UX or resource consumers as validated.

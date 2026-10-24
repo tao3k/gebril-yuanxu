@@ -1,0 +1,93 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.37 Session Source Rebinding Concurrency
+:PROPERTIES:
+:ID: agentic-ai-lab-context-session-rebinding-concurrency
+:STATUS: module-protocol-local-verification
+:END:
+
+* Owner and unchanged authority path
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context semantics. [[file:35-recovered-controller-session-handoff.org][35]] defines the collection-bearing
+source proposal after controlled recovery/activation. This refinement qualifies
+its concurrent admission boundary, not another binding API or acceptance rule.
+=source-control.ss= still owns issued proposals/permits and control generations,
+=installation.ss= owns the active installation/root, and =consumers.ss= owns
+Session revisions, current registries and Query issuance. The existing final
+guards require no functional Module change for these interleavings. Proofs
+imports that implementation rather than installing another policy engine.
+
+Two proposals may be authorized for the same control generation and collection.
+This is legitimate speculative preparation, not two permissions to publish.
+Under controller -> installation -> registry locks, the first publication moves
+the control and selected registry generation together. Its competitor fails
+the final generation/CAS check; the loser cannot borrow the winner's receipt or
+retry its own receipt against the new collection. No callback runs in final
+publication. This is local serialization, not a durable transaction or fairness
+guarantee under arbitrary process failure.
+
+* Precise revocation subjects and order
+
+| Transition and linearization | Consequence |
+|------------------------------+-------------|
+| Source proposal permit withdrawn before commit | Core receipt invalid; no binding/collection publication; another current proposal can win |
+| Consumed proposal permit withdrawn after commit | Cannot replay it; does not itself uninstall the published binding |
+| Installation root revoked before commit | Final installation guard refuses; selected registry remains unchanged |
+| Installation root revoked after commit | Preserve publication history; binding/admission become unusable and consumer obligation reopens |
+| Target Session source retires before commit | Captured target revision invalid; no handoff; a separately authorized unaffected target may win |
+| Target Session source retires after commit | Session sync advances that registry and removes retired slices; old collection/Query/review become stale and obligation reopens |
+| Old Session source retires before commit | Its registry is already replaced by retirement; the old proposal cannot copy retired slices to a fresh source |
+| Old Session source retires after commit | Selected registry now belongs to the successor source, so old-source retirement is isolated from it |
+
+Withdrawal of a consumed source-proposal receipt is not revocation of an active
+effect grant. Current effect permission remains mandatory in Assurance and can
+withdraw consumer admission independently. The worker Cases here exercise the
+Module's permit/root/Session operations, not cross-thread calls to the serialized
+effect Host. Existing Assurance owner-thread regressions remain part of the gate.
+
+If old-source retirement wins, an independently approved fresh proposal may
+handoff the current empty selection. Composition and Project Context remain,
+but absent Session slices are not recreated. A target that lists the same
+Session name does not resurrect the retired slice; a new Query for that Session
+is refused. This differs from silently retargeting an old captured proposal.
+
+* Knowledge, live selection and obligations
+
+Completed history survives later invalidation. Current admission does not:
+root revocation or retirement of the selected target withdraws the consumer
+obligation's support and reopens it. An unaffected Project consumer with its
+own current authority, review and grant remains admitted. Rebinding is not
+Context deletion, a transfer of all Project permissions or global source retirement.
+
+Old collection and Query handles never become the successor's issued cut.
+Old review/Profile, source permits and recovery permits cannot be replayed.
+Fresh selected-source membership, review and permission are still required.
+Retirement here is a revision of the exact designated Session-authority snapshot,
+not a global blacklist inferred from equal Session names across providers. Actual
+provider identity/synchronization must uphold the configured source contract.
+A structural historical Query may remain current after root revocation alone;
+that does not restore the binding or authorize consumption. Query currency,
+published history and current authority remain different observations.
+
+* Executable correspondence
+
+| Projection / consumer | Responsibility and explicit premise |
+|-----------------------+--------------------------------------|
+| =ContextRebindingRace.qnt= | Two old-cut proposals/targets, revocation and both Session retirement orders; first winner, current admission, empty fresh handoff and retained knowledge |
+| =RebindingConcurrency.lean= | Reuses =Reactivation.rebind= and LeanPOO Focus; one winner, stale generation/revision refusal, post-commit isolation and conditional view/knowledge laws |
+| =rebinding-concurrency-controls.ss= | Nine actual Scheme thread schedules; real Module/Core/Governance issuance, ORG-derived Context and real Session objects |
+| Assurance consumer after worker joins | Owner-thread Profile/review/grant checks and independently admitted Project view; workers never bypass the Host owner guard |
+| ASCENT | Existing Module-owned candidate/support relations; not another issuer, commit path or source of authority |
+
+The Quint initial cut assumes two genuinely issued receipts and an activated
+recovered installation, qualified by the prior recovery/activation models.
+Fresh empty handoff uses a separate approval, not either stale initial permit.
+Unsafe mutations deliberately bypass one final guard or reuse old views; they
+must yield actual TLC violations. Lean identities/currentness are conditional
+projections, not authentication from names or a proof of Scheme/OS mutex code.
+Session membership is additionally exercised by real Scheme and the finite
+Quint selection; the Lean revision lemmas alone do not prove ORG/Session parsing.
+
+No new public callback protocol, runtime storage, bindings, old Memory,
+distributed delivery or remote identity service is introduced.
+[[file:38-session-rebinding-concurrency-verification.org][38 records executable results and exact local cut]].

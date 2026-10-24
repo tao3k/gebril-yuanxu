@@ -1,0 +1,694 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Open Profile Composition 01: Complete Configured-Feature Admission Design
+#+property: STATUS document-source-only-not-installed-or-executed
+
+* Reading and source boundary
+
+This is the complete corrected design body, not a runtime compatibility layer.
+It supersedes module 07's Module-local Profile lookup. The independent Profile
+occurrence and its configured feature occurrence now have different context
+slots. Scenario names, language names and participant count are not hardcoded.
+All helpers introduced by this source are defined below. Existing dependencies
+are Core evidence/admission constructors, POO syntax/reflection, Scheme list/hash
+operations, the predicates/constants referenced in module 05, and the existing
+yuanxu-append-map, yuanxu-find and yuanxu-stable-duplicates functions.
+No hidden module load, user callback, compiler invocation or runtime effect is
+added. Source owner bindings/exports are still a future integration concern.
+
+Read this with [[file:02-profile-admission.org][independent Profile admission]] and
+[[file:03-dynamic-composition.org][dynamic composition/projection]]. Within this design family these replace
+the earlier context/helper declarations directly; do not evaluate both versions
+in one namespace. These are ordinary Scheme design blocks, not installed files.
+
+* Field Contracts, neutral defaults and pure feature publication
+
+#+begin_src scheme
+(def (no-field-obligations _candidate _context)
+  '())
+
+(def (field-contract identity-value predicate)
+  (yuanxu-predicate-contract
+    identity-value predicate no-field-obligations))
+
+(def (named-symbol? value)
+  (and (symbol? value)
+       (positive? (string-length (symbol->string value)))))
+
+(def (unique-symbols? value)
+  (and (list? value)
+       (every named-symbol? value)
+       (= (length value)
+          (length (delete-duplicates/hash value)))))
+
+(def (nonempty-unique-symbols? value)
+  (and (pair? value) (unique-symbols? value)))
+
+;; The existing low-level predicate retains its runtime name. Only the proposed
+;; public field/Contract and this design helper use task-oriented naming.
+(def (commands? value)
+  (and (yuanxu-cicd-command-vector? value)
+       (positive? (string-length (car value)))))
+
+(def (optional-object? value)
+  (or (eq? value #f) (object? value)))
+
+(def (object-list? value)
+  (and (list? value) (every object? value)))
+
+(def (metadata-shape? value)
+  (and (list? value)
+       (every (lambda (entry)
+                (and (pair? entry) (symbol? (car entry))))
+              value)
+       (= (length value)
+          (length (delete-duplicates/hash (map car value))))))
+
+(def (durable-action? value)
+  (and (symbol? value)
+       (if (memq value +yuanxu-durable-action-classes+) #t #f)))
+
+(def RequiredSymbolContract
+  (field-contract 'funflow/named-symbol named-symbol?))
+(def UniqueSymbolsContract
+  (field-contract 'funflow/unique-symbols unique-symbols?))
+(def NonemptyUniqueSymbolsContract
+  (field-contract 'funflow/nonempty-unique-symbols
+                  nonempty-unique-symbols?))
+(def CommandsContract
+  (field-contract 'funflow/argv commands?))
+(def SandboxReferenceContract
+  (field-contract 'funflow/sandbox-reference
+                  yuanxu-cicd-profile-ref?))
+(def ProperListContract
+  (field-contract 'funflow/proper-list list?))
+(def OptionalObjectContract
+  (field-contract 'funflow/optional-object optional-object?))
+(def EffectiveChecksContract
+  (field-contract 'funflow/check-object-list object-list?))
+(def ApplicationMetadataContract
+  (field-contract 'funflow/metadata-shape metadata-shape?))
+(def DurableActionContract
+  (field-contract 'funflow/durable-action durable-action?))
+(def FalseContract
+  (field-contract 'funflow/false (cut eq? <> #f)))
+(def EmptyListContract
+  (field-contract 'funflow/empty-list null?))
+(def CheckKindContract
+  (field-contract 'funflow/check-kind
+                  (cut eq? <> 'yuanxu.funflow.check.prototype)))
+(def PipelineKindContract
+  (field-contract 'funflow/pipeline-kind
+                  (cut eq? <> 'yuanxu.funflow.pipeline.prototype)))
+
+;; These aliases deliberately prove structure only.
+(def InputBindingsContract ProperListContract)
+(def ConfigSourcesContract ProperListContract)
+(def ResultProtocolContract ProperListContract)
+(def RuntimeModeContract RequiredSymbolContract)
+(def RetentionContract RequiredSymbolContract)
+(def OptionalObservabilityContract OptionalObjectContract)
+(def OptionalReportContract OptionalObjectContract)
+(def ObservedReferencesContract ProperListContract)
+(def GuardReferencesContract ProperListContract)
+
+
+(.def funflow-check
+  kind: 'yuanxu.funflow.check.prototype
+  check-name: #f
+  profile-ref: #f
+  commands: '()
+  input-bindings: '()
+  config-sources: '()
+  artifact-outputs: '()
+  cache-intents: '()
+  secret-requirements: '()
+  result-protocol: '()
+  runtime-mode: 'manifest-handoff
+  dependency-refs: '()
+  durable-task-id: #f
+  action-class: 'idempotent
+  compensation-refs: '()
+  artifact-retention: 'workflow-retained
+  observability: #f
+  observes: '()
+  guards: '()
+  report: #f
+  metadata: '()
+  runtime-executed: #f)
+
+(.def funflow-pipeline
+  kind: 'yuanxu.funflow.pipeline.prototype
+  pipeline-name: #f
+  checks: '()
+  metadata: '()
+  runtime-executed: #f)
+
+
+(.def (FunflowPipeline. @ funflow-pipeline) selected-checks: '())
+
+(.def FunflowModule.
+  source: #f
+  prototypes: (.o check: funflow-check pipeline: FunflowPipeline.)
+  contracts: (.o check: FunflowCheckContract pipeline: FunflowPipelineContract))
+#+end_src
+
+* Check, Pipeline and configured-feature Contracts
+
+The guarded admission resolves functions defined in the next section when
+demanded. FunflowModule. has no recipes or Profile catalog. Its declaration
+refers lazily to the Check/Pipeline Contract values, not to a Profile factory.
+
+#+begin_src scheme
+(define-type (FunflowCheckContract @ YuanxuObjectContract.)
+  identity: 'funflow/check-v2
+  proto: funflow-check
+  reserved-metadata:
+  '(source check dependency-refs observability durable-task-id action-class
+    compensation-refs artifact-retention observes guards report)
+  responsibilities:
+  (.o kind: CheckKindContract
+      check-name: RequiredSymbolContract
+      profile-ref: SandboxReferenceContract
+      commands:
+      (.o (:: @ CommandsContract)
+        audience: 'ordinary
+        description: "Executable and argv; no implicit shell."
+        default-path: '(prototypes check commands))
+      input-bindings: InputBindingsContract
+      config-sources: ConfigSourcesContract
+      artifact-outputs: UniqueSymbolsContract
+      cache-intents: UniqueSymbolsContract
+      secret-requirements: UniqueSymbolsContract
+      result-protocol: ResultProtocolContract
+      runtime-mode: RuntimeModeContract
+      dependency-refs: UniqueSymbolsContract
+      durable-task-id: RequiredSymbolContract
+      action-class: DurableActionContract
+      compensation-refs: UniqueSymbolsContract
+      artifact-retention: RetentionContract
+      observability: OptionalObservabilityContract
+      observes: ObservedReferencesContract
+      guards: GuardReferencesContract
+      report: OptionalReportContract
+      metadata: ApplicationMetadataContract
+      runtime-executed: FalseContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-check @ base-admit <> <>)))
+  .obligations: (cut funflow-check-obligations @ <> <>))
+
+(define-type (FunflowPipelineContract @ YuanxuObjectContract.)
+  identity: 'funflow/pipeline-v2
+  proto: FunflowPipeline.
+  reserved-metadata: '(source pipeline)
+  responsibilities:
+  (.o kind: PipelineKindContract
+      pipeline-name: RequiredSymbolContract
+      selected-checks: NonemptyUniqueSymbolsContract
+      checks: EffectiveChecksContract
+      metadata: ApplicationMetadataContract
+      runtime-executed: FalseContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-pipeline @ base-admit <> <>)))
+  .obligations: (cut funflow-pipeline-obligations @ <> <>))
+
+(define-type (ConfiguredFunflowContract @ YuanxuObjectContract.)
+  identity: 'funflow/config-v3
+  proto: FunflowModule.
+  responsibilities: (.o pipeline: FunflowPipelineContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-config @ base-admit <> <>)))
+  .obligations: (cut funflow-config-obligations @ <> <>))
+#+end_src
+
+* Canonical pure publication for this design family
+
+Instantiate the new pure feature owner before evaluating independent recipe
+factories from module 13. Do not reuse objects constructed against an old
+Module/prototype generation and describe them as migrated instances.
+
+#+begin_src scheme
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.) source: source-handle))
+(def Funflow
+  (make-funflow-scope (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+* Complete selection, contextual guards, obligations and graph functions
+
+#+begin_src scheme
+(def (ff-issue code-value path-value detail-value)
+  (.o code: code-value path: path-value detail: detail-value))
+
+(def (ff-require condition code-value path-value detail-value)
+  (if condition '() (list (ff-issue code-value path-value detail-value))))
+
+(def (ff-slots? value names)
+  (and (object? value) (every (cut .slot? value <>) names)))
+
+(def (ff-derives? value prototype)
+  (and (object? value)
+       (if (memq prototype (compute-precedence-list! value)) #t #f)))
+
+(def (ff-contract? value)
+  (ff-derives? value YuanxuContract.))
+
+(def (ff-safe-path context)
+  (with-catch
+    (lambda (_error) '())
+    (lambda ()
+      (if (and (ff-slots? context '(config-path))
+               (list? (.get context config-path)))
+        (.get context config-path)
+        '()))))
+
+(def (ff-admit-problems contract-value candidate context path-value code-value)
+  (let ((evidence
+         (yuanxu-contract-admit contract-value candidate context)))
+    (cond
+      ((not (yuanxu-validation-evidence? evidence))
+       (list (ff-issue 'invalid-validation-evidence path-value evidence)))
+      ((not
+         (and
+           (eq? (.get evidence contract-identity) (.get contract-value identity))
+           (equal? (.get evidence classification type-identity)
+                   (.get contract-value identity))
+           (if (object? candidate)
+             (eq? candidate (.get evidence candidate))
+             (equal? candidate (.get evidence candidate)))
+           (eq? context (.get evidence context))))
+       (list (ff-issue 'admission-input-mismatch path-value evidence)))
+      ((yuanxu-validation-evidence-accepted? evidence) '())
+      (else (list (ff-issue code-value path-value evidence))))))
+
+(def (ff-reject descriptor candidate context classification problems)
+  (yuanxu-validation-evidence
+    (.get descriptor identity) candidate classification problems #f
+    (append (.get classification diagnostics) problems) context))
+
+(def (ff-evaluation-rejection descriptor candidate context caught)
+  (let* ((problems
+          (list (ff-issue 'configuration-evaluation-failed
+                          (ff-safe-path context) caught)))
+         (classification
+          (yuanxu-classification-evidence
+            (.get descriptor identity) candidate #f problems context)))
+    ;; The result is rejection, not a fabricated successful family proof.
+    (yuanxu-validation-evidence
+      (.get descriptor identity) candidate classification problems #f
+      problems context)))
+
+(def (unknown-field-problems descriptor candidate path-value)
+  (let ((declared (.all-slots (.get descriptor responsibilities))))
+    (map
+      (lambda (slot-name)
+        (ff-issue 'unknown-attribute
+                  (append path-value (list slot-name))
+                  (.get descriptor identity)))
+      (filter (lambda (slot-name) (not (memq slot-name declared)))
+              (.all-slots candidate)))))
+
+
+(def (ff-capabilities? value)
+  (and
+    (ff-slots? value
+      '(runtime-modes result-protocols action-classes artifact-retentions
+        sandbox-references inline-sandbox-profiles compensation-actions
+        payload-contracts))
+    (every (lambda (slot-name) (unique-symbols? (.ref value slot-name)))
+           '(runtime-modes action-classes artifact-retentions
+             sandbox-references compensation-actions))
+    (list? (.get value result-protocols))
+    (list? (.get value inline-sandbox-profiles))
+    (every object? (.get value inline-sandbox-profiles))
+    (ff-slots? (.get value payload-contracts)
+      '(input-bindings config-sources observability observes guards report))
+    (every
+      (lambda (slot-name)
+        (ff-contract? (.ref (.get value payload-contracts) slot-name)))
+      '(input-bindings config-sources observability observes guards report))))
+
+(def (ff-context? context)
+  (and
+    (ff-slots? context
+      '(scenario module-slot profile-binding owner check-contract capabilities
+        effective-profile effective-config config-path))
+    (object? (.get context scenario))
+    (object? (.get context effective-profile))
+    (named-symbol? (.get context module-slot))
+    (named-symbol? (.get context profile-binding))
+    (list? (.get context config-path))
+    (every named-symbol? (.get context config-path))
+    (ff-slots? (.get context owner) '(source contracts))
+    (yuanxu-module-source-ref? (.get context owner source))
+    (ff-slots? (.get context owner contracts) '(check))
+    (ff-contract? (.get context check-contract))
+    (eq? (.get context check-contract) (.get context owner contracts check))
+    (ff-derives? (.get context effective-config) FunflowModule.)
+    (ff-capabilities? (.get context capabilities))))
+
+(def (ff-config-context-problems context)
+  (let* ((scenario-value (.get context scenario))
+         (binding (.get context profile-binding))
+         (module-name (.get context module-slot))
+         (path-value (.get context config-path)))
+    (cond
+      ((not (.slot? scenario-value binding))
+       (list (ff-issue 'selected-profile-missing path-value binding)))
+      (else
+       (let ((profile-value (.ref scenario-value binding)))
+         (cond
+           ((not (eq? profile-value (.get context effective-profile)))
+            (list (ff-issue 'effective-profile-mismatch path-value binding)))
+           ((not (.slot? profile-value module-name))
+            (list (ff-issue 'selected-module-missing path-value module-name)))
+           (else
+            (let ((config-value (.ref profile-value module-name)))
+              (append
+                (ff-require (equal? path-value (list binding module-name))
+                            'invalid-config-path path-value path-value)
+                (ff-require (eq? config-value (.get context effective-config))
+                            'effective-config-mismatch path-value module-name)
+                (ff-require (and (.slot? config-value 'source)
+                                 (eq? (.get config-value source)
+                                      (.get context owner source)))
+                            'source-identity-mismatch path-value module-name))))))))))
+
+(def (ff-config-preflight _descriptor candidate context)
+  (ff-require (eq? candidate (.get context effective-config))
+              'effective-config-mismatch (.get context config-path) candidate))
+
+(def (ff-check-preflight descriptor candidate context)
+  (if (not (and (ff-slots? context '(check-slot path))
+                (named-symbol? (.get context check-slot))
+                (list? (.get context path))))
+    (list (ff-issue 'invalid-admission-context
+                    (.get context config-path) 'check-position))
+    (let* ((name (.get context check-slot))
+           (profile-value (.get context effective-config))
+           (path-value (append (.get context config-path) (list name))))
+      (append
+        (unknown-field-problems descriptor candidate path-value)
+        (ff-require (equal? (.get context path) path-value)
+                    'invalid-admission-context path-value 'check-path)
+        (cond
+          ((not (.slot? profile-value name))
+           (list (ff-issue 'selected-check-missing path-value name)))
+          (else
+           (ff-require (eq? candidate (.ref profile-value name))
+                       'effective-check-mismatch path-value name)))))))
+
+
+(def (native-check? value)
+  (ff-derives? value funflow-check))
+
+(def (funflow-selected-checks profile names)
+  (unless (object? profile)
+    (error "Expected a configured Funflow object" profile))
+  (unless (nonempty-unique-symbols? names)
+    (error "Expected nonempty unique Check names" names))
+  (map
+    (lambda (name)
+      (unless (.slot? profile name)
+        (error "Selected Check does not exist" name))
+      (let ((check (.ref profile name)))
+        (unless (native-check? check)
+          (error "Selected slot is not a Funflow Check" name))
+        check))
+    names))
+
+(def (ff-selection-problems profile names path-value)
+  (yuanxu-append-map
+    (lambda (name)
+      (cond
+        ((eq? name 'pipeline)
+         (list (ff-issue 'reserved-check-position path-value name)))
+        ((not (.slot? profile name))
+         (list (ff-issue 'selected-check-missing path-value name)))
+        ((not (native-check? (.ref profile name)))
+         (list (ff-issue 'selected-slot-not-check path-value name)))
+        (else '())))
+    names))
+
+(def (ff-pipeline-preflight descriptor candidate context)
+  (let* ((profile-value (.get context effective-config))
+         (path-value (append (.get context config-path) '(pipeline))))
+    (append
+      (unknown-field-problems descriptor candidate path-value)
+      (cond
+        ((not (.slot? profile-value 'pipeline))
+         (list (ff-issue 'effective-pipeline-missing path-value 'pipeline)))
+        ((not (eq? candidate (.get profile-value pipeline)))
+         (list (ff-issue 'effective-pipeline-mismatch path-value candidate)))
+        ((not (.slot? candidate 'selected-checks))
+         (list (ff-issue 'missing-selection path-value 'selected-checks)))
+        ((not (nonempty-unique-symbols? (.get candidate selected-checks)))
+         (list (ff-issue 'invalid-selection
+                         (append path-value '(selected-checks))
+                         (.get candidate selected-checks))))
+        (else
+         (ff-selection-problems profile-value
+           (.get candidate selected-checks)
+           (append path-value '(selected-checks))))))))
+
+
+(def (ff-guard-admission descriptor base-admit candidate context preflight)
+  (with-catch
+    (lambda (caught)
+      (ff-evaluation-rejection descriptor candidate context caught))
+    (lambda ()
+      (let ((classification
+             (yuanxu-type-classify descriptor candidate context)))
+        (if (not (yuanxu-classification-evidence-accepted? classification))
+          (base-admit candidate context)
+          (with-catch
+            (lambda (caught)
+              (ff-reject descriptor candidate context classification
+                (list (ff-issue 'configuration-evaluation-failed
+                                (ff-safe-path context) caught))))
+            (lambda ()
+              (if (not (ff-context? context))
+                (ff-reject descriptor candidate context classification
+                  (list (ff-issue 'invalid-admission-context
+                                  (ff-safe-path context) 'required-context)))
+                (let* ((position-problems (ff-config-context-problems context))
+                       (problems
+                        (if (null? position-problems)
+                          (preflight descriptor candidate context)
+                          position-problems)))
+                  (if (null? problems)
+                    (base-admit candidate context)
+                    (ff-reject descriptor candidate context
+                               classification problems)))))))))))
+
+(def (funflow-admit-check descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-check-preflight))
+
+(def (funflow-admit-pipeline descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-pipeline-preflight))
+
+(def (funflow-admit-config descriptor base-admit candidate context)
+  (ff-guard-admission descriptor base-admit candidate context
+                      ff-config-preflight))
+
+
+(def (ff-membership-problems check field-name caps capability-name path-value)
+  (ff-require
+    (if (member (.ref check field-name) (.ref caps capability-name)) #t #f)
+    (case field-name
+      ((runtime-mode) 'unsupported-runtime-mode)
+      ((result-protocol) 'unsupported-result-protocol)
+      ((action-class) 'unsupported-action-class)
+      ((artifact-retention) 'unsupported-retention))
+    (append path-value (list field-name)) (.ref check field-name)))
+
+(def (ff-reference-resolved? value caps)
+  (cond
+    ((symbol? value)
+     (if (memq value (.get caps sandbox-references)) #t #f))
+    ((object? value)
+     (if (memq value (.get caps inline-sandbox-profiles)) #t #f))
+    ((and (pair? value) (list? value))
+     (every (cut ff-reference-resolved? <> caps) value))
+    (else #f)))
+
+(def (ff-metadata-problems descriptor candidate path-value)
+  (map
+    (lambda (key)
+      (ff-issue 'reserved-metadata-key (append path-value '(metadata)) key))
+    (filter
+      (lambda (key) (memq key (.get descriptor reserved-metadata)))
+      (map car (.get candidate metadata)))))
+
+(def (ff-payload-problems check context)
+  (yuanxu-append-map
+    (lambda (field-name)
+      (let* ((path-value (append (.get context path) (list field-name)))
+             (field-context (.o (:: @ context) path: path-value))
+             (contract-value
+              (.ref (.get context capabilities payload-contracts) field-name)))
+        (ff-admit-problems contract-value (.ref check field-name)
+                           field-context path-value 'unsupported-payload)))
+    '(input-bindings config-sources observability observes guards report)))
+
+
+(def (funflow-check-obligations descriptor check context)
+  (let* ((name (.get context check-slot))
+         (path-value (.get context path))
+         (caps (.get context capabilities))
+         (compensations (.get check compensation-refs)))
+    (append
+      (ff-check-preflight descriptor check context)
+      (ff-require (eq? (.get check check-name) name)
+                  'check-name-mismatch (append path-value '(check-name))
+                  (.get check check-name))
+      (ff-membership-problems check 'runtime-mode caps 'runtime-modes path-value)
+      (ff-membership-problems check 'result-protocol caps 'result-protocols path-value)
+      (ff-membership-problems check 'action-class caps 'action-classes path-value)
+      (ff-membership-problems check 'artifact-retention caps
+                              'artifact-retentions path-value)
+      (ff-require
+        (or (not (eq? (.get check action-class) 'compensatable))
+            (pair? compensations))
+        'missing-compensation (append path-value '(compensation-refs)) name)
+      (map
+        (lambda (reference)
+          (ff-issue 'unresolved-compensation
+                    (append path-value '(compensation-refs)) reference))
+        (filter (lambda (reference)
+                  (not (memq reference (.get caps compensation-actions))))
+                compensations))
+      (ff-require (ff-reference-resolved? (.get check profile-ref) caps)
+                  'unresolved-sandbox-reference
+                  (append path-value '(profile-ref)) (.get check profile-ref))
+      (ff-payload-problems check context)
+      (ff-metadata-problems descriptor check path-value))))
+
+
+(def (ff-selected-graph names checks context)
+  (let ((index (make-hash-table-eq))
+        (indegrees (make-hash-table-eq))
+        (dependents (make-hash-table-eq))
+        (path-value (.get context config-path)))
+    (for-each
+      (lambda (name check)
+        (hash-put! index name check)
+        (hash-put! indegrees name 0)
+        (hash-put! dependents name '()))
+      names checks)
+    (let* ((missing
+            (yuanxu-append-map
+              (lambda (name)
+                (map
+                  (lambda (dependency)
+                    (ff-issue 'missing-selected-dependency
+                      (append path-value (list name 'dependency-refs)) dependency))
+                  (filter (lambda (dependency) (not (hash-key? index dependency)))
+                          (.get (hash-get index name) dependency-refs))))
+              names))
+           (duplicate-tasks
+            (map (lambda (task-id)
+                   (ff-issue 'duplicate-durable-task-id path-value task-id))
+                 (yuanxu-stable-duplicates
+                   (map (cut .ref <> 'durable-task-id) checks)))))
+      (if (pair? missing)
+        (.o order: '() problems: (append missing duplicate-tasks))
+        (begin
+          (for-each
+            (lambda (name)
+              (for-each
+                (lambda (dependency)
+                  (hash-put! indegrees name (+ 1 (hash-get indegrees name)))
+                  (hash-put! dependents dependency
+                    (cons name (hash-get dependents dependency))))
+                (.get (hash-get index name) dependency-refs)))
+            names)
+          (let loop ((remaining names) (order-rev '()))
+            (if (null? remaining)
+              (let ((order-value (reverse order-rev)))
+                (.o order: order-value problems: duplicate-tasks))
+              (let ((ready-name
+                     (yuanxu-find
+                       (lambda (name) (zero? (hash-get indegrees name)))
+                       remaining)))
+                (if ready-name
+                  (begin
+                    (for-each
+                      (lambda (dependent)
+                        (hash-put! indegrees dependent
+                          (- (hash-get indegrees dependent) 1)))
+                      (hash-get dependents ready-name))
+                    (loop (filter (lambda (name) (not (eq? name ready-name)))
+                                  remaining)
+                          (cons ready-name order-rev)))
+                  (let ((order-value (reverse order-rev))
+                        (issues
+                         (append duplicate-tasks
+                           (list (ff-issue 'cyclic-dependencies
+                                           path-value remaining)))))
+                    (.o order: order-value problems: issues)))))))))))
+
+
+(def (funflow-pipeline-obligations descriptor pipeline context)
+  (let* ((profile-value (.get context effective-config))
+         (path-value (append (.get context config-path) '(pipeline)))
+         (names (.get pipeline selected-checks))
+         (expected (funflow-selected-checks profile-value names))
+         (actual (.get pipeline checks))
+         (identity-problems
+          (ff-require
+            (and (= (length actual) (length expected))
+                 (every eq? actual expected))
+            'effective-checks-mismatch (append path-value '(checks)) names))
+         (preflight (ff-pipeline-preflight descriptor pipeline context))
+         (metadata-problems (ff-metadata-problems descriptor pipeline path-value)))
+    (if (or (pair? preflight) (pair? identity-problems))
+      (append preflight identity-problems metadata-problems)
+      (let ((check-problems
+             (apply append
+               (map
+                 (lambda (name check)
+                   (let* ((check-path
+                           (append (.get context config-path) (list name)))
+                          (check-context
+                           (.o (:: @ context) check-slot: name path: check-path)))
+                     (ff-admit-problems (.get context check-contract)
+                       check check-context check-path 'check-admission-failed)))
+                 names expected))))
+        (if (pair? check-problems)
+          (append metadata-problems check-problems)
+          (append metadata-problems
+            (.get (ff-selected-graph names expected context) problems)))))))
+
+(def (funflow-config-obligations descriptor profile context)
+  (append
+    (ff-config-context-problems context)
+    (ff-config-preflight descriptor profile context)
+    (ff-require
+      (not (memq 'pipeline (.get profile pipeline selected-checks)))
+      'reserved-check-position (.get context config-path) 'pipeline)))
+#+end_src
+
+* Correctness and demand boundaries
+
+The native kernel still performs declared responsibility admission. The guard
+prechecks selection before checks is forced. Check typos are rejected without
+forcing their unknown getters. Policy and payload obligations still apply per
+selected occurrence. Actual Check identities must match final config lookups.
+A repeated parent list is not current merely because its names or length match.
+The private local graph remains a reference algorithm, not a runtime scheduler.
+
+Configured-feature context lookup is now Scenario -> independent Profile binding
+-> module binding. The config-path is a diagnostic locator, not authority.
+The caller supplies the expected publication and capabilities independently of
+candidate values. Source association is not authentication or runtime readiness.
+An explicit stable supported view is required across admission/projection; opaque
+or mutable getters need conservative handling. No new test receipt is claimed.

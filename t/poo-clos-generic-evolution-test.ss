@@ -5,11 +5,11 @@
 
 ;;; POO-native ensure/reinitialize generic-function conformance.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .ref)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-generic-evolution-test)
 
@@ -20,7 +20,7 @@
 
 (def poo-clos-generic-evolution-test
   (test-suite "POO-native CLOS generic evolution"
-    (poo-flow-test-case "ensure creates an explicit dispatchable binding"
+    (yuanxu-test-case "ensure creates an explicit dispatchable binding"
       (let (binding
             (poo-clos-ensure-generic-function
              'ensured required: 1 rest?: #t))
@@ -29,7 +29,7 @@
         (check-exception (poo-clos-call binding)
                          (failure-code? 'argument-count-mismatch))))
 
-    (poo-flow-test-case "reinitialization preserves admitted methods atomically"
+    (yuanxu-test-case "reinitialization preserves admitted methods atomically"
       (let* ((binding
               (poo-clos-ensure-generic-function 'configured required: 1))
              (method
@@ -51,7 +51,7 @@
            (failure-code? 'method-required-argument-mismatch))
           (check (eq? (poo-clos-generic-binding-current binding) next) => #t))))
 
-    (poo-flow-test-case "ensure reuses bindings and checks their identity"
+    (yuanxu-test-case "ensure reuses bindings and checks their identity"
       (let (binding
             (poo-clos-ensure-generic-function 'same required: 0))
         (check (eq? (poo-clos-ensure-generic-function

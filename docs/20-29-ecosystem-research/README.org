@@ -1,0 +1,74 @@
+#+title: Configuration-System Research Library
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS independent-dossiers-initial-research-not-complete
+
+* Documentation ownership
+
+This is the independent research owner under [[file:../README.org][Core docs]]. Our proposed
+architecture and Guestbook construction live separately in
+[[file:../10-19-design/10-configuration/10.01-index.org][the configuration design unit]]. Moving articles does not upgrade evidence.
+
+* Organization and reading order
+
+Each platform owns an independent directory and an Org dossier. The dossier
+owns its configuration model, source evidence, issue observations, reflection
+and conclusions. A cross-platform synthesis must cite these owners instead of
+reducing several platforms to paragraphs in one mixed research document.
+
+Start with [[file:../30-39-research-foundations/30-method/30.01-evidence-protocol.org][the research and evidence protocol]]. The current dossiers are initial
+source-reading notes with explicit gaps, not completed independent experiments.
+
+| Subject | Independent owner | Particular research boundary |
+|---------+-------------------+------------------------------|
+| Terraform | [[file:23-terraform/23.01-index.org][Terraform research]] | HCL-based inputs, module interfaces, lifecycle and planning phases |
+| OpenTofu | [[file:24-opentofu/24.01-index.org][OpenTofu research]] | Stable instance identity, providers, state and version-specific behavior |
+| Pulumi | [[file:26-pulumi/26.01-index.org][Pulumi research]] | Language SDKs, components, unknown/secret outputs and engine behavior |
+| Spacelift | [[file:28-spacelift/28.01-index.org][Spacelift research]] | Stack interfaces, run dependencies, plan policy and execution governance |
+| env0 | [[file:29-env0/29.01-index.org][env0 research]] | Template/workflow configuration, environment outputs and drift |
+| Crossplane | [[file:27-crossplane/27.01-index.org][Crossplane research]] | Composition functions, observations, readiness and function revisions |
+| NixOS | [[file:20-nixos/20.01-index.org][NixOS research]] | Module arguments, options, merging, provenance and fixed-point evaluation |
+| devenv | [[file:21-devenv/21.01-index.org][devenv research]] | Maintained development modules, environment connections and process boundaries |
+| Flox | [[file:22-flox/22.01-index.org][Flox research]] | Environment composition, locking, effective views and activation |
+| Nickel | [[file:25-nickel/25.01-index.org][Nickel research]] | Contracts/merge, local consistency and Omnibus/tf-ncl ecosystem use |
+
+Related languages, libraries and ecosystems are recorded in the appropriate
+dossier but are not conflated with the platform. HCL toolkit semantics are not
+identical to Terraform restrictions; Nix is not identical to the NixOS module
+library; Omnibus is an ecosystem use of Nickel rather than Nickel itself.
+When a language/ecosystem requires substantial independent analysis, give it
+its own dossier and link the platform to it. Do not force a new subject into an
+unrelated directory merely to keep the list short.
+
+* Paper records
+
+- [[file:../30-39-research-foundations/31-papers/31.01-backpack.org][Backpack: interface and instance identity]].
+- [[file:../30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][Build Systems a la Carte: scheduling, demand and reuse]].
+
+These are independent reading notes. Neither citation establishes that a Core
+implementation satisfies the paper's model or theorem.
+
+* Cross-platform artifacts
+
+- [[file:../10-19-design/10-configuration/10.02-review-controls.org][Shared review questions and negative controls]].
+- [[file:../10-19-design/10-configuration/10.03-outcome-states.org][Admission, planning, approval, execution and readiness distinctions]].
+- [[file:../10-19-design/10-configuration/10.04-module-system-design-questions.org][Module-system interfaces, uniform context, contributions and invalidation]].
+- [[file:../10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][Guestbook: lexical context candidates, five improvements and effective preview]].
+- [[file:../10-19-design/10-configuration/10.06-human-agent-module-authoring.org][Human-Agent module creation, extension and review as a design goal]].
+- [[file:../10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Guestbook JSON/Scheme input, native Contracts, defaults, bindings and object construction]].
+- [[file:../10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Concrete native constructor, Contract metadata and template publication design]].
+- [[file:../10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][Constructor research lineage, real cases, limitations and Human-Agent controls]].
+- [[file:../10-19-design/10-configuration/10.20-module-system-assurance.org][Module assurance guarantees, real Gitea/PostgreSQL evidence and limits of immutability]].
+- [[file:../../module-system/design/08-infrastructure-platforms-and-design-gates.org][Architecture synthesis and gates before implementation]].
+
+These files own comparisons, not the underlying platform research. The synthesis
+may change when an independent dossier produces counterevidence.
+
+* Same-case assurance studies
+
+- [[file:20-nixos/20.10-gitea-port-source-comparison.org][NixOS: real Gitea/PostgreSQL final port, TCP consumer and phase limits]].
+- [[file:26-pulumi/26.03-gitea-port-fixed-source-comparison.org][Pulumi: fixed SDK source, known ports, unknown outputs and reported RPC boundary]].
+- [[file:../30-39-research-foundations/32-module-assurance/32.01-gitea-postgresql-evidence.org][Our framework: case source manifest, existing controls and unproved advantages]].
+
+Maintainer-code comparison: [[file:../30-39-research-foundations/32-module-assurance/32.02-maintainer-publication-comparison.org][32.02]] links the platform-owned examples and
+separates real upstream mechanisms, analyst adapters and existing Core protocol.

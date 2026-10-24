@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: devenv: Maintained Language Features, Reusable Defaults and Open Contributions
+#+date: [2026-10-15]
+#+property: STATUS upstream-source-research-no-execution-or-loader-change
+
+* Source scope
+
+The official pages and main-branch files below were read on 2026-10-15. They
+are not a pinned release, local checkout or benchmark. No devenv evaluation,
+activation, package installation or DevOps operation was performed. This study
+compares actual library organization and authoring boundaries, not just Nix
+language syntax. It does not claim parity with devenv's tooling or integrations.
+
+* Language interface and implementation live with a maintained owner
+
+The actual [[https://github.com/cachix/devenv/blob/main/src/modules/languages/rust.nix][languages/rust.nix]] declares:
+
+#+begin_src nix
+enable = lib.mkEnableOption "tools for Rust development";
+#+end_src
+
+That owner also maintains typed options, defaults, descriptions, conditional
+configuration and assertions for incompatible toolchain settings. A short user
+selection rests on a substantive maintained interface. It is not just three
+printed cargo commands. We need a similar discoverable publication/Contract
+boundary while keeping language recipes out of pure POO feature Modules.
+
+* Organization-owned defaults are reusable outside one repository
+
+The official [[https://devenv.sh/extending/][extending guide]] shows a central project module, domain options
+and conditional defaults, then a downstream input referencing the organization's
+repository. It also describes replacing existing modules. This supports user
+ecosystem ownership rather than restricting contributions to built-in languages.
+The corresponding POO goal is independently published Profiles/Scenarios using
+the same Contracts and source roles as maintained ones; it is not a new wrapper
+or a giant list of user-side module components.
+
+* Profile composition and deferred configuration
+
+The official [[https://devenv.sh/profiles/][Profiles guide]] gives this named composition:
+
+#+begin_src nix
+fullstack = {
+  extends = [ "backend" "frontend" ];
+};
+#+end_src
+
+The actual [[https://github.com/cachix/devenv/blob/main/src/modules/profiles.nix][profiles.nix]] uses lazy attribute/submodule structure, a deferred module
+option and an inheritance-name list. That is relevant to sparse recipe publication
+and delayed activation. It does not prove no source evaluation occurs, zero
+first-use cost or our proposed native cache transport. Its hostname/user activation
+and merge semantics are not copied into Scenario execution or POO inheritance.
+
+* Design consequences and remaining gaps
+
+| Observation | POO decision | Remaining gap |
+|-------------+--------------+---------------|
+| Many maintained language interfaces | Discoverable feature metadata and independent recipe publication | Tooling, migration and a real consumer environment |
+| Custom organization defaults | Upstream/user publications share Contract/source roles | Trusted selected revision/source association |
+| Named reusable Profile combinations | Scenario selects arbitrary independent Profile occurrences | Dynamic per-occurrence deep admission and correct graph projection |
+| Deferred configuration | Separate metadata, source resolution, construction, admission and execution | No source-level laziness claim from getter laziness alone |
+| A useful ecosystem beyond task lists | Generic composition must not encode two languages or seven tasks | Scale/UX/consumer qualification rather than fixture count as product value |
+
+The [[file:../164-funflow-public-configuration/15-open-profile-composition.org][open Profile composition design]] provides complete Scheme design bodies
+for actual selected admission and projection, replacing the hardcoded fixture
+kernel. Those bodies are not implementation or evidence of devenv-level maturity.

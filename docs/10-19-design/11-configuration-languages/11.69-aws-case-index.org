@@ -1,0 +1,109 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.69 AWS Configuration: Capability, Recipes and Ordinary User Data
+#+property: DOCUMENT_ID 11.69
+#+property: STATUS design-source-not-built-no-loader
+
+The canonical source directory is now
+[[file:../../../scenarios/aws/README.org][Core scenarios/aws]]. Its implemented root roles, public ObjectContract
+definitions and selected-publication calls supersede the shell shown below.
+The network recipes and this comparison retain their historical design scope;
+moving them is not a new deployment qualification.
+
+* Corrected boundary
+
+There is no mandatory Deployment/Deployments module between users and AWS.
+An ordinary consumer fills =Config= with native POO data, using the Provider's
+=provider/resource/data= field vocabulary. New =.o= values are records, not
+implicitly refinements. A user need not inherit or assemble named Profiles to
+configure an existing VPC/subnet and an EC2 instance.
+
+The independent [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][user contribution config.ss]] contains that case. It has explicit
+region, credential profile, VPC/subnet, AMI, key name, access range, security-group
+reference and machine tags. These are documentation placeholders, not deployable
+account data. =objects.ss= names the value and demonstrates optional inheritance;
+=types.ss= reuses the AWS-published generated Contract.
+
+* Historical source organization before migration
+
+#+begin_example
+modules/aws/
+  types.ss                 generated OpenTofu Contract alias and scope contracts
+  config.ss                empty capability defaults, no customer machine data
+  objects.ss               ordinary configuration object
+  func.ss                  final admission and unchanged-value projection
+  interface.ss             one OpenTofu dependency, types/config/project
+  scenarios/
+    profiles/network.ss    ordinary VPC/subnet inputs in Provider field names
+    profiles/machines.ss   ordinary AMI/instance_type/tags inventory
+    profiles/access.ss     region, credential profile, role and access inputs
+    profiles/config.ss     complete connected resource configuration
+    objects.ss             independent reusable Profile values
+    development.ss         name the ordinary baseline
+    build-host.ss          add a build host while retaining network/access values
+contributions/aws-project/
+  types.ss                 reuse AWS Config Contract
+  config.ss                complete ordinary user input for an existing-network case
+  objects.ss               optional retained-value refinement
+  interface.ss             ordinary contribution publication, no special wrapper
+#+end_example
+
+These filenames classify source responsibilities, not another metadata syntax.
+There is no metadata parser, deployment registry or per-Profile publication
+object. Profiles may be plain values; Scenarios combine those values, and POO
+inheritance is shown only when retaining maintained defaults has a practical use.
+The Module capability does not load every optional Recipe or customer Scenario.
+
+* Two different real cases
+
+=The network-creating Recipe= (retired design source) includes VPC, subnet, gateway, route table,
+association, security group, key pair and EC2. References use Provider input
+strings such as =${aws_subnet.test.id}=. Machine/network/access files contain
+ordinary values; they do not define a second AWS schema. The Build Scenario
+retains those resources and adds a host by extending the maintained instance.
+An upstream AMI/network/key change is inherited by that new host, while its
+instance_type/tags are explicitly replaced.
+
+The independent contribution case uses existing VPC/subnet/key identifiers. It
+therefore does not pretend one instance-type edit supplies all deployment data.
+Its ordinary =Config= is sufficient as a configuration input; Contract admission
+and Provider planning are distinct later steps.
+
+* Contracts and execution limits
+
+Resource field Contracts are generated from locked Provider exports by the
+implemented OpenTofu module. This design removes the parallel handwritten
+Network/Instance field vocabulary and the duplicated AWS admission chain.
+=aws-project= admits the final value with that Contract and returns the same
+object. The general JSON boundary owns serialization; this is not plan/apply.
+
+Provider structural admission does not validate every interpolation reference,
+cloud account, AMI existence, CIDR/provider SDK rule or deployment feasibility.
+Provider planning remains responsible for unexported semantics. Domain relation
+contracts can be added when they express additional user requirements; they must
+not claim those properties merely because a string field passed its Schema.
+
+StateConfig remains explicit Recipe data. The current implemented configuration
+envelope supports only provider/resource/data: terraform.backend and output are
+not silently inserted into it. Publishing state/backend/output Contracts and a
+verified Terraform JSON consumer remains work. SSH preparation is also explicit;
+ordinary config evaluation does not execute ssh-keygen.
+
+The files in this directory are design sources, not loaded/built modules.
+Generated dependency injection for their declarative interface.ss is not claimed
+as implemented. The real selected-build/currentness control is separately
+[[file:11.54-selected-graph-nix-sources.org][documented and executed]] with a normal configuration source.
+
+* Reflection
+
+The earlier layering made simple user values look like a framework instance.
+Replacing that with a common Provider field vocabulary reduces maintenance and
+makes source diagnosis point at the user's data. Generated Contracts provide
+field validation; native composition provides optional reuse. Neither benefit
+requires a special Deployment object hierarchy.
+
+The remaining UX obligations are field discovery from those same Contracts,
+precise reference diagnostics, and an explicit admitted-config -> Provider-plan
+handoff. These are testable requirements, not benefits established by choosing
+Scheme. Historical source-parity/audit documents remain research history; their
+old domain wrappers are superseded by this role split.

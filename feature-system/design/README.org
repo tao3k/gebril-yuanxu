@@ -1,0 +1,75 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Feature System Ownership and Integration Boundary
+#+date: [2026-10-16]
+#+property: STATUS implemented-source-migration-loader-not-connected
+
+* Shared mechanism and product adapter
+
+The Feature System implementation is owned by Core, not the product's former
+src/feature-system. Public declarations remain native POO objects and the existing
+bounded defrules forms. No compatibility modules or parallel implementation remain.
+
+| Owner | Contents |
+|-------+----------|
+| [[file:../interface.ss][Core Feature System]] | descriptors, selections, dependency/conflict resolution, manifests, composition |
+| [[file:../domain-case/interface.ss][Core DomainCase]] | generic closure, Contract projection, instance overlay and method/projection binding |
+| Core capability/policy/adapter binding | provider identity/version matching, requirements and inert handoff values |
+| Core Bundle v1 | lowering, validated foreign arena images, DomainCase projection and explicit byte-file writing |
+| [[file:../../../modules/workflow/scenario/bundle-v1-projection.ss][Product Scenario adapter]] | Scenario -> execution Plan; node identities, guard policy, graph edges and environment handoff |
+
+The adapter reference identifies a downstream integration, not a Core import.
+Core never imports its Plan types or Scenario syntax. Wire IDs, Bundle layout,
+source-lock IDs and feature resolution precedence are unchanged.
+
+The extracted [[file:../../composition/roles.ss][native role algorithms]] retain the existing constant-slot fast lane
+and native .mix fallback semantics. Computed/self/super slots are not silently
+flattened into constants. Product flow/task/runtime roles remain product objects.
+[[file:../../utilities/functional.ss][Pure functions]] and [[file:../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
+The public function names are retained as definitions at that owner, not aliases
+from deleted product modules.
+
+* Core versus Feature
+
+A selected Module's mandatory baseline is a Module System responsibility.
+Optional descriptor resolution and feature projections are Feature System
+responsibilities. No baseline operation has been wrapped in a synthetic Feature.
+The selected Core/Feature/init/build integration remains pending where described
+in [[file:../../module-system/design/03-publication-selection.org][the publication/selection protocol]]. This migration does not implement directory
+loading, capability discovery or init-source resolution.
+
+* Product source organization
+
+Agentic AI Lab's former src tree is removed. Product workflow/runtime policy, authoring
+conventions, UI, Scenario planning and qualification now live in named modules.
+Shared Graph primitives, JSON Schema Contracts, type-fact projection and pure
+utilities moved into Core with their actual dependencies. No arbitrary all-src
+copy was put into Core and no Core -> product import is introduced.
+
+The maintained product source declaration is root =init.ss=, beside =modules/=.
+A contributing package may instead use =modules/init.ss=. These are alternative
+source locations, not two copies of one configuration. The future source adapter
+must take the declared init source explicitly and resolve its module root from
+that declaration; it must not infer an extra object layer from a file location.
+Only one product init object is currently declared. It performs no discovery or
+module initialization. The existing load-modules collection API is unchanged.
+
+* Validation and remaining qualification
+
+The Core-only source environment contains Core and the immutable gerbil-poo
+099b381 dependency, with no Agentic AI Lab namespace. All 17 relocated Feature/DomainCase/
+functional/overlay suites pass there. A separate fresh native build of the full
+Core build graph also completes. Installed product .ssi files were not used as
+an import fallback; incompatible older native artifacts were excluded.
+
+Product Plan/Scenario and Funflow tests are separate consumer controls. The
+existing gxtest entry could not load interpreted test modules on this installed
+runtime, so the local source controls use native std/test/base test-suite! and
+fail the process on any failed TestResult. This is test execution through the
+existing test library, not a production harness or a new configuration DSL.
+
+The pending published-Module role shell is still a coordinated admission change,
+not a reason to add empty types/objects/configs files. Natural exit, accepted
+Contract evidence and runtime effects remain separate from lazy declaration.
+No Loader adapter or performance claim is added by this source migration.

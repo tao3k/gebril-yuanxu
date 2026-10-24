@@ -1,0 +1,46 @@
+#+title: 10.02 Cross-platform Review Controls
+#+language: en
+#+property: DOCUMENT_ID 10.02
+#+property: STATUS shared-questions-not-platform-research
+
+* Review controls before coding
+
+| User scenario | Desired behavior | Claim that must not substitute for it |
+|---------------+------------------+--------------------------------------|
+| Replace instance type | Direct assignment, inherited unrelated defaults | Every field needs =>.+ |
+| Add an ingress rule | Named data function preserves source and final validation | List append proves set/provider equality |
+| Reference a future VPC ID | Unknown is explicit and dependency-bearing | A cached slot is already a concrete provider result |
+| Misspell instance_type | Generated Contract points to the original path | Serialization success means a valid deployment |
+| Change lifecycle policy | Concrete target plus separate policy review | Powerful macros override backend semantics |
+| Rename a directory window | Same package/source and resource identities | Namespace route determines all identities |
+
+Onwards: specify external-value and Contract semantics before writing another
+wrapper. Use the existing real-provider tests as separate evidence; this research
+adds no provider acceptance, live deployment or performance result.
+
+* Issues and Engineering Limitations
+
+Original platform reports belong to [[file:../../20-29-ecosystem-research/README.org][the independent dossiers]]. The controls below
+are DESIGN-INFERENCE and UNEXECUTED unless a separate receipt says otherwise.
+A proposed negative control is not a reproduced upstream bug.
+
+* Open design obligations
+
+| Proposed benefit | Acceptance control | Risk that remains |
+|------------------+--------------------+-------------------|
+| Small ordinary configuration | User writes command/timeout once | Interface/Contract boilerplate may still dominate small modules |
+| Independent maintained objects | Contracted publication plus explicit dependency graph | Inferred structural edges may be weaker than domain requirements |
+| One reusable args environment | Shared generation, hygienic role bindings | A global-like tree can hide dependencies without a guarded view |
+| Predictable recursion errors | Reject dependency cycle before linking | Value-level recursive computation can still diverge |
+| Rename without identity loss | Package source and owner preserved | Alias and multi-instance semantics need separate tests |
+| Natural laziness | Unselected malformed branch stays unread/unexecuted | Scope admission can force more than one field |
+| Final values after refinement | Parent/child controls against stale projection | Captured effective contexts can leak across caches |
+| Actionable configuration errors | Path, requester and original source | Raw exceptions are not yet an editor discovery interface |
+
+These questions guide the implementation rather than decorate a comparison:
+What must be known before evaluating a module? What can remain lazy until a field
+is requested? Which Contract obligations must survive composition? Which original
+source should an error blame? When is a direct assignment sufficient? What must
+the user understand to change two values? A design that cannot answer these with
+an actual scenario has not established a UX advantage.
+

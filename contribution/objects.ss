@@ -9,8 +9,8 @@
 (export contribution-contract-id Contribution. make-contribution
         contribution? contribution-diagnostics admit-contributions)
 
-(def contribution-contract-id 'poo-flow.contribution.v1)
-(def Contribution. (.o kind: 'poo-flow.contribution))
+(def contribution-contract-id 'yuanxu.contribution.v1)
+(def Contribution. (.o kind: 'yuanxu.contribution))
 
 (def (nonempty-string? value)
   (and (string? value) (> (string-length value) 0)))
@@ -19,7 +19,7 @@
   (and (object? value)
        (every (lambda (slot) (.slot? value slot))
               '(kind identity revision owner core-contract facets requires profile))
-       (eq? (.ref value 'kind) 'poo-flow.contribution)
+       (eq? (.ref value 'kind) 'yuanxu.contribution)
        (every (lambda (slot) (nonempty-string? (.ref value slot)))
               '(identity revision owner))
        (symbol? (.ref value 'core-contract))
@@ -66,7 +66,7 @@
                                 (contribution-diagnostics value capabilities))
                               values)))
          (accepted-value (null? reasons-value)))
-    (.o kind: 'poo-flow.contribution-admission
+    (.o kind: 'yuanxu.contribution-admission
         core-contract: contribution-contract-id
         accepted?: accepted-value reasons: reasons-value
         selected: (if accepted-value values '())

@@ -1,0 +1,253 @@
+#+title: 32.33 Actual Issuer Associations and the Lean Projection
+#+language: en
+#+startup: overview
+
+* Why 32.32 was not sufficient
+
+Follow-up: [[file:32.34-metadata-write-boundary.org][32.34]] audits the actual SDK metadata setters and tests restoration
+inside a sealed receiver's active computation. It retains the raw-write bypass
+as a negative result; a proposed monotonic write generation is not an existing
+native guarantee.
+
+[[file:32.32-issued-read-association.org][32.32]] established native issuance and metadata-route controls, but its
+=Read.birth= was a private semantic input. The separate =associated= lemmas did
+not derive that input from the actual Scheme issuer. A theorem over an assumed
+Birth does not establish that a runtime record owns that Birth.
+
+This follow-up constructs the symbolic association through allocation/mint
+transitions and independently checks real native association snapshots. It
+changes no Loader, module selection, public configuration syntax or domain
+Contract. The new inspection entry belongs to the low-level MOP, not to ordinary
+Profile authoring. No user maintains an Evidence object or a purity flag.
+
+* Native read-only inspection
+
+The actual private mint now creates a =case-lambda= birth closure. Its existing
+one-argument branch validates exactly the original captured fields. The new
+zero-argument branch returns copies of those same lexical captures:
+
+#+begin_src scheme
+(def birth
+  (case-lambda
+    (() (values read
+          (vector self key revision instance value
+            (map values parent-copy) checker)
+          (and key-copy (map values key-copy))))
+    ((candidate)
+     (and (eq? candidate read)
+          (eq? (slot-read-receiver read) self)
+          (eq? (slot-read-key read) key)
+          (or (not key-copy) (same-list? key key-copy))
+          (= (slot-read-revision read) revision)
+          (eq? (slot-read-instance read) instance)
+          (eq? (slot-read-value read) value)
+          (eq? (read-runtime.slot-ref read 'current?) checker)
+          (same-list? (slot-read-dependencies read) parent-copy)))))
+#+end_src
+
+This is an excerpt from the private mint in the producer's =object.ss=.
+Copy mode uses primitive
+metadata containers. It must not call a potentially rebound class constructor,
+POO getter, caller-provided closure or observation callback. It does not register
+a miss, populate a value cache, or register the returned copy as a signed read.
+
+The inspector is defined in the SAME private issuer scope:
+
+#+begin_src scheme
+(def (inspect read)
+  (unless (eq? (read-runtime.object-class read) record-class)
+    (error "foreign slot-read type"))
+  (def presented (read-runtime.slot-ref read 'birth))
+  (def original (hash-get issued read))
+  (if original
+    (let-values (((signed snapshot shape) (original)))
+      (values presented original signed snapshot shape))
+    (values presented #f #f #f #f)))
+#+end_src
+
+It is exported as =object-read-issuance= through =object.ss= and =mop.ss=. Only the
+closure obtained from the private weak registry is invoked; a substituted public
+=birth= field is observed as data, never called. The five results identify the
+presented closure, registered closure, originally bound record, captured payload
+and frozen key shape. A forged record has no registered association. A borrowed
+closure does not change that.
+
+These are shallow metadata copies: object/instance/value identities intentionally
+remain references. The vector and copied list spines are independent; changing
+the returned vector does not change the frozen environment. This is not a deep
+snapshot of mutable referenced objects or an atomic multi-thread transaction.
+An unsigned public read reconstructed from the metadata still fails issuance.
+Revealing a per-record closure handle does not authorize another record, because
+both the registry key and the closure's captured record identity remain checked.
+
+* Constructive model and legacy projection
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean][IssuerProjection.lean]] models separate stores:
+
+- =registry=: record identity to original closure identity;
+- =environments=: closure identity to captured owner, payload and key shape;
+- =Record=: current public fields and presented closure;
+- =readCache=: cache membership, separate from issuer authority.
+
+Neither the native result Boolean nor a =nativeCreated= flag populates these
+stores. =mint= allocates fresh identities and updates the registry/environment
+pair together. =allocateRaw= consumes a fresh record identity without writing
+either association; public field edits likewise do not write the private store.
+=empty_frontier= and =mint_preserves_frontier= establish allocation separation.
+=raw_allocation_preserves_frontier= and
+=later_mint_does_not_sign_public_copy= cover public allocation followed by native
+allocation, so an old raw copy cannot acquire authority through identity reuse.
+
+=project= derives the legacy =IssuedRead.Read.birth= from registry lookup,
+registered/presented identity agreement, the captured environment and key-shape
+agreement. The central equalities are:
+
+#+begin_src lean
+theorem projection_agrees_with_verifier (s : Store) (r : Record) :
+    IssuedRead.issued (project s r) = authenticate s r
+
+theorem mint_projects_without_birth_premise
+    (s : Store) (p : Payload) (shape : List Nat) (cache : Bool) :
+    IssuedRead.issued
+      (project (mint s p shape cache).1 (mint s p shape cache).2) = true
+#+end_src
+
+=transient_cache_unchanged= proves that transient minting leaves =readCache=
+unchanged. =mint_keeps_parent_authentication= preserves an older parent's
+association. =final_admission_keeps_both_requirements_and_child= preserves the
+conjunction of authentication, both independent requirements and child ownership;
+it does not synthesize or prove the Gitea/PostgreSQL domain rules.
+
+* Actual Scheme to Lean check
+
+[[file:../../../t/issuer-projection-test.ss][issuer-projection-test.ss]] obtains records through =.ref= / =.ref/cached=,
+then calls the native inspector. It maps actual live =eq?= identities to positive
+handles, preserving list order and aliases; mutation revision remains a numeric
+value. Zero is reserved for absence in the JSON codec, not a user authority tag.
+The producer copy operation never executes the presented untrusted closure.
+
+The Scheme test exports 12 observations: persistent read, transient miss,
+unsigned copy, replacement, restoration, callback closure restoration, borrowed
+closure, payload edit, callback before/after an effect, and revision before/after
+native edit-and-restore. It does not construct expected registry rows. It also
+checks that altering an inspection copy leaves the original valid and that a
+read reconstructed from a copy has no issuer association.
+
+[[file:../../../dev/proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck.lean]] independently decodes the current record, actual
+registry result and actual captured environment. It computes =authenticate= and
+=project= before comparing them with the native result. It also compares native
+currentness with receiver revision/instance and the appropriate persistent-cache
+or transient-absence condition, checks that repeated observations preserve the
+original association, and requires the restored-effect and revision-ABA witnesses.
+This currentness decoder covers the sampled ordinary-value/cache-miss routes;
+it is not a decoder for bootstrap, all query kinds or arbitrary malformed heaps.
+
+The wire checker rejects three intentionally damaged inputs with
+=native/projected issuance mismatch: persistent=: missing registry, substituted
+presented closure and changed public payload. These are codec negative controls,
+not additional native executions. A valid Scheme execution and an arbitrary
+JSON file are not interchangeable evidence.
+
+Repeatable gates, using the normal default Gerbil runtime:
+
+#+begin_src sh
+just test-issuer-projection /private/tmp/core-issuer-projection-current
+just proofs-lean
+python3 dev/proofs/quint/check.py --case-prefix IssuerProjection \
+  --receipt /private/tmp/core-issuer-projection-quint.ss
+#+end_src
+
+The first recipe preserves the heap-fenced Scheme test entry and invokes the
+independent Lean checker. Generated observations and raw logs remain outside Git.
+
+* What modification-and-restoration means
+
+The native test uses a real replay observer to replace the selected table's
+=ref= method, call that method (incrementing an external counter), and restore
+the original in =dynamic-wind=. Native replay succeeds with current endpoints
+and counter =1=. The inspector/projector agrees with that result. This is a
+POSITIVE runtime witness of the limitation, not a successful read-only proof.
+A closure replaced and restored entirely inside a callback likewise has matching
+endpoint identity; the untrusted replacement is not invoked by the kernel.
+
+In contrast, two supported =.put!= operations change a receiver value and restore
+it but advance revision. Issuance remains genuine, while native currentness and
+replay refuse the old read. Raw writes without revision tracking do not inherit
+this guarantee.
+
+[[file:../../../dev/proofs/quint/IssuerProjection.qnt][IssuerProjection.qnt]] constructs parent and child associations through mint
+transitions, admits an unregistered self-consistent user closure as adversarial
+input, and models callback enter/effect/restore as separate steps. It does not
+start with a private Birth/native-origin Boolean. =NoCallbackEffects= is
+intentionally outside positive =safety=: its matched normal-model wrapper must
+produce a counterexample. Deleting registry/payload checks, final validation,
+route guarding, miss separation, the second requirement, child ownership or
+laziness has its own matched counterexample. An acceptance witness rejects a
+vacuous implementation that refuses everything.
+
+* Existing consumer obligations retained
+
+The actual =SourceAdmissionContract.= regression in
+[[file:../../../t/issued-read-admission-test.ss][issued-read-admission-test.ss]] remains the Gitea/PostgreSQL control:
+parent plan cached at 5432, child PostgreSQL changed to 5433, cold/warm default
+following, two independent port contributions and both child responsibilities.
+Explicit Gitea 5440, reuse of the parent plan and changed JSON source are refused.
+The parent retains its original cached plan identity/value. The new inspector
+is not inserted into this user flow; it is only an observation/proof interface.
+The old native read suite retains bootstrap, cold/hot/inline/cached lookup and
+unselected-branch controls. No new Fixture family or Loader path is introduced.
+
+* Results and remaining premises
+
+| Gate | Accepted result |
+|------+-----------------|
+| Default-runtime native projection | 4 cases; 12 actual native observations; independent Lean decoding passes |
+| Existing issuer controls | 10 cases pass, including live/dead weak-GC controls |
+| Existing replay controls | 11 cases pass, including bootstrap, parent/child isolation and lazy branches |
+| Actual Gitea/PostgreSQL admission | 2 cases pass with both requirements, child obligations, currentness and stale-plan rejection |
+| Lean aggregate | 173 jobs; 5861 declarations audited; standard Lean axioms only; 15 selected new theorems |
+| Quint | 176 model sources typecheck; 11 selected outcomes match, including the normal-model history counterexample |
+| Wire negative controls | Missing registry, changed closure and changed payload each rejected with the expected mismatch |
+| Producer build | Standard library build exits 0 without disabling optimization |
+
+The final runtime gates use the workspace's actual compiled producer and ordinary
+Core test path, without a temporary producer load path. Exact local producer
+inputs are recorded in [[file:32.33-producer-source.sha256][32.33-producer-source.sha256]]. Raw logs, actual observation JSON,
+negative input JSON and verifier receipts remain under
+=/private/tmp/core-issuer-projection-20261018=, not in Git. No dependency lock,
+branch or Loader is changed; these remain local worktree changes.
+
+Earlier parser/type derivation corrections are retained as failures. The first
+accepted Quint cut was superseded by the added public-allocation laws; the next
+full run was rejected because another session changed
+=module-system/source/admission.ss= during qualification. Its drift record is
+retained. The final run passed all checks and the strict before/after source cut;
+no consistency assertion or timeout was relaxed. Historical 32.32 receipts are
+not rewritten into receipts for this new implementation.
+
+Issuance here is a local identity/capability association, not a cryptographic
+signature or hostile-host attestation. The producer base remains
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b= plus local changes. LeanPoo's actual
+checkout and lock both remain =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+The remaining premises are now specific, rather than an opaque Birth:
+
+1. Native allocation provides fresh live object/procedure identity, and =eq?=
+   plus the selected-handle codec preserves it. The allocator/compiler is not
+   verified here. Public raw allocation and native mint are modeled separately.
+2. The private weak table is written only by the audited mint; runtime primitive/class-layout or method-table
+   rebinding, unsafe closure-environment mutation, FFI and arbitrary concurrent
+   writes are outside the serial API boundary.
+3. The zero/one-argument branches share the lexical captures shown in Scheme.
+   Source review and native trace checks establish correspondence at the pinned
+   source cut; this is not a mechanically verified Scheme compiler or proof of
+   all possible runtime traces.
+4. Weak-GC availability for live records remains a runtime control, not a Lean GC
+   theorem. Authentication does not require membership in the read cache.
+5. Endpoint inspection cannot certify arbitrary callback history. Source
+   observation needs its separately constrained boundary; external publication
+   still needs synchronization/conditional commit. No amount of endpoint replay
+   proves that all external effects were absent.
+6. Domain Contract correctness, complete selected-graph discovery and provider
+   execution safety remain distinct obligations. They are not implied merely by
+   authenticating a read token or decoding one selected observation.

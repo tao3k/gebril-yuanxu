@@ -1,0 +1,257 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Native Parent Graphs Replace Manual Profile Origin Records
+#+property: STATUS source-audited-design-only-no-runtime-or-loader-change
+
+[[file:19-native-parent-validation.org][Module 19]] records the executed dependency-pin probe (44 assertions), the
+receiver-relative nested-slot correction, right-operand loss controls and exact
+LeanPoo source-check boundaries. Its results supersede unexecuted expectations.
+
+* Source result and correction to module 17
+
+Audited learning corpus .data/gerbil-poo at
+240695a7461ec2d7fbbad4b83cab86508ec9c748. This is a reference corpus, not a new
+runtime dependency or proof that every installed package has that exact source.
+The canonical runtime import owner remains :clan/poo/object. Core path syntax
+was inspected at core/object-syntax/path-slots.ss in the active checkout.
+
+| Native source | Observed behavior |
+|---------------+-------------------|
+| object.ss object struct and initializer | object-supers stores the flattened direct-parent values; caches are separate fields |
+| object.ss .def / .def/ctx | Produces def and .o/ctx with the supplied options; no declaration-origin registration |
+| object.ss .o/ctx and object/init | Passes the super expression to make-object supers: |
+| object.ss object/slot-spec | =>.+ lowers to inherited-value transformation through .+ |
+| object.ss .+ | Keeps base as a direct parent, plus override's supers; copies override's direct slot specs/defaults |
+| object.ss %with-slots / .ref | Receiver-aware lexical slot references and receiver-local lazy slot caches |
+| mop.ss define-type | Builds on .def/ctx; does not install a general export/source-origin recorder |
+| Core path-slots.ss .def | Emits def with native-.o/ctx after bounded path normalization; no provenance recorder |
+
+Correction: standard native inheritance already preserves the useful object
+relationship. Do not add TeamDeclarationOrigin/GerbilExportOrigin records or
+wrap every .def simply to duplicate object-supers. Module 17's manual-origin
+records and resolve-profile-origin path are superseded by this module for native
+inheritance. Its contribution indexes, requirements and integration method bundle
+remain useful. Its pre-resolved admission entry shape remains unchanged.
+
+* User declaration and exact first-stage native expansion
+
+#+begin_src scheme
+(.def (TeamCIProfile @ GerbilCIProfile)
+  funflow: =>.+
+  (.o build: =>.+
+      (.o commands: '("gerbil" "build" "release"))))
+
+;; Native .def/ctx expansion, without source registration or a new constructor:
+(def TeamCIProfile
+  (.o/ctx original-syntax-context
+    (:: @ GerbilCIProfile)
+    funflow: =>.+
+    (.o build: =>.+
+        (.o commands: '("gerbil" "build" "release")))))
+#+end_src
+
+original-syntax-context denotes the original syntax object inserted by the
+expander, not a runtime variable a user defines. This is a source-derived
+expansion schematic, not an executed macroexpand transcript. The remaining
+native object/init expansion passes GerbilCIProfile as supers; its initializer
+flattens that parent expression into object-supers. The already implemented Core
+path .def similarly delegates to native-.o/ctx after normalizing slot bodies.
+No wrapper is needed to capture the declared object's name or @ parent spelling.
+
+For an inherited configured object, the native refinement law is explicit:
+
+#+begin_src scheme
+(def (.+ base override)
+  (make-object
+    slots: (object-slots override)
+    supers: [(object-supers override)... base]
+    defaults: (object-defaults override)))
+#+end_src
+
+This is the inspected native definition, not a replacement implementation.
+It preserves the actual inherited base value in the resulting parent graph.
+For an inline constructed parent slot, superfun can produce that value at the
+child receiver; it need not be eq? to the parent receiver's cached slot object.
+Module 19 validates both that case and the canonical constant-value case.
+An arbitrary function
+that reconstructs an object without base as a parent does NOT preserve this law.
+.+ does not retain override itself as a parent; its direct slots are copied.
+Therefore parent traversal tracks native inheritance requirements, not every
+value/provider involved in construction. A published override used solely as the
+right-hand operand needs explicit integration provenance if its own obligations
+must apply. Do not label it automatically discovered by this graph.
+
+* Maintain export requirements once; bind roots at the publication boundary
+
+Use LanguageCIInterface, GerbilCIRequirements and RustCIRequirements as fully
+defined in module 17. A package interface associates canonical exports with their
+actual Contracts and source requirements once. The trusted planning view binds
+the exact admitted interface/revision snapshot. This is the same pending source
+boundary, not a source-authentication property of object-supers.
+
+The selected export-use list below is internal resolved input from package/import
+selection. Its entries contain interface and export-key, not a copied Profile
+body or a separately authored ProfilePublication. The publication owner obtains
+this list from resolved export bindings and admitted source dependencies; deriving
+it from arbitrary unannotated runtime objects is not implemented or assumed.
+Do not construct it by scanning/forcing every export in the contribution catalog.
+
+#+begin_src scheme
+(def (make-selected-profile-anchors export-uses protocol view)
+  (let ((index (make-hash-table-eq)))
+    (for-each
+      (lambda (use)
+        (let* ((interface-value (.get use interface))
+               (key (.get use export-key))
+               (association-value
+                (profile-export-association interface-value protocol key view))
+               (root-value (.ref (.get interface-value exports) key))
+               (anchor
+                (.o interface: interface-value
+                    export-key: key
+                    root: root-value
+                    association: association-value)))
+          (unless (object? root-value)
+            (error "profile-export-is-not-native-object" key))
+          (hash-put! index root-value
+            (cons anchor (hash-ref index root-value '())))))
+      export-uses)
+    index))
+#+end_src
+
+The interface-value binding avoids a same-name native slot initializer.
+The index is a private identity hash, built locally and returned as a read-only
+view artifact, not a public configuration DSL or mutable global registry. It
+retains every export association when two exports share one root object. That
+ambiguity must not be hidden by overwriting a hash entry. Duplicate export uses
+are harmless for correctness but should be deduplicated by the selection owner.
+Root-value demand occurs only after the export association is selected/admitted;
+metadata-only discovery must stop before this function. Exports themselves may
+already have been eagerly evaluated by Scheme module initialization; the
+required staged source adapter is still missing.
+
+* Walk native parents without demanding configuration slots
+
+#+begin_src scheme
+(def (native-profile-anchors candidate-value anchor-index)
+  (let ((state (make-hash-table-eq))
+        (found '()))
+    (let walk ((current candidate-value))
+      (unless (object? current)
+        (error "profile-parent-is-not-native-object" current))
+      (let ((mark (hash-ref state current #f)))
+        (cond
+          ((eq? mark 'visiting) (error "cyclic-profile-parent-graph" current))
+          ((eq? mark 'done) (void))
+          (else
+            (hash-put! state current 'visiting)
+            (set! found (append (hash-ref anchor-index current '()) found))
+            (for-each walk (object-supers current))
+            (hash-put! state current 'done)))))
+    (when (null? found)
+      (error "missing-published-profile-root" candidate-value))
+    found))
+
+(def (native-profile-association candidate-value anchor-index)
+  (let* ((anchors (native-profile-anchors candidate-value anchor-index))
+         (first (.get (car anchors) association)))
+    (unless
+      (every (lambda (anchor)
+               (same-profile-requirements? first (.get anchor association)))
+             (cdr anchors))
+      (error "incompatible-published-profile-roots" candidate-value))
+    first))
+
+(def (resolve-native-scenario-profiles scenario-value anchor-index)
+  (let ((names (.get scenario-value composition participants)))
+    (unless (nonempty-unique-symbols? names)
+      (error "invalid-participants" names))
+    (map
+      (lambda (name)
+        (unless (.slot? scenario-value name)
+          (error "missing-selected-profile" name))
+        (let* ((candidate (.ref scenario-value name))
+               (association-value
+                (native-profile-association candidate anchor-index)))
+          (.o binding: name
+              profile: candidate
+              association: association-value)))
+      names)))
+#+end_src
+
+same-profile-requirements? and admit-selected-profile-associations have complete
+bodies in module 17. The former compares exact Contract/approved requirement/
+module-policy identity and plan-module values. The latter checks the final
+Scenario binding again and calls .admit with a new occurrence-specific context,
+then validates evidence/candidate/context correlation. No new placeholder helper
+is called here. This conservative version refuses distinct requirements until
+an explicit approved composite Contract/integration is supplied; choosing a CLOS
+method or parent linearization must not discard another applicable requirement.
+
+The native walk reads object-supers, not .all-slots, .ref on business fields,
+object-instance or a forced precedence cache. It does not demand commands or a
+Pipeline. It visits each reachable native parent once per call, including shared
+diamond ancestors, and reports a cycle. No claim is made about arbitrary .def
+super expressions: Scheme must evaluate those expressions to construct the object.
+Prototype mutation during a walk/admission violates the stable-view precondition.
+Production may memoize graph results only with current graph/policy/view validity;
+this design does not add mutation versioning or prove all Scheme graphs immutable.
+
+* Concrete integration path, without hand-authored declaration records
+
+#+begin_src scheme
+(.def (ProjectCI @ CICDScenario.)
+  application: TeamCIProfile
+  composition: =>.+ (.o participants: '(application)))
+
+;; Planning-owner bodies, not user configuration or Loader activation:
+(def (admit-native-profile-selection scenario-value export-uses protocol view)
+  (let* ((anchors (make-selected-profile-anchors export-uses protocol view))
+         (resolved (resolve-native-scenario-profiles scenario-value anchors)))
+    (admit-selected-profile-associations scenario-value resolved)))
+#+end_src
+
+Root association is maintained once in the contribution interface. Referencing,
+renaming or inheriting that same root value requires no per-child origin record.
+Scenario application resolves to the actual TeamCIProfile value; the native graph
+finds GerbilCIProfile and its approved requirement association. The candidate
+passed to .admit is still TeamCIProfile, never replaced with GerbilCIProfile.
+An inherited Scenario that refines application yields another native child;
+the same walk works as long as the canonical published root remains reachable.
+
+The planning entry returns module 17's admitted entry shape for composition
+preparation. It must replace, not duplicate, module 15's separate preparation
+admission path. Composition checks stable final bindings before projection.
+Parent Pipeline caches stay local to parents. The final Pipeline computes Checks
+from native effective-config and selected-checks; domain admission compares final
+Check identities/order even after parent caches were populated. A fixed parent
+list remains the negative control. Configuration admission does not admit the
+consumer format, publish a plan or create a running Session.
+
+* What this does not recover
+
+A parent graph cannot recover declaration names/source spans, distinguish the
+intended import alias when identical values have different exports, authenticate
+packages, or identify overwritten value providers. These facts remain in the
+publication/declaration boundary for diagnostics and explicit source policy.
+Shared roots retain all indexed associations; incompatible requirements refuse.
+A copied/serialized/reconstructed object with no published ancestor needs an
+explicit maintained export association. Inline anonymous .o or a factory result
+that retains the published parent can use the same native graph, regardless of
+which syntax produced it. No universal .def instrumentation is required for that.
+
+* Status and required checks
+
+Existing and source-observed: object-supers, .def/.o construction, native .+
+parent retention, lexical receiver/cache behavior; Core CLOS method packages and
+slot Contract admission. Proposed only: contribution export indexes and trusted
+revision binding, selected anchor assembly, parent-graph resolver, its integration
+into Profile/composition admission and staged source discovery. The reference
+source audit is not an executed expansion, runtime test or performance receipt.
+
+Future checks: canonical aliases/renames, native .def and anonymous descendants,
+nested =>.+ and Core path lowering, diamonds/cycles, equal-value multiple exports,
+right-hand .+ provenance limitation, unknown/copied roots, selected-only export
+demand, source/graph/policy invalidation and final Check identity with both parent
+Pipelines cached. No implementation or Loader integration is performed here.

@@ -1,0 +1,293 @@
+#+title: 32.16 Root and Child Admission: Analysis, Source Certification, and Read Reuse
+#+language: en
+
+* Question and evidence boundary
+
+Can repeated whole-publication source reads move out of nested child admission
+without weakening domain obligations or admitting a stale plan?
+
+This is a proposed protocol, proved on explicit projections. It is NOT a Scheme
+refactor. No Loader or Scheme source changes belong to this qualification.
+LeanPoo is pinned at =6e6a706e14fa6f8199e4f36711440355b42ef335= in the existing
+Core Lean project; Quint is 0.33.0 with TLC via Apalache 0.62.1.
+
+The owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootChild.lean][Admission.RootChild]] and
+[[file:../../../dev/proofs/quint/RootChild.qnt][RootChild.qnt]]. They reuse the existing
+=Source.sourceObject= / =LeanPoo.Proof.Certificate=, =SourceWindows.check= backed
+by LeanPoo =ensureLookup=, and the real LeanPoo =DeclarativeMetadata.Contract=
+invocation/publication protocol. They do not invent another object/cache engine.
+
+* Responsibility boundary, not a new user API
+
+| Operation | Must establish | Does NOT establish |
+|-----------+----------------+--------------------|
+| Internal scalar / ObjectContract responsibility analysis | Shape, normalization and child obligations on the exact final child | Currentness of the entire selected publication |
+| PostgreSQL child analysis | Port range 1..65535 and its independently contributed requirement | Gitea requirement, plan identity, root publication authority |
+| Gitea child / application analysis | Client/server port relation and its own requirement | Permission to discard the PostgreSQL requirement |
+| Root configuration admission | All selected analytic evidence, authoritative contribution coverage, exact final receiver/revision, plan/config association, and fresh final source checks | Effects, deployment or provider acceptance |
+| Standalone public child admission | Its own full return-time source guarantee, when its contract promises that guarantee | Permission to use an internal analysis result as that public receipt |
+| Publication after an intervening callback/effect | A NEW check after that effect | Reuse of earlier currentness as proof of present currentness |
+
+The current Scheme =.admit= entry is NOT changed into an unchecked child entry.
+Any future optimization needs an internal, root-owned analysis scope whose result
+cannot escape as a source-certified receipt. Exported or independently invoked
+=SourceAdmissionContract.= children retain their existing checks. Arbitrary
+=.obligations=, inherited =.contract-obligations=, diagnostics callbacks and
+package operations remain potentially effectful unless separately constrained.
+
+* Concrete Gitea/PostgreSQL projection
+
+The Lean input is concrete data, not an arbitrary proposition supplied by a caller:
+
+#+begin_src lean
+structure Config where
+  receiver : Nat
+  revision : Nat
+  databasePort : Nat
+  clientPort : Nat
+
+structure Contribution where
+  origin : String
+  port : Nat
+  sources : List (String × String)
+
+def domain (config : Config) (parts : List Contribution) : Bool :=
+  (1 ≤ config.databasePort && config.databasePort ≤ 65535) &&
+  (config.clientPort == config.databasePort) &&
+  parts.all (fun part => part.port == config.databasePort)
+#+end_src
+
+A cached parent has receiver/revision 0/0 and port 5432. A derived final child
+has receiver/revision 1/1 and port 5433. Default-following produces clientPort
+5433; explicit clientPort 5432 fails the actual equality check. Two independently
+published requirements of 5432 and 5433 fail, even though prototype merging could
+otherwise hide one slot. Both contributions must be collected BEFORE slot
+precedence resolution; byte deduplication must never deduplicate their demands.
+
+=Analysis= records the candidate and complete contribution list. Its existence
+means domain analysis, not source validity. =rootCheck= compares those records
+with the final candidate and authoritative publication collection, checks the
+domain predicate, then checks the flattened source requirements in a fresh byte
+window. A source-only root with no local inputs must still include nested inputs.
+
+#+begin_src lean
+def rootCheck (config : Config) (parts : List Contribution)
+    (evidence : Analysis) (finalWorld : World) : Bool :=
+  (evidence.candidate == config) && (evidence.contributions == parts) &&
+  domain config parts && (check (inputs parts) finalWorld empty).accepted
+#+end_src
+
+The list equality is intentionally strict: reordering requires a new analysis,
+not an undocumented claim that every callback is order-independent. Object IDs
+and revision data must project real receiver identity; a user string or a hash
+with an unproved collision assumption is not a substitute.
+
+* What Lean proves
+
+- =requirements_retained= and =conflicting_ports_rejected=: every selected party
+  constrains the final database port; conflicting requirements cannot pass.
+- =candidate_bound= / =cached_parent_rejected=: accepted analysis belongs to the
+  exact final candidate, so a warm parent result cannot certify the child.
+- =coverage_bound=: omitted or replaced contribution records cannot pass against
+  the supplied authoritative collection.
+- =root_sources= / =child_sources=: the fresh root source Certificate implies
+  each selected child's source Certificate, including shared and private inputs.
+- =post_effect_change_rejected=: a changed observed input rejects even when
+  earlier domain analysis succeeded.
+- =returned_invocation_sources=: an actual LeanPoo metadata Invocation implies
+  the source Certificate, rather than accepting a fabricated authority flag.
+- =stale_return_keeps_previous=: the actual metadata publish operation rejects
+  stale return evidence and retains the previous published state. External side
+  effects are NOT rolled back by this theorem.
+- =batching_equivalent=: in ONE stable world, a fresh check of all flattened
+  requirements is equivalent to fresh individual checks of every part.
+- =shared_closure_one_read=: two independent requirements on the same path need
+  one physical observation inside that window, while both comparisons remain.
+
+The previously proved =SourceWindows.child_misses_parent= and =final_value=
+use LeanPoo ContextSlot's complete-context equality and =read_value=. They remain
+the cache mechanism laws; this model adds exact admission-candidate association.
+It does not claim a new implementation of POO receiver binding. In particular,
+=candidate_bound= alone does not prove that an arbitrary nested plan was projected
+correctly: the runtime still needs the ContextSlot resolver correspondence and
+its concrete plan/config identity check. The QNT warm-parent control is a bounded
+projection of that additional requirement.
+
+* Schedule and independent rechecks
+
+1. Resolve selected publication identity and retain all contributions. Keep
+   pre-read guards needed to reject already stale input before evaluating getters.
+2. Analyze each selected child on the final normalized candidate. Collect nested
+   source observations and child evidence; do not force unrelated branches.
+3. Finish every potentially effectful domain/platform/diagnostic callback. Replay
+   selected MOP dependencies on the final receiver. Collect any new observations.
+4. Validate graph/generation, provenance coverage, object revisions and exact
+   plan/config association. Only callback-free checks may share a pure window.
+5. With an EMPTY byte cache, compare the complete observed source requirements
+   against fresh bytes, including nested sources. Preserve conflicting revisions.
+6. Return root evidence without another effectful operation. If publication or a
+   package callback happens afterward, its boundary needs an independent recheck.
+
+Steps 4–6 require a stable observation interval. Sequential file reads are not a
+filesystem transaction. A concurrent writer between the final observation and
+return, or a late effect, requires snapshot/fencing machinery or refusal; POO
+memoization alone cannot close that TOCTOU gap. No callback runs under a byte
+cache merely because its name is =current!=.
+
+* QNT finite controls
+
+The model has two child analyses, two independent port requirements, a shared
+source plus a private second source, a warm parent plan, and an unselected third
+branch. Source changes can happen between children AND after the last child.
+They cannot happen within the final pure window in the positive model.
+
+| Control | Expected observation |
+|---------+----------------------|
+| RootChild / safety | Complete finite search, all invariants hold |
+| analyticAuthority | Child analysis published without final source certification fails |
+| crossEffect | Reusing pre-effect bytes fails final currentness |
+| omit | Losing the second party fails requirement completeness |
+| skipchild | Omitting a child-obligation event fails domain coverage |
+| omitSource | Losing the private child source check fails final currentness |
+| parent | Returning the warm parent's plan fails receiver isolation |
+| eager | Forcing an unselected branch fails demand locality |
+| lateEffect | Allowing mutation after the final read fails currentness |
+| acceptance / RejectAll | Expected counterexample proves success is reachable |
+
+These are bounded transition results, not evidence that arbitrary callbacks,
+all filesystem interleavings or production observation discovery are modeled.
+The Lean model covers arbitrary finite source/contribution lists. QNT explicitly
+checks schedules and negative controls. Neither replaces native correspondence.
+
+* Deriving an optimization without weakening the protocol
+
+Let S be the full publication source closure and k the number of contextual
+children currently demanding that closure. The present implementation can pay
+k × |S| physical reads in separate pure windows, even for a child with no platform
+callback. In a single stable final window, shared bytes can instead be read once
+per distinct path; ALL expected-value comparisons still execute.
+
+The proof justifies replacing repeated same-world source certification with one
+root source Certificate that projects to its selected children. It does NOT
+justify keeping bytes across child obligations, nor deleting the obligations,
+pre-getter rejection, graph/coverage checks, or independent post-effect rechecks.
+A pure child may produce evidence before the final source Certificate; it must
+not publish or authorize effects on that evidence.
+
+The prior repaired native measurement is 718 opens: 606 publication reads,
+102 final-source reads, 4 config/source reads and 6 graph reads. This turn does
+NOT reduce those counts. The six whole-publication windows are an optimization
+target, not proof that all six are removable. [[file:32.17-publication-check-callers.org][32.17]] now attributes the measured
+sequence: three internal child/context analyses, root contribution callback
+before/after guards, and a root return-context guard. It distinguishes the
+qualified baseline runtime from concurrently edited reader/link source. Future
+Scheme work must preserve every genuine independent public/effect boundary. Retaining six boundaries with six real effects
+may legitimately require six fresh checks.
+
+Two same-path requirements need one observation in the model, even if their
+expected texts disagree; disagreement still rejects. Sharing path bytes is safe
+inside the stable window. Sharing a successful Boolean check across different
+requirements or effects is not. The model counts source-observation cache misses. For present files these
+correspond to content reads; missing-path checks have filesystem-query cost,
+not a successful file open. Missing files are observed absence, not empty
+strings. Absence requirements for optional role files remain outside this
+expected-text model and must not be silently dropped by an implementation.
+
+* Remaining production premises and Reflection
+
+1. The authoritative selected contribution collection must really be complete.
+   The Lean equality check cannot discover a contributor omitted from BOTH the
+   reference collection and the analysis. Existing =.for-export= coverage/source
+   binding is the candidate mechanism, not a proved automatic discovery theorem.
+2. Source lists here project transitive publication inputs, including root
+   config/Schema/manifest inputs; they are not inferred from port fields.
+   Source observation and cached dependency replay must include all selected
+   contract/config/Schema/contribution inputs. An unselected branch must not be
+   scanned to obtain an artificial global completeness claim.
+3. Arbitrary child obligations are not reduced to port checks: the concrete
+   domain model checks port bounds, equality and independent requirements. The
+   runtime adapter must preserve every actual child obligation and diagnostic.
+4. Final candidate normalization, receiver/revision identity, plan association
+   and graph/source guards must describe the same configuration. Mutable external
+   state or untracked writes invalidate this projection.
+5. Source authenticity, package/provider validation, deployment success and effect
+   authority are separate from currentness. Neither Lean nor QNT authenticates
+   arbitrary files merely because their bytes match an earlier observation.
+
+Why this helps: it gives a semantic reason to reduce repeated whole-closure
+certification, rather than stretching a byte cache over callbacks. Why it may
+not help: if public children must each independently publish source-certified
+results, their checks are part of the API promise. The next implementation
+question is how the existing Contract context distinguishes root-owned analysis
+from standalone admission without exposing new complexity to users.
+
+* Local qualification
+
+Qualification date: 2026-10-18. The existing Core Lean project completed 143
+build jobs and passed both the arbitrary-Prop-field shape audit and the standard
+Lean-axiom audit. =RootChild.lean= contains twelve named theorems; this is a local
+projection proof, not twelve independent production guarantees.
+
+The focused QNT receipt contains all ten new registered cases:
+
+| Model / control | Generated | Distinct | Remaining queue | Result |
+|-----------------+-----------+----------+-----------------+--------|
+| RootChild | 168 | 132 | 0 | Positive exhaustive check |
+| analyticAuthority | 72 | 57 | 15 | Expected FinalSources counterexample |
+| crossEffect | 142 | 121 | 14 | Expected FinalSources counterexample |
+| omit | 128 | 108 | 15 | Expected TwoRequirements counterexample |
+| skipchild | 128 | 108 | 15 | Expected DomainChecks counterexample |
+| omitSource | 143 | 122 | 14 | Expected FinalSources counterexample |
+| parent | 128 | 108 | 15 | Expected ReceiverIsolation counterexample |
+| eager | 5 | 5 | 3 | Expected LazyBranch counterexample |
+| lateEffect | 151 | 130 | 20 | Expected FinalSources counterexample |
+| acceptance | 128 | 108 | 15 | Expected RejectAll counterexample |
+
+Negative searches stop at their counterexample; their nonempty queues are not
+positive exhaustive-search claims. The gate requires the named invariant failure,
+exit 1 and state counts for a negative, and exit 0 plus an empty queue for the
+positive. All sources typecheck. The Lean/QNT model digest agrees, and all 21
+bound source digests remained current through verification and the final recheck.
+The full registered catalog now has 30 cases; this turn qualified the ten new
+cases, not a new run of all thirty.
+
+Local receipts (not committed raw logs):
+- =/private/tmp/core-source-window-model/root-child-receipt.ss=: Scheme v1
+  receipt with pinned tools, exact source hashes, predicates, exits and counts.
+- =/private/tmp/core-source-window-model/root-child-run-02.log=: successful
+  bounded verifier run; 45-second case deadline, 5-second real-output watchdog
+  and 1GB TLC heap remained unchanged.
+- =/private/tmp/core-source-window-model/root-child-lean-retry.log=: successful
+  aggregate Lean build/audits on Lean 4.34.0 and the pinned LeanPoo revision.
+
+Failure history is retained. Initial QNT effect typing rejected unparenthesized
+Boolean update expressions; grouping was corrected before model checking. The
+first ten-case run obtained expected verifier outcomes but did NOT emit a receipt:
+this session had added a Lean theorem after its source hashes were captured, so
+the final source-binding gate rejected it. It was rerun without relaxing that
+gate. An aggregate Lean attempt also failed when another session added imports
+before their object files existed; the subsequent build resolved those modules
+without reverting that session's changes.
+
+No Scheme source or Loader implementation was changed. No new native runtime
+acceptance or performance improvement is claimed. The observation-discovery,
+identity projection, stable-window and publication-coverage premises above remain
+production correspondence obligations.
+
+* Current implementation attribution
+
+[[file:32.18-current-core-check-attribution.org][32.18]] rebuilds current Core reader/link and the dynamically imported service
+admission dependencies. It confirms the same six positions on current code,
+with explicit default-child and alias checks, two-party requirements, parent
+cache isolation and a silent post-admission package source mutation control.
+The recorded cut is six 87-file checks plus an independent 88-file final pass;
+620 total reads is an observation of changed source, not an implemented
+root/child delegation optimization. The stable-window/completeness premises
+of the theorems above remain explicit.
+
+* Narrow implementation follow-up
+
+[[file:32.19-root-owned-child-analysis.org][32.19 Root-Owned Responsibility Analysis]] implements the qualified W1--W3
+convergence. It preserves this document as the historical model/baseline and
+records matched current-reader controls; it does not turn the Lean premises into
+a proved refinement of arbitrary Scheme callbacks or add Loader integration.

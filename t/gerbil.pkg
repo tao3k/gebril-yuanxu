@@ -1,0 +1,5 @@
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;; Test fixtures retain their yuanxu/t identity without prioritizing
+;; uncompiled production sources over the admitted native Core artifacts.
+(package: yuanxu/t prelude: :tao3k/yuanxu/prelude)

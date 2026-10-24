@@ -1,0 +1,281 @@
+#+title: 32.15 Model-directed source admission and cache optimization
+#+language: en
+#+property: DOCUMENT_ID 32.15
+#+property: STATUS formal-qualified-native-correspondence-open
+#+date: [2026-10-18]
+
+* Correct the method before optimizing another callback
+
+[[file:32.14-source-check-windows.org][32.14]] is an executable negative result, not a completed optimization.
+310, 1024 and 614 opens correspond to different guard boundaries. Their counts
+cannot select the correct architecture. First define the observation, admission
+and work semantics, then refute unsafe schedules, prove admissible reuse, and
+check that Scheme implements those premises. Runtime counters are correspondence
+receipts; they are not a substitute for this model.
+
+* Exact dependency and correspondence scope
+
+Core previously used LeanPoo v0.1.1 / d8adf138948c854e7564234bc046387b4a5ee63b.
+The first inspected [[https://github.com/tao3k/lean-poo/pull/13][LeanPoo PR 13]] head was
+=6bb3880c25eb6c9b3271a06e1440e9cf780693d6=. During qualification it advanced to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=, touching Prototype/Compose and method
+declaration examples/contracts. Core's Lake declaration and lock now pin this
+new exact commit under Lean 4.34.0; the complete Core proof build was repeated. The separate author's dirty LeanPoo
+checkout is untouched; preliminary qualification used a clean committed clone,
+then the Core project built against the exact dependency.
+
+The [[https://github.com/tao3k/gerbil-poo/pull/13][companion Gerbil PR 13]] head at inspection was
+=139d918cf6abe3117ad2c94b97777b9f80599748=. Scheme cost receipts still use
+=ece6f609357ea918038090559ac051a8d9f3e52f=. GitHub's fixed-commit comparison shows
+one intervening commit touching support/syntax, declaration examples/tests and
+documentation, with no change to object.ss or slot-observation.ss. This is narrow
+MOP source correspondence, not qualification of all latest macro behavior or
+exact-head native CI. Scheme dependency pins are not silently upgraded here.
+
+* Three mechanisms, not one cache
+
+| Layer | Reuse key / premise | What is not reusable authority |
+|-------+---------------------+--------------------------------|
+| POO dependency values | Complete receiver/revision/context and certified family; ContextSlot | Source files are current; a parent plan fits a child |
+| Source bytes | Actual path inside one freshly entered stable pure window | An obligation passed; two contributors mean one requirement |
+| Contract admission | All selected child/domain/contribution obligations and final source/plan checks | A stored value, old receipt or file-cache hit |
+
+Use the dependency's implementations: Functional.CacheLookup.ensureLookup owns
+commit-after-success and stored-hit semantics; ContextSlot owns exact-context
+value reuse; Proof.Obligation/Certificate owns analytic source requirements.
+ConstructionCache.Partial.step_done and step_reused describe stronger work
+skipping, but its refresh requires resolver equality on every relevant self.
+A version label, sampled equal output or elapsed timer is not that proof.
+There is no new Core object evaluator or generic cache framework in this model.
+
+* Lean: computed checks and conditional equivalence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean][SourceWindows.lean]] contains executable checks over source observations, not
+just a fresh flag attached to a cache entry.
+
+- fetch calls LeanPoo ensureLookup. A missing path invokes the supplied source
+  read; a present path returns its stored bytes. No free source-version oracle
+  appears in the algorithm.
+- check traverses every independent requirement, compares the observed bytes
+  with its expected bytes, and counts physical read calls separately from
+  comparisons. Requirements with the same path are not collapsed.
+- check_exact proves equivalence with checking every requirement against the
+  actual world, *provided the retained bytes are Sound for that world*.
+- fresh_certificate connects an empty-window check to an actual LeanPoo
+  Certificate over a source Obligation. changed_source_rejected proves refusal
+  for an observed input whose actual source differs.
+- read_bound holds for arbitrary finite requirement lists. two_requirements_one_read
+  proves one physical read even for two different expectations on the same path;
+  conflicting expectations still fail. This is work-count evidence, not wall time.
+- child_misses_parent and final_value reuse ContextSlot laws at an explicit
+  receiver/revision/port context. An old parent snapshot cannot report a child hit.
+
+An executable bad-cache control accepts old cached bytes after the world changes.
+It deliberately lacks Sound. This refutes unconditional cross-effect reuse;
+it is not an example of a certified cache. Source Certificate means analytic
+validity for its input/state; it does not authorize a deployment or authenticate
+a source repository.
+
+* Quint: schedules and matched failures
+
+[[file:../../../dev/proofs/quint/SourceWindows.qnt][SourceWindows.qnt]] models an initial pure window, an obligation with an optional
+source edit, and a fresh return window. Two contributors constrain one source;
+a cached parent plan has owner 0/port 5432 and the final child has owner 1/port
+5433. Reads, checked contributor identities, demanded paths and obligation count
+are operational state, rather than caller-provided witness labels.
+
+| Control | Required result |
+|---------+-----------------|
+| SourceWindows / safety | Complete finite reachable-state check passes |
+| cross / CurrentEvidence | Reusing initial bytes after an effect produces a counterexample |
+| omit / CompleteRequirements | Skipping one contributor produces a counterexample |
+| receiver / FinalReceiver | Returning the parent plan produces a counterexample |
+| repeat / OncePerWindow | Reopening the shared file per requirement produces a counterexample |
+| eager / LazyBranch | Demanding unselected path 1 produces a counterexample |
+| skipfinal / CurrentEvidence | Omitting final checking produces a counterexample |
+| acceptance / RejectAll | Expected counterexample proves successful admission is reachable |
+
+The ordinary finite invariant also requires one actual child-obligation event
+and two fresh-window reads at terminal states. The acceptance witness prevents
+an always-rejecting implementation from passing safety vacuously. The maintained
+Core checker includes all controls, binds the Quint digest in the Lean module,
+and binds the actual Scheme guard sources in its receipt. A hash binding proves
+which artifacts were checked; it is not a proof that the two languages refine
+one another.
+
+* Decisions derived for Scheme
+
+1. Share bytes across duplicate checks only in a stable pure window; retain every
+   source/contract requirement and every selected child obligation.
+2. A cached POO plan must be consumed at the complete final receiver context.
+   Do not turn normalization or a parent cache hit into currentness evidence.
+3. End the byte window before an obligation/effect and start fresh afterwards.
+   If a later optimization proposes cross-boundary reuse, it must discharge a
+   real dependency/frame proof, rather than assume that no write occurred.
+4. Combine source-only final inspection with final source comparison when the
+   same-window premises hold. Do not cache a Boolean admission result.
+5. Measure the remaining scope, not just the repeated helper. Six whole-publication
+   guard windows account for the current 614 opens. The model does *not* prove
+   that six windows or their full 101-file closures are minimal or necessary.
+   Narrowing those closures requires a proof of dependency completeness and
+   standalone child-receipt validity, not deletion of slow checks.
+
+ContractConsequence and the dependency's certified projections are candidates
+for preserving joint requirements while narrowing consumer views. They cannot
+supply a missing observation-completeness or source-frame proof automatically.
+This is the next design question, before another Scheme performance patch.
+
+* Premises still outside the proof
+
+- The filesystem read returns the actual bytes and selected paths bind the
+  intended assets. Module/source authenticity and packaging are separate gates.
+- World is stable *inside* each modeled pure window. Pure Scheme callbacks do
+  not by themselves prevent an external process from editing a file. Atomic
+  filesystem snapshots/concurrent source publication are not proved here.
+- MOP observations and publication collection cover every required source;
+  receiver/revision encodings correspond to actual reference identity; native
+  cache hits replay all dependencies. The finite omission mutant only refutes
+  one violated coverage case; it does not prove the collector complete.
+- Actual native Contract normalization, callbacks, cold/hit behavior and failures
+  match the modeled events. Existing real Scenario controls are independent
+  evidence. The new replay-count control now passes after matching actual emitted
+  read events rather than an unnormalized fixture path. This still does not
+  close full native refinement or performance acceptance.
+- The finite model covers one shared source and one parent/child pair. Lean's
+  finite-list laws generalize requirement counts, not arbitrary concurrent
+  services, temporal behavior, Loader integration or CPU costs.
+
+The optimization gate is therefore: formal laws and mutants, explicit Scheme
+correspondence controls, then equal-semantics cold/warm work and timing receipts.
+A lower read count alone cannot bypass any of these gates.
+
+* Model-directed rejection of the 614-open candidate
+
+The stable-window premise is not established by a method name. The experimental
+collector accepted a function inspect, which called the replaceable context
+admit-current method while byte reuse remained enabled. A negative context first
+called module-source-admit-current! for context.json, then rewrote that file.
+The collector reused the earlier bytes and returned a receipt instead of raising
+the expected stale-source error. The native negative gate failed at Error? = false;
+this is a real Scheme counterexample, not a fabricated evidence record.
+
+This is the cross-effect model counterexample embedded inside what had been
+called a single pure inspection. Accordingly the inspect callback extension and
+its final-window merge were withdrawn. Replaceable context checking runs outside
+the byte window; the existing collector performs its independent fresh final
+pass afterwards. No assertion or deadline was relaxed. The 614-open rows remain
+historical rejected-candidate evidence, not the count of the repaired adapter.
+A new performance comparison is required after native correspondence passes.
+
+This is the concrete benefit of modeling first: it rejects a locally cheaper
+cache boundary whose purity premise does not hold at the public POO protocol.
+ConstructionCache reuse cannot manufacture that missing premise. Shared source
+bytes are only valid where the complete calling path is genuinely stable.
+
+The source checker uses actual String paths/contents and Option-valued reads,
+including rejection of an absent required file. Its certificate bridge reuses
+Core Admission.Source.sourceObject; it does not maintain a second source
+Obligation implementation. Expected absence of optional role files, I/O errors,
+source-kind checks and arbitrary external edits still require further correspondence.
+
+* Qualification receipts and failure history
+
+Core built the exact PR dependency and all imported models with the existing
+whole-project shape/axiom audit. The first full Quint integration passed 20 cases:
+four positive finite checks, fifteen matched mutants and one acceptance witness.
+This is proof/model evidence for its recorded source hashes, not native equivalence.
+After the callback-boundary correction and source-model consolidation the final
+gates must be rerun against the new hashes before a new receipt is admitted.
+
+A later finite-model attempt failed the unchanged five-second output watchdog
+while bootstrapping another JVM. Quint's installed apalache.js shows it spawns and
+terminates a server per command when no ready backend exists. A separate owned
+backend preparation now waits for real gRPC reflection readiness and warms one
+real RPC. Merely seeing the server's listening log was insufficient and caused
+a second server/address-in-use failure; that failed preparation is retained too.
+Preparation stays within 60 seconds; each proof case retains 45 seconds, five
+seconds without real output, and 1GB TLC heap. No bootstrap success is a proof.
+The owned backend is terminated on exit; other sessions' servers are untouched.
+
+All raw runs, failed compiler attempts and local receipts remain under
+/private/tmp/core-source-window-model. No logs or generated backend files are
+committed. Whole-Core build success is local evidence, not exact-head remote CI.
+
+* Final local qualification after the counterexample repair
+
+| Gate | Local result |
+|------+--------------|
+| Core Lean aggregate, final 6e6a706 dependency | 138 build tasks; whole-closure shape/axiom audit passed |
+| Core Quint catalog | 20 cases passed: four positives, fifteen mutants, one non-vacuous acceptance witness |
+| Native source admission | 6 cases passed, including refusal after an effectful currentness callback |
+| Native source observations | 6 cases passed, including same-window replay reuse and immediate post-effect refusal |
+| Native read/replay consumers | 16 cases passed |
+| Real Scenario cost/semantic controls | 3 cases passed, including cold/warm, parent cache, child obligation and lazy branch |
+
+All native gates use the default runtime through the serial heap-fenced Just
+entrypoints, with MODULE-OK, HARNESS-OK, final OK and no error/overflow marker.
+The negative callback run is retained; only the subsequent repaired run passes.
+The final Quint receipt binds the exact dependency declarations/lock/toolchain,
+Core's existing source model, the Scheme guard owners and consumer tests.
+Raw receipts/logs remain local. These 31 native cases and finite models are not
+the full product test suite, remote CI, observer-completeness proof or Loader acceptance.
+
+The repaired real Scenario has 718 opens in both cold/warm counter runs:
+606 publication, six graph, four configuration, and 102 independent final reads.
+The graph remains 871 nodes / 1938 edges. This single fresh-process final cost
+run retains three timing samples per mode but is not a new matched latency claim.
+The earlier 614-open experiment is explicitly rejected. The original 310-open
+broad-kernel window and the strict 1024-open negative control remain historical.
+No net performance optimization over 310 is qualified.
+
+The next proof target is a root/child admission protocol: distinguish analytic
+child evidence from final source-bound publication evidence, then prove whether
+complete root observation can subsume any repeated whole-publication guards.
+That would avoid reusing currentness across obligations; it must not erase
+child/domain requirements, pre-getter source checks, plan identity or the final
+fresh source check. Standalone child consumers and opaque callbacks must be
+covered before changing their contract. This is a design obligation, not an
+already-proved 718-to-smaller performance result.
+
+* Related publication model and concurrent-work boundary
+
+The existing [[file:../../../dev/proofs/lean/YuanxuProof/Admission/Publication.lean][Admission.Publication]] model is maintained separately. It uses
+LeanPoo.DeclarativeMetadata's actual invocation/publication mechanism and derives
+stale-return refusal while retaining the previous published state. It is a
+useful foundation for the root/child source-certification target above. It does
+not prove rollback of arbitrary external side effects, collector completeness
+or that all intermediate guards can be removed. This work does not replace it
+with another publication engine.
+
+After the first 20-case integration receipt, a concurrent session changed a
+bound module-testing source and LeanPoo advanced. The old receipt is retained
+under its original hashes; it is not relabeled as current. Final source-window
+qualification separately binds the eight relevant models/controls, the exact
+new lock, the shared Source model and the owned Scheme guard/test inputs.
+Unrelated in-progress module-test changes are not certified by that narrower
+receipt. No source or proof edits from the concurrent session are reverted.
+
+* Final exact-revision source-window receipt
+
+The final 6e6a706 qualification completed all eight source-window cases under
+unchanged case deadlines and source hashes. The positive finite model explores
+26 distinct states with an empty queue. Six deliberate unsafe variants produce
+the named invariant violations; the eighth check supplies a reachable accepted
+state, so safety is not obtained by refusing everything. The final local JSON
+receipt binds 20 owned model/dependency/guard/test files and verifies their
+current hashes after the run. The 20-case integration result remains separately
+recorded with its earlier pin and complete-source hashes.
+
+Core's final exact-PR aggregate build completed 138 tasks and passed the
+whole-closure axiom/shape audit. The 31 focused native controls remain current
+for the unchanged owned Scheme sources; they are not relabeled as tests of the
+separate author's in-progress changes. No commits, pushes, Loader integration
+or claim of lower latency are part of this qualification.
+
+* Root/child protocol follow-up
+
+[[file:32.16-root-child-admission.org][32.16]] separates internal child analysis from root return-time source
+certification, using LeanPoo metadata Invocation and source Certificates.
+It proves stable-window batching equivalence without permitting byte reuse
+across callbacks or weakening standalone child admission. Production Scheme
+remains unchanged; the 718-open repaired result is still the runtime baseline.

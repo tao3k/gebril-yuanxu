@@ -1,0 +1,359 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.14 Config Languages 13: Module-Scoped Guestbook Contracts and Admission
+#+property: DOCUMENT_ID 11.14
+#+date: [2026-10-16]
+#+filetags: :config-language:modules:guestbook:contracts:design:
+#+property: STATUS design-only-no-module-or-loader-implementation
+
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+its Core export rename is pending. This example does not introduce an alias.
+
+* Correct the abstraction boundary
+
+[[file:../../../../docs/10-19-design/10.08-config-languages/12-guestbook-schema-profile-plan-chain.org][Module 12]] inventories existing schema functions. Those are implementation
+owners, not the ordinary configuration interface. Publish the capability through
+a maintained JsonSchema module scope; Guestbook contributors consume that scope;
+application users consume Guestbook. A user changing an image must not decode a
+schema file, reproduce imports or assemble a validation pipeline.
+
+Native module interfaces may internally import their implementation owners. That
+is distinct from requiring every configuration to repeat those imports. The new
+module scopes below are designs; existing use-module binds a supplied POO scope
+but does not resolve an unbound module name from the filesystem.
+
+* What the existing module system actually does
+
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][yuanxu-load-modules]] accepts a source collection object and projects the
+collection's conventional interface.ss SourceRefs. Collection discovery lists its
+module directories; a selected module can instead be located by key without
+projecting every interface. [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/source-registry.ss][User tree source policy]] independently names init.ss
+and config.ss. These are source selection/discovery mechanisms, not evaluation
+of all implementation bodies or a raw path-to-lexical-binding macro.
+
+[[file:../../../profile-composition/selection-syntax.ss][Bounded use-module]] expands to a hygienic lexical binding of the existing
+scope via yuanxu-module-scope. [[file:../../../profile-composition/bindings.ss][That function]] checks object identity/shape and
+returns the object; it does not import a file, resolve a catalog name, force source
+slots or create admission evidence. Keep these responsibilities separate.
+
+Existing public collection projection, shown only for framework maintainers:
+
+#+begin_src scheme
+(yuanxu-load-modules
+ (make-yuanxu-module-source-collection
+  'team-modules 'team "." "modules"))
+#+end_src
+
+Do not document (yuanxu-load-modules "./dir") as currently accepted or claim
+that it automatically installs lexical JsonSchema/Guestbook bindings. Connecting
+selected SourceRefs, admitted interfaces and exported native scopes is the
+remaining integration boundary; this task does not implement that Loader work.
+
+At scale, do not call full collection projection for every selected service.
+Reuse keyed location and immutable source metadata; keep schema decoding,
+compilation and Profile bodies off discovery. A module scope can provide lazy
+slots, but an eager interface import can still load implementations. Startup,
+first-selected-schema cost and warm reuse require measured controls; naming a
+Lazy Loader does not prove fast startup for ten thousand modules.
+
+The [[file:../../../../docs/10-19-design/10.08-config-languages/14-directory-module-tree-design.org][typed directory/tree revision]] addresses this limitation directly: init.ss
+entry admission, hierarchical namespace projection and selected-demand boundaries.
+It is a proposed successor source protocol, not an implemented Loader change.
+
+* JsonSchema publishes one capability scope
+
+The following proposed module interface wraps existing implementation functions.
+No new syntax or schema engine is introduced. Function definitions live in the
+module's functional owner, not in downstream config files.
+
+#+begin_src scheme
+(def (schema-obligations artifact candidate _context)
+  (if (object? candidate)
+    (yuanxu-json-schema-object-contract-validation-diagnostics
+     (yuanxu-json-schema-contract-artifact-validate artifact candidate))
+    (list (.o kind: 'native-config-object-required))))
+
+(def (schema-artifact->contract artifact)
+  (.cc YuanxuContract.
+       'identity 'schema/complete
+       'value-contract (yuanxu-json-schema-contract-artifact-object-contract artifact)
+       '.obligations (cut schema-obligations artifact <> <>)))
+
+(.def JsonSchema
+  compile: yuanxu-json-schema->contract-artifact
+  contract: schema-artifact->contract
+  admit: yuanxu-contract-admit
+  accepted?: yuanxu-validation-evidence-accepted?)
+#+end_src
+
+The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-object-contract]] derives
+it from a native Record. Native validate owns required/optional fields and
+returns the normalized object, including checked Function fields. It can
+participate in native responsibilities; it does not manufacture a Core .admit
+receipt. The .cc adapter above explicitly composes that value-contract with
+Core's contextual admission and the existing full-root validator. A Record's
+field inventory alone does not enforce every root-level JSON Schema rule such
+as additionalProperties. Do not append a second handwritten field validator or
+silently weaken full-schema semantics to the slot inventory.
+
+This adapter is proposed, not a new test result. Verify diagnostic facts are
+compatible with Core evidence consumers, complete-schema validation coverage,
+root optional/required semantics, context retention and qualified schema identity.
+Generation diagnostics must be reviewed before an artifact is published. The
+existing artifact-valid? flag does not by itself certify all warning cases.
+
+* Input schema: a concrete bounded configuration interface
+
+This is a proposed reduced Guestbook input schema, not a copied Kubernetes API
+schema or a complete export of KCL Server. The maintained Guestbook package owns
+this source; the JsonSchema module compiles it. Private resource/environment maps
+are deliberately open below. Their full library schema is further qualification,
+not an implicit guarantee. Keep image required at admission, but permit the
+unadmitted baseline to omit it until an environment supplies it.
+
+#+begin_src json
+{
+  "type": "object",
+  "required": ["name", "image", "replicas", "labels", "mainContainer", "services"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {"type": "string", "minLength": 1},
+    "image": {"type": "string", "minLength": 1},
+    "replicas": {"type": "integer", "minimum": 1},
+    "workloadType": {"enum": ["Deployment"]},
+    "labels": {"type": "object", "additionalProperties": {"type": "string"}},
+    "schedulingStrategy": {"type": "object"},
+    "mainContainer": {
+      "type": "object", "required": ["ports"], "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"}, "env": {"type": "object"},
+        "ports": {"type": "array", "minItems": 1, "maxItems": 1,
+          "items": {"type": "object", "required": ["containerPort"],
+            "additionalProperties": false, "properties": {
+              "containerPort": {"type": "integer", "minimum": 1, "maximum": 65535},
+              "protocol": {"enum": ["TCP"]}
+            }}}
+      }
+    },
+    "services": {"type": "array", "minItems": 1, "maxItems": 1,
+      "items": {"type": "object", "required": ["ports"], "additionalProperties": false,
+        "properties": {
+          "ports": {"type": "array", "minItems": 1, "maxItems": 1,
+            "items": {"type": "object", "required": ["port"],
+              "additionalProperties": false, "properties": {
+                "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+                "targetPort": {"type": "integer", "minimum": 1, "maximum": 65535},
+                "protocol": {"enum": ["TCP"]}
+              }}}
+        }}}
+  }
+}
+#+end_src
+
+This reduced interface supports one Service/port per role, exactly as this
+Guestbook input uses. It does not silently claim generic multi-port support.
+Schema default annotations are not object defaults; maintained prototypes supply
+replicas/labels. Recursive default completion of newly constructed nested objects
+still needs the domain view adapter. Unknown top-level image misspellings should
+be rejected by additionalProperties=false, through the full-root validator.
+
+* Maintained defaults and responsibilities reuse that compiled Contract
+
+GuestbookServerSchema below denotes the package-owned compiled-in JSON-like value
+of the schema above. It is a source asset, not an undefined user parameter or a
+runtime path. Producing it belongs to package preparation, using the existing
+JSON-to-Scheme generation route if needed. Source content/version and diagnostics
+must remain associated with the published artifact.
+
+#+begin_src scheme
+(.def GuestbookServerDefaults.
+  (replicas ? 1)
+  (workloadType ? "Deployment")
+  (labels ? (.o)))
+
+(.def GuestbookScenario.)
+
+(def (make-guestbook-contracts)
+  (use-module JsonSchema as schema
+    (with-slots (compile contract) schema
+      (let* ((artifact
+              (compile GuestbookServerSchema
+                       '((owner . guestbook)
+                         (source-ref . guestbook/server-schema-v1)
+                         (object-kind . GuestbookServer)
+                         (object-key . guestbook/server))))
+             (ServerContract (contract artifact)))
+        (define-type (ScenarioContract @ YuanxuObjectContract.)
+          identity: 'guestbook/scenario
+          proto: GuestbookScenario.
+          responsibilities:
+          (.o frontend: ServerContract
+              leader: ServerContract
+              follower: ServerContract)
+          .obligations: guestbook-links)
+        (.o artifact ServerContract ScenarioContract)))))
+#+end_src
+
+All three responsibility entries reference the same schema-backed native Contract.
+The existing Core yuanxu-object-admit walks them and invokes each Contract's
+.admit on that final child. It records responsibility-evidence and only runs
+Scenario obligations after successful role classification and child admission.
+The Scenario inherits this public .admit; it does not need a separate handwritten
+child-validation loop. Missing required roles receive native missing-responsibility
+failures. Exact published associations for arbitrary extensible Profile families
+remain separate future work; these three fixed roles have explicit requirements.
+
+The full Profiles from module 11 must inherit GuestbookServerDefaults. through
+their maintained prototypes, or receive the qualified default view before
+admission. Parent lookup alone does not objectize nested values. Port and Service
+constructors remain new data objects. No user repeats Schema, responsibilities,
+child-evidence lists or import declarations for each derivative.
+
+* Scenario obligations use the final admitted children
+
+A concrete bounded relationship check follows. The schema above guarantees the
+single-element lists used here. It constrains this recipe to the original names,
+one namespace supplied by the Scenario context, TCP, and ports 80/6379; it refuses
+arbitrary Redis listener changes. No evidence of image-level DNS behavior is
+invented. That still requires a pinned image capability definition/integration test.
+
+#+begin_src scheme
+(def (guestbook-port-errors scenario role expected-name expected-port)
+  (let* ((profile (.ref scenario role))
+         (container (.get profile mainContainer))
+         (container-port (car (.get container ports)))
+         (service (car (.get profile services)))
+         (service-port (car (.get service ports)))
+         (target (if (.slot? service-port 'targetPort)
+                   (.get service-port targetPort) (.get service-port port))))
+    (if (and (equal? (.get profile name) expected-name)
+             (= (.get container-port containerPort) expected-port)
+             (= (.get service-port port) expected-port)
+             (= target expected-port))
+      '()
+      (list (.o kind: 'guestbook-endpoint-mismatch role profile)))))
+
+(def (guestbook-links scenario _context)
+  (let* ((frontend (.get scenario frontend))
+         (container (.get frontend mainContainer))
+         (dns? (and (.slot? container 'env)
+                    (object? (.get container env))
+                    (.slot? (.get container env) 'GET_HOSTS_FROM)
+                    (object? (.get container env GET_HOSTS_FROM))
+                    (.slot? (.get container env GET_HOSTS_FROM) 'value)
+                    (equal? (.get container env GET_HOSTS_FROM value) "dns"))))
+    (append
+     (guestbook-port-errors scenario 'frontend "frontend" 80)
+     (guestbook-port-errors scenario 'leader "redis-leader" 6379)
+     (guestbook-port-errors scenario 'follower "redis-follower" 6379)
+     (if dns? '() (list (.o kind: 'guestbook-dns-mode-required))))))
+#+end_src
+
+The env object guards keep this check safe when its deliberately open schema
+admits a non-object value under GET_HOSTS_FROM. These guards do not establish
+complete environment semantics. The resource phase must also check rendered
+selectors/namespace and any provider-managed labels. Do not
+confuse those checks with the bounded input-name/port/DNS checks above.
+
+* Admission and Deployment/Service generation through the module interface
+
+The proposed Guestbook scope publishes baseline, Contracts and a pure plan entry.
+Keep schema compilation in its lazy contract slot and Profile construction in
+its own lazy baseline slot. Reaching baseline must not force every resource
+schema or all Profiles in a package. No Guestbook scope publication is implemented
+by these snippets, and the module initialization/import graph still needs testing.
+
+The module interface can publish the independently prepared V2 Scenario under
+baseline and expose native admission without forcing its contracts at scope binding:
+
+#+begin_src scheme
+(.def Guestbook
+  baseline: GuestbookBaselineV2
+  contracts: (make-guestbook-contracts)
+  admit:
+  (cut yuanxu-contract-admit (.get contracts ScenarioContract) <> <>))
+#+end_src
+
+GuestbookBaselineV2 denotes the independently maintained Scenario value from the
+evolution experiment (MaintainedV2 there); this module scope is not that Scenario
+and is not its parent. Its default-bearing Profile prototypes must be prepared
+as described above. This separation avoids making Profiles children of a module.
+Reading baseline does not reference contracts; calling admit demands the selected
+contracts. Full plan publication is not exported until the complete consumer and
+output admission are qualified.
+
+A consumer reads the final admitted Profile. This projection excerpt deliberately
+shows the coupled fields rather than pretending to be the complete KCL backend:
+
+#+begin_src scheme
+(def (guestbook-resource-fields profile namespace managed-labels)
+  (with-slots (name image replicas labels mainContainer services) profile
+    (.o
+     deployment:
+     (.o apiVersion: "apps/v1" kind: "Deployment"
+         metadata: (.o name namespace labels)
+         spec:
+         (.o replicas
+             selector: (.o matchLabels: managed-labels)
+             template:
+             (.o metadata: (.o labels: managed-labels)
+                 spec: (.o containers:
+                           (list (.o name: "main" image
+                                     ports: (.get mainContainer ports)))))))
+     service:
+     (.o apiVersion: "v1" kind: "Service"
+         metadata: (.o name namespace)
+         spec: (.o selector: managed-labels
+                   ports: (.get (car services) ports))))))
+#+end_src
+
+This excerpt uses actual final lexical slot reads; list/object construction creates
+resources, not patches to cached parent resources. managed-labels must come from
+the selected platform namespace/app/component policy. User labels go to Deployment
+metadata, not automatically to Pod or Service metadata, matching the inspected
+KCL distinction. The excerpt does not project env, original container name,
+resource requests/limits, defaults or Namespace objects; therefore it is not a
+complete parity renderer and must not be published as a runnable Guestbook plan.
+
+The missing full plan entry must gate publication on native Scenario admission,
+then complete projection, final selector/namespace/identity checks and existing
+schema validation of each output resource. Only a successful result can be an
+admitted-preview. Bind admission evidence to the final inputs and consumer/schema
+generations. No hand-maintained child lists, parent-resource reuse or hidden
+execution is allowed. Warm-parent/child controls remain to be run for this adapter.
+
+Downstream target (direct path assignment still pending):
+
+#+begin_src scheme
+(def Development
+  (use-module Guestbook as gb
+    (.o (:: @ (.get gb baseline))
+      frontend.image: "gcr.io/google-samples/gb-frontend:v5")))
+#+end_src
+
+The existing-native body instead refines frontend with =>.+ and an .o image
+payload, as shown in module 11. Module 12 retains the three evolution variants and
+expected resource previews. A future plan call goes through the Guestbook scope,
+not schema-path reads or raw implementation imports. Its signature/result must be
+qualified before this design advertises an executable downstream plan API.
+
+* Conclusion and concrete remaining work
+
+Directly reusable: hygienic existing-scope binding, native slots/defaults and
+receiver behavior, JSON Schema artifact generation/full-root validation, native
+Contract/.admit dispatch and responsibility evidence. New: JsonSchema and Guestbook
+scope publication, full-schema obligation adapter, selected schema/default views,
+Guestbook input and rendered-link checks, complete resource consumer and output
+schema qualification. Directory-to-scope Loader integration is outside this work.
+
+The module system is the right maintenance boundary: contributors publish a
+capability once and users configure selected native objects. Its value must be
+shown by less repeated loading/validation policy and controlled demand, not by
+exposing thousands of interfaces or claiming startup gains without measurements.
+The next tests should compare selected versus unselected schema demand, validate
+image/label evolution after a warm parent, retain unknown-field rejection, and
+reject unsupported endpoint changes before any resource plan is published.
+
+This is design documentation only. No module, adapter, renderer or Loader code
+was implemented or run.

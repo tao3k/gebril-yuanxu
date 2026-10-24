@@ -1,0 +1,58 @@
+#+title: Core Documentation — Johnny.Decimal Index
+#+language: en
+
+* Areas and categories
+
+| Area | Category | Owner |
+|------+----------+-------|
+| 10–19 Design | 10 Configuration Module System | [[file:10-19-design/10-configuration/10.01-index.org][10.01 Design index]] |
+| | 11 Configuration Languages | [[file:10-19-design/11-configuration-languages/11.01-index.org][11.01 Configuration languages index]] |
+| | 12 Contracts and Types | [[file:10-19-design/12-contracts-types/12.01-index.org][12.01 Contracts index]] |
+| | 13 Module Loading and Building | [[file:10-19-design/13-module-loading/13.01-index.org][13.01 Module loading index]] |
+| 20–29 Ecosystem Research | 20 NixOS | [[file:20-29-ecosystem-research/20-nixos/20.01-index.org][20.01 NixOS index]] |
+| | 21 devenv | [[file:20-29-ecosystem-research/21-devenv/21.01-index.org][21.01 devenv index]] |
+| | 22 Flox | [[file:20-29-ecosystem-research/22-flox/22.01-index.org][22.01 Flox index]] |
+| | 23 Terraform | [[file:20-29-ecosystem-research/23-terraform/23.01-index.org][23.01 Terraform index]] |
+| | 24 OpenTofu | [[file:20-29-ecosystem-research/24-opentofu/24.01-index.org][24.01 OpenTofu index]] |
+| | 25 Nickel and current ecosystem studies | [[file:20-29-ecosystem-research/25-nickel/25.01-index.org][25.01 Nickel index]] |
+| | 26 Pulumi | [[file:20-29-ecosystem-research/26-pulumi/26.01-index.org][26.01 Pulumi index]] |
+| | 27 Crossplane | [[file:20-29-ecosystem-research/27-crossplane/27.01-index.org][27.01 Crossplane index]] |
+| | 28 Spacelift | [[file:20-29-ecosystem-research/28-spacelift/28.01-index.org][28.01 Spacelift index]] |
+| | 29 env0 | [[file:20-29-ecosystem-research/29-env0/29.01-index.org][29.01 env0 index]] |
+| 30–39 Research Foundations | 30 Method and evidence | [[file:30-39-research-foundations/30-method/30.01-evidence-protocol.org][30.01 Research protocol]] |
+| | 31 Papers | [[file:30-39-research-foundations/31-papers/31.01-backpack.org][31.01 Backpack]]; [[file:30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][31.02 Build Systems a la Carte]] |
+
+* Identifier rules
+
+An area owns ten categories; a category owns numbered items in the form AC.ID.
+The category prefix matches its area, for example category 20 in area 20–29.
+Use 20.01 for the NixOS reading index, with subsequent items for substantive
+research. Every item has its identifier in the filename, title and DOCUMENT_ID.
+Area README files and this routing index are navigation, not numbered research
+items. Category 31 may grow a 31.03 reading index without renumbering its papers.
+
+Allocate the next unused identifier; do not renumber existing items to change
+reading order. Keep reading order in the category index. New substantial subjects
+receive their own available category or a newly allocated area, rather than a
+third directory layer under a crowded platform category. Reserve unused area
+and category numbers until a real owner exists. Do not generate empty documents.
+
+NixOS, devenv and Flox remain independent research categories even when they use
+related Nix mechanisms. A paper owns its assumptions and conclusions independently
+of a platform. Design items cite research owners; research evidence is not silently
+upgraded to an implemented design or an executed validation.
+
+* Migration boundary
+
+The documents maintained in this docs tree now use Johnny.Decimal. Relative Org
+links in the existing Core documentation were rewritten against original targets.
+The old docs/design and docs/research trees have no duplicate document owners.
+
+The former top-level Core design tree is fully migrated into categories 11–13,
+including its supporting assets and design specimens. There is no forwarding
+copy under design/. Historical proposals and qualification limits retain their
+status; moving a document does not establish an implementation result.
+
+[[file:../module-system/design/README.org][Engineering/style documents]] remain their separate normative owner. This
+migration does not renumber those RFCs or change their authority. No implemented
+module source moves with this documentation work.

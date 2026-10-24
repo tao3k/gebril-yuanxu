@@ -1,0 +1,156 @@
+#+title: 12.27.20 Route-Free Index Preparation
+#+property: DOCUMENT_ID 12.27.20
+#+language: en
+#+property: STATUS source-only-qualified
+
+* Actual chain and the remaining before hotspot
+
+The preceding receipt has 47169 physical reads and 19205 reads attributed to
+build-admit-before. An exclusive stage decomposition of those before reads is:
+
+| Enclosing stage | Before reads |
+|-----------------+--------------|
+| Publication package-before | 4676 |
+| Publication package-after | 3340 |
+| Outside a package/admission stage | 2839 |
+| Invocation meaning-current | 1670 |
+| Publication entry-current | 1336 |
+| SelectedPackages publication-current | 1336 |
+| Publication post-package-current | 1169 |
+| Root contract-admit | 1169 |
+| Contribution binding | 668 |
+| SelectedPackages entry, input and guard-script stages | 1002 |
+| Total | 19205 |
+
+These are exclusive enclosing stages, not additional totals to add to request
+spans. Package guards cross Nix queries and replaceable callbacks. The existing
+[[file:04-remaining-guards.org][warm-callback mutation control]] still forbids sharing an observation window
+across them. This change does not assert that all remaining before reads are
+necessary, nor remove a check merely because its current Nix command is read-only.
+
+* A different duplicate in that same chain
+
+Selected publication assembly calls selected-index before constructing its
+complete Context. The normal index reader guards sources before reading author
+contribution declarations. The AWS selection has no such declarations: its
+native Graph nodes, kinds, publications and Core values have already been
+demanded by selection/build preparation and the publication entry.
+
+The private index constructor now inspects those existing values with the
+public .ref/cached operation. A miss immediately declines the shortcut; it does
+not force the missing slot value. If a Core has a contributions slot, even a
+cold or empty declaration, it also declines the shortcut. The ordinary guarded
+index reader remains responsible for demanding and validating that declaration.
+
+A fully observed route-free index records the same node/publication/Core
+revisions as the ordinary reader. It uses the EXISTING weak Graph-keyed index
+table. Later empty-index lookups inspect that private completed index and check
+its observations; nonempty indexes retain the source guard. There is no second
+Graph, namespace tree, source-currentness cache or exported method.
+
+#+begin_src scheme
+(def (cached-route-free-index graph)
+  (let/cc unavailable
+    (def (cached receiver slot)
+      (unless (object? receiver) (unavailable #f))
+      (.ref/cached receiver slot (lambda () (unavailable #f))))
+    (def revision (object-revision graph))
+    (def observations '())
+    (for-each
+      (lambda (node)
+        (when (eq? (cached node 'kind) 'module-core)
+          (let* ((publication (cached node 'publication))
+                 (core (cached publication 'core)))
+            ;; Presence inspection does not demand the declaration's value.
+            (when (.slot? core 'contributions) (unavailable #f))
+            (set! observations
+              (append (map observe (list node publication core)) observations)))))
+      (cached graph 'nodes))
+    (.cc (.o) revision: revision routes: (make-hash-table-eq)
+         observations: observations)))
+#+end_src
+
+The executable owner, including the existing index observation helpers, is
+[[file:../../../../../admission/contributions.ss][contributions.ss]]. It is not a new user configuration surface. The path
+assumes the platform's prepared selected/build Graph, not arbitrary unprepared
+foreign objects or a claim that cache presence proves source currentness.
+
+* The next source boundary must remain before author metadata
+
+Deleting the index's source traversal alone is insufficient. A late export
+getter can change sources before the binder reads a cold Contract handler.
+An isolated candidate that left Context collection after that handler fails
+the new control: the handler runs once when it must not run at all.
+
+For zero incoming rows the binder now demands its existing base Context
+immediately after native index inspection. That Context's source-entry check
+validates compiler AND request/configuration observations before cold Contract
+metadata/handlers. Its read window ends before Schema getters. The final full
+Context check still validates Graph, Schema, Contract revisions and contribution
+coverage before publication escape. Nonempty incoming collections retain their
+original preparation, export traversal and final checks.
+
+#+begin_src scheme
+(def index (selected-index selection graph))
+(def edges (incoming index owner name))
+(def source-base (and (null? edges) (.get publication context)))
+;; Read/register the actual Contract and its handlers only after that boundary.
+;; Collect real incoming rows with their existing guarded path.
+(def base (or source-base (.get publication context)))
+;; Build derived Context, then perform its unchanged complete return check.
+#+end_src
+
+* Native controls and qualification
+
+The existing admission-publication suite covers actual source opens, cold route
+declarations, native revision invalidation and the late-export/cold-handler
+boundary. It retains Schema/request-input refusal and standalone Context guards.
+The unchanged one-file work assertion measures (before reads, all-phase opens):
+(2 4) for the candidate. Restoring the previous producer gives (2 5) and fails
+that assertion. The fully source-guarded Context and standalone guards remain.
+The working-source admission-publication suite passes; the real nonempty-route
+publication suite also completes all ten cases, including inherited obligations,
+coverage/origin refusals, later routes and cached-parent/final-child checks. Both
+finish naturally with MODULE-OK, HARNESS-OK and final OK, without failure markers.
+
+Negative injectors are fixture getters, source changes or native object edits;
+they are not alternative publication or evidence implementations.
+
+An initial added test had an extra closing parenthesis and failed module reading.
+That failure is retained as a failure; observation budgets and expectations
+were not widened to pass it. The late-Context candidate also remains a failed
+negative control, not the final implementation.
+
+The complete candidate passes through the unchanged observation-enabled init
+tests object's .run, selecting JsonSchema, Funflow and AWS in the same Case.
+It retains the existing progress-aware budgets, Schema transition, stale
+Schema/Contract/Context evidence refusal, previous-value preservation and cleanup.
+Natural exit is zero, with seven MODULE-OK, two HARNESS-OK and two final OK
+markers and no failure or overflow markers.
+
+| Actual AWS work | Previous receipt | Complete candidate | Reduction |
+|-----------------+------------------+--------------------+-----------|
+| Physical source reads | 47169 | 46813 | 356 |
+| build-admit-before reads | 19205 | 19205 | 0 |
+| File requests | 119607 | 118412 | 1195 |
+| Read windows | 516 | 514 | 2 |
+| Publication guard bodies | 255 | 253 | 2 |
+
+Two route-free index traversals disappear, one per Schema-version publication.
+These reads were attributed to the enclosing source/link guard; nested before
+checks in that same existing observation window already reused its bytes. The
+before hotspot therefore remains 19205. Moving or renaming attribution is not
+counted as an improvement. The measured benefit is 356 fewer all-phase physical
+opens, not a reduction of that before subtotal or an endpoint latency claim.
+The initial late-Context candidate produced the same aggregate counts but failed
+the cold-handler negative; only the complete candidate above is retained.
+
+* Scope
+
+Qualification uses locked gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b= and the existing source-only environment.
+Working-checkout artifact gates are preserved. These controls issue no compiled
+artifact and do not qualify the concurrent artifact integration. No compiled
+cache, upstream edit, full build, runtime Loader integration or push is involved.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and qualification limits]]

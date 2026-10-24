@@ -1,0 +1,191 @@
+#+title: 12.27.28 Public Preparation And Native Read Retention
+#+property: DOCUMENT_ID 12.27.28
+#+language: en
+
+* Implemented: one inert preparation per public source
+
+The reader's existing preparation index now also owns public dependency
+projections, under a disjoint public-source/path key. This retains source
+observations and compiler headers, not a successful admission, native import
+result, expanded program or library initializer. Native import still runs
+through the existing SDK entry on every demand.
+
+On every hit the original byte/package guard runs. The declared external
+identity is then resolved through the original native library resolver and
+must still name the exact source path. Registering one guard is sufficient
+for repeated demands of that same retained projection; the guard executes at
+each independent currentness boundary. A failed hit never replaces expected
+bytes with the changed version.
+
+The retained guard also checks native name resolution, even for a warm role.
+Checking this only at the next cold import would miss load-path redirection
+when the native Module context was already evaluated. A new native resolution
+requires a fresh reader, rather than silently changing the old source epoch.
+
+[[file:../../../../../t/module-publication-test.ss][Focused native controls]] use the existing fixture macro and the public native
+load-path API. They create their own external public library, restore the
+original load path and remove all fixture sources. Installed SDK/POO sources
+are never edited. They cover repeated declaration evaluation, unique inert
+preparation, changed dependency bytes, and unchanged bytes under a redirected
+public name. Both changed cases refuse through the actual reader currentness
+entry. Existing macro reuse, source confinement and deferred Build tests pass.
+
+| Matched 16-Module boundary | Before | After |
+|--------------------------+--------+-------|
+| Native publication/body evaluations | 16 / 64 | 16 / 64 |
+| Relative public-source requests | 48 | 48 |
+| Inert public preparations | 48 | 1 |
+| Retained source guards after construction | 112 | 65 |
+| Graph-ready publication guard invocations | 68 | 68 |
+| Graph-ready physical reads | 5495 | 5495 |
+
+The earlier reader had no public-preparation counter. Its 48 preparations
+follow from the unconditional factory call on each of the 48 import requests;
+the post-change counter explicitly records one construction. Counts do not
+establish an end-to-end speedup. Physical reads did not decrease: independent
+effect-boundary checks still inspect all required bytes.
+
+The Lean file [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] adds public_resolution_change_refused and
+repeated_registration_same_requirements. They separate native resolution from
+byte equality and establish idempotent source requirements in one unchanged
+world. They do not authorize reuse of acceptance across native evaluation.
+
+* Measured: native read-token retention is a different owner
+
+Deep tracing in the existing ModuleTestingProfile now reports delivered native
+read counts, dependency widths and a geometric-width identity census. The
+adapter uses the public slot-read observer; only scalar totals escape. The
+temporary census table is discarded before its observer returns. No receiver,
+token, context or source byte is retained in telemetry state.
+
+The existing observation tests verify disabled observation, native observer
+delivery on repeated reads, fixture cleanup, restored observation scope and no
+domain reads introduced by automatic source-event formatting. These assertions
+continue to use the original fixture macro, Case policy and Ops execution.
+
+| Deep-trace control | Direct dependency edges | Distinct token identities |
+|--------------------+-------------------------+---------------------------|
+| Shared authoring slot | 4971 | 2114 |
+| 16-Module selected-graph | 487798 | 76261 |
+
+Thus about 84.4 percent of this Graph record's direct edges repeat a token
+identity. This is not the percentage of process memory that can be freed.
+Distinct tokens may retain different receivers, values and transitive evidence;
+the native compiler/runtime roots remain a separate lifetime question.
+
+Deep tracing makes cached native reads observable and adds census work. It can
+disable read-free admission shortcuts. Use matched traced controls; do not
+compare its timings or logical guard totals to an untraced run as a speed claim.
+Default observation remains inert, and ordinary emit-only observation does not
+install this dependency census.
+
+The existing native collector conses each delivered token into a collection
+frame, including repeated identities. Its public replay already visits each
+token identity once and performs the final currentness pass after callbacks.
+Core cannot safely interpose another collector, drop private POO dependencies,
+or globally disable read observation to avoid those records.
+
+* Ownership boundary: Core-only optimization
+
+The user explicitly selected Core-only optimization. The locked gerbil-poo
+source remains unchanged; an isolated upstream experiment is also outside this
+scope. The following collector idea records the ownership boundary, not an
+approved implementation route.
+
+The proposed common-owner change is confined to the native collection frame:
+
+#+begin_src scheme
+;; Proposal inside gerbil-poo; not a Core implementation or a public DSL.
+;; A frame owns reverse-reads plus a fresh eq?-identity set.
+(unless (hash-key? seen read)
+  (hash-put! seen read #t)
+  (set! reverse-reads (cons read reverse-reads)))
+;; Native read observers still receive EVERY delivery, outside this condition.
+#+end_src
+
+The set is discarded with that collection invocation. It never stores a value
+check, authorizes a source read, or survives an effect as evidence of freshness.
+The first occurrence order must be preserved. Same receiver/key/value with a
+different read token is not a duplicate: revision changes, ABA, same-named
+Contracts and different Contexts must retain their separate obligations.
+
+The necessary comparison must cover nested frames, repeated observer effects,
+exception unwinding, cached parent/final child values, old evidence refusal and
+the final after-callback currentness pass. A raw dependency-list consumer that
+treats multiplicity as an event trace would need an explicit protocol decision;
+frequency belongs to native observer delivery, not silently changed semantics.
+
+The existing IdentityDFS model is relevant to token identity and final replay,
+but does not by itself prove native collector equivalence or allocation bounds.
+The native Scheme and large-scale controls remain required after any candidate
+is authorized. Do not clear SDK contexts, compiler bindings or promises.
+
+* Observation must not consume the domain work budget
+
+The AWS regressions exposed a Core tracing defect: new native-read and public
+preparation counters consumed the Case's existing 64-category budget. Failure
+during scope finalization could also replace the original exception while
+unwinding. Read totals now use one fixed three-scalar observation line; public
+preparation totals use a fixed two-scalar line. Neither enters the dynamic
+work-category table. Kernel-closure requests, walks and visits likewise use
+three fixed scalars, rather than displacing existing Nix work categories. The
+category limit is unchanged. A focused native control
+fills all 64 work categories after reporting public preparation activity and
+checks that trace finalization still emits both receipts. Disabled observation
+still installs no native read observer.
+
+* Reuse the input identity index after recursive imports
+
+Private native imports recurse before returning. The reader previously found
+the returning context's input by scanning the complete per-publication input
+list and reading every candidate's path slot. That search made unrelated input
+objects native read dependencies, in addition to its linear lookup work.
+
+The existing path uniqueness index now stores the corresponding input object
+instead of a Boolean. Registration and ordered output remain unchanged. After
+native import, the reader looks up that same input and verifies its path before
+registering the context. A missing or mismatched input is refused. No extra
+index, evaluation result or successful currentness result is retained. This
+removes the unrelated candidate traversal; it does not remove source guards or
+the native import's effect boundary.
+
+The matched deep-traced 16-Module control passes through the original init
+tests object. The selected-graph direct dependency list decreases from 487798
+to 487750 edges; distinct identities remain 76261. Native body evaluations
+remain 64 and physical Graph-ready reads remain 5495. This is a measured but
+small removal of unrelated slot reads, not a capacity or speedup claim. The
+publication tests also pass with the indexed lookup, including recursive
+native import, macro reuse, source refusal and deferred Build support.
+
+* Final focused qualification
+
+After the bounded-telemetry correction and input-index change, the unchanged
+init tests-object aggregation passes its JsonSchema, Funflow and real AWS
+publication cases. The source-only frozen qualification uses the locked POO
+revision and original Case policy. Schema replacement refuses stale evidence;
+failed publication retains the accepted value; fixture cleanup is checked.
+Both worker and outer native harness terminate naturally with exit zero,
+MODULE-OK, HARNESS-OK and final OK, without error or overflow markers.
+
+The observation budget control, publication suite and 16-Module native
+declaration control also pass. The focused Lean ImportCorrespondence check
+passes, and the existing source-bound Quint qualification passes all seven
+TestSourceAdmission cases, including its expected counterexamples. The receipt
+also binds the actual native declaration fixture, capacity entrypoints and
+observation implementation. These are separate evidence levels: finite model
+controls and the 16-Module run do not establish thousand-Module capacity.
+
+* Capacity remains open
+
+With retained public preparations and deep tracing, the 1000-Module gate still
+refuses at 74 completed publications under the original memory policy. It has
+one public preparation for 222 public-source requests and 297 retained source
+guards. The physical count at refusal is 58917; it is not comparable to a
+failure at a different completed-publication count as a read reduction.
+
+No heap/timeout increase or compiled cache is introduced. Fixture cleanup and
+the outer harness refusal remain required. The full thousand/ten-thousand
+declaration capacity claim is not closed by these source-preparation savings.
+
+[[file:14-declaration-capacity.org][Native declaration capacity gates]]
+[[file:../../12.27-aws-schema-transition-costs.org][Read map]]

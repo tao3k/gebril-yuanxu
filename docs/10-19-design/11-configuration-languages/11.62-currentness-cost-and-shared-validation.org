@@ -1,0 +1,228 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.62 Config Languages 61: Currentness Cost and Shared Source Validation
+#+property: DOCUMENT_ID 11.62
+#+property: STATUS native-ops-three-round-controls-passed
+
+* What the historical 27 seconds establishes
+
+The failed third round recorded 27.020347 seconds for AWS+Null independent
+currentness, one Nix evaluation, zero realizations and zero type reads or
+compilations. It therefore does not show extra Nix starts or Provider Contract
+compilation. That old measurement did not separate child-process wait from
+native work. Its exact delay cannot retrospectively be attributed to either.
+The subsequent host load observation was 37.87 on a 12-logical-CPU host; that is
+supporting context, not proof of the cause of this particular delay.
+
+The failed [[file:../../../t/fixtures/opentofu/explicit-core-sources-control.json][explicit-source qualification receipt]] remains unchanged. A new passing run
+does not relabel its timeout as success.
+
+* Measure the three costs separately
+
+The existing Nix start observer still counts actual CLI starts. An optional
+completion observer now measures each run-process boundary, including a failed
+or interrupted return. It neither changes argv nor wraps execution in a second
+process. Each measured phase records:
+
+- total wall time and summed Nix child-process wall time;
+- remaining native wall time, which includes Scheme, filesystem waits, GC and
+  scheduling delay and must not be labelled CPU time;
+- source-check entries, actual file reads, read requests, stat calls and
+  pure-query cache hits/misses;
+- selected Contract input reads and compilations, with the original assertions.
+
+The native Scheme qualification entry in t/qualification/opentofu/ independently samples host
+load approximately once per second and records waited-for child-cohort
+user/system CPU through POSIX /usr/bin/time -p at the test boundary.
+Nix daemon workers are outside that CPU accounting. Load average alone cannot
+distinguish runnable CPU pressure from other waits. Per-process completion rows
+and per-phase rows are flushed to local JSONL even when a later assertion or
+watchdog fails. Raw traces stay outside version control.
+
+* Confirmed duplicate work
+
+An instrumented, unoptimized full default-runtime control passed all 82
+assertions against the same real locked AWS and Null artifacts:
+
+| Independent check | Total s | Nix s | Native wall s | Reader scopes | Actual reads | Stat calls |
+|-------------------+---------+-------+---------------+---------------+--------------+------------|
+| AWS               |   3.093 | 0.983 |         2.110 |           180 |        26113 |      52939 |
+| AWS+Null          |   3.661 | 1.015 |         2.647 |           180 |        26113 |      52579 |
+
+The selected-graph check, prepared publication guards, configuration-role
+guards and retained-source guards repeatedly reached the same reader. Each
+reader call created its own byte/query cache. Thus nested guards reread the
+same physical files within a synchronous source-only validation. This is a
+measured implementation defect, independent of whether host pressure caused
+the historical outlier. The baseline host one-minute load ranged from 11.67
+to 16.35; the baseline is not an idle-host or download-cold benchmark.
+
+* Reuse one pure validation scope, preserve every effect boundary
+
+The repair reuses the existing source-observation cache at three source-only
+owners: build-graph currentness, retained-source validation and configuration
+source validation. Nested reader checks inherit that cache. They still execute
+their guards; file reads still check regular-file status. Independent calls
+start with fresh observations. No permanent validity receipt, scheduler or
+second dependency graph is introduced.
+
+#+begin_src scheme
+;; Source admission: nested guards share only this synchronous validation.
+(def (call-with-module-source-read-cache thunk)
+  ;; Optional observation counters/timing omitted here; see implementation.
+  (if (source-read-cache)
+    (thunk)
+    (parameterize ((source-read-cache (make-hash-table))) (thunk))))
+
+;; Existing selected build graph: source guards only, no realization here.
+(def (current!)
+  (call-with-module-source-read-cache
+    (lambda ()
+      ((.ref selected-value 'admit-current))
+      (for-each (lambda (check) (check)) checks))))
+#+end_src
+
+This scope must finish before role evaluation, expansion, file writes, Nix
+instantiation or realization. In particular, the Ops package operation's final
+currentness guard itself is NOT wrapped: it checks inputs, calls the package
+guard (which may execute Nix), then
+checks inputs again under fresh validation scopes. Each Nix .prepare guard and
+each independent currentness still perform their original checks. Source guard
+callbacks are source validation, not an arbitrary effect hook.
+
+The focused native regression verifies one actual read through nested guards,
+then changes the file between scopes and requires a new read and rejection of
+the old snapshot. The integration retains Config mutation, indirect Nix input
+mutation, tampered demand, script mutation during realization, immutable lock,
+final .admit failure and parent cached Contract isolation controls. Neither the
+60-second Case watchdog nor the 120-second outer test limit is increased.
+
+* Scope of the result
+
+This changes source-validation reuse and diagnostic observations. It does not
+cache Nix evaluation across independent checks, remove post-effect checks,
+change Provider selection, implement a Loader or authorize Provider plan/apply.
+Passing source and Contract checks remain distinct from execution authority.
+Final three-round measurements and the source-bound receipt are added below.
+
+* Operational ownership
+
+Ops is a built-in Core library published by =:yuanxu/ops/interface=. Neither
+Core nor the product root selects it in =init.ss=. Its functional APIs and
+Script prototypes are the same inert native values; only an explicit =run= or
+=.run= starts a process. Native package compilation owns its library sources.
+[[file:../../../ops/README.org][The Ops library design]] records configuration,
+Contract and runtime boundaries.
+
+The implementation remains at core/ops. Project-specific test commands and
+measurement coordination remain in Core/t/qualification/opentofu. Importing the catalog,
+loading the Module, constructing a script or resolving .run starts no operational
+process. Explicit invocation delegates to the named run-script function and
+Gerbil run-process. Native std/test remains assertion authority. No second
+Loader, script DSL, build entry or compatibility publication is maintained.
+
+* Results and attribution limits
+
+The cache-only comparison completed three default-runtime rounds, 82 assertions
+per round, before the concurrent Core source-role refactor. Its AWS+Null
+independent check used 1,013 actual reads per round instead of the baseline's
+26,113, while keeping one Nix evaluation and all source checks. Total time was
+1.540--1.968 seconds. Only the four validation owners and the statistics
+coordinator differed among the baseline's tracked files. This isolates repeated
+IO as a real avoidable cost; it does not prove the historical 27-second cause.
+
+The earlier ordinary-library Ops path also completed three rounds, 82 assertions each, with
+unchanged source digests. It consumes the current Core external-package graph
+without restoring the removed write-build-entry API. A normal guard.ss replaces
+the old generated Build Script; all serialized source and Nix rejection controls
+remain. This is a workflow migration as well as a cache repair, so its timings
+must not be presented as a cache-only matched speedup:
+
+| Earlier library Ops phase | Total seconds, min--max | Nix seconds, min--max | Actual reads | Type reads/compiles |
+|------------------------+-------------------------+----------------------+--------------+---------------------|
+| AWS independent check  |             1.002--1.385 |         0.683--1.109 |          568 |                 0/0 |
+| AWS+Null independent   |             1.045--1.214 |         0.630--0.724 |          568 |                 0/0 |
+
+Both checks start exactly one Nix evaluation and no realization. Hot receiver
+access starts none and reads/compiles no types. AWS-only build reads/compiles one
+selected type; adding Null reads/compiles two, leaving awscc unselected. The
+earlier cohort's one-minute host load ranged from 7.90 to 14.91 on 12 logical CPUs;
+these are populated-store local controls, not a host-saturation guarantee.
+The post-move cohort verifies Core ownership and unchanged semantic controls.
+A separate focused source-admission test overlapped part of its first round;
+its timings are observational rather than an isolated performance comparison.
+The earlier cache-only matched control remains the performance attribution
+evidence, and its original receipt is retained.
+
+Intermediate native integrations rejected missing role-forms/module-prelude
+runtime artifacts, the removed Core writer reference, and a malformed generated
+guard import. Their logs remain failures. The current package prelude and
+Core/modules/gerbil.pkg are included in the source-bound native receipt.
+No compatibility API or fallback source was introduced to pass those runs.
+
+See the structured [[file:../../../t/fixtures/opentofu/currentness-ops-control.json][Scheme Ops receipt]]. The old timeout receipt is retained separately;
+the original 27-second interval remains unattributed beyond its recorded
+process/type counts. The new native observations make future intervals
+separable without widening a watchdog or removing a rejection assertion.
+
+* Selected Ops Module qualification
+
+The current source-bound receipt is refreshed after Module migration. Earlier
+ordinary-library measurements above remain historical controls; they do not
+prove the Module path's overhead. New Module publication tests use the actual
+Core init and Loader, and verify inertness, configured child defaults after
+parent demand, disabled selection and stale declaration rejection. Qualification
+still retains every watchdog, failure diagnostic and final-admission assertion.
+
+All current provider fixtures, receipts and qualification entries are Core-owned
+under t/fixtures/opentofu and t/qualification/opentofu. Historical receipt JSON
+is relocated without rewriting its recorded paths or outcomes.
+
+The first selected-Module three-round attempt is retained as a failed control at
+/private/tmp/opentofu-selected-ops-module-rounds-20261017. Round one passed all
+82 assertions. Round two preserved its source generation but the invalid-final-
+configuration Case exceeded the unchanged 60-second budget. Its native trace
+records a 40.459-second completed Nix call and a later interrupted nix-store
+call (16.358 seconds). During that round sampled one-minute host load rose from
+13.32 to 99.49 on 12 logical CPUs. Measured build and independent-currentness
+phases completed before this negative-control stall. This is direct latency and
+concurrent-load evidence, not unique proof of which host task caused the wait.
+No watchdog, assertion or failed record was changed. A fresh attempt is required
+for three-round acceptance; the passing first round alone does not close it.
+
+The accepted selected-Module control is
+/private/tmp/opentofu-selected-ops-module-rounds-c-20261017. It completed three
+serial rounds of 82 assertions each. Immediate receipt publication independently
+matched all 130 retained source digests. The current structured receipt records
+this Module path, its prior failed cohort, the previous ordinary-library control
+and its native compilation/focused-test boundaries.
+
+Independent AWS rechecks took 1.176--1.430 seconds; AWS+Null rechecks took
+1.199--3.589 seconds. Each retained exactly one Nix evaluation, 568 actual source
+reads, no realization and no type reads/compiles. These are observed local ranges
+under concurrent host work, not a Module-vs-library speedup or saturation claim.
+The third full test cohort took 93.05 seconds and still passed the unchanged
+per-Case and outer bounds. No negative-control assertion was removed.
+
+An intermediate three-round cohort also passed, but its later publication was
+refused because another session changed Core/Justfile after completion. That
+record remains at /private/tmp/opentofu-selected-ops-module-rounds-b-20261017;
+it is not relabeled as current for the later source revision. The final cohort
+was followed immediately by strict source-current publication instead.
+
+* Functional First follow-up
+
+The public Ops function API now separates pure validation, command preparation,
+explicit environment merging and preview from the run-script runtime boundary.
+The native .run delegates to that same function. The qualification catalog
+inherits the admitted scope, and the real coordinator calls run through native
+use-module/with-slots. No second execution implementation or public macro DSL
+was added. Function exports and Module API publication responsibilities are
+specified in the source-role design and Ops README.
+
+/private/tmp/opentofu-functional-ops-rounds-20261017 completed three serial rounds
+of 82 assertions each. Immediate publication matched 131 source digests. Six
+focused controls passed, including the new pure API/inert preview/native-method
+parity checks. The current structured receipt includes the function API boundary;
+earlier Module-only and failed controls remain historical records. Service
+supervision and lifecycle are design only and are not qualified by these runs.

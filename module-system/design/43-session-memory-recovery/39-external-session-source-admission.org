@@ -1,0 +1,123 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.39 External Session Source Authentication and Retirement
+:PROPERTIES:
+:ID: agentic-ai-lab-context-external-session-source-admission
+:STATUS: module-protocol-local-verification
+:DATE: 2026-10-15
+:END:
+
+* Owner and trust boundary
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context; [[file:37-session-rebinding-concurrency.org][37]] qualifies local rebinding/retirement interleavings.
+Its trusted-host =session-sync!= was not external-source authentication. This
+refinement introduces =session-source.ss= in Modules, not another proof issuer
+or storage service. ORG Elements/Contract remain source/structure owners;
+external Session observations only change consumption membership and freshness.
+They do not rewrite ORG Context, Contract validity or Project knowledge.
+
+The host configures a named =org-context-session-source= with an exact issued
+Session authority, its current source binding/Governance, monotone clock,
+authentication operation, canonical event projection and approval policy.
+Same names, copied POO presentations and claimed verified flags do not issue
+identities. Configuration is trusted DI after governed source bootstrap, not
+remote self-registration. The optional Assurance constructor checks actual Host
+evidence seal, effect grant and explicit source policy before and after its
+policy callback. Evidence and a grant alone do not authorize arbitrary syncing.
+
+Authentication checks the event's complete provider/audience/credential and
+scope according to configured policy. The callback receives requested validity
+bounds and must enforce the provider's authenticated expiry and clock domain.
+The canonical projection must include all provider-specific authenticated
+fields. Core additionally freezes generation, expected local revision and
+Session IDs before/after authentication, and rechecks the input at use.
+The Module cannot make an incomplete or dishonest trusted verifier sound.
+The fixture uses an exact capability identity and audience, not network crypto.
+
+* Protocol and currentness
+
+| Object / operation | Meaning and required boundary |
+|--------------------+-------------------------------|
+| Session source | Issued private owner bound to the current controller generation, root and exact authority/Governance |
+| =session-observation= | Actual Core-authenticated event, external generation, local expected revision, retired/remaining Session IDs and expiry; not permission |
+| =session-sync-proposal= | POO proposal referring to the actual issued observation and domain payload; copied or foreign observations are refused |
+| =session-sync-authorize= | Current observation, binding, Governance assessment and configured approval; issues an actual Core receipt |
+| =session-sync-commit!= | Rechecks approval, binding/root, expected local revision, strictly newer external generation, retirement-only subset and validity before publication |
+| =session-sync-evaluate= | Candidate/completed/reopened observations; =authorized= and =runtime-executed= remain false |
+
+An authority can have one configured external provider pin. Its public
+trusted-host =session-sync!= is then disabled: a current local revision alone
+cannot bypass authentication. Installing the pin starts without a fresh lease;
+pre-existing views cannot consume on the strength of unverified membership.
+Initial provider membership is an upper bound supplied by governed bootstrap.
+Synchronization removes Sessions or confirms that bound; it cannot add a
+retired Session. New membership needs a separately designed/authorized source
+transition, not a fabricated full snapshot.
+
+The provider cursor advances strictly, while the local Session revision and
+each bound registry generation advance on every accepted snapshot, even a
+membership-preserving refresh. Old permits, collections, Queries and reviews
+cannot replay on that new cut. Public presentation data is not private issuance.
+Source-binding replacement invalidates the old provider owner; duplicate
+provider configuration cannot claim the already managed authority.
+
+The final local order is provider -> controller -> installation -> registry.
+Trusted authentication and approval operations run outside these final locks.
+The private registry guard checks the source clock against both report and
+permit deadlines immediately before mutation. Lease reads take a separate
+clock mutex only; they do not acquire controller locks from inside registry
+checks. The trusted clock/projection functions must be pure observations and
+must not reenter Module/Host mutation APIs from a leaf check. Clock rollback
+fails closed. This is process-local serialization, not
+a durable multi-process transaction or real-time bound on external delivery.
+
+* Expiry, retirement and reopened obligations
+
+An accepted provider observation gives managed consumer sets a freshness lease.
+Expiry makes those sets, Queries and consumer admission stale. Constructing a
+new set cannot bypass the expired lease. Refresh requires a newly authenticated,
+newer-generation report and separately approved publication, then a fresh
+consumer review. A source clock is distinct from the Assurance Host's configured
+clock; the tests isolate source expiry while keeping Host support/permission
+current. A real integration must define compatible clock/expiry contracts.
+
+Expired/stale pending sync proposals reopen their obligations. A completed sync
+remains historical completion after its lease expires; the dependent consumption
+obligation reopens instead. Retirement removes the selected slices, not the
+composition. Independent Project consumers retain admission under their own
+current source, review, evidence and grant. No inherited/global permission follows.
+
+Retirement is scoped to the exact authority, not a global Session-name blacklist.
+Revoking/replacing the binding refuses later provider commits but does not
+silently erase historical membership. A structural Query may remain current
+until lease expiry after root/binding change; admission separately requires the
+current authorized binding and therefore cannot use that Query to bypass it.
+
+* Responsibility and executable correspondence
+
+| Mechanism | Qualification, not another semantic authority |
+|-----------+----------------------------------------------|
+| Modules consumers/source-control/session-source | Private issuer, manager pin, cursor/lease and final local acceptance |
+| Existing Assurance/Governance | Actual evidence/permission, configured management policy and threat assessment |
+| Quint =ContextSessionSourceAuth= | Finite event/order/expiry/refusal and retirement/knowledge exploration; unsafe mutations must violate invariants |
+| LeanPOO =SessionSourceAuth= | Conditional authentication/permission/binding, strict generation/revision, Focus update, expiry and view/knowledge laws |
+| Scheme proof consumer | Real ORG-derived Context/Contract and Session inputs, actual Module/Core/Assurance objects; no duplicate synchronization predicate |
+| ASCENT | Existing candidate/support and reopened-obligation relations consume current Module admission; no fact creates a source identity or authorization |
+
+Quint's generations 1/2 and Lean's nonzero report generations abstract the
+Scheme cursor's arbitrary natural generations with an order-preserving encoding
+(empty cursor maps to zero). They are not literal producer revision values.
+Lean assumes truthful issued/authenticated/authorized premises; it does not
+prove private tables, cryptography, arbitrary Scheme evaluation or OS mutexes.
+The finite model permits a bounded number of reports/time steps, not every
+possible provider history: two local publications, one pending report slot and
+three clock values. Actual authentication and policy refusal are tested
+through Scheme, not by trusting submitted Bool fields.
+
+Managed-provider replacement/recovery on the same authority was outside this
+cut; [[file:41-controlled-session-source-change.org][41]] now specifies its local controlled-change protocol and [[file:42-session-source-change-verification.org][42]] records
+its verification. Durable cursor and lease storage, remote transport/signature/
+key rotation, complete unified Query adaptation and delivery guarantees remain
+open. Old Memory, storage executors and bindings are unchanged. RFC 0015 is only
+the SDLC consumer of this protocol.
+[[file:40-external-session-source-verification.org][40 records the executable cut and remaining limits]].

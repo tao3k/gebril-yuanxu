@@ -1,0 +1,375 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.09 Config Languages 08: Contract-Directed Web, API and Database Scenarios
+#+property: DOCUMENT_ID 11.09
+#+date: [2026-10-16]
+#+filetags: :config-language:contracts:scenarios:kubernetes:design:
+#+property: STATUS proposed-declaration-and-graph-adapters-no-implementation-no-loader
+
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+its Core export rename is pending. This example does not introduce an alias.
+
+* Correction: a simple surface must still declare its domain
+
+A Web Profile is not an arbitrary record that happens to contain image. Its
+maintained domain Contract supplies defaults, admissible fields, exports,
+requirements and a compatible consumer. Simplicity comes from that maintained
+interface, not from deleting the type boundary. This is the same task-facing
+principle seen in the [[file:../../../module-system/design/164-module-interface-comparison/07-ecosystem-task-interfaces.org][Omnibus AWS example]]: instance values are interpreted under
+the maintained AWS interface and its resource elaboration, not accepted as arbitrary
+provider objects. This does not establish equivalence between Nickel Contracts
+and POO ancestry checks.
+
+Upstream/downstream are not syntax tiers. Either author can create against a
+Contract, inherit a maintained Profile or extend a compatible mechanism. This
+case uses three independently reusable Profiles, then one selected Scenario. It
+is not three independent invocations of the single-server projector from module
+06: database state, connections and qualified identity require additional domains.
+
+* Requested declaration and current native expansion
+
+The desired service authoring surface uses the existing .def shape with a domain
+Contract as the designated parent value:
+
+#+begin_src scheme
+(.def (WebProfile @ WebProfileContract)
+  image: "registry.example/web:1")
+
+(.def (APIProfile @ APIProfileContract)
+  image: "registry.example/api:1")
+
+(.def (DatabaseProfile @ DatabaseProfileContract)
+  image: "postgres:16"
+  credentials: (.o secret: "app-db" key: "password"))
+#+end_src
+
+This parent-value interpretation is a proposed declaration adapter. In inspected
+Core e85fd45 (workspace root 7ab549d0), core/object-syntax/path-slots.ss delegates
+ordinary inheritance to native POO and does not implement Contract-to-proto
+resolution. Do not claim the above creates typed service instances today.
+The native parent portion is instead:
+
+#+begin_src scheme
+(.def (WebProfile @ (.get WebProfileContract proto))
+  image: "registry.example/web:1")
+#+end_src
+
+The expanded .def alone does not admit it. Declaration metadata must retain the
+exact Contract association for later public .admit, through contribution export
+and compatible derivatives. No per-Profile publication wrapper or repeated
+downstream policy declaration is required by this proposed design. A recognized
+domain Contract is resolved by typed identity/association, not merely because an
+arbitrary object has a proto slot. Ordinary Profile parents retain normal native
+inheritance; heterogeneous/ambiguous parents must retain all mandatory requirements
+or be refused. Raw Contract descriptor fields must never become instance fields.
+
+* What the maintained service Contracts provide
+
+These native defaults and constraints are internal contribution-library code.
+Primitive StringContract, IntegerContract, no-obligations and closed-fields are
+the concrete definitions from module 05. The following is a distinct general
+service interface, not an unannounced weakening of that module's 80/443 Port type.
+
+#+begin_src scheme
+(def ServicePortNumberContract
+  (yuanxu-predicate-contract 'service/port-number
+    (lambda (v) (and (positive-integer? v) (<= v 65535))) no-obligations))
+(def HTTPContract
+  (yuanxu-predicate-contract 'service/http
+    (lambda (v) (equal? v "HTTP")) no-obligations))
+(def PostgreSQLContract
+  (yuanxu-predicate-contract 'service/postgresql
+    (lambda (v) (equal? v "PostgreSQL")) no-obligations))
+
+(.def Endpoint.)
+(.def ExportMap.)
+(.def Web.
+  (replicas ? 1)
+  exports: (.o (:: @ ExportMap.)
+    http: (.o (:: @ Endpoint.) protocol: "HTTP" port: 80 targetPort: 8080)))
+(.def API.
+  (replicas ? 1)
+  exports: (.o (:: @ ExportMap.)
+    http: (.o (:: @ Endpoint.) protocol: "HTTP" port: 8080 targetPort: 8080)))
+(.def Database.
+  (replicas ? 1)
+  storage: (.o size: "10Gi")
+  exports: (.o (:: @ ExportMap.)
+    postgres: (.o (:: @ Endpoint.)
+      protocol: "PostgreSQL" port: 5432 targetPort: 5432)))
+
+(.def (HTTPEndpointContract @ YuanxuObjectContract.)
+  identity: 'service/http-endpoint
+  proto: Endpoint.
+  responsibilities:
+  (.o protocol: HTTPContract port: ServicePortNumberContract targetPort: ServicePortNumberContract)
+  .obligations: (cut closed-fields '(protocol port targetPort) <> <>))
+
+(.def (PostgreSQLEndpointContract @ HTTPEndpointContract)
+  identity: 'service/postgresql-endpoint
+  responsibilities: =>.+ (.o protocol: PostgreSQLContract))
+
+(.def (HTTPExportsContract @ YuanxuObjectContract.)
+  identity: 'service/http-exports
+  proto: ExportMap.
+  responsibilities: (.o http: HTTPEndpointContract)
+  .obligations: (cut closed-fields '(http) <> <>))
+
+(.def (PostgreSQLExportsContract @ HTTPExportsContract)
+  identity: 'service/postgresql-exports
+  responsibilities: (.o postgres: PostgreSQLEndpointContract)
+  .obligations: (cut closed-fields '(postgres) <> <>))
+
+(def (secret-reference? value)
+  (and (object? value)
+       (.slot? value 'secret) (.slot? value 'key)
+       (null? (closed-fields '(secret key) value #f))
+       (nonempty-string? (.get value secret)) (nonempty-string? (.get value key))))
+(def SecretReferenceContract
+  (yuanxu-predicate-contract 'service/secret-ref secret-reference? no-obligations))
+
+(def (storage-shape? value)
+  (and (object? value) (.slot? value 'size)
+       (null? (closed-fields '(size) value #f))
+       (nonempty-string? (.get value size))))
+(def StorageContract
+  (yuanxu-predicate-contract 'service/storage-shape storage-shape? no-obligations))
+
+(.def (WebProfileContract @ YuanxuObjectContract.)
+  identity: 'service/web
+  proto: Web.
+  responsibilities:
+  (.o image: StringContract replicas: IntegerContract exports: HTTPExportsContract)
+  requirements: (.o api: "HTTP")
+  .obligations: (cut closed-fields '(image replicas exports) <> <>))
+
+(.def (APIProfileContract @ WebProfileContract)
+  identity: 'service/api
+  proto: API.
+  requirements: (.o database: "PostgreSQL"))
+
+(.def (DatabaseProfileContract @ YuanxuObjectContract.)
+  identity: 'service/database
+  proto: Database.
+  responsibilities:
+  (.o image: StringContract replicas: IntegerContract
+      exports: PostgreSQLExportsContract storage: StorageContract credentials: SecretReferenceContract)
+  requirements: (.o)
+  .obligations: (cut closed-fields '(image replicas exports storage credentials) <> <>))
+#+end_src
+
+requirements is descriptor-owned role metadata, not a field copied into each
+Profile. It defines connection roles and expected endpoint protocols. Missing
+credentials, a wrong endpoint protocol, an unknown field or an unrecognized parent
+must fail admission. The descriptor's proto identifies an implementation family;
+it does not prove a container image implements HTTP/PostgreSQL at runtime.
+Image/source allowlists, storage quantity syntax, Secret existence and provider
+policy need separate gates. StorageContract above proves shape, not PVC viability.
+Database replication/storage policy and persistence rendering are not silently
+borrowed from the stateless server example.
+
+* Scenario selects occurrences and typed relationships
+
+[[file:11.10-application-scenario-admission.org][Module 09]] defines ApplicationScenarioContract, its shape responsibilities,
+bounded Contract association, per-Profile public .admit, required/unknown role
+checks and retained final-edge evidence. It fills the previously named-only
+Scenario Contract. Its implementation and scale qualification remain pending.
+
+The Contract-directed Scenario parent below is also proposed parent resolution.
+Its Composition Contract must admit every selected occurrence through its own
+associated Profile Contract, then check connections against descriptor requirements.
+Checking only services is an object would be insufficient.
+
+#+begin_src scheme
+(.def (Shop @ ApplicationScenarioContract)
+  namespace: "shop"
+  services: (.o web: WebProfile api: APIProfile database: DatabaseProfile)
+  connections:
+  (.o web: (.o api: (.o service: 'api export: 'http))
+      api: (.o database: (.o service: 'database export: 'postgres))))
+
+(.def (ReleaseShop @ Shop)
+  namespace: "release"
+  services.web: =>.+ (.o image: "registry.example/web:release")
+  services.api: =>.+
+  (.o replicas: 3
+      exports.http: =>.+ (.o port: 8081))
+  services.database: =>.+
+  (.o exports.postgres: =>.+ (.o port: 5544)))
+#+end_src
+
+This separates Profile export identity from occurrence keys web/api/database.
+Reuse a Profile at another key without mutating its published object. namespace
+and image/port/replicas are ordinary assignments; object refinements retain the
+other fields. Dotted =>.+ is existing authoring syntax; Contract-directed parent
+resolution and this whole domain/association/graph admission are not implemented.
+No imports/compose DSL or execution order is added.
+
+* Concrete edge kernel: read the final services, never a parent endpoint
+
+After admitting selected Profiles and validating reference object shape, the
+following pure function resolves one required connection. It receives only the
+selected Scenario and an expected protocol from that consumer's Contract metadata.
+It is not a replacement for the full graph admission or source association layer.
+
+#+begin_src scheme
+(def (resolve-service-reference scenario reference expected-protocol)
+  (let* ((services (.get scenario services))
+         (service-key (.get reference service))
+         (export-key (.get reference export)))
+    (unless (.slot? services service-key)
+      (error "connection target not selected" service-key))
+    (let* ((target (.ref services service-key))
+           (exports (.get target exports)))
+      (unless (.slot? exports export-key)
+        (error "target export absent" service-key export-key))
+      (let ((endpoint (.ref exports export-key)))
+        (unless (equal? (.get endpoint protocol) expected-protocol)
+          (error "connection protocol mismatch" service-key export-key))
+        (.o target-profile: target
+            target-endpoint: endpoint
+            service-key export-key
+            host: (string-append (symbol->string service-key) "."
+                                 (.get scenario namespace) ".svc")
+            port: (.get endpoint port)
+            targetPort: (.get endpoint targetPort)
+            protocol: (.get endpoint protocol))))))
+
+;; Concrete reads demonstrating the selected Scenario receiver:
+(resolve-service-reference ReleaseShop
+  (.get ReleaseShop connections web api)
+  (.get WebProfileContract requirements api))
+
+(resolve-service-reference ReleaseShop
+  (.get ReleaseShop connections api database)
+  (.get APIProfileContract requirements database))
+#+end_src
+
+Profile/endpoint object identities remain in the resolved value for correlation;
+the plan serializer excludes these internal references. The selected occurrence
+key and namespace determine the Service address in this bounded same-cluster case.
+The graph adapter must validate DNS/collision policy for those values, rather than
+blindly concatenate arbitrary symbols. The kernel assumes typed reference fields
+service/export are symbols. Exact reference admission, descriptor resolution and
+cyclic dependency handling remain graph-adapter work; its error calls are local
+design diagnostics, not complete published evidence.
+
+The default App Scenario prototype should compute its selected graph/plan from
+its own services, namespace and connections lexical slots. These have the same
+native receiver rule as module 06's server, not cached parent values. Module 09
+now gives the concrete bounded configuration/edge admission functions; full
+resource generation and general graph policy remain pending. At graph
+admission, require exactly the connection roles demanded by each descriptor,
+refuse unknown roles/targets/exports, retain each selected Profile receipt, then
+retain each final resolved-edge identity and its compatibility evidence. No
+unselected global catalog entries participate in that phase.
+
+* Effective preview and consumers
+
+Expected review summary, not executed output:
+
+#+begin_example
+ReleaseShop, namespace=release
+web -> api.http:
+  address=http://api.release.svc:8081
+  targetPort=8080
+api -> database.postgres:
+  host=database.release.svc
+  port=5544
+  targetPort=5432
+resources proposed:
+  Deployment/web; Service/web
+  Deployment/api (replicas=3); Service/api (8081 -> 8080)
+  StatefulSet/database; client Service/database (5544 -> 5432)
+  database headless Service/PVC policy and app-db Secret reference required
+status=projected-unadmitted
+#+end_example
+
+The Web renderer maps its api connection to the actual frontend's maintained
+proxy/config interface; the API renderer maps database host/port and Secret
+references to the API's actual connection interface. An endpoint summary alone
+does not configure either application. These consumers, required database name/
+user fields, persistence/headless Service definitions and startup/readiness policy
+need domain implementation and Contracts before full resource publication. Do
+not emit a generic Deployment for every Profile or claim this runs PostgreSQL.
+
+Changing api's exported Service port must update Web connection configuration;
+changing database's Service port must update API configuration. Container target
+ports remain unchanged unless explicitly refined. Service selectors/labels must
+use occurrence identity, not a shared Profile label that accidentally selects all
+instances. Config, edges, resource graph, schemas and provider policy are separate
+admission gates over one final snapshot; preview cannot become admitted-preview
+while any required consumer or gate is missing.
+
+* KCL/Omnibus comparison: actual ecosystem evidence, not invented parity
+
+The actual [[https://www.kcl-lang.io/docs/0.12/reference/lang/codelab/schema][KCL schema codelab]] imports a reusable Server model, sets image/labels/
+service ports, and reuses Deployment plus a persistent-volume mixin. Actual
+[[https://www.kcl-lang.io/docs/0.12/user_docs/guides/working-with-konfig/guide][Konfig deployment guidance]] renders Namespace/Deployment/Service from its
+maintained application interface. These demonstrate checked frontend models and
+hidden renderers, not just a choice of list syntax. The actual
+[[https://www.kcl-lang.io/docs/0.12/user_docs/guides/configuration][KCL configuration guide]] derives a PostgreSQL connection from selected environment
+host, port and database fields. It is a separate example, not the same verified
+Web/API/database Scenario.
+
+Short KCL source-interface excerpt (not an invented three-service package):
+
+#+begin_src python
+import pkg
+server = pkg.Server {
+    name = "my-nginx"
+    image = "nginx:1.14.2"
+}
+#+end_src
+
+The corpus now includes actual [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/base/base.k][Konfig Guestbook source]] with frontend, Redis
+Leader and Redis Follower, plus the [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/render/render.k][renderer]]. This is a verified three-workload
+source case, though not the exact proposed Web/API/PostgreSQL workload or typed
+connection protocol. See [[file:../../../../docs/10-19-design/10.08-config-languages/10-source-scenario-research.org][the source-level study]] for that distinction.
+
+Scheme's matched intended declaration is WebProfile @ WebProfileContract plus its
+business values, not an untyped object followed by repeated caller-owned checks.
+Both ecosystems should hide manifests/Contracts/rendering where already maintained.
+KCL also supports schema inheritance/functions; POO is not uniquely capable of
+typed reuse. Our direct Contract parent, associated export metadata, final-edge
+admission and rich domain consumers remain missing, while Konfig has a real
+consumer path. A verified exact Web/API/PostgreSQL linked case was not found in
+this bounded search. Do not label the proposed Shop example as translated or
+executed KCL parity. Omnibus AWS's actual network reference similarly demonstrates
+that a short field can denote a maintained domain relationship and resource
+elaboration rather than an arbitrary object.
+
+* Thousand-service demand and cache boundary
+
+Catalog descriptions do not instantiate every Profile. Scenario.services is the
+explicit selected occurrence set, not an enumeration of the contribution registry.
+Admit selected Profiles once per valid snapshot; build indexes by occurrence key
+and export. Resolve edges using those indexes, without repeated full-catalog scans.
+Full graph admission must inspect selected vertices/required edges: lazy omission
+cannot prove global uniqueness or relation completeness. Unselected Profiles and
+unneeded application payloads remain cold until their consumer needs them.
+
+A Web image-only edit invalidates its local admission/rendering, not an unrelated
+database endpoint. An API export-port edit invalidates its endpoint evidence,
+Service projection, Web's resolved reference and Web's connection configuration.
+A database credentials change affects its Secret policy and API configuration;
+do not expose secret material in cache keys/previews. A namespace edit invalidates
+all affected names/references. A selected-set/edge change may invalidate global
+uniqueness and cycle checks. Parent caches are not current child evidence.
+
+Potential cache keys include effective occurrence identity, Profile/helper/Contract
+revision, dependent field/edge generations and admission scope. These are proposed
+requirements; native lazy slot caching does not implement an incremental graph
+engine or automatic cross-object dependency invalidation. Proof and workload
+qualification are still required, especially for multi-parent requirements,
+reference cycles and omitted evidence. No scale/performance results are claimed.
+
+* Status
+
+Existing: native object inheritance, defaults, receiver-aware lexical slots,
+value-first =>, =>.+, bounded scopes, path-object refinements and public .admit.
+Proposed/unexecuted: all service-domain Contracts/defaults here, Contract-parent
+declaration resolution/association, role-aware selected graph admission, actual
+Web/API/database consumers, final resource/cluster-policy validation and incremental
+cache tracking. No production source, module adapter or Loader is changed.

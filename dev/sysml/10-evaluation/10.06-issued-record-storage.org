@@ -1,0 +1,308 @@
+#+title: 10.06 Issued Record Storage
+#+language: en
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Responsibility and unchanged boundaries
+
+This follows [[file:10.05-issued-traversal-projection.org][10.05]]. The issuer owns the immutable association between an
+original read identity and its captured payload. Core consumes that association;
+it neither manufactures reads nor maintains another cache protocol. The selected
+read graph, ordered dependency occurrences, observer deliveries and fresh
+currentness checks remain unchanged. No passing admission result is cached.
+
+* Actual retention attribution
+
+PR 19 at =08da1635cc583cf7e69b3809f8ea757b2e0d8e5d= passes both platform builds
+and all non-capacity jobs. Both capacity jobs still refuse the ten-thousand
+declaration workload under the existing live-growth policy. That refusal is not
+a timeout to enlarge or a test to weaken.
+
+The retained graph census at 256 declarations contains 142878 original records,
+12984 receivers and 324931 ordered edge occurrences. At 16 declarations it has
+9918 records and 23971 edges. A separate raw-container census attributes most
+growth to closures and pairs; SDK import metadata is largely a fixed baseline.
+These are trace measurements, not ordinary-path timing results. VM accounting
+field seven is not used as a physical-allocation measurement (see 10.02).
+
+The compiled issuer's =case-lambda= retains two payload closures and a variadic
+dispatcher per record. At 16 declarations the three actual code identities each
+have 10015 live instances, with closure lengths 9, 9 and 3. This identifies
+duplicated representation, not disposable graph edges.
+
+* Producer representation
+
+Use one fixed-arity private closure. A real, RTD-checked record requests the
+unchanged authentication checks; =#f= requests detached inspection copies. The
+public =object-read-issuance= interface still returns five values and invokes
+only the original registry-associated closure. Callers cannot select an alleged
+issuer, register a purity flag or acquire signing authority through inspection.
+
+The weak-key/weak-value registry, original read class, exact payload checks,
+dependency order, key-shape copy and original closure identity stay intact.
+Inspector results copy the payload vector, dependency spine and compound-key
+spine. Mutating these copies must not mutate or authenticate a signed record.
+
+* Formal and native correspondence
+
+[[file:../../proofs/lean/YuanxuProof/Admission/IssuerProjection.lean][IssuerProjection]] proves =single_closure_authentication=,
+=inspection_cannot_authenticate= and =inspection_preserves_ordered_payload=.
+[[file:../../proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck]] compares the alternative predicate with native
+observations instead of assuming that an arbitrary supplied Birth is authentic.
+The existing QNT issuer controls still cover forged/borrowed/replaced closures,
+transient misses, callback restoration, revision changes and parent isolation.
+
+The model assumes the native identity projection, RTD guard, private lexical
+capture and sequential execution boundary. It does not prove Gambit's closure
+layout, GC behavior, arbitrary FFI safety or atomic external-file deployment.
+Compiled closure counts and retained bytes require separate runtime evidence.
+
+Native producer tests pass the existing seventeen issued-read cases and the
+slot-observation regression. The persistent/forged case additionally mutates
+detached inspection copies and checks that original authentication is unchanged.
+Core consumer, matched retention and full capacity qualification must also pass
+before this change can be called an end-to-end capacity repair.
+
+* Acceptance record
+
+** Version and concurrent-work boundary
+
+The first isolated candidate is based on Core's original =80b590b= pin. During
+qualification another session advanced PR 19 to =f3ade216= and its dependency
+to =8c15ba5=. The final candidate is =badfbfaa1c5d889c446e9a8c445dd0d5523c724d=,
+a narrow child of that newer declared dependency. No Table work or upstream
+observation-scope changes were reverted. The existing producer PR 13 branch
+integrates the candidate through merge =4d63f36=, preserving the concurrent
+=e21d285= head. Core pins the narrow candidate, not an unqualified broader
+upgrade. No compiler or SDK source is modified.
+
+** Checked results
+
+| Check | Result |
+|-------+--------|
+| Native issued reads / slot observation | Pass, including detached-copy mutation and transient miss |
+| Core native observations / independent Lean decoder | 4 cases, 12 observations agree |
+| Lean complete audit | 199 jobs; 6807 declarations, standard Lean axioms only |
+| QNT issuer / selected replay controls | 11 + 11 qualified cases, including expected negative counterexamples |
+| Real Gitea/PostgreSQL publication and JSON configuration | Both default Just entries pass |
+| Native build lifecycle | Spec, cold build, zero-compilation hot build, clean, rebuild and cleanup pass |
+| Immediate Core hot build | Zero compiler invocations |
+| 256 real declarations | Pass, including stale-source refusal and unselected-scope/Feature assertions |
+
+The current candidate retains exactly 142878 original records, 12984 receivers,
+324931 ordered edge occurrences and the same widest edge list (185355). Observer
+summary remains 2592333 deliveries and 4794834 delivered dependency occurrences,
+equal to the earlier control. Neither the original graph nor duplicate delivery
+events were pruned. Compiled issuer storage is 142878 closures / 1143024 captured
+fields (the code pointer at closure index zero is excluded).
+
+GC-retained live bytes at 256 declarations are 401805320. The earlier full-census
+control measured 434254536; the first narrow candidate measured 401746584. These
+are explicitly versioned trace receipts with different diagnostic probes, not a
+strict timing A/B or a claim that the full capacity requirement is closed.
+
+The first candidate's unchanged ten-thousand-declaration gate still refuses at
+1143 completed publications with 1074319240 live-growth bytes. The earlier CI
+controls refused near 982/993 publications. The default 1 GiB live-growth policy,
+2 GiB VM heap fence and existing deadlines remain unchanged. A smaller issuer
+representation alone is insufficient for ten thousand modules. The final-current
+candidate also refuses: 1127 completed publications, 1217509728 live bytes and
+1077178416 live-growth bytes. This is an observed refusal, not a pass or a
+new throughput bound; collection placement and the dependency cohort differ.
+Both failures are retained. The passing 256-declaration and domain regressions
+do not establish ten-thousand-module capacity or an all-green PR.
+
+Keep failed source-cut drift, compile and capacity runs as local artifacts;
+source control contains executable controls and this structured summary only.
+The next retention study must account for the remaining graph-owned storage
+without constructor elision, deletion of signed edges, suppressed observers or
+cached admission decisions.
+
+* Remaining storage: private dependency snapshot
+
+The next candidate changes private representation only. Each native record
+keeps its original public dependency list, including repeated occurrences. Its
+issuer previously copied the same sequence into another pair spine. A private
+vector can retain the same identities in order; inspection converts it back to
+a detached list. Empty snapshots use a shared empty vector. No public field,
+dependency edge, observer call or replay-root policy changes.
+
+=private_sequence_authentication= proves that comparison against the dense
+snapshot equals comparison against the original sequence. Inspection recovers
+that complete sequence. =IssuerSequence.qnt= checks the finite representation
+boundary and supplies expected counterexamples for deduplication, reordering and
+aliasing the inspection result. Existing issuer/replay controls still own
+forgery, currentness, parent isolation, both requirements and laziness. These
+models do not prove vector GC layout or private reflection resistance.
+The native loop's bounded index traversal and pointer-to-model identity mapping
+remain source-correspondence assumptions, checked by the native repeated-edge
+controls; there is no extracted compiler-correctness proof.
+
+** Rejected attribution hypotheses
+
+Trace-only probes at 16 and 256 real declarations respectively observe 10500
+and 143636 entries in the actual weak issuer index, with 30723 and 327687 raw
+storage slots. They do not show pathological table expansion. The transitive
+reader-context chains contain 67/1027 contexts and 4970/9770 bindings; private
+global bindings number 64/1024. These counts do not justify deleting issuer
+authority, imports or role contexts. The temporary probes never enumerate weak
+keys/values and were removed after recording the results.
+
+Installed Gambit =ea114fc3d2f120abbe20393c1f9aeafdd3f8c89f= computes post-GC
+live accounting from movable and still space; its movable contribution includes
+both copying spaces and VM stack occupancy. Raw graph-container word counts
+therefore cannot simply be equated with the gate's live-byte statistic. The
+existing statistic, 1 GiB growth policy and 2 GiB VM fence remain unchanged.
+Only source inspection was used; no compiler/runtime source was modified.
+
+** Concurrent CI binding
+
+PR 19 =bf9e6d1= selects producer merge =4d63f36=. Its =object.ss= and
+=slot-observation.ss= are byte-identical to the earlier narrow =badfbfa=
+candidate, but the proof's declared revision must nevertheless match the real
+package. All eight new QNT shards refused that stale revision binding. Updating
+it restores the correspondence check; this is separate from the still-failing
+ten-thousand-module capacity gate. Concurrent build changes remain intact.
+
+** Qualified producer and consumer boundary
+
+The dense-snapshot producer is =fe82518686c21b11f6f1b91e44b35f3dfbab52c8=,
+published on the existing PR 13 branch. It is a child of the selected merge,
+not a downgrade to the earlier narrow history. Native issued-read controls
+complete all seventeen cases, including mutated inspection copies, mutated
+public dependencies and deletion/reordering of actual repeated dependencies.
+Slot-observation regressions also pass. A test initially selected the external
+record by slot name alone; it now selects the actual receiver and slot. That
+failure is retained rather than relabeled as a production defect.
+
+The complete Lean build passes 199 jobs and the 6816-declaration standard-axiom
+audit. QNT qualifies fifteen issuer/sequence cases and eleven selected-replay
+cases. Core's independent Lean decoder agrees with twelve actual native
+observations. Core's full default build and subsequent zero-compilation hot
+build pass. The real Gitea/PostgreSQL publication entry completes eleven cases.
+Further capacity measurements remain separate acceptance requirements.
+
+The pre-=e117f15= Core cohort (producer =fe82518=) 256-declaration trace passes
+with 142878 original records, 12984
+receivers, 324931 ordered edges and widest list 185355. The issuer still retains
+142878 closures / 1143024 captured fields. Observer totals remain exactly
+2592333 deliveries / 4794834 delivered edge occurrences. GC live accounting is
+393107928 bytes, compared with the earlier versioned 401805320-byte receipt.
+This is a measured storage reduction, not a strict timing A/B: the newer
+producer merge and public-facade build changes are also present. It does not
+establish ten-thousand-module capacity.
+
+Latest PR 19's Linux bootstrap failure is also attributable: the narrowed
+build-lifecycle fixture still exported only =core-spec= after production added
+=core-public-roots=. The fixture now declares that interface with an empty
+public-facade selection. Production facade discovery is untouched; cold/hot,
+clean/rebuild, source-mismatch and unselected-output checks remain required.
+
+An initial lifecycle run passes specification (30.63 s), cold compilation
+(59.36 s) and zero-compilation hot reuse (30.80 s), then refuses at the existing
+clean-phase idle deadline. Concurrent host =gsc-boot= processes were observed;
+that observation alone does not prove the failure was caused by contention.
+The refusal is retained. A repeat begins only after the observed host compiler
+process count reaches zero, with the same budgets and assertions. No synthetic
+progress, enlarged deadline or cached currentness result is introduced.
+
+That repeat passes the complete default lifecycle: specification 12.14 s,
+cold compilation 34.10 s, zero-compilation hot reuse 12.92 s, cleanup 11.31 s,
+recompilation 33.32 s and final cleanup 12.27 s. The nested source-package and
+changed-input negative controls pass too. Both runs remain recorded; this does
+not turn the failed attempt into a pass or establish a wall-time speedup.
+
+The final default ten-thousand-declaration run still refuses after 1148 completed
+publications: 1216541568 live bytes and 1076279680 live-growth bytes. It reports
+=live-growth-limit-exceeded=, not an enlarged timeout or a relaxed assertion.
+This remains a capacity failure. The earlier 1127-publication receipt and these
+collection-dependent checkpoints are not an exact throughput bound. No passing
+end-to-end capacity result or all-green PR is claimed.
+
+** User-selected two-GiB capacity boundary
+
+After that refusal, the user explicitly changes the ten-thousand-module budget
+to 2 GiB. The outer fixture and its worker share one native Case-profile function,
+which derives the existing POO Case profile with
+=live-growth-limit-bytes: 2147483648=. The VM's existing 2 GiB hard managed-heap
+cap and the Case's 2 GiB heap-size guard remain in place: the change removes
+the former 1 GiB early growth refusal, not the hard cap. Smaller declaration
+fixtures and the project-wide default policy remain unchanged. Duration,
+idle, source-currentness, issuance and semantic checks are not relaxed.
+The old one-GiB receipts remain failures under their original declared policy;
+new results must name the two-GiB boundary rather than relabel those receipts.
+
+The first two-GiB worker run reaches the 2000-publication checkpoint
+(2146545496 managed-heap bytes; 1857868328 live bytes), then reports
+=Heap overflow=. The Harness correctly rejects the result despite its emitted
+=MODULE-OK= marker. This is a retained capacity failure, not a passing gate.
+The follow-up applies the same selected growth policy to the outer Fixture
+through the existing =yuanxu-test-fixture profile:= form; no new runner or
+cache protocol is introduced.
+
+** Unified two-GiB rerun and remaining ownership
+
+Core =a3736ea381b003c46be3905bc42ccc1e02aebe85=, native producer
+=fe82518686c21b11f6f1b91e44b35f3dfbab52c8=: the default Just ten-thousand
+entry with the shared outer/worker policy exits 70. Its last completed scalar
+checkpoint is 2000 publications, 2147277856 managed-heap bytes and 1862349584
+live bytes, followed by =Heap overflow=. There is no
+=live-growth-limit-exceeded= refusal. Neither the automatic test preparation
+counter nor a worker's =MODULE-OK= marker establishes a completed publication
+count or a passing Harness. The hard two-GiB fence remains unchanged.
+
+The same current source cut passes the existing 256-publication trace. It
+retains 142888 authentic original records, 12989 receiver identities and
+324946 ordered dependency occurrences; its largest =selected-graph= list has
+185365 occurrences. It retains 142888 issuer closures with 1143104 captured
+fields. Final GC live accounting is 393486288 bytes. Actual observer totals
+are 2589668 deliveries and 4792173 delivered edge occurrences. These are the
+new cohort's measurements, not an identity-equality comparison against the
+older Core cohort's different event sequence.
+
+Attribution of already demanded selected-graph roots, without invoking another
+getter, finds:
+
+| Native family | Distinct original reads | Receiver identities |
+|---------------+-------------------------+---------------------|
+| Effective method | 36865 | 2305 |
+| Invocation frame | 23041 | 2305 |
+| Module authoring admission | 39936 | 3328 |
+| Contract validation evidence | 4608 | 256 |
+| Type classification evidence | 3072 | 256 |
+
+This points to retained Generic/authoring object state, not another disposable
+duplicate-root buffer. It does not prove how many VM bytes each family owns:
+payloads, parents and SDK contexts can be shared. The actual role-context
+snapshot still has 256 contexts per interface/types/config/objects role and
+zero retained code bodies, expansions or programs in those rows. Closed
+scalar observation counters do not retain discovery contexts. Erasing an
+invocation frame or an admission because it has the same receiver, result or
+port as another record would violate the existing identity/coverage controls.
+
+Before another production storage change, the existing =ReadRetention= and
+=IssuerProjection= Lean targets pass (108 build jobs); all seven ReadRetention
+QNT controls qualify, including the expected receiver-coalescing, omitted-miss,
+memoized-approval, missing-second-requirement and eager-branch counterexamples.
+These prove the abstract sharing restrictions, not a two-GiB heap bound or a
+new compressed native layout. The existing real Scenario cost entry also
+passes its three matched raw/unique cold/warm rounds. Parent 5432 stays cached;
+each child admits 5433/5433 with exact final Config/plan identity, both contextual
+child obligations, both contributions and fresh physical-source checks. Full
+ordered observer-key sequences are compared, not just event totals.
+
+In this current cohort each matched sample retains 895 original records,
+158 receivers and 1974 edges, performs 236 physical source reads, and delivers
+2396 cold / 2383 warm observer events. Only collector root-reference storage
+changes (1488 raw versus 489 unique); both modes retain 489 root identities.
+The allocation counter is marked non-current, so its deltas are not admitted
+as physical allocation measurements. Separate default Just publication and
+JSON configuration regressions pass all eleven and four cases respectively,
+including their existing source-change, parent-cache and lazy-branch controls.
+
+No further graph pruning, cross-effect approval cache, collector rewrite or
+unqualified producer upgrade is admitted by these results. The next storage
+candidate must account for native Generic/authoring metadata ownership while
+preserving the complete original token and edge sequence; a local vector
+micro-optimization is not evidence of ten-thousand-module capacity. This
+capacity gate remains failed, independently of passing smaller controls and
+the still-running PR checks.

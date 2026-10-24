@@ -1,0 +1,316 @@
+#+title: 10.12 Deep Export Paths Through Admitted Selected Records
+#+language: en
+#+property: DOCUMENT_ID 10.12
+#+date: [2026-10-17]
+#+property: STATUS executed-frozen-and-current-source-controls-not-product-loader-integration
+
+[[file:10.13-selected-contribution-publication.org][10.13]] records the later production migration: the collector and publisher
+attachment no longer live in this test. The five-case receipts below are
+historical; the current executable has ten production-boundary cases.
+
+The historical frozen run below is retained. The later current-source run in
+"Migration back to the current Core linker" validates the same controls against
+the working implementation, without a frozen Core fallback.
+
+* Question and change from 10.11
+
+Can a deep contribution export be resolved from a real admitted selected record,
+with every intermediate receiver fenced, without demanding unrelated branches?
+The executable owner is [[file:../../../t/contribution-deep-publication-isolation-test.ss][the Core deep-publication isolation test]].
+It extends [[file:10.11-contribution-publication-isolation.org][10.11]] without changing that historical receipt or implementing
+the production contribution adapter proposed in [[file:10.10-gitea-postgresql-native-module-design.org][10.10]].
+
+The old fixture supplied publication records, SourceRefs, scopes and build
+preparation values. This control writes actual temporary module role files and
+an explicit init.ss, then uses the existing Core source reader and linker:
+
+#+begin_src scheme
+(def selection
+  (yuanxu-load-modules (path-expand "init.ss" root)))
+(def base-publication
+  (.call AdmissionPublication. .for-export
+         selection 'fixture/application 'Scenario))
+(def record
+  (.call selection .selected-record owner))
+(def prepared
+  ((.get selection prepare-publication) owner))
+#+end_src
+
+These are INTERNAL test/platform steps, not additional user configuration.
+yuanxu-load-modules here is Core's existing SOURCE linking entrypoint. The
+product runtime Loader/backend is neither connected nor modified. Calling this
+existing Core entrypoint is not evidence that a new product Loader was installed.
+
+* Physical source and publication arrangement
+
+#+begin_example
+<temporary package>/
+  gerbil.pkg
+  init.ss
+  modules/fixture/
+    application/{types.ss,config.ss,objects.ss,interface.ss}
+    operations/{types.ss,config.ss,objects.ss,interface.ss}
+    security/{types.ss,config.ss,objects.ss,interface.ss}
+    unused/interface.ss     deliberately malformed, disabled in init.ss
+#+end_example
+
+The role-file contents are fully defined as Scheme source templates in the test.
+No callback substitutes read-publication; no test creates a selected record or a
+scope/publication evidence object. The source reader evaluates normal interface
+publications and the native role imports. objects.ss imports its local type or
+configuration owner explicitly where required by the existing source-role rules.
+This does not establish a new automatic cross-role lexical binding mechanism.
+
+The explicit init.ss selects application, operations and security, and retains
+=(unused disable: #t)=. Each policy interface publishes one ordinary proposed
+core.contributions route. The application publishes its existing admission paths:
+
+#+begin_src scheme
+;; Policy interface metadata; collection of this field is still test-local.
+contributions:
+(.o database-port:
+    (.o target-owner: 'fixture/application
+        target-admission: 'Scenario
+        export-path: '(exports policy requirements port)))
+
+;; Application interface metadata; .for-export consumes this production field.
+admissions:
+(.o Scenario:
+    (.o export-path: '(Scenario)
+        contract-path: '(types Admission)))
+#+end_src
+
+The small ApplicationContract has an object value Type and actual Core .admit
+classification for final connection/plan equations. It is not the complete
+Gitea/PostgreSQL field Contract or a general domain policy library. Both policy
+payloads demand port 5433; conflicting 5433/5440 dispatch remains covered by
+10.11's separate CLOS control. This new control deliberately does not requalify
+multiple dispatch or delayed method registration.
+
+* Demand every path receiver, not every export
+
+The exercised path is scope.exports.policy.requirements.port. The collector
+records a revision BEFORE each .ref and separately records the final payload:
+
+#+begin_src scheme
+(def (walk-export scope path)
+  (unless (and (pair? path) (list? path) (every symbol? path))
+    (error "invalid deep export path" path))
+  (def observations '())
+  (def payload
+    (foldl
+      (lambda (name receiver)
+        (unless (and (object? receiver) (.slot? receiver name))
+          (error "unresolved deep export" path name))
+        (set! observations (cons (observe receiver) observations))
+        (.ref receiver name))
+      scope path))
+  (values payload observations))
+#+end_src
+
+The test checks the four observed receiver IDENTITIES, not just observation
+count: scope, exports, policy and requirements (stored in reverse walk order).
+There is no .all-slots walk of domain exports. A sibling requirements.cold would
+increment a Probe vector and raise if demanded; its counter remains zero after
+collection, coverage, admission, preview and the applicable refusal controls.
+Reading that Probe is a test observation, not a user-visible cache/evidence API.
+
+The collector gets each record through the REAL .selected-record and checks its
+publication against the actual selected node. Coverage reuses .selected-record,
+checks the exact record/SourceRef/publication/generation/key/path association and
+re-walks the deep path to compare final payload identity. Missing and substituted
+rows are refused. Public .for-export resolves the application's actual Contract;
+the test derives that descriptor to attach the bounded joint policy obligation.
+It does not replace the native .admit producer or production .publish.
+
+Selected node/publication/core/contributions-container revisions are captured
+before route enumeration. This is necessary even when the later payload walk is
+correct: deleting a route after indexing must not silently remove an obligation.
+The metadata baseline and every path/payload/origin observation join the same
+currentness fence, along with each REAL prepared source's admit-current guard.
+
+* Five executed controls
+
+| Control | Result |
+|---------+--------|
+| Deep origin resolution | Two collected rows, exact .selected-record identities, accepted production scope evidence, four exact receiver observations per path |
+| Intermediate edit | .put! on requirements.port writes the SAME leaf back; leaf identity/value stay unchanged, but publication refuses with underlying Error-message deep export receiver changed |
+| Omitted/substituted provenance | Dropping a row raises incomplete deep collection; a new SourceRef for the same path raises substituted deep origin; removing core.contributions after indexing also refuses via the metadata revision fence |
+| Actual source edit | Edit operations/config.ss after assembly; a valid 5433 child refuses with the specific underlying stale prepared Module publication error |
+| Parent cache and final preview | Force both parent leaves at 5432 BEFORE creating Release; checked publication admits a 5433/5433 child and binds evidence.candidate to next; cached parent stays 5432; explicitly attaching its old plan to the child refuses |
+
+The valid child in the source-edit control matters: using only the unmodified
+5432 parent would already violate policy and could mask a broken source guard.
+The intermediate-edit control similarly avoids relying on a changed port value.
+No assertion is satisfied merely by observing some unrelated exception.
+
+Every applicable control checks the cold sibling Probe and absence of
+fixture/unused from the selected module order. The malformed disabled interface
+would fail if the reader parsed it. This establishes no evaluation/linking of that
+module, not zero directory discovery/stat calls. Core requires dependencies of a
+demanded module are still eagerly linked by existing link.ss; this test does not
+claim per-export dependency injection or catalogue-wide cost guarantees.
+
+* Input identity, environment failures and reproduction
+
+The active workspace link.ss changed concurrently and temporarily failed to
+expand because result was unbound. It was NOT repaired, reverted or replaced in
+the workspace. Isolation instead used a frozen checkout-index copy of Core's
+staged source. These results do NOT qualify the concurrently changing working
+linker or its newer package-realization branch.
+
+- Core base HEAD: =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e=; staged additions
+  are part of the frozen input, so this is not clean-HEAD qualification.
+- Frozen index manifest SHA-256:
+  =188c36695d4b0f8811b25170f0ed6b9c02e05b77c62d1dc5c6aa23e452b3631a=.
+- Frozen link.ss Git blob: =ccd6d73fb38b49145186cbd62c3ebb37a01a63b2=.
+- Frozen reader.ss Git blob: =d0ed1db4bdb1cd7c817103fd386425b628fad4df=.
+- Frozen admission/publication.ss Git blob: =630eda3eb753e52a020ce86b4b074417f48a1ba1=.
+- gerbil-poo pin: =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=, unchanged.
+  The verified archive identity is retained in 10.11.
+
+The default reader correctly refused the first source-only dependency path with
+=source import leaves its Module and package kernel=. No guard was loosened.
+The pinned dependency's object module was compiled normally into a temporary
+Gerbil library so the reader could consume its canonical compiled interface.
+An interface-only -S attempt was insufficient for macro execution and is retained
+as a failed preparation attempt. The successful preparation uses normal gxc:
+
+#+begin_src sh
+# The dependency build, not a project test; isolated state/source environment.
+# Run from the frozen Core directory with these variables exported.
+export GERBIL_PATH=/private/tmp/poo-deep-publication-20261017/state
+export GERBIL_LOADPATH=/private/tmp/poo-deep-publication-20261017/source
+env -u SDKROOT -u LIBRARY_PATH -u COMPILER_PATH -u GCC_EXEC_PREFIX \
+  timeout --foreground --signal=TERM --kill-after=5s 60s \
+  gxc -:max-heap=1G,debug=q -d "$GERBIL_PATH/lib" \
+  /private/tmp/poo-deep-publication-20261017/source/clan/poo/object.ss
+export GERBIL_LOADPATH="$GERBIL_PATH/lib:$GERBIL_LOADPATH"
+just test-file t/contribution-deep-publication-isolation-test.ss
+#+end_src
+
+The frozen source aliases map core to the checkout-index snapshot and clan/poo
+to the same pinned upstream sources used by 10.11. No dependency source patch or
+compatibility runtime is introduced. Local attempts and the source manifest live
+under =/private/tmp/poo-deep-publication-20261017= (earlier discovery attempts under
+10.11's temporary directory); raw logs are not added to source control.
+
+Final run: exit 0; five completed cases; MODULE-OK, HARNESS-OK and standalone OK;
+no ERROR CASE/CHECK/HARNESS, heap or stack overflow. The existing 120-second Core
+test timeout and heap fence were retained. Before/after hashes matched for the
+frozen linker, reader, preparation, publication, types and test source. This is
+not a complete transitive dependency or concurrency audit.
+
+The final test source SHA-256 is
+=d56d376c2b365daa011fcce8e59fb24cfde7d860e803d374aaba8b1793cd75fe=.
+The retained final log SHA-256 is
+=52ef8a2c1a56951a27133561f1513ac75b7eab5bd10af5f1a91fbe999b912f16=.
+
+* Remaining production boundary and Reflection
+
+The metadata query, collector, coverage checks, receiver observations and binding
+of contributions into the descriptor/Context remain TEST-LOCAL. The query scans
+selected metadata once for this small control; it is not the generation-cached
+production route index proposed in 10.10. It covers selected Core declarations,
+not Feature contribution projection, dynamic method sources or arbitrary IO.
+Raw mutation of private lists/strings and untracked external state remain outside
+native MOP revision guarantees. SourceRefs are actual admitted local endpoints,
+not cryptographic authentication of remote contributors.
+
+The result closes two fixture gaps: selected record provenance no longer comes
+from manually assembled records, and a deep export no longer has a top-scope-only
+revision fence. It does not justify a new configuration syntax or expose internal
+records to users. The next integration review must preserve these refusal and
+laziness controls when installing the production adapter, qualify the then-current
+linker, and measure selected-graph cost separately from domain payload demand.
+
+
+* Migration back to the current Core linker
+
+The five controls were rerun UNCHANGED against the current working Core source.
+No checkout-index copy, patched linker, substituted selected record or custom
+publication reader was used for this run. The native dependency artifacts remain
+isolated; the Core source alias now points directly to the active checkout.
+
+** Linker audit and exact applicability
+
+The earlier unbound result reference is no longer present in the demanded link
+path. The current implementation binds selection-value as the returned native
+object and passes that value to bind-exports. .selected-record still resolves the
+selected graph, verifies owner membership, obtains the generation-local link
+record and guards currentness before returning it. .for-export continues to use
+that record's actual publication/scope and the current selected build graph.
+These changes were already present; this task did not edit link.ss or any other
+production source belonging to a concurrent session.
+
+The current linker additionally supports opt-in .bind-publication and package
+realization through .with-packages. The small application fixture does not opt
+into .bind-publication and does not realize external packages. This run qualifies
+the ordinary selected-record/.for-export path, NOT every new linker branch,
+external-package execution or the laziness of arbitrary admission export sets.
+
+** Current source identity and stability
+
+| Input | Current-run identity |
+|-------+----------------------|
+| Core base HEAD | 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e, with working changes; not clean-HEAD acceptance |
+| Current link.ss Git blob | f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6 |
+| Current link.ss SHA-256 | 653281faca84e9ddb377376e6f2682a38de32db1aa7e956b93c509ebd9367756 |
+| Current reader.ss Git blob | d0ed1db4bdb1cd7c817103fd386425b628fad4df |
+| Current admission/publication.ss Git blob | 630eda3eb753e52a020ce86b4b074417f48a1ba1 |
+| Unchanged test source SHA-256 | d56d376c2b365daa011fcce8e59fb24cfde7d860e803d374aaba8b1793cd75fe |
+| gerbil-poo dependency | 26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5, same pinned native dependency |
+
+Before/after hashes matched for all thirteen observed files:
+source/{link,reader,preparation,selection,publication,declaration,role-forms}.ss,
+module-system/building/source-closure.ss, admission/publication.ss, types.ss,
+gerbil.pkg, Justfile and the test. These checks establish stability of the named
+inputs during this run, not a complete transitive import audit or a guarantee
+about subsequent edits by another session.
+
+** Current-source reproduction and result
+
+From the CURRENT Core directory, the isolated source tree maps:
+
+#+begin_example
+/private/tmp/poo-current-deep-publication-20261017/source/
+  core -> /Users/guangtao/ghq/github.com/tao3k/agentic-ai-lab/core
+  clan -> the pinned gerbil-poo source namespace used by 10.12
+#+end_example
+
+The reused temporary state/lib contains the compiled native dependency and no
+Core module artifacts. Do not put the old frozen source directory on this run's
+load path. From the active Core directory:
+
+#+begin_src sh
+export GERBIL_PATH=/private/tmp/poo-deep-publication-20261017/state
+export GERBIL_LOADPATH="$GERBIL_PATH/lib:/private/tmp/poo-current-deep-publication-20261017/source"
+just test-file t/contribution-deep-publication-isolation-test.ss
+#+end_src
+
+Result: exit 0, five completed cases, MODULE-OK, HARNESS-OK and standalone OK;
+no ERROR CASE/CHECK/HARNESS or heap/stack overflow. The original 120-second test
+bound and heap fence remain unchanged. Controls retain exact receiver identities,
+same-leaf intermediate mutation, omitted/substituted source and route deletion,
+specific source-currentness refusal, cached-parent/final-child preview, frozen
+parent-plan refusal and both cold-branch observations.
+
+Local current-run artifacts are under
+=/private/tmp/poo-current-deep-publication-20261017=; the final log is
+=attempt-01.log=. Its SHA-256 is
+=52ef8a2c1a56951a27133561f1513ac75b7eab5bd10af5f1a91fbe999b912f16=.
+The textual log happens to match the historical run because the test emits only
+stable case/harness summaries. Identical log bytes do NOT establish identical
+source; the input identities and before/after manifest distinguish these runs.
+Raw logs remain local rather than committed.
+
+** Boundary after migration
+
+Real .selected-record and .for-export no longer depend on the frozen Core copy
+for this control. The contribution metadata query, complete-row collector,
+coverage/MOP observation fence and descriptor/Context attachment remain test-local.
+No production contribution adapter or product Loader backend was installed. This
+is source-evaluated current-checkout qualification with pinned native dependency
+artifacts, not full Core AOT, CI, thousand-module or package-realization acceptance.
+The frozen run remains useful historical evidence and a source-difference control;
+it is no longer the only executed version of this deep-path validation.

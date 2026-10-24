@@ -1,0 +1,160 @@
+#+title: 12.27.27 Real Declaration Expansion And Capacity Gates
+#+property: DOCUMENT_ID 12.27.27
+#+language: en
+
+* Workload: source Modules, not publication substitutes
+
+The [[file:../../../../../t/qualification/module-scale/fixture.ss][existing fixture macro]] now creates 16, 1000 or 10000 minimal Modules with
+actual types.ss, objects.ss, config.ss and interface.ss sources. Each interface
+uses the production publication declaration; each nonroot Module requires the
+same root Module. A generated explicit init selects the entire catalog. These
+are generated valid native declarations, not thousands of maintained production
+services, and they do not qualify wide enabled-Feature or runtime workloads.
+
+The controller imports that init and calls the existing Module tests object:
+
+#+begin_src scheme
+(def tests (.get fixture modules module-0 tests))
+(.def (Observed @ tests)
+  execution.profile.emit?: #t
+  execution.profile.trace-enabled?: #t
+  execution.log: (.get fixture log))
+(.call Observed .run)
+#+end_src
+
+There is no additional runner. The unchanged worker is discovered as a Module
+test, imports its own init, and demands its selected Graph. Native declaration
+expansion, compilation and evaluation happen through the production reader.
+The worker asserts 4N body expansions and evaluations, N publications and 3N
+interface phase snapshots. It checks the same Graph identity and a cold business
+scope. Both business scope and unselected Feature carry error sentinels.
+
+After successful construction, changing the Graph-provided init source must
+refuse currentness. Restoration uses dynamic-wind. The fixture owns acquisition
+rollback and verifies removal after either success or failure. Observation logs
+remain external local artifacts. Assertion counters are not replayed into the
+delegated observer, which would otherwise double the work totals.
+
+* Results and retained failures
+
+Run the focused entrypoints serially from Core, with the repository-locked
+source dependencies and the existing source-only namespace:
+
+#+begin_src text
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+just test-file t/module-declaration-10000-test.ss true
+#+end_src
+
+These explicit capacity entrypoints retain the existing 2 GiB pre-import fence,
+Case memory policy, progress-sensitive idle limit and finite total budget. No
+compiled Core cache, larger heap, extra cache or upstream modification is used.
+The frozen source cut excludes concurrent compiler-artifact integration; it is
+not qualification of every dirty file in the main checkout.
+
+| Source experiment | Demanded Modules | Completed publications | Outcome |
+|-------------------+------------------+------------------------+---------|
+| Original source-only reader | 16 | 16 | Native Graph, cold scope, stale-init refusal and cleanup passed |
+| Original source-only reader | 1000 | 72 | Existing live-growth policy refused; Graph incomplete |
+| SDK cut plus weak-prelude experiment | 16 | 16 | Passed the functional calibration |
+| SDK cut plus weak-prelude experiment | 1000 | 73 | Existing live-growth policy refused; Graph incomplete |
+| SDK cut plus weak-prelude experiment | 10000 | 59 | Existing live-growth policy refused; Graph incomplete |
+| Retained SDK cut; original prelude/imports | 16 | 16 | Same Graph, cold scope, stale-init refusal and cleanup passed |
+
+The 1000 baseline recorded 216 role imports, 288 expanded/evaluated bodies,
+291 publication guards and 55601 physical reads before refusal. The 10000
+experiment created the full source catalog and entered native expansion; it
+did not expand ten thousand declarations successfully. Its Graph entry already
+held more namespace/selection state than the 1000 control. A harness can report
+exit zero after a Case failure: the outer .run and Just gate correctly refused
+these runs. They are not passes, timeouts or evidence of supported capacity.
+
+The weak-prelude experiment did not solve capacity and is withdrawn. Existing
+publication import/prelude semantics remain intact. A memory sample is a
+watchdog observation, not a forced-GC retained-size census: do not infer an
+exact retained byte cost per Module or blame one runtime owner from it.
+
+* A bounded optimization with an independent native oracle
+
+The private-context dependency index previously traversed canonical SDK import
+subtrees for every private role. Those contexts cannot have private-source
+registrations. Their complete demanded source support is independently enrolled
+and checked by tool-dependencies. The existing DFS now accepts an internal
+descent predicate; ordinary callers retain full traversal.
+
+The reader cuts only exact canonical context identities. A matching name or
+source prefix is insufficient. Unknown contexts remain traversable. The private
+registration site explicitly rejects a canonical tool context. The index retains
+completed context topology, never a successful check or initializer result;
+input registrations are still projected afresh on consumption.
+
+The [[file:../../../../../t/module-publication-test.ss][native publication regression]] compares against an independent full SDK DFS
+and registers every evaluated private wrapper, a superset of role inputs.
+Its full traversal visits 551 contexts; the cut traversal visits 16. Projected
+private identities and their order are equal. Macro reuse, completed-body-only
+release, deferred Build support, transitive tool source enrollment and changed
+source refusal remain checked. No SDK state is cleared.
+
+In the final 16-Module control, 48 native role imports and 64 body expansions
+produce 48 private-context index entries containing 48 context references.
+Observed direct table widths total 3776 bindings and 3648 import edges. These
+are table/edge counts, not unique transitive objects or retained byte sizes.
+The Graph-ready physical read count remains 5495 and the guard count remains
+68, exactly as in the original 16-Module control. This cut does not reduce
+physical source reads; no other phase's saving is credited to those guards.
+
+Observability now records private binding widths, import-edge widths, visited
+kernel contexts and dependency-index reference counts as scalar values. It
+does not retain contexts or syntax in telemetry keys. These separate native
+import/expansion work from retained index roots and physical guard reads.
+Reducing DFS visits is not a claim of end-to-end speedup or capacity closure.
+
+* Model correspondence and its limits
+
+The existing scoped TestSourceAdmission Quint family was rerun: its positive
+case and six matched refusal/counterexample controls passed. UniqueDiscovery
+constrains repeated structural discovery, while source changes and cleanup
+remain independent invariants. It does not authorize reuse of checked bytes
+across a macro initializer, callback or effect.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence.private_projection_cut]] proves exact ordered projection
+equality for arbitrary context lists when every omitted context has no private
+registration. Existing later_registration_is_visible remains necessary: a
+topology index must not freeze an earlier input lookup. The focused Lean file
+checks without added axioms or sorry.
+
+Native completeness, immutable canonical SDK topology and independent tool
+source guarding remain explicit premises. The theorem does not prove Gambit
+allocation, native macro termination or that every closure below a cut is safe
+under arbitrary MOP mutation. The native full-walk oracle tests the exercised
+context graph; it is not a universal SDK proof.
+
+* Architectural gaps exposed by this workload
+
+1. Four publication guards per new declaration still recheck a monotonically
+   growing reader-wide guard set. Even with one shared dependency and no scope
+   links, this creates quadratic observation work. The source index must project
+   the actual operation support and preserve transitive registration, with a
+   complete final Graph check. An arbitrary initializer is an effect boundary;
+   neither its predecessor's acceptance nor unchanged values can skip rechecks.
+2. Releasing completed wrapper bodies does not release imports, binding tables,
+   lazy runtime promises or publication objects. Canonical SDK cuts remove an
+   index duplication but do not establish a bounded native declaration arena.
+   Those owners need separate lifetime evidence before any release is safe.
+3. Catalog namespace/selection cost, fixture file generation, child cold import,
+   first Graph expansion and post-effect source checks need separate envelopes.
+   A sparse selection pass cannot stand in for a fully demanded Graph pass.
+4. Source-only expansion must remain supported under the existing limits.
+   Compiling a cache, weakening source checks or declaring the capacity failure
+   an expected successful test would hide the requirement rather than meet it.
+
+The thousand/ten-thousand full-declaration capacity gate remains open. The
+implemented cut is one measured structural reduction, not a solution to the
+remaining whole-reader guard and native state-lifetime problems.
+
+The next [[file:15-public-preparation-and-read-retention.org][public preparation and native read retention control]] reduces duplicate
+guard registration, adds native-name redirection refusal, and records the
+remaining 1000-Module failure. Earlier experiments above remain historical.
+
+[[file:13-scale-and-model-correspondence.org][Catalog and resolver controls]]
+[[file:../../12.27-aws-schema-transition-costs.org][Read map]]

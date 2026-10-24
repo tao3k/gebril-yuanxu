@@ -1,0 +1,180 @@
+#+title: 32.53 Streaming Original Root Collection
+#+date: [2026-10-21]
+#+language: en
+#+filetags: :module-assurance:root-collection:lean:quint:
+
+* Boundary established before implementation
+
+[[file:32.52-demanded-read-graph-retention.org][32.52]] found 999 repeated root references, not 999 disposable objects. Root
+storage can be compacted only if original identities, first-occurrence order,
+dependency edges and every observer event survive. The installed Gerbil compiler
+is unchanged. gerbil-poo's existing integration branch advanced to
+=6a43e2ad7c72a3b2bb1c5380c3a33f70d964711e= before this change; that other-session
+work was retained with a fast-forward and an additional baseline run.
+
+* Native collection and Core consumers
+
+=slot-observation.ss= has one recording implementation with an internal
+=unique-roots?:= option. The default exact trace is essential: native object
+construction, computed slots, preparation and query capture use this function
+to construct dependency lists. Changing its default would delete edge
+occurrences before native issuance. Those callers remain unchanged.
+
+#+begin_src scheme
+(%call-with-recorded-slot-reads action unique-roots?: #t)
+#+end_src
+
+Only root consumers request compaction. Their private per-call identity table
+stores the first reference to each record, without copying records or changing
+their fields. =%deliver-slot-read= runs its complete observer loop OUTSIDE that
+storage branch, on duplicate deliveries too. =without-observation=, prechecks,
+nested dynamic scope and exception propagation retain their original boundaries.
+The table is not an issuance registry, source cache or admission verdict.
+
+Core's =call-with-owned-read-projection= and =call-with-publication-reads= opt in.
+Their former post-collection identity maps are removed. The same original root
+sequence is forwarded and replayed; no dependency list is edited. Reader's
+diagnostic counter now says =stored-roots= rather than mislabelling compact
+storage as total deliveries. The publication regression checks equality with
+the actual root list, while observer multiplicity is checked independently.
+
+* Proof and executable correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean][RootCollection.lean]] establishes:
+
+- =callbacks_unchanged=: for an arbitrary world transition, every input delivery
+  still updates the observer world, in input order, for every finite prefix.
+- =roots_are_original_first_occurrences=: streaming storage equals original
+  identity deduplication, preserving first occurrence rather than sorting.
+- =first_diagnostic_unchanged=: a stable per-record failure predicate finds the
+  same first failure after compaction.
+- =dependency_binding_retained= and =demanded_closure_unchanged=: original token
+  bindings and their demanded closure survive; payload equality is not identity.
+
+The graph/currentness premises from 32.52 remain. In particular, the diagnostic
+lemma does not authorize treating an effectful checker as pure or sharing an
+approval across callbacks. Native protected replay and SourceAdmissionContract
+still own those checks. This is not a VM, GC-scheduling or external-effect proof.
+
+[[file:../../../dev/proofs/quint/RootCollection.qnt][RootCollection.qnt]] checks eight controls: normal streaming, suppressed duplicate
+callbacks, reversed observer order, reordered first diagnostics, receiver-only
+coalescing, copied identities, deleted edge occurrences and a progress witness.
+The model and Lean source binding passed before production collection changed.
+
+Native regressions compare exact original record references and observer event
+payload/order for the same input. They also cover an exception on the second
+duplicate callback, a newer record for the same field retaining its stale
+predecessor, duplicate dependency edges under an enclosing compact root frame,
+and identical first stale diagnostics. These controls connect the abstract
+prefix model to the real production entry rather than reconstructing tokens.
+
+* Real Scenario comparison
+
+[[file:../../../t/read-retention-cost-test.ss][read-retention-cost-test.ss]] uses actual reader/link, Contracts and =.admit=.
+It alternates raw/unique order across three rounds, with two fresh children per
+round and both cold-child and warm-child admissions. Each child must yield
+5433/5433, preserve exact final Config/plan identity and contextual child receipts,
+retain both contributions, and leave the parent's cached 5432 plan unchanged.
+
+A first unmatched run had 2,659 observer events on the first raw admission and
+2,396 on the next compact admission. It was retained as a FAILED comparison:
+the shared Contract descriptor/catalog had only been cold in the first call.
+The corrected control admits the parent once before both measurements. It warms
+descriptor functions/data, not child values or approvals. Every measured call
+still performs 224 physical source reads and its return-currentness boundary.
+
+The corrected twelve samples compare the ENTIRE ordered observer-key sequences,
+not just their lengths. Same-context native tests additionally compare exact
+record identities; different normalized child instances need not share identities.
+
+| Measured property | Raw | Unique |
+|-------------------+-----+--------|
+| Stored root references | 1,488 | 489 |
+| Unique root identities | 489 | 489 |
+| Reachable original records | 901 | 901 |
+| Stored dependency edges | 1,992 | 1,992 |
+| Receiver identities | 158 | 158 |
+| Cold-child observer events | 2,396 | 2,396 |
+| Warm-child observer events | 2,383 | 2,383 |
+| Physical source reads | 224 | 224 |
+
+The 999-reference reduction applies to an individual collector buffer. Core's
+old publication output was ALREADY unique. This change avoids building that
+temporary duplicate list and removes its later deduplication pass; it does not
+shrink the authenticated graph or prove shorter payload/prototype lifetimes.
+
+Wall times fluctuate and the VM allocation stream regresses. An independent
+read-only host check also found load averages about 26--34 and several busy
+processes belonging to another checkout. Those processes were not changed.
+No latency, allocation-byte or retained-heap improvement is admitted from this
+run. Structural storage reduction and semantic controls are the supported result.
+
+* Qualification boundaries and preserved failures
+
+Two monolithic 47-unit Core compilation attempts reached the existing 120-second
+deadline. They remain exit 124; neither deadline nor assertion was weakened.
+The separate =compile-build-publication-delta= gate reuses the owned 32.51
+compiled baseline, checks source hashes for the unchanged 45 units, recompiles
+the two changed production units and emits/checks a complete source manifest.
+It uses the installed compiler and the same pre-import heap fence. It is NOT
+a successful monolithic compile receipt or an alternative runtime.
+
+* Proof project organization
+
+All 554 existing Core proof source files move from =core/proofs/= to
+=core/dev/proofs/=. Justfile/CI, source-bound QNT checks, Org file links, product
+Lake dependency/cache paths and source-corpus exclusions follow that ownership.
+The product's own =packages/proofs/= projects do not move. Fixed-revision remote
+URLs retain their historical source paths.
+
+A local product LeanPoo cache symlink still pointed at the old Core directory.
+Only that known dangling link was repointed to the same immutable dependency
+at its new location; no package was downloaded or compiler changed. The default
+product =lake build= has no target, so the actual consumer check explicitly
+builds =AgenticAILabProof=. An empty default invocation is not counted as proof success.
+
+* Recorded gates and remaining limits
+
+The native integration is =0df023fd9e15192156935c971f0f1940028c5277= on the existing
+=feat/positive-closure-costs= branch. Native =just test= completed 122 modules and
+1,124 cases with complete harness markers and natural exit 0. Exact-head
+[[https://github.com/tao3k/gerbil-poo/actions/runs/39550961039][CI]] completed all 42 jobs successfully. Both Core and product dependency
+declarations name this revision; the concurrent dirty installed package was not
+reset or overwritten.
+
+The relocated Core Lean aggregate completed 196 jobs with its 6,667-declaration
+shape/standard-axiom audit; the explicit product =AgenticAILabProof= consumer completed
+455 jobs. The RootCollection QNT scope passed all eight controls. Separate
+full-model typechecking hit its unchanged five-second limit at
+=ContextWalk_forgetShared=; a ReadRetention attempt hit its existing real-output
+watchdog. Neither failure is relabelled as success or repaired with a heartbeat.
+With lower observed host contention, a separate ReadRetention rerun passed all
+seven controls under the same watchdog limits. The earlier failure remains a
+failure; no new complete QNT-suite pass is claimed here.
+
+Current consumer gates completed Gitea/PostgreSQL publication (11 cases), original
+issued-root forwarding (5), source admission (6), native/contextual Contract
+diagnostics (6), and all twelve matched Scenario measurements. Their complete
+markers and normal exits were checked. The source-hash manifest matches all 47
+Core production units; the incremental compilation receipt remains distinct
+from the two failed monolithic compilation attempts.
+
+The older module-publication suite also exposed obsolete implementation claims:
+its transport import of the replayer and synthetic =publication-reads= expectation
+predate original-record forwarding. Those controls now use the public object
+replayer, assert genuine original roots, replay them and refuse changed provenance.
+The zero-closure weak-retention telemetry is replaced by an explicit full-graph
+control; historical weak-retention acceptance is NOT claimed. Both focused
+original-root reader controls passed. A later deferred Build source-enrollment
+assertion failed in both the owned baseline and candidate Core artifacts with
+the same current native dependency. This excludes the Core collector change as
+the sole cause, but does not isolate every dependency effect. The complete
+module-publication suite is not claimed as passing; its expected result remains
+unchanged. The explicit diagnostic target reuses the original Std TestSuite case
+and fixture rather than replacing the failure with a passing negative assertion.
+
+Python path-admission unit assertions passed four cases. Its project-wide harness
+nevertheless reported 154 blocking findings (the first reported hotspots are in
+the untouched =assessment_studies/candidate_model.py=). This is not a passing
+Python package gate. No harness was disabled and those unrelated files were not
+edited as part of this work.

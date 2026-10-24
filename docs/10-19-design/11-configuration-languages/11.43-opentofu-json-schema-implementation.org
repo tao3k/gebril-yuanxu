@@ -1,0 +1,365 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.43 Config Languages 42: OpenTofu Conversion and Shared JSON Schema Admission
+#+property: DOCUMENT_ID 11.43
+#+property: STATUS implementation-bounded-no-loader
+
+* Ownership and implemented boundary
+
+The implementation belongs to two owners, not two competing validators:
+
+- =modules/json-schema=: positional tuple predicates/validation, nested field
+  diagnostics, JSON value equality for =uniqueItems=, and the reusable
+  =yuanxu-json-schema->contract= adapter to native =.classify= / =.admit=.
+- =modules/opentofu=: cty/provider-format conversion and supplemental set
+  semantics. It delegates shape checking to the JSON Schema owner.
+
+The existing tuple parser and reference resolver already retained positional
+children. The gaps were predicate emission and both recursive validation paths.
+Nested object validation already existed. Nullable =anyOf= wrappers now retain
+inner field errors instead of collapsing them to the enclosing nullable field.
+=uniqueItems= previously carried metadata without enforcing uniqueness.
+
+The public OpenTofu implementation is a pure conversion/admission kernel.
+There is no Loader, schema download, provider execution, lock acquisition,
+build-required publication, state mutation, or deployment. Source selection is
+explicit. No Go component is required to consume an already-exported schema.
+
+* Concrete sources and controls
+
+See [[file:../../../t/fixtures/opentofu/README.org][fixture provenance]] in the product checkout (the Core submodule alone does not
+contain the product test directory). The executable owner is
+=agentic-ai-lab/t/opentofu-schema-test.ss=.
+
+The real AWS Security Group block is extracted unchanged from the official
+historical =terraform-json= fixture at commit
+=176c29554e7823cce59f3b8151348e8088fbdc01=. It does not identify its provider
+plugin version. Its =ingress= is a cty set-of-object attribute. The real awscc
+provider block at =d1018bf93fd9c097133b0159ab8b3c0517a846c9= contains
+=assume_role.nested_type= with =nesting_mode: single=. awscc is distinct from
+hashicorp/aws. Tuple controls are synthetic and are labelled as such.
+
+The separately reviewed AWS v5.100.0 =securityGroupRuleHash= demonstrates why a
+provider object-set identity cannot be inferred from JSON Schema. It does not
+establish the version or hash implementation of the historical fixture.
+
+* Conversion and native Contract publication
+
+After building Core, the maintained interface exposes these pure functions.
+The tests import the compiled public Core interfaces through the default native toolchain.
+
+#+begin_src scheme
+(import :yuanxu/modules/opentofu/interface
+        :yuanxu/modules/json-schema/interface
+        :clan/poo/object)
+
+;; Synthetic cty tuple, not an AWS-exported tuple.
+(yuanxu-opentofu-cty->schema '("tuple" ("string" "number")))
+;; => ((type . "array")
+;;     (items . (((type . "string")) ((type . "number"))))
+;;     (minItems . 2) (maxItems . 2))
+
+;; awscc-provider-block is the decoded, source-qualified fixture block.
+(def AwsccContract
+  (yuanxu-opentofu-block-contract 'awscc/provider awscc-provider-block))
+(.call AwsccContract .admit
+       '((assume_role . ((duration . "900")))) #f)
+;; accepted
+(.call AwsccContract .admit
+       '((assume_role . ((duration . 900)))) #f)
+;; rejected; diagnostic path: (assume_role duration)
+#+end_src
+
+=block->schema= converts required/optional attributes, nested attributes and
+nested blocks recursively. Computed-only fields are excluded from the closed
+input vocabulary. Optional+computed fields remain legal inputs. Bare cty object
+descriptors contain no nested required/default declarations, so the converter
+does not invent them. This is an input-configuration Contract, not a Contract
+claiming to describe fully normalized provider state.
+
+The shared adapter compiles once, rejects unsupported-generation diagnostics,
+and attaches native classification evidence containing recursive JSON Schema
+paths. OpenTofu adds an explicit =collection-contract= and =.normalize= / =.prove=; it does not
+reimplement tuple, object, scalar or JSON uniqueness validation.
+
+* Literal normalization is separate from provider identity
+
+#+begin_src scheme
+(def StringSetBlock '((attributes . ((accounts . ((type . ("set" "string")) (required . #t)))))))
+#+end_src
+
+#+begin_src scheme
+(def StringsContract
+  (yuanxu-opentofu-block-contract 'example/string-set StringSetBlock))
+(def normalized
+  (.call StringsContract .normalize '((accounts . ("b" "a" "b")))))
+(.get normalized value)       ;; => ((accounts . ("b" "a")))
+(.get normalized diagnostics) ;; => () -- literal normalization succeeded
+
+;; Generic JSON shape admits the canonical literal representation.
+(def StringShapeContract
+  (yuanxu-json-schema->contract 'cty/string-set (.get StringsContract schema)))
+(.call StringShapeContract .admit (.get normalized value) #f) ;; accepted
+
+;; Provider identity has NOT thereby been established.
+(.call StringsContract .admit (.get normalized value) #f) ;; accepted configuration
+(.call (.get StringsContract collection-contract) .admit (.get normalized value) #f)
+;; rejected: provider-set-identity-unresolved, path (accounts)
+#+end_src
+
+String normalization preserves first occurrence order for reproducible output;
+it does not give a set execution order. It uses literal string equality only.
+Templates containing =${= or =%{= do not receive a literal normalization claim.
+Raw duplicate lists are not automatically malformed sets: the normalizer may
+remove duplicates. JSON Schema =uniqueItems= instead rejects duplicates and
+never normalizes the input. The converter therefore does not emit =uniqueItems=
+for every cty set.
+
+Even a canonical string set may have provider-specific identity or state
+normalization rules not exported in the schema. Ordinary =.admit= checks the
+exported configuration shape and does not require these identities. The separate
+=collection-contract= rejects unresolved identities; that result is a limit of
+this local semantics check, not evidence that the configuration is invalid.
+Synthetic literal-string policies remain explicit controls; user-supplied
+=accepted?= flags cannot bypass that separate check.
+
+Object-set traversal still visits children and accumulates their requirements.
+It may normalize literal string members inside a Security Group rule while
+retaining the unresolved outer rule identity. Cardinality cannot be certified
+from raw object-list length when its provider equivalence is unknown.
+
+* Selected ConfigurationContract and final admission
+
+#+begin_src scheme
+(def ConfigurationContract
+  (yuanxu-opentofu-configuration-contract
+    (list (cons 'awscc awscc-provider-block))
+    (list (cons 'aws_security_group aws-security-group-block))
+    '()))
+
+(def wire
+  '((provider . ((awscc . (((assume_role . ((duration . "900"))))))))
+    (resource . ((aws_security_group . ((web . ((name . "demo")))))))))
+(.call ConfigurationContract .admit wire #f) ;; accepted selected subset
+#+end_src
+
+Provider entries are lists of configuration objects under their provider name;
+resource/data entries are maps of instance names under the selected type. An
+unselected resource name is rejected by the closed shape Contract. Adding an
+=ingress= object set is structurally admissible. Explicit collection checking
+can yield a supplemental diagnostic with the qualified path
+=(resource aws_security_group web ingress)=. Field type errors are rejected
+before the provider semantic walk. The candidate/context in the native receipt
+are the actual final values supplied to =.admit=, not a parent cached projection.
+
+This constructor currently covers the selected =provider/resource/data= subset.
+It does not yet cover backend/output/module expressions, Terraform references,
+provider version/lock matching, source authentication or engine normalization.
+Successful admission is neither a resource plan nor execution authorization.
+
+* Supported subset and remaining work
+
+- Tuple conversion uses draft-style positional =items= plus exact =minItems=
+  and =maxItems=. Empty tuples work. General =additionalItems= / =prefixItems=
+  support is not claimed.
+- Nested =single/list/set/map= structure is supported; unknown/group/dynamic
+  cases and write-only semantics fail conversion rather than weaken validation.
+- JSON uniqueness compares numeric values numerically, records without key-order
+  dependence and nested arrays recursively. Empty object/array ambiguity in
+  legacy alist/list wire forms remains: use native POO objects or hashes for
+  objects and vectors for arrays at ambiguous boundaries. Values must be finite
+  acyclic JSON-domain values. No large-set performance bound is claimed.
+- Standard JSON Schema shape coverage does not imply complete provider behavior.
+  External provider hash evidence, authenticated lock acquisition and unsupported
+  source constraints still require explicit adapters. User context is not proof.
+
+* Reproducible validation and evidence limits
+
+Use the default native toolchain:
+
+#+begin_src sh
+just test-file t/gerbil-runtime-import-test.ss
+just test-file t/opentofu-schema-test.ss
+just test-file t/json-schema-contract-bridge-test.ss
+just test-file t/json-schema-native-contract-test.ss
+#+end_src
+
+=just test-opentofu= is only a convenience delegation to =just test-file=.
+The test imports the compiled Core interfaces directly. There is no source-tree
+rewriter, old-runtime selection, isolated POO copy or test-body =eval= wrapper.
+The default entry fences the actual test worker before imports and requires
+=MODULE-OK=, =HARNESS-OK= and final =OK= without failure markers.
+
+The initial isolated source control passed 54 assertions under an older host;
+that historical receipt did not repair the default environment. A same-name
+lazy-slot recursion was caught and fixed during those controls. Failed runs
+remain failed; they are not native acceptance.
+
+The default host =__eval-import= failure has now been repaired, as detailed in
+[[file:11.44-default-native-test-tool-repair.org][43 Default Native Test Tool Repair]]. The same installed Gerbil version is
+used. The test tool initializes the native expander, retains dynamic-evaluation
+bindings, and uses GCC 16 coherently. POO remains pinned at
+=099b381588360a8a49fd772f666a1a00351366f5=; POO and Core AOT outputs were rebuilt
+from current sources. No material under =.data= is a runtime dependency.
+
+The normal =just test-file t/opentofu-schema-test.ss= entry passed all 54
+assertions with all three harness markers and exit 0, using compiled public
+Core interfaces. This supersedes the source-isolation workaround. It is not a
+full product-suite/remote-CI claim, provider export, deployment, or a Lean proof.
+
+The two existing JSON Schema regression suites and the independent runtime
+import control also passed through the same default entry after the native
+repair. See chapter 43 for the exact commands and host binary identity.
+
+* Provider collection evidence: explicit trust, local proof, native admission
+
+The evidence kernel lives in =modules/opentofu/collections.ss=. It uses ordinary
+POO authority/receipt objects, the existing JSON Schema native Contract, and
+=.defgeneric= / =.defmethod= over two independent axes: collection policy and
+evidence transport. Unsupported crossings fail closed. There is no new DSL,
+Loader, implicit provider execution, or serialized certificate trust.
+
+The authority constructor is an *upstream trust-root enrollment*, not evidence
+that a provider was downloaded, version-checked, or source-reviewed. Its caller
+must already establish that the named provider/version implements literal
+string equality at the listed fields. A freely supplied version string cannot
+authenticate a provider. The built-in algorithm proves only this enrolled
+literal policy; it cannot prove an arbitrary custom hash. The historical AWS
+fixture has no plugin version, so its object-set identity remains unresolved.
+
+The following is an explicitly synthetic provider-policy control, not an
+attestation about hashicorp/aws. Production policy enrollment belongs to the
+maintainer, not ordinary downstream configuration.
+
+#+begin_src scheme
+;; Internal synthetic-policy control; not an AWS source-authentication API.
+(import (only-in :yuanxu/modules/opentofu/collections
+                 yuanxu-opentofu-string-set-authority))
+(def StringBlock
+  '((attributes . ((accounts . ((type . ("set" "string")) (required . #t)))))))
+(def Authority
+  (yuanxu-opentofu-string-set-authority
+    "test/provider" "1.0.0" StringBlock '((accounts))))
+(def Strings
+  (yuanxu-opentofu-block-contract 'test/accounts StringBlock Authority))
+(def candidate
+  (.get (.call Strings .normalize
+          '((accounts . ("b" "a" "b"))))
+        value))
+(def evidence (.call Strings .prove candidate 300))
+(.call (.get Strings collection-contract) .admit candidate evidence)
+;; Accepted under the explicitly enrolled literal-equality policy.
+;; .prove does not itself admit; the collection Contract repeats its checks.
+#+end_src
+
+The issuer hashes the actual decoded Schema and binds its receipt to provider,
+version, policy revision, enrolled field paths, the complete candidate digest,
+the concrete field path, the field-value digest and expiration. SHA-256 covers
+canonical tagged snapshots with sorted object keys and ordered arrays. This is
+an internal snapshot format, not a standardized JSON canonicalization or a
+provider hash. Ambiguous legacy empty alist/list values retain their wire
+representation limitation; prefer native POO/hash objects and vectors where
+needed. Fields use canonical symbol paths; array positions remain integers.
+
+Receipts are capabilities enrolled in a private, authority-local identity
+ledger. Copying the visible fields or deriving an object from a receipt does
+not enroll it. Verification uses the private snapshots, not user-editable
+=accepted?= flags. Identical-looking independently created authorities do not
+share receipts. Evidence is process-local; it is neither portable nor a digital
+signature. The authority and policy code are trusted Scheme code in the same
+process, not a security sandbox against arbitrary code execution.
+
+The default clock uses host time. A short positive lifetime is capped at one
+hour; the injectable clock supports deterministic expiry tests. Admission is
+valid at the observed check time and does not create an indefinitely valid
+runtime authorization. This is not a distributed/monotonic-clock guarantee.
+The ledger uses native weak keys, following Core verification: it does not
+retain discarded receipt objects merely because an authority remains live.
+Retained contexts still obey their validity interval.
+
+** Full ConfigurationContract binding
+
+The optional fourth argument associates upstream authorities with selected
+provider/resource/data blocks. Schema equality is checked against the actual
+selected block. Instance paths and the full Configuration candidate are retained
+when evidence is generated; a block-local receipt cannot discharge a full
+configuration requirement.
+
+#+begin_src scheme
+(def ConfigurationContract
+  (yuanxu-opentofu-configuration-contract
+    '() (list (cons 'test_resource StringBlock)) '()
+    (.o resource: (.o test_resource: Authority))))
+(def config
+  '((resource . ((test_resource . ((web . ((accounts . ("a" "b"))))))))))
+(def evidence (.call ConfigurationContract .prove config))
+(.call ConfigurationContract .admit config evidence)
+;; Accepted. Later changes require new evidence for the final candidate.
+#+end_src
+
+** Rejection and evidence limits
+
+- Without an enrolled field/policy: =provider-set-identity-unresolved=.
+- Fabricated/derived/foreign-authority receipts: =provider-set-evidence-forged=.
+  This includes replay across provider versions or independently enrolled roots.
+- At or after expiry: =provider-set-evidence-expired=.
+- Same issuer but a different field: =provider-set-evidence-path-mismatch=.
+- Changed candidate, including a sibling field: =provider-set-evidence-candidate-mismatch=.
+- Raw duplicates still require normalization; a receipt does not suppress
+  =set-normalization-required=. Template strings cannot obtain literal proof.
+- Object sets, including empty object sets, do not become literal string sets.
+  Enrolling their field in a string authority never certifies a custom hash.
+- Structural errors still use JSON Schema diagnostics; supplemental failures
+  retain paths such as =(resource test_resource web accounts)=.
+
+The executable control is =t/opentofu-set-evidence-test.ss=, alongside the
+existing real AWS/awscc and synthetic tuple controls in
+=t/opentofu-schema-test.ss=. The clock/provider used for positive evidence tests
+is a fixture; it is not external provider qualification. External hash support
+still needs a trusted, source-qualified semantics implementation or an explicit
+engine-result verification protocol, including authenticated lock/binary binding.
+Neither is silently performed by =.admit=.
+
+** Default-runtime qualification receipt (2026-10-16)
+
+The compiled public Core interfaces were rebuilt with the default installed
+native Gerbil toolchain. The following gates ran serially through the existing
+pre-import heap-fenced entrypoint, without an isolated/compatibility runtime:
+
+#+begin_src sh
+just test-file t/opentofu-set-evidence-test.ss
+just test-file t/opentofu-schema-test.ss
+just test-file t/json-schema-contract-bridge-test.ss
+just test-file t/json-schema-native-contract-test.ss
+just test-file t/gerbil-runtime-import-test.ss
+#+end_src
+
+All five gates returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK=,
+without failure/overflow markers. The new gate contains 36 assertions; the
+existing OpenTofu gate retains its 54 assertions. This is focused local native
+qualification, not a full-suite or remote-CI result.
+
+The new controls cover literal normalization and admission; missing/forged/
+cloned receipts; public audit-field mutation isolation; expiry at the boundary;
+renewal; lifetime limits; template rejection; changed sets and sibling fields;
+provider/version replay; Schema mismatch and post-construction Schema mutation;
+unregistered fields; cross-field replay; full ConfigurationContract proof and
+qualified paths; block-to-configuration replay; stable object-key ordering;
+string/symbol field names; and real AWS inner-string versus outer-object-set
+requirements. Positive provider policies are synthetic fixture enrollments,
+not qualifications of a downloaded AWS plugin.
+
+Initial failed controls exposed same-name lexical slot self-reference and
+incorrect use of carbon-copy as prototype instantiation. The implementation
+uses native =.cc= to attach computed constants without lexical capture, and
+native =.+= to preserve the receipt prototype needed by dispatch. Neither
+failure was reclassified as a pass; the gates above were rerun after repair.
+The existing alist-only accessor was also replaced by candidate-row projection
+at POO context boundaries. Build/test transcripts remain local artifacts.
+
+* Superseding real-provider qualification
+
+[[file:11.45-aws-provider-source-and-collection-admission.org][Chapter 44]] adds the real AWS 5.100.0 source/binary gates and correct SDK CRC32
+policy. The literal issuer above is now internal to synthetic tests and is not
+exported by the default module interface. Ordinary source-qualified callers use
+native =.admit= directly; retained binding contexts remain a plan-consumer concern.

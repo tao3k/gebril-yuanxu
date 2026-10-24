@@ -1,0 +1,282 @@
+#+title: 32.25 Serial Computation and Conditional Use
+#+language: en
+
+* Decision
+
+[[file:32.24-revision-aba-and-use-boundaries.org][32.24]] established that endpoint checks do not fence later use. This follow-up
+asks whether existing MOP frames or dynamic parameter scopes supply that fence.
+Only qualification tests, formal models and documentation change. Production
+Scheme and Loader do not change. No caller-supplied purity flag, invented native
+epoch, manually installed active frame, or new public DSL is used.
+
+The answer is deliberately narrower than a transaction:
+
+- A real cold slot computation prevents supported writes whose invalidation
+  closure intersects an actual active receiver/construction in that thread.
+- The same serial call can still mutate an independently read object or write a
+  file. A source-observer parameter scope does not turn either into a transaction.
+- Cached method lookup and calling the resulting procedure are distinct. A
+  complete admission call is not automatically an active MOP computation.
+- Final replay/source checks protect returned certification, not an earlier
+  effect. An external conditional commit needs an authority that atomically
+  compares its own version/precondition and applies the effect.
+
+* Fixed source audit
+
+Producer: gerbil-poo =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+Core checkout: =80e2e74022c9c4053445475402856c5f369aec48= with concurrent local
+changes preserved. LeanPoo remains =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+| Actual source | What it supplies | What it does not supply |
+|---------------+------------------+-------------------------|
+| =object.ss: compute-slot-value= | Real dynamically scoped receiver/slot frame on a cache miss; restoration on exit | An active frame spanning a warm read or later method invocation |
+| =object.ss: check-object-edit= | Rejects supported edits intersecting active construction/computation receivers | General callback purity, exclusion of file writes, cross-thread locking |
+| =object-state.ss: invalidate-state!= | Check entire weak-dependent closure before incrementing/clearing; identity deduplication | Transaction across arbitrary read-demand edges; source explicitly requires caller serialization |
+| =slot-observation.ss: replay-slot-reads!= | Read graph check before callbacks and a final check of all visited records | Rollback of a callback that already ran |
+| =object.ss: .call= | =((.get object slot) args ...)= | Lock or active frame around the returned procedure's body |
+| Core =admission/source.ss= | Actual-demand source checks, collected read graph, independent replay and return source checks | External resource commit or immutable filesystem snapshot |
+
+The source observer is a Gerbil parameter. Restoring its binding restores a
+value, not the effects performed while bound. Native frame checks are scoped to
+supported setters and the actual same-thread frame stack. Manually shadowing
+those stacks, raw internal writes, parallel mutation and continuation-driven
+re-entry are not qualified by these tests.
+
+* Four executable native controls
+
+Owner: [[file:../../../t/mop-serial-use-test.ss][mop-serial-use-test.ss]]. It uses the existing test macro and
+DirectoryFixture; no additional fixture framework or production interceptor.
+
+** Cold protection, warm caching and return boundary
+
+#+begin_src scheme
+(.def Root
+  port: 5432
+  preview:
+  (let ((before (object-revision Root)) (value (.get Root port)))
+    (set! calls (+ 1 calls))
+    (refuses "object mutation during computation"
+      (cut .putslot! Root 'port ($constant-slot-spec 9999)))
+    (check-equal? (object-revision Root) before)
+    value)
+  unused: (error "unselected branch forced"))
+(check-equal? (.get Root preview) 5432)
+(check-equal? (.get Root preview) 5432)
+(check-equal? calls 1)
+(.putslot! Root 'port ($constant-slot-spec 5433))
+(check-equal? (.get Root preview) 5433)
+(check-equal? calls 2)
+#+end_src
+
+No active state is fabricated: evaluating the cold slot establishes it. The
+attempted write is refused before revision changes. The warm read returns a
+value without rerunning the body. Once evaluation has returned, supported writes
+are allowed and invalidate the preview. The unused branch stays unforced.
+
+** A serial cold computation can edit an external demand
+
+#+begin_src scheme
+(.def Database port: 5432)
+(.def Application
+  preview:
+  (let (value (.get Database port))
+    (.putslot! Database 'port ($constant-slot-spec 5433))
+    value))
+(def roots (recorded (cut .get Application preview)))
+(check-equal? (.get Database port) 5433)
+(refuses "stale slot dependency"
+  (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
+#+end_src
+
+The Application frame is active, but Database.port has already returned and
+Database is not its prototype/invalidation ancestor. The write succeeds; the
+Application revision stays unchanged. Full demand replay rejects the old read.
+This is a same-call sequential counterexample, requiring no scheduler race.
+The expression demonstrates a rejected impure computation, not recommended
+configuration code.
+
+** Warm replay is not callback exclusion
+
+A recorded Root.port read is replayed with an observer that increments a local
+counter and changes Root.port. The native final sweep raises
+=stale slot dependency=. The counter is still one and the new port remains 5433.
+Suppressing read observation during replay does not suppress arbitrary effects
+in the observer. This control exercises actual native replay, not a replacement.
+
+** Source writes remain possible inside a cold frame
+
+DirectoryFixture supplies a temporary =input.json=. Root.preview reads =before=,
+then inside an actual source-observer parameter scope writes =after= and reads
+it back. The slot returns =before=; the observer binding restores, and the file
+still contains =after=. Dynamic scope and active MOP computation do not guard a
+file. This test does not publish or execute an external deployment.
+
+* Serial guarantee versus external commit
+
+A serialized sequence of already-closed kernel reads with no intervening
+callback/mutation can compare and consume the same in-memory state. That is a
+conditional reasoning boundary, not a blanket property of =.admit= or any
+procedure called inside =parameterize=. This work tests hostile operations to
+show exactly where native protection ends; it does not relabel arbitrary Scheme
+functions as closed or infer purity from their names.
+
+For Gitea/PostgreSQL, admission must still retain both independent port
+requirements, child Contract obligations, final candidate/plan identity and
+selected source checks. A valid preview says which effective configuration was
+admitted. Returning it does not reserve a database port, freeze a source file or
+force a deployment engine to apply that exact plan.
+
+If a later effect depends on an external version, the external owner must offer
+one of the following sufficiently strong boundaries: atomic compare-and-apply,
+a transaction/snapshot with a conditional write, or an equivalent enforced
+fencing protocol. The condition must bind the applicable candidate/plan and
+relevant resource identities, not just a timestamp or a local cache hit. A local
+hash comparison followed by an unguarded write still has a gap. Detecting a
+restored-value history also requires a monotonic external version if that history
+matters; content equality alone certifies bytes, not absence of intervening edits.
+No such external authority is implemented here.
+
+* Lean correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
+through SnapshotLifetime. Its actions are concrete: affected edit, independent
+demand edit, source edit and read. The =cold= argument projects a real captured
+native frame, never a user assertion of purity. Native identity-based closure
+membership and complete projection remain premises.
+
+- =serial_cold_trace_preserves_root=: every modeled action sequence preserves
+  the active root's revision because intersecting edits are vetoed.
+- =cold_does_not_freeze_demand= and =cold_does_not_freeze_source=: that same
+  root protection permits an independent demand/source revision to change.
+- =checks_keep_requirements=: acceptance retains both requirements, child owner
+  and complete projected state equality.
+- =changed_version_refuses_commit= and =version_aba_refuses_commit=: an atomic
+  conditional-commit relation rejects changed external versions, including a
+  two-step revision even if external values could be restored.
+- =local_success_not_commit=: an earlier local success does not imply success
+  at a later version. The conditional relation is an external-provider premise,
+  not a proved native file API or a new Scheme implementation.
+- =preserves_diagnostic_schedule=: reuses the earlier ordered-failure theorem;
+  it does not reorder source failure behind a later stale-plan diagnostic.
+
+The trace theorem is about the concrete transition model under serialized
+supported calls. It neither extracts all Scheme procedures nor proves native
+thread synchronization. A rejected write can still have unrelated effects
+before attempting the write; whole-callback rollback is not inferred.
+
+* Quint correspondence and matched controls
+
+[[file:../../../dev/proofs/quint/SerialUse.qnt][SerialUse]] models preparation, an intervening operation, use, ordered
+certification, a later external write, and conditional commit. Terminal states
+have an explicit self-step. Native active protection and external conditional
+commit are separate transitions; the latter is an explicitly assumed atomic
+relation. Its monotonic source version is not a native MOP field.
+
+| Variant | Required observation |
+|---------+----------------------|
+| positive | Active-root protection, both requirements, child owner, complete read currentness, source-first diagnostics and conditional commit |
+| noGuard | Unsafe removal of active-root protection |
+| omitDemand | Unsafe omission of the external read dependency |
+| dropB | Unsafe omission of the second independent requirement |
+| parent | Unsafe acceptance under parent plan identity |
+| prefix | Unsafe stale-read error before an earlier source error |
+| localOnly | Local certification accepts but a later source edit invalidates commit |
+| coldAll | Limitation witness on the correct algorithm: a cold frame does not freeze every demand/source |
+| acceptance | A valid configuration reaches acceptance; rejection is not vacuous |
+
+* Relation to the real Scenario
+
+The unchanged lifetime regression first caches the parent's plan at 5432, derives
+Release at 5433, and admits the child through the real published Contract with
+two contributions. Its final Gitea plan reads 5433 while the parent cached scalar
+remains 5432. Source-observer ABA then modifies the selected JSON, and native
+=.admit= rejects =configuration source changed=. If both source and read record
+are stale, that earlier source diagnostic still wins. These are independent
+regression controls, not properties supplied by the new conditional-commit model.
+
+Ordinary users retain assignments and native refinement. They do not supply
+frame flags, version histories or source lists. Any future effect boundary must
+be owned by the runtime/provider; pushing those details into configuration would
+hide a missing system guarantee rather than repair it.
+
+* Consequence for the proposed optimization
+
+Do not remove a before/after or return source check merely because both occur
+inside one dynamic parameter scope or one =.admit= call. Cold getter protection
+is narrower than read-graph stability; replay observers are still callbacks.
+The existing raw-state extraction can identify selected records and actual
+frames, but it does not certify every user procedure's behavior. Reuse across
+such a callback remains unqualified. A future stronger production boundary must
+justify its own exclusion/conditional-use mechanism rather than accept a manual
+"pure" declaration. The native and formal controls here identify that remaining
+obligation; they do not implement the optimization.
+
+* Qualification
+
+Completed gates and retained failures are recorded below. Raw output stays in
+local artifacts, not Git. No performance reduction, runtime fencing, production
+Scheme migration or Loader integration is claimed.
+
+
+** Native and Lean results
+
+The unchanged Core =just test-file= entrypoint ran four serial-use controls,
+seven snapshot-lifetime controls and eleven real Gitea/PostgreSQL publication
+controls: 22 cases passed with =MODULE-OK=, =HARNESS-OK= and final =OK=, without
+error/overflow markers. The selected graph and unused branch controls were not
+replaced by a synthetic all-success admission.
+
+The complete Lean build passed 165 jobs with 5159 declarations, the structure
+shape audit and the standard-axiom audit. Nine SerialUse theorems are explicitly
+required by the aggregate gate. An initial proof attempt failed on conjunction
+association and a wrongly qualified Window type; those failures were corrected
+without additional axioms or larger proof limits. An initial test launch and a
+Lean launch used the product rather than Core/project working directory and
+failed before qualifying their targets; their logs are retained separately.
+No failure is reclassified as success.
+
+All raw artifacts remain under =/private/tmp/core-serial-use-20261018/=. The
+input manifest includes current Core source entries, the unchanged test snapshot
+helper and producer source files. Native behavior and source inspection do not
+prove installed-binary reproducibility or thread safety.
+
+
+** Source-bound Quint results
+
+Quint 0.33.0 / Apalache 0.62.1 / TLC typechecked all 99 sources and obtained all
+98 expected outcomes, including 13 positive cases, 72 unsafe variants, four
+correct-algorithm limitation witnesses and nine acceptance witnesses. The final
+source-cut comparison passed and produced =quint-receipt.ss=. No bound, timeout,
+heap policy or invariant was weakened. The new positive model fully exhausts
+392 distinct states (448 generated, zero queued).
+
+| Model | Predicate | Generated / distinct | Result |
+|-------+-----------+----------------------+--------|
+| SerialUse | safety | 448 / 392 | Exhaustive pass |
+| SerialUse_noGuard | ActiveProtected | 153 / 153 | Expected counterexample |
+| SerialUse_omitDemand | ReadCurrent | 228 / 228 | Expected counterexample |
+| SerialUse_dropB | TwoRequirements | 235 / 235 | Expected counterexample |
+| SerialUse_parent | ReceiverIdentity | 236 / 236 | Expected counterexample |
+| SerialUse_prefix | OrderedDiagnostic | 249 / 249 | Expected counterexample |
+| SerialUse_localOnly | ConditionalCommit | 356 / 356 | Expected counterexample |
+| SerialUse_coldAll | ColdFreezesAll | 200 / 200 | Expected counterexample |
+| SerialUse_acceptance | RejectAll | 236 / 236 | Expected counterexample |
+
+=SerialUse_coldAll= is a limitation of the correct algorithm, not an unsafe
+implementation variant. =SerialUse_localOnly= removes the modeled external
+conditional commit: its late-write counterexample is why a successful local
+check cannot supply that external guarantee. The positive result is conditional
+on that authority really providing atomic compare-and-apply; only the pure
+relation, not a real provider RPC or filesystem transaction, was verified.
+
+The input manifest's audited Core/producer source identities remained unchanged
+through the final native/formal audit. This is bounded qualification of the
+recorded source cut, not a claim that the entire concurrently edited workspace
+or all installed build artifacts are reproducibly qualified. Failed launch and
+proof-development logs remain alongside passing logs. =qualification.json=
+records identities and output hashes outside source control.
+
+* Follow-up
+
+[[file:32.26-call-lookup-body-and-observation.org][32.26]] supplies the missing native =.call= phase controls, including ambient
+caller protection and the acquisition-only observation counterexample.

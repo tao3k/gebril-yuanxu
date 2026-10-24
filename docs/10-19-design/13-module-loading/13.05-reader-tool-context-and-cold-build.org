@@ -1,0 +1,171 @@
+#+title: 13.05 Build Reader Tool Contexts and Cold JsonSchema Qualification
+#+property: DOCUMENT_ID 13.05
+#+language: en
+
+Subsequent implementation: [[file:13.06-init-build-spec-adapter.org][05]] lands the list adapter and removes the
+combined-graph fixture. The pending-integration statements below describe this
+earlier reader-only qualification stage.
+
+* Historical experiment
+
+The current consumer and production boundaries are documented in
+[[file:13.07-core-build-entry.org][06]] and [[file:13.10-automatic-role-projection.org][09]]. Returned-main helpers, materialized build
+scripts and overlay setup controls below describe superseded experiments.
+They are not supported alternate build APIs. Recorded failures remain failures.
+
+* Scope and root cause
+
+This build-time correction follows the historical failure in
+[[file:13.04-isolated-init-build-validation.org][03]]. It does not add a runtime Loader, change Contract admission, or
+replace Gerbil's build protocol. No full package build is required by the gate.
+
+The publication reader previously treated the already imported declaration
+compiler as an ordinary private implementation source. Its generated wrapper
+then imported include-module-body from that same compiler: native expansion
+correctly reported a cycle. Merely bypassing this wrapper in the reader was
+insufficient: a generated build source for declaration.ss would reproduce the
+same self-import during compilation.
+
+The correction has two parts:
+
+1. Walk the SDK's actual build-tool import Contexts. Reuse an exact Context only
+   when its identity and normalized source path match the observed registry.
+   Include its observed Core source closure in the selected build inputs.
+2. Prepare those compiler tools using native include of the original header-free
+   body, retaining source locations and the native compiler identity. Ordinary
+   Module implementation sources retain their existing role-aware preparation.
+
+The internal SDK-only helper modules/building/bootstrap.ss now exposes Contexts
+rather than an identity-only boolean table. This helper is not the independent
+root bootstrap.ss script. It remains part of the source dependency closure.
+There is no compatibility alias for the former identity-only helper.
+
+* Source authority remains narrow
+
+An arbitrary Core-looking identity, matching basename, or directory prefix is
+insufficient. Context identity is checked by object identity against the SDK
+registry; source and positive/negative package observations are rechecked.
+Reload requires a fresh reader. A compiler tool cannot depend on the selected
+Module's implementation. A selected interface still cannot import itself and
+reverse role imports still fail before expansion.
+
+Tool byte/package observations are deduplicated per reader boundary. This avoids
+reparsing every tool through every guard, without replacing byte currentness
+with a timestamp or dropping package observations. Source dependencies are
+recorded from actual imported Contexts, not from a directory-wide allowlist.
+
+* Real source-only JsonSchema case
+
+The qualification stages Core Scheme sources and package metadata into one
+isolated root. Its root build.ss and bootstrap.ss are absent. The active Core
+Context is a .ss source and the isolated dependency cache has no lib/core.
+The only precompiled project prerequisite is the separately qualified nine-unit
+public gerbil-poo tool dependency closure. Its local PR checkout and local edits
+are an explicit dependency override, not validation of the package lock pin.
+
+The real init remains:
+
+#+begin_src scheme
+(yuanxu! mode: explicit source: "./modules" (json-schema))
+#+end_src
+
+The real default reader, selected Graph and existing build-entry writer are
+used. The fixture adds the actual retained utilities/algorithms.ss and types.ss
+roots to that Graph, reusing an existing entry when compiler identity, source,
+options and prepared forms agree. Conflicting compiler options are rejected.
+JsonSchema gxc entries are derived from the Graph; the fixture does not maintain
+a JsonSchema compiler-path list. Assertions on expected output identities are
+controls, not build declarations.
+
+The current snapshot selects 33 compiler entries and merges to 34 entries.
+These counts describe this observed source closure, not a fixed API or a claim
+that every Core dependency can be inferred without its publication.
+
+The native dispatcher uses its existing local source-anchor expansion:
+
+#+begin_src scheme
+(let ((this-source-file (lambda () (.get artifact build-entry))))
+  (defbuild-script (.get artifact spec)
+    libdir: lib bindir: bin prefix: "" parallelize: 1 optimize: #f)
+  main)
+#+end_src
+
+The qualification wrapper checks artifact currentness before and after each
+native command. It exercises SDK spec, compile and clean, verifies all derived
+.ssi identities in the explicit output root and their removal, and rejects
+changes to init, a real private JsonSchema source, a retained source, and the
+generated entry. A change after native spec dispatch is also rejected.
+
+* Executable controls and evidence boundary
+
+- [[file:../../../t/module-reader-tool-context-test.ss][Tool Context controls]] exercise changed tool bytes, a foreign same-identity
+  declaration with a side-effect sentinel, and a reversed Module role import.
+- Real JsonSchema qualification (retired control) exercises the Graph/native build path above.
+- [[file:../../../t/module-build-source-snapshot-test.ss][Source staging]] and [[file:../../../t/module-build-dependency-qualification-test.ss][public dependency preparation]] keep the cold-Core
+  premise explicit. [[file:../../../t/module-build-entry-capture-test.ss][Source capture]] is a smaller SDK control.
+
+All gates use the existing serial, heap-fenced Justfile test-file recipe and its
+unchanged timeout. Raw transcripts and generated compiler artifacts stay outside
+the repository. MODULE-OK, HARNESS-OK and OK are necessary but insufficient: the
+enclosing process must also exit successfully. An intermediate run reached all
+34 compile/clean assertions and final OK but exited 124; it is not accepted as
+a passing run. Phase timing was added to distinguish work cost from shutdown.
+The timed source-4 run subsequently completed all assertions in 100.49 seconds
+after test-module loading and naturally exited 0 under the same 120-second
+recipe. No forced exit, cleanup bypass or enlarged timeout was used. The earlier
+124 is retained as an unsuccessful run; the timing does not establish its cause.
+
+Final source-5 qualification includes the concurrently updated separation of
+publication reader forms from standalone compiler forms. The live source and
+snapshot SHA-256 values agree for the corrected units:
+
+| Unit | SHA-256 |
+|------+---------|
+| module-system/source/reader.ss | 27a0e0ba27223cf03dcf2dac6ca46f7e9c14ae32261abdc302857720f348f68f |
+| module-system/source/preparation.ss | 4bb23340c98048e8de65d24e629a7161d509242f0b9b399612ff3786b6f6864a |
+| modules/building/bootstrap.ss | 04143ec34b7d3f832c392cfa4a21b9c222f6c9f1325025a64a87fd5bc6a3b088 |
+
+| Focused gate | Final result |
+|--------------+--------------|
+| Source-only staging | PASS, natural exit 0 |
+| Three tool-source confinement controls | PASS, natural exit 0 |
+| Existing selected-build Graph suite, eleven cases | PASS, natural exit 0 |
+| Real JsonSchema plus retained roots | PASS: native spec, 34 compiled .ssi identities, 34 cleaned .ssi identities, input and generated-entry refusal; natural exit 0 |
+
+The final real case reached its last assertion at 88.15 seconds after test-module
+loading under the unchanged timeout. It also proves that the native spec callback
+actually completed before the post-dispatch drift refusal, rather than accepting
+an unrelated early exception. The Graph regression requires the original ten
+domain roots and unique declaration/types tool identities; it does not assert an
+obsolete total that would discard necessary compiler tools.
+
+The first Graph-regression attempt stopped at import because the isolated cache
+did not contain the test framework's clan/poo/support/debug. Its source was made
+available from the same explicit public dependency checkout for that suite. The
+final real JsonSchema gate uses only its original nine-unit dependency cache.
+No Core binary cache, runtime Loader, independent root bootstrap invocation,
+full package build, Contract-system change, raw-log commit or push was involved.
+
+* Compiler epoch and remaining integration
+
+Native std/make changes the process-global expander module registry while
+compiling generated sources. Creating a new source reader after that operation
+in the same process can observe generated Contexts instead of the original
+source epoch. Such an epoch switch is not permission to accept temporary paths.
+The qualification checks fresh-reader drift controls before compilation and
+keeps the original artifact's guarded epoch through compile and clean. General
+reader reuse across a compiler-epoch switch remains an integration boundary.
+
+The existing init syntax publishes selection intent. This validation consumes
+it through yuanxu-load-modules; it does not implement direct lazy Graph/spec
+exports from init, the proposed build-spec adapter, or migration of the live
+Core build.ss. The retained-entry merge is a test adapter, not a new public
+build protocol. Runtime scope linking and runtime Loader work remain excluded.
+
+The fixture's combined Graph is not the intended build API. Its purpose is to
+exercise the existing writer against one source root while the thin adapter is
+pending. The integration design is ordinary list composition at defbuild-script:
+project the selected Graph, normalize retained entries to the same source/output
+interpretation, reject conflicts, then append/deduplicate native entries. No POO
+Graph extension is required to combine build specifications. Source preparation
+and before/after currentness remain internal responsibilities.

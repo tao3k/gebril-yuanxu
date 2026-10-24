@@ -1,0 +1,354 @@
+#+title: 12.13 Graph association resolution and final-object admission
+#+property: DOCUMENT_ID 12.13
+#+language: en
+
+* Status and correction to the earlier sketch
+
+Design only. No code in this document is installed or executed. The binding factory and source/artifact checks are defined in [[file:12.12-publication-owned-admission-associations.org][11]]. This document covers Contract association, derivation requirements, final-object admission and evidence. Module selection and build-spec production are separate features under [[file:../13-module-loading/13.01-index.org][Module loading and building]]. An admitted selected Graph is an input here, not an instruction to build or load modules.
+
+* Native construction information: necessary upstream input
+
+Current gerbil-poo object.ss has object-revision and native constructor/slot
+protocols. Its .+ copies the right operand's direct specifications and uses the
+right operand's parents plus the left operand as supers. Therefore the resulting
+supers list does NOT retain the identity of the right operand itself. Declaration
+metadata copying is not proof that all Core admission requirements survive.
+
+The proposed upstream extension retains an immutable construction observation
+inside native object state, not in candidate-editable slots or Core-specific
+fields. A read-only construction-view exposes kind, operands, revision and operand
+revisions. The initializer stores the data using private compact storage; it must
+not recursively allocate POO trace objects from inside its own initializer.
+
+| Native route | Required observed operands |
+|--------------+----------------------------|
+| Fresh .o / object<-fun / object<-alist | Native parents, possibly empty |
+| .def / .mix multiple inheritance | ALL native parents |
+| .cc / .extend | The copied/extended object, plus any other native parent |
+| .+ | BOTH actual operands, before right-side identity is erased |
+| =>.+ | The inherited slot object and refinement object, when demanded |
+
+The unified initializer accepts observations only from governed native constructor
+paths. .+ must transmit its operands at the copying site: an initializer cannot
+reconstruct information already erased. This small operand capture is unavoidable;
+it is not a second implementation of .+ semantics. Raw struct mutation, unsupported
+copying and forged observations are outside the governed boundary and refused.
+The extension must also invalidate observations on specification/prototype changes;
+receiver-local lazy cache population alone must not invalidate them.
+
+Concrete upstream storage/copy sketch (the private object-%construction field and
+these functions are NEW; ordinary users keep their existing .+ syntax):
+
+#+begin_src scheme
+(defstruct construction-observation
+  (kind operands revision operand-revisions))
+
+(def (record-construction! result kind operands)
+  (set! (object-%construction result)
+    (make-construction-observation
+      kind operands (object-revision result) (map object-revision operands))))
+
+;; Final initializer step after native state/dependency initialization:
+;; (record-construction! self 'inherit (object-supers self))
+
+(def (.+ base override)
+  (let (result
+         (make-object
+           slots: (object-slots override)
+           supers: [(object-supers override)... base]
+           defaults: (object-defaults override)
+           protocol: (object-%protocol override)
+           declarations: (object-%declarations override)))
+    ;; Before the fresh result escapes; no slot lookup/protocol callback here.
+    (record-construction! result 'merge (list base override))
+    result))
+
+(def (construction-view value)
+  (let (record (object-%construction value))
+    (unless record (error "Missing native construction observation" value))
+    (.o kind: (construction-observation-kind record)
+        operands: (construction-observation-operands record)
+        revision: (construction-observation-revision record)
+        operand-revisions: (construction-observation-operand-revisions record))))
+#+end_src
+
+These private setters are not exports. Copy-specific operands replace the fresh
+initializer's default observation before the result is exposed; observations are
+immutable after that construction boundary. This is a proposed upstream change,
+not permission to replace native .+ with a Core wrapper. Equivalent copy routes
+must supply their actual operands at that same boundary.
+
+Proposed read-side code, using existing object-revision and the NEW read-only
+construction-view. roots is a private identity table populated at admitted export
+resolution. It maps actual exported objects to owner-qualified association anchors;
+users never construct these anchors. All governed objects must have observations,
+including fresh leaves; an unknown object is not silently treated as unconstrained.
+
+#+begin_src scheme
+(def (required-anchors candidate roots)
+  (def seen (make-hash-table-eq))
+  (def active (make-hash-table-eq))
+  (def result '())
+  (def (walk value)
+    (when (hash-key? active value)
+      (error "Cyclic construction provenance" value))
+    (unless (hash-key? seen value)
+      (hash-put! active value #t)
+      (let* ((trace (construction-view value))
+             (operands (.get trace operands)))
+        (unless
+          (and (= (object-revision value) (.get trace revision))
+               (equal? (map object-revision operands)
+                       (.get trace operand-revisions)))
+          (error "Stale construction provenance" value))
+        (for-each walk operands)
+        (for-each
+          (lambda (anchor)
+            (unless (memq anchor result)
+              (set! result (cons anchor result))))
+          (hash-ref roots value '())))
+      (hash-remove! active value)
+      (hash-put! seen value #t)))
+  (walk candidate)
+  (reverse result))
+#+end_src
+
+construction-view must raise on absent/invalid observation. This is a required
+upstream capability, not an existing function with an assumed implementation.
+The table and traversal are generation/session bounded; they are not a global
+strong-reference registry retaining every historical object.
+
+* Anchor resolution is selected-Graph owned
+
+An anchor contains owner, generation, declaration, scope and source-context from
+an already admitted selected publication. Its scope is demanded only when resolving
+that association. It must not contain user-supplied owner assertions. Feature
+anchors are allowed only if their contribution is present in the same Graph.
+
+The following uses the complete resolve-admission-binding definition in 11:
+
+#+begin_src scheme
+(def (binding-resolver selected anchors)
+  (def cache (make-hash-table-eq))
+  (def allowed (.get selected module-order))
+  (def (resolve anchor)
+    ((.get selected admit-current))
+    (unless (and (memq anchor anchors)
+                 (memq (.get anchor owner) allowed)
+                 (equal? (.get anchor generation) (.get selected generation)))
+      (error "Admission association outside selected Graph" anchor))
+    (let (row
+           (if (hash-key? cache anchor)
+             (hash-ref cache anchor)
+             (let (resolved
+                    (resolve-admission-binding
+                      (.get anchor scope)
+                      (.get anchor declaration)
+                      (.get anchor source-context)))
+               ((.get selected admit-current))
+               (hash-put! cache anchor resolved)
+               resolved)))
+      ((.get (.get row binding) admit-current))
+      row))
+  (.o resolve: resolve
+      bindings:
+      (lambda ()
+        (filter-map
+          (lambda (anchor)
+            (and (hash-key? cache anchor)
+                 (.get (hash-ref cache anchor) binding)))
+          anchors))))
+#+end_src
+
+anchors is the admitted contributor sequence obtained in existing selected Graph
+dependency order, including only selected Feature contributions. Membership by
+owner alone is insufficient: memq against these exact anchors retains the Feature
+decision. The code does not re-sort dependencies or give prototype order execution
+meaning. Cyclic factory resolution must additionally use the existing linking
+active-set refusal; recursively requesting the same unresolved factory is invalid.
+
+* Final-object closure, including nested responsibilities
+
+The complete finite-object traversal below retains each distinct actual Contract
+reference. An object+descriptor pair may be shared; a repeated pair on the active
+path is rejected as an unsupported cyclic admission dependency. Domain recursive
+Types need a separately qualified recursion policy, not accidental nontermination.
+
+The admitted publication boundary validates descriptor shape before this stage.
+Plain field Types remain the responsibility of the containing Contract; only
+descriptors exposing the Core .admit protocol create nested admission rows.
+For dynamic selected collections, the domain MUST project the final selection
+into a responsibilities map before entering this traversal. Enumerating all slots
+of an open dictionary is not selected-child discovery. That domain projection is
+part of the pending adaptation and must preserve its declared Schema dependencies.
+
+#+begin_src scheme
+(def (resolve-admission-rows final roots resolve-binding)
+  (def rows '())
+  (def active '())
+  (def (same-pair? row value descriptor)
+    (and (eq? value (.get row subject))
+         (eq? descriptor (.get row contract))))
+  (def (visit value descriptor binding path)
+    (when (find (lambda (row) (same-pair? row value descriptor)) active)
+      (error "Cyclic admission requirement" path))
+    (unless (find (lambda (row) (same-pair? row value descriptor)) rows)
+      (let (row (.o subject: value contract: descriptor binding: binding path: path))
+        (set! active (cons row active))
+        (when (.slot? descriptor 'responsibilities)
+          (let (requirements (.get descriptor responsibilities))
+            (for-each
+              (lambda (name)
+                (unless (and (object? value) (.slot? value name))
+                  (error "Missing required final field" path name))
+                (let (child-contract (.ref requirements name))
+                  (when (.slot? child-contract '.admit)
+                    (let ((child (.ref value name))
+                          (child-path (append path (list name))))
+                      (visit child child-contract binding child-path)
+                      (visit-origins child child-path)))))
+              (.all-slots requirements))))
+        (set! active (cdr active))
+        (set! rows (cons row rows)))))
+  (def (visit-origins value path)
+    (when (object? value)
+      (for-each
+        (lambda (anchor)
+          (let* ((resolved (resolve-binding anchor))
+                 (binding (.get resolved binding)))
+            ;; Never substitute resolved.root: value is the FINAL receiver.
+            (visit value (.get binding contract) binding path)))
+        (required-anchors value roots))))
+  (visit-origins final '())
+  (when (null? rows) (error "No admitted publication association" final))
+  (reverse rows))
+#+end_src
+
+If two anchors return the SAME descriptor on the SAME final subject, admission can
+share that pair, but every anchor/binding guard and Schema closure must still be
+retained separately. Therefore resolved binding coverage is collected from all
+visited anchors, not only from deduplicated rows. A same-name different-descriptor
+pair never qualifies for sharing. The resolver's cache provides those resolved
+bindings; its internal production API must expose them for Context construction.
+
+The retained pair list is internal admission work, not a user-authored list of
+completed children. Direct assignment to a field is still ordinary configuration.
+Requirements from an earlier Profile are not removed by replacing a field.
+
+* Existing admission/evidence producer, not a second receipt system
+
+Context must be constructed from the full resolved binding set and the existing
+build Graph/source observations before admission. Nested .admit results are checked
+against exact subject/descriptor/Context references and retained in classification.
+No parent acceptance receipt authorizes a child.
+
+#+begin_src scheme
+(def (admit-resolved-rows rows context)
+  (map
+    (lambda (row)
+      (def subject (.get row subject))
+      (def descriptor (.get row contract))
+      (def evidence (yuanxu-contract-admit descriptor subject context))
+      (unless
+        (and (yuanxu-validation-evidence-accepted? evidence)
+             (eq? subject (.get evidence candidate))
+             (eq? descriptor (.get evidence admission-contract))
+             (eq? context (.get evidence context)))
+        (error "Rejected or mismatched final-object evidence" (.get row path)))
+      evidence)
+    rows))
+
+(def (resolved-composition-contract final rows)
+  (.cc YuanxuContract.
+    identity: 'module/selected-composition
+    .classify:
+    (lambda (candidate context)
+      (unless (eq? candidate final)
+        (error "Admission resolution belongs to another object"))
+      (let (evidence (admit-resolved-rows rows context))
+        (.cc (yuanxu-classification-evidence
+               'module/selected-composition candidate #t '() context)
+          children: evidence)))))
+#+end_src
+
+This internal aggregate descriptor is created once per final-object resolution;
+its identity symbol is diagnostic, not a cache key. Ordinary validation failure
+currently raises inside this design adapter; public metadata.publish turns it
+into refusal and retains the old value. A later diagnostic-valued implementation
+may preserve richer paths without changing the acceptance rule.
+
+Publication reuses AdmissionPublication. with the resolved aggregate Contract,
+all resolved binding artifacts, and existing bind-evidence. Requirements must be
+resolved before admission, then Graph, construction revisions and EVERY binding
+guard rechecked inside its context-current guard before publication. Existing
+native .cc permits replacing the context slot with a guarded derived Context;
+the following is the proposed orchestration, not a new evidence system. Validating
+only before .admit leaves a time-of-check gap and is explicitly insufficient.
+
+#+begin_src scheme
+(def (graph-admission-publication view roots anchors final)
+  (def (revision value) (and (object? value) (object-revision value)))
+  (def selected (.get view selected-graph))
+  (def resolver (binding-resolver selected anchors))
+  (def rows
+    (resolve-admission-rows final roots (.get resolver resolve)))
+  (def bindings ((.get resolver bindings)))
+  (def artifacts
+    (foldr append '()
+      (map (lambda (binding)
+             (let (values (.get binding artifacts))
+               (map (lambda (key) (.ref values key)) (.all-slots values))))
+           bindings)))
+  (def subjects (map (lambda (row) (.get row subject)) rows))
+  (def revisions (map revision subjects))
+  (def descriptors (map (lambda (row) (.get row contract)) rows))
+  (def descriptor-revisions (map object-revision descriptors))
+  (def base
+    (.cc AdmissionPublication.
+      graph: (.get view build-graph)
+      schemas: artifacts
+      contract: (resolved-composition-contract final rows)))
+  (def original-context (.get base context))
+  (def (current!)
+    ((.get original-context admit-current))
+    (unless (and (equal? revisions (map revision subjects))
+                 (equal? descriptor-revisions (map object-revision descriptors)))
+      (error "Final objects or Contracts changed after Graph resolution"))
+    (for-each (lambda (binding) ((.get binding admit-current))) bindings)
+    ;; Rewalk every demanded final object; missing/stale operand records refuse.
+    (for-each (lambda (subject)
+                (when (object? subject) (required-anchors subject roots)))
+              subjects)
+    ((.get original-context admit-current)))
+  (current!)
+  (.cc base context: (.+ original-context (.o admit-current: current!))))
+#+end_src
+
+The private roots/anchor index must be immutable for this Graph session. Revision
+snapshots cover subjects and descriptor objects, whose supported native dependency
+invalidation must include their referenced specifications. A domain Contract that
+hides mutable dependencies in arbitrary Scheme closures still needs an explicit
+source/currentness guard. Plain scalar/collection fields do not acquire object
+revisions: the admitted boundary must require immutable/frozen values or a
+complete owner guard and reject unsupported mutable payloads. This precondition
+is not established merely by returning #f from revision. The native context-slot override is unqualified here:
+it needs a focused inherited-publish test before implementation claims are made.
+
+| Control | Expected design result |
+|---------+------------------------|
+| Multiple parents A and B | Both anchors; both Contracts on final subject |
+| .+ A B, with B not present in supers | B retained through construction operands |
+| Shared ancestor | Factory once; distinct Contract references preserved |
+| Missing trace, parent requirement or selected owner | Refuse before accepting evidence |
+| Schema key omitted/extra, wrong source or IR | resolve-admission-binding refuses |
+| Missing final child | responsibilities traversal refuses with path |
+| Parent projection cached before child.port changes | .ref reads final child, .admit binds that child |
+| Contract returns old/foreign evidence | Reference checks refuse |
+| Specification changes during admission | Final construction/binding/Graph guard refuses |
+
+These are acceptance requirements, not new test results. Arbitrary closure I/O,
+raw mutations and unsupported recursive domains remain outside the proven boundary.
+
+* Feature boundary
+
+This Contract design consumes owner-qualified publication metadata and current source capabilities. It does not choose a build executor, extend defbuild-script, produce compiler targets or initialize runtime modules. Contract evidence does not authorize compilation, loading or deployment.

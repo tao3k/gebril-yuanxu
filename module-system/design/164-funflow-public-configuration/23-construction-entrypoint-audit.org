@@ -1,0 +1,279 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Native Construction, Copy and Mutation: Unified Provenance Boundary
+#+date: [2026-10-15]
+#+property: STATUS source-audited-design-no-kernel-implementation-no-module-adapter-no-loader
+
+* Decision and correction to module 22
+
+[[file:24-unified-construction-and-admission-laws.org][Module 24]] supplies the concrete constructor sketch, n-ary source membership
+and selected dependency admission proofs. It leaves the native implementation
+and dependency-discovery completeness premises explicitly open.
+
+One construction protocol should own allocation identity, provenance capture,
+finalization and validation. Ordinary operations must not each maintain a
+metadata table or finalize a provisional trace after allocation. This supersedes
+module 22's proposed record-operands! setter and its replacement .+ body.
+
+However, a constructor cannot infer information that its caller has discarded.
+.+ and .cc must supply their consumed source objects to the common constructor.
+That is operand declaration at two native semantic owners, not instrumentation
+of every .def, macro, module, Profile or consumer. Other source-erasing transforms
+must be explicitly classified rather than accidentally covered by a parent hook.
+
+There is also a real dependency constraint: mop.ss imports object.ss, not vice
+versa. The minimal construction protocol belongs below the class MOP, at the
+object.ss allocation/:init! boundary (or a dependency-neutral support module).
+MOP may expose read-only reflection and trusted extension integration. Putting
+the foundational hook only in the existing mop.ss misses direct object imports
+and would create a cycle if object.ss imported it. No per-operation CLOS method
+bundle is necessary for this single construction axis.
+
+* Audited source identity and scope
+
+The audit reads the pinned package source used by module 21, revision
+099b381588360a8a49fd772f666a1a00351366f5, through the existing isolated source
+scope /tmp/agenticailab-dfs-admit-20261015/clan/poo. This is not an audit of an
+unidentified installed artifact or the different .data learning checkout.
+
+| File | SHA-256 checked during this audit |
+|------+----------------------------------|
+| object.ss | 13f43a877db90d9a2aa0df10d7f92be41aecb4be476a63906bbf91b6f6bdf056 |
+| mop.ss | 0483d555553e4b5f3432a7316cac9e92aee03c75166fcad90ee80c3148a10b7c |
+| type.ss | 0e39952b15ccbb6390da9c45ac59e79b28c274329619f0faa27baec999dadfb8 |
+| debug.ss | 1d0470b8f5f24be7723c62f7e5b6c11a0c7303b6c2d66aad9a32a10cbf535534 |
+
+The inventory covers all direct native make-object allocation sites in object.ss,
+the class MOP constructors/copy consumers, built-in data reconstruction paths,
+brace lowering, and current Core path-slot lowering. Other domain packages may
+compose these paths. Arbitrary Gerbil/runtime allocation, custom macros, FFI,
+serialization and application-defined data transformations are explicit external
+boundaries, not universally covered by this source inspection.
+
+* Allocation and copy inventory
+
+Locations below refer to the pinned source, not the .data corpus.
+
+| Native entry | Actual lowering / source | What the common constructor knows | Additional source declaration needed? |
+|--------------+--------------------------+-----------------------------------+---------------------------------------|
+| .def | object.ss:551--562, .def/ctx -> .o/ctx -> object/slots -> object/init | All explicit native parents | No per-declaration hook |
+| .o and braces | object.ss:429--454; brace.ss:11--22 -> .o/ctx | All explicit native parents | No per-syntax hook |
+| @ [A B ...] | .o parent expression -> object/init -> make-object -> :init! flatten | All supplied parents, in native order | Capture all parents once; do not reorder semantic supers |
+| make-object / :init! | object.ss:72--98 | supers, direct SlotSpecs and defaults | Central new capture/finalization owner |
+| object<-alist | object.ss:224--226 -> make-object | Explicit supers; data is a fresh payload | No automatic recovery of objects from which the alist was extracted |
+| object<-hash | object.ss:228--229 -> object<-alist | Same | Same data boundary |
+| object<-fun | object.ss:231--233 -> make-object | Explicit supers; thunks stay unforced | Captured free variables are not inspectable provenance |
+| .mix | object.ss:235--236 -> make-object | All operands ARE semantic supers | No additional operand list |
+| .extend | object.ss:237--238 -> make-object | self IS the semantic parent | No additional operand list |
+| .+ | object.ss:239--241 -> make-object | base and RHS parents; RHS itself is absent | YES: both actual operands to constructor |
+| =>.+ | object.ss:456--469 -> => .+ | Same as .+ when the computed slot runs | No separate macro hook |
+| .cc | object.ss:615--639 -> make-object | Copied slots/defaults and self's PARENTS; self itself is absent | YES: self to constructor |
+| define-type, descriptor form | mop.ss:119--125 -> .cc desc | Covered through .cc once corrected | No additional define-type hook |
+| define-type, named body | mop.ss:123--125 -> .def/ctx | Covered through ordinary construction | No additional macro hook |
+| .new | mop.ss:460--467 -> brace object inheriting class proto | Actual proto is a parent | No additional .new hook |
+| instance | mop.ss:457 -> .cc class.proto | Actual proto identity is currently lost like other .cc sources | Covered by .cc source declaration |
+| slot-lens .set / .modify | mop.ss:475--478 and Lens methods -> .cc | Original structure is the .cc source | Covered by .cc; not by changing Lens consumers |
+| Class.proto construction | mop.ss:292--297 creates {}, then slot-definer mutates it | Allocation plus later setup writes | Must finalize after trusted descriptor setup, before sealing/admission |
+| trace-poo | debug.ss:61--65 -> inherited object then .putslot! | Parent preserved, then setup writes | Same construction/setup boundary; no bypass for debug wrappers |
+
+All seven direct make-object call sites in object.ss are included above:
+object<-alist, object<-fun, .mix, .extend, .+, object/init and .cc.
+object<-hash delegates instead of allocating separately. The exported
+@make-object is Runtime.make-object renamed to avoid the POO constructor name;
+it is not an alternative qualified POO constructor. Raw host/struct copying or
+low-level field access does not acquire trusted provenance merely by returning
+an object-shaped value.
+
+Current Core path slots (core/object-syntax/path-slots.ss) lower shared prefixes
+to native nested =>.+; there is no independent runtime allocation mechanism.
+The current dotted leaf rule accepts =>.+ only. Dotted direct assignment remains
+a separate proposed extension; this audit does not promote it to implemented.
+
+* One constructor, explicit source inputs at information-loss sites
+
+The following is DESIGN syntax for a new internal constructor keyword, not an
+existing API and not a public configuration option:
+
+#+begin_src scheme
+;; Proposed native .+ body: slot semantics remain exactly as before.
+(def (.+ base override)
+  (make-object
+    slots: (object-slots override)
+    supers: [(object-supers override)... base]
+    defaults: (object-defaults override)
+    sources: (list base override)))
+
+;; Proposed final constructor call inside .cc.
+;; Existing override normalization/SlotSpec copying is unchanged.
+(make-object slots: slots
+             supers: (object-supers self)
+             defaults: (object-defaults self)
+             sources: (list self))
+#+end_src
+
+The common :init! protocol must:
+
+1. Normalize semantic supers exactly as the current kernel does.
+2. Allocate a fresh construction token; validate and capture immutable provenance
+   from ALL supers plus explicit sources. Explicit sources cannot subtract supers.
+3. Build one immutable node with deduplicated source-node references, independent
+   of business SlotSpecs, caches and publication-index lookup.
+4. Initialize native storage and caches, then expose the completed object.
+   No provisional provenance setter is exposed and no source Contract runs here.
+5. Permit trusted initial schema/descriptor setup before sealing; writes create
+   a new generation. Construction completion and later configuration sealing
+   are distinct events, not one incorrectly placed freeze inside make-object.
+
+The source metadata record is private and non-POO to avoid recursive allocator
+instrumentation, as in module 22. Source inputs are provenance edges, NOT new
+object-supers. The central constructor must not invoke a user-overridable
+configuration slot to decide whether a mandatory source is retained.
+
+An allocation hook receiving ONLY today's supers/slots/defaults cannot repair
+.+ or .cc: identical resulting payloads can arise from differently published
+source objects. Recovering those source identities is not a function of that
+payload. Adding source information at these owners is necessary unless the
+entire SlotSpec representation is redesigned to carry provenance. This design
+does not select that much broader representation rewrite or ambient dynamic
+tracking, which is fragile under delayed evaluation and reentrant construction.
+
+* Value conversion and reconstruction are not implicitly semantic copies
+
+| Boundary | Existing behavior | Admission design |
+|----------+-------------------+------------------|
+| map-object-values | mop.ss:203--204 reads every slot and returns object<-alist with no supers | Eager value transformation, not a lazy clone. Do not use to preserve a Profile's semantics. A future source-preserving use must declare its source through the same constructor; otherwise treat as fresh data. |
+| MonomorphicObject .<-json | mop.ss:198 -> object<-alist, no source prototype | Fresh decoded data; target schema admission only. It does not recover the serialized object's prior source policies. |
+| Class .<-json / .unmarshal | mop.ss:313--326 -> object<-alist with class proto | Target proto requirements retained; sender's additional provenance is not carried by the wire format. |
+| Class .<-tuple-list / .<-tuple | mop.ss:331--333 -> object<-alist without proto | Currently loses even the class proto; requires target-schema reconstruction adaptation or refusal at a provenance-sensitive boundary. |
+| RecordSlot / Record / Sum | type.ss:337--375, data-created descriptors and ordinary inherited POO bodies | Ordinary construction paths apply. A supplied Type value is a payload, not automatically a source-policy parent; its own Contract semantics govern its use. |
+| .alist / .alist/sort / hash<-object / force-object | Slot reads or forced value projections | Can force many slots; do not use for source discovery or selected lazy admission. Round trips are not certified copies. |
+
+The policy is deliberately bounded: provenance-sensitive composition accepts
+certified semantic derivations, not arbitrary data round trips claimed to be the
+same published Profile. A deliberately fresh object may be admitted against its
+own target Contract, but cannot claim the original export's source identity.
+Ordinary Scheme can manually copy raw SlotSpecs, fabricate graphs or mutate
+fields. The proposed provenance protocol is not a sandbox, general taint analysis
+or protection against arbitrary hostile in-process code. Trusted package/export
+boundaries and kernel encapsulation remain necessary; source inspection alone
+cannot distinguish every handwritten copy from genuinely fresh construction.
+
+* Mutation and cache inventory
+
+| Entry | Current native behavior | Required boundary |
+|-------+-------------------------+-------------------|
+| .ref | object.ss:197--207 memoizes by receiver/slot | No revision or dependency certificate is stored with the cached value |
+| instantiate-object! | object.ss:108--115 computes precedence and slot functions once | Initialization, not admission |
+| uninstantiate-object! | object.ss:117--123 clears only this object's native caches | Does not invalidate descendant objects, outside caches, receipts or published plans |
+| .put! / .set! / .get-set! / .@-set! | object.ss:569--573,608--611 writes an instance-table value | Not a persistent SlotSpec edit; reset can discard it, and dependent cached values are not recomputed automatically |
+| .putslot! / .setslot! / .def! | object.ss:579--605 changes direct SlotSpec storage | No automatic reset of compiled slot functions or dependent/descendant caches |
+| .putdefault! | object.ss:586--591 changes defaults storage | Same invalidation gap |
+| object-slots-set! / object-defaults-set! | object.ss:102--106 replaces storage | Same; exposed low-level setters cannot bypass the sealing boundary |
+| object-supers and struct field setters | Direct generated/raw mutation can alter graph identity assumptions | Not qualified on a sealed admission view |
+| hash<-object result | object.ss:283--284 returns the LIVE instance table after forcing | Mutating the returned table bypasses ordinary setters; cannot expose it as a writable certified snapshot |
+
+The current kernel does NOT provide general dependency invalidation. The design
+must not present uninstantiate-object! as such a mechanism. In particular,
+modifying a parent in place can stale a child's cached Pipeline even if the
+parent alone is reset. Likewise, updating the build instance entry does not
+invalidate already memoized checks on that same receiver.
+
+First qualification therefore uses immutable sealed configuration generations.
+Trusted initial descriptor construction may mutate before sealing and before
+observations escape. Published Profile objects and their selected dependencies
+cannot be mutated during a view. User refinement creates a new native object;
+it does not unfreeze or edit the parent. External mutable values, captured
+state and effectful slot computations require explicit revision dependencies
+or are excluded from the certified configuration path.
+
+Later support for in-place editing requires one centralized mutation protocol
+that advances generation and invalidates all dependent receipts/plans, plus
+reverse dependency tracking or a conservative whole-view revision. Direct raw
+writes must be rejected or treated as view corruption. Source requirements
+remain monotone through a permitted mutation; revision changes do not erase
+them. This protocol is PENDING, not a new claim about existing native setters.
+
+Separate cache keys/validation obligations are:
+
+- Provenance collection: immutable source node plus sealed publication/Contract/
+  policy-index revision; a newly added Contract association invalidates old results.
+- Slot values: native receiver-local behavior under the immutable-generation
+  premise; do not reuse a parent's instance cache as the child's cache.
+- Admission: canonical Contract/revision, final candidate and context identities,
+  selected dependency generations and sealed source/policy view.
+- Plan preview/publication: admitted selection, relations, ordering and dependency
+  evidence revisions; any changed selected value or context invalidates reuse.
+
+Cache metadata must not retain an unbounded history of complete object heaps.
+Private immutable provenance nodes can share a DAG; lifetime, bounded memoization
+and reclamation remain validation requirements, not demonstrated cost savings.
+
+* Nested demand: a bounded selected admission closure
+
+Use normal native declarations; no user-provided requirement list is added:
+
+#+begin_src scheme
+(.def (Release @ UpstreamScenario)
+  gerbil: =>.+
+  (.o funflow: =>.+
+      (.o build: =>.+ (.o commands: '("gerbil" "build" "--release"))
+          smoke: NewSmoke
+          pipeline: =>.+
+          (.o selected-checks: '(build test package smoke)))))
+#+end_src
+
+UpstreamScenario and NewSmoke denote upstream and user-maintained POO values;
+this example illustrates demand boundaries, not an implemented Funflow adapter.
+The selection comes from the Scenario's admitted composition configuration,
+not from construction-parent order. No fixed language set is assumed.
+
+| Step | Demand / provenance | Still lazy |
+|------+---------------------+------------|
+| Declare Release | Allocate outer object and record known native parent nodes | Computed gerbil, funflow, build and Pipeline refinements |
+| Select participants | Scenario Contract admits selection and declared composition relations | Unselected Profile slots |
+| Demand selected Profile/module | Computed =>.+ invokes the SAME native .+ constructor; collect resulting source nodes | Unused modules and unrelated slots |
+| Admit selected Pipeline | Its Contract demands selectors and required Check fields; admit each selected final Check and any new RHS history | Unselected Checks and runtime operations |
+| Close and preview | All demanded admission obligations have correlated successful receipts in one unchanged view | Runtime commands remain unexecuted |
+| Publish plan | Revalidate the view/dependency evidence; retry/refuse on change | Session/executor work remains behind the runtime handoff |
+
+Each node uses the existing public yuanxu-contract-admit protocol. Track
+candidate/Contract/context/view work identities to skip completed shared demands
+and reject unsupported recursive in-progress admission, rather than infinitely
+forcing a cycle. Newly discovered selected dependencies extend the worklist;
+completion means a closed selected dependency graph, not an empty outer trace.
+This worklist is an internal pure/reference algorithm plus controlled demand,
+not a second configuration DSL. Its implementation/correspondence is pending.
+
+Contracts must declare their candidate/dependency scope or use a qualified
+demand protocol. Arbitrary custom .admit methods that read hidden mutable globals
+or unreported objects cannot be assumed to participate in the closure. Record
+construction nodes only after each selected object exists; do not eagerly force
+all nested objects to obtain provenance at declaration time. Resource limits
+must fail with a diagnostic, not accept an incomplete closure.
+
+* Parent-cache control and proof boundaries
+
+The existing native parent-cache control still applies: warm the parent Pipeline,
+derive a child that changes build and selects smoke, then compare the child's
+ordered checks with the final child's selected slot identities. Cached parent
+lists fail, including the equal-length changed-build counterexample. Construction
+provenance cannot make a stale list correct; it only retains which policies must
+validate the final value.
+
+Module 22's proved derive_preserves and plus_right_complete describe requirement
+membership. The centralized constructor can map .cc to a source-preserving
+derive node even though .cc has no semantic parent edge to self. accepted_right_receipt
+still checks final candidate/context receipts. None of those proofs establishes
+complete native constructor interception, authenticity, multi-source fold
+correspondence, mutable-heap invalidation or termination of selected admission.
+No new theorem or native-runtime result is claimed by this source audit.
+
+Future qualification must include .def, shared-root multiple inheritance, .mix,
+.extend, .+, .cc, instance, Lens setters, deferred =>.+ and merged path prefixes;
+warm-parent/final-child controls; descriptor setup before sealing; foreign/raw
+copy refusal; mutation-after-seal refusal; index changes; and nested late demands.
+Public .admit receipt correlation remains mandatory for every selected candidate.
+
+Only documentation changes in this audit. No native object/MOP implementation,
+module adapter, Loader, dependency pin or historical receipt is modified.

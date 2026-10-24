@@ -1,0 +1,122 @@
+#+title: 32.01 Gitea/PostgreSQL: Evidence for Our Module Assurance Claims
+#+language: en
+#+property: DOCUMENT_ID 32.01
+#+date: [2026-10-17]
+#+property: STATUS maintained-source-reviewed-prior-focused-receipts-no-new-implementation
+
+* Scope and source identity
+
+This article owns evidence about our candidate framework, not source findings
+about other platforms. Compare the same TCP port action in [[file:../../20-29-ecosystem-research/20-nixos/20.10-gitea-port-source-comparison.org][NixOS 20.10]] and
+[[file:../../20-29-ecosystem-research/26-pulumi/26.03-gitea-port-fixed-source-comparison.org][Pulumi 26.03]]. No platform installation or new runtime qualification occurred
+in this source/document update.
+
+Core HEAD is =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e= with a dirty
+working tree: that commit alone does not identify the maintained code reviewed.
+[[file:32.01-source-manifest.sha256][The per-file manifest]] identifies the case's role files, JSON assets, admission
+owners, provenance/path bindings and relevant controls as read on 2026-10-17.
+Paths in the manifest are Core-relative. This is a bounded source-audit manifest,
+not a complete runtime closure or a new frozen executable receipt. The native
+POO dependency in gerbil.pkg is pinned to
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
+
+* Ordinary configuration and maintained relationship
+
+The real JSON baseline is:
+
+#+begin_src json
+{"settings":{"port":5432},"allowed-ports":[5432]}
+#+end_src
+
+Gitea's baseline has an empty database object and allows only 5432. The existing
+JSON configuration functions retain the document/source relationship and fill
+missing defaults. The maintained gitea-application constructor defaults an absent
+client port from its lexically bound final PostgreSQL instance. An explicit
+client value or null is not silently rebound. The Scenario publishes two
+requirement rows using policies from those service scopes. Both contribution
+declarations belong to the Scenario; these controls are not a demonstration of
+two mutually untrusted organizations publishing arbitrary code.
+
+The current user override and internal admission boundary are:
+
+#+begin_src scheme
+(.def (Release @ BaseScenario)
+  config.postgresql.settings: =>.+ {port: 5433})
+
+(def evidence
+  (.call (.get publication contract) .admit
+    Release (.get publication context)))
+(defvalues (receipt published failure)
+  (.call publication .publish BaseScenario Release))
+#+end_src
+
+publication is supplied by the selected publication mechanism, not manually
+assembled evidence in ordinary user configuration. Dotted syntax currently
+requires =>.+ at an object prefix; the leaf port is a direct assignment. A plain
+dotted direct-assignment shorthand is still a design proposal.
+
+* Exact existing controls and their limits
+
+| Question | Existing control/result | Limit |
+|----------+-------------------------+-------|
+| Effective port change | Parent plan cached at 5432; child database/client plans both 5433 and parent unchanged | Successful case uses isolated policies allowing both ports; repository defaults reject 5433 |
+| Incompatible requirements | Service policies allow only 5433 and only 5440; both rows survive and admission refuses with unsatisfied-joint-port-requirements | Not a proof of all open ecosystem combinations or hostile-code containment |
+| Omitted/replaced contribution | Removing a bound row or substituting its origin causes publication refusal | Coverage is over declared selected contributors, not unstated intended modules |
+| Source changed | JSON/Scheme source changed after observation/caching causes refusal; right-hand copied slots retain their source | Not an atomic filesystem snapshot or a guarantee against changes after checking |
+| Detached parent plan | plan.configuration identity and endpoint checks reject stale-parent-plan | Pure candidate association, not deployed resource identity or external drift detection |
+| Explicit client mismatch | Reports connection-mismatch and final field path/origins | Domain policy; Nix assertions or Pulumi components can also express equality |
+
+Owners: [[file:../../../t/gitea-postgresql-publication-test.ss][publication controls]], [[file:../../../t/gitea-postgresql-relocation-test.ss][relocation controls]], [[file:../../../scenarios/gitea-postgresql/gitea/types.ss][domain checks]] and
+[[file:../../../admission/publication.ss][selected admission/publication]]. Prior execution receipts are in
+[[file:../../10-19-design/10-configuration/10.19-service-publication-fixtures.org][10.19]], including the 32-case focused run. It includes test-lifecycle controls;
+32 is not a count of cross-platform experiments or production deployment checks.
+Those receipts are not rerun or promoted to a fresh complete-runtime qualification.
+
+* Reflection: the improvement we should actually pursue
+
+Known-port following and endpoint equality are not unique capabilities. Our
+implemented contribution is a common selected-publication path that checks source
+currentness, requirement coverage and effective candidate admission together.
+This may reduce repeated per-application wiring, but that maintenance-cost
+advantage has not been established against equivalent NixOS/Pulumi libraries.
+
+The decisive design question is whether an independent contribution can be
+silently lost while a useful-looking final object still emerges. Our bound-row
+controls reject specific omissions/replacements. Generalize only as far as the
+selected source protocol and trusted domain handlers actually enforce it.
+Value precedence must not silently waive a separately declared requirement;
+there is no need to copy a numeric priority language into every user field.
+
+For AI/Human authoring the useful result would be a stable field interface and
+an actionable conflict naming the final field and retained contributors. Users
+should not see evidence records or reason about cached parent objects. Field
+discovery, comprehensive typo checks and polished default diagnostics are still
+UX design goals; this narrow predicate-based service model does not deliver all
+of them. Unknown provider values, secret propagation, real service lifecycle,
+readiness and execution authorization likewise remain outside this local plan.
+
+* Issues and Engineering Limitations
+
+The comparison uses the real upstream issue records in 20.10 and 26.03. Their
+reported recursion or RPC/Output failures are not reproduced or fixed by this
+case. No resolving PR is claimed. Native .cc opaque writes cannot be assigned
+invented source locations; arbitrary custom slot implementations and AOT source
+attribution need additional qualification. Module/Contract code remains trusted.
+
+* Conclusion and onwards
+
+Already evidenced: the selected Core chain rejects the listed omission, conflict,
+stale-source and stale-plan controls while preserving the effective child port.
+Not evidenced: lower maintenance cost, faster evaluation, universally clearer
+diagnostics, or solving a limitation that NixOS/Pulumi cannot address.
+
+The source-first research goal is to identify concrete missing defaults or
+costly extension boundaries, then specify the smallest stronger framework
+invariant. Consult official manuals, fixed source and Issue/PR evidence first;
+use a minimal reproduction only if a remaining claim actually needs it. Do not
+resume platform installation or product Loader work as a side effect of research.
+
+* Maintainer responsibility comparison
+
+[[file:32.02-maintainer-publication-comparison.org][32.02]] shows real Type/range/default/policy checks, actual Scenario declarations,
+protocol-owned wiring and the unexecuted Nix/Pulumi application adapters.

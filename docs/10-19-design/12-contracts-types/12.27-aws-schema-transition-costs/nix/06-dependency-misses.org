@@ -1,0 +1,153 @@
+#+title: 12.27.10 Evaluation Misses and Dependency Reuse
+#+property: DOCUMENT_ID 12.27.10
+#+language: en
+#+property: STATUS retained-evidence
+
+* Four native misses: evaluation, Store requests and GC protection
+
+The same init-selected qualification Case now uses the existing Ops progress
+decoder for both liveness and observation. Its decoded record is delivered to
+the existing ModuleTestingProfile observer; no second JSON parser, process,
+result cache or user-side observation object is introduced. A supervising
+TestingScript skips compact native diagnostic-message records that cannot
+advance progress, while retaining activity decoding and the child's progress
+relay. Repeated messages, including GC-root messages, cannot renew an idle
+deadline. Observation emission remains independent of progress decoding.
+
+For a bounded diagnostic run only, the private frozen source snapshot extends
+the debug allowance from four to 24 processes, covering the 20 queries and two
+realizations. The ordinary source retains four. This changes diagnostic
+coverage, not the 60-second inactivity or 600-second total budgets. Execution
+still enters through the init-owned test object's =.run=, with observation
+enabled on its execution Profile and no outer trace flags.
+
+| Query | Input event | Query wall ms | Instantiation events | Validity requests | GC-root requests | Store-add requests | Path-info requests | File-evaluation messages |
+|-------+-------------+---------------+--------------------------+-------------------+------------------+--------------------+--------------------+--------------------------|
+| 1 | Initial locked input | 20500 | 1324 | 1328 | 1326 | 303 | 288 | 329 |
+| 6 | Transitive input changed | 15704 | 1324 | 1328 | 1326 | 303 | 288 | 330 |
+| 7 | Original bytes restored, native input metadata changed | 17205 | 1324 | 1328 | 1326 | 303 | 288 | 329 |
+| 11 | Second Schema publication | 21132 | 1324 | 1328 | 1326 | 303 | 288 | 329 |
+| Each of 16 hits | Stable native input fingerprint | 248–683 | 0 | 3 | 2 | 2 | 3 | 3 |
+
+The four miss queries account for 74541 ms; the 16 hits account for 4829 ms.
+The two actual realization processes take 553 and 651 ms. Thus an evaluation
+miss must not be labelled a rebuild: the expensive queries instantiate
+derivation descriptions and interact with the Store even when outputs exist.
+The file column counts native evaluation messages, not unique physical reads.
+Likewise, =AddToStore= requests do not prove that new bytes were written.
+
+Worker operations 1, 7, 11 and 26 identify validity, Store-add, temporary GC-root
+and path-info requests respectively in the pinned Nix protocol. Temporary
+roots protect paths while evaluation uses them. Native derivation publication
+requests a temporary root before checking whether the derivation already
+exists. Removing those requests, or opening the live writable Store database
+as immutable/read-only to evade them, is not a qualified optimization.
+
+These are request counts, not RPC-completion timestamps. Query wall time
+includes evaluator execution, IPC, Store work and scheduling; the public log
+does not separate their service times. The audit therefore does not assign
+seconds to GC protection or claim that GC itself consumed the miss interval.
+The observed second and third misses have different native input identities;
+restoring bytes does not authorize overriding native fingerprint metadata.
+Cross-Schema reuse must also retain the new publication's identity checks.
+
+The safe reduction here is shared decoding and removal of redundant diagnostic
+decoding in the parent. Existing same-Graph source-read windows and union DFS
+remain bounded to pure work; they do not cache initializer effects, admission
+results or answers across source transitions. No additional Scheme cache is
+introduced to disguise the four native misses. The remaining package-body
+reevaluation is still an open performance cost.
+
+The full Case exits naturally with seven MODULE-OK, two HARNESS-OK and two final
+OK markers, without error/overflow markers. AWS publication completes at
+100145 ms and retains Schema-update rejection, old-evidence rejection,
+previous-value preservation and fixture cleanup. This is an observation-enabled
+functional receipt, not a controlled speedup claim. Focused native tests also
+cover observation without liveness renewal, bounded scalar aggregation, native
+cache hits/invalidation, and native progress transport with observation off.
+The temporary diagnostic allowance is restored after the run; raw logs remain
+local artifacts.
+
+** Why the four fingerprints repeat the dependency evaluation
+
+The follow-up compares the complete native =instantiated ... -> ...drv= event
+multisets, not merely their totals. Each miss has 1324 events but only 802
+distinct derivation paths. Repeated paths account for 522 additional events
+within each evaluation, including hook/bootstrap outputs. The same Python
+build hook appears 22 times. These are evaluator events, not 1324 distinct
+packages, new builds, or 1324 invocations of the Core Graph builder.
+
+| Query versus query 1 | Shared distinct derivations | Shared events including multiplicity | Changed distinct derivations |
+|----------------------+-----------------------------+--------------------------------------+------------------------------|
+| 6: transitive file added | 801 of 802 | 1323 of 1324 | 1: final artifact bundle name |
+| 7: original bytes restored | 802 of 802 | 1324 of 1324 | 0 |
+| 11: Schema upgrade | 796 of 802 | 1318 of 1324 | 6 |
+
+The six changed paths are the provider download, installed provider, generated
+OpenTofu input, provider-bound OpenTofu engine, Schema artifact and final
+artifact bundle. The stable package-set source is imported as a plain locked
+Nix input; the application evaluates its package expressions under the root
+Flake's cache. Its 796 unchanged dependency paths do not acquire separate
+persistent expression caches merely because their outputs already exist.
+
+Installed Nix =2.34.4+1= matches the inspected =2.34.4= implementation:
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libflake/flake.cc][LockedFlake::getFingerprint and openEvalCache]]
+combine the root input fingerprint, subdirectory, effective lock graph and
+observable =revCount=/=lastModified= metadata. The persistent
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libexpr/eval-cache.cc][attribute cache]]
+uses a database selected by that fingerprint. An attribute-cache miss enters
+the root evaluator; it is not a dependency-aware incremental cache across
+different Flake fingerprints. Store derivation/output reuse remains a separate
+layer. This explains both the repeated native evaluation and the fast output
+realization without attributing either to a second Core Graph.
+
+The focused native Scheme control in
+[[file:../../../../../t/nix-evaluation-cache-test.ss][nix-evaluation-cache-test.ss]]
+now checks the boundary without a timing assertion or a new cache:
+
+- An unchanged source fingerprint reuses the cached attribute without loading
+  the evaluator root. The test checks native root-load/cached-string messages
+  in its existing captured diagnostic stream without adding Case categories.
+- Two explicitly supplied source-metadata values produce the same stable
+  derivation but independently evaluate its body. Another output that reads
+  =self.lastModified= produces different derivations, proving why this input
+  dimension cannot be silently erased.
+- Revisiting the first metadata identity uses its existing native cache.
+  Switching identities does not imply eviction of the earlier database.
+- Adding an unconsumed file changes the native whole-tree fingerprint and
+  reevaluates the body even though the selected derivation stays identical.
+  The next query with those same inputs again hits the native cache.
+
+Explicit metadata is used only to make this negative control deterministic.
+Production Sources continue to accept Nix's real metadata. The control does
+not normalize timestamps, alter cache keys, retain successful admission or
+infer currentness from equal outputs. It passes through the normal fenced
+native test entrypoint with no harness/overflow failures.
+
+Repeating the first version of that control exposed a false cold-start
+precondition: a different temporary directory with identical bytes and
+explicit metadata reused the previous run's native cache. Its cold-trace
+assertion failed correctly. The fixture now includes its unique directory
+basename as a Flake description, making each invocation's input bytes distinct
+while keeping all comparisons within that invocation identical. It never
+deletes native caches or equates a fresh directory with a cold cache.
+
+Consequently, queries 6 and 11 have real relevant input changes; query 7 is a
+native metadata-induced invalidation with no final derivation change. All
+three belong to an input-transition boundary even where the Scheme selection
+object survives. Stable-fingerprint queries already use native attribute
+reuse. Removing their adjacent source/Schema checks would not eliminate these
+three distinct fingerprints and would weaken publication safety.
+
+There is no qualified public Nix switch here that imports cached expression
+results from one fingerprint into another while rechecking its dependencies.
+The earlier exact-attribute fix removed actual same-fingerprint duplicate body
+evaluation. This follow-up does not invent another cache to claim a further
+reduction. A future publication split could isolate an immutable provider
+catalog from mutable selection data, but must first preserve transitive input
+coverage, native GC protection and the Schema/publication association. Moving
+files alone is insufficient: overridden input identities remain part of the
+effective lock graph. That architectural change is not established by these
+controls or implemented here.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

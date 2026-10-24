@@ -1,0 +1,290 @@
+#+title: 32.02 Maintainer Responsibilities: Contribution Coverage, Source Binding and Plan Applicability
+#+language: en
+#+property: DOCUMENT_ID 32.02
+#+date: [2026-10-17]
+#+property: STATUS source-backed-responsibility-comparison-unexecuted-upstream-adapters
+
+* Scope, fixed references and reading order
+
+Migration note, 2026-10-18: predicate-based service snippets in this article
+record the earlier audited snapshot. [[file:32.05-maintained-service-object-contracts.org][32.05]] owns the maintained ObjectContract
+replacement, contextual child admission and final focused qualification. Do not
+treat those historical predicates as the current recommended authoring surface.
+
+This compares maintainer responsibilities for the same known-value
+Gitea/PostgreSQL application envelope. It does not compare full deployments,
+claim every platform needs our hand-written adapters, or rank line counts.
+Ordinary users change a port; maintainers own the interfaces and relationship.
+
+- NixOS: [[file:../../20-29-ecosystem-research/20-nixos/20.10-gitea-port-source-comparison.org][20.10]], including the bounded analysis adapter, uses nixpkgs
+  =50ab793786d9de88ee30ec4e4c24fb4236fc2674=.
+- Pulumi: [[file:../../20-29-ecosystem-research/26-pulumi/26.03-gitea-port-fixed-source-comparison.org][26.03]], including the bounded analysis adapter, uses SDK/engine
+  commit =d89552a06391618eee1a9455cd4bcd701810a940= (v3.197.0).
+- Core: [[file:32.01-gitea-postgresql-evidence.org][32.01]] records dirty-tree identity, per-file source hashes, dependency pin
+  and prior local controls. These are maintained files, not just HEAD contents.
+
+Both upstream adapter functions are ANALYST-WRITTEN, NOT-EXECUTED and limited to
+known ordinary data. They expose the work a reusable application library could
+own. They are not replacements for native module origins or engine plans and
+are not complete reproductions of Core's identity/source protocol.
+
+* Responsibility ledger
+
+For matched multi-contributor domain code rather than unequal snippet sizes,
+see [[file:32.04-equal-scope-complex-service-comparison.org][32.04 Equal-Scope Service Composition]].
+
+| Concern | NixOS existing mechanism / extra application concern | Pulumi existing mechanism / extra application concern | Core already centralized / still domain-owned |
+|---------+-----------------------------------------------------+------------------------------------------------------+-----------------------------------------------|
+| Legal port | types.port is 0..65535; use ints.between for 1..65535 if the application requires it | Config numeric parsing and optional bounds; integer/relationship policy belongs to the component | Originally a local predicate; 32.05 now uses native IntegerRange and shared ObjectContract fields |
+| Default 5432 | Option default, distinct from port type | Component/default expression, distinct from numeric bounds | JSON/default configuration, distinct from Port Type |
+| Allowed ports and connection | Options/assertions can express domain policy and relationship | Components/policies can express domain policy and relationship | Port obligations and application-issues remain maintained domain code |
+| Expected contribution coverage | Imported definitions carry locations; an expected contributor/route manifest is an extra application contract | Components/engine resources have identities; expected application policy membership is an extra contract | Selected routes, row collection, deep identity observations and coverage are bound by .for-export |
+| Source association/currentness | Definition file metadata already exists; stable build inputs are not the same as a working-file revision gate | Output origin tracks resource dependency; source-file snapshot identity is a different application/build concern | Selected graph/source generations and observed input guards; domain Contract must still publish its JSON source-inputs |
+| Plan applicability | Real Gitea HOST derives from final config; detached application projection needs its own meaning | Saved update plans already constrain engine operations; unknown inputs follow engine semantics | Domain checks configuration identity/ports; .publish binds accepted evidence to current context |
+| Failure semantics | Evaluation refusal; system generation/activation are separate mechanisms | Engine execution and partial failure are separate from a synchronous application guard | Guarded publication retains previous candidate on refusal; no service execution qualification here |
+
+An upstream capability not found in the inspected files is not proven absent.
+NixOS metadata and Pulumi engine plans are concrete counterevidence to claims
+that our framework uniquely provides origins or plan validation.
+
+* Scheme's value validation must be visible in the comparison
+
+Actual [[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQL types.ss]]:
+
+#+begin_src scheme
+(def (valid-port? value)
+  (and (exact-integer? value) (<= 1 value 65535)))
+(def Port
+  (yuanxu-predicate-type 'postgresql/port valid-port?))
+(def (postgresql-config? value)
+  (and (object? value) (.slot? value 'settings)
+       (object? (.get value settings))
+       (.slot? (.get value settings) 'port)
+       (valid-port? (.get value settings port))))
+(def PostgreSQLConfigContract
+  (yuanxu-predicate-contract 'postgresql/config
+    postgresql-config? (lambda (_v _c) '())))
+#+end_src
+
+The Scenario passes this Config Contract and Port Type from the admitted
+PostgreSQL dependency scope into the Application Contract. The real
+[[file:../../../scenarios/gitea-postgresql/gitea/types.ss][application-issues]] admits the database, validates the client's port with the
+same Type, then checks endpoint equality and plan association. The policy loop
+separately checks membership of the final database port in every allowed-port
+list. Therefore 5433 is a valid port but is refused by the current [5432]-only
+policies. No numeric merge priority participates in those tests.
+
+This is a real remaining maintenance cost: the framework does not synthesize
+all domain predicates, field discovery or unknown-field diagnostics from those
+few lines. Publishing a Contract name alone would not implement these checks.
+
+* What the Scenario maintainer actually declares
+
+The following is the exact admission/contribution portion of the maintained
+[[file:../../../scenarios/gitea-postgresql/interface.ss][interface.ss]], excerpted from its core object, not a replacement full file:
+
+#+begin_src scheme
+admissions:
+(.o Application:
+    (.o export-path: '(Scenario) contract-path: '(types Application)))
+contributions:
+(.o postgresql-port:
+    (.o target-owner: 'applications/gitea-postgresql
+        target-admission: 'Application
+        export-path: '(requirements postgresql))
+    gitea-port:
+    (.o target-owner: 'applications/gitea-postgresql
+        target-admission: 'Application
+        export-path: '(requirements gitea)))
+#+end_src
+
+Dependency declarations, application-scope construction and domain Contracts
+remain required maintained code. Both declarations are owned by this Scenario;
+their payloads come from the two service policies. This case does not prove
+universal coverage for unrelated or unselected ecosystem modules.
+
+* What the protocol removes from each domain caller
+
+Actual [[file:../../../admission/publication.ss][AdmissionPublication.]] method body:
+
+#+begin_src scheme
+(lambda (selection owner name)
+  (let (record (.call selection .selected-record owner))
+    (bind-publication-contributions selection owner name
+      (module-admission-publication (.get selection build-graph)
+        (.get record publication) (.get record scope) name))))
+#+end_src
+
+This is the .for-export implementation. Its callers do not manually walk export
+paths, construct origin rows or enumerate the expected rows again. In the real
+[[file:../../../admission/contributions.ss][collection implementation]], the selected route index supplies edges; collect
+resolves actual .selected-record values, verifies publication/generation, walks
+the deep export path and observes intermediate objects. coverage! requires the
+registered row identities and matching selected source/publication/path; the
+currentness closure rechecks revisions and source guards at admission.
+
+Actual domain source association is still explicit in ApplicationContract:
+
+#+begin_src scheme
+source-inputs:
+(append (.get documents postgresql source-inputs)
+        (.get documents gitea source-inputs))
+#+end_src
+
+The platform consumes these declared inputs. It does not discover arbitrary
+filesystem reads or magically know every dependency of a Scheme function.
+The domain also retains the actual plan-consistency condition:
+
+#+begin_src scheme
+(and (eq? (.get candidate plan configuration) (.get candidate config))
+     (= (.get candidate plan postgresql port) (.get database settings port))
+     (= (.get candidate plan gitea database-port) (.get client database port)))
+#+end_src
+
+Thus .publish centralizes the admission/currentness/evidence binding and previous
+candidate retention, but the meaning of a valid Gitea plan is still domain code.
+The final call is the existing protocol, not a new authoring DSL:
+
+#+begin_src scheme
+(def publication
+  (.call AdmissionPublication. .for-export selected
+    'applications/gitea-postgresql 'Application))
+(defvalues (receipt next failure)
+  (.call publication .publish previous candidate))
+#+end_src
+
+* Concrete repetition removed, and what has not been removed
+
+Removed from each protocol caller: selected-record lookup and generation checks,
+contribution enumeration/collection, deep-path origin construction, expected-row
+identity checking, common source/currentness guards and evidence-to-candidate
+binding. This is visible in current implementation, with negative controls in
+[[file:../../../t/gitea-postgresql-publication-test.ss][publication tests]] and [[file:../../../t/gitea-postgresql-relocation-test.ss][relocation tests]]. Prior local receipts remain in
+[[file:../../10-19-design/10-configuration/10.19-service-publication-fixtures.org][10.19]]; none was rerun for this document update.
+
+Not removed: role/interface declarations, source-input declarations, domain Type
+and Contract implementations, relationship/plan checks, diagnostics design,
+policy maintenance and real resource consumers. Generic discovery, broad typo
+checking, external unknown/secret propagation and safe execution remain gaps.
+
+The Nix/Pulumi analysis functions show that local envelope checks are expressible
+without our POO framework. Their expected-route/source inputs are intentionally
+not authenticated by those examples; making them production-quality would need
+an owning library. Conversely, the native NixOS/Pulumi frameworks already provide
+substantial mechanisms our small adapters omit. Comparing their handwritten
+function lengths against one Core method call would hide both sides' framework
+cost and is not evidence of reduced total maintenance.
+
+* Issues and Engineering Limitations
+
+Nix #379855 motivates phase-aware discovery, not a missing port checker. Pulumi
+#20536 motivates component RPC/Output semantics, not plain integer membership.
+Both remain reported, not locally reproduced or fixed here. Pulumi's pinned
+engine plan and official manual were newly inspected for this comparison; they
+already enforce operation constraints. No relevant resolving PR was verified.
+
+Core's current domain predicates are narrower than a full schema-driven service
+interface, and its plan checks are earlier/purer than provider execution. Trusted
+module implementations and stable selected declarations remain assumptions.
+
+* Reflection and conclusion
+
+** Authoring correction: use the existing descriptor algebra first
+
+The complete proposed service declarations, Meta catalog, bounded Prototype
+Types example and fixed-source NixOS comparison are in
+[[file:32.03-service-type-declaration-convergence.org][32.03 Service Type Declaration Convergence]].
+
+The service predicate shown above records the pre-migration source, not the final
+authoring interface. Repeating =object?=, =.slot?= and scalar recognizers is an
+authoring defect when the maintained Type library already expresses the shape.
+Centralizing publication does not compensate for a verbose field declaration.
+
+At Core's pinned gerbil-poo revision
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=, the following are existing APIs:
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/number.ss][IntegerRange]],
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/object-contract.ss][ObjectContract., refine and diagnostic adaptation]], and =List=.
+This proposed service declaration reuses those APIs; it is not an implemented
+replacement of the service files and was not executed for this source audit:
+
+#+begin_src scheme
+(def Port (IntegerRange min: 1 max: 65535))
+
+(def PostgreSQLSettings
+  (.cc ObjectContract.
+    responsibilities: (.o port: Port)))
+
+(def PostgreSQLValueContract
+  (.cc ObjectContract.
+    responsibilities:
+    (.o settings: PostgreSQLSettings
+        allowed-ports: (List Port))))
+#+end_src
+
+Here =1..65535= is the application's chosen domain, =5432= remains a JSON default,
+and =allowed-ports= remains an independent policy. Required-field detection,
+unknown-field rejection and nested field diagnosis belong to ObjectContract.
+The Core test [[file:../../../t/json-schema-value-contract-test.ss][json-schema-value-contract-test.ss]] already demonstrates a
+Schema-derived Type nested in public ObjectContract responsibilities. This is
+source evidence of reuse, not a fresh runtime receipt for the declaration above.
+
+The descriptor goes into contextual admission through =value-contract=; do not
+copy its fields into Core =YuanxuContract.= contextual =responsibilities=.
+Connection equality, intersection of independent port requirements, source
+currentness and candidate/plan applicability remain separate checks. A descriptor
+can normalize a value, so publication must bind the final checked receiver rather
+than assume validation preserves its original object identity.
+
+** Updated upstream: distinguish three abstraction owners
+
+Source review of gerbil-poo's feature branch at
+=a2525126cb91c98e2ef50e302e39243c7c633913= found capabilities beyond Core's pin:
+
+- [[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/doc/row-types.md][Object row Types]] compile field declarations through ObjectContract. Open/closed
+  rows express extensible interfaces versus exact user configuration. Finite
+  guarded recursion is explicitly bounded, not arbitrary recursive inference.
+- [[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/doc/prototype-types.md][Prototype Types]] parameterize reusable descriptors and check finite explicit
+  substitutions/bounds. Higher-order Function fields retain runtime validation;
+  prototype ancestry alone is not semantic subtyping.
+- [[https://github.com/tao3k/gerbil-poo/blob/a2525126cb91c98e2ef50e302e39243c7c633913/doc/meta-prototype.md][Meta/declaration protocols]] elaborate declarations into ordinary Slot descriptors
+  and finalize the whole declaration set. They can centralize maintained field
+  conventions, but do not automatically supply module contribution coverage,
+  file currentness or domain connection policy.
+
+These files were inspected on the feature branch, not assumed to exist on master
+or in Core's dependency. No pin migration or upstream test execution occurred.
+Use existing ObjectContract composition for this simple service before requiring
+bounded inference or a custom Meta expander. Add a Meta convention only when
+multiple real modules share a stable declaration policy; preserve ordinary POO
+expansion and exact source paths. Do not introduce a configuration-specific DSL.
+
+** NixOS comparison and improvement criterion
+
+NixOS =mkOption= combines type/default/documentation declarations; =types.submodule=
+reuses the module evaluator for nested configuration. Our nested ObjectContract
+is comparable for structural admission, not equivalent to that evaluator or its
+definition priorities, defaults and documentation. See the fixed-version
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix][NixOS Types source]]. A better POO interface should reuse one descriptor graph
+for validation and field discovery, while keeping defaults in maintained config
+and relationships in domain obligations. Shared descriptors do not by themselves
+establish a complete discovery interface, merge policy or source diagnostic.
+
+The measurable target is fewer repeated shape checks and consistent paths across
+JSON/Scheme inputs, not fewer lines obtained by hiding unimplemented helpers.
+Before claiming an advantage, exercise missing/unknown fields, nested invalid
+ports, parent-prepared descriptors followed by child refinement, independent
+requirements and normalized final receiver identity. Existing publication
+controls remain relevant but do not prove this proposed service migration.
+
+The implemented consolidation is real and specific; superiority is not yet an
+established result. The useful target is an ecosystem where new domains reuse
+this publication protocol while keeping ordinary user assignments simple. Ask
+whether each new domain still has to invent coverage, source authority or cache
+identity. If it does, the framework has not actually centralized that concern.
+
+Also ask the reverse question: does our protocol force a domain to declare more
+metadata than a reusable Nix or Pulumi library needs? Can a field error be traced
+without exposing internal evidence? Can general Types replace repeated private
+predicates? These questions direct the next design work without installing
+platforms or extending Fixtures. No implementation or Loader change is proposed
+as part of this research record.

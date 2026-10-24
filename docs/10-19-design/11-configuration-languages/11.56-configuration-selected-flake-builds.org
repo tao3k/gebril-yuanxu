@@ -1,0 +1,429 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.56 Config Languages 55: Configuration-selected Flake Builds
+#+property: DOCUMENT_ID 11.56
+#+property: STATUS implemented-local-native-no-loader
+
+* Implementation update
+
+[[file:11.57-module-build-role-and-final-admission.org][Chapter 56]] implements the optional build role, phase-bound Build publication
+and admission-before-return described here as pending. Its new phase accounting
+supersedes the earlier timing table; this chapter and receipt preserve the
+pre-implementation design and qualification history.
+
+* Ownership and public configuration
+
+The final OpenTofu configuration is the only Provider demand declaration. A
+Module maintainer supplies a locked package capability; users do not duplicate
+Provider names in a selection list. Nix owns Provider packages and Schema
+production. OpenTofu owns demand projection and generated Contracts. Core owns
+the selected graph and its guarded build entry. The product Loader is not wired.
+
+** Module selection is not Provider selection
+
+=yuanxu-load-modules= discovers and selects Module declarations and their
+contributions. It must not recognize AWS, Null, OpenTofu resource names or
+Provider versions. A selected OpenTofu contribution projects external package
+demand from its final configuration. The generic Core build mechanism consumes
+that contribution; the Nix Module evaluates the locked package capability.
+Provider-specific interpretation stays inside OpenTofu.
+
+The distinctions are essential:
+
+- The root =init.ss= is the highest-level unified entry for ALL Modules and
+  their Feature decisions, including infrastructure and application Modules.
+- The selected consumer's =config.ss= contains its OpenTofu configuration.
+- OpenTofu's existing =.build-inputs= projects Provider demand internally.
+- Core's explicit build boundary realizes contributed package requests and
+  demands final configuration admission before publishing a successful result.
+
+Adding a Null resource changes configuration-derived external demand. It does
+not add a Null Module to init, change Module discovery, or require an AWS-specific
+build directory/API. The module-selection decisions may stay identical even
+though the source-bound build generation changes.
+
+** Root orchestration and module-local roles
+
+Do not flatten root orchestration and Module roles into three peer root files.
+The root =init.ss= organizes the whole Module universe. =config.ss= belongs to a
+particular Module. A Module's =build.ss= owns its local build-tool contribution,
+not the root selection entry. This distinction is independent of whether the
+Module is maintained upstream or by a downstream user.
+
+#+begin_example
+project/
+  init.ss                         unified Module/Feature entry
+  modules/app/infrastructure/
+    types.ss                      Module types and Contracts
+    config.ss                     this Module's user configuration
+    objects.ss                    this Module's POO objects
+    interface.ss                  this Module's admitted publication
+    build.ss                      local build contribution, when needed
+#+end_example
+
+The maintained shell may supply the role files the user does not need to edit.
+There is no universal claim that every project must author exactly three files.
+The current source-role mechanism consumes config from its selected owner;
+it does not automatically route an arbitrary root =config.ss= into OpenTofu.
+
+#+begin_src scheme
+;; project/init.ss -- supported declarative selection
+(yuanxu! mode: explicit source: "./modules"
+  :app
+  (infrastructure))
+#+end_src
+
+#+begin_src scheme
+;; project/modules/app/infrastructure/config.ss -- first revision
+(def Config
+  (.o provider: (.o aws: (list (.o region: "us-east-1")))
+      resource:
+      (.o aws_security_group:
+          (.o web: (.o name: "web")))))
+#+end_src
+
+#+begin_src scheme
+;; The same config.ss -- subsequent revision
+(def Config
+  (.o provider: (.o aws: (list (.o region: "us-east-1")))
+      resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource:
+          (.o smoke: (.o triggers: (.o release: "smoke"))))))
+#+end_src
+
+The Module-local build contribution derives Provider demand from this Module's
+final configuration. Its =build.ss= must not reopen the root =init.ss= or call
+=yuanxu-load-modules= to rediscover the application. Root selection passes
+admitted contributions to generic Core build orchestration. That orchestration
+owns generation allocation, currentness, native build invocation and final
+admission. No AWS/Null-specific branch belongs in root discovery or orchestration.
+The Module interface declares its contribution once; users do not assemble the
+stages in either init or config.
+
+The previous proposed =project/build.ss= / =yuanxu-build(init,args)=
+user entry has been removed from this design: it incorrectly made a root build
+wrapper a peer of Module-local configuration and build roles. Merely moving
+that wrapper into a Module would retain the wrong dependency direction.
+
+Implementation boundary: =core/modules/opentofu/build.ss= is currently an
+explicit build-tool owner providing the tested contribution. =build= is NOT
+currently a source role automatically admitted by the role-file mechanism;
+its allowed roles remain =types objects func config interface=. Automatically
+wrapping/publishing a Module-local build role and closing the root-to-build
+invocation path are remaining design/implementation work. The tested internal
+chain must not be described as that completed authoring experience.
+
+The internal =Parent=/=Child= objects, explicit module-selection/build-entry
+calls and =.build/aws-null= directories remain qualification details. They are
+not user configuration or routing conventions. Native command semantics must
+also remain intact: inspection/cleanup must not accidentally realize packages,
+and generated compiler inputs must retain their own source directory. This
+correction implements no new driver, role adapter or product Loader.
+
+** Concrete module-local publication target
+
+This subsection gives the corrected file boundary. Root init syntax, the
+FlakeSource prototype, the OpenTofu contribution constructor and selected
+=core.projections= consumption already exist. Automatic build-role wrapping is
+a TARGET. The four-file layout below must not be advertised as runnable through
+that missing adapter today. No new syntax or publication object is proposed.
+
+#+begin_src scheme
+;; project/init.ss -- root authority, unchanged across both config revisions
+(yuanxu! mode: explicit source: "./modules"
+  :app
+  (infrastructure))
+#+end_src
+
+=config.ss= is the Module-local configuration shown above. Its AWS-only revision
+contains =provider.aws= and =resource.aws_security_group.web=. Its next revision
+adds =resource.null_resource.smoke=; init and build declarations stay unchanged.
+
+#+begin_src scheme
+;; modules/app/infrastructure/build.ss -- TARGET automatic role wrapper
+;; The maintained build-tool binding environment supplies these existing owners:
+;; NixFlakeSource. and yuanxu-opentofu-package-contribution.
+(.def (ProviderArtifacts @ NixFlakeSource.)
+  reference: "path:/srv/company/provider-packages"
+  attribute: "lib.providerArtifacts")
+
+(def Build
+  (yuanxu-opentofu-package-contribution ProviderArtifacts))
+#+end_src
+
+The path names the maintainer's locked flake capability. It is not a Provider
+list and does not select AWS or Null. Constructing =Build= constructs an ordinary
+native contribution; it does not execute Nix, read the final config or reload
+init. The existing contribution's =.prepare= receives the admitted owning Module
+root, currentness callback and publication from Core. Its default source/binding
+are =config.ss= and =Config= relative to that owner.
+
+The existing scope-shape Contract used by this small example belongs in the
+maintained =types.ss=, distinct from generated Provider configuration Contracts:
+
+#+begin_src scheme
+(def InfrastructureScopeContract
+  (yuanxu-predicate-contract 'app/infrastructure-scope
+    (lambda (scope)
+      (and (object? scope) (.slot? scope 'config)
+           (object? (.get scope config))))
+    (lambda (_value _context) '())))
+#+end_src
+
+#+begin_src scheme
+;; modules/app/infrastructure/interface.ss -- TARGET Build role binding;
+;; the native core.projections field and contribution protocol already exist
+(.def Infrastructure
+  identity: 'app/infrastructure
+  core:
+  (.o requires: (.o)
+      scope-contract: InfrastructureScopeContract
+      exports: (.o config: Config)
+      projections: (list Build))
+  features: (.o))
+#+end_src
+
+Interface publishes the binding once. Automatic publication means source-role
+preparation supplies the bounded =Build= binding and Core consumes the declared
+projections of selected Modules. It does NOT mean scanning arbitrary object
+bindings for things that look executable, or maintaining another global build
+inventory. The phase wrapper owns native imports/exports; application authors
+must not duplicate those in these declarations.
+
+The existing Core selected-build implementation already performs the essential
+owner-to-request call (excerpt from =module-system/source/build.ss=):
+
+#+begin_src scheme
+(let (request
+      ((.ref projection '.prepare)
+       (cdr root)
+       (.ref selected-value 'admit-current)
+       publication))
+  (hash-put! package-ids id #t)
+  (set! checks (cons (.ref request 'admit-current) checks))
+  (set! package-values (cons request package-values)))
+#+end_src
+
+Here =root= is the owning Module source root resolved from its admitted metadata,
+not a root-init path requested by that Module. The returned request enters the
+same selected graph's =external-packages= slot. Duplicate external-package
+identities reject; multiple independent OpenTofu consumers are not silently
+merged by this design.
+
+On the next explicit unified build request after a config change:
+
+1. Root orchestration obtains current Module/Feature selection. OpenTofu Provider
+   names never become Module-selection syntax.
+2. The selected interface's contribution prepares its own final config from
+   source. OpenTofu projects AWS-only, or AWS plus Null, into package demand.
+3. The generic build mechanism invokes the contributed request. Nix evaluates
+   the locked capability and realizes the selected Schema producers. OpenTofu
+   constructs the corresponding lazy module scope/ConfigurationContract.
+4. Successful publication must demand the final =admission= slot; this performs
+   currentness checks and the public native =.admit= internally. Users do not
+   extract scopes, choose type lists or assemble those stages.
+
+This is build-on-invocation, not an implemented filesystem watcher or automatic
+deployment. Config mutation invalidates the previous source-bound generation;
+it does not rewrite a cached parent Contract in place.
+
+Remaining adapter obligations are concrete:
+
+- Admit an optional Module-local =build.ss= role with its native build-tool
+  bindings, source locations and source observations. Build-role removal/addition
+  must invalidate the owning generation; nonselected Modules stay unprepared.
+- Supply =Build= only to the admitted build-publication phase. Do not blindly
+  include the build-tool closure in ordinary runtime or config evaluation. The
+  current config-role evaluator's related-role policy also needs this distinction.
+- Resolve =Build= into =core.projections= through the same hygienic role wrapper;
+  do not introduce a second role parser, registry or Module-to-root lookup.
+- Let root orchestration own output allocation, native build invocation and
+  forcing lazy final admission before reporting success. The existing entry
+  writer realizes external packages but returns a still-lazy admission slot.
+
+The three-round native receipt validates these internal mechanisms through
+explicit test orchestration. It does not qualify automatic build-role publication
+or the remaining invocation adapter. This section changes design documentation
+only; it does not connect the product Loader.
+
+The following is the build-tool declaration inside a maintained interface; it
+uses the existing external-package contribution protocol:
+
+#+begin_src scheme
+(.def (ProviderArtifacts @ NixFlakeSource.)
+  reference: "path:/absolute/maintained/provider-packages"
+  attribute: "lib.providerArtifacts")
+
+;; Inside the existing interface declaration:
+(yuanxu-opentofu-package-contribution ProviderArtifacts)
+#+end_src
+
+Ordinary config remains ordinary native objects:
+
+#+begin_src scheme
+(def Config
+  (.o resource:
+      (.o aws_security_group:
+          (.o web: (.o name: "web")))))
+;; A later config revision adds a resource, not another package declaration:
+(def Config
+  (.o resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource:
+          (.o smoke: (.o triggers: (.o release: "smoke"))))))
+#+end_src
+
+These are alternative config revisions, not two definitions in one file.
+The existing Module object layer resolves the final configuration's resource,
+data and Provider namespaces, reads only selected indexed type inputs, and
+publishes its ConfigurationContract. The external-package graph obtains that
+same configuration through its admitted source context; no second parser for
+Provider demand is introduced.
+
+* Maintained Flake capability, selected demand
+
+The flake exports a function whose package set and catalog are already locked:
+
+#+begin_src nix
+lib.providerArtifacts = import ./lib/selected-provider-artifacts-flake.nix {
+  inherit pkgs;
+  schemas = import ./providers.nix { inherit pkgs; };
+};
+#+end_src
+
+The implementation is deliberately small:
+
+#+begin_src nix
+{ pkgs, schemas }:
+{ selection }:
+let demand = builtins.fromJSON selection;
+in pkgs.callPackage ./provider-artifacts.nix {
+  inherit schemas;
+  selection = demand;
+}
+#+end_src
+
+The catalog is a capability set, not a demand list. The existing collector
+selects catalog attributes before forcing their derivations. AWS-only must not
+put Null in its selected collection producer inputs; adding Null must retain AWS's
+immutable Schema store output. An unselected awscc branch in the real-package
+fixture throws if forced. This is stronger than a runtime-only lazy namespace
+check, though the fixture's awscc branch is a sentinel, not a built awscc plugin.
+
+Core passes the automatically projected demand as a string argument on a derived
+FlakeSource. Nix does not accept =--argstr= with flakes. The native Source uses
+=--apply= with JSON data and Nix-string escaping:
+
+#+begin_example
+nix --extra-experimental-features 'nix-command flakes' eval --raw \
+  --no-update-lock-file \
+  path:/absolute/maintained/provider-packages#lib.providerArtifacts \
+  --apply 'function: (function (builtins.fromJSON "<escaped JSON>")).drvPath'
+#+end_example
+
+The ellipsis-free implementation is in =modules/nix/func.ss=; the example above
+shows the process boundary rather than reproducing a generated demand receipt.
+There is no shell interpolation, =--impure=, runtime lock command, or arbitrary
+CLI flag field. The real native control includes quotes, Unicode and literal
+=${...}= in configuration source paths. Empty arguments retain constant package
+output selection; non-string arguments remain rejected by the Source Contract.
+This supersedes chapter 54's earlier rejection of all nonempty flake arguments.
+
+* Currentness, frozen locks and receiver isolation
+
+The existing native Source preparation protocol owns receiver-local lazy
+=derivation= and =artifact=. Its currentness function is independent evidence,
+not a cache hit. OpenTofu derives the supplied FlakeSource with its final demand
+and Core source observations. Local flake root =flake.nix= and =flake.lock=
+bytes are included. Shared =module-source-admit-current!= checks observations
+before and after native evaluation; Core uses the same authority for generated
+entry inputs. Absent observations remain absent, rather than silently becoming
+new inputs.
+
+Configuration source observations include the admitted owner roles and package
+context. A changed config cannot be replayed with its old demand. A fresh native
+Nix evaluation compares the selected derivation to the expected derivation and
+catches relevant transitive Nix dependency changes. Generated entry guards carry
+the arguments and observations, so replay does not lose that binding.
+
+A newly requested flake input fails under =--no-update-lock-file=.
+Nix 2.34 allowed in-memory lock changes when =--no-write-lock-file= was
+also supplied. A direct native negative control exposed this; the implementation
+now uses only the stronger no-update flag, which rejects changes before writing. The
+qualification checks that the lock bytes are unchanged. Lock creation belongs
+to explicit package preparation, never admission or currentness. Remote source
+transport/authentication and complete arbitrary dynamic IO tracking are not
+proved by these local-root controls.
+
+A child configuration causes a new selected graph/Source/publication and a new
+ConfigurationContract. Its final receiver reads its own artifact. The already
+cached parent Contract and AWS-only namespace stay unchanged. AWS Schema store
+content can be shared without sharing a mutable configuration Contract.
+
+* Reproduction and evidence boundary
+
+#+begin_src sh
+just prepare-opentofu-flake /private/tmp/new-locked-provider-flake
+just test-opentofu-selected-flake /private/tmp/new-locked-provider-flake
+just test-opentofu-selected-flake-rounds /private/tmp/new-flake-rounds \
+  /private/tmp/new-locked-provider-flake 3
+#+end_src
+
+The preparation tool reuses the repository =devenv.lock= Git Nixpkgs revision
+and explicitly creates a fixture lock. Official AWS 5.100.0 and Null 3.2.4
+packages produce real Provider Schemas. Package preparation is outside runtime
+phase measurements. A fresh Scheme process is cold for POO caches; the Nix store
+is already populated. This is not a download-cold or dedicated-host benchmark.
+Every round retains the default heap fence and 120-second native case timeout.
+
+The native controls cover final-config demand, selected collection producer inputs,
+read-only locks, source and indirect Nix changes, generated guards, delayed first
+admission, source changes during realization, complete diagnostic paths,
+selected type read/compile counts and parent cache isolation. Python only
+orchestrates serial gates and computes phase statistics.
+
+A subsequent serial round hit the existing duration watchdog in an extra
+recursive closure query on a heavily loaded host. The final native control
+checks direct collection-to-Schema-producer input edges instead of walking the
+entire Nix toolchain closure. Its assertion is intentionally that narrower
+claim; the failed round is retained and not counted as passing. A second round
+hit the same unchanged duration watchdog during independent currentness.
+Direct replay of the exact captured argv then took 0.689 seconds and a complete
+native graph probe passed. The subsequent three-round gate passed without
+widening the duration/heap/process budgets. The contention attribution is
+observational, not a proved causal explanation or a speedup claim.
+
+An initial installed-package-set =path:= fixture exceeded the unchanged native
+timeout because repeated evaluation processed a large package tree. A local
+archive preparation attempt stalled and was stopped. Neither run qualifies as
+passing evidence, and no timeout was widened. Reusing the existing locked Git
+package input removes that fixture-specific repeated path import; it is not a
+claim that all flake evaluations are constant-time.
+
+The structured receipt is
+[[file:../../../t/fixtures/opentofu/selected-flake-control.json][selected-flake-control.json]].
+Raw logs remain local. This chapter supersedes chapter 54's expression-only
+automatic adapter limitation, while preserving its historical measurements.
+No product Loader, Provider plan/apply/RPC validation, full Core build, or formal
+proof of external process/filesystem atomicity is claimed.
+
+* Qualified local result
+
+The final source-stable serial run passed three rounds, 68 assertions each
+(204 total), with =MODULE-OK=, =HARNESS-OK=, final =OK= and no harness/heap/stack
+failure marker. The expression selected-graph regression passed 60 assertions;
+the standalone frozen-flake regression passed 32. Focused native owner builds
+also completed; the complete Core build was not rerun.
+
+| Phase | AWS-only median seconds | AWS + Null median seconds | Native CLI / type work, every round |
+|-------+-------------------------+---------------------------+------------------------------------|
+| Build including scope | 2.329 | 2.104 | 2 evaluations, 1 realization call; 0 type reads/compiles |
+| First admission | 0.918 | 1.124 | 1 evaluation; respectively 1 / 2 type reads and compiles |
+| Five hot accesses | 0.000004 | 0.000005 | 0 processes; 0 type reads/compiles |
+| Independent currentness | 0.963 | 1.241 | 1 evaluation; 0 realizations and type reads/compiles |
+
+Independent currentness must still evaluate Nix to detect relevant indirect
+package-source changes. Its cached expected derivation is a comparison value,
+not proof that mutable dependencies stayed current. These medians summarize
+three local observations with a populated store, not a latency guarantee.
