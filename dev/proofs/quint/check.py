@@ -16,6 +16,14 @@ import tempfile
 import time
 
 CASES = [
+    ("IncrementalRoles", "safety", False),
+    ("IncrementalRoles_edge", "Invalidation", True),
+    ("IncrementalRoles_compile", "Compilation", True),
+    ("IncrementalRoles_observer", "Observer", True),
+    ("IncrementalRoles_approval", "Current", True),
+    ("IncrementalRoles_parent", "Isolation", True),
+    ("IncrementalRoles_dropB", "Both", True),
+    ("IncrementalRoles", "NoAcceptance", True),
     ("ModuleDemand", "safety", False),
     ("ModuleDemand_preflight", "PreflightOnly", True),
     ("ModuleDemand_contract", "ValidPublication", True),
@@ -543,7 +551,7 @@ def main():
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--case-prefix", help="Qualify an explicitly scoped subset; default is the complete catalog")
     parser.add_argument("--producer-source", type=Path,
-                        help="Bind a local gerbil-poo source tree for SelectionReplay correspondence")
+                        help="Bind native gerbil-poo source owners for replay/incremental correspondence")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--typecheck-scope", choices=("all", "selected"), default="all",
@@ -561,8 +569,8 @@ def main():
         parser.error("selected typechecking requires an explicit --case-prefix")
     producer_bound = []
     if args.producer_source:
-        if not args.case_prefix or not args.case_prefix.startswith("SelectionReplay"):
-            parser.error("producer-source is scoped to SelectionReplay correspondence")
+        if not args.case_prefix or not args.case_prefix.startswith(("SelectionReplay", "IncrementalRoles")):
+            parser.error("producer-source requires replay or incremental correspondence cases")
         args.producer_source = args.producer_source.resolve()
         producer_bound = [args.producer_source / name for name in
                           ("gerbil.pkg", "object.ss", "object-state.ss", "slot-observation.ss",
@@ -601,6 +609,18 @@ def main():
         result.update({os.path.relpath(p, core):
                        hashlib.sha256(p.read_bytes()).hexdigest() for p in producer_bound})
         return result
+    incremental_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/IncrementalRoles.lean"
+    incremental_digest = "sha256:" + hashlib.sha256((models / "IncrementalRoles.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{incremental_digest}"' not in incremental_lean.read_text():
+        raise AssertionError("Lean retains a stale IncrementalRoles Quint source binding")
+    bound.extend([incremental_lean, core / "t/module-incremental-cache-test.ss",
+                  core / "t/module-incremental-make-test.ss",
+                  core / "dev/sysml/20-module-loading/20.03-incremental-role-ownership.sysml",
+                  core / "t/module-retention-census-test.ss",
+                  core / "module-system/building/test-observation.ss",
+                  core / "t/qualification/module-scale/fixture.ss",
+                  core / "t/qualification/module-scale/worker-test.ss",
+                  core / "poo-clos/objects.ss", core / "poo-clos/dispatch.ss"])
     demand_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean"
     demand_digest = "sha256:" + hashlib.sha256((models / "ModuleDemand.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{demand_digest}"' not in demand_lean.read_text():
