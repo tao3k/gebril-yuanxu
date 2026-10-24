@@ -8,12 +8,14 @@ import hashlib
 import json
 import os
 import re
-import selectors
 import shutil
-import signal
 import subprocess
 import tempfile
-import time
+
+if __package__:
+    from .native import QuintCLI
+else:
+    from native import QuintCLI
 
 CASES = [
     ("IncrementalRoles", "safety", False),
@@ -501,73 +503,13 @@ COUNTS = re.compile(rb"([\d,]+) states generated, ([\d,]+) distinct states.*?([\
 
 def typecheck_entries(quint, sources):
     """Fresh native CLI stages per entry, sharing only the Node runtime."""
-    executable = shutil.which(quint)
-    if not executable:
-        raise FileNotFoundError(quint)
-    commands = Path(executable).resolve().with_name("cliCommands.js")
-    if not commands.is_file():
-        raise RuntimeError(f"pinned Quint CLI API is missing: {commands}")
-    worker = Path(__file__).with_name("typecheck.cjs")
-    command = ["node", "--max-old-space-size=1024", str(worker), str(commands)]
-    with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                          start_new_session=True) as process:
-        try:
-            with selectors.DefaultSelector() as selector:
-                selector.register(process.stdout, selectors.EVENT_READ)
-                for source in sources:
-                    source = str(source.resolve())
-                    started = time.monotonic()
-                    process.stdin.write((json.dumps(source) + "\n").encode())
-                    process.stdin.flush()
-                    output = bytearray()
-                    while not output.endswith(b"\n"):
-                        remaining = 5 - (time.monotonic() - started)
-                        if remaining <= 0 or not selector.select(remaining):
-                            raise TimeoutError(f"Quint typecheck exceeded 5s: {source}")
-                        chunk = os.read(process.stdout.fileno(), 65536)
-                        if not chunk:
-                            raise RuntimeError(f"Quint typecheck worker exited: {source}")
-                        output.extend(chunk)
-                    result = json.loads(output)
-                    if result.get("input") != source or result.get("ok") is not True:
-                        raise RuntimeError(f"Quint typecheck failed: {result}")
-                    print(f"QUINT-TYPECHECK-ENTRY {source}", flush=True)
-            process.stdin.close()
-            if process.wait(timeout=1) != 0:
-                raise RuntimeError("Quint typecheck worker failed")
-        except BaseException:
-            if process.poll() is None:
-                os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            raise
-
-
-def run(command, cwd):
-    started = last_output = time.monotonic()
-    output = bytearray()
-    with subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, start_new_session=True) as process:
-        try:
-            with selectors.DefaultSelector() as selector:
-                selector.register(process.stdout, selectors.EVENT_READ)
-                while selector.get_map():
-                    now = time.monotonic()
-                    if now - started > 45 or now - last_output > 5:
-                        raise TimeoutError("Quint exceeded 45s case or 5s real-output deadline")
-                    for key, _ in selector.select(0.1):
-                        chunk = os.read(key.fileobj.fileno(), 65536)
-                        if chunk:
-                            output.extend(chunk)
-                            last_output = time.monotonic()
-                            print(chunk.decode(errors="replace"), end="", flush=True)
-                        else:
-                            selector.unregister(key.fileobj)
-            status = process.wait(timeout=1)
-        except BaseException:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            raise
-    return status, bytes(output)
+    with QuintCLI(quint, "typecheck") as runtime:
+        for source in sources:
+            source = str(source.resolve())
+            status, output = runtime.request({"input": source})
+            if status != 0:
+                raise RuntimeError(f"Quint typecheck failed: {source}: {output.decode(errors='replace')}")
+            print(f"QUINT-TYPECHECK-ENTRY {source}", flush=True)
 
 
 def scheme(value):
@@ -1061,7 +1003,8 @@ def main():
                   core / "t/qualification/module-publication/controls.ss",
                   core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
     bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve(),
-                  Path(__file__).with_name("typecheck.cjs").resolve(),
+                  Path(__file__).with_name("native-cli.cjs").resolve(),
+                  Path(__file__).with_name("native.py").resolve(),
                   Path(__file__).with_name("test_typecheck.py").resolve()])
     sources = digests()
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
@@ -1085,7 +1028,7 @@ def main():
         from backend import backend_session
     session = (nullcontext(args.server_endpoint) if args.server_endpoint else
                backend_session(lambda chunk: print(chunk.decode(errors="replace"), end="", flush=True), args.quint))
-    with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint:
+    with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint, QuintCLI(args.quint, "verify", directory) as verifier:
         work = Path(directory)
         for source in models.glob("*.qnt"):
             shutil.copyfile(source, work / source.name)
@@ -1093,10 +1036,13 @@ def main():
         config.write_text('{"workers":"1","maxHeap":"-Xmx1G"}\n')
         for model, invariant, negative in selected_cases:
             print(f"QUINT-CHECK {model} {invariant}", flush=True)
-            status, output = run([args.quint, "verify", str(work / (model + ".qnt")),
-                "--main", model, "--backend", "tlc", "--apalache-version", "0.62.1",
-                "--invariant", invariant, "--tlc-config", str(config), "--verbosity", "3"] +
-                ["--server-endpoint", endpoint], work)
+            status, output = verifier.request({
+                "input": str(work / (model + ".qnt")), "main": model,
+                "backend": "tlc", "apalacheVersion": "0.62.1",
+                "invariant": invariant, "invariants": [], "init": "init", "step": "step",
+                "maxSteps": 10, "randomTransitions": False,
+                "tlcConfig": str(config), "verbosity": 3, "serverEndpoint": endpoint,
+            }, wall=45, idle=5, emit=True)
             counts = COUNTS.search(output)
             accepted = ((status == 1 and b"Error: Invariant q_inv is violated." in output
                          and b"[violation] Found an issue" in output

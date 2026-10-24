@@ -12,6 +12,15 @@ spec.loader.exec_module(check)
 
 
 class TypecheckTests(unittest.TestCase):
+    def test_wall_and_real_output_deadlines_are_enforced(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "Sample.qnt"
+            source.write_text("module Sample { pure val answer: int = 1 }")
+            for limits in ({"wall": 0, "idle": 5}, {"wall": 5, "idle": 0}):
+                with self.subTest(limits=limits), check.QuintCLI("quint", "typecheck") as runtime:
+                    with self.assertRaises(TimeoutError):
+                        runtime.request({"input": str(source)}, **limits)
+
     def test_native_cli_agreement(self):
         cases = [
             ("module Sample { pure val answer: int = 1 }", True),

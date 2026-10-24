@@ -13,6 +13,14 @@ the original five-second wall deadline, including the first runtime startup.
 native CLI verdicts and checks that an imported source mutation is rejected by
 the next request in the same runtime.
 
+Verification similarly invokes the native =compile= and =verifySpec= stages
+with the original TLC options and shared Apalache session. Each case retains
+the 45-second wall and five-second real-output deadlines. Native diagnostics
+are streamed unchanged; a separate result pipe binds the native status to its
+input, main module and invariant. Positive and negative admission still require
+the original TLC state counts and success or counterexample evidence. Models,
+compiled representations and verification decisions are never reused.
+
 * Native Make layout correspondence
 
 [[file:../../sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] allocates =TestMakeLayout= to the actual
