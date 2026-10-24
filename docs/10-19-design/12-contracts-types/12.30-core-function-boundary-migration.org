@@ -417,7 +417,8 @@ claim. Earlier receipts predate the proposed broad migration.
 
 ** Funflow implementation and verification boundary
 
-The current dependency revision is =68af803c7deb37b52d67425975087a39ad8737a8=.
+The current immutable dependency is declared in [[file:../../../gerbil.pkg][gerbil.pkg]]. The exact revisions
+reviewed above remain historical example-inspection cuts, not competing pins.
 =Flow=, branch and try declarations use upstream =ObjectContract.= and =refine=.
 Their obligations compare real input/output Types along the declared route;
 upstream =Function= still validates values and recursively wraps callbacks.

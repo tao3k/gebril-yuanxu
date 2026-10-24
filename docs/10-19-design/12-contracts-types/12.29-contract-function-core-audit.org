@@ -8,8 +8,13 @@
 
 The upstream source is [[https://github.com/tao3k/gerbil-poo/pull/13][gerbil-poo PR 13]], revision
 =ad206b86dece016962d7cdec4f4cf2d1928a2fc7=. This is an exact revision audit,
-not a claim about later PR updates. Core's source baseline is =10a0759=;
-the working changes described below have not been published.
+not a claim about later PR updates. Core's source baseline was =10a0759=;
+the working changes below were unpublished at that audit cut. The failures and
+installation gaps below remain historical observations, not current status.
+
+The implemented migration is described in
+[[file:12.30-core-function-boundary-migration.org][Core Function Boundary Migration]]. The current immutable dependency is owned by
+[[file:../../../gerbil.pkg][gerbil.pkg]]; this historical audit does not override it or qualify a later build.
 
 Read the examples at this revision together:
 
