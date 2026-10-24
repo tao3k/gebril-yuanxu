@@ -491,6 +491,49 @@ CASES = [
 COUNTS = re.compile(rb"([\d,]+) states generated, ([\d,]+) distinct states.*?([\d,]+) states left on queue")
 
 
+def typecheck_entries(quint, sources):
+    """Fresh native CLI stages per entry, sharing only the Node runtime."""
+    executable = shutil.which(quint)
+    if not executable:
+        raise FileNotFoundError(quint)
+    commands = Path(executable).resolve().with_name("cliCommands.js")
+    if not commands.is_file():
+        raise RuntimeError(f"pinned Quint CLI API is missing: {commands}")
+    worker = Path(__file__).with_name("typecheck.cjs")
+    command = ["node", "--max-old-space-size=1024", str(worker), str(commands)]
+    with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                          start_new_session=True) as process:
+        try:
+            with selectors.DefaultSelector() as selector:
+                selector.register(process.stdout, selectors.EVENT_READ)
+                for source in sources:
+                    source = str(source.resolve())
+                    started = time.monotonic()
+                    process.stdin.write((json.dumps(source) + "\n").encode())
+                    process.stdin.flush()
+                    output = bytearray()
+                    while not output.endswith(b"\n"):
+                        remaining = 5 - (time.monotonic() - started)
+                        if remaining <= 0 or not selector.select(remaining):
+                            raise TimeoutError(f"Quint typecheck exceeded 5s: {source}")
+                        chunk = os.read(process.stdout.fileno(), 65536)
+                        if not chunk:
+                            raise RuntimeError(f"Quint typecheck worker exited: {source}")
+                        output.extend(chunk)
+                    result = json.loads(output)
+                    if result.get("input") != source or result.get("ok") is not True:
+                        raise RuntimeError(f"Quint typecheck failed: {result}")
+                    print(f"QUINT-TYPECHECK-ENTRY {source}", flush=True)
+            process.stdin.close()
+            if process.wait(timeout=1) != 0:
+                raise RuntimeError("Quint typecheck worker failed")
+        except BaseException:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGKILL)
+            process.wait()
+            raise
+
+
 def run(command, cwd):
     started = last_output = time.monotonic()
     output = bytearray()
@@ -997,7 +1040,9 @@ def main():
     bound.extend([core / "t/qualification/module-publication/fixtures.ss",
                   core / "t/qualification/module-publication/controls.ss",
                   core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
-    bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve()])
+    bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve(),
+                  Path(__file__).with_name("typecheck.cjs").resolve(),
+                  Path(__file__).with_name("test_typecheck.py").resolve()])
     sources = digests()
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     # Input identities are not a passing qualification receipt. Retain them even
@@ -1008,10 +1053,9 @@ def main():
                          [models / (model + ".qnt") for model, _, _ in selected_cases])
     if args.typecheck_scope == "all":
         typecheck_sources = typecheck_sources[args.shard_index::args.shard_count]
-    # Quint itself resolves and typechecks transitive imports for each entry;
-    # do not implement another parser or substitute a prior successful decision.
-    for source in typecheck_sources:
-        subprocess.run([args.quint, "typecheck", str(source)], check=True, timeout=5)
+    # The same pinned CLI load/parse/typecheck stages resolve transitive imports
+    # afresh per entry. Only Node startup is shared; each entry keeps its 5s limit.
+    typecheck_entries(args.quint, typecheck_sources)
     print("QUINT-TYPECHECK-OK", flush=True)
     print(f"QUINT-TYPECHECK-SCOPE {args.typecheck_scope} {len(typecheck_sources)} entries (including native imports)", flush=True)
     results = []

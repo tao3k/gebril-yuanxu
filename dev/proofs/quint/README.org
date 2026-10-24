@@ -2,6 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: Core Quint Models
 
+* Typechecking entry ownership
+
+The runner invokes Quint 0.33.0's own =load=, =parse= and =typecheck= CLI
+functions for every entry, including native import resolution. One Node runtime
+serves the serial requests; source maps, resolvers and typechecking state are
+fresh for each request. No successful result is retained. Every entry still has
+the original five-second wall deadline, including the first runtime startup.
+=python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py= compares
+native CLI verdicts and checks that an imported source mutation is rejected by
+the next request in the same runtime.
+
 * Native Make layout correspondence
 
 [[file:../../sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] allocates =TestMakeLayout= to the actual
