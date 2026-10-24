@@ -11,7 +11,7 @@
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-test-checkpoint yuanxu-selected-testing-case-profile))
-(export declaration-scale-case declaration-scale-profile)
+(export DeclarationFixture declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count)
   (let (profile (yuanxu-selected-testing-case-profile))
     (if (= count 10000)

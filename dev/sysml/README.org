@@ -52,3 +52,5 @@ before production Loader changes.
 Every row has an evidence status: design, modeled, machine-checked or runtime
 observed. Status is per property, not a blanket badge for an entire workstream.
 Model files do not carry trusted currentness results into runtime.
+
+- [[file:20-module-loading/20.03-retention-and-incremental-roles.org][20.03 Retention and Incremental Roles]] — retained owners, distinct dependency relations, native cache limits and bounded scheduling.
