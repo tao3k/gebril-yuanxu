@@ -225,3 +225,9 @@ Next implementation sequence:
 4. Only after those changes pass, rerun the original 10000-selected gate once
    under two GiB. Retain the previous failures and do not claim full-scale
    business-scope activation from a declaration-only pass.
+
+The subsequent [[file:20.02-metadata-projection-correspondence.org][20.02 source correspondence control]]
+pins the latest audited LeanPoo PR, derives closed/opaque classification from
+source shapes, and qualifies a small actual declaration/role binding experiment.
+It supersedes the supplied-Boolean classification in the first finite model;
+production hygiene, general fallback and the original capacity gate remain open.

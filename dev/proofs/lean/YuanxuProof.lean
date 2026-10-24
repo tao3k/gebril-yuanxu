@@ -96,6 +96,7 @@ import YuanxuProof.ModuleSystem.Schema.Association.Construction
 import YuanxuProof.ModuleSystem.Schema.Association.Selection
 import YuanxuProof.ModuleSystem.Schema.Association.NativeFixtures
 import YuanxuProof.ModuleSystem.Schema.Association.Controls
+import YuanxuProof.ModuleSystem.Loading.MetadataProjection
 import Lean.Util.CollectAxioms
 import Lean.Elab.Command
 
@@ -107,6 +108,10 @@ run_cmd do
   let allowed := #[`propext, `Classical.choice, `Quot.sound]
   let owners := #[`YuanxuProof]
   for required in #[
+      `YuanxuProof.ModuleSystem.Loading.MetadataProjection.dependenciesUnchanged,
+      `YuanxuProof.ModuleSystem.Loading.MetadataProjection.parentCannotHitChild,
+      `YuanxuProof.ModuleSystem.Loading.MetadataProjection.constructAtFinalContext,
+      `YuanxuProof.ModuleSystem.Loading.MetadataProjection.publishRequiresBothAndCurrent,
       `YuanxuProof.Admission.IssuedRootForwarding.preserves_issuance,
       `YuanxuProof.Admission.ReadRetention.closure_coverage,
       `YuanxuProof.Admission.RootCollection.callbacks_unchanged,

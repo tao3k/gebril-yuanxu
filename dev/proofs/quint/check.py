@@ -17,6 +17,7 @@ import time
 
 CASES = [
     ("ModuleDemand", "safety", False),
+    ("ModuleDemand_classifier", "Classification", True),
     ("ModuleDemand_eager", "DeclarationOnly", True),
     ("ModuleDemand_premature", "AdmissionPhase", True),
     ("ModuleDemand_edge", "ActualTrace", True),
@@ -598,6 +599,16 @@ def main():
         result.update({os.path.relpath(p, core):
                        hashlib.sha256(p.read_bytes()).hexdigest() for p in producer_bound})
         return result
+    demand_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean"
+    demand_digest = "sha256:" + hashlib.sha256((models / "ModuleDemand.qnt").read_bytes()).hexdigest()
+    if f'quintSourceDigest : String := "{demand_digest}"' not in demand_lean.read_text():
+        raise AssertionError("Lean retains a stale ModuleDemand Quint source binding")
+    bound.extend([demand_lean, core / "t/module-demand-projection-test.ss",
+                  core / "module-system/source/declaration.ss",
+                  core / "module-system/source/role-forms.ss",
+                  core / "module-system/source/preparation.ss",
+                  core / "module-system/bootstrap/body-inclusion.ss"])
+    bound.extend(sorted((core / "t/qualification/module-demand").rglob("*.ss")))
     issued_roots_lean = core / "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean"
     layout_lean = core / "dev/proofs/lean/YuanxuProof/Admission/TestMakeLayout.lean"
     layout_digest = "sha256:" + hashlib.sha256((models / "TestMakeLayout.qnt").read_bytes()).hexdigest()
