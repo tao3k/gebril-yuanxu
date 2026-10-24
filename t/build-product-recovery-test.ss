@@ -3,12 +3,19 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/module-system/building/artifacts
-                 repair-build-products! require-build-products!))
+                 repair-build-products! require-build-products! test-build-publication)
+        :clan/poo/object)
 (export build-product-recovery-test)
 (def (write-product root relative)
   (def path (path-expand relative root))
   (create-directory* (path-directory path))
   (call-with-output-file path (cut display "fixture\n" <>)))
+(def (publication-at projection prefix)
+  (def previous (getenv "GERBIL_PATH" #f))
+  (dynamic-wind
+    (cut setenv "GERBIL_PATH" prefix)
+    (cut test-build-publication projection)
+    (cut setenv "GERBIL_PATH" previous)))
 (def build-product-recovery-test
   (test-suite "SDK product completion and selected marker recovery"
     (test-case "a missing dynamic phase invalidates only its own marker"
@@ -35,4 +42,21 @@
             '("fixture/unit.ssi" "static/fixture__unit.scm"))
           (create-directory* (path-expand "fixture/unit.o1" root))
           (check-exception (repair-build-products! '(fixture/unit) root) error?)
-          (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))))
+          (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
+    (test-case "SDK directory aliases share one publication identity without crossing prefixes"
+      (call-with-temporary-directory "publication-prefix"
+        (lambda (root)
+          (def prefix (path-expand "state" root))
+          (create-directory* prefix)
+          (def other-prefix (path-expand "other" root))
+          (create-directory* other-prefix)
+          (def projection
+            (.o spec: '((gxc: "fixture/unit")) compiler-identities: '(fixture/unit)
+                source-inputs: '()))
+          (def canonical (publication-at projection prefix))
+          (def alias (publication-at projection (string-append prefix "/../state")))
+          (def other (publication-at projection other-prefix))
+          (check-equal? (.get canonical artifact) (.get alias artifact))
+          (check-equal? (.get canonical reference) (.get alias reference))
+          (check-equal? (equal? (path-strip-directory (.get canonical artifact))
+                               (path-strip-directory (.get other artifact))) #f))))))

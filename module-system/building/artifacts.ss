@@ -46,15 +46,19 @@
 (def (canonical-build-inputs inputs)
   (list-sort (lambda (left right) (string<? (car left) (car right))) inputs))
 (def (test-build-publication projection)
+  ;; The SDK accepts directory aliases in GERBIL_PATH. Derive both the key and
+  ;; the signed output location from one canonical prefix; old alias-spelled
+  ;; packets must not collide with a newly selected canonical projection.
+  (def prefix (path-normalize (path-expand (gerbil-path))))
   (def key
     (hex-encode (sha256 (string->utf8 (object->string
-      (list 'tests (gerbil-version-string) (gerbil-home)
+      (list 'tests prefix (gerbil-version-string) (gerbil-home)
         (map (lambda (name) (cons name (getenv name #f)))
           '("GERBIL_BUILD_DEBUG" "GERBIL_BUILD_PREFIX" "GERBIL_GXC" "GERBIL_GSC"))
         (.get projection spec) (.get projection compiler-identities)
         (canonical-build-inputs (.get projection source-inputs))))))))
-  (def directory (path-expand key (path-expand "test-lib" (gerbil-path))))
-  (def approval-root (path-expand ".yuanxu-test-publications" (path-expand "lib" (gerbil-path))))
+  (def directory (path-expand key (path-expand "test-lib" prefix)))
+  (def approval-root (path-expand ".yuanxu-test-publications" (path-expand "lib" prefix)))
   (def approval-directory (path-expand key approval-root))
   (def approved (path-expand "issuance.ss" approval-directory))
   (def approved-input #f)
