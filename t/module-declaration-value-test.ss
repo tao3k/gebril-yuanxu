@@ -3,12 +3,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Declaration values, lexical bindings and POO inheritance need no filesystem.
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .def .o .get .slot? .put! .call)
+        (only-in :clan/poo/object .def .o .get .slot? .put! .call .cc)
         (only-in :gerbil/expander core-expand datum->syntax)
         (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
         (only-in :clan/poo/object object?)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/mop Type. Function TypeError?)
+        (only-in :clan/poo/number Integer)
+        (only-in :clan/poo/type Record)
         (only-in :yuanxu/module-system/source/publication ModulePublicationContract)
         (only-in :yuanxu/module-system/source/objects make-yuanxu-module-generated-source yuanxu-module-source-ref-value)
         (only-in :yuanxu/module-system/source/admission admit-module-publication!)
@@ -34,8 +36,46 @@
                                 unused: (error "unused export must remain lazy"))))
   features: (.o unused: (error "unused feature must remain lazy")))
 
+(def dependency-callback-calls 0)
+(def provider-scope
+  (.o run: (lambda (value) (set! dependency-callback-calls (+ dependency-callback-calls 1)) value)))
+(def CheckedDependency
+  (.cc YuanxuContract. identity: 'test/checked-dependency
+    value-contract: (Record run: (list (Function (list Integer) (list Integer))))))
+(publication-definition ProviderPublication
+  identity: 'custom/provider
+  core: (.o requires: (.o) scope-contract: ScopeContract exports: provider-scope)
+  features: (.o))
+(publication-definition ConsumerPublication
+  identity: 'custom/consumer
+  core: (.o requires: (.o Provider: (.o module-id: 'custom/provider contract: CheckedDependency))
+            scope-contract: ScopeContract
+            exports: (.o provider: Provider run: (lambda (value) (.call Provider run value))))
+  features: (.o))
+
 (def module-declaration-value-test
   (test-suite "In-memory Module declaration and POO behavior"
+    (yuanxu-test-case "dependency bindings consume the checked Function before its callback"
+      (set! dependency-callback-calls 0)
+      (def view
+        (yuanxu-load-modules
+          (.o generation: "checked-dependency-test"
+              module-ids: '(custom/provider custom/consumer)
+              selected: '(custom/consumer) denied-modules: '()
+              locate: make-yuanxu-module-generated-source
+              current?: (lambda (_generation) #t)
+              read-publication:
+              (lambda (source)
+                (if (eq? (yuanxu-module-source-ref-value source) 'custom/provider)
+                  ProviderPublication ConsumerPublication)))))
+      (def record (.call view .selected-record 'custom/consumer))
+      (def scope (.get record scope))
+      (check-exception (.call scope run "bad") TypeError?)
+      (check-equal? dependency-callback-calls 0)
+      (check-equal? (.call scope run 8) 8)
+      (check-equal? dependency-callback-calls 1)
+      (check-equal? (eq? (.get scope provider)
+                        (.get record dependency-records Provider requirement-evidence candidate)) #t))
     (yuanxu-test-case "publication is deferred; native helpers and dependency identifiers are hygienic"
       (let* ((before factory-calls)
              (source (make-yuanxu-module-generated-source 'custom/published))
