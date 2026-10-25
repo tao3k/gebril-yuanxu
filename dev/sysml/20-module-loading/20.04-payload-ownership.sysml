@@ -12,6 +12,11 @@ package YuanxuPayloadOwnership {
                next-function identity and metadata publication question.
                PayloadSharing Lean owns observation-relative identity
                projection laws; Scheme owns the native observation cut.
+               POOF correspondence is specified in 20.13. Lean reuses Compose,
+               TableRepresentation, CompiledPlan and ContextSlot for semantic
+               refinement; SharedCellRefinement is not duplicated in QNT.
+               ThunkConstruction owns only additional effectful exposure and
+               callback schedules, not pointer-allocation or lookup proofs.
                A new model requires a new question, not a second encoding. */
     }
     part def CanonicalContext {

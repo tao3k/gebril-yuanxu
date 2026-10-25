@@ -28,6 +28,14 @@ No Gerbil compiler or SDK source is changed.
    table. Even a receiver with no protocol and no descriptor declarations can
    expose an unforced function and observe its identity before its value runs.
 
+* Theoretical foundation and interpretation
+
+[[file:20.13-poof-semantics-and-materialization-correspondence.org][20.13 POOF correspondence]] supplies the semantic foundation and exact locked
+LeanPoo/source map. The observations below constrain compatibility of the current
+implementation; they are not a substitute for POOF semantics or a proof that
+closure allocation must remain eager. Eager hook fallback is a conservative
+candidate, not the selected architecture.
+
 * Which construction may be delayed?
 
 | Boundary | Result |

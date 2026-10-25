@@ -91,3 +91,8 @@ and already-observable construction hooks before considering further laziness.
 
 [[file:20-module-loading/20.12-thunk-construction-observation-boundary.org][20.12 Thunk Construction Observation Boundary]] assigns construction order/identity
 to QNT, observation projection laws to Lean, and actual MOP behavior to Scheme.
+
+[[file:20-module-loading/20.13-poof-semantics-and-materialization-correspondence.org][20.13 POOF Semantics and Demand Materialization Correspondence]] maps the paper,
+locked LeanPoo declarations and current native entries before any interception
+choice. Lean owns representation/identity laws; existing QNT owns observable
+construction schedules, with no duplicate prototype or fixed-point model.

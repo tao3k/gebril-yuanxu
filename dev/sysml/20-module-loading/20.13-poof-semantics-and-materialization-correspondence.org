@@ -1,0 +1,174 @@
+#+title: 20.13 POOF Semantics and Demand Materialization Correspondence
+#+language: en
+#+filetags: :sysml:poof:lean:quint:correspondence:
+
+* Decision and evidence cut
+
+Begin with Faré's POOF semantics, not a getter interception strategy. Demand
+materialization is a proposed representation refinement of the existing object
+system. No accessor, constructor, Loader or runtime is changed by this document.
+No new cache or admission protocol is introduced.
+
+The audited sources are fixed independently:
+
+| Source | Revision | Status in this audit |
+|--------+----------+----------------------|
+| POOF =poof.scrbl= | =59cecf050c8f2fab480175278c439410f3151cd6= | Paper source read; current source edition, not asserted identical to the 2021 proceedings |
+| LeanPoo | =5d4587a30e2333fc5f935dac6163aa56ff16a2dc= | Actual Core lock and checked-out dependency agree |
+| gerbil-poo PR13 | =29c58aa9c5be103ba843767e3d22ef8802b79342= | Source correspondence inspected; no producer edit |
+| Core PR19 baseline | =bc68cd4d359e8d5e2f71ae8b20ba77c8dfaf4d11= | Existing 20.12 runtime receipts remain historical evidence |
+
+Primary references:
+- [[https://github.com/metareflection/poof/blob/59cecf050c8f2fab480175278c439410f3151cd6/poof.scrbl][POOF fixed paper source]]: section tags =computations_not_values=,
+  =slot_introspection=, =different_prototype=, =unifying_instance_prototype=,
+  and the Cache invalidation subsection.
+- [[https://github.com/tao3k/gerbil-poo/blob/29c58aa9c5be103ba843767e3d22ef8802b79342/README.md][gerbil-poo's explicit POOF attribution]].
+- [[https://github.com/tao3k/lean-poo/tree/5d4587a30e2333fc5f935dac6163aa56ff16a2dc/LeanPoo][Locked LeanPoo sources]]. File and declaration names below refer to this revision.
+
+* Semantic contract before representation
+
+POOF describes prototypes as increments of computation over final self and
+inherited computation. Its composition laws do not equate child self with a
+cached parent instance. The delayed formulation permits an overriding child to
+avoid forcing its inherited computation. It does not promise termination of an
+arbitrary recursive definition.
+
+The paper explicitly separates instance/prototype semantics from function,
+dictionary and key-list representations. Its dictionary example identifies
+repeated dictionary construction as a source of exponential work and introduces
+sharing by lazy evaluation. This is the theoretical reason to investigate
+representation sharing and demand, rather than adding another Core cache.
+
+This separation does NOT establish Scheme procedure =eq?=, arbitrary raw metadata
+reflection or effectful callback equivalence. Those are additional observations
+of the present implementation. Preserve supported observations or explicitly
+review an API change; do not silently erase them because pure values agree.
+
+* Item-by-item correspondence
+
+All Lean paths below are relative to the locked dependency's =LeanPoo/=.
+An existing definition is not labeled a theorem. A theorem about an abstract
+carrier is not a proof of the Scheme compiler or heap.
+
+| POOF semantic obligation | Existing LeanPoo owner and exact declaration | gerbil-poo source owner | Missing correspondence for demand materialization |
+|--------------------------+----------------------------------------------+------------------------+-------------------------------------------------|
+| Prototype composition with final self, inherited computation and identity; paper lines 282–320 and 522–550 | =Prototype/Compose.lean=: =compose_identity_left=, =compose_identity_right=, =compose_assoc= | =object.ss=: =compute-precedence-list!=, =compute-slot-funs!=, =apply-slot-spec= | Prove the demand resolver composes the SAME checked precedence layers and inherited suffix; associativity alone does not prove C4 or callback ordering |
+| Delayed computation, not eager inherited values; lines 883–916 | =Prototype/Delayed.lean=: =DelayedProto.compose= (definition), =Prototype/Object.lean=: =Object.recordSlotGen= (definition) | =apply-slot-spec= binds self/superfun; =.ref= alone computes a missing value | Relate slot demand to final receiver without forcing unrelated value bodies; construction laziness is separate from value laziness |
+| One shared fixed point; lines 1039–1090 and Appendix D | =Prototype/FixedPoint.lean=: =sharedFix= (unsafe executable); =Prototype/SharedCellRefinement.lean=: =replay_refines=, =ready_reference= | =instantiate-object!= installs one receiver instance; =.ref= checks revision and instance identity before publishing a value | Transport the relation to Scheme allocation/publication and exception cleanup. SharedCell models Lean primitive events; it does not prove Gambit or arbitrary recursion |
+| Alternative record/prototype representations with preserved lookup; lines 980–1038 | =Functional/TableRepresentation.lean=: =TableCarrier.conjugate_read=, =TableCarrier.conjugate_apply= | =object-%slot-funs= plus symbolic instance table, =object-layout= | Supply an actual carrier relation, key/value conversion and absent/pending/failed distinction. An isomorphism theorem is not yet a simulation for a partial materialization state |
+| Introspection without manually maintained keys; lines 953–1027 | =Prototype/KeyedPrototype.lean=: =Definition.withKeys= (definition); =Prototype/PrototypeReflection.lean=: =fromRecord_toRecord= | =object-slot-names=, =object-layout= and exported =object-%slot-funs= | Prove completeness before full exposure and consistency across point lookup, names, layout and reflection, without forcing unrelated VALUES. Reflection round-trip does not prove completion timing |
+| Retained prototype with a fresh derived instance; lines 1057–1090 | =Prototype/Object.lean=: =Object.extend= (unsafe executable); =Object/Memo.lean=: =CompiledPlan.resolve_sound=; =Functional/ContextSlot.lean=: =ContextSlot.read_hit=, =ContextSlot.read_miss= | =compute-slot-funs!= binds receiver-local functions; =object-state.ss=: =invalidate-state!= | A compiled OPEN method may be shared only under the same plan; a self-bound closure/value cell must retain receiver ownership. Context equality must include actual receiver/revision dependencies |
+| Reuse construction data under explicit validity premises | =Functional/ConstructionCache.lean=: =Cache.reference=, =Partial.step_reused=, =Partial.step_reused_builder_independent=, =refresh= (definition) | Existing revision, dependent invalidation and issued preparation/read mechanisms | Derive clean/reuse premises from native state. Do not assume a cached approval, or use builder independence to skip an observable Scheme hook |
+| Mutation and cache invalidation; paper lines 1525–1558 | Above structural laws provide conditional reuse, not whole-language mutation coverage | =object-state.ss=: =invalidate-state!=; =object.ss=: =clear-object-cache!= and active computation guards | Prove supported mutation closure, failure/retry and revision transitions. External files, FFI and unrestricted reflection remain separate trust/runtime boundaries |
+
+Important existing limit: =Object/Memo.lean= =Plan.buildThunks= allocates a thunk
+for every declared key. =Plan.compileMemo= composes effective methods eagerly;
+=CompiledPlan.instantiate= gives each instance fresh lazy cells. These are useful
+semantic/representation references, not an already-proved implementation of
+on-demand metadata closure allocation. =ContextSlot= is an exact-context data
+memo, not a new native runtime cache to copy into Core.
+
+* Current Scheme observations that constrain refinement
+
+At this native cut, =instantiate-object!= computes checked precedence and the
+entire function table before installing the instance and preparation read.
+=compute-slot-funs!= first resolves declaration descriptors, then standard
+functions, then invokes =compute-slot= in that table's actual enumeration order.
+An exception clears partial caches and rethrows the cause.
+
+=.ref=, =.ref/cached= and =.ref/inline= ultimately depend on this preparation.
+In particular, a cached-read miss does not mean preparation was skipped. Names
+and layouts require a coherent key set. Full function-table reflection currently
+exposes functions for unselected slots without evaluating their value bodies.
+
+The compatibility obligation is one procedure identity per observable slot
+function in a receiver revision, stable repeated =next= results, and unchanged
+observed callback sequence/refusal. It is not an obligation to identify parent
+and child procedures, preserve allocation addresses across invalidation, or force
+unselected values. Nor does POOF itself require all procedures to be allocated
+eagerly: their current allocation timing and public observability must be
+separated before implementing a refinement.
+
+* Missing proof obligations and their acceptance criteria
+
+| ID | Question and required result | Primary owner | Existing material to reuse |
+|----+------------------------------+---------------+----------------------------|
+| M1 | Relate partial metadata, complete reflected metadata and eager reference lookup at the same final receiver; retain declared absence versus unmaterialized state | Lean | Compose, TableRepresentation, CompiledPlan.resolve_sound; no second prototype calculus |
+| M2 | One stable observable procedure identity per receiver/revision/slot, including inherited =next=; representation sharing must not share receiver-bound mutable environments | Lean | Existing Core PayloadSharing observation-relative identity laws; extend the relation, do not use extensional equality as pointer equality |
+| M3 | Complete materialization precedes first full reflection, while point demand leaves unrelated value bodies cold | QNT | Extend existing ThunkConstruction only with demand/exposure transitions after M1 defines the relation; no duplicate Lean lookup proof |
+| M4 | Preserve callback order, construction refusal, reentry, failure cleanup and retry at native preparation boundaries | QNT | Existing ThunkConstruction; ReadRetention remains the owner of read/currentness/effect ordering |
+| M5 | Derived receivers retain their own final self and cache cells after the parent is warm; shared immutable open methods do not become shared instantiated values | Lean for ownership relation; existing QNT ReadRetention for invalidation sequence | ContextSlot exact-context premises, CompiledPlan open methods, original issued-record identity |
+| M6 | Every real read/reflection/preparation entry implements M1–M5, including descriptors, bootstrap hooks, misses and inline hits | Scheme source audit and focused consumer tests | 20.12 controls and real Gitea/PostgreSQL regression; no fixture-only replacement evaluator |
+| M7 | Reduced retained closures and acceptable first-reflection cost under unchanged budgets | Bounded measurement | Existing 16/32 census, classified identity union, cold/hot phases; no heap saving inferred from abstract theorem |
+
+These are required results, not newly declared or proven Lean theorems. No new
+formal model or runtime interception is introduced in this documentation step.
+Before implementation, close M1/M2 on the selected representation and use their
+relation as the premise for M3/M4. M6 must then demonstrate actual correspondence;
+M7 determines whether the lawful change is useful.
+
+* SysML allocation and non-duplication
+
+[[file:20.04-payload-ownership.sysml][Payload ownership]] allocates semantic correspondence to Lean, temporal
+schedules to existing QNT models, real entry coverage to Scheme and cost to
+measurement. [[file:../00-development-assurance.sysml][Development assurance]] remains the single cross-cutting owner.
+
+- Lean establishes universal composition/representation/ownership claims.
+  =SharedCellRefinement= already supplies a sequential primitive refinement;
+  do not create a second QNT fixed-point machine for it.
+- QNT explores the extra native mutable/effectful schedule: exposure before
+  completion, callback changes, refusal and invalidation. The existing
+  =ThunkConstruction= token identities are abstract observations, not proof of
+  allocation uniqueness or a native purity certificate.
+- =ReadRetention= continues to own both requirements, original read coverage,
+  source changes, parent isolation and effect/return checks. Do not copy those
+  states into the new materialization question.
+- Source correspondence must connect native-issued reads and real receivers to
+  these premises. No result caches admission success or replaces fresh source
+  currentness with a structural proof.
+
+* Gitea/PostgreSQL acceptance slice
+
+Warm the parent plan at 5432; derive a child configuring PostgreSQL at 5433.
+The child's default-following Gitea port and projected plan must use 5433 while
+the parent remains 5432. An explicit Gitea port of 5432 must still fail the
+connection requirement. Independent conflicting port requirements must both
+survive collection and report the same first diagnostic in the same check order.
+
+A proposed metadata change must preserve that existing Scenario's complete
+observations: final receiver, both requirements, original issued read identities
+and ordered dependencies, source diagnostics and currentness-before-return
+checks. Unselected service/value bodies stay cold. Source changes still reject;
+no field list, synthetic read bundle or successful admission result substitutes
+for the actual observation graph. Cached parent metadata is not a child plan.
+
+* Reflection and next decision
+
+The advantage to pursue is less eager representation work under the SAME object
+semantics, not a new author-facing configuration language. The paper already
+identifies the right abstraction: share computations through their representation
+while preserving prototype meaning. It also warns that fully correct mutation
+tracking extends beyond an object system when arbitrary language effects exist.
+
+20.12 establishes compatibility counterexamples and measured cold identities;
+it does not choose a materialization architecture. Its suggestion of eager
+fallback for hooks is a conservative option, not a theorem-derived final design.
+The next decision requires M1/M2 and a complete observation boundary first.
+No getter interception is selected by this document. No runtime speedup, full-CI
+pass or 10000-module capacity result is claimed; the 2 GiB budget and all existing
+timeouts remain unchanged.
+
+* Documentation validation receipt
+
+The 14 named theorem declarations resolve in the locked LeanPoo checkout.
+The eight referenced module targets (Compose, Delayed, SharedCellRefinement,
+PrototypeReflection, TableRepresentation, ConstructionCache, ContextSlot and
+Object.Memo) rebuild successfully through the existing Lake project: 95 jobs.
+Existing unused-section-variable linter warnings remain warnings. Local Org file
+links resolve and =git diff --check= passes.
+
+This rerun checks existing modules; it adds no proof of M1–M7 and does not rerun
+Scheme runtime regressions. The prior 20.12 controls remain separately dated
+runtime evidence. Only English design/SysML documentation changes here, on PR19.
+The documentation commit uses =[skip ci]= to avoid triggering the unchanged scale
+job; full CI and capacity are not claimed.
