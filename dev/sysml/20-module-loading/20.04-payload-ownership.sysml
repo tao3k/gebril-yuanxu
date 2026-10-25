@@ -42,7 +42,12 @@ package YuanxuPayloadOwnership {
     }
     part def CallbackEnvironment {
         doc /* One call/receiver owns mutable captures. Equal printed values
-               cannot authorize merging closures or their environments. */
+               cannot authorize merging closures or their environments.
+               Warm/cold table entries may reference the same function. Lean
+               owns the identity partition, Scheme owns raw non-forcing key
+               extraction; existing QNT owns value-demand/currentness traces.
+               No model here proves compute-slot construction hooks may be
+               reordered just because a value is absent from the cache. */
     }
     requirement def OwnerShellAccounting {
         doc /* Shell projections and indirect environments share one identity

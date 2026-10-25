@@ -145,3 +145,13 @@ The candidate is local and unpushed; Core's declared REV has not been changed.
 No full CI, 10000-module retry, new cache protocol, success caching or compiler
 source modification is claimed. SysML remains a design allocation, not a
 qualified executable SysML model.
+
+* Publication follow-up
+
+The native repair is now committed and pushed on the existing
+=feat/positive-closure-costs= branch as
+=29c58aa9c5be103ba843767e3d22ef8802b79342=, retaining intervening build-recovery
+commits. Core's package REV and its SelectionReplay/MetadataProjection bindings
+now select that SHA. The previous local-candidate section records the earlier
+validation state; it does not describe the subsequent publication state.
+See [[file:20.11-thunk-demand-and-capture-retention.org][20.11]] for the merged-source proof checks and remaining thunk-demand work.

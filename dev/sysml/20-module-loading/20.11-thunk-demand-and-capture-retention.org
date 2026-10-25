@@ -1,0 +1,123 @@
+#+title: 20.11 Receiver Thunk Demand and Remaining Capture Retention
+#+language: en
+
+* Source question
+
+At gerbil-poo =29c58aa9c5be103ba843767e3d22ef8802b79342=,
+=object.ss:compute-slot-funs!= assembles the complete effective thunk table and
+invokes =compute-slot= on its effective entries. A slot without a cached VALUE
+can therefore already have run a construction hook. Do not treat absent value
+cache entries as permission to suppress or postpone these hooks.
+
+The previous 16/32 census retained 6249/12041 distinct thunk identities and
+10321/19601 capture fields, including 4017/7505 direct receiver references.
+Neither field counts nor a reference to a receiver measures exclusive bytes.
+The SDK remains one shared graph; no repeated SDK charge is introduced.
+
+* Non-forcing measurement
+
+The existing trace enumerates the raw receiver instance table into an ephemeral
+identity key set, then classifies each already assembled thunk TABLE ENTRY.
+It does not call =HashTable.ref= on receiver-owned metadata: that path can
+invoke replaceable hashing/equality callbacks. It does not call a getter, force
+an unselected value, change metadata, or retain a new production cache.
+
+A missing recognized raw instance table is unknown, not cold. Present =#f=
+values count as cached through key membership. Distinct warm/cold function sets
+are compared by identity: a function referenced by both categories is reported
+as shared-with-warm, never charged as a cold-only root. Capture fields count
+references from cold-only functions; they are NOT unique transitively retained
+objects or exclusive GC bytes. Native compute hooks may already have observed
+cold-only functions, so even that category is not an elimination certificate.
+
+* Assurance ownership
+
+SysML 20.04 allocates these boundaries. Lean
+=PayloadSharing.coldOnlyExcludesWarm= proves disjointness of the reported
+identity difference. =warmAndColdCoverOriginal= proves that warm roots plus
+cold-only roots retain the original union. Actual closure layout, Scheme raw
+key extraction and heap ownership remain runtime/source obligations.
+
+The existing ReadRetention QNT positive and matched negatives cover retained
+reads, transient misses, both requirements, parent/child isolation, effect-time
+currentness and unselected VALUE laziness. They do not model =compute-slot=
+construction-event ordering; no new structural QNT copy is added and no theorem
+claims that cold-only thunks may be constructed later. Changing that boundary
+would require an explicit temporal/source argument before a producer edit.
+
+* Publication integration
+
+The singleton snapshot repair is committed and pushed on the existing native
+branch as =29c58aa=. Core's package pin and both native-source proof bindings
+select that exact SHA. The concurrent remote proof runner and build-entry
+changes are preserved by a normal merge. Historical 20.10 local candidate
+receipts remain historical rather than being rewritten as remote CI results.
+
+The Core push uses =[skip ci]= solely to honor the explicit instruction not to
+rerun the known failing ten-thousand-module gate. No workflow, gate, 2 GiB
+limit, observer or assertion is weakened. Small local validation and remote
+full qualification remain separate claims. Automatic Loader read enrollment
+still waits for complete CI qualification.
+
+* Bounded runtime receipt
+
+The merged fixed-revision Core build passes after correction of an invalid
+internal-definition position in the trace adapter; the original failed build
+is retained locally. Lean builds all three targeted modules successfully
+(111 dependency jobs): PayloadSharing, MetadataProjection and SelectionReplay.
+The concurrent native Quint runner's documented discover entry passes three
+tests. An earlier invocation via a different unittest module-import path failed
+to resolve its sibling module; it is retained, not relabeled a runner pass.
+
+The first QNT run overlapped the trace-source correction and refused at its
+bound-source check. After freezing that source, the existing ReadRetention
+positive/negative qualification passes all seven cases with the original limits.
+This is an actual source-currentness refusal, not a reason to replace a digest.
+
+Default serial =just test-file t/module-retention-census-test.ss= passes the
+required MODULE-OK, HARNESS-OK and final OK markers without error/overflow:
+
+| Observed quantity | 16 modules | 32 modules |
+|-------------------+------------+------------|
+| Cached-value thunk entries | 4469 | 8700 |
+| Uncached-value thunk entries | 1780 | 3341 |
+| Unclassified entries | 0 | 0 |
+| Cold-only function identities | 1780 | 3341 |
+| Cold identities also in warm set | 0 | 0 |
+| Cold-only capture fields | 3296 | 6178 |
+| Original signed reads | 9231 | 18159 |
+| Ordered dependency occurrences | 22619 | 42923 |
+| Native singleton snapshot vectors | 0 | 0 |
+| Cold/hot role expansions | 32 / 0 | 64 / 0 |
+| Cold/hot source reads | 6960 / 106 | 13968 / 170 |
+
+Trace-enabled cold/hot wall microseconds are 9482368/226535 and
+12463798/175129; CPU microseconds are 5058754/77515 and 6569978/137695.
+These include instrumentation and differing host conditions. They establish
+neither a runtime speedup nor exclusive retained bytes. The classification
+allocates temporary key sets only inside the opt-in diagnostic; there is no
+new production cache or admission verdict reuse.
+
+* Interpretation and next boundary
+
+The 3341 functions at 32 modules are a concrete, receiver-local construction
+cost to investigate, not repeated SDK payload. They coexist with 8700 demanded
+entries and the complete read graph. This observation narrows the next source
+question to native effective-thunk construction; it does not license pooling
+receiver state, removing reads or skipping hooks.
+
+Before changing construction, the native MOP's declared slot semantics and
+observable =compute-slot= identity/order must distinguish a supported demand
+projection from an arbitrary effectful hook. Existing ReadRetention models
+cannot supply that missing temporal premise. Keep these functions and all
+currentness/observer boundaries intact until that source correspondence and
+hook-order argument exist. No manual purity label or Core side cache follows
+from the new counts. The ten-thousand-module budget is unchanged and was not
+rerun.
+
+The fixed-revision real Gitea/PostgreSQL publication test passes all 11 cases
+again, including both requirements, final child values after parent caching,
+source changes within admission and stale-plan refusal. The existing
+module-test-observation regression also passes. Both default test-file runs
+have MODULE-OK, HARNESS-OK and final OK, with no error/heap/stack markers.
+No module/Scenario or compiler SDK source outside this owned worktree was reset.

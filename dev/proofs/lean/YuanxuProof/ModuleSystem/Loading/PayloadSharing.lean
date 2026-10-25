@@ -219,6 +219,19 @@ theorem snapshotPreservesEveryOccurrence (parents : List Nat) (index : Nat) :
   rw [snapshotParentsExact]
 
 -- No equality of receiver/callback state and no cached admission is inferred.
+-- A cold table ENTRY may share its function with a warm entry. Count the
+-- identity difference, not all cold entries as independently removable roots.
+def coldOnly (cold warm : List Nat) : List Nat :=
+  cold.filter (fun identity => !(warm.contains identity))
+
+theorem coldOnlyExcludesWarm (cold warm : List Nat) (identity : Nat)
+    (member : identity ∈ coldOnly cold warm) : identity ∉ warm := by
+  simpa [coldOnly] using (List.mem_filter.mp member).2
+
+theorem warmAndColdCoverOriginal (cold warm : List Nat) (identity : Nat) :
+    identity ∈ warm ++ coldOnly cold warm ↔ identity ∈ warm ∨ identity ∈ cold := by
+  by_cases present : identity ∈ warm <;> simp [coldOnly, present]
+
 -- Mutating, dropping or reordering public parents is accepted iff the original
 -- identity sequence is restored; revision/currentness remain separate checks.
 end YuanxuProof.ModuleSystem.Loading.PayloadSharing

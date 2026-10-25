@@ -85,3 +85,6 @@ Model files do not carry trusted currentness results into runtime.
 
 [[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared SDK graphs,
 observable thunk identities and removable issuer-private wrapper allocations.
+
+[[file:20-module-loading/20.11-thunk-demand-and-capture-retention.org][20.11 Receiver Thunk Demand]] separates cached values, shared function identities
+and already-observable construction hooks before considering further laziness.

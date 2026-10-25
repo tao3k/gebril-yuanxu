@@ -548,6 +548,11 @@
     (def metadata-backing-cells 0)
     (def metadata-callback-cells 0)
     (def metadata-receiver-captures 0)
+    (def warm-thunks (make-hash-table-eq))
+    (def cold-thunks (make-hash-table-eq))
+    (def warm-entries 0)
+    (def cold-entries 0)
+    (def unknown-entries 0)
     ;; Trace-only transitive raw payload accounting. Never force a slot, promise,
     ;; interface method or checker. Receiver and SDK context identities are
     ;; frontiers, not recursively expanded into the entire running process.
@@ -713,14 +718,30 @@
         (list (object-%slots receiver) (object-%defaults receiver)))
       (observe-pairs (object-%precedence-list receiver))
       (observe-pairs (object-%all-slots receiver))
-      (let* ((cached (object-%slot-funs receiver)) (table (and cached (native-table cached))))
+      (let* ((cached (object-%slot-funs receiver))
+             (table (and cached (native-table cached)))
+             (values-table (and table (native-table (object-%instance receiver))))
+             (value-keys (and values-table (make-hash-table-eq))))
         (when (and table (not (hash-key? metadata-tables table)))
           (hash-put! metadata-tables table #t)
           (set! metadata-entries (+ metadata-entries (&raw-table-count table)))
           (set! metadata-backing-cells
             (+ metadata-backing-cells (vector-length (&raw-table-table table))))
+          ;; Enumerate raw keys rather than dispatching ref/hash callbacks on
+          ;; a receiver-owned table. This diagnostic never forces a slot.
+          (when values-table
+            (raw-table-for-each values-table
+              (lambda (key _) (hash-put! value-keys key #t))))
           (raw-table-for-each table
-            (lambda (_key fun)
+            (lambda (key fun)
+              (cond
+                ((not values-table) (set! unknown-entries (1+ unknown-entries)))
+                ((hash-key? value-keys key)
+                 (set! warm-entries (1+ warm-entries))
+                 (when (##closure? fun) (hash-put! warm-thunks fun #t)))
+                (else
+                 (set! cold-entries (1+ cold-entries))
+                 (when (##closure? fun) (hash-put! cold-thunks fun #t))))
               (when (and (##closure? fun) (not (hash-key? metadata-callbacks fun)))
                 (hash-put! metadata-callbacks fun #t)
                 (set! metadata-callback-cells
@@ -768,6 +789,15 @@
       (hash-length specification-roots) (hash-length metadata-tables)
       metadata-entries metadata-backing-cells (hash-length metadata-callbacks)
       metadata-callback-cells metadata-receiver-captures)
+    (let ((only-cold 0) (shared-warm 0) (cold-fields 0))
+      (hash-for-each (lambda (fun _)
+        (if (hash-key? warm-thunks fun) (set! shared-warm (1+ shared-warm))
+          (begin
+            (set! only-cold (1+ only-cold))
+            (set! cold-fields (+ cold-fields (1- (##closure-length fun))))))) cold-thunks)
+      (yuanxu-write-observation-line!
+        "slot-thunk-demand warm-entries=%s cold-entries=%s unknown-entries=%s cold-only-identities=%s shared-with-warm=%s cold-only-capture-fields=%s"
+        warm-entries cold-entries unknown-entries only-cold shared-warm cold-fields))
     ;; Distinct closures may repeat the SAME capture identity sequence. Hash
     ;; only primitive identity codes, then compare every field (including code)
     ;; on collision. Never invoke a thunk or merge the original functions.
