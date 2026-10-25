@@ -13,4 +13,5 @@ prepare-quint:
 
 # All maintained finite models are Quint; receipts remain local artifacts.
 proofs-quint receipt="/private/tmp/core-quint-proof.ss":
+    python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py
     python3 dev/proofs/quint/check.py --receipt "{{ receipt }}"

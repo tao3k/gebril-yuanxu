@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source-only Graph admission is independent of compiler execution.
-(import (only-in :std/test test-suite test-case check-equal?)
+(import (only-in :std/test test-suite check-equal?)
         (only-in :gerbil/expander core-import-module expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
@@ -43,7 +43,7 @@
       (check-equal? visits (walk))
       (yuanxu-test-observe 'bootstrap-root-visits repeated)
       (yuanxu-test-observe 'bootstrap-union-visits visits))
-    (test-case "init selects a source Graph and exposes the declared Contract"
+    (yuanxu-test-case "init selects a source Graph and exposes the declared Contract"
       (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
              (graph (.get view build-graph))
              (scope (.get view modules Modules json-schema))

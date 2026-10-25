@@ -8,12 +8,14 @@ import hashlib
 import json
 import os
 import re
-import selectors
 import shutil
-import signal
 import subprocess
 import tempfile
-import time
+
+if __package__:
+    from .native import QuintCLI
+else:
+    from native import QuintCLI
 
 CASES = [
     ("IncrementalRoles", "safety", False),
@@ -499,32 +501,15 @@ CASES = [
 COUNTS = re.compile(rb"([\d,]+) states generated, ([\d,]+) distinct states.*?([\d,]+) states left on queue")
 
 
-def run(command, cwd):
-    started = last_output = time.monotonic()
-    output = bytearray()
-    with subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, start_new_session=True) as process:
-        try:
-            with selectors.DefaultSelector() as selector:
-                selector.register(process.stdout, selectors.EVENT_READ)
-                while selector.get_map():
-                    now = time.monotonic()
-                    if now - started > 45 or now - last_output > 5:
-                        raise TimeoutError("Quint exceeded 45s case or 5s real-output deadline")
-                    for key, _ in selector.select(0.1):
-                        chunk = os.read(key.fileobj.fileno(), 65536)
-                        if chunk:
-                            output.extend(chunk)
-                            last_output = time.monotonic()
-                            print(chunk.decode(errors="replace"), end="", flush=True)
-                        else:
-                            selector.unregister(key.fileobj)
-            status = process.wait(timeout=1)
-        except BaseException:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            raise
-    return status, bytes(output)
+def typecheck_entries(quint, sources):
+    """Fresh native CLI stages per entry, sharing only the Node runtime."""
+    with QuintCLI(quint, "typecheck") as runtime:
+        for source in sources:
+            source = str(source.resolve())
+            status, output = runtime.request({"input": source})
+            if status != 0:
+                raise RuntimeError(f"Quint typecheck failed: {source}: {output.decode(errors='replace')}")
+            print(f"QUINT-TYPECHECK-ENTRY {source}", flush=True)
 
 
 def scheme(value):
@@ -1025,7 +1010,10 @@ def main():
     bound.extend([core / "t/qualification/module-publication/fixtures.ss",
                   core / "t/qualification/module-publication/controls.ss",
                   core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
-    bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve()])
+    bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve(),
+                  Path(__file__).with_name("native-cli.cjs").resolve(),
+                  Path(__file__).with_name("native.py").resolve(),
+                  Path(__file__).with_name("test_typecheck.py").resolve()])
     sources = digests()
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     # Input identities are not a passing qualification receipt. Retain them even
@@ -1036,10 +1024,9 @@ def main():
                          [models / (model + ".qnt") for model, _, _ in selected_cases])
     if args.typecheck_scope == "all":
         typecheck_sources = typecheck_sources[args.shard_index::args.shard_count]
-    # Quint itself resolves and typechecks transitive imports for each entry;
-    # do not implement another parser or substitute a prior successful decision.
-    for source in typecheck_sources:
-        subprocess.run([args.quint, "typecheck", str(source)], check=True, timeout=5)
+    # The same pinned CLI load/parse/typecheck stages resolve transitive imports
+    # afresh per entry. Only Node startup is shared; each entry keeps its 5s limit.
+    typecheck_entries(args.quint, typecheck_sources)
     print("QUINT-TYPECHECK-OK", flush=True)
     print(f"QUINT-TYPECHECK-SCOPE {args.typecheck_scope} {len(typecheck_sources)} entries (including native imports)", flush=True)
     results = []
@@ -1049,7 +1036,7 @@ def main():
         from backend import backend_session
     session = (nullcontext(args.server_endpoint) if args.server_endpoint else
                backend_session(lambda chunk: print(chunk.decode(errors="replace"), end="", flush=True), args.quint))
-    with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint:
+    with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint, QuintCLI(args.quint, "verify", directory) as verifier:
         work = Path(directory)
         for source in models.glob("*.qnt"):
             shutil.copyfile(source, work / source.name)
@@ -1057,10 +1044,13 @@ def main():
         config.write_text('{"workers":"1","maxHeap":"-Xmx1G"}\n')
         for model, invariant, negative in selected_cases:
             print(f"QUINT-CHECK {model} {invariant}", flush=True)
-            status, output = run([args.quint, "verify", str(work / (model + ".qnt")),
-                "--main", model, "--backend", "tlc", "--apalache-version", "0.62.1",
-                "--invariant", invariant, "--tlc-config", str(config), "--verbosity", "3"] +
-                ["--server-endpoint", endpoint], work)
+            status, output = verifier.request({
+                "input": str(work / (model + ".qnt")), "main": model,
+                "backend": "tlc", "apalacheVersion": "0.62.1",
+                "invariant": invariant, "invariants": [], "init": "init", "step": "step",
+                "maxSteps": 10, "randomTransitions": False,
+                "tlcConfig": str(config), "verbosity": 3, "serverEndpoint": endpoint,
+            }, wall=45, idle=5, emit=True)
             counts = COUNTS.search(output)
             accepted = ((status == 1 and b"Error: Invariant q_inv is violated." in output
                          and b"[violation] Found an issue" in output
