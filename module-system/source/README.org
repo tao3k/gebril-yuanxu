@@ -11,7 +11,8 @@ that binding. Syntax definitions and phase initializers remain owned by the
 existing guarded native role reader. Both paths preserve source-currentness
 checks. A closed declaration can have
 no role inputs before a getter is demanded; a hot getter retains its original
-guarded inputs, while a fresh publication admits fresh role wrappers.
+guarded inputs. Fresh publications recheck their source and use the reader-owned
+native contexts; source checks and test verdicts are never cached.
 
 The publication Fixture materializes ordinary Scheme role forms and owns their
 temporary files and cleanup. Cases refine those forms through native POO values.

@@ -5,7 +5,7 @@
 (import :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash append-map)
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
-(export module-deferred-role-exports include-deferred-declaration define-module-role-values
+(export module-deferred-role-exports include-deferred-declaration module-role-values
         current-module-role-resolver)
 (def current-module-role-resolver (make-parameter #f))
 (def (closed-rows body)
@@ -61,15 +61,15 @@
 
 ;; Internal projection after the native role body has expanded. The expander
 ;; owns optional Config binding, just as in export-role-config.
-(defsyntax (define-module-role-values input)
+(defsyntax (module-role-values input)
   (syntax-case input ()
-    ((_ binding (name ...))
+    ((_ name ...)
      (with-syntax (((field ...)
                     (filter (lambda (name)
                               (or (not (eq? (stx-e name) 'Config))
                                   (resolve-identifier name)))
                       (syntax->list #'(name ...)))))
-       #'(def binding (.o bind-these: #f field ...))))))
+       #'(.o bind-these: #f field ...)))))
 (def (module-deferred-role-exports interface-text role-texts)
   ;; Only inspect the already guarded byte snapshots. No source initializer,
   ;; macro expander, native Type predicate or role loader runs here.

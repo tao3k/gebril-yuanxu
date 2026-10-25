@@ -9,10 +9,10 @@
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :gerbil/expander current-expander-context make-top-context
-                 current-expander-module-import eval-syntax expander-context-id module-context-path
+                 current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  core-resolve-library-module-path core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval current-expander-phi
-                 expander-context-table module-context-import syntax-e)
+                 expander-context-table module-context-import syntax-e datum->syntax)
         (only-in :clan/poo/object .o .cc .ref .slot? object? object-protocol compute-precedence-list! replay-slot-reads!)
         (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
@@ -23,7 +23,8 @@
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
         (only-in :yuanxu/module-system/source/declaration current-module-build-resolver)
-        (only-in :yuanxu/module-system/source/deferred-declaration current-module-role-resolver)
+        (only-in :yuanxu/module-system/source/deferred-declaration
+                 current-module-role-resolver module-role-values)
         :yuanxu/module-system/source/objects
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module yuanxu-bootstrap-contexts
                  yuanxu-bootstrap-source-path yuanxu-library-identity?))
@@ -784,38 +785,76 @@
                    input-values)))
                  (parameterize ((current-module-source-phase 'build-role-after)) (current!)) value)))
            (def deferred-roles (.ref prepared 'deferred-roles))
+           (def (publication-import path (reload? #f))
+             (cond
+              ((and (string? path) (hash-key? artifacts (path-normalize path)))
+               (native-import path reload?))
+              ((and (string? path) (string=? (path-extension path) ".ss"))
+               (source-context path reload?))
+              (else
+               ;; Compiled libraries must retain their canonical SDK
+               ;; import closure. Redirect only the caller's source
+               ;; binding, never imports inside a compiled library.
+               (when (candidate)
+                 (let* ((requested (syntax-e path))
+                        (text (and (symbol? requested) (symbol->string requested)))
+                        (id (and text (> (string-length text) 1)
+                                 (char=? (string-ref text 0) #\:)
+                                 (string->symbol (substring text 1 (string-length text))))))
+                   (unless (or (and id (hash-get tool-contexts id))
+                               (and (string? requested)
+                                    (hash-get tool-paths (path-normalize requested))))
+                     (open-boundary! (list 'uncatalogued-import path id)))))
+               (let* ((context (parameterize ((current-expander-module-import native-import))
+                                 (native-import path reload?)))
+                      (identity (expander-context-id context))
+                      (id (and (symbol? identity) (symbol->string identity)))
+                      (native-path (module-context-path context))
+                      (owned-path (if (and (string? native-path)
+                                           (string=? (path-extension native-path) ".ss"))
+                                    native-path
+                                    (yuanxu-bootstrap-source-path context compiler-core-root)))
+                      (owner (and source-tree owned-path
+                                  ((.ref source-tree 'locate-owner) owned-path))))
+                 ;; Symbol and exact source-path imports share the same
+                 ;; observed compiler-context and currentness boundary.
+                 (cond
+                  ((hash-key? tool-contexts identity) (tool-context context reload?))
+                  (owner (source-context owned-path reload?))
+                  ((and id (string-prefix? id-prefix id))
+                   (source-context (path-expand (string-append (substring id (string-length id-prefix) (string-length id)) ".ss") root) reload?))
+                  ((and id package-prefix (string-prefix? package-prefix id))
+                   (source-context (path-expand (string-append (substring id (string-length package-prefix) (string-length id)) ".ss") package-root) reload?))
+                  (else context))))))
            (def (resolve-role role names)
-             ;; Native role objects are constructed only by the demanded POO
-             ;; getter. Use the same prepared source/currentness/asset registry.
              (current!)
-             (let* ((path (path-expand (string-append (symbol->string role) ".ss") root))
-                    ;; Eligibility excludes relative role/private imports. Do
-                    ;; not prepare three unused wrappers for one demanded role.
-                    (input (yuanxu-prepare-module-build-source path void))
-                    (binding (string->symbol (symbol->string (gensym 'RoleValues))))
-                    (constructor (string->symbol (symbol->string (gensym 'RoleValuesDefinition))))
-                    (bundled (.cc input 'compiler-forms
-                               (append (.ref input 'compiler-forms)
-                                 ;; Resolve optional Config in this native role context.
-                                 ;; A private alias keeps source-owned bindings intact.
-                                 (list `(import
-                                          (rename-in
-                                            (only-in :yuanxu/module-system/source/deferred-declaration
-                                              define-module-role-values)
-                                            (define-module-role-values ,constructor)))
-                                       `(,constructor ,binding ,names))))))
-               (record-input! input)
-               (parameterize ((current-configuration-input-observer record-data!)
-                              (current-expander-module-import native-import))
-                 (let (value
-                       (module-prepared-source-binding bundled binding
-                         compiler-tools: (list tool-contexts tool-paths tool-dependencies tool-observations)
-                         shared-contexts: kernel-contexts shared-inputs: kernel-inputs
-                         source-inputs: (lambda (rows)
-                                         (record-source-observations! tool-observations rows))))
+             (def created? (not (file-exists? directory)))
+             (dynamic-wind
+               (lambda () (when created? (create-directory directory)))
+               (lambda ()
+                 (parameterize ((current-expander-context (make-top-context))
+                                (current-expander-compile compile)
+                                (current-expander-eval evaluate)
+                                (current-configuration-input-observer record-data!)
+                                (current-expander-module-import publication-import))
+                   ;; Use the SAME confined context and source-input registry as
+                   ;; eager publication. Symbol imports must not create a second
+                   ;; public copy of an already admitted private role or kernel.
+                   (def path (path-expand (string-append (symbol->string role) ".ss") root))
+                   (def context (source-context path #f))
+                   ;; The native context owns its initializer promise. Reuse it
+                   ;; after wrapper cleanup without resolving a deleted file.
+                   (eval-module context)
+                   (def value
+                     (parameterize ((current-expander-context context))
+                       (eval-syntax
+                         (cons (quote-syntax module-role-values)
+                           (map (cut datum->syntax #f <>) names)))))
                    (hash-put! dependencies interface-path (reverse input-values))
                    (current!)
-                   value))))
+                   (release-reader-expansions! completed)
+                   value))
+               (lambda () (when created? (remove-reader-tree directory)))))
            (dynamic-wind
             (lambda () (create-directory directory))
             (lambda ()
@@ -838,47 +877,7 @@
                      (current-module-build-resolver resolve-build!)
                      (current-module-role-resolver resolve-role)
                      (current-expander-module-import
-                      (lambda (path (reload? #f))
-                        (cond
-                         ((and (string? path) (hash-key? artifacts (path-normalize path)))
-                          (native-import path reload?))
-                         ((and (string? path) (string=? (path-extension path) ".ss"))
-                          (source-context path reload?))
-                         (else
-                          ;; Compiled libraries must retain their canonical SDK
-                          ;; import closure. Redirect only the caller's source
-                          ;; binding, never imports inside a compiled library.
-                          (when (candidate)
-                            (let* ((requested (syntax-e path))
-                                   (text (and (symbol? requested) (symbol->string requested)))
-                                   (id (and text (> (string-length text) 1)
-                                            (char=? (string-ref text 0) #\:)
-                                            (string->symbol (substring text 1 (string-length text))))))
-                              (unless (or (and id (hash-get tool-contexts id))
-                                          (and (string? requested)
-                                               (hash-get tool-paths (path-normalize requested))))
-                                (open-boundary! (list 'uncatalogued-import path id)))))
-                          (let* ((context (parameterize ((current-expander-module-import native-import))
-                                            (native-import path reload?)))
-                                 (identity (expander-context-id context))
-                                 (id (and (symbol? identity) (symbol->string identity)))
-                                 (native-path (module-context-path context))
-                                 (owned-path (if (and (string? native-path)
-                                                      (string=? (path-extension native-path) ".ss"))
-                                               native-path
-                                               (yuanxu-bootstrap-source-path context compiler-core-root)))
-                                 (owner (and source-tree owned-path
-                                             ((.ref source-tree 'locate-owner) owned-path))))
-                            ;; Symbol and exact source-path imports share the same
-                            ;; observed compiler-context and currentness boundary.
-                            (cond
-                             ((hash-key? tool-contexts identity) (tool-context context reload?))
-                             (owner (source-context owned-path reload?))
-                             ((and id (string-prefix? id-prefix id))
-                              (source-context (path-expand (string-append (substring id (string-length id-prefix) (string-length id)) ".ss") root) reload?))
-                             ((and id package-prefix (string-prefix? package-prefix id))
-                              (source-context (path-expand (string-append (substring id (string-length package-prefix) (string-length id)) ".ss") package-root) reload?))
-                             (else context))))))))
+                      publication-import))
                   (observe-reader-work 'reader-interface-start 'reader-interface-end
                     (lambda () (eval-syntax `(import ,wrapper))))
                   (let (value (eval-syntax (.ref prepared 'binding)))

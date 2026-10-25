@@ -38,13 +38,14 @@
                              exports: (.o (:: @ FixtureScope) greeting: Greeting))
                    features: (.o)))))
 
-(def (with-publication-source test roles: (roles (.o)))
+(def (with-publication-source test roles: (roles (.o))
+                             package: (package (gensym 'publication-fixture-)))
   (let* ((root (make-temporary-file-name "module-publication-"))
          (module-root (path-expand "modules/custom/example" root)))
     (dynamic-wind
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root)
-                   (string-append "(package: " (symbol->string (gensym 'publication-fixture-)) ")"))
+                   (string-append "(package: " (symbol->string package) ")"))
        ;; The Fixture owns native source materialization and cleanup. Cases
        ;; refine role forms as ordinary POO values rather than escaped strings.
        (let (sources (.+ publication-roles roles))
