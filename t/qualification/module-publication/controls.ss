@@ -73,17 +73,33 @@
       (with-publication-source
         (lambda (_root _module-root source view)
           (def reader (module-publication-reader))
-          (defvalues (_publication roots)
-            (%call-with-recorded-slot-reads (cut .call reader read source) unique-roots?: #t))
+          (defvalues (publication roots)
+            (%call-with-recorded-slot-reads
+              (lambda ()
+                (def value (.call reader read source))
+                ;; Declaration reading leaves role values cold. Demand the
+                ;; actual Types getter before asserting its guarded inputs.
+                (check-equal? (.call reader inputs source) '())
+                (check-equal? (object? (.get value core scope-contract)) #t)
+                value)
+              unique-roots?: #t))
           (let ()
             (def first (.call reader inputs source))
             (check-equal? (pair? first) #t)
-            (.call reader read source)
+            (check-equal? (object? (.get publication core scope-contract)) #t)
             (def second (.call reader inputs source))
-            ;; The same guarded native inputs are projected again, not cloned
-            ;; sources or reused success. Existing currentness controls remain.
+            ;; A hot getter keeps the exact guarded inputs. A separate read
+            ;; owns fresh role wrappers and must independently admit its bytes.
             (check-equal? (length second) (length first))
             (for-each (lambda (input) (check-equal? (if (memq input first) #t #f) #t)) second)
+            (def fresh (.call reader read source))
+            (check-equal? (.call reader inputs source) '())
+            (check-equal? (object? (.get fresh core scope-contract)) #t)
+            (def fresh-inputs (.call reader inputs source))
+            (check-equal? (map (cut .ref <> 'path) fresh-inputs)
+                          (map (cut .ref <> 'path) first))
+            (check-equal? (map (cut .ref <> 'source-inputs) fresh-inputs)
+                          (map (cut .ref <> 'source-inputs) first))
             (check-equal? (andmap object-read-issued? roots) #t)
             ;; Full graph retention is intentional. Do not resurrect the old
             ;; zero-closure telemetry as a passing memory optimization.
@@ -124,7 +140,9 @@
               (lambda (failure)
                 (and (Error? failure)
                      (equal? (Error-message failure) "stale slot dependency")))))
-          (check-equal? replays 2)))))
+          (check-equal? replays 2))
+        roles: (.o config: '((def Config #f) (def Greeting "hello")
+                             (export Config Greeting))))))
 
 (def (register-build-support-control-cases!)
   (yuanxu-test-case "tool eligibility does not enlarge the declaration dependency closure"

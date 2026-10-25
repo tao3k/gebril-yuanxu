@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source preparation shared by publication suites; no test suite is imported.
-(import (only-in :clan/poo/object .def .o .get)
+(import (only-in :clan/poo/object .def .o .get .ref .+)
         (only-in :std/test check-equal?)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
@@ -22,21 +22,40 @@
            (delete-directory path))
     (delete-file path)))
 
-(def (with-publication-source test)
+(def publication-roles
+  (.o
+    types: '((import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+                     (only-in :clan/poo/object object?))
+             (def FixtureContract
+               (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '())))
+             (export FixtureContract))
+    objects: '((import (only-in :clan/poo/object .o))
+               (def FixtureScope (.o retained: 'upstream))
+               (export FixtureScope))
+    config: '((def Greeting "hello") (export Greeting))
+    interface: '((.def Fixture identity: 'custom/example
+                   core: (.o requires: (.o) scope-contract: FixtureContract
+                             exports: (.o (:: @ FixtureScope) greeting: Greeting))
+                   features: (.o)))))
+
+(def (with-publication-source test roles: (roles (.o)))
   (let* ((root (make-temporary-file-name "module-publication-"))
          (module-root (path-expand "modules/custom/example" root)))
     (dynamic-wind
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root)
                    (string-append "(package: " (symbol->string (gensym 'publication-fixture-)) ")"))
-       (write-file (path-expand "types.ss" module-root)
-         "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def FixtureContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export FixtureContract)")
-       (write-file (path-expand "objects.ss" module-root)
-         "(import (only-in :clan/poo/object .o)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope)")
-       (write-file (path-expand "config.ss" module-root)
-         "(def Greeting \"hello\") (export Greeting)")
-       (write-file (path-expand "interface.ss" module-root)
-         "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting)) features: (.o))"))
+       ;; The Fixture owns native source materialization and cleanup. Cases
+       ;; refine role forms as ordinary POO values rather than escaped strings.
+       (let (sources (.+ publication-roles roles))
+         (for-each
+           (lambda (role)
+             (write-file (path-expand (string-append (symbol->string role) ".ss") module-root)
+               (call-with-output-string
+                 (lambda (port)
+                   (for-each (lambda (form) (write form port) (newline port))
+                     (.ref sources role))))))
+           '(types objects config interface))))
      (lambda ()
        (let* ((view (yuanxu-load-modules (path-expand "modules" root)))
               (source ((.get view context locate) 'custom/example)))

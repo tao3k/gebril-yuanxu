@@ -42,11 +42,10 @@
       (['import . specs]
        (when (source-path? specs) (error "private source imports require guarded reader" role)))
       ([(? symbol? head) . _]
-       ;; Unknown top-level macros can introduce exports that a syntactic
-       ;; export list cannot account for. They retain native eager admission.
+       ;; Syntax exports and phase initializers are not runtime tuple fields.
+       ;; Keep their original native contexts and one-time expansion owner.
        (unless (memq head '(export def defvalues defstruct defclass
-                           .def .defgeneric .defmethod defrules defrule defsyntax
-                           begin-syntax))
+                           .def .defgeneric .defmethod))
          (error "open role declaration requires guarded reader" role head)))
       (else (error "open role body requires guarded reader" role)))) forms)
   (def names
@@ -57,8 +56,12 @@
            (unless (andmap symbol? names) (error "open role exports" role))
            names)
           (else '()))) forms))
-  (delete-duplicates/hash
-    (if (eq? role 'config) (cons 'Config names) names)))
+  ;; export-role-config asks the native expander whether an implicit Config
+  ;; exists. The closed value projection cannot invent that binding or decide
+  ;; what a macro introduces; let the existing native role reader own it.
+  (when (and (eq? role 'config) (not (memq 'Config names)))
+    (error "implicit Config binding requires native role expansion" role))
+  (delete-duplicates/hash names))
 (def (module-deferred-role-exports interface-text role-texts)
   ;; Only inspect the already guarded byte snapshots. No source initializer,
   ;; macro expander, native Type predicate or role loader runs here.

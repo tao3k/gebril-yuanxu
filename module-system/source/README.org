@@ -3,6 +3,20 @@
 
 #+title: Executable source preparation boundary
 
+* Closed role values
+
+The deferred value projection requires explicit runtime exports. In particular,
+it must not invent =Config=: implicit Config binding, syntax definitions and
+phase initializers remain owned by the existing guarded native role reader.
+Both paths preserve source-currentness checks. A closed declaration can have
+no role inputs before a getter is demanded; a hot getter retains its original
+guarded inputs, while a fresh publication admits fresh role wrappers.
+
+The publication Fixture materializes ordinary Scheme role forms and owns their
+temporary files and cleanup. Cases refine those forms through native POO values.
+File mutation Cases exercise actual reader/expander and provenance boundaries;
+pure value and eligibility Cases do not require filesystem fixtures.
+
 * Entry and selection
 
 The public =:yuanxu/module-system/interface= entry now accepts either the existing

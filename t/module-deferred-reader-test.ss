@@ -58,15 +58,30 @@
       (replace-forms (module-path fixture "types.ss")
         '((def ScopeContract #f) (export ScopeContract)))
       (check-exception (.get fixture modules module-0 tests source selected-graph) error?))
-    (test-case "private source closure retains the original guarded route"
+    (yuanxu-test-fixture "implicit Config uses the native binding and role reader"
+      (fixture (.cc DeclarationFixture size: 1))
+      (replace-forms (module-path fixture "config.ss")
+        '((def Config (.o value: 7))))
+      (replace-forms (module-path fixture "interface.ss")
+        '((.def Module identity: 'module-0
+            core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
+            features: (.o))))
+      (check-equal? (.get fixture modules module-0 scope value) 7))
+    (test-case "only closed runtime role exports use the deferred projection"
       (def interface
         "(.def Module identity: 'example core: (.o requires: (.o) scope-contract: ScopeContract exports: Config) features: (.o))")
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(def ScopeContract #f) (export ScopeContract)")
-            (config . "(def Config #f)")))
+            (config . "(def Config #f) (export Config)")))
         '((types ScopeContract) (config Config)))
+      ;; The native expander still supports implicit Config. Its binding is
+      ;; outside the closed value projection, as the integration Case checks.
+      (check-equal?
+        (module-deferred-role-exports interface
+          '((types . "(def ScopeContract #f) (export ScopeContract)")
+            (config . "(def Config #f)"))) #f)
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(import (only-in \"private.ss\" Private)) (export ScopeContract)")
-            (config . "(def Config #f)"))) #f))))
+            (config . "(def Config #f) (export Config)"))) #f))))

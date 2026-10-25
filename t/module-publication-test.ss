@@ -542,7 +542,9 @@
                                     (path-expand "objects.ss" module-root) void)
                                   compiler-forms)) #t)
          (.call reader read source)
-         (.call reader admit-current))))
+         (.call reader admit-current))
+       roles: (.o config: '((def Config #f) (def Greeting "hello")
+                            (export Config Greeting)))))
     (yuanxu-test-case "failed post-evaluation source guard does not release reader bodies"
       (with-publication-source
        (lambda (_root module-root source _view)
@@ -594,8 +596,9 @@
            (call-with-output-string
              (lambda (port)
                (write `(import (only-in ,library FixtureScope)) port)
+               (write '(def Config #f) port)
                (write '(def Greeting "hello") port)
-               (write '(export Greeting) port))))
+               (write '(export Greeting Config) port))))
          ;; Registration is local to the test; the SDK still resolves package
          ;; prefixes and the reader still enforces the original owner boundary.
          (def previous (load-path))
