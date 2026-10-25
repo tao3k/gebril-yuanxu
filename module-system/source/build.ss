@@ -6,6 +6,8 @@
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
         (only-in :std/list/list find)
+        (only-in :gerbil/expander expander-context-id module-context-path)
+        (only-in :yuanxu/module-system/building/source-closure package-library-spec)
         (only-in :clan/poo/object .o .cc .ref .slot? .all-slots object?)
         (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
@@ -30,7 +32,10 @@
 (def (build-contribution? value)
   (and (object? value) (.slot? value 'kind) (.slot? value 'roots)
        (eq? (.ref value 'kind) 'module/build)
-       (list? (.ref value 'roots)) (andmap native-build-root? (.ref value 'roots))))
+       (list? (.ref value 'roots)) (andmap native-build-root? (.ref value 'roots))
+       (or (not (.slot? value 'library-roots))
+           (and (list? (.ref value 'library-roots))
+                (andmap string? (.ref value 'library-roots))))))
 (def BuildContributionContract
   (yuanxu-predicate-contract 'module/build-contribution build-contribution? (lambda (_v _c) '())))
 (def ExternalPackageContributionContract
@@ -70,7 +75,7 @@
   (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table))
         (prepared (make-hash-table)) (checks '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
-        (package-values '()) (package-demands '()) (package-refused? #f)
+        (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)))
     ;; Index the already-selected Core nodes once; dependency edges select
@@ -133,6 +138,47 @@
         (add! 'source (.ref (hash-ref by-path path) 'input) options-value owner contributor)
         (add! 'source (or observed-input (yuanxu-prepare-module-build-source path void))
               options-value owner contributor)))
+    ;; Package public entries belong to their declaring Module. Gerbil supplies
+    ;; the actual import graph; the existing preparer guards every local source.
+    ;; Owner-relative roots remain confined and keep their explicit options.
+    (def (add-library! publication projection owner contributor)
+      (when (and (.slot? projection 'library-roots)
+                 (pair? (.ref projection 'library-roots)))
+        (let* ((metadata (find (lambda (row)
+                                (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
+                              (.ref publication 'source-inputs)))
+               (package-root (and metadata (path-normalize (path-directory (car metadata))))))
+          (unless package-root (error "public library entries require native package metadata" owner))
+          (let* ((properties (call-with-input-string (cdr metadata) read))
+                 (field (and (list? properties) (memq 'package: properties)))
+                 (package (and field (pair? (cdr field)) (cadr field)))
+                 (entries (.ref projection 'library-roots)))
+            (unless (symbol? package) (error "public library entries require a native package identity" owner))
+            ;; Confine before expansion, including every unresolved path part.
+            (def prefix (string-append (symbol->string package) "/"))
+            (for-each
+              (lambda (entry)
+                (def path (confined-build-path package-root entry))
+                (def input (yuanxu-prepare-module-build-source path void))
+                (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
+                  (error "public library entry belongs to another native package" path)))
+              entries)
+            (def (admit-context context)
+              (def identity (expander-context-id context))
+              (when (and (symbol? identity) (string-prefix? prefix (symbol->string identity)))
+                (let* ((relative (substring (symbol->string identity) (string-length prefix)
+                                            (string-length (symbol->string identity))))
+                       (path (confined-build-path package-root relative))
+                       (actual (module-context-path context)))
+                  (unless (and (string? actual) (equal? path (path-normalize actual)))
+                    (error "public library compiler source differs from declared package" identity path actual))
+                  ;; Imported leaves inherit an explicitly selected native option
+                  ;; set; two explicit contributions still conflict in add!.
+                  (add-source! path
+                    (if (hash-key? by-path path) (.ref (hash-ref by-path path) 'options) '())
+                    owner contributor))))
+            (package-library-spec package-root package
+              (map (cut path-default-extension <> ".ss") entries) admit-context: admit-context)))))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -198,7 +244,9 @@
               (lambda (spec)
                 (add-source! (confined-build-path (cdr root) (if (string? spec) spec (cadr spec)))
                              (if (string? spec) '() (cddr spec)) owner contributor-value))
-              (.ref projection 'roots))))
+              (.ref projection 'roots))
+             (set! library-demands
+               (cons (list publication projection owner contributor-value) library-demands))))
           ((feature-projection-request? projection)
            ;; A build request still needs an admitted concrete build contribution.
            (when (eq? (.ref projection 'projection-id) 'build)
@@ -237,6 +285,10 @@
            ((feature)
             (add-projections! owner contributor (.ref (.ref node 'descriptor) 'projections)))
            (else (error "unknown selected Graph node" node))))) (.ref selected-value 'nodes))
+    ;; All explicit selected contributions decide options before a public import
+    ;; closure inherits them. Module order cannot manufacture an option conflict.
+    (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
+    (set! library-demands '())
     (let ((init-inputs
            ;; Finalization only reads the init source. Share the existing pure
            ;; window for its two Graph checks; close it before any consumer can

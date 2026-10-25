@@ -180,3 +180,34 @@ calculate itself before its own source is readable.
 The source audit above preceded implementation. The reader correction is recorded
 in [[file:13.05-reader-tool-context-and-cold-build.org][04]] and the adapter implementation/qualification in [[file:13.06-init-build-spec-adapter.org][05]]. Neither implements
 the runtime Loader or merges build projection with Contract-system admission.
+
+* Module-owned public library entries
+
+An existing =module/build= contribution may additionally declare =library-roots=:
+
+#+begin_src scheme
+(def Build (.o kind: 'module/build roots: '()
+               library-roots: '("public-api")))
+#+end_src
+
+=roots= remains owner-relative and supports explicit gxc options. =library-roots=
+is a list of public entry files relative to the owning native package, not a
+whole-file inventory. Core derives that package from guarded =gerbil.pkg= input,
+confines regular source paths, and delegates expansion/import traversal to the
+existing =package-library-spec=. Library runtime initializers are not evaluated.
+Every same-package context must name its actual declared source path; imported
+sources join the ordinary guarded compiler Graph. Explicitly selected native
+options are preserved for imported leaves, while conflicting explicit roots
+still reject. Missing paths, symlinks, escapes, foreign root identities and
+malformed domains reject; changing any captured import invalidates the Graph.
+
+Publication and configuration projections preserve the original native package
+parent for symbolic relative imports, with a separate private namespace. The
+configuration reader resolves its exact admitted identity index, so private
+projection does not turn =../shared= into an unrelated temporary-package import.
+No source discovery, runtime loader or compiler scheduler is added.
+
+All explicit selected contributions are collected before public import closures
+are expanded. Thus a dependency imported by an earlier Module inherits options
+owned by a later selected Module as well. This does not resolve conflicting
+explicit choices; those still reject before closure expansion.

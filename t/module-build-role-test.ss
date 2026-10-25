@@ -47,6 +47,100 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "public imports inherit explicit options from later selected Modules"
+      (call-with-temporary-directory "module-public-library-options"
+        (lambda (root)
+          (def owner (fixture root
+            "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+          (def later (path-expand "modules/app/later" root))
+          (for-each (lambda (role)
+                      (write-source (path-expand role later)
+                        (module-source-read (path-expand role owner))))
+                    '("types.ss" "objects.ss" "config.ss"))
+          (write-source (path-expand "helper.ss" later) "(def value 42) (export value)")
+          (write-source (path-expand "build.ss" later)
+            "(def Build (.o kind: 'module/build roots: '((gxc: \"helper\" \"-O\"))))")
+          (write-source (path-expand "interface.ss" later)
+            "(.def Later identity: 'app/later core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+          (write-source (path-expand "init.ss" root)
+            "(yuanxu! mode: explicit source: \"./modules\" :app (example) (later))")
+          (write-source (path-expand "public.ss" root)
+            "(import ./modules/app/later/helper) (export (import: ./modules/app/later/helper))")
+          (add-load-path! root)
+          (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
+          (def helper (filter (lambda (entry)
+                                (equal? (path-normalize (.get entry path))
+                                        (path-normalize (path-expand "helper.ss" later))))
+                              (.get graph entries)))
+          (check-equal? (length helper) 1)
+          (check-equal? (.get (car helper) options) '("-O")))))
+    (yuanxu-test-case "Module public entries use the native import graph without runtime execution"
+      (call-with-temporary-directory "module-public-library-entries"
+        (lambda (root)
+          (def owner (fixture root
+            "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+          (add-load-path! root)
+          (write-source (path-expand "service.ss" owner)
+            "(error \"public source runtime must not execute\") (def answer 42) (export answer)")
+          (write-source (path-expand "public.ss" root)
+            "(import ./modules/app/example/service) (export (import: ./modules/app/example/service))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+          (def graph (.get view build-graph))
+          (def paths (map (cut .get <> path) (.get graph entries)))
+          (assert 'public-facade-enrolled (member (path-normalize (path-expand "public.ss" root)) (map path-normalize paths)))
+          (assert 'native-private-dependency-enrolled (member (path-normalize (path-expand "service.ss" owner)) (map path-normalize paths)))
+          (call-with-output-file (list path: (path-expand "service.ss" owner) append: #t)
+            (cut display "\n;; changed actual imported source\n" <>))
+          (check-exception ((.get graph compiler-current)) error?))))
+    (yuanxu-test-case "Module public entries reject package escapes and missing sources"
+      (for-each
+        (lambda (entry)
+          (call-with-temporary-directory "module-public-library-denied"
+            (lambda (root)
+              (fixture root (string-append
+                "(def Build (.o kind: 'module/build roots: '() library-roots: '("
+                (object->string entry) ")))"))
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+              (check-exception (.get view build-graph) error?))))
+        '("../escape.ss" "missing.ss")))
+    (yuanxu-test-case "Module public entries reject symlinks, foreign identities and malformed domains"
+      (for-each
+        (lambda (kind)
+          (call-with-temporary-directory "module-public-library-source-boundary"
+            (lambda (root)
+              (fixture root
+                (if (eq? kind 'malformed)
+                  "(def Build (.o kind: 'module/build roots: '() library-roots: '(42)))"
+                  "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+              (case kind
+                ((foreign) (write-source (path-expand "public.ss" root)
+                             "package: other-native-package (def value 42) (export value)"))
+                ((symlink)
+                 (write-source (path-expand "target.ss" root) "(def value 42) (export value)")
+                 (create-symbolic-link (path-expand "target.ss" root) (path-expand "public.ss" root))))
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+              (check-exception (.get view build-graph) error?))))
+        '(symlink foreign malformed)))
+    (yuanxu-test-case "private projections preserve native relative-symbol imports"
+      (call-with-temporary-directory "module-native-relative-import"
+        (lambda (root)
+          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (add-load-path! root)
+          (write-source (path-expand "shared.ss" owner) "(def answer 42) (export answer)")
+          (write-source (path-expand "private/entry.ss" owner)
+            "(import (only-in ../shared answer)) (export answer)")
+          (write-source (path-expand "objects.ss" owner)
+            "(import :clan/poo/object (only-in ./private/entry answer)) (.def Defaults value: answer) (export Defaults)")
+          (write-source (path-expand "interface.ss" owner)
+            "(.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+          (check-equal? (.get view modules app example value) 42)
+          (def graph (.get view build-graph))
+          (assert 'native-relative-import-build-graph (object? graph))
+          ;; The projection must keep the actual helper in its currentness closure.
+          (call-with-output-file (list path: (path-expand "shared.ss" owner) append: #t)
+            (cut display "\n;; changed imported source\n" <>))
+          (check-exception ((.get view admit-current)) error?))))
     (yuanxu-test-case "original interface compiler gets the lazy phase-bound Build binding"
       (call-with-temporary-directory "module-raw-build-binding"
         (lambda (root)

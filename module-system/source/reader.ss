@@ -572,12 +572,17 @@
                 (completed (make-hash-table-eq))
                 (input-values '()) (input-paths (make-hash-table)) (native-import (current-expander-module-import)))
            (defvalues (compile evaluate) (reader-evaluation-observers artifacts completed))
-           (def (write-wrapper path forms)
+           (def (write-wrapper path forms native-identity)
              (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                     (target (path-expand name directory)))
                (call-with-output-file target
                  (lambda (port)
-                   (write 'package: port) (display " " port) (write prefix port) (newline port)
+                   ;; Preserve native relative-symbol import resolution. Only the
+                   ;; private namespace/filename changes, not its package parent.
+                   (write 'package: port) (display " " port)
+                   (write (path-strip-trailing-directory-separator
+                            (path-directory (symbol->string native-identity))) port)
+                   (newline port)
                    (write 'namespace: port) (display " " port)
                    (write (string-append prefix "/" (path-strip-extension name)) port) (newline port)
                    (for-each (lambda (form) (write form port) (newline port)) forms)))
@@ -660,7 +665,7 @@
                    (let (input (yuanxu-prepare-module-private-source allowed-root original-path void))
                      (set! guards (cons (.ref input 'admit-current) guards))
                      (record-input! input)
-                     (write-wrapper path (reader-body (.ref input 'compiler-forms)))))))
+                     (write-wrapper path (reader-body (.ref input 'compiler-forms)) (.ref input 'compiler-identity))))))
            (def (shared-context original-path owner-root reload? (shared? #t))
              (let* ((path (path-normalize original-path))
                     (context
@@ -866,7 +871,7 @@
                 (if deferred-roles '() (.ref prepared 'role-sources)))
               (enroll-candidate! (.ref prepared 'admit-current))
               (parameterize ((current-module-source-phase 'declaration-inputs)) (current!))
-              (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms)))))
+              (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms))) (.ref prepared 'compiler-identity)))
                 (parameterize
                     ((current-configuration-input-observer record-data!)
                      (current-expander-compile compile)
@@ -1037,7 +1042,7 @@
   (let* ((inputs (append (cons prepared related) private-sources))
          (directory (make-temporary-file-name "configuration-reader-"))
          (prefix (symbol->string (gensym 'configuration-reader-)))
-         (wrappers (make-hash-table))
+         (wrappers (make-hash-table)) (native-paths (make-hash-table-eq))
          (owned (make-hash-table)) (completed (make-hash-table-eq))
          (native-import (current-expander-module-import)))
     (defvalues (compile evaluate) (reader-evaluation-observers owned completed))
@@ -1053,6 +1058,9 @@
             (module-source-admit-current! (hash->list tool-observations) "compiler tool source changed")
             (for-each (lambda (input) ((.ref input 'admit-current))) inputs)))))
     (def (write-input! input)
+      ;; Exact admitted compiler identities also name symbol-relative imports.
+      ;; This is an index of captured inputs, not another source resolver.
+      (hash-put! native-paths (.ref input 'compiler-identity) (path-normalize (.ref input 'path)))
       (let* ((path (.ref input 'path))
              (owner (path-directory (path-normalize (.ref prepared 'path))))
              (shared (and shared-contexts
@@ -1068,7 +1076,13 @@
             (hash-put! owned (path-normalize wrapper) #t)
             (call-with-output-file wrapper
               (lambda (port)
-                (write 'package: port) (display " " port) (write prefix port) (newline port)
+                (write 'package: port) (display " " port)
+                (write (path-strip-trailing-directory-separator
+                         (path-directory (symbol->string (.ref input 'compiler-identity)))) port)
+                (newline port)
+                (write 'namespace: port) (display " " port)
+                (write (string-append prefix "/" (path-strip-extension (path-strip-directory wrapper))) port)
+                (newline port)
                 (for-each (lambda (form) (write form port) (newline port))
                   (append (reader-body (.ref input 'compiler-forms)
                             (if (and role-imports? (eq? input prepared))
@@ -1092,7 +1106,14 @@
                   (current-expander-eval evaluate)
                   (current-expander-module-import
                    (lambda (path (reload? #f))
-                     (let (target (and (string? path) (hash-get wrappers (path-normalize path))))
+                     (let* ((requested (syntax-e path))
+                            (text (and (symbol? requested) (symbol->string requested)))
+                            (native-id (and text (> (string-length text) 1)
+                                            (char=? (string-ref text 0) #\:)
+                                            (string->symbol (substring text 1 (string-length text)))))
+                            (source (or (and (string? requested) (path-normalize requested))
+                                        (and native-id (hash-get native-paths native-id))))
+                            (target (and source (hash-get wrappers source))))
                        (cond
                          ((pair? target)
                           (when reload? (error "shared publication context reload requires a fresh reader"))
