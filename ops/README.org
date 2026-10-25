@@ -143,3 +143,13 @@ not just the test body's static imports. The loader probe emits scalar lifecycle
 checkpoints around compilation, closure capture and bootstrap to locate the
 native crash. Production reader restrictions and all existing budgets remain
 unchanged; successful qualification of these changes is still required.
+
+* Process output
+
+=copy-process-output= retains its four positional arguments and default line
+mode for Ops progress callbacks. Its optional =mode:= accepts =lines=, =text=
+or =bytes=. Text and byte modes drain bounded chunks before newline or EOF;
+text mode uses the Gerbil port decoder, while bytes preserve arbitrary data.
+Only line mode accepts progress callbacks. The optional forwarding port receives
+the same data. =std/misc/process= remains the spawn/wait/status owner; this pump
+does not schedule jobs, grant admission or issue build publications.

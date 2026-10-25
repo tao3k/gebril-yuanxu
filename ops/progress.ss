@@ -173,13 +173,34 @@
                  (exact-integer? (vector-ref record 1)) (>= (vector-ref record 1) 0))
         (execution-progress! (list 'worker (vector-ref record 0)) (vector-ref record 1))))))
 
-;; Shared duplex-effect output pump. The caller owns any stdin payload; after
-;; it has been sent, close that direction and observe real child rows in order.
-(def (copy-process-output process port progress forward)
+;; std/run-process owns spawn, wait and status propagation. The caller sends
+;; stdin before this pump closes it. Lines preserve the Ops progress protocol;
+;; chunk modes forward available output without waiting for a newline or EOF.
+(def (copy-process-output process port progress forward mode: (mode 'lines))
+  (unless (memq mode '(lines text bytes))
+    (error "invalid process output mode" mode))
+  (when (and progress (not (eq? mode 'lines)))
+    (error "process progress requires line mode" mode))
   (close-output-port process)
-  (let loop ((line (read-line process #\newline #t)))
-    (unless (eof-object? line)
-      (when progress (progress line))
-      (display line port) (force-output port)
-      (when forward (display line forward) (force-output forward))
-      (loop (read-line process #\newline #t)))))
+  (case mode
+    ((lines)
+     (let loop ((line (read-line process #\newline #t)))
+       (unless (eof-object? line)
+         (when progress (progress line))
+         (display line port) (force-output port)
+         (when forward (display line forward) (force-output forward))
+         (loop (read-line process #\newline #t)))))
+    (else
+     (let* ((text? (eq? mode 'text))
+            (buffer (if text? (make-string 8192) (make-u8vector 8192)))
+            (read-chunk (if text? read-substring read-subu8vector))
+            (write-chunk (if text? write-substring write-subu8vector)))
+       (let loop ()
+         ;; min-count 1 returns available data, including unterminated fragments.
+         ;; Gerbil ports retain split UTF-8 decoder state in text mode.
+         (let (count (read-chunk buffer 0 8192 process 1))
+           (unless (zero? count)
+             (write-chunk buffer 0 count port) (force-output port)
+             (when forward
+               (write-chunk buffer 0 count forward) (force-output forward))
+             (loop))))))))

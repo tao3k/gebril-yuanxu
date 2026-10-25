@@ -10,7 +10,9 @@
         (only-in :std/os/signal kill)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
-        (only-in :std/misc/ports read-all-as-string))
+        (only-in :std/misc/ports read-all-as-string)
+        (only-in :std/misc/process run-process process-error?)
+        (only-in :yuanxu/ops/progress copy-process-output))
 (import (only-in "../ops/tests/atomic-test.ss" ops-watchdog-test))
 (export ops-process-script-test ops-watchdog-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
@@ -23,6 +25,49 @@
     (lambda () (kill pid 0) #f)))
 (def ops-process-script-test
   (test-suite "POO declarative operational scripts"
+    (yuanxu-test-case "line pump preserves callbacks, forwarding and final fragments"
+      (def rows '())
+      (def forwarded (open-output-string))
+      (def captured
+        (call-with-output-string
+          (lambda (port)
+            (run-process '("printf" "first\nlast") stdout-redirection: #t
+              coprocess: (lambda (process)
+                (copy-process-output process port
+                  (lambda (row) (set! rows (cons row rows))) forwarded))))))
+      (check-equal? captured "first\nlast")
+      (check-equal? (get-output-string forwarded) captured)
+      (check-equal? (reverse rows) '("first\n" "last")))
+    (yuanxu-test-case "byte pump preserves undecodable output and forwards it"
+      (def forwarded (open-output-u8vector))
+      (def captured
+        (call-with-output-u8vector
+          (lambda (port)
+            (run-process '("printf" "\\000\\377\\316\\273") stdout-redirection: #t
+              coprocess: (lambda (process)
+                (copy-process-output process port #f forwarded mode: 'bytes))))))
+      (check-equal? captured #u8(0 255 206 187))
+      (check-equal? (get-output-u8vector forwarded) captured))
+    (yuanxu-test-case "text pump decodes split UTF-8 and propagates child failure"
+      (check-equal?
+        (call-with-output-string
+          (lambda (port)
+            (run-process '("sh" "-c" "printf '\\316'; sleep 0.02; printf '\\273'")
+              stdout-redirection: #t
+              coprocess: (lambda (process)
+                (copy-process-output process port #f #f mode: 'text)))))
+        "λ")
+      (check-exception
+        (call-with-output-string
+          (lambda (port)
+            (run-process '("sh" "-c" "printf failed; exit 17") stdout-redirection: #t
+              coprocess: (lambda (process)
+                (copy-process-output process port #f #f mode: 'text)))))
+        process-error?))
+    (yuanxu-test-case "invalid modes and chunk progress refuse before touching the child"
+      (check-exception (copy-process-output #f #f #f #f mode: 'unknown) Error?)
+      (check-exception (copy-process-output #f #f void #f mode: 'text) Error?)
+      (check-exception (copy-process-output #f #f void #f mode: 'bytes) Error?))
     (yuanxu-test-case "Case cancellation terminates the owned Ops descendants"
       (call-with-temporary-directory "ops-cancel"
         (lambda (root)
