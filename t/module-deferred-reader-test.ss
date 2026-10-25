@@ -1,10 +1,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Integration boundary: actual native role expansion and initializer laziness.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-deferred-role-exports))
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
 (export module-deferred-reader-test)
 (def (replace-forms path forms)
   (call-with-output-file (list path: path truncate: #t)
@@ -71,22 +71,4 @@
       (check-equal? (length (.get fixture modules module-0 tests source selected-graph module-order)) 1)
       (check-equal? (.ref/cached (.get fixture modules module-0) 'scope) #f)
       (check-equal? (.get fixture modules module-0 scope value) 7))
-    (test-case "only closed runtime role exports use the deferred projection"
-      (def interface
-        "(.def Module identity: 'example core: (.o requires: (.o) scope-contract: ScopeContract exports: Config) features: (.o))")
-      (check-equal?
-        (module-deferred-role-exports interface
-          '((types . "(def ScopeContract #f) (export ScopeContract)")
-            (config . "(def Config #f) (export Config)")))
-        '((types ScopeContract) (config Config)))
-      ;; Preserve the original implicit Config capability. Its native binding
-      ;; is resolved after role expansion, as the integration Case checks.
-      (check-equal?
-        (module-deferred-role-exports interface
-          '((types . "(def ScopeContract #f) (export ScopeContract)")
-            (config . "(def Config #f)")))
-        '((types ScopeContract) (config Config)))
-      (check-equal?
-        (module-deferred-role-exports interface
-          '((types . "(import (only-in \"private.ss\" Private)) (export ScopeContract)")
-            (config . "(def Config #f) (export Config)"))) #f))))
+    ))

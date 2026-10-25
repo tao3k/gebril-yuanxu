@@ -19,6 +19,23 @@ temporary files and cleanup. Cases refine those forms through native POO values.
 File mutation Cases exercise actual reader/expander and provenance boundaries;
 pure value and eligibility Cases do not require filesystem fixtures.
 
+* Test boundaries
+
+| Suite | Input and boundary | Temporary source files |
+|-------+--------------------+------------------------|
+| =t/module-declaration-value-test.ss= | Native declaration values, POO inheritance, checked dependencies and Graph normalization | None |
+| =t/module-deferred-projection-test.ss= | Source text as parser input data | None |
+| =t/module-deferred-reader-test.ss= | Real role expansion, lexical bindings and initializer laziness | Required |
+| =t/module-publication-test.ss= | Native imports, preparation and refusal after source mutation | Required |
+
+Value Cases construct publications and source capabilities directly in Scheme.
+They do not use the source Fixture. In integration Cases the actual import,
+mutation and assertion stay visible in the Case. The shared Fixture only creates
+a temporary package with its role files, supplies a source view, and cleans up;
+it does not hide validation, import or mutation scenarios. Contract Function and
+functional composition Cases likewise stay in memory unless they explicitly
+qualify a native import or source-currentness boundary.
+
 * Entry and selection
 
 The public =:yuanxu/module-system/interface= entry now accepts either the existing

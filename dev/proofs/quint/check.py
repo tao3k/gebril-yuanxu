@@ -1020,6 +1020,8 @@ def main():
                   core / "module-system/schema/slot-contracts.ss",
                   core / "t/contract-function-composition-test.ss",
                   core / "ops/tests/atomic-test.ss", core / "t/module-publication-test.ss"])
+    bound.extend([core / "t/module-declaration-value-test.ss",
+                  core / "t/module-deferred-projection-test.ss"])
     bound.extend([core / "t/qualification/module-publication/fixtures.ss",
                   core / "t/qualification/module-publication/controls.ss",
                   core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
