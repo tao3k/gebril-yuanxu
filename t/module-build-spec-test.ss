@@ -77,14 +77,26 @@
             (def entry (path-expand "build.ss" root))
             (def (project roots (source-root root) (source-entry entry) (source view))
               (yuanxu-project-source-spec source roots source-root source-entry))
-            (def artifact (project '("utilities/algorithms" "object-types/contracts")))
+            ;; Use an actual selected ordinary library, not a bootstrap-tool
+            ;; membership assumption that changes with the upstream closure.
+            (def overlap
+              (find (lambda (row)
+                      (and (string-prefix? "yuanxu/" (symbol->string (.get row compiler-identity)))
+                           (string-prefix? (path-expand "modules/" root) (.get row path))))
+                    (.get selected entries)))
+            (unless overlap (error "build-spec fixture requires a selected package input"))
+            (def overlap-name
+              (substring (symbol->string (.get overlap compiler-identity)) 7
+                         (string-length (symbol->string (.get overlap compiler-identity)))))
+            (def overlap-spec `(gxc: ,overlap-name ,@(.get overlap options)))
+            (def artifact (project (list "utilities/algorithms" overlap-spec)))
             (check-equal? (eq? (.get artifact build-graph) selected) #t)
             (check-equal? (.get artifact source-root) root)
             (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
-            (check-equal? (length (filter (lambda (row) (equal? (cadr row) "object-types/contracts"))
+            (check-equal? (length (filter (lambda (row) (equal? (cadr row) overlap-name))
                                         (.get artifact spec))) 1)
             (check-equal? (rejects? "conflicting retained compiler options"
-                            (lambda () (project '((gxc: "object-types/contracts" "-debug"))))) #t)
+                            (lambda () (project (list (append overlap-spec '("-debug")))))) #t)
             (check-equal? (rejects? "duplicate retained compiler target"
                             (lambda () (project '("object-types/contracts" "object-types/contracts")))) #t)
             (check-equal? (rejects? "retained build entries require"
@@ -124,7 +136,7 @@
                                   (lambda () (set! invoked? #t))))) #t)
               (check-equal? invoked? #f)
               ;; A foreign dependency remains observed after target partitioning.
-              (let* ((dependency (.get (car (.get selected entries)) path))
+              (let* ((dependency (.get overlap path))
                      (original (module-source-read dependency)))
                 (dynamic-wind
                   (lambda () (write-source dependency (string-append original "\n;; stale dependency\n")))
@@ -137,10 +149,10 @@
               (set! build (path-expand "build.ss" foreign))
               (write-source build "(export #t)")
               (write-source (path-expand "gerbil.pkg" foreign) "(package: yuanxu)\n")
-              (write-source (path-expand "object-types/contracts.ss" foreign)
-                            (module-source-read (path-expand "object-types/contracts.ss" root)))
+              (write-source (path-expand (string-append overlap-name ".ss") foreign)
+                            (module-source-read (.get overlap path)))
               (check-equal? (rejects? "conflicting compiler inputs"
-                              (lambda () (project '("object-types/contracts") foreign build))) #t))
+                              (lambda () (project (list overlap-spec) foreign build))) #t))
             (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) installed-core?)))))
     (begin
       (displayln "SKIP module-build-spec: CORE_QUALIFICATION_ROOT is unset")
