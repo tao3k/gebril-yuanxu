@@ -184,3 +184,20 @@ actual completed work through existing Ops, without a timer heartbeat, new
 Builder/cache protocol or Loader enrollment. Lean's structural owners and
 existing QNT temporal owners are unchanged; no duplicate model was introduced
 and no new source-bound all-model/complete-CI qualification is claimed here.
+
+* Retained library admission ownership (2026-10-25)
+
+Ordinary retained source preparations own their file and native-package guards.
+The selected Graph is admitted by the enclosing source projection at each
+independent boundary, including entry and return of compiler dispatch. Attaching
+that same whole-Graph callback to every retained file repeats Graph replay when
+reading a prepared field and when checking each source, without adding another
+independent boundary. Test-source preparation already uses the local-source rule.
+
+A two-width native projection control observes preparation/check counts of4/3
+for one retained file and193/129 for64 before the adapter change. Afterwards both
+widths observe1/1. The source-byte and selected-Graph drift controls still refuse;
+the maintained regression additionally refuses package-metadata drift and retains
+the entire target set. These are deterministic work and validity controls, not
+an end-to-end cold-build timing claim. Package timing, compiler/load identity,
+complete products and source-bound qualification remain separate required gates.

@@ -25,6 +25,49 @@
   (def module-build-spec-test
     (if root
     (test-suite "Direct source build specification identity and validity"
+      (test-case "retained width does not multiply Graph admission; source and Graph drift still refuse"
+        (for-each
+          (lambda (width)
+            (call-with-temporary-directory "retained-admission-width"
+              (lambda (temporary)
+                (write-source (path-expand "gerbil.pkg" temporary) "(package: retained-admission)\n")
+                (write-source (path-expand "build.ss" temporary) "(export #t)\n")
+                (def checks 0)
+                (def graph-current? #t)
+                ;; Empty selected Graph protocol; ordinary retained files are
+                ;; real native sources. This fixture never compiles or issues.
+                (def graph
+                  (.o entries: '() compiler-inputs: '() other-projections: '()
+                      selected-graph: #f
+                      compiler-current:
+                      (lambda ()
+                        (set! checks (+ checks 1))
+                        (unless graph-current? (error "stale fixture Graph")))))
+                (def names
+                  (map (lambda (n) (string-append "owned" (number->string n))) (iota width)))
+                (for-each
+                  (lambda (name)
+                    (write-source (path-expand (string-append name ".ss") temporary) "(export #t)\n"))
+                  names)
+                (def projection
+                  (yuanxu-project-source-spec (.o build-graph: graph) names temporary
+                    (path-expand "build.ss" temporary)))
+                (check-equal? checks 1)
+                (def previous checks)
+                ((.get projection admit-current))
+                (check-equal? (- checks previous) 1)
+                (check-equal? (length (.get projection spec)) width)
+                (write-source (path-expand "owned0.ss" temporary) "(export #t)\n;; changed source\n")
+                (check-exception ((.get projection admit-current)) Error?)
+                (write-source (path-expand "owned0.ss" temporary) "(export #t)\n")
+                ((.get projection admit-current))
+                (write-source (path-expand "gerbil.pkg" temporary) "(package: changed-owner)\n")
+                (check-exception ((.get projection admit-current)) Error?)
+                (write-source (path-expand "gerbil.pkg" temporary) "(package: retained-admission)\n")
+                ((.get projection admit-current))
+                (set! graph-current? #f)
+                (check-exception ((.get projection admit-current)) Error?))))
+          '(1 64)))
       (test-case "one selected Graph, retained overlaps, conflicts and stale entry"
         (call-with-temporary-directory "build-spec-boundaries"
           (lambda (temporary)

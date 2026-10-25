@@ -57,7 +57,7 @@
       (unless (andmap module-source-name? (string-split relative #\/))
         (error "compiler identity is not a relative build target" identity))
       relative))))
-(def (retained-build-entries specs root package-prefix selected current!)
+(def (retained-build-entries specs root package-prefix selected)
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
   (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table)))
@@ -88,7 +88,11 @@
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
          (def old (hash-get selected-by-path path-value))
          (def prepared-input (if old (.ref old 'input)
-                                 (yuanxu-prepare-module-retained-source path-value current!)))
+                                 ;; Ordinary retained files own their source/package guards.
+                                 ;; The projection checks its selected Graph once at each
+                                 ;; independent boundary; do not attach that whole Graph
+                                 ;; replay to every file (including every read of its fields).
+                                 (yuanxu-prepare-module-retained-source path-value void)))
          (def identity (.ref prepared-input 'compiler-identity))
          (unless (equal? name (build-target-name identity package-prefix))
            (error "retained source path and compiler identity disagree" name identity))
@@ -272,12 +276,12 @@
   (let* ((view (if (string? source) (yuanxu-load-modules source) source))
          (graph (.ref view 'build-graph))
          ;; Preparing retained headers only observes source and package metadata.
-         ;; Share the existing pure read window across their Graph guards; end
-         ;; it before native compilation or any independent freshness boundary.
+         ;; Share the existing pure read window across their own source guards.
+         ;; The projection owns selected-Graph admission once per boundary; end
+         ;; this window before compilation or independent currentness checks.
          (kept (call-with-module-source-read-cache
                  (lambda ()
-                   (retained-build-entries retained root package-prefix (.ref graph 'entries)
-                     (lambda () ((.ref graph 'compiler-current)))))))
+                   (retained-build-entries retained root package-prefix (.ref graph 'entries)))))
          ;; A selection may use Modules from another source package. Observe
          ;; their inputs and Graph guards below, but let that package's native
          ;; build own its output names and compiler options.
