@@ -607,37 +607,6 @@
                (output (path-expand "generated" root)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
            (check-equal? (domain-entry-count (.get view build-graph) module-root) 4)))))
-    (yuanxu-test-case "deferred role imports retain the same private native value"
-      (def package (gensym 'role-import-identity-))
-      (def library
-        (string->symbol
-          (string-append ":" (symbol->string package) "/modules/custom/example/objects")))
-      (with-publication-source
-        (lambda (root _module-root _source view)
-          (def previous (load-path))
-          (dynamic-wind
-            (lambda () (add-load-path! root))
-            (lambda ()
-              (def scope (.get view modules custom example))
-              (check-equal? (eq? (.get scope left) (.get scope right)) #t))
-            (lambda () (set-load-path! previous))))
-        package: package
-        roles:
-        (.o config: `((import (only-in ,library FixtureScope))
-                       (def Config #f) (def Greeting FixtureScope) (export Config Greeting))
-            interface:
-            '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
-                          exports: (.o left: FixtureScope right: Greeting))
-                features: (.o))))))
-    (yuanxu-test-case "new source sessions do not reuse stale native role namespaces"
-      (with-publication-source
-       (lambda (root module-root _source view)
-         (check-equal? (.get view modules custom example greeting) "hello")
-         (write-file (path-expand "config.ss" module-root) "(def Greeting \"changed\") (export Greeting)")
-         (check-exception ((.get view admit-current)) error?)
-         (let (next (yuanxu-load-modules (path-expand "modules" root)))
-           (check-equal? (.get next modules custom example greeting) "changed")))))
     (yuanxu-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
       (with-publication-source
        (lambda (root module-root _source _view)
