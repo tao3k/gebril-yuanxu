@@ -8,6 +8,10 @@ package YuanxuPayloadOwnership {
                own callback-to-admission, invalidation and parent/child event
                traces. Scheme tests own actual MOP correspondence; the bounded
                census owns measured reachability and GC-live observations.
+               ThunkConstruction QNT owns the distinct construction-event,
+               next-function identity and metadata publication question.
+               PayloadSharing Lean owns observation-relative identity
+               projection laws; Scheme owns the native observation cut.
                A new model requires a new question, not a second encoding. */
     }
     part def CanonicalContext {

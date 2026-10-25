@@ -4,6 +4,9 @@ import Init.Data.List.Perm
 
 namespace YuanxuProof.ModuleSystem.Loading.PayloadSharing
 
+def thunkConstructionDigest : String := "sha256:800d1aa25d86f6922e2682ac005c8b2dffd9be8fac461d12ca65532c6e7d4c8e"
+def projectionObjectDigest : String := "sha256:0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced"
+
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=
   if name = fresh then some binding else original name
@@ -234,4 +237,28 @@ theorem warmAndColdCoverOriginal (cold warm : List Nat) (identity : Nat) :
 
 -- Mutating, dropping or reordering public parents is accepted iff the original
 -- identity sequence is restored; revision/currentness remain separate checks.
+-- An effective thunk is already observable through exported native metadata.
+-- This is an observation theorem, not a claim that function identity is data.
+def delayEntry (table : Nat → Option Nat) (slot : Nat) : Nat → Option Nat :=
+  fun key => if key = slot then none else table key
+
+theorem otherThunkIdentityPreserved (table : Nat → Option Nat) (slot key : Nat)
+    (different : key ≠ slot) : delayEntry table slot key = table key := by
+  simp [delayEntry, different]
+
+theorem exposedThunkCannotDisappear (table : Nat → Option Nat) (slot identity : Nat)
+    (visible : table slot = some identity) : delayEntry table slot slot ≠ table slot := by
+  simp [delayEntry, visible]
+
+-- The positive boundary is observation-relative: absence from this projection
+-- must be established; "no protocol" alone does not establish it.
+theorem unobservedThunkProjectionPreserved (table : Nat → Option Nat)
+    (slot : Nat) (observed : List Nat) (hidden : slot ∉ observed) :
+    observed.map (delayEntry table slot) = observed.map table := by
+  apply List.map_congr_left
+  intro key member
+  apply otherThunkIdentityPreserved
+  intro same
+  exact hidden (same ▸ member)
+
 end YuanxuProof.ModuleSystem.Loading.PayloadSharing

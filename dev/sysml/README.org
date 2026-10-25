@@ -88,3 +88,6 @@ observable thunk identities and removable issuer-private wrapper allocations.
 
 [[file:20-module-loading/20.11-thunk-demand-and-capture-retention.org][20.11 Receiver Thunk Demand]] separates cached values, shared function identities
 and already-observable construction hooks before considering further laziness.
+
+[[file:20-module-loading/20.12-thunk-construction-observation-boundary.org][20.12 Thunk Construction Observation Boundary]] assigns construction order/identity
+to QNT, observation projection laws to Lean, and actual MOP behavior to Scheme.

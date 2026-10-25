@@ -67,6 +67,13 @@ CASES = [
     ("RootCollection_copy", "IdentityOrder", True),
     ("RootCollection_edges", "Edges", True),
     ("RootCollection", "NoWork", True),
+    ("ThunkConstruction", "safety", False),
+    ("ThunkConstruction_deferHook", "HookOrder", True),
+    ("ThunkConstruction_partialReflect", "MetadataComplete", True),
+    ("ThunkConstruction_reorder", "HookOrder", True),
+    ("ThunkConstruction_freshNext", "NextIdentity", True),
+    ("ThunkConstruction_freshRead", "StableIdentity", True),
+    ("ThunkConstruction", "RejectAll", True),
     ("ReadRetention", "safety", False),
     ("ReadRetention_receiver", "Coverage", True),
     ("ReadRetention_miss", "Coverage", True),
@@ -554,13 +561,13 @@ def main():
         parser.error("selected typechecking requires an explicit --case-prefix")
     producer_bound = []
     if args.producer_source:
-        if not args.case_prefix or not args.case_prefix.startswith(("SelectionReplay", "IncrementalRoles")):
-            parser.error("producer-source requires replay or incremental correspondence cases")
+        if not args.case_prefix or not args.case_prefix.startswith(("SelectionReplay", "IncrementalRoles", "ThunkConstruction")):
+            parser.error("producer-source requires replay, incremental or thunk-construction correspondence cases")
         args.producer_source = args.producer_source.resolve()
         producer_bound = [args.producer_source / name for name in
                           ("gerbil.pkg", "object.ss", "object-state.ss", "slot-observation.ss",
                            "read-route.ss", "slot-layout.ss", "prototype-map.ss",
-                           "support/object-syntax.ss", "t/issued-read-test.ss")]
+                           "support/object-syntax.ss", "inheritance-hooks.ss", "t/issued-read-test.ss")]
         if not all(p.is_file() for p in producer_bound):
             parser.error("producer-source must contain the complete selected native source owners")
     args.receipt.unlink(missing_ok=True)
@@ -611,6 +618,11 @@ def main():
                   core / "object-family/read-projection.ss",
                   core / "module-system/source/reader.ss",
                   core / "module-system/building/test-observation.ss"])
+    thunk_digest = "sha256:" + hashlib.sha256((models / "ThunkConstruction.qnt").read_bytes()).hexdigest()
+    if f'thunkConstructionDigest : String := "{thunk_digest}"' not in payload_lean.read_text():
+        raise AssertionError("Thunk construction proof retains a stale Quint binding")
+    bound.extend([core / "t/mop-thunk-construction-test.ss",
+                  core / "dev/sysml/20-module-loading/20.04-payload-ownership.sysml"])
     demand_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean"
     demand_digest = "sha256:" + hashlib.sha256((models / "ModuleDemand.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{demand_digest}"' not in demand_lean.read_text():
@@ -647,8 +659,9 @@ def main():
         raise AssertionError("Replay proof correspondence retains a stale gerbil-poo revision")
     if producer_bound:
         producer_digest = "sha256:" + hashlib.sha256((args.producer_source / "object.ss").read_bytes()).hexdigest()
-        if f'projectionObjectDigest : String := "{producer_digest}"' not in selection_lean.read_text():
-            raise AssertionError("Replay projection proof retains a stale native object source binding")
+        proof_owner = payload_lean if args.case_prefix.startswith("ThunkConstruction") else selection_lean
+        if f'projectionObjectDigest : String := "{producer_digest}"' not in proof_owner.read_text():
+            raise AssertionError("Selected projection proof retains a stale native object source binding")
     selection_bound = [selection_lean, core / "module-system/source/reader.ss",
                        core / "module-system/source/admission.ss", core / "module-system/source/link.ss",
                        core / "module-system/source/publication.ss", core / "t/module-publication-test.ss",

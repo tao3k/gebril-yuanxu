@@ -81,7 +81,10 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
 
 def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
-def projectionObjectDigest : String := "sha256:bdba1ca6c9d0df33833c39d951961c73b2f10d4b6719120afd2a79b099391d83"
+-- The 40c61fe -> 29c58aa object-source delta is the issuer-private singleton
+-- codec only. PayloadSharing proves exact ordered parent restoration; native
+-- issuance/reflection tests check the unchanged public snapshot protocol.
+def projectionObjectDigest : String := "sha256:0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.

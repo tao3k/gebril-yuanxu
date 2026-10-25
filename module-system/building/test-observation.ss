@@ -553,6 +553,9 @@
     (def warm-entries 0)
     (def cold-entries 0)
     (def unknown-entries 0)
+    (def cold-protocol-entries 0)
+    (def cold-declaration-entries 0)
+    (def cold-bare-entries 0)
     ;; Trace-only transitive raw payload accounting. Never force a slot, promise,
     ;; interface method or checker. Receiver and SDK context identities are
     ;; frontiers, not recursively expanded into the entire running process.
@@ -721,7 +724,11 @@
       (let* ((cached (object-%slot-funs receiver))
              (table (and cached (native-table cached)))
              (values-table (and table (native-table (object-%instance receiver))))
-             (value-keys (and values-table (make-hash-table-eq))))
+             (value-keys (and values-table (make-hash-table-eq)))
+             (precedence (object-%precedence-list receiver))
+             (has-protocol (and (pair? precedence) (ormap object-%protocol precedence)))
+             (has-declarations (and (pair? precedence)
+               (ormap (lambda (parent) (pair? (object-%declarations parent))) precedence))))
         (when (and table (not (hash-key? metadata-tables table)))
           (hash-put! metadata-tables table #t)
           (set! metadata-entries (+ metadata-entries (&raw-table-count table)))
@@ -741,6 +748,10 @@
                  (when (##closure? fun) (hash-put! warm-thunks fun #t)))
                 (else
                  (set! cold-entries (1+ cold-entries))
+                 (when has-protocol (set! cold-protocol-entries (1+ cold-protocol-entries)))
+                 (when has-declarations (set! cold-declaration-entries (1+ cold-declaration-entries)))
+                 (when (and (pair? precedence) (not has-protocol) (not has-declarations))
+                   (set! cold-bare-entries (1+ cold-bare-entries)))
                  (when (##closure? fun) (hash-put! cold-thunks fun #t))))
               (when (and (##closure? fun) (not (hash-key? metadata-callbacks fun)))
                 (hash-put! metadata-callbacks fun #t)
@@ -796,8 +807,9 @@
             (set! only-cold (1+ only-cold))
             (set! cold-fields (+ cold-fields (1- (##closure-length fun))))))) cold-thunks)
       (yuanxu-write-observation-line!
-        "slot-thunk-demand warm-entries=%s cold-entries=%s unknown-entries=%s cold-only-identities=%s shared-with-warm=%s cold-only-capture-fields=%s"
-        warm-entries cold-entries unknown-entries only-cold shared-warm cold-fields))
+        "slot-thunk-demand warm-entries=%s cold-entries=%s unknown-entries=%s cold-only-identities=%s shared-with-warm=%s cold-only-capture-fields=%s cold-protocol-entries=%s cold-declaration-entries=%s cold-bare-entries=%s"
+        warm-entries cold-entries unknown-entries only-cold shared-warm cold-fields
+        cold-protocol-entries cold-declaration-entries cold-bare-entries))
     ;; Distinct closures may repeat the SAME capture identity sequence. Hash
     ;; only primitive identity codes, then compare every field (including code)
     ;; on collision. Never invoke a thunk or merge the original functions.
