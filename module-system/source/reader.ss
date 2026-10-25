@@ -793,15 +793,17 @@
                     ;; not prepare three unused wrappers for one demanded role.
                     (input (yuanxu-prepare-module-build-source path void))
                     (binding (string->symbol (symbol->string (gensym 'RoleValues))))
-                    (constructor (string->symbol (symbol->string (gensym 'RoleObject))))
+                    (constructor (string->symbol (symbol->string (gensym 'RoleValuesDefinition))))
                     (bundled (.cc input 'compiler-forms
                                (append (.ref input 'compiler-forms)
-                                 ;; Preserve the role's original bindings. Only the private
-                                 ;; tuple constructor needs a strong alias; the exact SDK
-                                 ;; module/context and its source checks remain unchanged.
-                                 (list `(import (rename-in (only-in :clan/poo/object .o)
-                                                           (.o ,constructor)))
-                                       `(def ,binding (,constructor bind-these: #f ,@names)))))))
+                                 ;; Resolve optional Config in this native role context.
+                                 ;; A private alias keeps source-owned bindings intact.
+                                 (list `(import
+                                          (rename-in
+                                            (only-in :yuanxu/module-system/source/deferred-declaration
+                                              define-module-role-values)
+                                            (define-module-role-values ,constructor)))
+                                       `(,constructor ,binding ,names))))))
                (record-input! input)
                (parameterize ((current-configuration-input-observer record-data!)
                               (current-expander-module-import native-import))

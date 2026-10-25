@@ -58,14 +58,18 @@
       (replace-forms (module-path fixture "types.ss")
         '((def ScopeContract #f) (export ScopeContract)))
       (check-exception (.get fixture modules module-0 tests source selected-graph) error?))
-    (yuanxu-test-fixture "implicit Config uses the native binding and role reader"
+    (yuanxu-test-fixture "implicit Config stays lazy and uses its native binding"
       (fixture (.cc DeclarationFixture size: 1))
       (replace-forms (module-path fixture "config.ss")
         '((def Config (.o value: 7))))
+      (replace-forms (module-path fixture "objects.ss")
+        '((def Scope (error "unused Objects role was forced")) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
             core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
             features: (.o))))
+      (check-equal? (length (.get fixture modules module-0 tests source selected-graph module-order)) 1)
+      (check-equal? (.ref/cached (.get fixture modules module-0) 'scope) #f)
       (check-equal? (.get fixture modules module-0 scope value) 7))
     (test-case "only closed runtime role exports use the deferred projection"
       (def interface
@@ -75,12 +79,13 @@
           '((types . "(def ScopeContract #f) (export ScopeContract)")
             (config . "(def Config #f) (export Config)")))
         '((types ScopeContract) (config Config)))
-      ;; The native expander still supports implicit Config. Its binding is
-      ;; outside the closed value projection, as the integration Case checks.
+      ;; Preserve the original implicit Config capability. Its native binding
+      ;; is resolved after role expansion, as the integration Case checks.
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(def ScopeContract #f) (export ScopeContract)")
-            (config . "(def Config #f)"))) #f)
+            (config . "(def Config #f)")))
+        '((types ScopeContract) (config Config)))
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(import (only-in \"private.ss\" Private)) (export ScopeContract)")

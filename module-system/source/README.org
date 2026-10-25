@@ -5,10 +5,11 @@
 
 * Closed role values
 
-The deferred value projection requires explicit runtime exports. In particular,
-it must not invent =Config=: implicit Config binding, syntax definitions and
-phase initializers remain owned by the existing guarded native role reader.
-Both paths preserve source-currentness checks. A closed declaration can have
+The deferred value projection uses runtime exports. The native expander resolves
+optional implicit =Config= after the role body; the projection cannot invent
+that binding. Syntax definitions and phase initializers remain owned by the
+existing guarded native role reader. Both paths preserve source-currentness
+checks. A closed declaration can have
 no role inputs before a getter is demanded; a hot getter retains its original
 guarded inputs, while a fresh publication admits fresh role wrappers.
 
