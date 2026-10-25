@@ -50,6 +50,28 @@
         (check-equal? (.get source port) 5432)
         (check-equal? (eq? unforced (hash-ref (object-%slot-funs source) 'unused)) #t)
         (check-equal? bodies 0)))
+    (test-case "first names reflection exposes complete methods without forcing values"
+      (def bodies 0)
+      (def parent
+        (.o (:: config [])
+          port: 5432
+          plan: (.o port: (.get config port))
+          unused: (begin (set! bodies (1+ bodies)) 'unused)))
+      (check-equal? (object-%instance parent) #f)
+      (check-equal? (.all-slots/sort parent) '(plan port unused))
+      (check-equal? (length (hash->list (object-%slot-funs parent))) 3)
+      (check-equal? bodies 0)
+      (check-equal? (.get parent plan port) 5432)
+      (.def (child @ parent) port: 5433)
+      (check-equal? (object-%instance child) #f)
+      (check-equal? (.all-slots/sort child) '(plan port unused))
+      (let (method (hash-ref (object-%slot-funs child) 'plan))
+        (check-equal? (procedure? method) #t)
+        (check-equal? (.ref/cached child 'plan) #f)
+        (check-equal? (.get child plan port) 5433)
+        (check-equal? (.get parent plan port) 5432)
+        (check-equal? (eq? method (hash-ref (object-%slot-funs child) 'plan)) #t)
+        (check-equal? bodies 0)))
     (test-case "an unselected construction-hook refusal precedes selected value delivery"
       (def cause (list 'unselected-construction-refused))
       (def bodies 0)

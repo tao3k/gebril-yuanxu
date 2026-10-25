@@ -17,6 +17,10 @@ package YuanxuPayloadOwnership {
                refinement; SharedCellRefinement is not duplicated in QNT.
                ThunkConstruction owns only additional effectful exposure and
                callback schedules, not pointer-allocation or lookup proofs.
+               DemandMaterialization Lean (20.14) owns partial/full open-method
+               refinement and installed-handle preservation, using the locked
+               CompiledPlan.resolve_sound. Scheme eq? correspondence remains
+               native evidence; QNT does not duplicate these lookup laws.
                A new model requires a new question, not a second encoding. */
     }
     part def CanonicalContext {

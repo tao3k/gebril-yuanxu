@@ -1,0 +1,148 @@
+#+title: 20.14 Partial Method Table Refinement and Native Observation Controls
+#+language: en
+#+filetags: :sysml:poof:lean:correspondence:
+
+* Scope
+
+This follows [[file:20.13-poof-semantics-and-materialization-correspondence.org][20.13]]. The fixed POOF, LeanPoo and gerbil-poo revisions there remain
+unchanged. This step proves a partial OPEN-method representation relation and
+stable installed identities. It does not implement delayed Scheme allocation or
+intercept a getter. Existing native caches and admission protocols are unchanged.
+
+The proof owner is
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/DemandMaterialization.lean][DemandMaterialization.lean]], imported by the existing audited Core proof root.
+It directly uses locked LeanPoo =Object.CompiledPlan= and
+=CompiledPlan.resolve_sound=. It does not rebuild prototype composition, C4
+linearization or the fixed-point implementation.
+
+* Representation and actual reuse of LeanPoo
+
+The full reference is the existing compiled OPEN method plan. A partial state
+holds a receiver/revision scope and optional cells, each containing an opaque
+identity observation and an open method. =Represents= requires every installed
+cell to belong to the reference's declared keys and, for EVERY final self, to
+resolve exactly as that reference plan. Missing cells are pending metadata;
+the authoritative declared-key list distinguishes them from absent fields.
+
+#+begin_src lean
+abbrev Methods (Key Value : Type) [BEq Key] [LawfulBEq Key] [Hashable Key] :=
+  LeanPoo.Object.CompiledPlan Key (fun _ => Value)
+
+def Represents (full : Methods Key Value) (state : Partial Key Value Handle) : Prop :=
+  ∀ key cell, state.cells key = some cell →
+    key ∈ full.keys ∧ ∀ self, cell.method self = full.plan.resolve key self
+#+end_src
+
+This uses a uniform value carrier, which may be a tagged domain value. It does
+not establish conversion from arbitrary heterogeneous Scheme values to Lean.
+The partial cells do NOT preallocate a canonical procedure for every key.
+=demand= installs an offered handle and =full.resolve key= only on a declared
+miss; a hit retains the entire original cell regardless of the new offered
+handle. =complete= folds that same operation over the reference keys. These are
+pure proof-model operations, not a second runtime evaluator or cache protocol.
+
+The new-cell case of =demand_represents= invokes the existing
+=full.resolve_sound key declared self=. This is where the locked library
+establishes open-recursive method meaning. =TableCarrier.conjugate_read= is NOT
+used as if a partial table were already isomorphic to a complete table: pending
+entries require a refinement relation rather than a total bijection.
+
+* Machine-checked properties and limits
+
+| New theorem | Proved statement | What it does not prove |
+|-------------+------------------+------------------------|
+| =empty_represents= / =demand_represents= | Empty and demanded partial tables refine the existing plan | Native descriptor/compiler correspondence |
+| =demand_unrelated= / =demand_scope= | Demanding one key changes neither other cells nor receiver/revision scope | Actual Scheme allocation or filesystem currentness |
+| =first_install_identity= / =demand_hit= | A miss retains its offered handle; a hit keeps the exact existing cell | Authenticity/freshness of an arbitrary offered native procedure |
+| =repeated_demand_stable= | After first demand, demanding the same declared key with ANY other offer returns the same state | Callback execution safety or equality of independently allocated closures |
+| =complete_represents= / =complete_lookup= | Every declared key exists after completion, and its method has the original plan meaning at every self | Timing of a real reflection API or execution/termination of method bodies |
+| =reflection_identity= | Completing other metadata retains every previously installed cell and its identity | Equal pointer addresses across invalidation, processes or independent receivers |
+| =different_scope_rejected= / =reset_has_no_parent_cell= | A foreign receiver/revision cannot use this projected lookup; reset starts with no parent cells | Automatic extraction of native revisions or completeness of native invalidation |
+
+The 17 new theorems and five required integration declarations are included in
+the existing Core axiom/shape audit. No arbitrary admission proposition is stored
+as a model field. There is no =sorry= or new axiom.
+
+The model does not infer procedure identity from extensional method equality.
+Handles may even coincide across distinct slots when the same existing procedure
+is legitimately reused. The native issuer/allocator must supply the correspondence
+to Scheme =eq?=; proving allocation-wide uniqueness would be a different claim.
+No conclusion about hook timing follows from these pure cell operations.
+
+* Minimal native observation control
+
+[[file:../../../t/mop-thunk-construction-test.ss][The existing consumer suite]] is extended with one first-reflection case. It
+uses actual =.all-slots/sort=, native metadata, lexical slots and =.get=:
+
+#+begin_src scheme
+(def parent
+  (.o (:: config [])
+    port: 5432
+    plan: (.o port: (.get config port))
+    unused: (begin (set! bodies (1+ bodies)) 'unused)))
+(check-equal? (object-%instance parent) #f)
+(check-equal? (.all-slots/sort parent) '(plan port unused))
+(check-equal? (length (hash->list (object-%slot-funs parent))) 3)
+(check-equal? bodies 0)
+(check-equal? (.get parent plan port) 5432)
+(.def (child @ parent) port: 5433)
+(check-equal? (object-%instance child) #f)
+(check-equal? (.all-slots/sort child) '(plan port unused))
+(check-equal? (.get child plan port) 5433)
+(check-equal? (.get parent plan port) 5432)
+#+end_src
+
+The test captures the child's actual plan procedure and checks =eq?= after value
+access. The original three cases retain repeated =next= identity, actual native
+hash enumeration versus hook trace, eager refusal and failure cache cleanup.
+They do not assume declaration order is hook order. The unselected value body
+stays cold throughout names reflection and selected reads.
+
+Current native construction is EAGER in its metadata preparation. Therefore this
+is evidence that existing reflection exposes a complete table before delivery,
+NOT evidence of a deployed partial constructor completing at first reflection.
+The latter still needs a native implementation relation and all entry coverage.
+No wrapper or simulated lazy constructor stands in for that missing evidence.
+
+* SysML allocation and remaining obligations
+
+Lean owns the representation, point-demand preservation and installed identity
+proofs above. The existing QNT =ThunkConstruction= family remains the temporal
+owner of construction/exposure order, refusal and stable repeated observations;
+no second prototype or pointer-identity state machine is added. =ReadRetention=
+continues to own per-use authentication, both requirements, effects and parent
+isolation. Scheme tests check actual entry behavior. This work does not claim
+arbitrary callback purity or whole-language mutation coverage.
+
+The remaining M1/M2 native correspondence is explicit: map real specifications,
+receivers, revisions and procedure cells to this partial/full relation, preserve
+issued preparation dependencies, and prove supported invalidations clear stale
+cells. The model's local scope check is not a new Core admission gate. M3/M4
+still require actual delayed preparation to preserve reflection completion,
+hook/descriptor ordering, refusal, reentry and exception cleanup. M6 covers every
+read/layout/reflection route; M7 remains measurement after a lawful implementation.
+
+No 10000-module run, budget increase, production interception, cached admission
+conclusion or Gerbil compiler change is part of this step.
+
+* Validation receipt
+
+The existing =lake build YuanxuProof= entry passes 207 jobs and audits 7644
+Core declarations with standard Lean axioms only; the five required integration
+theorems are loaded. The default =just test-file t/mop-thunk-construction-test.ss=
+passes the four native cases. The default real Gitea/PostgreSQL publication test
+passes all 11 cases, including both independent requirements, source changes,
+child obligations and parent-plan rejection. Both Scheme runs contain MODULE-OK,
+HARNESS-OK and final OK, with no error/heap/stack markers.
+
+The unchanged source-bound =ThunkConstruction= QNT family passes seven controls:
+its positive safety run and six expected counterexamples, including reordered
+hooks, deferred refusal, incomplete reflection and replaced identities. This
+reuses the temporal owner rather than encoding the new representation lemmas
+again. The sandbox initially denied the existing backend's local port binding;
+the unchanged runner passes with that permission. Initial proof/launch failures
+and final logs remain local, never committed as raw artifacts.
+
+No production source or dependency revision changes. The existing PR19 commit
+uses =[skip ci]= to avoid the unchanged automatic scale job. No complete CI,
+10000-module capacity or retained-memory improvement is claimed by this step.

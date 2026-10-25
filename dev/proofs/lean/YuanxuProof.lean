@@ -97,6 +97,7 @@ import YuanxuProof.ModuleSystem.Schema.Association.Selection
 import YuanxuProof.ModuleSystem.Schema.Association.NativeFixtures
 import YuanxuProof.ModuleSystem.Schema.Association.Controls
 import YuanxuProof.ModuleSystem.Loading.PayloadSharing
+import YuanxuProof.ModuleSystem.Loading.DemandMaterialization
 import YuanxuProof.ModuleSystem.Loading.MetadataProjection
 import YuanxuProof.ModuleSystem.Loading.IncrementalRoles
 import Lean.Util.CollectAxioms
@@ -110,6 +111,11 @@ run_cmd do
   let allowed := #[`propext, `Classical.choice, `Quot.sound]
   let owners := #[`YuanxuProof]
   for required in #[
+      `YuanxuProof.ModuleSystem.Loading.DemandMaterialization.complete_lookup,
+      `YuanxuProof.ModuleSystem.Loading.DemandMaterialization.complete_represents,
+      `YuanxuProof.ModuleSystem.Loading.DemandMaterialization.repeated_demand_stable,
+      `YuanxuProof.ModuleSystem.Loading.DemandMaterialization.reflection_identity,
+      `YuanxuProof.ModuleSystem.Loading.DemandMaterialization.different_scope_rejected,
       `YuanxuProof.ModuleSystem.Loading.MetadataProjection.dependenciesUnchanged,
       `YuanxuProof.ModuleSystem.Loading.MetadataProjection.parentCannotHitChild,
       `YuanxuProof.ModuleSystem.Loading.MetadataProjection.constructAtFinalContext,

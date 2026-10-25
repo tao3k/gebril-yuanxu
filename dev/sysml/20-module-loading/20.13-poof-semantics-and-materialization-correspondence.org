@@ -172,3 +172,11 @@ Scheme runtime regressions. The prior 20.12 controls remain separately dated
 runtime evidence. Only English design/SysML documentation changes here, on PR19.
 The documentation commit uses =[skip ci]= to avoid triggering the unchanged scale
 job; full CI and capacity are not claimed.
+
+* Follow-up: proof-model relation and native observation controls
+
+[[file:20.14-partial-method-table-refinement.org][20.14]] adds machine-checked partial/full open-method refinement and stable
+installed-handle proofs using locked LeanPoo, with the native first-reflection
+control. The M1/M2 representation lemmas now exist; actual delayed Scheme
+allocation and its identity/issuer mapping remain correspondence obligations.
+The original design-only validation receipt above describes the earlier commit.

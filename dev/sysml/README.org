@@ -96,3 +96,8 @@ to QNT, observation projection laws to Lean, and actual MOP behavior to Scheme.
 locked LeanPoo declarations and current native entries before any interception
 choice. Lean owns representation/identity laws; existing QNT owns observable
 construction schedules, with no duplicate prototype or fixed-point model.
+
+[[file:20-module-loading/20.14-partial-method-table-refinement.org][20.14 Partial Method Table Refinement]] reuses the locked CompiledPlan theorem
+for partial/full open-method correspondence and proves stable installed handles.
+Actual first reflection and lexical parent/child behavior use the existing native
+consumer suite; no parallel QNT semantics or runtime interceptor is introduced.

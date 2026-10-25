@@ -13,6 +13,16 @@ universally proved requirements.
 
 * Per-model inspection
 
+The demand-materialization refinement is reviewed in
+[[file:../../sysml/20-module-loading/20.14-partial-method-table-refinement.org][20.14]].
+=ModuleSystem/Loading/DemandMaterialization.lean= reuses locked LeanPoo
+=CompiledPlan.resolve_sound= and proves partial/full open-method correspondence,
+completion and installed-handle stability. Handles are abstract identity
+observations: actual allocation, delayed construction and Scheme =eq?= mapping
+remain native correspondence obligations. Its five required integration theorems
+are loaded by the audited root. Existing QNT construction schedules are reused.
+
+
 | Model | Current owner | Definition / proved behavior | Boundary |
 |-------+---------------+------------------------------+----------|
 | [[file:YuanxuProof/Admission/Contributions.lean][Admission/Contributions]] | =admission/contributions.ss= | Exact contribution rows, reference identity, selected origin and resolved payload | Native reference and export-path observations; no inferred authority |
