@@ -7,6 +7,8 @@
 ;;; schema discovery remains with the product adapter.
 
 (import (only-in :yuanxu/module-system/config yuanxu-module-kind=?)
+        (only-in :clan/poo/object .ref object<-alist)
+        (only-in :clan/poo/value-diagnostics diagnose-value)
         :yuanxu/module-system/projection/option-objects)
 
 (export yuanxu-module-find-schema
@@ -29,14 +31,15 @@
    '("option schema is not declared")
    '()))
 
-(def (yuanxu-module-option-schema-valid? schema config)
-  (if (eq? (yuanxu-module-option-schema-rule schema) 'constant)
-    (equal? (yuanxu-module-option-config-value config)
-            (yuanxu-module-option-schema-value schema))
-    #t))
-
 (def (yuanxu-module-option-schema-validation-receipt schema config)
-  (if (yuanxu-module-option-schema-valid? schema config)
+  (let (issues
+        (diagnose-value
+          (yuanxu-module-option-schema-contract schema)
+          (object<-alist
+            (list (cons (string->symbol (yuanxu-module-option-config-id config))
+                        (yuanxu-module-option-config-value config))))
+          '()))
+  (if (null? issues)
     (make-yuanxu-module-option-validation-receipt
      (yuanxu-module-option-config-id config)
      (yuanxu-module-option-config-source-module config)
@@ -48,9 +51,9 @@
      (yuanxu-module-option-config-id config)
      (yuanxu-module-option-config-source-module config)
      #f
-     'constant-mismatch
-     '("option value does not match constant schema")
-     (yuanxu-module-option-schema-metadata schema))))
+     (.ref (car issues) 'kind)
+     issues
+     (yuanxu-module-option-schema-metadata schema)))))
 
 ;; Preserve input order while traversing only once; schema-ref is supplied by
 ;; the owner of the concrete Module Interface or descriptor.

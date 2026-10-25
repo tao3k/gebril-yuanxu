@@ -233,14 +233,6 @@ Source: [[file:../config.ss][core/module-system/config.ss]].
 | =yuanxu-module-interface-schema-spec= | D | Read supplied Interface data or project an inspection receipt. |
 | =yuanxu-module-interface-authoring= | D | Read supplied Interface data or project an inspection receipt. |
 | =yuanxu-module-interface-metadata= | D | Read supplied Interface data or project an inspection receipt. |
-| =yuanxu-string-required= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-string-constant= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-string-default= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-string-optional= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-option-policy= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-option-append= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-option-override= | E | Interface/schema/option-policy authoring. |
-| =yuanxu-option-conflict= | E | Interface/schema/option-policy authoring. |
 
 * core/module-system/funs.ss
 

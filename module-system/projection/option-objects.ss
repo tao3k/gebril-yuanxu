@@ -6,7 +6,9 @@
 ;;; Core POO values for Module option configuration, schema, and validation.
 ;;; Product descriptors decide how these values are projected and presented.
 
-(import (only-in :yuanxu/object-family/syntax defpoo-object-family))
+(import (only-in :yuanxu/object-family/syntax defpoo-object-family)
+        (only-in :clan/poo/object .cc .ref .slot? object<-alist)
+        (only-in :clan/poo/type Record))
 
 (export yuanxu-module-option-config-prototype
         make-yuanxu-module-option-config
@@ -20,6 +22,8 @@
         yuanxu-module-option-schema?
         yuanxu-module-option-schema-id
         yuanxu-module-option-schema-source-module
+        yuanxu-module-option-schema-field
+        yuanxu-module-option-schema-contract
         yuanxu-module-option-schema-type
         yuanxu-module-option-schema-rule
         yuanxu-module-option-schema-value
@@ -57,18 +61,36 @@
   (constructor make-yuanxu-module-option-schema
                (id-value id)
                (source-module-value source-module)
-               (type-value type)
-               (rule-value rule)
-               (schema-value value)
+               (field-value field)
                (metadata-value metadata))
   (accessors
    (yuanxu-module-option-schema-id id)
    (yuanxu-module-option-schema-source-module source-module)
-   (yuanxu-module-option-schema-type type)
-   (yuanxu-module-option-schema-rule rule)
-   (yuanxu-module-option-schema-value value)
+   (yuanxu-module-option-schema-field field)
    (yuanxu-module-option-schema-metadata metadata))
   (projections))
+
+;; Reporting projections read the native effective Slot, never a shadow type DSL.
+(def (yuanxu-module-option-schema-type schema)
+  (.ref (yuanxu-module-option-schema-field schema) 'type))
+(def (yuanxu-module-option-schema-rule schema)
+  (let (field (yuanxu-module-option-schema-field schema))
+    (cond ((.slot? field 'policy) (.ref field 'policy))
+          ((.slot? field 'constant) 'constant)
+          ((.slot? field 'default) 'default)
+          ((.ref field 'optional) 'optional)
+          (else 'required))))
+(def (yuanxu-module-option-schema-value schema)
+  (let (field (yuanxu-module-option-schema-field schema))
+    (cond ((.slot? field 'constant) (.ref field 'constant))
+          ((.slot? field 'default) (.ref field 'default))
+          (else #f))))
+
+(def (yuanxu-module-option-schema-contract schema)
+  (.cc (Record) 'slots
+    (object<-alist
+      (list (cons (string->symbol (yuanxu-module-option-schema-id schema))
+                  (yuanxu-module-option-schema-field schema))))))
 
 (defpoo-object-family
   (prototype yuanxu-module-option-validation-receipt-prototype

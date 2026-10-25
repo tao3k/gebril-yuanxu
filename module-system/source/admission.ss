@@ -2,7 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Shared source-role and publication admission. No expansion or activation.
-(import (only-in :clan/poo/object .o .cc .ref .slot? .all-slots .ref/cached object? object-%instance object-protocol
+(import (only-in :clan/poo/type Record)
+        (only-in :clan/poo/object .o .cc .ref .slot? .all-slots .ref/cached object? object-%instance object-protocol
                  object-revision object-supers replay-slot-reads!)
         (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation %slot-read-active?
@@ -400,7 +401,7 @@
                    (replay-slot-reads! (reverse reads) (lambda (_receiver _key) (void)))
                    value)
                  ;; Custom policies keep their ordinary constructor/Type calls.
-                 (yuanxu-module-interface "source-policy" (.o) '()
+                 (yuanxu-module-interface "source-policy" (Record) '()
                    authoring: (.ref policy 'authoring))))
              (interface
               (.cc prototype
@@ -479,7 +480,7 @@
       ;; obligation result is cached. Native reads retain the constructor's
       ;; complete Type/metadata support, including inherited-policy invalidation.
       (%authoring-interface
-        (let* ((value (yuanxu-module-interface "source-policy" (.o) '() authoring: authoring))
+        (let* ((value (yuanxu-module-interface "source-policy" (Record) '() authoring: authoring))
                (profile (.ref value 'authoring))
                (fields (.ref ModuleAuthoringProfileContract 'responsibilities)))
           ;; Bind the checked OUTPUT as well as the constructor's input reads.

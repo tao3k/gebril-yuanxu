@@ -1,7 +1,8 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/object .o .ref .cc .put!)
+(import (only-in :clan/poo/type Record)
+        (only-in :clan/poo/object .o .ref .cc .put!)
         (only-in :clan/poo/mop element?)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -29,7 +30,7 @@
 (def module-authoring-test
   (test-suite "Core source admission without product imports or activation"
     (yuanxu-test-case "authoring receipt identities are stable and do not grant currentness"
-      (def interface (yuanxu-module-interface "example" (.o) '()))
+      (def interface (yuanxu-module-interface "example" (Record) '()))
       (def result
         (yuanxu-module-authoring-admit-datum interface 'objects '(.o add-profile: #t)))
       (def diagnostic (car (yuanxu-module-authoring-admission-diagnostics result)))
@@ -47,7 +48,7 @@
       (def generic ModuleAuthoringAdmissionGeneric)
       (check-equal? (eq? (.ref generic 'protocol) ModuleAuthoringAdmissionProtocol) #t)
       (check-equal? (length (.ref generic 'methods)) 2)
-      (def interface (yuanxu-module-interface "example" (.o) '()))
+      (def interface (yuanxu-module-interface "example" (Record) '()))
       (def executor (.o (:: @ ModuleAuthoringExecutor.)))
       (def ordinary-role
         (.o (:: @ (yuanxu-module-authoring-role interface 'objects))))
@@ -70,7 +71,7 @@
         (lambda (failure)
           (eq? (.ref failure 'code) 'method-bundle-protocol-mismatch))))
     (yuanxu-test-case "inert datum batches preserve native port diagnostics and order"
-      (def interface (yuanxu-module-interface "example" (.o) '()))
+      (def interface (yuanxu-module-interface "example" (Record) '()))
       (def text "(.o pipeline: (.get ff prototypes pipeline))\n(.o pipeline: (.ref ff pipeline))\n(.o add-profile: #t)\n")
       (def from-port
         (call-with-input-string text
@@ -120,7 +121,7 @@
           (check-equal? (codes augmented) (codes from-port)))
         (cut poo-clos-remove-method ModuleAuthoringAdmissionGeneric before)))
     (yuanxu-test-case "native Interface and final role admission"
-      (let (interface (yuanxu-module-interface "example" (.o) '()))
+      (let (interface (yuanxu-module-interface "example" (Record) '()))
         (check-equal? (yuanxu-module-interface? interface) #t)
         (check-equal?
          (yuanxu-module-authoring-admission-accepted?

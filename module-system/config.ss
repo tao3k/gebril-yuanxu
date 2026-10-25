@@ -4,7 +4,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Native Module System interface configuration. Product identity and policy are
-;;; supplied by the caller; Core owns the schema index and option vocabulary.
+;;; supplied by the caller; gerbil-poo owns effective Slot metadata.
 (import (only-in :clan/poo/object .all-slots .o .ref .slot? object?)
         (only-in :clan/poo/mop validate)
         (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract))
@@ -18,15 +18,7 @@
         yuanxu-module-interface-schemas
         yuanxu-module-interface-schema-spec
         yuanxu-module-interface-authoring
-        yuanxu-module-interface-metadata
-        yuanxu-string-required
-        yuanxu-string-constant
-        yuanxu-string-default
-        yuanxu-string-optional
-        yuanxu-option-policy
-        yuanxu-option-append
-        yuanxu-option-override
-        yuanxu-option-conflict)
+        yuanxu-module-interface-metadata)
 
 (def (yuanxu-module-kind=? value expected)
   (cond
@@ -39,23 +31,16 @@
     (.ref object slot-name)
     default-value))
 
-(def (yuanxu-module-object->alist/rev object slot-names rows-rev)
-  (if (null? slot-names)
-    rows-rev
-    (yuanxu-module-object->alist/rev
-     object (cdr slot-names)
-     (cons (cons (car slot-names) (.ref object (car slot-names))) rows-rev))))
-
 (def (yuanxu-module-object->alist value)
   (cond
    ((object? value)
-    (reverse (yuanxu-module-object->alist/rev value (.all-slots value) '())))
+    (map (lambda (name) (cons name (.ref value name))) (.all-slots value)))
    ((list? value) value)
    (else '())))
 
 (def (yuanxu-module-interface-schema-index schema-object)
-  (let (index (make-hash-table))
-    (when (object? schema-object)
+  (let ((index (make-hash-table))
+        (slots (.ref schema-object 'effective-slots)))
       (for-each
        (lambda (slot-name)
          (let (option-id
@@ -65,8 +50,8 @@
            (when (hash-key? index option-id)
              (error "duplicate normalized Module Interface schema id"
                     option-id))
-           (hash-put! index option-id (.ref schema-object slot-name))))
-       (.all-slots schema-object)))
+           (hash-put! index option-id (.ref slots slot-name))))
+       (.all-slots slots))
     index))
 
 (def (make-module-interface prototype interface-id-value schema-object
@@ -95,28 +80,3 @@
 
 (def (yuanxu-module-interface-metadata interface)
   (.ref interface 'metadata))
-
-(def (yuanxu-string-required)
-  (.o type: 'String))
-
-(def (yuanxu-string-constant constant-value)
-  (.o type: 'String constant: constant-value))
-
-(def (yuanxu-string-default default-value)
-  (.o type: 'String default: default-value))
-
-(def (yuanxu-string-optional)
-  (.o type: 'String optional?: #t))
-
-(def (yuanxu-option-policy value-type policy-rule default-value metadata-value)
-  (.o type: value-type policy: policy-rule
-      default: default-value metadata: metadata-value))
-
-(def (yuanxu-option-append value-type default-value)
-  (yuanxu-option-policy value-type 'append default-value '()))
-
-(def (yuanxu-option-override value-type default-value)
-  (yuanxu-option-policy value-type 'override default-value '()))
-
-(def (yuanxu-option-conflict value-type)
-  (.o type: value-type policy: 'conflict))

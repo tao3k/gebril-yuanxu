@@ -5,6 +5,8 @@
 
 (import (only-in :std/test check-equal? test-suite)
         (only-in :clan/poo/object .ref object?)
+        (only-in :clan/poo/type Record String)
+        (only-in :clan/poo/mop Bool)
         :yuanxu/observability/testing-case
         :yuanxu/module-system/projection/option-objects
         :yuanxu/module-system/projection/option-validation)
@@ -19,7 +21,7 @@
                "enabled" #t 'module-a '((owner . core))))
              (schema
               (make-yuanxu-module-option-schema
-               "enabled" 'module-a 'Boolean 'constant #t '()))
+               "enabled" 'module-a (.ref (.ref (Record enabled: [Bool constant: #t]) 'effective-slots) 'enabled) '()))
              (receipt
               (make-yuanxu-module-option-validation-receipt
                "enabled" 'module-a #t 'ok '() '())))
@@ -30,10 +32,19 @@
         (check-equal? (yuanxu-module-option-schema-rule schema) 'constant)
         (check-equal? (yuanxu-module-option-validation-receipt? receipt) #t)
         (check-equal? (.ref receipt 'valid?) #t)))
+    (yuanxu-test-case "nonconstant native Type failures retain field path and contributor"
+      (def field (.ref (.ref (Record endpoint: [String default: "localhost"]) 'effective-slots) 'endpoint))
+      (def schema (make-yuanxu-module-option-schema "endpoint" 'network field '()))
+      (def bad (make-yuanxu-module-option-config "endpoint" 42 'user-config '()))
+      (def receipt (yuanxu-module-option-schema-validation-receipt schema bad))
+      (check-equal? (yuanxu-module-option-validation-receipt-valid? receipt) #f)
+      (check-equal? (yuanxu-module-option-validation-receipt-source-module receipt) 'user-config)
+      (check-equal? (.ref (car (yuanxu-module-option-validation-receipt-messages receipt)) 'path)
+                    '(endpoint)))
     (yuanxu-test-case "pure validation preserves order and typed outcomes"
       (let* ((schema
               (make-yuanxu-module-option-schema
-               "enabled" 'module-a 'Boolean 'constant #t '()))
+               "enabled" 'module-a (.ref (.ref (Record enabled: [Bool constant: #t]) 'effective-slots) 'enabled) '()))
              (matched
               (make-yuanxu-module-option-config
                "enabled" #t 'module-a '()))

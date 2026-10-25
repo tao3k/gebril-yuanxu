@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; A diagnostic reachability control, not an alternative AWS acceptance mode.
-(import :std/test :clan/poo/object
+(import (only-in :clan/poo/type Record)
+        :std/test :clan/poo/object
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile yuanxu-test-checkpoint)
@@ -15,7 +16,7 @@
   collect-before-sample?: #t
   emit?: #t)
 (.def Resource .acquire: void .release: (lambda (_resource) (void)))
-(def Interface (yuanxu-module-interface "retention" (.o) '()))
+(def Interface (yuanxu-module-interface "retention" (Record) '()))
 
 ;; Keep allocation in a completed lexical frame. Only weak keys escape;
 ;; retaining the last local datum would make the reachability control invalid.

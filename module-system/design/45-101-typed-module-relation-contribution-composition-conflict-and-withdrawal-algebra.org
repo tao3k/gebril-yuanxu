@@ -52,10 +52,7 @@ ancestry, extension, composition, delegation, super, and precedence.
 
 Current parser-owned discovery identifies project selectors named:
 
-- =yuanxu-option-policy=;
-- =yuanxu-option-override=;
-- =yuanxu-option-conflict=;
-- =yuanxu-option-append=;
+- Native Record Slot =policy= annotations for append, override and conflict;
 - Module import kind and source selectors.
 
 Their exact bodies are unavailable. The exact provider blocker is:

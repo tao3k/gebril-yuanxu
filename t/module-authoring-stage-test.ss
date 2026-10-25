@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Construction is not admission. Public constructors retain their boundary.
-(import :std/test :clan/poo/object
+(import (only-in :clan/poo/type Record)
+        :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/slot-observation
                  %call-with-recorded-slot-reads slot-read-key slot-read-dependencies
@@ -49,10 +50,10 @@
       (check-equal? (eq? (.get profile types) (.get right authoring types)) #t)
       (.put! profile 'types #f)
       (check-exception
-        (yuanxu-module-interface "invalid" (.o) '() authoring: profile) error?)
+        (yuanxu-module-interface "invalid" (Record) '() authoring: profile) error?)
       ;; Mutating one default does not mutate another receiver's default.
       (check-equal? (object? (.get right authoring types)) #t)
-      (check-equal? (object? (yuanxu-module-interface "valid" (.o) '()
+      (check-equal? (object? (yuanxu-module-interface "valid" (Record) '()
                              authoring: (.get right authoring))) #t))
     (yuanxu-test-case "Interface validates once and the public factory still validates immediately"
       (def validations 0)
@@ -65,7 +66,7 @@
           (def policy (.o (:: @ yuanxu-module-style-policy-prototype)))
           (def raw (.get policy authoring))
           (check-equal? validations 0)
-          (def interface (yuanxu-module-interface "checked" (.o) '() authoring: raw))
+          (def interface (yuanxu-module-interface "checked" (Record) '() authoring: raw))
           (check-equal? validations 1)
           (check-equal? (eq? (.get interface authoring) raw) #t)
           ;; The public factory still validates immediately, independently of

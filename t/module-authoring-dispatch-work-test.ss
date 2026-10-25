@@ -1,7 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Actual dispatch work and admission-boundary controls; no cache or runner.
-(import :std/test
+(import (only-in :clan/poo/type Record)
+        :std/test
         (only-in :clan/poo/object .o .get .ref .cc .put!)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-key slot-read-receiver)
@@ -45,7 +46,7 @@
 (def module-authoring-dispatch-work-test
   (test-suite "Actual authoring dispatch policy work"
     (yuanxu-test-case "warm datum admission still reads nested carrier policies"
-      (def interface (yuanxu-module-interface "work-probe" (.o) '()))
+      (def interface (yuanxu-module-interface "work-probe" (Record) '()))
       ;; Warm only through the actual operation; never clear or replace SDK state.
       (policy-deliveries interface 1)
       (def one (policy-deliveries interface 1))
@@ -61,7 +62,7 @@
         "authoring-policy-deliveries order=generic,effective,frame,method one=%s four=%s eight=%s"
         one four eight))
     (yuanxu-test-case "closed default checks once and an open hook checks before and after"
-      (def interface (yuanxu-module-interface "boundary-probe" (.o) '()))
+      (def interface (yuanxu-module-interface "boundary-probe" (Record) '()))
       (def executor (.get interface authoring executor))
       (def role (yuanxu-module-authoring-role interface 'objects))
       (def checks 0)
@@ -95,7 +96,7 @@
       (check-equal? checks 2)
       (check-equal? calls 1))
     (yuanxu-test-case "a prepared constructor produces a fresh checked carrier on each demand"
-      (def interface (yuanxu-module-interface "fresh-carrier" (.o) '()))
+      (def interface (yuanxu-module-interface "fresh-carrier" (Record) '()))
       (def arguments
         (list (.get interface authoring executor)
           (yuanxu-module-authoring-role interface 'objects)
@@ -112,7 +113,7 @@
       (check-equal? (eq? first second) #f)
       (check-equal? (eq? (.get second arguments) arguments) #t))
     (yuanxu-test-case "public effective-method callback may invalidate the checked default"
-      (def interface (yuanxu-module-interface "callback-probe" (.o) '()))
+      (def interface (yuanxu-module-interface "callback-probe" (Record) '()))
       (def calls 0)
       (def protocol
         (.cc ModuleAuthoringAdmissionProtocol
