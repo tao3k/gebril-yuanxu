@@ -108,3 +108,13 @@ publication bodies in this test are explicit fixtures; no runtime Loader is
 connected. =t/module-scope-link-test.ss= retains the native scope Contract, cycle,
 owner identity and generation controls. These are correctness controls, not
 startup-time or thousand-module performance measurements.
+
+=t/module-role-context-test.ss= provides a narrow native entry for shared role
+identity and source-admission controls. It moves the private/public alias and
+fresh-source-epoch cases out of the large publication suite, and checks both
+public-name redirection and changed bytes against the exact public-dependency
+refusal. The protected callback remains unentered, and exact source/name
+restoration admits again. Run =just test-file t/module-role-context-test.ss true=
+with the existing heap and external qualification deadline. These are fixture
+correctness controls, not historical Agentic attribution, cold-build timing
+repair, or a replacement for the complete publication suite.
