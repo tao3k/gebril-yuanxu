@@ -12,7 +12,8 @@
         (only-in :clan/poo/number Integer)
         (only-in :clan/poo/type Record)
         (only-in :yuanxu/module-system/source/publication ModulePublicationContract)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-generated-source yuanxu-module-source-ref-value)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-generated-source yuanxu-module-source-ref-value
+                 yuanxu-module-source-ref-prototype yuanxu-module-source-ref-construction-current?)
         (only-in :yuanxu/module-system/source/admission admit-module-publication!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
@@ -193,4 +194,12 @@
             (if (string-contains
                   (exception-message (lambda () (.get view selected-graph)))
                   "publication source owner mismatch") #t #f) #t))
-        (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+        (lambda () (.put! ModulePublicationContract 'value-contract original))))
+    ;; Keep last: restoring the Slot value does not undo its native revision.
+    (yuanxu-test-case "the source constructor prototype is part of closed-prefix support"
+      (check-equal? (yuanxu-module-source-ref-construction-current?) #t)
+      (dynamic-wind
+        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #t))
+        (lambda () (check-equal? (yuanxu-module-source-ref-construction-current?) #f))
+        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #f)))
+      (check-equal? (yuanxu-module-source-ref-construction-current?) #f))))

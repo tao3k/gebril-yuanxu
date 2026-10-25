@@ -256,13 +256,6 @@
           (check-exception (.get view selected-graph) error?)
           (check-equal? calls 1)
           (check-equal? (file-exists? marker) #f))))
-    (yuanxu-test-case "the source constructor prototype is part of closed-prefix support"
-      (check-equal? (yuanxu-module-source-ref-construction-current?) #t)
-      (dynamic-wind
-        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #t))
-        (lambda () (check-equal? (yuanxu-module-source-ref-construction-current?) #f))
-        (lambda () (.put! yuanxu-module-source-ref-prototype 'prefix-test-marker #f)))
-      (check-equal? (yuanxu-module-source-ref-construction-current?) #f))
     (yuanxu-test-case "interfaces share the SDK POO prelude without per-module alias copies"
       (with-publication-source
         (lambda (_root _module-root source _view)
