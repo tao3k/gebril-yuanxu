@@ -1,0 +1,316 @@
+#+title: 20.05 Receiver Instance and Callback Retention
+#+filetags: :modules:retention:lean:quint:source:
+
+* Current allocation and historical evidence (2026-10-24)
+
+Structural sharing is now Lean-owned. The duplicate =PayloadSharing= QNT
+family and runner bindings were removed after the runs recorded below.
+Those receipts remain historical; they are not a requirement to recreate a
+second structural model. Temporal analysis references existing QNT owners.
+
+Before that allocation correction, native clean/rebuild, source-bound Quint
+(12 controls), Lean (206 jobs),
+and four serial focused runtime suites pass. Cache-only effective-slot metadata
+is now measured. The original SSI refusal does not recur, but its exact trigger
+is not established; persistent SSI bytes and all 61 retained expectations match.
+See the recovery/result sections for counts, the narrowed I/O error boundary and
+limits. No instance/thunk pooling or capacity-success claim follows.
+
+* Question and evidence boundary
+
+Follow an original issued read through its receiver, captured instance and
+cached callback environment. Do not use token counts as retained bytes. This
+study continues [[file:20.04-generic-payload-and-binding-retention.org][20.04]] on the same owned PR 19 candidate and the same
+installed Gerbil. No compiler source or native issuance field is modified.
+
+The gerbil-poo source is fixed at
+=40c61fe6afc8313f297599da0e511f96e3a23dcf=. In =object.ss=,
+=object-issued-read-current?= compares revision, exact receiver instance,
+registered read identity and cached value identity. Bootstrap and temporary
+cache-miss records have their own native conditions. The simplified Lean anchor
+models only the ordinary instance-bound branch, not the complete checker.
+
+* Native ownership correspondence
+
+| Retained route | Existing owner | Safe sharing boundary |
+|----------------+----------------+-----------------------|
+| Read receiver, instance, revision and birth | Native read issuer | Preserve all identities; equal contents are insufficient |
+| Instance hash and its cached values | One receiver | Never pool across parent/child receivers |
+| Name/index shape | Native slot-layout producer | Already shared through weak shape catalogue; cells remain local |
+| Frame/effective argument spine | One Generic invocation | Already the same pointer within one call; do not merge calls |
+| Callback captured environment | Its actual closure | Do not infer immutability from equal values or a pure-looking name |
+| Compiler context/source catalogue | Existing admitted reader | Role helper references the original catalogue; fresh source checks remain |
+| Immutable ordered dependency snapshot | Native producer only | Full ordered identity equality and actual immutability required; Core cannot intern exposed lists |
+
+=slot-layout.ss= already separates shared shapes from receiver-local vectors.
+Switching all reads to =.ref/inline= is not a demonstrated memory repair: native
+ordinary hashes remain and a layout adds a value vector. The native weak issuance
+registry does not by itself strongly retain all records. Prepared source bytes
+are also already referenced by pointer in the source-observation table; there is
+no evidence here that every reader copies all source strings.
+
+* Model before any further sharing repair
+
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean][PayloadSharing.lean]] adds =ReceiverState= and =ReadAnchor=. Its
+=shapeSharingPreservesAnchor= and =shapeSharingPreservesPayload= theorems retain
+receiver, revision, instance, cells and callback while changing only a structural
+shape reference. =instanceReplacementRefused=, =revisionReplacementRefused= and
+=parentCannotAuthenticateChild= establish ordinary-anchor rejection. These are
+value-model theorems; they do not establish actual Scheme immutability or a
+source-to-machine heap refinement theorem.
+
+Structural instance/environment ownership belongs to =PayloadSharing.lean=.
+The duplicate =PayloadSharing.qnt= family has been removed. Temporal boundaries
+reuse =IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles= rather than
+copying their transitions. Both requirements and actual MOP behavior remain
+consumer-test obligations. Production records and callbacks are not reconstructed.
+
+* Bounded observation, not a heap profiler
+
+The existing =ModuleTestingProfile.= trace now reports =slot-retained-payload=.
+It reads actual =slot-read-instance= references, unwraps only Gerbil's native raw
+HashTable backend and enumerates already cached values. Unknown backends are
+counted as unknown; their methods are never invoked. Identity sets deduplicate
+within one report and are discarded before returning. They are diagnostic work,
+not a retained cache or source of admission authority.
+
+The report counts distinct instance/table identities, entries/backing vector
+cells, shallow list spines, direct object references, cached closure identities
+and captured cells, distinct string characters and vector cells. Nested closure
+captures remain opaque. These counts overlap and must not be summed into bytes.
+A noncurrent instance-reference count is an observation, not a substitute for
+native currentness validation.
+
+=t/module-retention-census-test.ss= uses the existing 16/32 DeclarationFixture.
+Cold and hot phases both explicitly invoke the graph's =admit-current=. A hot
+query must return the same graph and expand no additional role. The scope remains
+undemanded. This retains fresh certification rather than caching an approval.
+
+* Qualification status
+
+Lean: full 206-job build passed, 7499-declaration standard-axiom and model-shape
+audits passed. The first attempt used the reserved Lean keyword =instance= as a
+field name and failed; the field is now =instanceId=. No admitted proof uses
+=sorry=.
+
+The first Quint attempt passed selected typechecking but failed its unchanged
+45-second case / 5-second real-output watchdog during backend translation.
+It is not a qualified finite-model receipt. The first default census invocation
+failed in automatic test precompilation before any Case, at the unchanged
+600-second execution budget. It is not a cold/hot runtime receipt. Local failure
+logs are retained outside source control. Host load observed immediately afterward
+was 72.33/78.09/62.47; concurrent unrelated builds were present. This observation
+does not establish that host load alone caused either failure.
+
+The reader candidate already narrows the generated private import to its single
+fresh constructor and shares the admitted catalogue with demanded role helpers.
+No new instance/callback pooling is justified by the present evidence. Do not
+publish it as a completed capacity repair: the two-GiB gate is unresolved. No
+known-failing ten-thousand-module test was rerun, no budget was widened, and
+automatic actual-read-edge enrollment remains blocked on complete CI success.
+
+** Completed cache-only census
+
+The next default =just test-file t/module-retention-census-test.ss= completed
+with MODULE-OK, HARNESS-OK, final OK and no error/overflow marker. Automatic
+precompilation had advanced in the failed attempt, so this is not a clean
+end-to-end cold-build comparison. The measured cold/hot phases below are inside
+the Case and both perform fresh graph source authentication.
+
+| Modules | Cold wall / CPU (ms) | Hot wall / CPU (ms) | Cold / hot role expansions | Cold / hot physical reads |
+|---------+----------------------+---------------------+----------------------------+---------------------------|
+| 16 | 13871.872 / 4231.398 | 88.026 / 78.078 | 32 / 0 | 6960 / 106 |
+| 32 | 16645.894 / 5897.815 | 865.910 / 245.234 | 64 / 0 | 13968 / 170 |
+
+| Cache-only retained structure | 16 modules | 32 modules |
+|-------------------------------+------------+------------|
+| Native issued records / dependency occurrences | 9231 / 22619 | 18159 / 42923 |
+| Receivers / captured instances | 875 / 875 | 1691 / 1691 |
+| Noncurrent captured instance / unknown backend | 0 / 0 | 0 / 0 |
+| Distinct native tables / entries / backing cells | 902 / 5543 / 26576 | 1734 / 9982 / 46800 |
+| Cached closure identities / shallow captured cells | 174 / 484 | 309 / 896 |
+| Direct callback targets also in receiver set | 64 | 112 |
+| Opaque nested closure captures | 73 | 121 |
+| Distinct shallow list-spine cells | 1752 | 3512 |
+| Distinct strings / characters | 88 / 9796 | 175 / 67775 |
+| Post-GC VM live bytes | 193476872 | 221412440 |
+
+At N=32, record and edge counts match the preceding narrow-import receipt
+(18159 / 42923). This is not an across-process identity equality assertion;
+original record identities are left untouched within each run. An instance may
+refer to more tables through cached values, hence native table count can exceed
+instance count. Character/backing-cell counts are not heap byte measurements.
+Timing was taken under substantial host contention and is not a speedup claim.
+
+The small shallow closure/table counts do NOT identify the dominant transitive
+retention owner. In particular this report does not yet enumerate receiver
+=%slot-funs= tables, persistent specification trees, or opaque interpreter
+closure environments. =object.ss:compute-slot-funs!= assembles effective thunks
+per receiver, with native =compute-slot= hook participation. Those thunks must
+not be pooled simply because their printed slot names match. The existing
+=apply-slot-spec= already reuses =$thunk-slot-spec= functions; self/computed
+specifications bind receiver/super and cannot be shared as a receiver-free
+closure. This is the next measured ownership boundary, not a proven repair.
+
+The second Quint attempt passed the positive model and nine matched negative
+controls through =PayloadSharing_callback=. It then hit the unchanged watchdog
+at =PayloadSharing_approval=. Thus the new instance/callback counterexamples
+were observed, but the complete twelve-entry source-bound suite has NOT
+qualified. No new sharing optimization is allowed on that partial result.
+
+** Final-source binding attempt
+
+After adding cache-only =%slot-funs= metadata attribution, the normal library
+build passed again. The final-source Quint attempt failed its existing five-second
+selected typecheck watchdog on =PayloadSharing_context.qnt=, before backend
+verification. Both earlier backend timeout attempts remain historical records.
+No timeout, memory threshold, assertion or backend-output watchdog was changed.
+The new model is not advertised as fully qualified, and no further production
+sharing repair is applied on this incomplete qualification.
+
+The real =just test-file t/gitea-postgresql-publication-test.ss= completed all
+11 cases after the first cache-only observation change, with MODULE-OK,
+HARNESS-OK and final OK and no failure/overflow marker. The subsequent edit only
+extends opt-in metadata tracing; it does not change reader, admission or domain
+code. The final metadata census is recorded separately rather than treating the
+previous trace as evidence for fields it did not inspect.
+
+** Historical effective-slot metadata attempt and stopping boundary
+
+The final =%slot-funs= census invocation was refused before the Case by existing
+build admission: =stale selected build input; regenerate the build entry= for
+=/opt/homebrew/Cellar/gerbil-scheme@0.19/0.19.20261009110849.1cfb032.patch618d76f9eb72/1cfb032/lib/std/serde/interface.ssi=.
+Its observed SHA-256 after refusal was
+=b8a09a601e807e92dfee6ea8971a9b2c775f728cac0570b6dd9491f7ba9d7795=.
+That fingerprint alone identifies neither the writer nor the cause of the
+mismatch. No installed file, approval or expected fingerprint was overwritten.
+The new =slot-receiver-metadata= trace therefore has build evidence but no
+completed runtime receipt. Do not attribute the earlier numbers to this trace.
+
+The final Lean build passes 206 jobs with a 7504-declaration standard-axiom audit.
+=equivalentShapePreservesLookup= now additionally requires equality of the actual
+name/index mapping, not merely permission to change a shape identity. Ordinary
+read-anchor preservation alone does not prove lookup equivalence.
+
+Further production sharing is blocked on (1) a stable admitted installed-input
+snapshot for the metadata census, (2) complete source-bound Quint qualification,
+and (3) a measured duplication owner worth changing. Preserve currentness at
+its actual boundaries; do not accept an old artifact just to obtain a timing.
+No new cache pool or approval cache was added, and no ten-thousand-module rerun
+or automatic read-edge enrollment was performed.
+
+* Currentness recovery using native cleaning
+
+The installed =std/serde/interface.ssi= resolves into the Homebrew Gerbil
+1cfb032 installation. Its recorded filesystem modification time is 2026-10-09;
+its SHA-256 remains =b8a09a601e807e92dfee6ea8971a9b2c775f728cac0570b6dd9491f7ba9d7795=.
+All 61 retained test approval packets in the owned validation prefix contain
+exactly those same 40664 bytes for this input. This excludes an obsolete
+persistent expected-byte fingerprint in those packets; it does not identify the
+cause of the failed process's observation. No installed SDK file is rewritten.
+
+The existing =gerbil clean= command was used on this owned checkout/runtime.
+It delegates to the package =build.ss clean= and native =std/make= output cleanup;
+Core's existing selected-family cleanup remains in force. Cleaning completed
+successfully. The following full =just build= completed within its unchanged
+600-second outer limit and two-GiB Gerbil heap fence. This is a real clean/rebuild,
+not editing an approval or accepting current bytes as a replacement fingerprint.
+
+For the failed census projection, cleanup uses its actual
+=init.exports.tests.for-files= demand and native =std-make-spec= equivalent:
+=make-clean= consumes that same spec/source root/output directory, followed by
+the existing =clean-build-artifacts!= to remove stale object generations. Any
+corresponding approval is moved to local audit storage before reissuance; it is
+not rewritten. Other selected keys and other sessions' prefixes are untouched.
+This one-time recovery is an operational use of existing APIs, not a new Builder
+or cache protocol. Its result and subsequent runtime measurements follow below.
+
+The final-source =PayloadSharing= Quint qualification now completes all twelve
+entries, including positive safety, instance/callback pooling counterexamples,
+stale approval rejection and reachable-admission nonvacuity. Earlier watchdog
+failures are retained. The only scheduling change removes background restriction
+from this verification shell; no other process policy, watchdog or heap budget
+is changed. This is not a performance improvement claim.
+
+** Recovery result and final source qualification
+
+Selected cleanup completed normally. The newly derived census output was
+=test-lib/c2dff26dcce67d5fdb408845fe274c26672187222a22af30fffcb83c7f6cc16f=.
+It had no existing approval to retire; no approval record was edited or deleted.
+Existing first-build staging in =call-with-build-artifact-issuance/locked= checks
+=projection.admit-current= AFTER compiler return and BEFORE publishing products
+or creating issuance. A refusal at that point is not a successfully signed test
+cache. Its temporary output directory is owned by the existing cleanup scope.
+
+A separate source-level diagnostic defect was found:
+=read-module-source-type= swallowed EVERY =file-info= exception into absence.
+It now follows the already maintained =role-forms.ss= policy:
+
+#+begin_src scheme
+(with-catch
+  (lambda (exception)
+    (if (no-such-file-or-directory-exception? exception) #f (raise exception)))
+  (lambda () (file-info-type (file-info path #f))))
+#+end_src
+
+Only genuine absence becomes =#f=. Other native exceptions preserve their
+identity/type and cannot be cached as absence by =module-source-observe=.
+The existing first source-observation Case now checks an absent file and a
+malformed path inside a pure read window, without adding another Fixture or test
+family. It confirms the native type exception rather than a stale-input error.
+No real OS I/O fault was injected; nor is this defect proved to have caused the
+historical =std/serde/interface.ssi= refusal. Clean/rebuild recovery alone cannot
+establish that exact causal chain, and the original triggering process is gone.
+
+After this source change, the ordinary library build succeeds again and the
+final source-bound =PayloadSharing= suite qualifies all twelve entries. Full
+Lean passes 206 jobs / 7504 declarations with standard axioms and no arbitrary
+Prop-valued fields. Serial default =just test-file= passes source observation
+(six Cases), deferred reader (four), maintained Gitea/PostgreSQL publication
+(eleven), and the existing 16/32 census (two). All four logs contain MODULE-OK,
+HARNESS-OK and final OK, with none of the forbidden error/overflow markers.
+Historical failed runs remain outside Git; they are not replaced by these passes.
+
+| Final source, Modules | Cold wall / CPU (ms) | Hot wall / CPU (ms) | Cold / hot expansions | Cold / hot source reads |
+|-----------------------+----------------------+---------------------+-----------------------+-------------------------|
+| 16 | 7737.300 / 3825.178 | 585.604 / 82.144 | 32 / 0 | 6960 / 106 |
+| 32 | 10160.793 / 5439.452 | 497.962 / 236.761 | 64 / 0 | 13968 / 170 |
+
+| Effective-slot metadata, final source | 16 Modules | 32 Modules |
+|--------------------------------------+------------+------------|
+| Specification root identities | 1694 | 3278 |
+| Already assembled thunk tables | 875 | 1691 |
+| Entries / distinct closure identities | 6249 / 6249 | 12041 / 12041 |
+| Backing vector cells | 33248 | 63712 |
+| Shallow captured closure cells | 10321 | 19601 |
+| Direct captures equal to that table's receiver | 4017 | 7505 |
+
+Capture counts are fields, NOT a claim that that many distinct functions each
+capture self exactly once. Indirect closure captures remain opaque. At N=32 the
+original selected support remains 18159 records / 42923 edge occurrences / 1691
+receivers, with widest direct support 22166. Post-GC live bytes are 193478776 at
+N=16 and 221415016 at N=32. Shallow metadata counts do not establish an additive
+physical-byte attribution, and timings on this shared host are not a speedup or
+capacity qualification. The hot phase admits sources again and returns the SAME
+graph with zero additional business-role expansion.
+
+** Sharing repair boundary
+
+The reader candidate shares the existing admitted SDK context/source-dependency
+catalogue with its demanded role helper, and narrows only the synthetic local
+constructor import. The final native controls and source-bound models now cover
+that candidate. No original native read is reconstructed; its receiver, birth,
+ordered edges and observer/replay behavior remain with the native issuer.
+Actual source guards continue to run at their existing boundaries.
+
+Do not infer receiver-free behavior from equal printed slots, no direct self
+capture, or matching Type names. The 7505 direct receiver captures at N=32
+already rule out indiscriminate cross-receiver thunk pooling; other captures may
+hold receiver state transitively. Shared persistent specification subtrees and
+opaque interpreter environments are still not a complete retained-heap census.
+No new pool of mutable tables, closures or successful approvals is introduced.
+Further producer-side sharing needs a measured owner and its own correspondence,
+not an extrapolation from the shape-value theorem. The two-GiB capacity gate is
+still unresolved; no ten-thousand-module run or automatic read-edge enrollment
+was performed. Other sessions' worktrees and installed Gerbil sources remain
+untouched.

@@ -11,13 +11,18 @@ package YuanxuDevelopment {
         attribute modelPath : String;
         attribute positiveRun : String;
         attribute counterexample : String;
-        doc /* Existing dev/proofs/quint owner. Bounds must be explicit. */
+        doc /* QNT owns transition ordering, interleavings, callback gaps,
+               invalidation and recovery traces. Bounds must be explicit.
+               Do not duplicate Lean value equalities as finite state cases. */
     }
     part def SemanticProof {
         attribute theoremPath : String;
         attribute premises : String;
         attribute implementationProjection : String;
-        doc /* Existing dev/proofs/lean and locked LeanPoo owner. */
+        doc /* Lean/locked LeanPoo owns universal structural and semantic
+               properties: identities, exact edges, lookup equivalence and
+               sharing preconditions. Do not restate an existing transition
+               model merely to provide a second tool's badge. */
     }
     part def RuntimeCorrespondence {
         attribute sourceRevision : String;
@@ -35,8 +40,9 @@ package YuanxuDevelopment {
     }
     part def Workstream {
         part architecture : Architecture;
-        part temporal : TemporalAnalysis;
-        part semantic : SemanticProof;
+        // Allocate by the question; a workstream need not create both models.
+        part temporal : TemporalAnalysis [0..1];
+        part semantic : SemanticProof [0..1];
         part runtime : RuntimeCorrespondence;
         part measurement : Measurement;
         dependency transitions from architecture to temporal;
@@ -48,6 +54,16 @@ package YuanxuDevelopment {
 
     part efficientCaching : Workstream;
     part demandDrivenModuleLoading : Workstream;
+
+    requirement def SingleProofOwner {
+        doc /* Each claim has one primary formal owner. Structural sharing is
+               owned by PayloadSharing.lean. Temporal callback/currentness and
+               invalidation claims reference existing IssuedRootForwarding,
+               ReadRetention and IncrementalRoles QNT models. Cross references
+               do not require copying their state or tests into PayloadSharing.
+               Runtime correspondence and measured memory remain separate
+               obligations; neither formal tool certifies physical heap cost. */
+    }
 
     requirement def EvidenceBoundary {
         attribute runtimeClaimed : Boolean;

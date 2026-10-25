@@ -17,9 +17,10 @@ module ModuleDemandModel {
   action init = {
     nondet demand = Set(narrow, wide).oneOf()
     // 0=direct literal declaration; 1=computed dependency; 2=inherited
-    // metadata; 3=extra top form; 4=duplicate field. The Scheme decoder
+    // metadata; 3=extra top form; 4=duplicate field; 5=private source imports.
+    // The Scheme decoder
     // must produce this classification from source, never a purity flag.
-    nondet shape = Set(0, 1, 2, 3, 4).oneOf()
+    nondet shape = Set(0, 1, 2, 3, 4, 5).oneOf()
     val closed = shape == 0
     nondet descriptorValid = Set(false, true).oneOf()
     nondet disabled = Set(false, true).oneOf()

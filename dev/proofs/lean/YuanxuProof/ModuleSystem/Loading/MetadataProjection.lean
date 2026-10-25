@@ -8,8 +8,8 @@ constructors cannot stand for arbitrary Scheme or authenticate native reads. -/
 namespace YuanxuProof.ModuleSystem.Loading.MetadataProjection
 open LeanPoo.Functional LeanPoo.Functional.Requirements
 
-def quintSourceDigest : String := "sha256:c3789e2d9898d533d2d85a47284baf0d6e806ff498fe5184a25373acb40eb6ef"
-def declaredPooRevision : String := "40c61fe6afc8313f297599da0e511f96e3a23dcf"
+def quintSourceDigest : String := "sha256:3cc007e7bd3f45c624c19e08ac0b4c9c4a9ed2e8a89f78251521f3fbb2dda31a"
+def declaredPooRevision : String := "29c58aa9c5be103ba843767e3d22ef8802b79342"
 def declaredLeanPooRevision : String := "5d4587a30e2333fc5f935dac6163aa56ff16a2dc"
 
 structure Dependency where
@@ -31,6 +31,7 @@ inductive Declaration (Body : Type) where
   | inheritedMetadata (body : Body)
   | extraTopForm (body : Body)
   | duplicateField (body : Body)
+  | privateSourceImports (body : Body)
   deriving Repr
 
 def project : Declaration Body → Option Metadata
@@ -50,7 +51,8 @@ theorem sourcesUnchanged (metadata : Metadata) (body : Body) :
 theorem unsupportedRefused (body : Body) :
     project (.calculatedDependency body) = none ∧
     project (.inheritedMetadata body) = none ∧
-    project (.extraTopForm body) = none ∧ project (.duplicateField body) = none := by
+    project (.extraTopForm body) = none ∧ project (.duplicateField body) = none ∧
+    project (.privateSourceImports body) = none := by
   simp [project]
 
 /-- LeanPoo owns reuse of a closed immutable declaration. This theorem does

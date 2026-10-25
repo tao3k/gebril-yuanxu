@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :clan/poo/object .o .ref .slot?)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
         (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
         (only-in :yuanxu/module-system/source/declaration include-module-body)
@@ -154,7 +155,14 @@
         ;; import table. Explicit role/import bindings still override the prelude.
         ;; A contributor's custom prelude keeps the original explicit imports.
         (def shared-prelude? (list-ref compiler-info 4))
-        (def (publication-forms imports)
+        (def deferred-roles
+          (and shared-prelude?
+            (module-deferred-role-exports (hash-ref texts path)
+              (map (lambda (role)
+                     (cons role (hash-ref texts
+                       (path-expand (string-append (symbol->string role) ".ss") root)))) roles))))
+        (def (publication-forms imports (deferred #f))
+          (let (resolver (and deferred (string->symbol (symbol->string (gensym 'role-resolver)))))
           (append
            (if shared-prelude?
              '(prelude: :yuanxu/module-system/source/config-prelude)
@@ -163,10 +171,14 @@
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
                           (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
+                          ,@(if deferred
+                              `((rename-in (only-in :yuanxu/module-system/source/deferred-declaration
+                                                   include-deferred-declaration current-module-role-resolver)
+                                           (current-module-role-resolver ,resolver))) '())
                           ,@imports))
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
-           (list `(include ,path))))
+           (list (if deferred `(include-deferred-declaration ,path ,deferred ,resolver) `(include ,path))))))
         (.o bind-these: #f source: source-value identity: owner binding: name
             compiler-identity: (cadr compiler-info)
             source-inputs:
@@ -180,6 +192,8 @@
                             (and (hash-key? texts file) file))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
+            deferred-roles: deferred-roles
+            deferred-reader-forms: (and deferred-roles (publication-forms '() deferred-roles))
             reader-forms: (publication-forms
                            (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
             compiler-forms: (publication-forms

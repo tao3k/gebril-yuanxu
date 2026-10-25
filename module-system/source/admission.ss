@@ -170,8 +170,13 @@
   (module-source-observe read-module-source-type path))
 (def (read-module-source-type path)
   (observe-source 'stats)
-  (with-catch (lambda (_exception) #f)
-              (lambda () (file-info-type (file-info path #f)))))
+  ;; Absence is data; an I/O/type failure is not an absent source and must not
+  ;; become a cached #f or a misleading stale-input diagnostic. Match the
+  ;; existing role discovery boundary and preserve the original exception.
+  (with-catch
+    (lambda (exception)
+      (if (no-such-file-or-directory-exception? exception) #f (raise exception)))
+    (lambda () (file-info-type (file-info path #f)))))
 ;; A reader validation is synchronous and effect-free. Reuse bytes and file-kind
 ;; observations only inside that boundary; every read requires regular-file
 ;; status. No cache survives an effect or an independent currentness call.

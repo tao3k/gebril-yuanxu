@@ -2,16 +2,20 @@
 ;;; Module-specific adapter of the existing Case policy, never a runner.
 (import :clan/poo/object
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
-                 slot-read-key slot-read-receiver slot-read-dependencies)
+                 slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
         (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :std/source this-source-file)
+        (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
+        (only-in :gerbil/runtime/table raw-table? &raw-table-table &raw-table-count raw-table-for-each eq-hash)
+        (rename-in (only-in :gerbil/runtime/gambit table?) (table? gambit-table?))
         (only-in :gerbil/expander current-expander-compile current-expander-context
-                 current-expander-phi module-context? module-context-path
+                 current-expander-phi expander-context? module-context? module-context-path
                  module-context-code expander-context-table)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile
                  yuanxu-test-checkpoint yuanxu-test-observe)
         (only-in :yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget))
@@ -29,6 +33,11 @@
     (path-strip-directory path)))
 
 (def (module-test-observer previous trace?)
+  ;; Report completed work through the existing scalar Ops channel. Merely
+  ;; printing a diagnostic line is not progress for its supervising process.
+  ;; No checkpoint receipt/POO construction is permitted inside admission.
+  (def progress-scope (gensym 'module-completed-work))
+  (def completed-work 0)
   (def started (current-jiffy))
   (def started-cpu (yuanxu-debug-cpu-microseconds))
   ;; Diagnostic counts only: bounded owner/phase rows, never source bytes,
@@ -282,7 +291,12 @@
              (for-each (lambda (row) (yuanxu-test-observe (car row) (cdr row))) (cdr key)))
            (when (eq? category 'reader-declaration)
              (stage category 'body)))))
-      (when previous (previous key amount))))
+      (when previous (previous key amount))
+      (when (and (memq category '(reader-body-compiled reader-body-evaluated
+                                  publication-guard-end metadata-replay-visits))
+                 (exact-integer? amount) (> amount 0))
+        (set! completed-work (+ completed-work amount))
+        (execution-progress! progress-scope completed-work))))
   (values observe flush-reads))
 
 (def (observe-module-test run)
@@ -399,6 +413,18 @@
     (def arguments 0)
     (def continuations 0)
     (def argument-lists (make-hash-table-eq))
+    (def argument-cells (make-hash-table-eq))
+    (def next-closures (make-hash-table-eq))
+    (def shared-frame-arguments 0)
+    (def separate-frame-arguments 0)
+    (def next-cells 0)
+    (def (observe-arguments args)
+      ;; Read existing pair identities only. Never copy/merge a call's payload,
+      ;; walk argument values or construct evidence inside this observer.
+      (let walk ((tail args))
+        (when (and (pair? tail) (not (hash-key? argument-cells tail)))
+          (hash-put! argument-cells tail #t)
+          (walk (cdr tail)))))
     (def authoring-interfaces (make-hash-table-eq))
     (def authoring-datums (make-hash-table-eq))
     (hash-for-each
@@ -412,6 +438,13 @@
             (when (list? args)
               (set! arguments (+ arguments (length args)))
               (hash-put! argument-lists args #t)
+              (observe-arguments args)
+              (when (eq? kind 'poo-clos/invocation-frame)
+                (let* ((effective (hash-get instance 'effective-method))
+                       (fields (and (object? effective) (object-%instance effective))))
+                  (if (and fields (eq? args (hash-get fields 'arguments)))
+                    (set! shared-frame-arguments (+ 1 shared-frame-arguments))
+                    (set! separate-frame-arguments (+ 1 separate-frame-arguments)))))
               (let* ((effective (if (eq? kind 'poo-clos/effective-method) value
                                  (hash-get instance 'effective-method)))
                      (fields (and (object? effective) (object-%instance effective)))
@@ -423,12 +456,23 @@
                   (hash-put! authoring-interfaces (caddr args) #t)
                   (hash-put! authoring-datums (cadddr args) #t)))))
         (when (and instance (procedure? (hash-get instance 'next)))
-          (set! continuations (+ continuations 1))))) clos-values)
+          (set! continuations (+ continuations 1))
+          (let (next (hash-get instance 'next))
+            (when (and (##closure? next) (not (hash-key? next-closures next)))
+              (hash-put! next-closures next #t)
+              ;; Shallow cells, not transitive bytes. Do not inspect or execute
+              ;; the callback's captured values, including external user state.
+              (set! next-cells (+ next-cells (1- (##closure-length next))))))))) clos-values)
     (yuanxu-write-observation-line!
       "reader-clos-roots publications=%s effective=%s frames=%s argument-refs=%s argument-lists=%s authoring-interfaces=%s authoring-datums=%s continuations=%s read-records=%s"
       publications effective frames arguments (hash-length argument-lists)
       (hash-length authoring-interfaces) (hash-length authoring-datums)
-      continuations (hash-length clos-reads)))
+      continuations (hash-length clos-reads))
+    (yuanxu-write-observation-line!
+      "reader-call-payload argument-spines=%s argument-cells=%s frames-sharing-effective-args=%s frames-with-own-args=%s next-closures=%s next-cells=%s"
+      (hash-length argument-lists) (hash-length argument-cells)
+      shared-frame-arguments separate-frame-arguments
+      (hash-length next-closures) next-cells))
   (def (observe-source key amount)
     (when (and (pair? key) (eq? (car key) 'publication-end))
       (set! publications (+ publications amount))
@@ -457,8 +501,21 @@
     ;; user payloads, execute a checker, or follow SDK/weak-registry internals.
     (def births (make-hash-table-eq))
     (def birth-cells 0)
+    (def singleton-snapshots (make-hash-table-eq))
     (def (birth! read)
       (defvalues (_presented original _signed _snapshot _shape) (object-read-issuance read))
+      ;; Count retained issuer captures, not the inspector's fresh copy. The
+      ;; value is excluded so a user's one-element vector is not a snapshot.
+      (let (parents (slot-read-dependencies read))
+        (when (and original (##closure? original) (pair? parents) (null? (cdr parents)))
+          (let fields ((index (1- (##closure-length original))))
+            (when (> index 0)
+              (let (field (##closure-ref original index))
+                (when (and (vector? field) (= (vector-length field) 1)
+                           (not (eq? field (slot-read-value read)))
+                           (eq? (vector-ref field 0) (car parents)))
+                  (hash-put! singleton-snapshots field #t)))
+              (fields (1- index))))))
       (when (and original (##closure? original))
         (let (owner (##subprocedure-parent (##closure-ref original 0)))
           (let walk ((pending (list original)))
@@ -474,6 +531,209 @@
                       (if (< index 1) (walk rest)
                         (fields (1- index) (cons (##closure-ref head index) rest)))))
                   (walk tail))))))))
+    ;; Exact retained reference routes, not an estimated transitive byte size.
+    ;; Inspect only native raw tables; never dispatch an unknown HashTable API.
+    (def instances (make-hash-table-eq))
+    (def tables (make-hash-table-eq))
+    (def cells (make-hash-table-eq))
+    (def callbacks (make-hash-table-eq))
+    (def direct-objects (make-hash-table-eq))
+    (def callback-objects (make-hash-table-eq))
+    (def strings (make-hash-table-eq))
+    (def vectors (make-hash-table-eq))
+    (def metadata-tables (make-hash-table-eq))
+    (def metadata-callbacks (make-hash-table-eq))
+    (def specification-roots (make-hash-table-eq))
+    (def metadata-entries 0)
+    (def metadata-backing-cells 0)
+    (def metadata-callback-cells 0)
+    (def metadata-receiver-captures 0)
+    ;; Trace-only transitive raw payload accounting. Never force a slot, promise,
+    ;; interface method or checker. Receiver and SDK context identities are
+    ;; frontiers, not recursively expanded into the entire running process.
+    (def sdk-contexts (make-hash-table-eq))
+    ;; Raw shell projection never invokes a getter or prepares a receiver.
+    ;; Descriptors are external roots, and nested owner contexts remain boundaries.
+    (def (shell-fields value)
+      (def type (##structure-type value))
+      (let loop ((index (1- (##structure-length value))) (result '()))
+        (if (< index 1) result
+          (loop (1- index)
+            (cons (##structure-ref value index type #f) result)))))
+    (def (deep-payload roots label (structural? #f))
+      (def progress-scope (gensym 'classified-payload-nodes))
+      (def visited (make-hash-table-eq))
+      (def frontiers (make-hash-table-eq))
+      (def kinds (make-hash-table-eq))
+      (def words 0)
+      (def references 0)
+      (def repeated 0)
+      (def closures 0)
+      (def characters 0)
+      (def (fields value length ref)
+        (let loop ((index (1- length)) (result '()))
+          (if (< index 0) result
+            (loop (1- index) (cons (ref value index) result)))))
+      (let walk ((pending roots))
+        (unless (null? pending)
+          (let ((value (car pending)) (tail (cdr pending)))
+          (cond
+            ((or (object? value) (expander-context? value) (class-type? value)
+                 ;; Weak tables are not strong retention edges. Do not walk
+                 ;; any Gambit/GC table until its ephemeron policy is modeled.
+                 (gambit-table? value)
+                 (and (##structure? value)
+                   (##structure-instance-of? value 'gerbil#__gc-table::t)))
+             (when (expander-context? value) (hash-put! sdk-contexts value #t))
+             (hash-put! frontiers value #t) (walk tail))
+            ((and structural?
+               (or (##closure? value)
+                 (and (##structure? value)
+                   (not (memq (##type-id (##structure-type value))
+                     '(clan/poo/prototype-map#specifications::t
+                       std/struct/rbtree#RBTree::t std/struct/rbtree#Tree::t
+                       std/struct/rbtree#Empty::t))))))
+             (hash-put! frontiers value #t) (walk tail))
+            ((or (pair? value) (vector? value) (string? value)
+                 (##closure? value) (##structure? value))
+             (if (hash-key? visited value)
+               (begin (set! repeated (1+ repeated)) (walk tail))
+               (begin
+                 (hash-put! visited value #t)
+                 ;; Actual newly discovered identities, never timer ticks.
+                 ;; This trace-only walk leaves native deliveries untouched.
+                 (when (zero? (modulo (hash-length visited) 1024))
+                   (execution-progress! progress-scope (hash-length visited)))
+                 (cond
+                   ((pair? value)
+                    (set! words (+ words 2))
+                    (set! references (+ references 2))
+                    (walk (cons (car value) (cons (cdr value) tail))))
+                   ((string? value)
+                    (set! characters (+ characters (string-length value))) (walk tail))
+                   ((vector? value)
+                    (set! words (+ words (vector-length value)))
+                    (set! references (+ references (vector-length value)))
+                    (walk (append (fields value (vector-length value) vector-ref) tail)))
+                   ((##closure? value)
+                    (set! closures (1+ closures))
+                    (set! words (+ words (##closure-length value)))
+                    ;; Code at index zero is an opaque executable, not an env.
+                    (set! references (+ references (1- (##closure-length value))))
+                    (walk (append (cdr (fields value (##closure-length value) ##closure-ref)) tail)))
+                   (else
+                    (let (type (##structure-type value))
+                    (hash-update! kinds (##type-id type) 1+ 0)
+                    (set! words (+ words (##structure-length value)))
+                    ;; Do not traverse the class descriptor at offset zero.
+                    (set! references (+ references (1- (##structure-length value))))
+                    (walk (append
+                      (let loop ((index (1- (##structure-length value))) (result '()))
+                        (if (< index 1) result
+                          (loop (1- index)
+                            (cons (##structure-ref value index type #f) result)))) tail))))))))
+            (else (walk tail))))))
+      (yuanxu-write-observation-line!
+        "slot-deep-payload kind=%s nodes=%s words=%s closures=%s references=%s repeated-identities=%s frontier=%s string-characters=%s top-structures=%s"
+        label (hash-length visited) words closures references repeated (hash-length frontiers) characters
+        (take (list-sort (lambda (a b) (> (cdr a) (cdr b))) (hash->list kinds))
+          (min 8 (hash-length kinds))))
+      visited)
+    (def stale-instances 0)
+    (def unknown-instances 0)
+    (def table-entries 0)
+    (def table-cells 0)
+    (def callback-cells 0)
+    (def opaque-closure-captures 0)
+    (def string-characters 0)
+    (def vector-cells 0)
+    (def (native-table value)
+      (let (raw (if (interface-instance? value) (interface-instance-object value) value))
+        (and (raw-table? raw) raw)))
+    (def (observe-pairs value)
+      (let walk ((tail value))
+        (when (and (pair? tail) (not (hash-key? cells tail)))
+          (hash-put! cells tail #t)
+          (when (object? (car tail)) (hash-put! direct-objects (car tail) #t))
+          (walk (cdr tail)))))
+    (def (observe-shallow value callback?)
+      (cond
+        ((object? value)
+         (hash-put! direct-objects value #t)
+         (when callback? (hash-put! callback-objects value #t)))
+        ((native-table value) =>
+         (lambda (table)
+           (unless (hash-key? tables table)
+             (hash-put! tables table #t)
+             (set! table-entries (+ table-entries (&raw-table-count table)))
+             (set! table-cells (+ table-cells (vector-length (&raw-table-table table)))))))
+        ((pair? value) (observe-pairs value))
+        ((string? value)
+         (unless (hash-key? strings value)
+           (hash-put! strings value #t)
+           (set! string-characters (+ string-characters (string-length value)))))
+        ((vector? value)
+         (unless (hash-key? vectors value)
+           (hash-put! vectors value #t)
+           (set! vector-cells (+ vector-cells (vector-length value)))))))
+    (def (observe-callback value)
+      (when (and (##closure? value) (not (hash-key? callbacks value)))
+        (hash-put! callbacks value #t)
+        (set! callback-cells (+ callback-cells (1- (##closure-length value))))
+        (let fields ((index (1- (##closure-length value))))
+          (when (> index 0)
+            (let (captured (##closure-ref value index))
+              ;; Nested closures are opaque; their environment can contain
+              ;; unrelated user state. Never invoke or recursively inspect it.
+              (if (##closure? captured)
+                (set! opaque-closure-captures (+ opaque-closure-captures 1))
+                (observe-shallow captured #t)))
+            (fields (1- index))))))
+    (def (observe-instance read)
+      (def instance (slot-read-instance read))
+      (when instance
+        (unless (eq? instance (object-%instance (slot-read-receiver read)))
+          (set! stale-instances (+ 1 stale-instances)))
+        (unless (hash-key? instances instance)
+          (hash-put! instances instance #t)
+          (let (raw (native-table instance))
+            (if raw
+              (begin
+                (observe-shallow instance #f)
+                (raw-table-for-each raw
+                  (lambda (_key value)
+                    (observe-shallow value #f)
+                    (observe-callback value))))
+              (set! unknown-instances (+ 1 unknown-instances)))))))
+    (def (observe-receiver-metadata receiver)
+      ;; These are raw struct fields, not public computed getters. Count only
+      ;; already assembled metadata; do not prepare a receiver to inspect it.
+      (for-each (lambda (root)
+        (when root (hash-put! specification-roots root #t)))
+        (list (object-%slots receiver) (object-%defaults receiver)))
+      (observe-pairs (object-%precedence-list receiver))
+      (observe-pairs (object-%all-slots receiver))
+      (let* ((cached (object-%slot-funs receiver)) (table (and cached (native-table cached))))
+        (when (and table (not (hash-key? metadata-tables table)))
+          (hash-put! metadata-tables table #t)
+          (set! metadata-entries (+ metadata-entries (&raw-table-count table)))
+          (set! metadata-backing-cells
+            (+ metadata-backing-cells (vector-length (&raw-table-table table))))
+          (raw-table-for-each table
+            (lambda (_key fun)
+              (when (and (##closure? fun) (not (hash-key? metadata-callbacks fun)))
+                (hash-put! metadata-callbacks fun #t)
+                (set! metadata-callback-cells
+                  (+ metadata-callback-cells (1- (##closure-length fun))))
+                (let fields ((index (1- (##closure-length fun))))
+                  (when (> index 0)
+                    (let (captured (##closure-ref fun index))
+                      (when (eq? captured receiver)
+                        (set! metadata-receiver-captures (+ metadata-receiver-captures 1)))
+                      ;; Only observe the immediate payload. Do not recurse
+                      ;; through interpreter closures, specs or user objects.
+                      (unless (##closure? captured) (observe-shallow captured #f)))
+                    (fields (1- index))))))))))
     (def edges 0)
     (def widest 0)
     (def widest-key #f)
@@ -487,6 +747,9 @@
                    (label (if (symbol? key) key 'structural-query)))
               (hash-put! seen read #t)
               (birth! read)
+              (observe-instance read)
+              (unless (hash-key? receivers (slot-read-receiver read))
+                (observe-receiver-metadata (slot-read-receiver read)))
               (hash-put! receivers (slot-read-receiver read) #t)
               (hash-update! rows label (cut + <> width) 0)
               (set! edges (+ edges width))
@@ -498,8 +761,114 @@
       (take (list-sort (lambda (left right) (> (cdr left) (cdr right))) (hash->list rows))
         (min 8 (hash-length rows))))
     (yuanxu-write-observation-line!
-      "slot-issuer-storage records=%s closures=%s captured-cells=%s"
-      (hash-length seen) (hash-length births) birth-cells))
+      "slot-issuer-storage records=%s closures=%s captured-cells=%s singleton-parent-vectors=%s"
+      (hash-length seen) (hash-length births) birth-cells (hash-length singleton-snapshots))
+    (yuanxu-write-observation-line!
+      "slot-receiver-metadata specification-roots=%s thunk-tables=%s entries=%s backing-cells=%s thunks=%s captured-cells=%s direct-own-receiver-captures=%s"
+      (hash-length specification-roots) (hash-length metadata-tables)
+      metadata-entries metadata-backing-cells (hash-length metadata-callbacks)
+      metadata-callback-cells metadata-receiver-captures)
+    ;; Distinct closures may repeat the SAME capture identity sequence. Hash
+    ;; only primitive identity codes, then compare every field (including code)
+    ;; on collision. Never invoke a thunk or merge the original functions.
+    (let ((buckets (make-hash-table)) (families (make-hash-table-eq))
+          (duplicates 0) (duplicate-fields 0))
+      (def (same-captures? left right)
+        (and (= (##closure-length left) (##closure-length right))
+          (let loop ((index (1- (##closure-length left))))
+            (or (< index 0)
+              (and (eq? (##closure-ref left index) (##closure-ref right index))
+                (loop (1- index)))))))
+      (hash-for-each (lambda (fun _)
+        (def signature
+          (let loop ((index (1- (##closure-length fun))) (value 0))
+            (if (< index 0) value
+              (loop (1- index)
+                (modulo (+ (* value 65599) (eq-hash (##closure-ref fun index))) 536870909)))))
+        (def bucket (or (hash-get buckets signature) '()))
+        (def duplicate? (any (cut same-captures? fun <>) bucket))
+        (def name (##subprocedure-parent-name (##closure-ref fun 0)))
+        (def label (if (symbol? name) name 'unnamed))
+        (def row (or (hash-get families label)
+          (let (row (vector 0 0 0)) (hash-put! families label row) row)))
+        (vector-set! row 0 (1+ (vector-ref row 0)))
+        (if duplicate?
+          (begin
+            (set! duplicates (1+ duplicates))
+            (set! duplicate-fields (+ duplicate-fields (1- (##closure-length fun))))
+            (vector-set! row 2 (+ (vector-ref row 2) (1- (##closure-length fun)))))
+          (begin
+            (vector-set! row 1 (1+ (vector-ref row 1)))
+            (hash-put! buckets signature (cons fun bucket))))) metadata-callbacks)
+      (yuanxu-write-observation-line!
+        "slot-thunk-captures repeated-environments=%s repeated-fields=%s families=%s"
+        duplicates duplicate-fields (hash->list families)))
+    (let* ((specs (deep-payload (hash-keys specification-roots) 'specifications))
+           (thunks (deep-payload (hash-keys metadata-callbacks) 'thunk-environments))
+           (shared 0))
+      (deep-payload (hash-keys specification-roots) 'specification-structure #t)
+      (hash-for-each (lambda (node _)
+        (when (hash-key? specs node)
+          (set! shared (1+ shared)))) thunks)
+      (yuanxu-write-observation-line! "slot-deep-intersection nodes=%s" shared)
+      ;; One-hop owner expansion. The closure walk still stops at every nested
+      ;; receiver/context, weak table and descriptor: no whole-process crawl.
+      (let* ((receiver-payload
+               (deep-payload (apply append (map shell-fields (hash-keys receivers)))
+                 'receiver-shell-payload))
+             (context-count (hash-length sdk-contexts))
+             (sdk-payload
+               (deep-payload (apply append (map shell-fields (hash-keys sdk-contexts)))
+                 'sdk-context-shell-payload))
+             (union (make-hash-table-eq)))
+        (def union-scope (gensym 'classified-union-nodes))
+        (def union-work 0)
+        (def (union-step!)
+          (set! union-work (1+ union-work))
+          (when (zero? (modulo union-work 1024))
+            (execution-progress! union-scope union-work)))
+        (for-each
+          (lambda (entry)
+            (let ((label (car entry)) (nodes (cdr entry)) (overlap 0) (added 0))
+              (hash-for-each (lambda (node _)
+                (union-step!)
+                (if (hash-key? union node) (set! overlap (1+ overlap))
+                  (begin (hash-put! union node #t) (set! added (1+ added))))) nodes)
+              (yuanxu-write-observation-line!
+                "slot-payload-union kind=%s overlap=%s added=%s union=%s"
+                label overlap added (hash-length union))))
+          (list (cons 'specifications specs) (cons 'thunks thunks)
+            (cons 'receiver-shell receiver-payload)))
+        ;; Count the final union by intersection; do not copy the million-node
+        ;; SDK support into a second table. Both tables enumerate unique ids.
+        (let ((shared 0)
+              (smaller (if (< (hash-length union) (hash-length sdk-payload))
+                         union sdk-payload))
+              (larger (if (< (hash-length union) (hash-length sdk-payload))
+                        sdk-payload union)))
+          (hash-for-each (lambda (node _)
+            (union-step!)
+            (when (hash-key? larger node) (set! shared (1+ shared)))) smaller)
+          (yuanxu-write-observation-line!
+            "slot-payload-union kind=sdk-shell overlap=%s added=%s union=%s scanned=%s"
+            shared (- (hash-length sdk-payload) shared)
+            (- (+ (hash-length union) (hash-length sdk-payload)) shared)
+            (hash-length smaller)))
+        (yuanxu-write-observation-line!
+          "slot-owner-shells receivers=%s sdk-contexts=%s nested-policy=frontier exclusive-bytes=unknown"
+          (hash-length receivers) context-count)))
+    (let ((known-targets 0) (callback-targets 0))
+      (hash-for-each (lambda (target _)
+        (when (hash-key? receivers target) (set! known-targets (+ known-targets 1)))) direct-objects)
+      (hash-for-each (lambda (target _)
+        (when (hash-key? receivers target) (set! callback-targets (+ callback-targets 1)))) callback-objects)
+      (yuanxu-write-observation-line!
+        "slot-retained-payload instances=%s noncurrent-instance-records=%s unknown-instances=%s native-tables=%s entries=%s backing-cells=%s list-cells=%s object-targets=%s known-receiver-targets=%s callbacks=%s callback-cells=%s callback-receiver-targets=%s opaque-closure-captures=%s strings=%s characters=%s vectors=%s vector-cells=%s"
+        (hash-length instances) stale-instances unknown-instances
+        (hash-length tables) table-entries table-cells (hash-length cells)
+        (hash-length direct-objects) known-targets (hash-length callbacks) callback-cells callback-targets
+        opaque-closure-captures (hash-length strings) string-characters
+        (hash-length vectors) vector-cells)))
   (def (observe read)
     (def receiver (slot-read-receiver read))
     (when (object? receiver)

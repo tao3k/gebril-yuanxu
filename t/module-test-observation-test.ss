@@ -4,8 +4,10 @@
         (only-in :std/list/list iota)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/mop call-with-slot-read-observer)
-        (only-in :clan/poo/slot-observation slot-read-key)
+        (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
         (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
+        (only-in :yuanxu/ops/progress call-with-execution-progress
+                 execution-progress-status)
         (only-in :yuanxu/poo-clos/objects poo-clos-generic-function poo-clos-method
                  poo-clos-any-specializer make-effective-method make-invocation-frame)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
@@ -46,6 +48,24 @@
       (check-equal? (yuanxu-test-observe 'compiler-demand 0) 1)
       ((current-module-source-observer) 'file-reads 3)
       (check-equal? (yuanxu-test-observe 'file-reads 0) 3)
+      ;; Completed source work advances the existing Ops clock. A zero-work
+      ;; observation cannot keep a stalled worker alive. No wall-clock sleep.
+      (let (now 0)
+        (call-with-execution-progress 10 100
+          (lambda (state)
+            (set! now 9)
+            ((current-module-source-observer) 'reader-body-compiled 1)
+            (set! now 15)
+            (check-equal? (execution-progress-status state) #f)
+            ((current-module-source-observer) 'reader-body-compiled 0)
+            (set! now 20)
+            (check-equal? (execution-progress-status state) 'idle)
+            ((current-module-source-observer) 'reader-body-compiled 1)
+            (check-equal? (execution-progress-status state) 'idle)
+            (set! now 101)
+            ((current-module-source-observer) 'reader-body-compiled 1)
+            (check-equal? (execution-progress-status state) 'total))
+          clock: (lambda () now)))
       ((current-module-source-observer)
         '(package-process-observation (nix-gc-root-requests . 4) (nix-store-info-requests . 2)) 1)
       (check-equal? (yuanxu-test-observe 'nix-gc-root-requests 0) 4)
@@ -92,17 +112,23 @@
       (check-equal? (yuanxu-test-observe 'compiler-demand 0) 0))
     (yuanxu-test-fixture "read-width tracing preserves every native observer delivery"
       profile: Observed (resource Resource)
-      (def target (.o answer: 42))
+      (def target (.o answer: 42 other: 43))
       (check-equal? (.get target answer) 42)
       (def deliveries 0)
+      (def ordered '())
       (call-with-slot-read-observer
         (lambda (read)
+          (when (and (eq? (slot-read-receiver read) target)
+                     (memq (slot-read-key read) '(answer other)))
+            (set! ordered (cons (slot-read-key read) ordered)))
           (when (eq? (slot-read-key read) 'answer)
             (set! deliveries (+ deliveries 1))))
         (lambda ()
           (check-equal? (.get target answer) 42)
+          (check-equal? (.get target other) 43)
           (check-equal? (.get target answer) 42)))
-      (check-equal? deliveries 2))
+      (check-equal? deliveries 2)
+      (check-equal? (reverse ordered) '(answer other answer)))
     (test-case "receipt attribution never demands cold Contract or Context slots"
       ;; Observation-only probes, not valid admission receipts. A census may
       ;; inspect cached kind data but must not validate or activate these values.

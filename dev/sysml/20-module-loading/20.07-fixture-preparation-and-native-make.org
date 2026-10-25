@@ -1,0 +1,186 @@
+#+title: 20.07 Fixture Preparation and Native Make Attribution
+#+language: en
+
+* Scope and decision
+
+The corrected indirect-environment census has not reached its Cases. Diagnose
+the existing =just test-file= preparation before changing storage sharing.
+Do not add a Builder, artifact cache, new scheduler or approval protocol. Keep
+the 120-second compiler limit, 60-second idle policy, 600-second outer gate and
+2 GiB VM fence. No capacity rerun or automatic read-edge enrollment is involved.
+
+This is a runtime measurement question, not another formal model. SysML owns
+this allocation. Lean owns the structural-sharing conditions in
+=PayloadSharing.lean=. Existing QNT transition owners cover effect/currentness
+boundaries. No new QNT/Lean encoding is justified by a slow host sample.
+
+* Actual execution path
+
+=just test-file= obtains the installed Ops context, imports init exports,
+selects the test demand and runs the existing TestingScript. Its
+=prepare-testing-script= invokes the selected build's =.compile=; the existing
+issuance/lock boundary encloses an ordinary =std/make= subprocess. Native Make
+is the dependency scheduler and compiler. Harness execution follows artifact
+admission, never a failed compilation.
+
+| Owner | Source |
+|-------+--------|
+| Heap-fenced entry | =dev/just/testing.just:test-file= |
+| Phase selection | =t/qualification/testing/run.ss= |
+| Make subprocess and budgets | =observability/testing-script.ss:prepare-testing-script= |
+| Test build identity and approval | =module-system/building/artifacts.ss:test-build-publication= |
+| Locked issuance and staging | =call-with-build-artifact-issuance/locked= |
+| Required support closure | =module-system/building/build-projection.ss:project-test-source-spec= |
+
+* Distinguish cold work from repetition
+
+The selected request contains 13 distinct, root-relative =gxc:= targets. The
+installed =std/make.ss= rejects duplicate spec files before worker creation and
+records target completions within that invocation. Its =build?= checks native
+outputs/input timestamps; =build-dependent?= checks imported dependency stamps.
+There is no =force:= request in this compiler expression.
+
+The existing test publication key binds runtime/compiler identity, spec,
+compiler identities and canonical source observations. Source changes can
+therefore select a new output directory intentionally. In a cold generation,
+the current implementation compiles into a temporary issuance-owned directory;
+that directory is released on failure. A failed attempt does not create an
+approved hot generation. Repeating it can repeat cold work without indicating
+a broken native Make cache. Do not recover unissued partial products as an
+optimization or erase a stale-source refusal.
+
+These source mechanisms do not prove that all warm executions compile zero
+targets. That requires a completed, same-source, new-process control and output
+identity/mtime checks. Previous successful receipts cannot qualify this failed
+source epoch.
+
+* Observed bounded attempt, 2026-10-24
+
+The default entry was run once with its existing =observe=true= mode and
+=/usr/bin/time -lp=. Only the owning shell was moved to foreground task policy;
+other sessions were untouched. The exact compiler expression and limits were
+unchanged. The raw failure log remains local as =fixture-stage-baseline.log=.
+
+| Measured span | Wall seconds | CPU seconds | Interpretation |
+|---------------+--------------+-------------+----------------|
+| Entry context command | 35 | Not separately sampled | Before init/test selection |
+| Init import | 3.538 | Not separately sampled | Existing source epoch |
+| Test selection | 78.484 | Not separately sampled | Includes graph demand |
+| Selected graph | 67.605 | 6.699 | About 60.906 seconds residual |
+| Reader currentness, 133 calls | 13.223 | 1.443 | Nested span; about 11.780 seconds residual |
+| Native Make import | 3.772 | Not separately sampled | Child-emitted existing timer |
+| Test support projection | 13.260 | Not separately sampled | 13 selected targets |
+| Whole failed command | 304.21 | 18.77 reported user+system | No successful preparation/Harness receipt |
+
+The compiler budget expired after the log's single
+=... compile module-system/source/admission= announcement. That announcement
+is not a completed compiler unit. No duplicate-target announcement was observed.
+One same-child process snapshot showed 65 seconds elapsed against 5.72 seconds
+cumulative CPU, before timeout. Host load samples were approximately 180--232.
+
+Wall/CPU residual is not automatically scheduler time: file wait, process wait,
+paging and clock/accounting effects can contribute. The host load and phase
+residuals establish a heavily contaminated cohort, not the exclusive cause of
+the timeout. Inclusive currentness/GC spans must not be added to their parents.
+The VM allocation account also flagged invalid samples and is not physical
+allocation evidence.
+
+* Initial result and next admissible experiment
+
+There is no observed stale-source or output-identity mismatch in this attempt,
+so cleaning a healthy publication cache is not justified. No runtime cache or
+Make behavior has been changed on this evidence. The cold preparation failure
+is retained; no second unchanged run is started under the same host condition.
+
+Resume on a sufficiently available host with the same entry and budgets. A
+completed cold run must be followed by a same-source new-process hot run:
+record actual compile labels/jobs, publication recovery/currentness phases and
+output identity/mtime. Only a demonstrated repeated native target or invalid
+target/output relationship justifies changing the Make integration.
+
+Then qualify the existing 16/32-module census: strong-reference frontiers,
+shared specification structure, indirect environments, cross-category identity
+intersection and post-GC live bytes. Preserve original records/edges,
+observation order, final currentness and parent-cache isolation. A rejected or
+unfinished experiment grants neither a performance claim nor an admission.
+
+* Direct continuation and a distinct idle-progress failure
+
+The waiting automation was disabled at the user's request. The next direct
+same-source cold attempt completed native Make and issuance: 13 compiler units,
+92.741 seconds subprocess wall, 85.789 seconds in Make. The new-process hot
+attempt compiled zero units: 43.578 seconds subprocess wall, 36.754 seconds in
+Make. Both completed preparation within its unchanged limits, but both later
+failed the Harness's unchanged idle budget. These are compilation/recovery
+results, not passing complete test runs or host-normalized speedups.
+
+The first attempt reached the 16-module cold query (35.818 seconds wall,
+4.586 seconds CPU). Its pure specification structure contains 18,649 distinct
+nodes, 82,213 pointer words, 9,119 RBTree nodes and one shared Empty node. The
+broader specification-value and thunk-environment walks overlap on 80,141
+identities. Pointer words and a single shared Empty node do not establish an
+exclusive byte saving. The 32-module result was not reached by these attempts.
+
+The source audit found a separate progress-reporting gap. The module adapter
+updated diagnostic counters/printed lines during real work but did not relay
+those completed-work events to the supervising Ops progress channel. Fixture
+acquisition occurred before a long query, and printing a later diagnostic line
+does not reset Ops idle detection. Do not treat that as a new compiler failure.
+
+The candidate correction uses the existing =execution-progress!= function;
+it creates no protocol, scheduler or timer. Native =reader-body-compiled=,
+=reader-body-evaluated=, =publication-guard-end= and actual replay-visit counts
+are relayed only after the pre-existing source observer returns. Each diagnostic
+payload walk also reports each completed batch of 1,024 newly discovered raw
+identities. No POO checkpoint receipt is constructed inside admission.
+=file-read= is deliberately excluded: its source notification precedes IO and
+cannot be relabeled as a completed physical read.
+
+The existing module-observation test Case now uses Ops's injected clock to
+check that positive completed work advances idle accounting, zero work does
+not, and work cannot revive expired idle or total budgets. Its existing native
+read test also checks ordered deliveries. No additional Fixture/test family,
+timeout increase or synthetic heartbeat is introduced. Final runtime
+qualification of this correction remains separate from the earlier runs.
+
+* Qualified correction, 2026-10-25
+
+Core's native build and the existing module-observation suite pass. The
+deterministic clock control confirms positive completed work updates idle
+accounting, zero work does not, and neither idle nor total expiration can be
+revived. The native read observer still receives =answer, other, answer= in
+that order, with both answer deliveries preserved. No test family was added.
+
+The corrected same-source census now passes completely in two separate
+processes:
+
+| Existing phase | Cold process | New hot process |
+|----------------+--------------+-----------------|
+| Support units selected | 14 | 14 |
+| Units actually compiled | 14 | 0 |
+| Make subprocess wall seconds | 60.229 | 28.025 |
+| Native Make body wall seconds | 57.298 | 21.343 |
+| Guarded compile phase wall seconds | 64.062 | 46.740 |
+| Recovery wall seconds | 0.000060 | 4.569 |
+| Recorded currentness wall seconds | 3.834 | 18.665 |
+| Harness wall seconds | 76.913 | 62.997 |
+
+The hot compile phase still does real recovery, dependency/currentness work
+and native Make traversal; zero compilation is not zero execution time. These
+inclusive spans must not be added blindly, and host variability precludes an
+algorithmic speedup claim. The within-VM hot query expanded no new roles and
+performed 106 / 170 physical source reads for 16 / 32 modules, respectively.
+
+Both census runs have MODULE-OK, HARNESS-OK and final OK and no failure/overflow
+markers. The 566-file source snapshot remained unchanged before/after them.
+All eleven Gitea/PostgreSQL publication Cases also pass: cached-parent child
+values, both independent requirements, contextual child obligations, closed
+field laziness, omitted/substituted contributions and source changes remain
+covered. No error was hidden and no successful verdict was cached.
+
+The earlier compiler-budget failures and the distinct idle-budget failures
+remain in local receipts. Limits were not relaxed. The correction relays only
+actual completed work through existing Ops, without a timer heartbeat, new
+Builder/cache protocol or Loader enrollment. Lean's structural owners and
+existing QNT temporal owners are unchanged; no duplicate model was introduced
+and no new source-bound all-model/complete-CI qualification is claimed here.

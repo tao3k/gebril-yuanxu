@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
+        (only-in :clan/poo/mop TypeError?)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :yuanxu/modules/funflow/objects Job. Task.)
         (only-in :yuanxu/modules/funflow/func runtime-command-fields->manifest)
@@ -20,7 +21,8 @@
   (test-suite "Funflow module atomic Job"
     (test-case "functional command publication projects data without running it"
       (def calls 0)
-      (def envelope '((request-id . "public-function")))
+      (def envelope '((schema . yuanxu.runtime-request.v1)
+                             (request-id . "public-function")))
       (def manifest
         (runtime-command-fields->manifest 'inspect "never-run"
           (lambda (actual)
@@ -30,7 +32,17 @@
           'stdout-s-expression '() envelope))
       (check-equal? calls 1)
       (check-equal? (cdr (assq 'argv manifest)) '("never-run" "--preview"))
-      (check-equal? (cdr (assq 'request-id manifest)) "public-function"))
+      (check-equal? (cdr (assq 'request-id manifest)) "public-function")
+      ;; The native Function boundary checks input BEFORE the builder and
+      ;; output BEFORE publication. A projection is not a process execution.
+      (check-exception
+        (runtime-command-fields->manifest 'inspect "never-run"
+          (lambda (_actual) (set! calls (+ calls 1)) '("--preview"))
+          'stdout-s-expression '() '((request-id . "missing-schema"))) TypeError?)
+      (check-equal? calls 1)
+      (check-exception
+        (runtime-command-fields->manifest 'inspect "never-run" (lambda (_actual) 42)
+          'stdout-s-expression '() envelope) TypeError?))
     (yuanxu-test-fixture "cached parent graph keeps child values and unused tasks lazy" (workspace Workspace)
       (def parent (.get Build graph))
       (.def (Release @ Build)

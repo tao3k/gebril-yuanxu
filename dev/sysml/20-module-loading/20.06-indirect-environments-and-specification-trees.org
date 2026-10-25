@@ -1,0 +1,144 @@
+#+title: 20.06 Indirect Environments and Specification Trees
+#+language: en
+
+* Latest bounded qualification (2026-10-25)
+
+After correcting the test observer's completed-work relay, the native Core
+build, module-observation regression, two serial 16/32-module census processes,
+and all eleven real Gitea/PostgreSQL publication controls pass. Each focused
+run has MODULE-OK, HARNESS-OK and final OK without error/overflow markers.
+The frozen 566-file Scheme source snapshot is unchanged across the paired
+census runs and the consumer regression. No global cache clean was performed.
+
+Native Make compiled 14 support units in the cold process and zero in the
+fresh hot process. This is native incremental reuse, not a new cache or a
+cached admission verdict. Both processes still authenticate currentness.
+The existing within-VM query checks also retain the same graph receiver by
+=eq?= and require zero additional role expansion on the hot query.
+
+| Classified retained support | 16 modules | 32 modules |
+|-----------------------------+------------+------------|
+| Original issued records | 9,231 | 18,159 |
+| Original edge occurrences | 22,619 | 42,923 |
+| Cached root thunks | 6,249 | 12,041 |
+| Closures reached through thunk environments | 17,487 | 33,807 |
+| Covered thunk-environment payload words | 350,049 | 676,673 |
+| Pure specification-structure nodes | 18,649 | 35,977 |
+| Pure specification-structure payload words | 82,213 | 158,485 |
+| Distinct Empty nodes in that structure | 1 | 1 |
+| Specification-value/environment intersection identities | 80,141 | 155,709 |
+| Post-GC live bytes, first process | 193,524,768 | 221,424,352 |
+| Post-GC live bytes, new process | 193,524,736 | 221,424,928 |
+
+The broader specification-value walk reaches 103,267 / 200,339 identities;
+the environment walk reaches 86,547 / 167,987. Their identity unions are
+109,673 / 212,617, not the sums of those categories. Pure tree storage is
+reported separately so captured read records are not mislabeled tree nodes.
+Immediate thunk capture fields (10,321 / 19,601) are different from transitive
+payload words and must not be compared as equivalent cost units.
+
+Post-GC live is a whole-VM measurement, not the exclusive cost of these roots.
+Covered words exclude string backing storage, allocation headers/padding, code,
+foreign storage, weak-table referents, SDK-context interiors and receiver
+interiors at the explicit frontiers. The two Cases share one VM, so their live
+byte difference is not an exclusive per-module allocation slope. No physical
+byte/GC-dominator theorem or storage-sharing optimization follows from this
+census. The 2 GiB capacity result remains open; no 10,000-module run occurred.
+
+* Question and ownership boundary
+
+How much storage is reachable through a slot thunk's indirect environment,
+and how much of the specification forest is already shared by identity?
+Root counts and immediate capture counts cannot answer this question.
+This bounded investigation does not change the 2 GiB capacity gate or enroll
+Loader read edges before the complete CI gate is green.
+
+* Source correspondence
+
+The producer is gerbil-poo =40c61fe6afc8313f297599da0e511f96e3a23dcf=.
+=prototype-map.ss= owns the private =specifications= record and the ordered
+and name-index RBTrees. Persistent updates reuse unchanged tree paths.
+=prototype-map-list= allocates snapshot pairs, so it is not used to inspect
+retained tree nodes. The installed Gerbil =std/struct/rbtree.ss= owns the
+=RBTree=, =Tree= and =Empty= representations.
+
+=object.ss:compute-slot-funs!= builds receiver-local thunks and can invoke
+the native =compute-slot= hook. =apply-slot-spec= can capture a receiver
+through another function. Equal printed code or equal slot names therefore
+do not authorize environment pooling. A private ordered tree and the mutable
+values to which its entries point have different ownership boundaries.
+
+* Measurement
+
+The existing opt-in =ModuleTestingProfile.= follows original issued records.
+Its additional diagnostic walk follows closure captures (excluding code),
+pair cars/cdrs, vectors, and raw structure fields (excluding the descriptor).
+Identity tables terminate cycles and count shared nodes once. POO receivers,
+class descriptors and SDK expander contexts are explicit frontiers. No slot,
+promise, interface method, checker or callback is invoked by the walk.
+
+Separate walks report the specification forest and the thunk environments;
+their intersection reveals double counting between the two categories.
+These maps are temporary diagnostic storage, not retained production caches.
+The reported words count covered pointer payloads, not GC headers, allocator
+overhead, executable code, foreign storage or exclusive/dominator ownership.
+String characters are reported separately. Gambit and GC tables are additional
+frontiers: weak references cannot be charged as strong retention edges without
+an ephemeron model. A transitive reachable union is
+not evidence that all those bytes could be freed by removing a thunk.
+
+* Formal boundary
+
+=PayloadSharing.lean:sharedNodeAccountedOnce= establishes accounting
+idempotence. =distinctEnvironmentRetained= keeps distinct identities in the
+accounting domain. The existing =parentCannotAuthenticateChild= theorem retains
+the receiver anchor; no second alias theorem is needed for thunks. Existing theorems retain
+the exact read sequence, dependency adjacency and observation order.
+
+There is no matching QNT storage model. That duplicated the Lean question and
+has been deleted with its variants and runner/digest entries. Existing
+=IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles= QNT models own
+callback ordering, invalidation and final authentication. They are referenced
+rather than copied. Neither tool proves Scheme heap sizes or arbitrary hook
+purity. See =00-development-assurance.sysml:SingleProofOwner= for allocation.
+
+* Decision rule
+
+Share only producer-owned immutable structural storage with a demonstrated
+identity-preserving correspondence. Do not intern closures by printed code,
+merge receiver instances, suppress deliveries, drop dependency edges, or
+reuse an admission verdict. Existing canonical storage must first be measured
+as shared storage rather than charged once per root.
+
+Cold/hot measurements use the existing 16/32-module Cases. Real
+Gitea/PostgreSQL consumer controls retain both port requirements, source
+change rejection, final currentness and parent-cache isolation. A passing
+small Case does not qualify the 10,000-module gate.
+
+* Qualification record and exclusions
+
+The initial 16/32-module transitive census passed MODULE-OK, HARNESS-OK and
+final OK. At 32 modules its two walks overlapped on 155,709 object identities;
+the separate categories must not be added. That initial walk did not yet make
+all Gambit/GC-table frontiers explicit, so its counts are exploratory rather
+than an exclusive strong-retention attribution. The corrected walk also
+separates pure specification structure from the graphs captured by slot values.
+
+An attempted allocation-header FFI probe failed compilation with a missing
+=::find-runtime-code= method for =%#define-runtime=. The probe was removed;
+the failed log is retained locally. No Gerbil compiler source was modified and
+no fabricated byte estimate replaces a runtime measurement. Covered payload
+words and post-GC live bytes remain different measurements.
+
+After removing the duplicate QNT family and a redundant Lean alias, the full
+Lean build passes 206 jobs, with 7,507 declarations in the standard-axiom and
+model-shape audits. Core's library build passes. The QNT runner accepts its
+updated catalog; no claim is made that every remaining temporal model was
+rerun by this ownership cleanup. SysML parsing is still unqualified.
+
+The corrected census attempt failed the existing Ops total budget during
+shared Fixture precompilation (the log reaches admission/output/CLOS type
+compilation, before either Case runs). Its failure receipt is retained locally.
+No timeout was widened. The corrected strong-frontier/topology census is built
+but not runtime-qualified by that attempt. No new production storage-sharing
+optimization, exclusive-byte attribution, or capacity pass is claimed.

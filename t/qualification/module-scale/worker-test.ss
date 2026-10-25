@@ -77,16 +77,20 @@
       (check-equal? (car (.get graph module-order)) 'module-0)
       (check-equal? (hash-ref counts 'publication-start) count)
       (check-equal? (hash-ref counts 'publication-discovered) count)
-      (check-equal? (hash-ref counts 'candidate-local-guard) (* 4 count))
+      ;; Deferred Type construction has its own before/after source checks.
+      ;; Keep those additional guards; never reuse a preflight verdict.
+      (check-equal? (hash-ref counts 'candidate-local-guard) (* 6 count))
       (check-equal? (hash-get counts 'candidate-open-guard) #f)
       ;; Prototype-only dispatch queries descriptor values; it must not import
       ;; or register the optional logical Class construction implementation.
       (check-equal? class-construction-reads 0)
-      ;; Each interface reports expanded/compiled/evaluated snapshots; the
-      ;; three role bodies plus interface each expand and evaluate once.
+      ;; Each interface retains all declaration snapshots. Closed selection
+      ;; expands interface and real Types only; Config/Objects stay cold.
+      ;; module-deferred-reader-test verifies both activate on actual access
+      ;; and invalid Type descriptors still fail before scope linking.
       (check-equal? (hash-ref counts 'reader-declaration) (* 3 count))
-      (check-equal? (hash-ref counts 'reader-body-expanded) (* 4 count))
-      (check-equal? (hash-ref counts 'reader-body-evaluated) (* 4 count))
+      (check-equal? (hash-ref counts 'reader-body-expanded) (* 2 count))
+      (check-equal? (hash-ref counts 'reader-body-evaluated) (* 2 count))
       (check-equal? (.ref/cached (.get FixtureExports modules module-0) 'scope) #f)
       ;; The delegated observer already recorded these events. Replaying the
       ;; assertion counters would double the published work totals.

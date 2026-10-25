@@ -171,14 +171,23 @@
                  (string? (.get environment GERBIL_PATH)) (string? (.get environment PATH))
                  (not (string-empty? (.get environment GERBIL_PATH)))
                  (not (string-empty? (.get environment PATH)))))
+          (when times
+            (displayln "test-prepare phase=compiler-entry seconds=" (- (real-time) started)
+              " recovery-seconds=" (or (hash-get times 'recovery) 0)
+              " currentness-seconds=" (or (hash-get times 'currentness) 0)))
+          ;; Preserve the caller's native Make worker budget. A test launch
+          ;; must not silently force a different compiler scheduling mode.
           (def receipt (run-script
             (.cc ProcessScript.
               'directory (.get script directory)
-              'environment (.+ environment (.o GERBIL_BUILD_CORES: "1" GERBIL_BUILD_VERBOSE: "1"))
+              'environment (.+ environment (.o GERBIL_BUILD_VERBOSE: "1"))
               'progress make-compiler-progress-reader
               'timeout 120 'idle-timeout 60
               'command
               (append
+                ;; Native POSIX time reports child + descendant CPU separately
+                ;; from wall time. This is opt-in observation, not a new runner.
+                (if times '("/usr/bin/time" "-p") '())
                 (if prepared? '("gxi")
                   (append '("gerbil") (.get script runtime-options) '("env" "gxi")))
                 (.get script runtime-options)
@@ -186,7 +195,10 @@
                   (if times '("-e" "(define test-make-started (real-time))") '())
                   (list "-e" "(import :std/make)")
                   (if times
-                    '("-e" "(displayln \"test-prepare phase=make-import seconds=\" (- (real-time) test-make-started))")
+                    (list "-e" (object->string
+                      '(displayln "test-prepare phase=make-import seconds="
+                         (- (real-time) test-make-started)
+                         " cores=" (getenv "GERBIL_BUILD_CORES" "0"))))
                     '())
                   (list "-e" (object->string expression)))))))
           ;; Report the actual compiler before completion admission: a refused
@@ -197,7 +209,9 @@
               (length (filter (cut string-prefix? "... compile " <>)
                         (string-split (.get receipt output) #\newline))))
             (for-each displayln
-              (filter (cut string-prefix? "test-prepare phase=" <>)
+              (filter (lambda (line)
+                (ormap (cut string-prefix? <> line)
+                  '("test-prepare phase=" "real " "user " "sys ")))
                 (string-split (.get receipt output) #\newline))))
           receipt))))
       (when (.get script profile emit?)

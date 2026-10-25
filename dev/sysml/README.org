@@ -23,6 +23,26 @@ owner and cross references; it is not copied into several models. Existing QNT
 and Lean paths remain stable. This index allocates their responsibilities and
 does not relocate or duplicate them.
 
+* One formal owner per question
+
+| Question | Primary owner | Reuse instead of duplication |
+|----------+---------------+------------------------------|
+| Which immutable structures may share storage without changing lookup, identities or ordered edges? | Lean / LeanPoo | =PayloadSharing.lean=; no matching QNT copy |
+| Can callbacks, invalidation, recovery or event ordering admit a stale value? | QNT | Existing =IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles= transitions |
+| Does the actual MOP preserve the modeled relation? | Scheme consumer regression | Existing Just/Harness controls |
+| What is retained or allocated? | Bounded runtime measurement | GC accounts plus classified identity-union census |
+
+SysML allocates these claims and assumptions; it does not prove them. A
+workstream may have only a Lean owner or only a QNT owner. Shared premises
+are linked, not reimplemented. The duplicate =PayloadSharing= QNT family
+and its runner/digest bindings have been removed; historical receipts remain
+historical, not current qualification requirements.
+
+This allocation is not a ban on cross-tool refinement. If Lean must establish
+an unbounded property of a transition abstraction, name that additional theorem
+and its correspondence explicitly; copying the same finite assertion into two
+tools is not that refinement.
+
 The evaluation workstream includes [[file:10-evaluation/10.02-runtime-accounting.org][10.02 Installed Runtime Accounting]],
 which separates native VM accounts from physical allocation and records the
 matched source-window lookup control under the same SysML ownership model.
@@ -54,3 +74,14 @@ observed. Status is per property, not a blanket badge for an entire workstream.
 Model files do not carry trusted currentness results into runtime.
 
 - [[file:20-module-loading/20.03-retention-and-incremental-roles.org][20.03 Retention and Incremental Roles]] — retained owners, distinct dependency relations, native cache limits and bounded scheduling.
+
+- [[file:20-module-loading/20.04-generic-payload-and-binding-retention.org][20.04 Generic Payload and Private Binding Retention]] — canonical binding projection and call-owned payload limits.
+- [[file:20-module-loading/20.05-receiver-instance-and-callback-retention.org][20.05 Receiver Instance and Callback Retention]] — native anchor ownership, cache-only census and bounded qualification status.
+- [[file:20-module-loading/20.06-indirect-environments-and-specification-trees.org][20.06 Indirect Environments and Specification Trees]] — identity-union accounting, indirect captures and sharing exclusions.
+- [[file:20-module-loading/20.07-fixture-preparation-and-native-make.org][20.07 Fixture Preparation and Native Make]] — cold-generation work, native target reuse, currentness and host-contaminated timing.
+
+[[file:20-module-loading/20.08-owner-shell-retention.org][20.08 Owner Shell Retention]] deepens receiver/SDK frontiers without charging shared nodes twice.
+[[file:20-module-loading/20.09-fixture-compiler-budget.org][20.09 Fixture Native Compiler Budget]] separates source authentication, native compile work and wall/CPU residuals.
+
+[[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared SDK graphs,
+observable thunk identities and removable issuer-private wrapper allocations.

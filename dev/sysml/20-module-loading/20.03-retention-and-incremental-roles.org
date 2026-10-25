@@ -8,11 +8,11 @@ Modules. It may nevertheless affect all of them if they genuinely depend on the
 changed interface. The guarantee is reuse outside the affected closure, not an
 unconditional promise that exactly one node executes.
 
-The user retains the full CI gate, including scale, before production Loader
-integration. This investigation changes tests and models only. It does not wire
-the metadata projection into the Loader, increase two-GiB limits, remove source
-checks, alter observer delivery, cache admission conclusions, or rerun the known
-failing ten-thousand-module workload.
+The user approved the reader memory repair before the full CI gate on
+2026-10-24: closed metadata may use deferred role values. Automatic actual-read
+edge registration still waits for complete CI, including scale. The two-GiB
+limit, native Type preflight, observer delivery, source checks and dependency
+edges remain mandatory. No admission conclusion is cached.
 
 * What the failed run actually counted
 
@@ -283,3 +283,94 @@ The production next step remains gated: enroll actual support through the
 existing native ownership boundary, without caching admission results, dropping
 edges, forcing unused roles, or pretending object-level invalidation is
 slot-minimal invalidation.
+
+* Reader integration qualification (in progress)
+
+At head =9526178b7305ceb877dafe29de90fd28c8feef93=, Linux scale failed at
+2103 declarations / 8412 body expansions under the unchanged two-GiB limit.
+This failure is retained; the unchanged ten-thousand workload was not rerun
+manually. Lean and all eight Quint shards passed for that head. This does not
+prove physical memory capacity.
+
+The closed reader classifier consumes already guarded source snapshots. It
+accepts a direct native declaration with literal identity, dependency identities,
+and unambiguous literal role exports. The generated include preserves original
+slot syntax/source positions and native lexical shadowing; private =with-slots=
+aliases demand an existing native role-value slot. Actual publication admission
+still demands and validates Types. Config, Objects and Func are not expanded
+merely to discover identity or dependency edges.
+
+Inherited/calculated metadata, custom preludes, ambiguous exports and relative
+private-source imports retain the original guarded reader. In particular,
+Funflow's control-plane imports cannot be redirected through an incomplete role
+closure. This conservative fallback is an explicit coverage limit, not a purity
+annotation. Existing compiled role inputs and build signing remain authoritative.
+The corresponding runtime controls must pass before this candidate is pushed.
+
+Early integration failures caught two distinct issues: include-frame hygiene of
+the private resolver, and recursive interception of temporary role wrappers by
+the outer reader. The former uses the original include lexical context; the
+latter invokes the existing guarded role reader with its original native import
+entry. Neither issue authorizes bypassing private-source confinement.
+
+** Qualified behavior versus unresolved retained memory
+
+The candidate passes the default build and the three focused real-init controls:
+selection expands exactly interface + Types (2N bodies); each actual business-role
+access expands that role once; an invalid scope Contract is refused during
+selection. Relative source imports and unknown top-level role macros retain the
+original guarded route. The actual Gitea/PostgreSQL publication suite passes all
+11 cases, including two requirements, parent-cache isolation, source-currentness
+refusal and unused-branch laziness. That suite exercises the preserved general
+route, not a proof that all source shapes use the closed route.
+
+The small scale worker retains all identities, source checks and class-loading
+controls. Its before/after Type construction guards increase the local-guard
+count from 4N to 6N; they are not removed for performance. Only expanded/evaluated
+role bodies change from 4N to 2N. Automatic actual-read-edge enrollment is still
+not connected.
+
+| Sample, same tracing profile | 16 Modules live bytes | 32 Modules live bytes | Body expansions |
+|------------------------------+-----------------------+-----------------------+-----------------|
+| Prior eager receipt | 192677144 | 220575520 | 4N |
+| Initial deferred candidate | 194949264 | 226487408 | 2N |
+| Prepare only the requested role | 194436160 | 224938768 | 2N |
+| Reuse the outer reader's compiler catalogue | 194157056 | 224211296 | 2N |
+
+These are whole-VM post-GC samples, not allocated bytes owned exclusively by a
+Module, matched CPU timings or a capacity proof. The extra compiled helper and
+SDK catalogue differ from the earlier receipt. In particular, the samples do
+NOT establish a reduction sufficient for the unchanged two-GiB capacity gate.
+No new ten-thousand-module run is justified by these numbers.
+
+The deferred candidate retains zero contexts in the outer reader's private
+context index, but that index does not count every context held by a delayed
+resolver. Native Generic effective methods/invocation frames remain 154/154 at
+16 and 298/298 at 32; the source-authoring datum count remains 153/297. Moving a
+reference out of one index is not evidence that the object became collectible.
+The first candidate retains 9723/18811 issued records (77784/150488 captured
+cells), so the apparent context reduction cannot stand in for total graph cost.
+
+The role reader now reuses the SAME outer SDK catalogue, source index and
+expected-byte observations. Every call still physically authenticates demanded
+sources; this is structural sharing within one reader, not a cached admission
+verdict, a cross-effect currentness result or a new cache protocol. Standalone
+role readers continue to construct their own compiler context. The modest live
+heap difference above shows that this duplicate structure is not the dominant
+remaining owner.
+
+Lean completes 205 jobs with the 7381-declaration standard-axiom audit. The
+source-bound ModuleDemand qualification passes all 14 positive/negative cases,
+including the conservative private-source fallback classification. These models
+prove phase/safety properties under the extraction correspondence; they do not
+prove native object sizes or the two-GiB retained-heap bound. Earlier attempts
+(typecheck watchdog, blocked local backend port, and an intentionally refused
+mid-qualification source change) are retained as local failure artifacts.
+
+The candidate remains uncommitted while the retention goal is unresolved. The
+next model must distinguish original read-record identity and observer order
+from the larger invocation argument/continuation payload they retain. Sharing
+or shortening that payload requires a producer-owned native equivalence proof;
+coalescing frames merely by method name, dropping edges or silencing observers
+would be invalid. No new Builder, cache protocol, timeout increase or Gerbil
+compiler change is authorized by this result.

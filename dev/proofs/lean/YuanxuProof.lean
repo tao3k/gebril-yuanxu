@@ -96,6 +96,7 @@ import YuanxuProof.ModuleSystem.Schema.Association.Construction
 import YuanxuProof.ModuleSystem.Schema.Association.Selection
 import YuanxuProof.ModuleSystem.Schema.Association.NativeFixtures
 import YuanxuProof.ModuleSystem.Schema.Association.Controls
+import YuanxuProof.ModuleSystem.Loading.PayloadSharing
 import YuanxuProof.ModuleSystem.Loading.MetadataProjection
 import YuanxuProof.ModuleSystem.Loading.IncrementalRoles
 import Lean.Util.CollectAxioms

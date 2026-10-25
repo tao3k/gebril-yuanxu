@@ -85,6 +85,7 @@
     "module-system/objects"
     "module-system/config"
     "module-system/graph/funs"
+    "module-system/source/deferred-declaration"
     "module-system/source/objects"
     "module-system/funs"
     "module-system/loader/objects"

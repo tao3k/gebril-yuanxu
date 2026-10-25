@@ -9,7 +9,7 @@
         (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
         (only-in :yuanxu/module-system/source/admission
                  current-module-source-observer call-with-module-source-read-cache
-                 module-source-admit-current!)
+                 module-source-admit-current! module-source-type)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/t/qualification/service-publication/fixtures
                  DirectoryFixture write-source read-overrides))
@@ -36,6 +36,14 @@
   (test-suite "Collect actual source checks without a field list"
     (yuanxu-test-fixture "replay shares one pure pass but never a preceding effect window"
       (fixture DirectoryFixture)
+      ;; Missing files remain ordinary absence. Malformed queries must retain
+      ;; their native error, including inside the pure source-read window.
+      (check-equal? (module-source-type (path-expand "missing.ss" (.get fixture root))) #f)
+      (check-equal?
+        (type-exception?
+          (with-catch values
+            (lambda () (call-with-module-source-read-cache
+              (lambda () (module-source-type '#(not-a-file-path))))))) #t)
       (def path (path-expand "window.ss" (.get fixture root)))
       (def text "(.def Observed port: 5432 client: 5432)\n")
       (def candidate (observed-config path text))

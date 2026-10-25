@@ -621,11 +621,19 @@ def main():
                   core / "t/qualification/module-scale/fixture.ss",
                   core / "t/qualification/module-scale/worker-test.ss",
                   core / "poo-clos/objects.ss", core / "poo-clos/dispatch.ss"])
+    payload_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean"
+    bound.extend([payload_lean, core / "poo-clos/objects.ss", core / "poo-clos/dispatch.ss",
+                  core / "object-family/read-projection.ss",
+                  core / "module-system/source/reader.ss",
+                  core / "module-system/building/test-observation.ss"])
     demand_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean"
     demand_digest = "sha256:" + hashlib.sha256((models / "ModuleDemand.qnt").read_bytes()).hexdigest()
     if f'quintSourceDigest : String := "{demand_digest}"' not in demand_lean.read_text():
         raise AssertionError("Lean retains a stale ModuleDemand Quint source binding")
     bound.extend([demand_lean, core / "t/module-demand-projection-test.ss",
+                  core / "t/module-deferred-reader-test.ss",
+                  core / "module-system/source/deferred-declaration.ss",
+                  core / "module-system/source/reader.ss",
                   core / "dev/sysml/20-module-loading/20.01-demanded-module-lifecycle.sysml",
                   core / "module-system/source/declaration.ss",
                   core / "module-system/source/role-forms.ss",

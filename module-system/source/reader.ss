@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Trusted build-time declaration evaluation using the native expander. This
 ;;; neither compiles selected roots nor invokes their deferred core.link scopes.
-(import (only-in :yuanxu/configuration/json current-configuration-input-observer)
+(import (only-in :std/list/list find)
+        (only-in :yuanxu/configuration/json current-configuration-input-observer)
         (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name)
@@ -22,6 +23,7 @@
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
         (only-in :yuanxu/module-system/source/declaration current-module-build-resolver)
+        (only-in :yuanxu/module-system/source/deferred-declaration current-module-role-resolver)
         :yuanxu/module-system/source/objects
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module yuanxu-bootstrap-contexts
                  yuanxu-bootstrap-source-path yuanxu-library-identity?))
@@ -781,6 +783,37 @@
                                      (map path-normalize (.ref prepared 'role-sources))))))
                    input-values)))
                  (parameterize ((current-module-source-phase 'build-role-after)) (current!)) value)))
+           (def deferred-roles (.ref prepared 'deferred-roles))
+           (def (resolve-role role names)
+             ;; Native role objects are constructed only by the demanded POO
+             ;; getter. Use the same prepared source/currentness/asset registry.
+             (current!)
+             (let* ((path (path-expand (string-append (symbol->string role) ".ss") root))
+                    ;; Eligibility excludes relative role/private imports. Do
+                    ;; not prepare three unused wrappers for one demanded role.
+                    (input (yuanxu-prepare-module-build-source path void))
+                    (binding (string->symbol (symbol->string (gensym 'RoleValues))))
+                    (constructor (string->symbol (symbol->string (gensym 'RoleObject))))
+                    (bundled (.cc input 'compiler-forms
+                               (append (.ref input 'compiler-forms)
+                                 ;; Preserve the role's original bindings. Only the private
+                                 ;; tuple constructor needs a strong alias; the exact SDK
+                                 ;; module/context and its source checks remain unchanged.
+                                 (list `(import (rename-in (only-in :clan/poo/object .o)
+                                                           (.o ,constructor)))
+                                       `(def ,binding (,constructor bind-these: #f ,@names)))))))
+               (record-input! input)
+               (parameterize ((current-configuration-input-observer record-data!)
+                              (current-expander-module-import native-import))
+                 (let (value
+                       (module-prepared-source-binding bundled binding
+                         compiler-tools: (list tool-contexts tool-paths tool-dependencies tool-observations)
+                         shared-contexts: kernel-contexts shared-inputs: kernel-inputs
+                         source-inputs: (lambda (rows)
+                                         (record-source-observations! tool-observations rows))))
+                   (hash-put! dependencies interface-path (reverse input-values))
+                   (current!)
+                   value))))
            (dynamic-wind
             (lambda () (create-directory directory))
             (lambda ()
@@ -791,16 +824,17 @@
                   ;; Do not parse/write an unused wrapper for that same context.
                   (unless (hash-key? kernel-contexts (path-normalize path))
                     (source-wrapper (path-normalize path) root)))
-                (.ref prepared 'role-sources))
+                (if deferred-roles '() (.ref prepared 'role-sources)))
               (enroll-candidate! (.ref prepared 'admit-current))
               (parameterize ((current-module-source-phase 'declaration-inputs)) (current!))
-              (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared 'reader-forms))))
+              (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms)))))
                 (parameterize
                     ((current-configuration-input-observer record-data!)
                      (current-expander-compile compile)
                      (current-expander-eval evaluate)
                      (current-expander-context (make-top-context))
                      (current-module-build-resolver resolve-build!)
+                     (current-module-role-resolver resolve-role)
                      (current-expander-module-import
                       (lambda (path (reload? #f))
                         (cond
@@ -999,6 +1033,7 @@
                                     shared-contexts: (shared-contexts #f)
                                     shared-inputs: (shared-inputs #f)
                                     private-sources: (private-sources '())
+                                    compiler-tools: (compiler-tools #f)
                                     source-inputs: (observe-inputs void))
   (let* ((inputs (append (cons prepared related) private-sources))
          (directory (make-temporary-file-name "configuration-reader-"))
@@ -1007,8 +1042,11 @@
          (owned (make-hash-table)) (completed (make-hash-table-eq))
          (native-import (current-expander-module-import)))
     (defvalues (compile evaluate) (reader-evaluation-observers owned completed))
+    ;; An admitted outer reader already owns this exact SDK catalogue/index.
+    ;; Share its structural maps, not a source-currentness or admission result.
+    ;; Standalone role readers still acquire their own native compiler closure.
     (defvalues (tool-contexts tool-paths tool-dependencies tool-observations)
-      (module-compiler-tools))
+      (if compiler-tools (apply values compiler-tools) (module-compiler-tools)))
     (def (current!)
       (parameterize ((current-module-source-phase 'configuration-current))
         (call-with-module-source-read-cache
