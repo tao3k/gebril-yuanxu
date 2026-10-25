@@ -44,9 +44,12 @@ model; the original Model.lean and Checks.lean are retained.
 * Source and dependency identity
 
 LeanPoo remains v0.1.1 / d8adf138948c854e7564234bc046387b4a5ee63b on
-Lean v4.34.0. No dependency refresh/upgrade was performed. Core types.ss is copied
-byte-for-byte into an isolated :yuanxu/types source scope; its hash matches the
-working checkout before/after the probe. Canonical :clan/poo imports resolve the
+Lean v4.34.0. No dependency refresh/upgrade was performed. At that historical
+verification cut, the then-current contract source was copied byte-for-byte
+into an isolated source scope; its hash matched the working checkout before
+and after the probe. The maintained probes now import
+=:yuanxu/object-types/contracts=. This namespace migration does not reissue the
+historical verification receipt. Canonical :clan/poo imports resolve the
 isolated dependency-pin sources at 099b381588360a8a49fd772f666a1a00351366f5.
 Object, MOP, brace and support source hashes are recorded in the receipt.
 The package tag/directory label alone is not source authentication.

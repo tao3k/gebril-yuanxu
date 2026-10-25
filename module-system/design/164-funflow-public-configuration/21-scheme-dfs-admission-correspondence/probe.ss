@@ -1,4 +1,4 @@
-(import :clan/poo/object :yuanxu/types)
+(import :clan/poo/object :yuanxu/object-types/contracts)
 (def assertions 0)
 (def (check label accepted)
   (unless accepted (error "native correspondence assertion failed" label))

@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;; Test fixture only: actual public Core admission, no Module/Loader adaptation.
-(import :clan/poo/object :yuanxu/types
+(import :clan/poo/object :yuanxu/object-types/contracts
         (only-in :std/list/list every))
 
 (def assertions 0)
