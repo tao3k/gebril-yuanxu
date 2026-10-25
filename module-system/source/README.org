@@ -26,6 +26,7 @@ pure value and eligibility Cases do not require filesystem fixtures.
 | =t/module-declaration-value-test.ss= | Native declaration values, POO inheritance, checked dependencies and Graph normalization | None |
 | =t/module-deferred-projection-test.ss= | Source text as parser input data | None |
 | =t/module-deferred-reader-test.ss= | Real role expansion, lexical bindings and initializer laziness | Required |
+| =t/module-role-context-test.ss= | Symbolic imports share role values; fresh epochs refuse old source authority | Required |
 | =t/module-publication-test.ss= | Native imports, preparation and refusal after source mutation | Required |
 
 Value Cases construct publications and source capabilities directly in Scheme.
