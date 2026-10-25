@@ -81,9 +81,10 @@ dotted direct assignment and AOT source authentication remain separate gaps.
 * Implemented internal build-role binding
 
 The private =module-role-values= projection runs after a role body has
-expanded. It asks the native expander whether optional =Config= is bound, then
-emits an ordinary POO object. A fresh compiler alias preserves source-owned
-names; syntax exports and phase initializers use the existing guarded reader.
+expanded and initialized. This ordinary function asks the native expander
+whether optional =Config= is bound, reads the existing runtime bindings in
+that same context, and constructs a native POO object. Syntax exports and
+phase initializers use the existing guarded reader.
 
 The source preparer's internal define-module-build-binding expands to a native
 POO lazy slot and an identifier-rules reference with fresh private bindings.

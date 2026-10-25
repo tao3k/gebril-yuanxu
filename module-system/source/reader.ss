@@ -12,7 +12,7 @@
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  core-resolve-library-module-path core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval current-expander-phi
-                 expander-context-table module-context-import syntax-e datum->syntax)
+                 expander-context-table module-context-import syntax-e)
         (only-in :clan/poo/object .o .cc .ref .slot? object? object-protocol compute-precedence-list! replay-slot-reads!)
         (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
@@ -847,9 +847,7 @@
                    (eval-module context)
                    (def value
                      (parameterize ((current-expander-context context))
-                       (eval-syntax
-                         (cons (quote-syntax module-role-values)
-                           (map (cut datum->syntax #f <>) names)))))
+                       (module-role-values names)))
                    (hash-put! dependencies interface-path (reverse input-values))
                    (current!)
                    (release-reader-expansions! completed)

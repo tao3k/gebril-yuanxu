@@ -3,6 +3,7 @@
 ;;; The resolver is captured once by an admitted private wrapper, never a user
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import :clan/poo/object
+        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier)
         (only-in :std/list/list delete-duplicates/hash append-map)
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values
@@ -61,15 +62,16 @@
 
 ;; Internal projection after the native role body has expanded. The expander
 ;; owns optional Config binding, just as in export-role-config.
-(defsyntax (module-role-values input)
-  (syntax-case input ()
-    ((_ name ...)
-     (with-syntax (((field ...)
-                    (filter (lambda (name)
-                              (or (not (eq? (stx-e name) 'Config))
-                                  (resolve-identifier name)))
-                      (syntax->list #'(name ...)))))
-       #'(.o bind-these: #f field ...)))))
+(def (module-role-values names)
+  (def fields
+    (filter (lambda (name)
+              (or (not (eq? name 'Config))
+                  (resolve-identifier (datum->syntax #f name))))
+      names))
+  (object<-alist
+    (map (lambda (name)
+           (cons name (eval-syntax (datum->syntax #f name))))
+      fields)))
 (def (module-deferred-role-exports interface-text role-texts)
   ;; Only inspect the already guarded byte snapshots. No source initializer,
   ;; macro expander, native Type predicate or role loader runs here.
