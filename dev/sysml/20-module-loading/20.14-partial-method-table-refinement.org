@@ -108,7 +108,7 @@ No wrapper or simulated lazy constructor stands in for that missing evidence.
 
 Lean owns the representation, point-demand preservation and installed identity
 proofs above. The existing QNT =ThunkConstruction= family remains the temporal
-owner of construction/exposure order, refusal and stable repeated observations;
+owner of construction/exposure order and stable repeated observations;
 no second prototype or pointer-identity state machine is added. =ReadRetention=
 continues to own per-use authentication, both requirements, effects and parent
 isolation. Scheme tests check actual entry behavior. This work does not claim
@@ -137,7 +137,9 @@ HARNESS-OK and final OK, with no error/heap/stack markers.
 
 The unchanged source-bound =ThunkConstruction= QNT family passes seven controls:
 its positive safety run and six expected counterexamples, including reordered
-hooks, deferred refusal, incomplete reflection and replaced identities. This
+hooks, deferred hooks, incomplete reflection and replaced identities. Refusal
+and original exception identity are checked by the native suite; the finite
+QNT model does not contain an exception/retry transition. This
 reuses the temporal owner rather than encoding the new representation lemmas
 again. The sandbox initially denied the existing backend's local port binding;
 the unchanged runner passes with that permission. Initial proof/launch failures
