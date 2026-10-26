@@ -4,8 +4,10 @@
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :clan/poo/object .get .o .cc .+ .call)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in "./test-projection.ss" module-test-projection module-test-file-source module-test-execution)
-        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-read-cache
+        (only-in "./test-projection.ss" module-test-projection module-test-file-source
+                 module-test-directory-source module-test-execution)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!
+                 call-with-module-source-read-cache
                  module-source-measure-operation))
 (export yuanxu-init-build call-with-init-build-spec)
 
@@ -65,7 +67,7 @@
       (.+ source-value
         (.o (:: tests) source: source-value
             build:
-            ((force build-projector) (selected!) '()
+            ((force build-projector) (lambda () (selected!)) '()
               (path-directory init-file) init-file
               demand: source-value)
             std-make-spec: (lambda ()
@@ -74,7 +76,9 @@
             execution: (module-test-execution source-value
                          (lambda () (.get tests build)))
             .run: (lambda () (.call (.get tests execution) .run))
+            .compile: (lambda () (.call (.get tests execution) .compile))
             .for-files: file-tests
+            .for-directory: directory-tests
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))
     (if suite executable
       (.o (:: @ executable)
@@ -94,13 +98,15 @@
     (.o identity: owner
         scope: (scope!)
         tests: (test-source (list owner))))
+  (def (admit-init-declaration! text)
+    (let* ((forms (call-with-input-string text read-all))
+           (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms)))
+      (unless (equal? declared (list declaration))
+        (error "imported init declaration differs from its source; use a fresh source context"))))
   (def (selected!)
     (unless selection
-      (let* ((init (path-expand source))
-             (forms (call-with-input-string (module-source-read init) read-all))
-             (declared (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms)))
-        (unless (equal? declared (list declaration))
-          (error "imported init declaration differs from its source; use a fresh source context"))
+      (admit-init-declaration! (module-source-read init-file))
+      (let (init (path-expand source))
         (def linker (module-source-measure-operation 'linker-import (cut force module-linker)))
         (set! selection (module-source-measure-operation 'context
                           (cut linker init module-view: module-view)))))
@@ -129,20 +135,30 @@
         ;; there is no import, caller handoff or execution requiring a recheck.
         (hash-put! tests key projection)
         projection)))
-  (def (file-tests files)
-    (def file-source (module-test-file-source files))
+  (def (file-tests files (inputs '()))
+    (source-tests (module-test-file-source files inputs)))
+  (def (directory-tests directory (excluded '()))
+    (source-tests (module-test-directory-source
+                   (path-expand directory (path-directory init-file)) excluded)))
+  (def (source-tests file-source)
+    ;; An explicit native file test does not select business Modules. Keep its
+    ;; init owner current without evaluating declarations/roles; if a Graph is
+    ;; later demanded, selected! adds the original complete admission boundary.
+    (def init-input (cons init-file (module-source-read init-file)))
+    (admit-init-declaration! (cdr init-input))
     (executable-tests
-      (.cc file-source
-        'source-root (path-directory init-file)
-        'selected-graph
+      (.o (:: @ file-source)
+        source-root: (path-directory init-file)
+        selected-graph:
         (let (view (selected!))
           (module-source-measure-operation 'selected-graph (lambda () (.get view selected-graph))))
-        'admit-current
+        admit-current:
         (lambda ()
-          ;; selected! already admits the current selection, including the
-          ;; package boundary when realized. Do not invoke that guard twice.
-          (selected!)
-          ((.get file-source admit-current))))))
+          (when selection (selected!))
+          (call-with-module-source-read-cache
+            (lambda ()
+              (module-source-admit-current! (list init-input) "test init source changed")
+              ((.get file-source admit-current))))))))
   (def (test-spec (owners #f))
     (def projection (test-source owners))
     ;; test-source already admits this projection. A narrow request must not

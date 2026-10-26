@@ -233,7 +233,9 @@
           seen)) files))
   (def inputs (unique-build-inputs observations))
   (def (selected-graph!)
-    (def selected (.ref view 'selected-graph))
+    ;; Explicit file demands may defer business selection until reflection asks
+    ;; for the Graph. Both views must still resolve to the same admitted owner.
+    (def selected (.ref (if (procedure? view) (view) view) 'selected-graph))
     (unless (eq? selected (.ref demand 'selected-graph))
       (error "test demand belongs to another selected graph"))
     selected)

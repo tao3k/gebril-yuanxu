@@ -5,11 +5,12 @@
 (import (only-in :clan/poo/object .o .ref .slot?)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :std/list/list delete-duplicates/hash)
+        (only-in :std/string/path path-absolute?)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source module-test-execution)
+(export module-test-projection module-test-file-source module-test-directory-source module-test-execution)
 
 ;; Native Gerbil import in a private context, demanded only by explicit .run.
 ;; This is the existing Ops prototype factory, not a module/runtime Loader.
@@ -23,20 +24,70 @@
 
 ;; Explicit native qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.
-(def (module-test-file-source files)
-  (unless (and (list? files) (pair? files) (andmap string? files))
+(def (module-test-file-source files (inputs '()))
+  (unless (and (list? files) (pair? files) (andmap string? files)
+               (list? inputs) (andmap string? inputs))
     (error "explicit test source requires native file inputs" files))
   (def paths (map path-expand files))
-  (def inputs (map (lambda (path) (cons path (module-source-read path))) paths))
+  (def observations
+    (map (lambda (path) (cons path (module-source-read path)))
+      (delete-duplicates/hash (append paths (map path-expand inputs)))))
   (.o spec: paths
       admit-current: (lambda ()
-                       (module-source-admit-current! inputs "explicit test source changed"))))
+                       (module-source-admit-current! observations "explicit test source changed"))))
 
 (def (test-directory-files directory)
   (let (kind (module-source-type directory))
     (cond ((not kind) '())
           ((not (eq? kind 'directory)) (error "module tests must be a real directory" directory))
           (else (list-sort string<? (directory-files directory))))))
+
+;; A bounded package regression directory uses the same source authority as
+;; selected module tests. Excluded subtrees are pruned before any filesystem
+;; read; their files never enter the source or compiler closure.
+(def (module-test-directory-source directory (excluded '()))
+  (unless (and (string? directory) (list? excluded)
+               (andmap (lambda (path)
+                         (and (string? path) (not (path-absolute? path))
+                              (not (member ".." (string-split path #\/))))) excluded))
+    (error "test directory exclusions must be relative paths" directory excluded))
+  (def root (path-expand directory))
+  (def directories '())
+  (def paths '())
+  (def (excluded? path)
+    (ormap (lambda (entry)
+             (or (string=? path entry) (string-prefix? (string-append entry "/") path))) excluded))
+  (def (walk path relative)
+    (unless (excluded? relative)
+      (case (module-source-type path)
+        ((directory)
+         (let (names (test-directory-files path))
+           (set! directories (cons (cons path names) directories))
+           (for-each
+             (lambda (name)
+               (unless (member name '("." ".."))
+                 (walk (path-expand name path)
+                       (if (string-empty? relative) name (string-append relative "/" name))))) names)))
+        ((regular)
+         (when (string-suffix? "-test.ss" path) (set! paths (cons path paths))))
+        (else (error "test tree contains a missing or non-regular entry" path)))))
+  (unless (eq? (module-source-type root) 'directory)
+    (error "test directory must exist" root))
+  (walk root "")
+  (def files (list-sort string<? paths))
+  ;; Listing the official Harness inputs does not read every suite body. The
+  ;; first explicit admission binds leaf bytes; subsequent checks authenticate
+  ;; those same bytes, including the check after execution.
+  (def source (delay (module-test-file-source files)))
+  (.o spec: files
+      admit-current:
+      (lambda ()
+        (for-each
+          (lambda (entry)
+            (unless (and (eq? (module-source-type (car entry)) 'directory)
+                         (equal? (test-directory-files (car entry)) (cdr entry)))
+              (error "test directory changed; use a fresh test demand" (car entry)))) directories)
+        ((.ref (force source) 'admit-current)))))
 
 (def (module-test-projection selection (owners #f) (suite #f))
   (unless (memq suite '(#f integration qualification)) (error "unknown module test suite" suite))
