@@ -335,10 +335,13 @@
       (def native-import (current-expander-module-import))
       (def inputs (make-hash-table))
       (def selected-sources (make-hash-table))
+      ;; The projection owner checks the complete footprint before and after
+      ;; this extent. Enrollment is not admission: each lookup below still
+      ;; physically rechecks its selected input before exposing it. Do not
+      ;; repeat each input's enclosing Context check while only indexing paths.
       (for-each (lambda (entry)
-        (def input (.ref entry 'input))
-        ((.ref input 'admit-current))
-        (hash-put! selected-sources (path-normalize (.ref entry 'path)) input)) entries)
+        (hash-put! selected-sources (path-normalize (.ref entry 'path))
+                   (.ref entry 'input))) entries)
       ;; Reuse the publication's admitted role inventory. Ordinary retained
       ;; libraries and private helpers retain their native source import path.
       (def roles (make-hash-table))

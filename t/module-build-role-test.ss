@@ -48,6 +48,25 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "compiler enrollment does not duplicate admission; every access rechecks"
+      (let ((checks 0) (valid? #t))
+        (def selected-path (path-expand "selected-retained.ss"))
+        (def prepared-input
+          (.o admit-current: (lambda ()
+              (set! checks (+ checks 1))
+              (unless valid? (error "selected source changed")))))
+        (call-with-module-compiler-inputs (list (.o path: selected-path input: prepared-input))
+          (lambda ()
+            (check-equal? checks 0)
+            (check-equal? (eq? (module-compiler-source-input selected-path) prepared-input) #t)
+            (check-equal? checks 1)
+            (check-equal? (eq? (module-compiler-source-input selected-path) prepared-input) #t)
+            (check-equal? checks 2)
+            (set! valid? #f)
+            (check-exception (module-compiler-source-input selected-path) error?)
+            (check-equal? checks 3)))
+        (check-equal? (module-compiler-source-input selected-path) #f)
+        (check-equal? checks 3)))
     (yuanxu-test-case "selected compiler sources survive native timestamp path removal only inside their owner"
       (call-with-temporary-directory "module-compiler-owned-source"
         (lambda (root)
