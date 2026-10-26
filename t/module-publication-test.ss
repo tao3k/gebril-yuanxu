@@ -384,7 +384,8 @@
          ;; Independent full native DFS is the oracle for the cut traversal.
          ;; Register every evaluated private wrapper, a superset of role inputs;
          ;; both projections must preserve exact order and identities.
-         (def canonical (yuanxu-bootstrap-contexts))
+         (def canonical (make-hash-table-eq))
+         (yuanxu-bootstrap-contexts (lambda (context) (hash-put! canonical context #t)))
          (def private (make-hash-table-eq))
          (hash-for-each
            (lambda (context _code)
@@ -394,7 +395,7 @@
          (def full-visits 0)
          (def cut-visits 0)
          (def (keep? context)
-           (not (eq? context (hash-get canonical (expander-context-id context)))))
+           (not (hash-key? canonical context)))
          (hash-for-each
            (lambda (root _registered)
              (def full '())

@@ -5,12 +5,17 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/ops/config Config)
-        (only-in :yuanxu/module-system/source/admission module-source-type)
+        (only-in :yuanxu/module-system/source/admission module-source-type current-module-source-observer)
         (only-in :yuanxu/module-system/building/artifacts
           accept-build-artifact-handoff! admit-build-artifacts! invalidate-build-artifacts!))
 (export publish-store! restore-selected-store! store-add store-verify)
 (def (store-command arguments)
-  (.get (run-script (.cc Config command: (append '("nix-store" "--store" "daemon") arguments) timeout: 120)
+  (def command (append '("nix-store" "--store" "daemon") arguments))
+  ;; Observability records the real process boundary; it never returns a
+  ;; verification verdict or skips a later native check.
+  (let (observe (current-module-source-observer))
+    (when observe (observe (list 'native-store-process command) 1)))
+  (.get (run-script (.cc Config command: command timeout: 120)
                     output-port: (current-error-port)) output))
 (def (store-add directory)
   (def result (find (cut string-prefix? "/nix/store/" <>)
@@ -23,7 +28,8 @@
                (not (string-index (substring root 11 (string-length root)) #\/))
                (eq? (module-source-type root) 'directory))
     (error "release root must be an exact local Nix store object" root))
-  (store-command (list "--check-validity" root))
+  ;; Nix 2.34 verify-path queries registered metadata before hashing contents.
+  ;; Keep one fresh verification at every boundary, without a duplicate process.
   (store-command (list "--verify-path" root)))
 (def (accept-packet! projection libdir packet)
   (call-with-input-string

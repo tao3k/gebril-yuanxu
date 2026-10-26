@@ -115,14 +115,19 @@
                       :yuanxu/object-types/ports
                       :yuanxu/object-family/role-syntax
                       :yuanxu/configuration/json))
-(def (yuanxu-bootstrap-contexts)
+(def (yuanxu-bootstrap-contexts (observe-context void))
   ;; Finish native imports before sharing DFS state. No observation window or
   ;; successful source check crosses a macro/initializer boundary here.
   (let ((roots (map core-import-module bootstrap-roots))
         (ids (make-hash-table)) (seen (make-hash-table-eq)))
     (for-each (lambda (root)
                 (for-each-build-module root
-                  (lambda (context) (hash-put! ids (expander-context-id context) context))
+                  (lambda (context)
+                    ;; A source and compiled interface can share an identity.
+                    ;; Preserve every actual SDK context for callers that need
+                    ;; exact instance membership, rather than only an ID index.
+                    (observe-context context)
+                    (hash-put! ids (expander-context-id context) context))
                   seen))
               roots)
     ids))

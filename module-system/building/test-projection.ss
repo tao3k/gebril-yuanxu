@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Test-source admission over the existing selection; Graph admission is lazy.
 (import (only-in :clan/poo/object .o .ref .slot?)
-        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
+                 current-expander-module-import core-import-module)
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/string/path path-absolute?)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
@@ -16,7 +17,11 @@
 ;; This is the existing Ops prototype factory, not a module/runtime Loader.
 (def testing-executor
   (delay
-    (parameterize ((current-expander-context (make-top-context)))
+    ;; This explicit native factory boundary must not inherit the selected
+    ;; publication's importer while lazily loading its own compiler libraries.
+    ;; Selected suite sources still pass their original admission and harness.
+    (parameterize ((current-expander-context (make-top-context))
+                   (current-expander-module-import core-import-module))
       (eval-syntax '(import :yuanxu/observability/testing-script))
       (eval-syntax 'testing-script-for-source))))
 (def (module-test-execution source (build #f))

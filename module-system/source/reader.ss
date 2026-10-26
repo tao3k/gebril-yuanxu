@@ -278,9 +278,21 @@
                    (not (equal? (hash-ref observations file) (cdr observation))))
           (error "inconsistent compiler tool source observations" file))
         (hash-put! observations file (cdr observation)))) rows))
+(def (captured-tool-context? contexts context)
+  ;; Preserve both the native instance and its identity at capture time.
+  ;; A same-name replacement or a mutated captured instance is not a capability.
+  (and (hash-key? contexts context)
+       (eq? (hash-ref contexts context) (expander-context-id context))))
 (def (module-compiler-tools)
-  (def tool-contexts (yuanxu-bootstrap-contexts))
+  (def native-contexts (make-hash-table-eq))
+  (def tool-contexts
+    (yuanxu-bootstrap-contexts
+      (lambda (context)
+        (hash-put! native-contexts context (expander-context-id context)))))
   (def tool-paths (make-hash-table))
+  (def tool-path-candidates (make-hash-table))
+  (def (index-tool-path! path context)
+    (hash-update! tool-path-candidates (path-normalize path) (cut cons context <>) '()))
   (def tool-inputs (make-hash-table-eq))
   (def tool-observations (make-hash-table))
   (def dependency-index (make-hash-table-eq))
@@ -328,8 +340,8 @@
    (call-with-module-source-read-cache
     (lambda ()
       (for-each
-        (lambda (entry)
-          (let* ((id (car entry)) (context (cdr entry))
+        (lambda (context)
+          (let* ((id (expander-context-id context))
                  (native-path (module-context-path context))
                  (path (if (and (string? native-path) (string=? (path-extension native-path) ".ss"))
                          native-path
@@ -341,20 +353,34 @@
             ;; their existing package/runtime trust boundary.
             (when (and (symbol? id) (string? native-path)
                        (string=? (path-extension native-path) ".ssi"))
-              (hash-put! tool-paths (path-normalize native-path) context))
+              (index-tool-path! native-path context))
             (when (and (symbol? id)
                        (string? path) (string=? (path-extension path) ".ss"))
               (let (input (compiler-tool-input context path))
                 (unless (eq? id (.ref input 'compiler-identity))
                   (error "compiler tool source identity mismatch" id path))
-                (hash-put! tool-paths (path-normalize path) context)
+                (index-tool-path! path context)
                 (hash-put! tool-inputs context input)))))
-        (hash->list tool-contexts)))))
+        (hash-keys native-contexts)))))
+  ;; Exact native origin wins over a compiled context's source projection.
+  ;; Competing instances at the same origin remain an error, never hash-order
+  ;; selection or permission inferred from a shared module identity.
+  (hash-for-each
+    (lambda (path contexts)
+      (def exact
+        (filter (lambda (context)
+                  (let (native (module-context-path context))
+                    (and (string? native) (equal? path (path-normalize native))))) contexts))
+      (def choices (if (pair? exact) exact contexts))
+      (unless (and (pair? choices) (null? (cdr choices)))
+        (error "compiler tool path has competing native contexts" path))
+      (hash-put! tool-paths path (car choices)))
+    tool-path-candidates)
   ;; The interpreter itself is always used, independently of author imports.
   ;; Preserve its exact native closure; later imports monotonically add demands.
   ;; The catalog grants import eligibility, never evidence of actual use.
   (inputs-for (hash-ref tool-contexts 'yuanxu/module-system/source/reader))
-  (values tool-contexts tool-paths inputs-for tool-observations))
+  (values tool-contexts tool-paths inputs-for tool-observations native-contexts))
 (def (module-publication-reader)
   (let ((guards '()) (dependencies (make-hash-table)) (refused? #f)
         (evaluated-interface-bindings 0)
@@ -447,12 +473,12 @@
             ((current-module-source-observer) 'kernel-context-visits 1))
           ;; Canonical tools keep their complete separate source support.
           ;; Unknown contexts must still be traversed before filtering.
-          (unless (eq? child (hash-get tool-contexts (expander-context-id child)))
+          (unless (captured-tool-context? native-contexts child)
             (visit child)))
         (make-hash-table-eq)
         (lambda (child)
-          (not (eq? child (hash-get tool-contexts (expander-context-id child)))))))
-    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations)
+          (not (captured-tool-context? native-contexts child)))))
+    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations native-contexts)
       (module-compiler-tools))
     (def interpreter-observations (hash->list tool-observations))
     (def (check-current! observed-guards observations)
@@ -625,8 +651,14 @@
              (string-prefix? (string-append (path-strip-trailing-directory-separator directory) "/") path))
            (def (tool-context context reload?)
              (when reload? (error "compiler tool reload requires a fresh publication reader"))
-             (unless (eq? context (hash-get tool-contexts (expander-context-id context)))
-               (error "compiler tool context changed during publication"))
+             (let (expected (hash-get tool-contexts (expander-context-id context)))
+               (unless (captured-tool-context? native-contexts context)
+                 ;; Preserve the strict native identity check and report both
+                 ;; origins so source/compiled aliases can be diagnosed.
+                 (error "compiler tool context changed during publication"
+                   (expander-context-id context)
+                   (and (module-context? context) (module-context-path context))
+                   (and (module-context? expected) (module-context-path expected)))))
              ;; This walk is a pure source check, not expansion. Shared tool
              ;; ancestors must not reread the same bytes once per import edge.
              ;; End the observation scope before returning to native-import.
@@ -689,8 +721,7 @@
                                 ;; A canonical SDK context must never acquire
                                 ;; private-source registration. The closure cut
                                 ;; relies on this identity invariant, not a name.
-                                (when (eq? context
-                                        (hash-get tool-contexts (expander-context-id context)))
+                                (when (captured-tool-context? native-contexts context)
                                   (error "private source resolved to canonical compiler tool" path))
                                 (hash-put! kernel-contexts path context)
                                 (let (input (hash-get input-paths path))
@@ -1052,7 +1083,7 @@
     ;; An admitted outer reader already owns this exact SDK catalogue/index.
     ;; Share its structural maps, not a source-currentness or admission result.
     ;; Standalone role readers still acquire their own native compiler closure.
-    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations)
+    (defvalues (tool-contexts tool-paths tool-dependencies tool-observations native-contexts)
       (if compiler-tools (apply values compiler-tools) (module-compiler-tools)))
     (def (current!)
       (parameterize ((current-module-source-phase 'configuration-current))
@@ -1132,7 +1163,7 @@
                          ((and (string? path) (hash-get tool-paths (path-normalize path)))
                           => (lambda (context)
                                (when reload? (error "compiler tool reload requires a fresh configuration context"))
-                               (unless (eq? context (hash-get tool-contexts (expander-context-id context)))
+                               (unless (captured-tool-context? native-contexts context)
                                  (error "compiler tool context changed during configuration"))
                                (parameterize ((current-module-source-phase 'configuration-import))
                                  (admit-compiler-inputs! context tool-dependencies))
