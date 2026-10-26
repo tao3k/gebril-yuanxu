@@ -121,12 +121,12 @@
 
 (def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f))
   (if demand
-    (project-test-source-spec source demand root entry-source)
+    (project-test-source-spec source demand retained root entry-source)
     (project-selected-source-spec source retained root entry-source)))
 
 ;; Only the demanded test import closure is expanded. In particular this never
 ;; reads view.build-graph.entries, evaluates business scopes or scans test peers.
-(def (project-test-source-spec view demand root entry-source)
+(def (project-test-source-spec view demand retained root entry-source)
   ((.ref demand 'admit-current))
   (def entry (yuanxu-prepare-module-retained-source entry-source void))
   (def package-prefix
@@ -137,6 +137,9 @@
   (def prepared (make-hash-table))
   (def observations (.ref entry 'source-inputs))
   (def entries '())
+  ;; Reuse the production native target validator and compiler identity checks.
+  ;; No selected business Graph is needed to retain package compiler options.
+  (def native-targets (retained-build-entries retained root package-prefix '()))
   (def (input! path)
     (def normalized (path-normalize path))
     (def input
@@ -147,6 +150,12 @@
             value)))
     ((.ref input 'admit-current))
     input)
+  (for-each (lambda (target) (input! (.get target path))) native-targets)
+  (def (native-spec entry)
+    (def target
+      (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry)))
+            native-targets))
+    `(gxc: ,(cdr entry) ,@(if target (.get target options) '())))
   ;; Derive each demanded package from the native header/package snapshot.
   ;; External selected owners keep their own identities; no catalog is scanned.
   (def packages (list (cons root package-prefix)))
@@ -256,7 +265,7 @@
    (.o (:: projection)
       selected-graph: (selected-graph!) build-graph: endpoint demand-source: demand
       compiler-identities: (map car (reverse entries)) source-inputs: inputs
-      source-root: root spec: (map (lambda (entry) `(gxc: ,(cdr entry))) (reverse entries))
+      source-root: root spec: (map native-spec (reverse entries))
       output-directory:
       (.get (force publication) artifact)
       compile-output: current-build-output-directory

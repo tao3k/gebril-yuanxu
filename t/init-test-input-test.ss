@@ -4,6 +4,7 @@
 ;;; Init owns test source selection and the explicit native compile boundary.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/source this-source-file)
         (only-in "../init.ss" yuanxu.init.exports))
 (export init-test-input-test)
 
@@ -16,6 +17,37 @@
 (def tests (.get yuanxu.init.exports tests))
 (def init-test-input-test
   (test-suite "Init-owned explicit and directory test inputs"
+    (test-case "native support retains its package compiler declaration"
+      (def root (path-expand ".." (path-directory (this-source-file))))
+      (call-with-temporary-directory (path-expand "t/qualification/native-options-" root)
+        (lambda (directory)
+          ;; Keep support in the real package root: native Make must use the
+          ;; package's identity and output placement, not a fabricated namespace.
+          (def support (path-expand "support.ss" directory))
+          (def file (path-expand "probe-test.ss" directory))
+          (def config (path-expand "compiler-input.txt" directory))
+          (def target (path-strip-extension
+                        (substring support
+                          (string-length (string-append (path-strip-trailing-directory-separator root) "/"))
+                          (string-length support))))
+          (put support
+            "(import (only-in :std/ffi C-declare))\n(C-declare \"#ifndef YUANXU_NATIVE_OPTIONS_PROBE\\n#error missing native compiler option\\n#endif\\n\")\n(export native-value) (def native-value 7)\n")
+          (put file
+            (string-append "(import :std/test :yuanxu/" target
+              ") (export probe-test)\n(def probe-test (test-suite \"native compiler options\" (test-case \"real compiled support\" (check-equal? native-value 7))))\n"))
+          (put config "-DYUANXU_NATIVE_OPTIONS_PROBE")
+          (def demand
+            (.call tests .for-files (list file) (list config)
+              (list (list 'gxc: target "-cc-options" "-DYUANXU_NATIVE_OPTIONS_PROBE"))))
+          (check-equal? (.get (.call demand .run) status) 0)
+          ;; A conflicting declaration cannot silently select arbitrary flags.
+          (def duplicate
+            (.call tests .for-files (list file) (list config)
+              (list (list 'gxc: target "-cc-options" "-DYUANXU_NATIVE_OPTIONS_PROBE")
+                    (list 'gxc: target "-cc-options" "-DOTHER"))))
+          (check-exception (.call duplicate .compile) error?)
+          (put config "changed compiler input")
+          (check-exception (.call demand .compile) error?))))
     (test-case "init compile prepares native support without running the Case"
       (call-with-temporary-directory "init-compile-"
         (lambda (directory)

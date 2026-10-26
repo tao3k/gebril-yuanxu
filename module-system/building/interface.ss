@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :clan/poo/object .get .o .cc .+ .call)
+(import (only-in :clan/poo/object .get .o .cc .+ .call .slot?)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./test-projection.ss" module-test-projection module-test-file-source
                  module-test-directory-source module-test-execution)
@@ -67,7 +67,9 @@
       (.+ source-value
         (.o (:: tests) source: source-value
             build:
-            ((force build-projector) (lambda () (selected!)) '()
+            ((force build-projector) (lambda () (selected!))
+              (if (.slot? source-value 'native-build-spec)
+                (.get source-value native-build-spec) '())
               (path-directory init-file) init-file
               demand: source-value)
             std-make-spec: (lambda ()
@@ -135,8 +137,11 @@
         ;; there is no import, caller handoff or execution requiring a recheck.
         (hash-put! tests key projection)
         projection)))
-  (def (file-tests files (inputs '()))
-    (source-tests (module-test-file-source files inputs)))
+  (def (file-tests files (inputs '()) (native-build-spec '()))
+    ;; The caller supplies existing package-owned native declarations. They
+    ;; refine only demanded support targets; they never expand the test roster.
+    (source-tests (.cc (module-test-file-source files inputs)
+                    native-build-spec: native-build-spec)))
   (def (directory-tests directory (excluded '()))
     (source-tests (module-test-directory-source
                    (path-expand directory (path-directory init-file)) excluded)))
