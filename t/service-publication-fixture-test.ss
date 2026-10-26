@@ -5,7 +5,8 @@
         (only-in :yuanxu/observability/testing-fixture
                  yuanxu-test-fixture with-yuanxu-fixture)
         (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 DirectoryFixture DirectoryFailureFixture ServicesFixture RelocatedServicesFixture write-source))
+                 DirectoryFixture DirectoryFailureFixture ServicesFixture RelocatedServicesFixture write-source
+                 current-service-source-root))
 (export service-publication-fixture-test)
 (def (check-distinct-verification-state first second releases)
   (check-equal? (eq? first second) #f)
@@ -106,6 +107,17 @@
 
 (def service-publication-fixture-test
   (test-suite "Native service Fixture ownership"
+    (yuanxu-test-fixture "runtime source rebinding refuses absent roles and restores the caller"
+      (control DirectoryFixture)
+      (def original (current-service-source-root))
+      ;; A caller-selected empty directory cannot authenticate missing roles.
+      (check-exception
+        (parameterize ((current-service-source-root (.get control root)))
+          (.call ServicesFixture .prepare (.o root: (.get control root))))
+        error?)
+      (check-equal? (current-service-source-root) original)
+      (with-yuanxu-fixture (valid ServicesFixture)
+        (check-equal? (.slot? valid 'selection) #t)))
     (yuanxu-test-fixture "declaration is inert and cached acquire creates independently owned resources"
       (control DirectoryFixture)
       (def preparations 0)

@@ -16,9 +16,14 @@
         (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/admission module-source-read))
 (export DirectoryFixture DirectoryFailureFixture ServicesFixture RepositoryServicesFixture RelocatedServicesFixture
-        relocate-services write-source read-overrides refused)
+        relocate-services write-source read-overrides refused current-service-source-root)
 
 (def source-root (path-expand "../../../scenarios/gitea-postgresql" (path-directory (this-source-file))))
+;; Linked qualification programs may outlive their compiler sandbox. Their
+;; launcher supplies the maintained runtime source directory explicitly; source
+;; reads and admission below still check the actual files on every preparation.
+(def current-service-source-root
+  (make-parameter (getenv "YUANXU_SERVICE_PUBLICATION_SOURCE_ROOT" source-root)))
 (def (write-source path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
@@ -137,6 +142,7 @@
                    'applications/gitea-postgresql 'Application)))
 
 (def (prepare-services workspace postgres-ports gitea-ports client-port null-settings?)
+  (def source-root (current-service-source-root))
   (def root (.get workspace root))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'service-test-))
@@ -190,6 +196,7 @@
               (prepare-services workspace postgres-ports gitea-ports client-port null-settings?)))
 
 (def (prepare-repository-services workspace)
+  (def source-root (current-service-source-root))
   (def root (.get workspace root))
   (create-directory* (path-expand "modules" root))
   (write-source (path-expand "gerbil.pkg" root)
