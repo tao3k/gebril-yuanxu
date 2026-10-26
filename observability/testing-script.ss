@@ -48,6 +48,7 @@
       source: source-value build: build-accessor
       ;; Bind the required compiler association at publication. A child Script
       ;; can refine its execution policy, but cannot silently erase preparation.
+      .compile: (lambda () (compile-testing-script script build-accessor))
       .run: (lambda () (run-testing-script script build-accessor))))
 
 (def (check-testing-spec files)
@@ -235,7 +236,7 @@
               (string-append (.get build output-directory)
                 (if (string-empty? prior) "" (string-append ":" prior))))))))))
 
-(def (run-testing-script script (required-build #f))
+(def (call-with-prepared-testing-script script required-build action)
   (when (and required-build (not (eq? required-build (.get script build))))
     (error "declared test compiler association cannot be replaced or removed"))
   (def source (.get script source))
@@ -270,6 +271,17 @@
               (set! script (prepare-testing-script script files value))
               value))))
       (when (and build (pair? (.get build spec))) (set! compiled build))
+      (action script files))))
+
+;; Compilation and execution share the same source/artifact Fixture. Preparing
+;; support never launches the Harness or turns a previous admission into a cache.
+(def (compile-testing-script script (required-build #f))
+  (call-with-prepared-testing-script script required-build
+    (lambda (prepared _files) prepared)))
+
+(def (run-testing-script script (required-build #f))
+  (call-with-prepared-testing-script script required-build
+    (lambda (script files)
       (yuanxu-test-checkpoint 'test-worker-launch)
       (let* ((receipt (run-script (testing-execution-script script files)))
              (result (if (.get receipt log)
@@ -306,4 +318,5 @@
   harness: #f
   required-lines: '()
   .admit-result: (lambda (result) (admit-testing-script-result script result))
+  .compile: (lambda () (compile-testing-script script))
   .run: (lambda () (run-testing-script script)))

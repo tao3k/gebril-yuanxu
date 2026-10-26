@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Test inputs stay source-bound without compiling or executing a nested suite.
+;;; Init owns test source selection and the explicit native compile boundary.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in "../init.ss" yuanxu.init.exports))
@@ -16,6 +16,26 @@
 (def tests (.get yuanxu.init.exports tests))
 (def init-test-input-test
   (test-suite "Init-owned explicit and directory test inputs"
+    (test-case "init compile prepares native support without running the Case"
+      (call-with-temporary-directory "init-compile-"
+        (lambda (directory)
+          (def file (path-expand "sample-test.ss" directory))
+          (def marker (path-expand "case-ran" directory))
+          (put (path-expand "gerbil.pkg" directory) "(package: init-compile-fixture)\n")
+          (put file
+            (string-append
+              "(import :std/test) (export sample-test)\n"
+              "(def sample-test (test-suite \"compile boundary\" (test-case \"runtime only\" "
+              "(call-with-output-file " (object->string marker)
+              " (lambda (port) (display \"ran\" port))))))\n"))
+          (def demand (.call tests .for-files (list file)))
+          (def prepared (.call demand .compile))
+          (check-equal? (eq? (.get prepared source) (.get demand source)) #t)
+          (check-equal? (file-exists? marker) #f)
+          ;; An inherited compile method cannot drop its declared compiler.
+          (check-exception (.call (.cc (.get demand execution) build: #f) .compile) error?)
+          (put file "(import :std/test) (export sample-test) (def sample-test (test-suite \"changed\"))")
+          (check-exception (.call demand .compile) error?))))
     (test-case "external inputs invalidate an inert explicit demand"
       (call-with-temporary-directory "init-input-"
         (lambda (directory)

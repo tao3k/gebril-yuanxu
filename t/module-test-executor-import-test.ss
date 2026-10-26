@@ -30,6 +30,7 @@
               (check-equal? (eq? (current-expander-module-import) publication-import) #t)
               result))
           (check-equal? imports 0)
+          (check-equal? (eq? (.get (.call execution .compile) source) source) #t)
           (check-equal? (.get (.call execution .run) status) 0)
           ;; Native factory ownership never authenticates changed suite bytes.
           ;; Keep the replacement valid and observe the command boundary, so a
@@ -38,5 +39,6 @@
           (.def (Changed @ execution)
             command: (begin (set! started? #t) '("false")))
           (put file "(import :std/test) (export probe-test) (def probe-test (test-suite \"changed\" (test-case \"native\" (check-equal? 43 43))))")
+          (check-exception (.call Changed .compile) error?)
           (check-exception (.call Changed .run) error?)
           (check-equal? started? #f))))))
