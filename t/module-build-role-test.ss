@@ -6,7 +6,8 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander core-import-module
                  current-expander-context make-top-context)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-write-module-publication)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-write-module-publication
+                 yuanxu-prepare-module-retained-source call-with-module-compiler-inputs module-compiler-source-input)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/admission module-source-read)
@@ -47,6 +48,56 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "selected compiler sources survive native timestamp path removal only inside their owner"
+      (call-with-temporary-directory "module-compiler-owned-source"
+        (lambda (root)
+          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def shared (path-expand "modules/shared.ss" root))
+          (write-source shared "(def source-answer 42) (export source-answer)")
+          (call-with-output-file (list path: (path-expand "types.ss" owner) append: #t)
+            (cut display "\n(import ../../shared) (export source-answer)" <>))
+          (write-source (path-expand "config.ss" owner) "(import ../../shared) (def Config (.o value: source-answer))")
+          (def saved (load-path))
+          (dynamic-wind
+            (lambda () (add-load-path! root))
+            (lambda ()
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+              (def scope (.get view modules app example))
+              (check-equal? (.get scope config value) 42)
+              (def prepared-input (yuanxu-prepare-module-retained-source shared void))
+              (def entries (list (.o path: shared input: prepared-input)))
+              (def without-root (filter (lambda (p) (not (equal? (path-normalize p) (path-normalize root)))) (load-path)))
+              (call-with-module-compiler-inputs entries
+                (lambda ()
+                  (set-load-path! without-root)
+                  (check-equal? (eq? (module-compiler-source-input shared) prepared-input) #t)
+                  ((.get view admit-current))
+                  (check-equal? (.get scope config value) 42)))
+              (check-equal? (module-compiler-source-input shared) #f)
+              (assert 'ambient-source-replacement-refuses-after-consumer
+                (rejects? "source.*identity|source.*changed|scope.*refused"
+                  (lambda () ((.get view admit-current))))))
+            (lambda () (set-load-path! saved))))))
+    (yuanxu-test-case "compiler source pin rechecks bytes and never enrolls an unselected source"
+      (call-with-temporary-directory "module-compiler-source-drift"
+        (lambda (root)
+          (fixture root "(def Build (.o kind: 'module/build roots: '()))")
+          (def shared (path-expand "modules/shared.ss" root))
+          (def foreign (path-expand "foreign/shared.ss" root))
+          (write-source shared "(def value 42) (export value)")
+          (def prepared-input (yuanxu-prepare-module-retained-source shared void))
+          (write-source foreign (string-append "package: "
+            (path-strip-trailing-directory-separator
+              (path-directory (symbol->string (.get prepared-input compiler-identity))))
+            "\n(error \"unselected source executed\") (def value 99) (export value)"))
+          (def foreign-input (yuanxu-prepare-module-retained-source foreign void))
+          (check-equal? (.get foreign-input compiler-identity) (.get prepared-input compiler-identity))
+          (call-with-module-compiler-inputs (list (.o path: shared input: prepared-input))
+            (lambda ()
+              (check-equal? (module-compiler-source-input foreign) #f)
+              (write-source shared "(def value 43) (export value)")
+              (check-exception (module-compiler-source-input shared) error?)))
+          (check-equal? (module-compiler-source-input shared) #f))))
     (yuanxu-test-case "public imports inherit explicit options from later selected Modules"
       (call-with-temporary-directory "module-public-library-options"
         (lambda (root)

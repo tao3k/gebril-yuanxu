@@ -230,14 +230,17 @@
                       (begin ((.ref prepared 'admit-current)) prepared)
                       (yuanxu-prepare-module-tool-source path void)))))
          (identity (and input (.ref input 'compiler-identity)))
+         (selected (and input (module-compiler-source-input path)))
          (external? (and (symbol? identity)
                          (not (yuanxu-library-identity? identity))))
          (resolved
+          (if (and external? selected (eq? identity (.ref selected 'compiler-identity)))
+            path
           (and external?
             (with-catch (lambda (_error) #f)
               (lambda ()
                 (core-resolve-library-module-path
-                  (string->symbol (string-append ":" (symbol->string identity)))))))))
+                  (string->symbol (string-append ":" (symbol->string identity))))))))))
     (and (string? resolved) (equal? (path-normalize path) (path-normalize resolved)) input)))
 ;; Check the demanded SDK dependency subgraph, not every selected role on each
 ;; import edge. Complete role/asset guards still bracket expansion/evaluation.

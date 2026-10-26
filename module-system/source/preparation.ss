@@ -19,7 +19,16 @@
 (export yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
-        yuanxu-prepare-module-private-source call-with-module-compiler-inputs)
+        yuanxu-prepare-module-private-source call-with-module-compiler-inputs module-compiler-source-input)
+;; Only the existing compiler-input owner installs this dynamic source index.
+;; std/make temporarily removes srcdir while checking dependency timestamps.
+;; That ambient search path is not the selected compiler source association.
+(def compiler-source-inputs (make-parameter #f))
+(def (module-compiler-source-input path)
+  (let* ((inputs (compiler-source-inputs))
+         (input (and inputs (hash-get inputs (path-normalize (path-expand path))))))
+    (and input (begin ((.ref input 'admit-current)) input))))
+
 (def (source-metadata source key)
   (let (entry (assq key (yuanxu-module-source-ref-metadata source)))
     (and entry (cdr entry))))
@@ -325,6 +334,11 @@
     (lambda (directory)
       (def native-import (current-expander-module-import))
       (def inputs (make-hash-table))
+      (def selected-sources (make-hash-table))
+      (for-each (lambda (entry)
+        (def input (.ref entry 'input))
+        ((.ref input 'admit-current))
+        (hash-put! selected-sources (path-normalize (.ref entry 'path)) input)) entries)
       ;; Reuse the publication's admitted role inventory. Ordinary retained
       ;; libraries and private helpers retain their native source import path.
       (def roles (make-hash-table))
@@ -366,4 +380,5 @@
                 (error "prepared compiler identity changed" datum identity))
               ((.ref input 'admit-current))
               context))))
-      (parameterize ((current-expander-module-import import-input)) (action)))))
+      (parameterize ((current-expander-module-import import-input)
+                     (compiler-source-inputs selected-sources)) (action)))))
