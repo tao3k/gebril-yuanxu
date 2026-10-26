@@ -24,9 +24,13 @@
 ;; Stable owner/role labels distinguish many modules' func.ss and types.ss.
 ;; This is only formatting of an observed path: no scan, import or slot read.
 (def observation-source-root
-  (string-append
-    (path-strip-trailing-directory-separator
-      (path-normalize (path-expand "../.." (path-directory (this-source-file))))) "/"))
+  ;; Diagnostic labels only need lexical parent directories. A compiled
+  ;; module may outlive its source sandbox; formatting must not stat or reopen
+  ;; that deleted tree, and cannot authenticate any observed source.
+  (let* ((building (path-directory (this-source-file)))
+         (module-system
+           (path-directory (path-strip-trailing-directory-separator building))))
+    (path-directory (path-strip-trailing-directory-separator module-system))))
 (def (source-label path)
   (if (string-prefix? observation-source-root path)
     (substring path (string-length observation-source-root) (string-length path))
