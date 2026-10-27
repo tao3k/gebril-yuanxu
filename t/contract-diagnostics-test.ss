@@ -3,6 +3,7 @@
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/mop validate TypeError? element?)
         (only-in :yuanxu/module-system/schema/relations SemanticSymbol)
+        (only-in :yuanxu/observability/types YuanxuObservationIdentityContract)
         (only-in :yuanxu/modules/json-schema/contracts schema-value-contract ProjectionContract.)
         (only-in :yuanxu/modules/json-schema/json-schema-diagnostics
                  yuanxu-json-schema-validation-diagnostic?)
@@ -28,6 +29,13 @@
       (check-equal? (eq? (.get refused admission-contract) SemanticSymbol) #t)
       (check-equal? (length (.get refused diagnostics)) 1)
       (check-equal? (.get (car (.get refused diagnostics)) code) 'expected-symbol))
+    (yuanxu-test-case "observation refusal exposes its original diagnostic code"
+      ;; Exercise the original scalar Type owned by this identity field.
+      (def Field (.get YuanxuObservationIdentityContract responsibilities namespace))
+      (def refused (.call Field .admit 42 #f))
+      (check-equal? (element? YuanxuValidationEvidence refused) #t)
+      (check-equal? (.get refused accepted?) #f)
+      (check-equal? (.get (car (.get refused diagnostics)) code) 'invalid-observation-field))
     (yuanxu-test-case "Schema and projection refusal retain precise original diagnostics and cause"
       (def Schema (schema-value-contract 'test/schema
                     '((type . "object")

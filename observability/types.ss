@@ -226,8 +226,8 @@
 ;;; feedback receipts and strict module-system presentation structs.
 ;; Typed evidence carries native POO diagnostics. Codes remain owned by
 ;; their producing Contract; this constructor is not a code registry.
-(def (observation-denial code)
-  (.o code: code))
+(def (observation-denial code-value)
+  (.o code: code-value))
 
 (def (yuanxu-observation-scalar-classify identity predicate candidate context)
   (let (accepted? (predicate candidate))
