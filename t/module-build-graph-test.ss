@@ -5,7 +5,8 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/make make)
         (only-in :std/list/list find)
-        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp)
+        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp
+                 current-expander-module-import core-import-module module-context-path)
         (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
@@ -17,7 +18,8 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source
+                 call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -87,6 +89,63 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "compiler role aliases end with their temporary source extent"
+      (call-with-temporary-directory "compiler-role-lifetime"
+        (lambda (root)
+          (def prefix (symbol->string (gensym 'compiler-lifetime-)))
+          (write-file (path-expand "gerbil.pkg" root)
+            (string-append "(package: " prefix ")\n"))
+          (def role-source-path (path-expand "role.ss" root))
+          (def text "(def Value 1) (export Value)\n")
+          (write-file role-source-path text)
+          (def original (core-import-module role-source-path))
+          (def prepared-role (yuanxu-prepare-module-retained-source role-source-path void))
+          (def entries
+            (list (.o path: role-source-path
+                      input: (.cc prepared-role role-sources: (list role-source-path)))))
+          (def staged-path #f)
+          (def public-source-path (path-expand "public.ss" root))
+          (write-file public-source-path "(export #t)\n")
+          (def public-context #f)
+          (def consumer-path (path-expand "consumer.ss" root))
+          (write-file consumer-path "(import \"./role.ss\") (export Value)\n")
+          (def staged-consumer #f)
+          (def (inside)
+            (def outer ((current-expander-module-import) role-source-path))
+            (set! staged-path (module-context-path outer))
+            (set! public-context ((current-expander-module-import) public-source-path))
+            (set! staged-consumer ((current-expander-module-import) consumer-path))
+            (check-equal? (eq? outer original) #f)
+            (check-equal? (file-exists? staged-path) #t)
+            ;; A failed nested extent restores the outer catalog exactly.
+            (check-exception
+              (call-with-module-compiler-inputs entries
+                (lambda ()
+                  (check-equal? (eq? ((current-expander-module-import) role-source-path) outer) #f)
+                  (error "intentional compiler boundary failure"))) error?)
+            (check-equal? (eq? (core-import-module (.get prepared-role compiler-identity)) outer) #t))
+          (call-with-module-compiler-inputs entries inside)
+          ;; Its path was stable, but its dependency pointed into staging.
+          ;; A later import must rebuild the native context over original roles.
+          (check-equal? (eq? (core-import-module consumer-path) staged-consumer) #f)
+          (check-equal? (file-exists? staged-path) #f)
+          ;; A legitimate import outside staging remains in Gerbil's catalog.
+          (check-equal? (eq? (core-import-module public-source-path) public-context) #t)
+          (check-equal? (eq? (core-import-module (.get prepared-role compiler-identity)) original) #t)
+          (check-exception
+            (call-with-module-compiler-inputs entries
+              (lambda () (inside) (error "intentional outer compiler failure"))) error?)
+          (check-equal? (file-exists? staged-path) #f)
+          ;; A legitimate import outside staging remains in Gerbil's catalog.
+          (check-equal? (eq? (core-import-module public-source-path) public-context) #t)
+          (check-equal? (eq? (core-import-module (.get prepared-role compiler-identity)) original) #t)
+          ;; Catalog cleanup does not authenticate changed original bytes.
+          (dynamic-wind
+            (lambda () (write-file role-source-path (string-append text ";; changed\n")))
+            (lambda () (check-exception ((.get prepared-role admit-current)) error?))
+            (lambda () (write-file role-source-path text)))
+          ((.get prepared-role admit-current)))))
+
     (yuanxu-test-case "native retained extra inputs preserve Make metadata and source guards"
       (call-with-temporary-directory "retained-native-inputs"
         (lambda (root)

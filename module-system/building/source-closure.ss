@@ -9,7 +9,7 @@
                  core-context-prelude prelude-context? prelude-context-import
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source))
-(export yuanxu-bootstrap-spec for-each-build-module yuanxu-bootstrap-contexts
+(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
         yuanxu-bootstrap-source-path yuanxu-library-identity? package-library-spec)
 
 ;; Project an explicitly selected package's actual native import graph. This
@@ -37,34 +37,35 @@
     entries)
   (reverse targets))
 
+(def (build-module-context value)
+  (cond
+   ((module-import? value) (build-module-context (module-import-source value)))
+   ((module-export? value) (build-module-context (module-export-context value)))
+   ((import-set? value) (build-module-context (import-set-source value)))
+   (else value)))
+(def (build-module-dependencies context)
+  ;; Native prelude exports point back to their module owner. Project that
+  ;; owner once, rather than walking thousands of aliases to the SAME module.
+  ;; Its e field is a delayed evaluator and is never forced for discovery.
+  (let* ((prelude (core-context-prelude context))
+         (entries (and (prelude-context? prelude) (prelude-context-import prelude)))
+         (imports (module-context-import context)))
+    (if (and entries (pair? entries))
+      (let (owner (build-module-context (car entries)))
+        (unless (and (module-context? owner)
+                     (eq? (expander-context-id owner) (expander-context-id prelude)))
+          (error "selected prelude export owner mismatch" (expander-context-id context)))
+        (cons owner (map build-module-context imports)))
+      (begin
+        (when (and (prelude-context? prelude) (expander-context-id prelude))
+          (error "selected prelude has no observable export owner" (expander-context-id context)))
+        (map build-module-context imports)))))
+
 (def (for-each-build-module root visit
                            (seen (make-hash-table-eq))
                            (descend? (lambda (_context) #t)))
   ;; A caller walking several already imported roots may share this traversal's
   ;; visited set. It never survives an independent closure request.
-  (def (context-of value)
-    (cond
-     ((module-import? value) (context-of (module-import-source value)))
-     ((module-export? value) (context-of (module-export-context value)))
-     ((import-set? value) (context-of (import-set-source value)))
-     (else value)))
-  (def (dependencies context)
-    ;; Native prelude exports point back to their module owner. Project that
-    ;; owner once, rather than walking thousands of aliases to the SAME module.
-    ;; Its e field is a delayed evaluator and is never forced for discovery.
-    (let* ((prelude (core-context-prelude context))
-           (entries (and (prelude-context? prelude) (prelude-context-import prelude)))
-           (imports (module-context-import context)))
-      (if (and entries (pair? entries))
-        (let (owner (context-of (car entries)))
-          (unless (and (module-context? owner)
-                       (eq? (expander-context-id owner) (expander-context-id prelude)))
-            (error "selected prelude export owner mismatch" (expander-context-id context)))
-          (cons owner imports))
-        (begin
-          (when (and (prelude-context? prelude) (expander-context-id prelude))
-            (error "selected prelude has no observable export owner" (expander-context-id context)))
-          imports))))
   ;; Each frame owns remaining siblings and the context to visit AFTER them.
   ;; Preserve the original postorder, shared seen identity and callback timing.
   ;; Host continuation depth no longer follows native import depth. No context
@@ -74,13 +75,13 @@
       (let* ((frame (car frames)) (pending (car frame)) (after (cdr frame)))
         (if (null? pending)
           (begin (when after (visit after)) (walk (cdr frames)))
-          (let* ((value (context-of (car pending)))
+          (let* ((value (build-module-context (car pending)))
                  (remaining (cons (cons (cdr pending) after) (cdr frames))))
             (if (and (module-context? value) (not (hash-key? seen value)))
               (begin
                 (hash-put! seen value #t)
                 (if (descend? value)
-                  (walk (cons (cons (dependencies value) value) remaining))
+                  (walk (cons (cons (build-module-dependencies value) value) remaining))
                   (begin (visit value) (walk remaining))))
               (walk remaining))))))))
 ;; Closed Core tools: build projection and ordinary data construction. Published

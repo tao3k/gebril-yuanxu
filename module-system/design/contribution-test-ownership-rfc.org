@@ -54,3 +54,18 @@ dependencies are part of that package's default test environment.
 * Qualification
 Tests demonstrate contribution behavior through ordinary std/test suites. No
 parent runtime or complete NASA assurance claim is inferred from them.
+
+* Compiler extent ownership
+
+Prepared role source files live only for one native compiler extent. Gerbil's
+module catalog must not retain path or identity aliases pointing into that
+removed tree after the extent returns. The compiler input owner restores the
+exact previous contexts on success, exception and nested exit. A stable-path importer can still retain a staged dependency. The native import
+graph supplies an extent-local reverse index; invalidation propagates through
+that graph in O(V+E), including cycles. Unaffected imports remain registered. This restores catalog ownership, without
+reloading initializers, creating another registry or granting source admission.
+
+The executable build-graph Scenario checks those boundaries together with the
+original changed-source refusal and successful restoration. A later test
+publication in the same process must not inherit a deleted compiler path.
+This lifecycle check does not close the separate 10K declaration capacity gate.
