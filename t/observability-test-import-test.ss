@@ -49,6 +49,8 @@
         (lambda (context)
           (set! identities (cons (expander-context-id context) identities))))
       (check-equal? (and (memq 'yuanxu/observability/memory identities) #t) #t)
+      ;; Record/List are mandatory owners of the native evidence descriptors.
+      (check-equal? (and (memq 'clan/poo/type identities) #t) #t)
       (for-each
         (lambda (id) (check-equal? (memq id identities) #f))
         '(yuanxu/observability/debug yuanxu/observability/slot-debug
@@ -61,6 +63,18 @@
           (check-equal? (and (memq id identities) #t)
                         (and (memq id contract-identities) #t)))
         '(clan/poo/type clan/poo/number)))
+    (test-case "pre-Harness completion callbacks keep a scalar import closure"
+      (def identities '())
+      (for-each-build-module
+        (core-import-module ':yuanxu/observability/testing-source)
+        (lambda (context)
+          (set! identities (cons (expander-context-id context) identities))))
+      ;; Cold observation must stay outside typed fixtures and business graphs.
+      (for-each
+        (lambda (id) (check-equal? (memq id identities) #f))
+        '(yuanxu/observability/memory yuanxu/observability/testing-case
+          yuanxu/object-types/contracts yuanxu/module-system/interface
+          clan/poo/debug clan/poo/type clan/poo/number)))
     (test-case "a fresh native worker qualifies the raw allocation counter"
       ;; A prior watchdog's lifetime can invalidate this VM counter stream.
       ;; Preserve the positive payload control in a fresh native test process;
