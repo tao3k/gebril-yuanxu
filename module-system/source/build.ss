@@ -375,6 +375,35 @@
 
 ;; Discover only the demanded import closure. Never project production entries,
 ;; evaluate business scopes or scan peer suites to obtain test support.
+;; Preserve std/make's native extra-inputs plist as declaration data. Only
+;; confined regular source files are admitted; no new option protocol or Make
+;; scheduler is introduced. Both timestamp compilation and byte guards use
+;; these same original inputs.
+(def (retained-extra-inputs options root)
+  (if (or (null? options) (string? (car options)))
+    (begin
+      (unless (andmap string? options) (error "invalid retained compiler options" options))
+      '())
+    (let (metadata (car options))
+      (unless (and (list? metadata) (= (length metadata) 2)
+                   (eq? (car metadata) extra-inputs:) (list? (cadr metadata))
+                   (andmap string? (cdr options)))
+        (error "invalid retained native Make metadata" metadata))
+      (map
+        (lambda (relative)
+          (unless (and (string? relative) (not (string-empty? relative))
+                       (not (path-absolute? relative))
+                       (andmap (lambda (part) (not (member part '("" "." ".."))))
+                               (string-split relative #\/)))
+            (error "retained extra input escapes source root" relative))
+          (let walk ((directory root) (parts (string-split relative #\/)))
+            (def path (path-expand (car parts) directory))
+            (unless (eq? (module-source-type path) (if (pair? (cdr parts)) 'directory 'regular))
+              (error "retained extra input is missing, non-regular or a symlink" path))
+            (if (pair? (cdr parts)) (walk path (cdr parts))
+              (cons (path-normalize path) (module-source-read path)))))
+        (cadr metadata)))))
+
 (def (retained-build-entries specs root package-prefix selected)
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
@@ -392,7 +421,7 @@
                             (error "retained entry must be a native Scheme target" spec))))
               (name (and (pair? parts) (car parts)))
               (options-value (and (pair? parts) (cdr parts))))
-         (unless (and (string? name) (list? options-value) (andmap string? options-value)
+         (unless (and (string? name) (list? options-value)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
@@ -404,13 +433,22 @@
                (unless (eq? (module-source-type file) (if (pair? (cdr parts)) 'directory 'regular))
                  (error "retained source is missing, non-regular or a symlink" file))
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
+         (def extra (retained-extra-inputs options-value root))
          (def old (hash-get selected-by-path path-value))
-         (def prepared-input (if old (.ref old 'input)
+         (def original-input (if old (.ref old 'input)
                                  ;; Ordinary retained files own their source/package guards.
                                  ;; The projection checks its selected Graph once at each
                                  ;; independent boundary; do not attach that whole Graph
                                  ;; replay to every file (including every read of its fields).
                                  (yuanxu-prepare-module-retained-source path-value void)))
+         (def prepared-input
+           (if (null? extra) original-input
+             (.cc original-input
+               source-inputs: (append extra (.get original-input source-inputs))
+               admit-current:
+               (lambda ()
+                 ((.get original-input admit-current))
+                 (module-source-admit-current! extra "stale retained native Make input")))))
          (def identity (.ref prepared-input 'compiler-identity))
          (unless (equal? name (build-target-name identity package-prefix))
            (error "retained source path and compiler identity disagree" name identity))
@@ -419,6 +457,8 @@
          (hash-put! seen identity #t)
          (when (and old (not (equal? options-value (.ref old 'options))))
            (error "conflicting retained compiler options" identity))
+         (when (and old (pair? extra))
+           (error "selected target cannot acquire retained extra inputs" identity))
          (or old (.o kind: 'source path: path-value input: prepared-input options: options-value
                      compiler-identity: identity owner: 'build contributor: 'retained)))) specs)))
 (def (module-test-source-spec view demand root entry-source (retained '()))
@@ -447,9 +487,15 @@
     input)
   (for-each
     (lambda (target)
-      (def input (input! (.get target path)))
+      (input! (.get target path))
+      ;; Keep the retained owner's complete input set, including native Make
+      ;; extra-inputs. Re-preparing its Scheme path alone would drop C/header
+      ;; authority from test publication/currentness while leaving Make aware.
+      (def input (.get target input))
+      ((.get input admit-current))
+      (set! observations (append (.get input source-inputs) observations))
       (set! compiler-observations
-        (append (.ref input 'source-inputs) compiler-observations)))
+        (append (.get input source-inputs) compiler-observations)))
     native-targets)
   (def (native-spec entry)
     (def target (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry))) native-targets))

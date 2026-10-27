@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "e281ad2e33784cfb9951c684b6be78bd2f4b7fca"
+def declaredPooRevision : String := "e207da75c8dff2eb747034ce8276fdeb5cb61bd6"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
@@ -92,10 +92,11 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
 
 def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
--- The 40c61fe -> 29c58aa object-source delta is the issuer-private singleton
--- codec only. PayloadSharing proves exact ordered parent restoration; native
--- issuance/reflection tests check the unchanged public snapshot protocol.
-def projectionObjectDigest : String := "sha256:0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced"
+-- The current producer binds e207da7: observed inline access delegates to
+-- ordinary .ref; unobserved access guards receiver-local layout/cells.
+-- This digest binds the source, not a native refinement proof. PayloadSharing
+-- proves ordered model restoration; native issuance/replay tests remain gates.
+def projectionObjectDigest : String := "sha256:bc890b7dc0bd956e02adf3a9c7404f5157659661f0cb63d5acb285424f3f06c6"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.

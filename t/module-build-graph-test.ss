@@ -20,7 +20,9 @@
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
         (only-in "../core-spec.ss" core-spec)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :yuanxu/module-system/source/build retained-build-entries))
 (export module-build-graph-test)
 (def Scope (yuanxu-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
 (def (write-file path text)
@@ -85,6 +87,30 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "native retained extra inputs preserve Make metadata and source guards"
+      (call-with-temporary-directory "retained-native-inputs"
+        (lambda (root)
+          (write-file (path-expand "gerbil.pkg" root) "(package: retained-native)\n")
+          (write-file (path-expand "leaf.ss" root) "(export #t)\n")
+          (write-file (path-expand "caller.c" root) "/* original */\n")
+          (def options '((extra-inputs: ("caller.c")) "-cc-options" "-DQUALIFICATION"))
+          (def entry (car (retained-build-entries
+                            (list (cons gxc: (cons "leaf" options))) root "retained-native" '())))
+          (check-equal? (.get entry options) options)
+          (def guard (.get entry input admit-current))
+          (guard)
+          (write-file (path-expand "caller.c" root) "/* changed */\n")
+          (check-exception (guard) error?)
+          (write-file (path-expand "caller.c" root) "/* original */\n")
+          (guard)
+          (for-each
+            (lambda (metadata)
+              (check-exception
+                (retained-build-entries (list (list gxc: "leaf" metadata))
+                  root "retained-native" '()) error?))
+            '((extra-inputs: ("../escape.c")) (extra-inputs: ("/absolute.c"))
+              (extra-inputs: ("missing.c")) (unknown-option: ("caller.c")))))))
+
     (yuanxu-test-case "library inventory does not compile the init selection owner"
       (check-equal? (member "init" core-spec) #f)
       (check-equal? (member "build" core-spec) #f)
