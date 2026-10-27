@@ -1791,3 +1791,12 @@ than inherit a live completion head. A focused control transfers a subset,
 recovers the same receiver and checks that output mtime is unchanged. This
 bounds native graph lifetime across a full-package publication; it neither
 invalidates the persisted approval nor grants a cached test/admission result.
+
+* Package compiler heap scope
+The native package interpreter establishes the 2 GiB compiler limit before
+imports, alongside the existing 300-second package deadline. POO publishes the
+same heap bound in its own package entry, without a package deadline. Package
+manager indexing retains its native default: compiler limits must not be
+exported globally to gxtags or unrelated tool processes. Parser CI regression
+44c61d6e expanded the limit globally; this source entry makes that expansion
+unnecessary while retaining the compiler bound. No Gerbil source is changed.
