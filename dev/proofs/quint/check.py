@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 
 if __package__:
     from .native import QuintCLI
@@ -1050,8 +1051,17 @@ def main():
         from .backend import backend_session
     else:
         from backend import backend_session
+    # Compilation runs in the owned backend, while the CLI waits on gRPC.
+    # Count its actual output as progress too; never synthesize a heartbeat or
+    # extend the per-case wall limit. External endpoints have no owned stream.
+    backend_output_at = 0.0
+    def report_backend_output(chunk):
+        nonlocal backend_output_at
+        if chunk:
+            backend_output_at = time.monotonic()
+            print(chunk.decode(errors="replace"), end="", flush=True)
     session = (nullcontext(args.server_endpoint) if args.server_endpoint else
-               backend_session(lambda chunk: print(chunk.decode(errors="replace"), end="", flush=True), args.quint))
+               backend_session(report_backend_output, args.quint))
     with tempfile.TemporaryDirectory(prefix="core-quint-") as directory, session as endpoint, QuintCLI(args.quint, "verify", directory) as verifier:
         work = Path(directory)
         for source in models.glob("*.qnt"):
@@ -1066,7 +1076,8 @@ def main():
                 "invariant": invariant, "invariants": [], "init": "init", "step": "step",
                 "maxSteps": 10, "randomTransitions": False,
                 "tlcConfig": str(config), "verbosity": 3, "serverEndpoint": endpoint,
-            }, wall=45, idle=5, emit=True)
+            }, wall=45, idle=5, emit=True,
+               backend_progress=(None if args.server_endpoint else lambda: backend_output_at))
             counts = COUNTS.search(output)
             accepted = ((status == 1 and b"Error: Invariant q_inv is violated." in output
                          and b"[violation] Found an issue" in output

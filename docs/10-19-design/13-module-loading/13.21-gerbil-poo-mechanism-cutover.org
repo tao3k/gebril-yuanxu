@@ -1,0 +1,564 @@
+#+title: 13.21 Yuanxu Mechanism Cutover to the Current gerbil-poo
+
+The current whole-configuration diagnostic cutover is recorded separately in
+[[file:13.24-whole-config-diagnostics.org][13.24 Whole Configuration Diagnostics]]. Native object configuration now uses
+the original Record, rather than the historical per-present-field path below.
+Diagnostic projection remains distinct from admission and publication.
+The metadata-only doctor consumer is qualified separately in
+[[file:13.25-doctor-demand-boundaries.org][13.25 Doctor Demand Boundaries]].
+Shared root/aggregate workflow diagnostics are qualified in
+[[file:13.26-workflow-preview-sharing.org][13.26 Workflow Preview Sharing]].
+#+language: en
+
+* Source cut and scope
+
+This is an architectural refactoring ledger, not a Type-only migration or a
+claim that upstream implements every platform requirement. The reviewed source
+is gerbil-poo PR 13 at =85a76738093622aff7e2a3482ad00d035ff38c1e=.
+Yuanxu currently declares =29c58aa9c5be103ba843767e3d22ef8802b79342=.
+A downloaded, fixed-revision source tree is used for inspection; existing dirty
+producer checkouts are neither reset nor substituted for that source cut.
+Qualification of the newer runtime precedes a dependency-pin update.
+
+[[https://github.com/tao3k/gerbil-poo/pull/13][Upstream PR]] and the fixed-revision
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/doc/TODO.md][implementation boundary ledger]]
+are independent inputs. Read the latter's remaining premises: a demonstration
+is not a proof of unrestricted reflection, arbitrary callbacks or concurrency.
+
+The target is removal of parallel mechanisms throughout Yuanxu: declaration,
+composition, dispatch, normalization, reflection, dependency reuse and explicit
+effects. Changing a REV or adding another facade is not architectural closure.
+
+* Native declaration and object families
+
+=object-family/syntax.ss= generates marker predicates, positional constructors
+and individual accessors. =object-family/role-syntax.ss= adds a second syntax
+for constant slot rows. The migration target is ordinary prototypes, native
+Class/Slot declarations and direct lexical slot reads. Contracts apply to the
+resulting object; a marker alone is not structural admission.
+
+Upstream's [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/generalized-declarations.ss][generalized declarations]]
+show =.prototype= with inherited finalization and heterogeneous lens fragments.
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/class-publication.ss][Class publication]]
+shows checked initialization, inherited fields and current candidate publication.
+These replace declaration machinery where semantics match, not by superficial
+macro-name substitution.
+
+** Shared source bindings and Catalog vertical cutover
+
+The source Catalog and static Loader entries no longer use separate object
+families for the same =source/module= pair. =module-system/source/types.ss=
+owns one =ModuleSourceBinding= Record. =catalog/types.ss= declares the ordered
+Catalog over that Type; =objects.ss= retains only ordered lookup, functional
+extension and receipt projection. The two native descriptors replace fifteen
+legacy marker/prototype/constructor/accessor exports across both owners.
+Catalog and Loader re-export the same binding, not independently constructed
+Types or compatibility aliases.
+
+#+begin_src scheme
+(define-type ModuleSourceBinding
+  (Record source: [Object] module: [Object]))
+(define-type ModuleCatalog
+  (Record name: [Symbol] entries: [(List ModuleSourceBinding)]))
+
+(make-instance ModuleCatalog name: 'services
+  entries: (list (make-instance ModuleSourceBinding
+                   source: source-ref module: module-value)))
+(.get catalog entries)
+#+end_src
+
+=Object= checks existing POO values without realizing their source or demanding
+business slots. SourceRef identity comparison remains owned by the SourceRef
+protocol; this Type does not pretend to authenticate a source or admit a Module.
+Missing fields and malformed entry containers now use native structural checks
+instead of a truthy marker predicate.
+
+A binding already constructed for a static Loader may be placed directly in a
+Catalog. The product's native-value control exercises this exact shared value
+and checks its identity after Catalog construction. Static lookup uses =find=
+and =.get=, with the same first SourceRef match as before; later entries and
+business slots remain unforced. SourceRef constructor revision/protocol guards
+are unchanged. Later Backend/plan/receipt stages are recorded below; sharing a
+data binding alone does not wrap callbacks or infer that they are pure.
+
+The backend cutover must distinguish checked Function normalization from
+data binding reuse. At the reviewed upstream revision, =Function.= validates
+through =wrap-function=, and =mop.ss= explicitly leaves wrapper deduplication
+across contracts/continuations open. Repeated normalization must therefore not
+be assumed to preserve callback identity. Qualify callback acquisition,
+revalidation and explicit invocation against the native protocol before removing
+that family; neither an =Any= field nor a hand-written purity label closes it.
+
+The shared-binding rerun passed default Just gates for Core Loader backend,
+Catalog and module authoring, followed serially by the product's native-value,
+module-system, user-interface and lazy-loader suites. The native-value suite
+confirmed =eq?= for one binding reused by the Loader and Catalog. The lazy-loader
+suite retained its existing 100/1000-module projection controls with zero selected
+build targets; this is not a 10k-module capacity or retained-memory qualification.
+Each completed gate emitted =MODULE-OK=, =HARNESS-OK= and final =OK=, without
+harness failures or heap/stack-overflow markers.
+
+The subsequent real Gitea/PostgreSQL publication rerun completed all eleven
+controls with the same three success markers. Parent-cache isolation, both
+contribution requirements and source-change refusal remained active. This
+qualifies the shared-binding integration; it does not qualify a replacement of
+the backend callback protocol or change the declared dependency revision.
+
+Catalog extension uses =validate= on =(.cc catalog entries: ...)=. It retains
+inherited extension fields instead of reconstructing just =name= and =entries=
+through a positional factory. An append does not invoke an initialization hook
+again. Native validation is rerun for the resulting value; it is not a cached
+admission conclusion. First-match lookup uses standard =find= and retains order
+and the existing metadata-independent SourceRef equality policy.
+
+Agentic AI Lab's catalog loader, activation diagnostics and all three affected
+consumer suites use the same native constructor/slot surface. The lightweight
+value-only catalog in =catalog/values.ss= has a different existing purpose and
+is not silently equated with a SourceRef Catalog.
+
+The final default Just runs passed the four Catalog controls, all three affected
+Agentic AI Lab suites (=module-system-native-value=, =module-system= and
+=module-system-user-interface=), and the eleven real Gitea/PostgreSQL publication
+controls. Every run had =MODULE-OK=, =HARNESS-OK= and final =OK=, with no harness
+failure or heap/stack-overflow marker. Catalog controls include a deferred
+business slot that raises if forced, malformed field rejection, inherited
+extension-field retention and an unchanged cached parent entries list.
+
+Two failed attempts remain separate from those results: the first Record
+declaration omitted the required field-option list, and a product test still
+inspected the retired marker slot. Both source defects were corrected rather
+than restoring compatibility wrappers. A sandbox-only Nix cache write refusal
+occurred before a product test body; the same default gate subsequently ran with
+the existing host cache accessible. Neither budgets nor assertions were relaxed.
+
+This cutover does not claim reduced retained memory or equivalent arbitrary
+construction hooks. It replaces one bounded declaration/consumer family; the
+remaining role assembly and dispatch/publication cutovers are still open.
+
+In particular, the existing role macro evaluates row values before
+=object<-alist=. Rewriting it as computed slots can change evaluation time,
+process effects and procedure identity. A cutover must preserve eager versus
+delayed construction deliberately, hygienic binding and source positions.
+Do not add another Yuanxu declaration DSL to hide this distinction.
+
+** Loader data and behavior follow-up
+
+The delayed-plan and load-receipt families now use native Records and slot reads.
+The callback-bearing Backend is a separate qualification boundary. The actual
+Function/Record normalization probe, data declarations and force semantics are
+documented in [[file:13.22-loader-data-and-function-normalization.org][13.22 Loader Data and Function Normalization]]. This removes eighteen
+more generated public bindings without caching admissions or changing callbacks
+into an implicitly normalized field.
+
+The checked Backend itself now uses a native Record/Function. Actual directory
+selection, =.for-export= and publication/evidence controls are detailed in
+[[file:13.23-backend-types-and-source-publication.org][13.23 Backend Types and Source Publication]]. Seven additional generated
+Backend exports have been removed and all consumers migrated. Known name,
+optional backend-name and annotation fields no longer use =Any=. This does not
+turn a held callback into a revocable capability or a conditional effect commit.
+
+* Inheritance, reflection and role assembly
+
+=composition/roles.ss= and =feature-system/domain-case/interface.ss= maintain
+constant-only overlay eligibility, an owner index, copied defaults and a second
+instance assembly path. They are candidates for retirement in favor of native
+=.mix=/=.cc=, persistent prototype storage and declared reflection.
+
+The upstream [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/inherited-services.ss][inherited services]]
+example keeps shared declaration revisions, inherited protocols, lazy private
+slots and a diamond join. It is a concrete correspondence target for Yuanxu's
+shared roles. A constant field is not evidence that an inheritance hook or
+observer is absent. Native construction must retain hook order and receiver
+identity; Core must not silently flatten those mechanisms for a fast lane.
+
+Before removing an overlay, check both field precedence and observable native
+inheritance/metadata behavior. Keep the old implementation as a bounded oracle
+during qualification only; do not leave two public strategies afterward.
+
+* Multiple dispatch and method combination
+
+The reviewed upstream has a real sparse multimethod index, typed calls,
+prototype precedence, qualified standard/simple/forwarding/inner/Simula
+combination, declaration installation and candidate publication. It is not
+limited to one receiver axis.
+
+See [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/multimethod.ss][multimethod.ss]],
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/declared-methods.ss][declared methods]] and
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/service-metadata.ss][service metadata]].
+
+Audit =poo-clos/dispatch.ss=, =method-combination.ss=, declaration IR and method
+bundle registration against those mechanisms. Retain platform semantics that
+are not demonstrated equivalent: actual prototype/eql specializers, Generic
+protocol identity, later registration invalidation, source ownership, dynamic
+call-next-method and long-form CLOS grouping. Named sparse-index specializers
+are not automatically equivalent to arbitrary object-identity specializers.
+The objective is one native dispatch engine plus necessary semantic integration,
+not a second effective-method implementation wrapped in new function names.
+
+* Functional interfaces and explicit effects
+
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/function-publication.ss][Function publication]]
+uses native Function descriptors for argument, multiple-result and returned
+callback checks. FUN binds the checked root to its descriptor/context before
+metadata publication. Core's callable validators and invocation wrappers must
+be compared against this complete chain, rather than checking =procedure?=
+or maintaining a separate function signature grammar.
+
+Ops still owns the actual OS process, timeout, logs and cleanup. Native IO/FUN
+composition does not by itself implement process cancellation or rollback.
+File currentness and authenticated package source association remain platform
+obligations. User configuration must not manually construct internal evidence.
+
+The first concrete cleanup removes seven exact standard-library aliases:
+=fold=, =fold-right=, =map=, =find=, =filter-map=, =remove= and =append-map=.
+Consumers import those standard functions directly; the old =yuanxu-*= exports
+are removed. This reaches Feature System, JSON Schema, Funflow and product
+consumers instead of changing only helper bodies. A test that only rechecks
+standard-library delegation is removed; tests of actual predicate/set/alist
+semantics remain. Strict-Boolean combinators are not aliases for truthy SRFI-1
+results and cannot be deleted on name similarity alone.
+
+The same audit found four more exact delegates inside JSON Schema's
+=functional.ss=: =yuanxu-contract-project-list=, =yuanxu-contract-filter-map=,
+=yuanxu-contract-append-map= and =yuanxu-contract-remove=. Those definitions
+and exports are removed too; all twelve affected JSON Schema files import
+standard functions directly. Across both batches, 47 distinct Scheme files
+change. JSON key conversion, missing/null distinction, path diagnostics and
+Contract construction remain domain behavior rather than alias candidates.
+
+* Demand, construction reuse and current publication
+
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/cached-feedback.ss][Cached feedback]]
+retains unaffected groups through explicit read edges while re-running current
+joint approval. =construction-cache.ss= supplies construction reuse;
+=generalized-graph= and native object reads supply their own dependency laws.
+
+Map DomainCase canonical closure tables, linker publications and issuer-owned
+read projections to these owners. Separate construction identity from source
+revision and from an admission result. Never replace a current source check
+with a cached verdict or infer complete dependency coverage from an endpoint
+hash. Formal obligations remain with existing Lean owners; QNT owns effect and
+invalidation transitions. SysML assigns those duties without duplicate models.
+
+* Cutover units and acceptance
+
+1. Fix the upstream source cut and qualify native library construction without
+   changing the installed compiler. Preserve failed command/build receipts.
+2. Delete exact functional aliases and migrate consumers. This is safe library
+   convergence, not completion of the object-system refactor.
+3. Replace one object-family/role vertical slice, validating declaration timing,
+   hooks, identity, reflection and parent-cached child values.
+4. Retire duplicate dispatch/combination and publication paths only after their
+   actual identity/registration/source guarantees have native correspondences.
+5. Reconcile construction/dependency caches with the native owners. Preserve
+   all dependency edges and observer order; do not introduce a Core cache or
+   rerun known-failing 10k capacity as a substitute for a closed design.
+
+Keep default Just heap/watchdog fences, genuine source-change refusal, both
+Gitea/PostgreSQL requirements, parent cache isolation and unselected laziness.
+Report each unit as implemented, runtime-qualified, formally supported or still
+open. Do not label this entire ledger complete after one helper migration.
+
+* Qualification receipt for the first cutover
+
+The seven alias definitions and exports have been removed, together with their
+consumer imports in 38 Scheme source/test files across Yuanxu and Agentic AI
+Lab. No compatibility aliases replace them. The remaining utility tests cover
+actual strict-Boolean, stable-duplicate, predicate and association-list behavior;
+the explicit-package-import control still imports a genuine Yuanxu operation.
+
+The fixed upstream source was compiled with the installed Gerbil, without SDK
+source edits. Its first cold library build reached the existing 120-second
+limit. An incremental Make invocation returned success while some dynamic
+phase products were still missing: interface/static outputs from the interrupted
+build were not sufficient evidence of a complete runtime. Missing targets were
+identified and rebuilt with native =std/make= =make-clean=/=make= under the same
+limit. This is a local qualification repair, not a new production build layer.
+
+After rebuilding the affected consumer interfaces, default
+=just test-file t/utilities-functional-test.ss= passed against the fixed newer
+runtime with =MODULE-OK=, =HARNESS-OK= and final =OK=. Earlier failures importing
+removed exports from old compiled interfaces remain failed attempts, not test
+passes. The dependency pin stays unchanged until the real publication and
+source-protection consumer gates qualify the newer runtime.
+
+Against the fixed newer runtime, the real Gitea/PostgreSQL publication suite
+completed all eleven controls, Feature System composition passed, JSON Schema
+value Contracts passed, and SourceAdmission completed all six controls. Each
+produced =MODULE-OK=, =HARNESS-OK= and final =OK= without a harness-error or
+heap/stack-overflow marker. These results qualify those consumers, not every
+Core/product test or the remaining architectural cutovers. The additional
+JSON Schema delegate removal was subsequently rebuilt through native Make;
+its final value-Contract consumer rerun also passed with all three markers.
+
+This receipt does not establish a cold-build performance result, a 10k-module
+capacity result, or completion of the declaration/dispatch/publication cutovers.
+
+* Effective Slot projection: one field authority
+
+The option schema adapter now constructs a native =ModuleOptionSchema= Record:
+
+#+begin_src scheme
+(define-type ModuleOptionSchema
+  (Record id: [String] source-module: [(Or String Symbol)] field: [Slot]))
+
+(make-instance ModuleOptionSchema
+  id: option-id source-module: owner field: effective-slot)
+#+end_src
+
+Module identities retain the existing Symbol-or-String domain; narrowing that
+field to Symbol would break sparse configs inheriting a String Interface id.
+
+Seven old prototype/constructor/marker/accessor exports are retired, with no
+compatibility aliases. Product projection, lookup, reporting tests and the
+indexed-schema performance scenario use native construction/slot reads.
+The projection carries the effective Slot itself: Type, required/default/constant
+policy and diagnostic annotations are not copied into a second declaration.
+The former fourth constructor argument for metadata is removed; annotations are
+read from the effective Slot, including inherited annotations. This intentionally
+removes a second independent authority for the same field.
+
+Keep the named rule/value/Contract projections: these interpret Slot presence
+and build a one-field native Record for diagnosis. They are not simple accessor
+aliases. Keep missing-schema rejection, original issue paths, contributor
+identity and receipt order. The schema adapter does not authenticate a source or
+replace SourceAdmission; publication/currentness protections remain separate.
+
+The initial schema-only cutover intentionally did not replace Config and
+validation-receipt families with =Any=-typed Records. Config payload Types come
+from their selected Slot; diagnostic messages include both textual absence
+messages and native issue objects. The follow-up below retires those remaining
+families without pretending that candidates or diagnostic summaries are
+admission evidence. Neither cutover establishes a measured memory improvement.
+
+Qualification uses the fixed gerbil-poo =85a76738093622aff7e2a3482ad00d035ff38c1e=
+source/runtime with the installed compiler. Default Just gates passed for Core
+option objects, product native values, product user configuration and all eleven
+Gitea/PostgreSQL publication controls. The option-object gate was rerun after
+restoring String module identities; it verifies original Slot identity, Slot
+annotations, defaults, malformed descriptors/ids/owners, field diagnostic paths
+and result order. Product gates retain constant mismatch and missing-schema
+outcomes; the service gate retains both requirements, source-change refusal,
+parent-cached child values and unselected branches.
+
+One product attempt refused =source-bytes-changed= because its projection source
+was edited during build preparation. The failure is retained locally; the frozen
+source rerun passed. Neither source fingerprints nor watchdogs were bypassed.
+Old compiled interfaces were rebuilt through native Make, not repaired by adding
+compatibility aliases. This qualification does not upgrade the declared package
+REV, prove the remaining object-family migrations, or establish full CI/scale
+capacity.
+
+* Candidate and diagnostic values: remove the remaining marker families
+
+The Config and validation-receipt families had no domain Type checks: their
+marker slots and generated predicates only identified a construction path.
+Adding an =Any= field or a second generalized metadata Type would preserve the
+wrong abstraction. Candidate data can remain ordinary POO values; its selected
+native Slot owns the actual value Contract:
+
+#+begin_src scheme
+(.o id: "endpoint" value: 42 source-module: 'user)
+;; Selecting the endpoint Slot declared with String rejects this value at
+;; (endpoint), retaining source-module = user. Construction alone is not admission.
+#+end_src
+
+Sixteen old constructor/prototype/marker/accessor exports are removed, with no
+aliases. All Scheme consumers in Core and the product now use ordinary slot
+reads. The schema Record and its effective Slot remain canonical. Existing
+missing-schema, constant mismatch, default and nonconstant Type behavior are
+not replaced by candidate-wrapper membership checks.
+
+The validation producer calls native =checked-issues= on =diagnose-value='s
+result. That existing native boundary requires a list of POO diagnostics with
+symbolic kind and list path. It returns the original list/issue objects, without
+copying expected Types, candidate values or extension details. Malformed results
+are programming errors; exceptions from domain diagnostics propagate unchanged.
+The first native issue still supplies the summary code, in original option/issue
+order. Native diagnostic validation adds kind/path reads; this does not claim
+an identical total MOP read trace to the retired unchecked projection.
+
+#+begin_src scheme
+(def issues
+  (checked-issues
+    (diagnose-value
+      (yuanxu-module-option-schema-contract schema)
+      (object<-alist
+        (list (cons (string->symbol (.ref config 'id)) (.ref config 'value))))
+      '())))
+(def option-id (.ref config 'id))
+(def contributor (.ref config 'source-module))
+(def annotations (yuanxu-module-option-schema-metadata schema))
+(.o id: option-id source-module: contributor
+    valid?: (null? issues)
+    code: (if (null? issues) 'ok (.ref (car issues) 'kind))
+    messages: issues metadata: annotations)
+#+end_src
+
+Attribution and Slot annotations are observed while producing the diagnostic
+result, preserving the previous preparation boundary rather than postponing
+those observations until reporting. A controlled native Slot verifies zero
+annotation evaluation during schema construction, one at result production,
+and no reevaluation when the result is inspected. Issue extension fields remain
+unforced. The domain diagnostic is invoked once per checked option; no accepted
+verdict is cached by this projection.
+
+A =valid?= result here means no value-diagnostic issues were returned. It does
+not install a normalized candidate, wrap its Function fields, authenticate the
+source-module label, or authorize publication/execution. Native Contract
+admission and SourceAdmission/publication retain those separate responsibilities.
+The =missing-schema= branch preserves its existing textual messages and refuses
+without reading the unclaimed payload. Do not confuse its text with the native
+structured diagnostics returned by a declared field Type.
+
+** Demand boundary and remaining facade duplication
+
+For a native config object, the product adapter now enumerates =.all-slots= and
+places each =.ref config name= behind the candidate's ordinary value slot. It
+no longer materializes every value through an eager object-to-alist projection.
+Schema lookup precedes value access. The legacy row branch retains its original
+row order and duplicates; it is not coerced through another object or index.
+
+The first product regression qualified the descriptor/projection boundary, with
+an unclaimed field that throws if evaluated. At that stage the facade still
+materialized its legacy =options= alist eagerly. The receiver-bound facade
+cutover below closes that specific gap and replaces the bypassed-constructor
+control with a real =agentic-ai-lab-modules= entry. No complete-admission or
+whole-runtime laziness claim follows from either regression.
+
+The private, unexported, uncalled doctor receipt-to-alist converter and its macro
+import are removed rather than maintained as a second serializer. Actual doctor
+count/status projections and publicly inspectable native diagnostic values keep
+their existing behavior.
+
+** Source correspondence and qualification
+
+Native authority is the fixed source cut
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/object-diagnostics.ss][object-diagnostics.ss: checked-issues]], together with
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/class-validation.ss][class-validation.ss: effective Slot diagnostics]]. These are source correspondences;
+no new Lean/QNT theorem or whole-repository upgrade is asserted.
+
+Default serial Just gates passed against that fixed runtime: Core option
+objects (six cases), product owner contracts, native value consumers, user
+configuration/doctor consumers, and all eleven real Gitea/PostgreSQL publication
+controls. The final option and user-interface reruns include annotation timing
+and removal of the dead converter. All gates have MODULE-OK, HARNESS-OK and final
+OK, without harness-error or heap/stack-overflow markers. No compiler source,
+heap/watchdog budget, dependency pin or approval cache protocol was changed.
+The producer negative controls retain malformed-diagnostic refusal and original
+exception identity. Service controls retain both requirements, final child
+values after parent-plan caching, source-change refusal and unselected branches.
+
+A transient product compilation failed because the edit dropped the trailing
+schema/validation definitions; those definitions were restored and the native
+Make rebuild passed before product qualification. Failed build output remains
+in local artifacts, not source control. These focused gates are not full CI,
+performance qualification, or a 10k-module capacity claim.
+
+* Receiver-bound options facade
+
+** One native object; constants plus one receiver formula
+
+The product's full descriptor constructor now uses the existing native =.o=
+syntax. Lexical shorthand captures its supplied arguments as constant slot
+specifications. Explicit =bind: (config interface)= supplies final-receiver
+references only where the options formula needs them; =bind-these: #f= prevents
+unintended capture of constructor parameters with the same names as slots.
+There is no new object layer, constructor DSL, getter interception or Core
+cache. The existing role prototype and all constructor slots remain in place.
+
+#+begin_src scheme
+;; Excerpt inside the existing full constructor; the other fields are also
+;; native lexical shorthand, e.g. (name), (group), (metadata).
+(.o inherit: (list agentic-ai-lab-module-descriptor-prototype)
+    bind: (config interface) bind-these: #f
+    (interface)
+    (options (if (object? interface)
+               (yuanxu-module-object->alist config)
+               options))
+    (config))
+#+end_src
+
+This excerpt is not a second constructor. =(config)= and =(interface)= capture
+the original arguments before native slot binding is introduced. Within the
+formula, those two identifiers resolve through the final receiver. =options=
+is deliberately not in the binding list: the fallback refers to the supplied
+row-list argument, not recursively to the options slot.
+
+For Interface-backed descriptors, config is the single value authority. The
+existing options accessor becomes its demand-driven aggregate view. The facade
+passes an empty row argument rather than computing a redundant eager copy.
+Callers of the full/extended constructor with an Interface must not expect a
+separate options argument to override config. For descriptors without an
+Interface, the supplied rows retain their original identity, order and duplicate
+keys. No compatibility alias, hidden execution-strategy flag or new public
+constructor is introduced.
+
+The native source correspondence is
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/support/object-syntax.ss#L52][prepare-shared-slot-specs]], which hoists shorthand captures before bindings, and
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/object.ss#L739][object/configured and object/slot-spec]], which implement explicit bindings,
+constant specifications and receiver formulas. The regression inspects the real
+native specifications: options is the sole =$self-slot-spec=; every other direct
+slot is a =$constant-slot-spec=. This is structural evidence, not a heap-size or
+GC-cost measurement.
+
+** Actual user path, inheritance and diagnostics
+
+#+begin_src scheme
+(def Interface
+  (yuanxu-module-interface "Network"
+    (Record endpoint: [String default: "localhost"]) '()))
+(def Parent (agentic-ai-lab-modules Interface (.o id: 'network)))
+(def cached (agentic-ai-lab-module-options Parent))
+(.def (Child @ Parent)
+  config: =>.+ (.o endpoint: "release.internal"))
+
+;; The existing accessor now uses the receiver-bound native cache.
+(agentic-ai-lab-module-options Child) ;; ((endpoint . "release.internal"))
+(agentic-ai-lab-module-options Parent) ;; the identical cached parent list
+#+end_src
+
+The real facade regression supplies an endpoint expression with a counter,
+an unclaimed config value that throws, and an unused fallback options expression
+that throws. Construction and candidate discovery leave the counter at zero.
+Value diagnostics read the selected endpoint once and produce one success plus
+one missing-schema result without demanding the unclaimed value or fallback.
+Config presence, not its truthiness, selects the config branch; unsupported
+explicit config values are not silently replaced by fallback options.
+
+This also fixes Gerbil's eager-argument trap in the old nested default-helper
+call: the options fallback is now inside the absence branch, rather than an
+argument evaluated even when config is already present. Other facade metadata
+fallbacks are not claimed to have been audited by this change.
+
+After the parent list has been cached, a derived config produces a distinct
+child list; repeated reads reuse each receiver's own list. A further child
+setting endpoint to 42 is rejected by the same native String Slot at
+=(endpoint)=. The parent list still contains localhost and retains its identity.
+All dependency reads and cache/revision behavior are owned by native POO.
+The adapter does not copy, merge or manually register read records.
+
+The aggregate options view intentionally reads all top-level values when explicitly
+requested. Field diagnostics use the selected-Slot path and can reject unknown
+fields without touching their payloads. An explicit override assigning a fixed
+list to the options slot remains a normal override, not a guarantee that such a
+list follows future config changes. A diagnostic summary is still not whole
+Record admission or publication authorization; coverage of absent required
+fields belongs to the owning complete Contract, not inference from an empty
+list of per-present-option diagnostics.
+
+** Qualification and remaining scope
+
+Default serial Just gates passed for module owner contracts, module system
+composition, native value consumers, user configuration/doctor behavior and all
+11 Gitea/PostgreSQL publication controls. The owner controls cover the actual
+facade, unused fallback refusal, parent-cached child options, final field-Type
+rejection, constant-versus-computed specifications and duplicate legacy rows.
+The service gate retains both independent requirements, stale-parent-plan
+refusal, source changes and unselected branches. All final logs have MODULE-OK,
+HARNESS-OK and final OK without harness errors or heap/stack overflows.
+
+Qualification uses the fixed native 85a7673 runtime with the installed compiler.
+The declared dependency REV has not changed; full CI and 10k-module capacity
+remain unqualified by these focused results. No compiler source, timeout/heap
+budget, Core cache protocol, Builder or admission-result cache was changed.

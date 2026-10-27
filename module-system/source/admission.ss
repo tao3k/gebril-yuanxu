@@ -313,8 +313,7 @@
               (reverse observed)))))))
   (parameterize ((source-collectors (cons collect! (source-collectors))))
     (consume current!)))
-(def (module-source-admit-current! observations
-        (message "stale selected build input; regenerate the build entry"))
+(def (admit-source-observations! observations message)
   ;; One authority for JSON, native slot sources and publication guards. Nested
   ;; admission contributes observations to every active enclosing scope.
   (for-each
@@ -322,6 +321,32 @@
       (check-source-current! entry message)
       (for-each (lambda (collect!) (collect! entry message)) (source-collectors)))
     observations))
+(def (module-source-admit-current! observations
+        (message "stale selected build input; regenerate the build entry"))
+  ;; This is the same closed filesystem window used by the enclosing guards,
+  ;; not an admission result. Its query key includes the active collectors, so
+  ;; a nested admission must still enroll its own complete observations.
+  ;; Open observers keep every original callback and comparison in order.
+  ;; With no collector, the per-source comparison index already avoids the
+  ;; duplicate work. Do not allocate another traversal index on metadata-only
+  ;; publication checks, where there is no collector enrollment to eliminate.
+  (if (and (source-read-cache) (pair? (source-collectors))
+           (not (current-module-source-observer)))
+    (let* ((cache (source-read-cache))
+           ;; As with check-source-current!'s expected-text index, use native
+           ;; identity here: hashing complete source texts repeats linear work.
+           ;; Inputs/bytes must remain stable within the existing pure window.
+           (key (cons admit-source-observations! (source-collectors)))
+           (batches (hash-get cache key)))
+      (unless (and batches (hash-key? batches observations))
+        (admit-source-observations! observations message)
+        (unless batches
+          (set! batches (make-hash-table-eq))
+          (hash-put! cache key batches))
+        ;; Only successful batches enter this collector-local traversal index.
+        ;; Repeated equal requirements keep the collector's first diagnostic.
+        (hash-put! batches observations #t)))
+    (admit-source-observations! observations message)))
 
 (def (yuanxu-module-role-reference? datum module-name role)
   (let ((leaf (string-append role ".ss"))

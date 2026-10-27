@@ -1,0 +1,139 @@
+#+title: 13.23 Backend Types and Source Publication
+#+language: en
+
+* Scope and source basis
+
+This follows [[file:13.22-loader-data-and-function-normalization.org][13.22]] with an actual Module directory, the current reader/linker,
+=.selected-record=, =AdmissionPublication. .for-export= and =.publish=.
+The isolated source roles and fault injections are fixtures. Selection, source
+association, normalization, evidence binding and refusal are production paths.
+
+The upstream source cut remains gerbil-poo
+=85a76738093622aff7e2a3482ad00d035ff38c1e=:
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/function-publication.ss][checked Function publication]],
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/examples/class-publication.ss][Class construction/publication]], and
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/function-signature.ss][Function wrapper implementation]].
+This is a focused runtime correspondence, not a new formal proof or pin update.
+
+* No universal Type for known domain fields
+
+The previous =Any= fields hid decisions that the Loader already knew. The
+implementation now declares these native Types in =loader/types.ss=:
+
+#+begin_src scheme
+(define-type LoaderMetadata
+  (List (Pair Symbol (Or Bool Symbol String UInt))))
+
+(define-type ModuleLoaderBackend
+  (Record name: [Symbol]
+          source-kind: [Symbol]
+          load: [(Function (list (OrFalse Object)) (list Object))]
+          metadata: [LoaderMetadata default: '()]))
+#+end_src
+
+Catalog names are Symbol identifiers too; receipt backend names use
+=(OrFalse Symbol)=. Native messages retain =(List String)=. These fields no
+longer admit arbitrary procedures, numbers as identifiers, string annotation
+keys, or opaque objects as annotation values. Existing annotation keys stay
+extensible over a declared scalar domain. This does not validate every key's
+business meaning: a count-specific relation still needs its owner's Contract.
+Nested metadata requires an explicitly richer Type, not a silent =Any= fallback.
+
+The Function result is an opaque existing Module object or =#f=. =Object= here
+checks that boundary; it does not admit the returned Module's exports, authenticate
+its source or authorize effects. The Module's own source/Scope Contracts retain
+those duties. Shape membership must not be presented as complete admission.
+
+* Identity is phase-specific
+
+Checked construction transforms raw callback =f0= into wrapper =f1=. Repeated
+reads on that Backend receiver return =f1=. A later independent admission may
+produce a new candidate whose callback is =f2=. It is wrong to demand
+=eq?(f0,f1)= or infer =eq?(f1,f2)= from a hot-slot guarantee.
+
+The production publication flow already supports this distinction:
+
+1. =.for-export= resolves the actual selected export and its declared Contract.
+   It binds source/build observations and the current publication Context.
+2. The existing SourceAdmission Contract normalizes the Backend through its
+   =value-contract: ModuleLoaderBackend=. Signature checking does not execute
+   the target body.
+3. =.publish= obtains the checked candidate from evidence and calls its existing
+   =.bind-evidence= on that exact candidate. The subject, Contract and Context
+   references must match; a projected lookalike or another Context is insufficient.
+4. The returned next value is exactly the evidence candidate. The cached parent
+   Backend and its callback are unchanged. A lazy plan retains that checked
+   Backend opaquely; it does not recursively normalize its Function again.
+5. Explicit force invokes the retained checked callback. Original callback errors
+   propagate with their identity. Native Function checking still owns supplied
+   arguments and returned values; it does not infer callback purity.
+
+No wrapper memoization, source table or new evidence format was added. Seven
+Backend prototype/positional-constructor/marker/accessor exports were removed;
+the Loader owner no longer imports =defpoo-object-family=. Maintainers construct
+the native Record with =make-instance= and read its fields with =.get=.
+
+* Actual source controls
+
+=t/module-loader-publication-test.ss= uses the existing =DirectoryFixture= and
+=yuanxu-test-fixture=. Maintained role text lives under
+=t/fixtures/loader-publication/= and is copied only for destructive source tests.
+The temporary root has its own package identity and an explicit selection that
+disables a syntactically invalid unused module. No production source is edited.
+
+The real Interface declares one Backend admission through its export/Contract
+paths. The test checks its selected-record identity, normalized next/evidence
+alias, exact Contract/Context identity, zero calls during admission, callback
+identity through a plan, explicit invocation and original failure propagation.
+A bound invocation with another Context refuses accepted evidence. A nonprocedure
+callback refuses before invocation. After caching the parent and publication
+Context, a changed config role refuses both publication and export rebinding.
+
+The first fixture was rejected by the existing authoring Contract because local
+=calls= and =failure= bindings collided with identically named POO lexical slots.
+The fixture names were corrected. Its objects role also imports its types role
+explicitly for a re-exported native descriptor. Neither role admission nor source
+currentness was relaxed to make the fixture load.
+
+* What is not guaranteed
+
+Source currentness is checked at admission/publication boundaries. An already
+held Scheme procedure is not revoked merely because a source file changes.
+The negative control deliberately invokes a held callback after publication has
+refused changed source; the stored procedure still runs. This is existing language
+behavior, not a new bypass introduced by Record normalization.
+
+Therefore these results establish neither an execution sandbox nor atomic
+check-to-effect binding. The execution owner must carry the admitted plan and
+its currentness/conditional-commit requirements to the actual effect boundary.
+Do not turn successful Backend Type validation into execution authorization.
+The actual directory Loader's source guards remain a separate mechanism.
+
+* Cost and qualification boundary
+
+Known Type fields and native declarations improve the maintainers' interface;
+they do not prove lower retained memory. Function normalization allocates a
+wrapper per admitted candidate. Repeated admission remains independent work;
+successful conclusions are not cached. Plans retain opaque Backend values to
+avoid accidental repeated Function normalization through nested data checks.
+No SDK source, heap budget, timeout, issuer or cache protocol was changed.
+The 10k-module gate is not qualified by these source-control experiments.
+
+* Qualification receipt
+
+Ten focused default Just suites passed against the fixed native runtime: Core
+Loader backend, Loader publication, Catalog, module authoring, Contract/Function
+composition; four product Module/value/user-interface/lazy-loader suites; and
+real Gitea/PostgreSQL publication (eleven controls). Every suite emitted
+=MODULE-OK=, =HARNESS-OK= and final =OK= without harness-error or heap/stack-overflow
+markers. The cleaned publication fixture and the production-Type Function probe
+were rerun after retiring their diagnostic/local-candidate scaffolding.
+
+Strict-field controls reject numeric Catalog/backend identifiers, non-string
+messages, invalid backend-name values, malformed annotation keys and procedure
+annotation values without invoking those procedures. The product lazy gate
+retained its existing 100/1000-module controls. =just check-test-groups= also
+passed; the new publication suite belongs to the existing modules group and
+default full-test list. No new runner, Builder, cache protocol or production
+dependency on a test fixture was introduced. Full CI and the declared dependency
+revision are unchanged; this is not a whole-repository qualification.

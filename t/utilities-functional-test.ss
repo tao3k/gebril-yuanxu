@@ -10,11 +10,6 @@
                  check-equal?
                  test-suite)
         (only-in :yuanxu/utilities/functional
-                 yuanxu-fold-right
-                 yuanxu-map
-                 yuanxu-find
-                 yuanxu-filter-map
-                 yuanxu-append-map
                  yuanxu-any?
                  yuanxu-all?
                  yuanxu-set-subset?
@@ -33,31 +28,6 @@
 ;; : TestSuite
 (def utilities-functional-test
   (test-suite "utilities functional helpers"
-    (yuanxu-test-case "delegates core list operations to std functional algorithms"
-      (check-equal?
-       (yuanxu-fold-right cons [] '(a b c))
-       '(a b c))
-      (check-equal?
-       (yuanxu-map
-        (lambda (value)
-          (* value 2))
-        '(1 2 3))
-       '(2 4 6))
-      (check-equal?
-       (yuanxu-find odd? '(2 4 5 6))
-       5)
-      (check-equal?
-       (yuanxu-filter-map
-        (lambda (value)
-          (and (odd? value) value))
-        '(1 2 3 4 5))
-       '(1 3 5))
-      (check-equal?
-       (yuanxu-append-map
-        (lambda (value)
-          (list value value))
-        '(a b c))
-       '(a a b b c c)))
     (yuanxu-test-case "composes predicates without duplicating loop code"
       (let ((positive-even?
              (yuanxu-predicate-and (list integer? positive? even?)))

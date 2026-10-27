@@ -7,11 +7,21 @@
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/module-system/building/artifacts current-build-phase-times)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./testing-case.ss" yuanxu-selected-testing-case-profile
                  yuanxu-testing-case-profile? yuanxu-test-checkpoint)
         (only-in "./testing-fixture.ss" call-with-yuanxu-fixture))
 (export TestingScript. admit-testing-result admit-testing-process-result testing-script-for-source make-compiler-progress-reader)
+
+;; Native bindings only: forcing this promise never stores an admission
+;; result. Empty support requests must not import the signing implementation.
+(def testing-build-api
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :gerbil/core))
+      (eval-syntax '(import (only-in :yuanxu/module-system/building/artifacts
+                             current-build-phase-times require-build-artifacts!)))
+      (eval-syntax '(list current-build-phase-times require-build-artifacts!)))))
 
 ;; Relay only real std/make work through the existing Ops progress frame.
 (def (make-compiler-progress-reader)
@@ -161,6 +171,8 @@
   (if (or (not build) (null? (.get build spec))) script
     (let ((started (real-time))
           (times (and (.get script profile emit?) (make-hash-table-eq))))
+      (defvalues (current-build-phase-times require-build-artifacts!)
+        (apply values (force testing-build-api)))
       (def reused? (admit-retained-testing-support? build))
       (def compilation
        (and (not reused?)

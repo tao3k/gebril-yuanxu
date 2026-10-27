@@ -9,7 +9,7 @@
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/configuration/json config-json-file config-field-origin)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture))
 (export slot-origin-test)
 (def slot-origin-test
   (test-suite "Native slot-attached Scheme provenance"

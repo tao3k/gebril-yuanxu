@@ -4,7 +4,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite check-equal?)
-        (only-in :clan/poo/object .o)
+        (only-in :clan/poo/object .o .get .cc)
+        (only-in :clan/poo/mop make-instance element?)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/catalog/objects)
@@ -19,12 +20,12 @@
              (same-source (make-yuanxu-module-source-ref
                            'local "feature/interface.ss" '((origin . later))))
              (first (.o name: 'first))
-             (later (.o name: 'later))
+             (later (.o name: 'later
+                       deferred: (error "unselected Catalog module was forced")))
              (catalog
-              (make-yuanxu-module-catalog
-               'test
-               (list (make-yuanxu-module-catalog-entry source first)
-                     (make-yuanxu-module-catalog-entry same-source later)))))
+              (make-instance ModuleCatalog name: 'test
+               entries: (list (make-instance ModuleSourceBinding source: source module: first)
+                              (make-instance ModuleSourceBinding source: same-source module: later)))))
         (check-equal? (resolve-yuanxu-module-source/default
                        catalog same-source 'missing)
                       first)
@@ -42,8 +43,24 @@
                                   (metadata (origin . later)))
                           (module . later)))))))
     (yuanxu-test-case "missing source returns caller default without I/O"
-      (let* ((catalog (make-yuanxu-module-catalog 'empty '()))
+      (let* ((catalog (make-instance ModuleCatalog name: 'empty entries: '()))
              (source (make-yuanxu-module-package-source 'absent)))
         (check-equal? (resolve-yuanxu-module-source/default
                        catalog source 'not-found)
-                      'not-found)))))
+                      'not-found)))
+    (yuanxu-test-case "native Catalog validation rejects malformed entries without loading sources"
+      (check-equal? (element? ModuleCatalog (.o name: 17 entries: '())) #f)
+      (check-equal? (element? ModuleCatalog (.o name: 'invalid entries: '(not-an-entry))) #f)
+      (check-equal? (element? ModuleSourceBinding (.o source: #f module: (.o))) #f))
+    (yuanxu-test-case "adding entries preserves inherited Catalog fields and isolates the parent"
+      (def source (make-yuanxu-module-package-source 'absent))
+      (def parent (make-instance ModuleCatalog name: 'base entries: '()))
+      (def cached (.get parent entries))
+      (def child (.cc parent tenant: 'release))
+      (def entry (make-instance ModuleSourceBinding source: source module: (.o name: 'loaded)))
+      (def next (yuanxu-module-catalog-add child entry))
+      (check-equal? (.get next tenant) 'release)
+      (check-equal? (.get next entries) (list entry))
+      (check-equal? (.get parent entries) cached)
+      (check-equal? (.get child entries) '())
+      (check-equal? (element? ModuleCatalog next) #t))))

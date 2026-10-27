@@ -16,16 +16,10 @@
         :yuanxu/object-family/role-syntax
         :yuanxu/composition/roles
         (only-in :yuanxu/utilities/functional
-                 yuanxu-fold-left
-                 yuanxu-fold-right
-                 yuanxu-map
-                 yuanxu-find
-                 yuanxu-filter-map
-                 yuanxu-remove
-                 yuanxu-append-map
                  yuanxu-all?
                  yuanxu-member?
-                 yuanxu-list-of?))
+                 yuanxu-list-of?)
+        (only-in :std/list/list fold fold-right map find filter-map remove append-map))
 
 ;; : (-> PooDomainCaseCache)
 (def (yuanxu-domain-case-cache)
@@ -92,7 +86,7 @@
                                             local-overrides
                                             selected-projection-ids)
   (append
-   (yuanxu-filter-map
+   (filter-map
     (lambda (diagnostic) diagnostic)
     (list
      (and (not (yuanxu-domain-case-cache? cache))
@@ -118,7 +112,7 @@
            'invalid-projection-selection '(selected-projections)
            selected-projection-ids))))
    (if (list? selected-projection-ids)
-       (yuanxu-map
+       (map
         (lambda (projection-id)
           (domain-case-diagnostic
            'duplicate-projection-selection '(selected-projections)
@@ -126,7 +120,7 @@
         (domain-case-duplicates selected-projection-ids))
        '())
    (if (list? components)
-       (yuanxu-filter-map
+       (filter-map
         (lambda (component)
           (and (not (yuanxu-case-component-valid? component))
                (domain-case-diagnostic
@@ -137,12 +131,12 @@
 ;; : (-> [PooCaseComponent] [PooCaseProjection] [Alist])
 (def (domain-case-closure-structural-diagnostics components projections)
   (append
-   (yuanxu-map
+   (map
     (lambda (component-id)
       (domain-case-diagnostic
        'duplicate-component-id '(components) component-id))
     (domain-case-duplicates
-     (yuanxu-map
+     (map
       (lambda (component) (.ref component 'component-id))
       components)))
    (domain-case-parent-diagnostics components)
@@ -158,7 +152,7 @@
    (lambda ()
      (apply role-compose
             (reverse
-             (yuanxu-map
+             (map
               (lambda (component) (.ref component 'role-prototype))
               components))))))
 
@@ -202,7 +196,7 @@
      (instance-overlay-compatible?
       (role-instance-overlay-compatible? composition))
      (type-contracts
-      (yuanxu-map
+      (map
        (lambda (component) (.ref component 'type-contract))
        components))
      (effective-slots effective-slots)
@@ -297,15 +291,15 @@
                (all-slots
                 (append
                  normalized-local-overrides
-                 (yuanxu-append-map
+                 (append-map
                   domain-case-component-slot-contracts
                   components)))
                (all-contracts
-                (yuanxu-append-map
+                (append-map
                  domain-case-component-method-contracts
                  components))
                (all-projections
-                (yuanxu-append-map
+                (append-map
                  domain-case-component-projections
                  components))
                (structural-diagnostics
@@ -428,15 +422,15 @@
 ;; : (-> PooDomainCase PooRole [Alist])
 (def (domain-case-instance-diagnostics domain-case instance)
   (append
-   (yuanxu-filter-map
+   (filter-map
     (lambda (slot-contract)
       (domain-case-slot-instance-diagnostic instance slot-contract))
     (.ref domain-case 'effective-slots))
-   (yuanxu-filter-map
+   (filter-map
     (lambda (type-contract)
       (domain-case-type-instance-diagnostic instance type-contract))
     (.ref domain-case 'type-contracts))
-   (yuanxu-filter-map
+   (filter-map
     (lambda (contract)
       (domain-case-state-instance-diagnostic instance contract))
     (.ref domain-case 'effective-contracts))))

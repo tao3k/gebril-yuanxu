@@ -13,14 +13,8 @@
                  .ref
                  .slot?
                  object?)
-        (only-in "./functional.ss"
-                 yuanxu-contract-any?
-                 yuanxu-contract-key->string
-                 yuanxu-contract-key->symbol
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-object-ref
-                 yuanxu-contract-project-list
-                 yuanxu-contract-filter-map)
+        (only-in "./functional.ss" yuanxu-contract-any? yuanxu-contract-key->string yuanxu-contract-key->symbol yuanxu-contract-json-object? yuanxu-contract-object-ref)
+        (only-in :std/list/list map filter-map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node-metadata
                  yuanxu-json-schema-pattern-property-compiled)
@@ -88,7 +82,7 @@
    ((yuanxu-contract-json-object? candidate)
     candidate)
    ((object? candidate)
-    (yuanxu-contract-project-list
+    (map
      (lambda (slot)
        (cons slot (.ref candidate slot)))
      (.all-slots candidate)))
@@ -150,7 +144,7 @@
    ((null? path) "root")
    (else
     (string-join
-     (yuanxu-contract-project-list
+     (map
       yuanxu-json-schema-path-part->string
       path)
      "/"))))
@@ -288,7 +282,7 @@
 
 ;; : (-> [YuanxuJsonSchemaPatternProperty] JsonObjectKey [YuanxuJsonSchemaPatternProperty])
 (def (yuanxu-json-schema-matching-pattern-properties pattern-properties key)
-  (yuanxu-contract-filter-map
+  (filter-map
    (lambda (pattern-property)
      (and (yuanxu-json-schema-pattern-property-matches?
            pattern-property

@@ -4,6 +4,7 @@ from pathlib import Path
 import importlib.util
 import subprocess
 import tempfile
+import time
 import unittest
 
 spec = importlib.util.spec_from_file_location("core_quint_check", Path(__file__).with_name("check.py"))
@@ -17,7 +18,11 @@ class TypecheckTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "Sample.qnt"
             source.write_text("module Sample { pure val answer: int = 1 }")
-            for limits in ({"wall": 0, "idle": 5}, {"wall": 5, "idle": 0}):
+            for limits in ({"wall": 0, "idle": 5}, {"wall": 5, "idle": 0},
+                           # Even current backend output cannot renew wall time;
+                           # stale backend output cannot renew the idle deadline.
+                           {"wall": 0, "idle": 5, "backend_progress": time.monotonic},
+                           {"wall": 5, "idle": 0, "backend_progress": lambda: 0.0}):
                 with self.subTest(limits=limits), check.QuintCLI(QUINT, "typecheck") as runtime:
                     with self.assertRaises(TimeoutError):
                         runtime.request({"input": str(source)}, **limits)

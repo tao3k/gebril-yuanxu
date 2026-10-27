@@ -23,5 +23,10 @@
         '((types ScopeContract) (config Config)))
       (check-equal?
         (module-deferred-role-exports interface
+          '((types . "(import (only-in :clan/poo/mop define-type)) (define-type (ScopeContract @ [])) (export ScopeContract)")
+            (config . "(def Config #f)")))
+        '((types ScopeContract) (config Config)))
+      (check-equal?
+        (module-deferred-role-exports interface
           '((types . "(import (only-in \"private.ss\" Private)) (export ScopeContract)")
             (config . "(def Config #f) (export Config)"))) #f))))

@@ -14,15 +14,8 @@
                  yuanxu-json-schema-property-record
                  yuanxu-json-schema-pattern-property-record
                  yuanxu-json-schema-diagnostic-record)
-        (only-in "./functional.ss"
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-json-array->list
-                 yuanxu-contract-key->string
-                 yuanxu-contract-key->symbol
-                 yuanxu-contract-object-ref
-                 yuanxu-contract-filter-map
-                 yuanxu-contract-member?
-                 yuanxu-contract-map-pair-with-diagnostics)
+        (only-in "./functional.ss" yuanxu-contract-json-object? yuanxu-contract-json-array->list yuanxu-contract-key->string yuanxu-contract-key->symbol yuanxu-contract-object-ref yuanxu-contract-member? yuanxu-contract-map-pair-with-diagnostics)
+        (only-in :std/list/list filter-map)
         (only-in "./json-schema-normalize-core.ss"
                  +yuanxu-json-schema-missing+
                  yuanxu-json-schema-parse/context
@@ -159,7 +152,7 @@
 (def (yuanxu-json-schema-required-symbols schema)
   (let ((required (yuanxu-contract-object-ref schema "required" +yuanxu-json-schema-missing+)))
     (if (list? (yuanxu-json-schema-array-value required))
-      (yuanxu-contract-filter-map
+      (filter-map
        (lambda (entry)
          (and (string? entry) (string->symbol entry)))
        (yuanxu-json-schema-array-value required))
@@ -400,7 +393,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-json-schema-filter-missing entries)
-  (yuanxu-contract-filter-map
+  (filter-map
    (lambda (entry)
      (and (not (eq? (cdr entry) +yuanxu-json-schema-missing+)) entry))
    entries))

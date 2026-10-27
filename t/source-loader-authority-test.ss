@@ -8,7 +8,7 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         "qualification/mop-state/artifact-authority"
         "qualification/mop-state/artifact-closure")
 (export source-loader-authority-test test-cleanup!)

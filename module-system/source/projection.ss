@@ -12,7 +12,7 @@
         yuanxu-module-auto-imports-resolve
         yuanxu-module-auto-imports-result-source-refs)
 
-;; : (-> [PooModuleLoaderBackend] [PooModuleSourceRef] Alist [YuanxuLazyLoadPlan] [YuanxuLazyLoadPlan])
+;; : (-> [ModuleLoaderBackend] [PooModuleSourceRef] Alist [LazyLoadPlan] [LazyLoadPlan])
 (def (yuanxu-module-source-refs->lazy-load-plans/rev
       backends
       source-refs
@@ -29,7 +29,7 @@
                                           metadata)
            plans-rev))))
 
-;; : (-> [PooModuleLoaderBackend] [PooModuleSourceRef] Alist [YuanxuLazyLoadPlan])
+;; : (-> [ModuleLoaderBackend] [PooModuleSourceRef] Alist [LazyLoadPlan])
 (def (yuanxu-module-source-refs->lazy-load-plans backends source-refs metadata)
   (reverse
    (yuanxu-module-source-refs->lazy-load-plans/rev

@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list map)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
@@ -283,7 +284,7 @@
    (feature-policy-strategy-binding 'not-an-assembly)))
 
 (def (adapter-projection-diagnostic-codes binding)
-  (yuanxu-map
+  (map
    (lambda (diagnostic) (.ref diagnostic 'code))
    (.ref binding 'diagnostics)))
 
@@ -380,11 +381,11 @@
         (check (.ref adapter-projection-ready 'status) => 'ready)
         (check (.ref adapter-projection-ready 'accepted?) => #t)
         (check (length adapter-bindings) => 2)
-        (check (yuanxu-map
+        (check (map
                 (lambda (binding) (.ref binding 'requirement-id))
                 adapter-bindings)
                => '(python-runtime-requirement cedar-policy-requirement))
-        (check (yuanxu-map
+        (check (map
                 (lambda (binding) (.ref binding 'provider-module-id))
                 adapter-bindings)
                => '(yuanxu/python-runtime yuanxu/cedar-adapter))
@@ -454,8 +455,8 @@
 
     (yuanxu-test-case "256 requirements and projections resolve with indexed owners"
       (let* ((entries (adapter-projection-stress-entries 256))
-             (projections (yuanxu-map cadddr entries))
-             (capabilities (yuanxu-map car entries))
+             (projections (map cadddr entries))
+             (capabilities (map car entries))
              (component
               (yuanxu-case-component
                'adapter-projection-stress-component

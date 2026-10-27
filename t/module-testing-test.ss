@@ -7,7 +7,8 @@
         (only-in "../init.ss" yuanxu.init.exports )
         (rename-in (only-in "../init.ss" yuanxu.init.exports) (yuanxu.init.exports ModuleNamespace))
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source
+                 module-test-directory-source)
         (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
         (only-in :yuanxu/module-system/source/admission module-source-read)
         (only-in :yuanxu/observability/testing-fixture
@@ -35,6 +36,37 @@
   (module-test-projection (yuanxu-load-modules source read-publication: fixture-reader)))
 (def module-testing-test
   (test-suite "Selected module atomic testing"
+    (yuanxu-test-fixture "directory discovery prunes excluded branches and guards membership"
+      (directory Workspace)
+      (create-directory (path-expand "nested" directory))
+      (create-directory (path-expand "excluded" directory))
+      (def first (path-expand "first-test.ss" directory))
+      (def second (path-expand "nested/second-test.ss" directory))
+      (write-forms first '((error "discovery executed a test")))
+      (write-forms second '((error "discovery executed another test")))
+      ;; If the excluded subtree is traversed, this non-regular entry refuses.
+      (def link (path-expand "excluded/loop" directory))
+      (dynamic-wind
+        (lambda () (create-symbolic-link directory link))
+        (lambda ()
+          (def projection (module-test-directory-source directory '("excluded")))
+          (check-equal? (.get projection spec) (list first second))
+          ((.get projection admit-current))
+          (write-forms (path-expand "excluded/new-test.ss" directory) '((error "excluded")))
+          ((.get projection admit-current))
+          (write-forms (path-expand "added-test.ss" directory) '((void)))
+          (check-exception ((.get projection admit-current)) error?))
+        ;; The outer generic directory Fixture must never follow our loop.
+        (lambda () (delete-file link))))
+    (yuanxu-test-fixture "directory demand rejects source changes and unsafe exclusions"
+      (directory Workspace)
+      (def file (path-expand "atomic-test.ss" directory))
+      (write-forms file '((void)))
+      (def projection (module-test-directory-source directory))
+      ((.get projection admit-current))
+      (write-forms file '((error "changed")))
+      (check-exception ((.get projection admit-current)) error?)
+      (check-exception (module-test-directory-source directory '("../other")) error?))
     (test-case "importing the init source does not acquire a Graph or enumerate tests"
       (check-equal? (.slot? (.get yuanxu.init.exports tests) '.run) #t)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'command) #f)
@@ -174,8 +206,6 @@
       (write-forms init (list changed))
       (check-exception ((.get session admit-current)) error?)
       (check-exception (test-session init) error?))
-    (test-case "Ops executes selected native std/test modules without another runner"
-      (.call (.get yuanxu.init.exports tests) .run))
     (yuanxu-test-fixture "selected test edits and additions invalidate a real source session" (workspace Workspace)
       (write-forms (path-expand "gerbil.pkg" workspace)
                    '((package: module-test-fixture prelude: :yuanxu/module-system/source/module-prelude)))

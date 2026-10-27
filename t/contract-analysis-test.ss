@@ -3,7 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/module-system/source/admission module-source-admit-current!)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)

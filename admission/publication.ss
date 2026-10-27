@@ -277,13 +277,20 @@
   (lambda (selection owner name)
     ;; Reject a stale managed build before resolving an export scope, whose
     ;; lazy fields may run author code. Native cache state grants no shortcut.
-    (admit-build-artifact-publication! (.get selection build-graph))
+    (publication-stage 'export-entry
+      (lambda ()
+        (def graph (publication-stage 'build-graph
+                      (lambda () (.get selection build-graph))))
+        (publication-stage 'artifact-publication-current
+          (lambda () (admit-build-artifact-publication! graph)))))
     (let (record (publication-stage 'selected-record
                    (lambda () (.call selection .selected-record owner))))
       (publication-stage 'bind-contributions
         (lambda ()
-          (let* ((base (module-admission-publication (.get selection build-graph)
-                         (.get record publication) (.get record scope) name))
+          (let* ((base (publication-stage 'publication-base
+                        (lambda ()
+                          (module-admission-publication (.get selection build-graph)
+                            (.get record publication) (.get record scope) name))))
                  (package-guard
                    (let ((build-current (build-artifact-publication-current (.get selection build-graph)))
                          (packages-current (.get selection package-current)))

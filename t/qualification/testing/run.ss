@@ -2,13 +2,14 @@
 ;;; A command-line projection of the maintained TestingScript policy.
 (import :clan/poo/object
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax core-read-module/sexp)
-        (only-in :yuanxu/module-system/source/init module-init-export-name))
+        (only-in :yuanxu/ops/progress execution-total-seconds)
+        (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
 
 (def (main file vm-options seconds observation (harness #f))
   (unless (member observation '("false" "true" "trace"))
     (error "observe must be false, true, or trace" observation))
   (def budget (string->number seconds))
-  (unless (and (exact-integer? budget) (> budget 0))
+  (unless (and (exact-integer? budget) (> budget 0) (<= budget execution-total-seconds))
     (error "test budget must be a positive number of seconds" seconds))
   (def started (real-time))
   (def exports

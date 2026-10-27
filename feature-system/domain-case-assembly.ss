@@ -4,7 +4,8 @@
 
 ;;; Boundary: assembles accepted feature plans into one DomainCase receipt;
 ;;; component closure semantics remain owned by module-system/domain-case.
-(import (only-in :clan/poo/object .ref object<-alist)
+(import (only-in :std/list/list map filter-map)
+        (only-in :clan/poo/object .ref object<-alist)
         :yuanxu/composition/roles
         :yuanxu/feature-system/capability-model
         :yuanxu/feature-system/composition
@@ -26,7 +27,7 @@
 
 ;; : (-> [Object] [Alist])
 (def (feature-domain-case-projection-request-diagnostics requests)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (request)
      (and (not (feature-projection-request? request))
           (feature-domain-case-projection-request-diagnostic request)))
@@ -75,7 +76,7 @@
        domain-case-id domain-case-version composition-plan components
        projection-requests '() #f #f #f #f request-diagnostics)
       (let* ((selected-projection-ids
-              (yuanxu-map
+              (map
                (lambda (request) (.ref request 'projection-id))
                projection-requests))
              (closure-receipt

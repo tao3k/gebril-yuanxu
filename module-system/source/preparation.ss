@@ -16,7 +16,7 @@
                  module-context? module-context-path prelude-context? prelude-context-path)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
-(export yuanxu-prepare-module-publication yuanxu-write-module-publication
+(export build-target-name yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
         yuanxu-prepare-module-private-source call-with-module-compiler-inputs module-compiler-source-input)
@@ -170,8 +170,23 @@
               (map (lambda (role)
                      (cons role (hash-ref texts
                        (path-expand (string-append (symbol->string role) ".ss") root)))) roles))))
-        (def (publication-forms imports (deferred #f))
-          (let (resolver (and deferred (string->symbol (symbol->string (gensym 'role-resolver)))))
+        (def (publication-forms imports (deferred #f) (compiled? #f))
+          (let (resolver
+                 (and deferred
+                   (if compiled?
+                     `(lambda ()
+                        (lambda (role names)
+                          (module-import-role-values
+                            (case role
+                              ,@(map (lambda (row)
+                                       `((,(car row))
+                                         ',(string->symbol
+                                            (string-append ":"
+                                              (substring id-text 0 (- (string-length id-text) (string-length "interface")))
+                                              (symbol->string (car row)))))) deferred)
+                              (else (error "unknown published role" role)))
+                            names)))
+                     (string->symbol (symbol->string (gensym 'role-resolver))))))
           (append
            (if shared-prelude?
              '(prelude: :yuanxu/module-system/source/config-prelude)
@@ -180,10 +195,18 @@
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
                           (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
-                          ,@(if deferred
+                          ,@(if (and deferred compiled?)
+                              '((only-in :yuanxu/module-system/source/deferred-declaration
+                                         include-deferred-declaration module-import-role-values))
+                              (if deferred
                               `((rename-in (only-in :yuanxu/module-system/source/deferred-declaration
                                                    include-deferred-declaration current-module-role-resolver)
-                                           (current-module-role-resolver ,resolver))) '())
+                                           (current-module-role-resolver ,resolver))) '()))
+                          ,@(if (and deferred compiled? (pair? roles))
+                              `((for-template
+                                 ,@(map (lambda (role)
+                                          (string-append "./" (symbol->string role) ".ss")) roles)))
+                              '())
                           ,@imports))
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
@@ -205,8 +228,10 @@
             deferred-reader-forms: (and deferred-roles (publication-forms '() deferred-roles))
             reader-forms: (publication-forms
                            (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
-            compiler-forms: (publication-forms
-                             (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles))))))
+            compiler-forms: (if deferred-roles
+                             (publication-forms '() deferred-roles #t)
+                             (publication-forms
+                               (map (lambda (role) (string-append "./" (symbol->string role) ".ss")) roles)))))))
 (def (yuanxu-write-module-publication prepared output)
   ;; Materialization belongs to source preparation, never to the syntax expander.
   (unless (string=? (path-strip-directory output) "interface.ss")
@@ -264,10 +289,16 @@
       ;; package cache), rather than reparse the entire unchanged module body.
       (def (current!)
         (context-current!)
-        (unless (equal? text (module-source-read source-path))
-          (error "stale prepared build source" source-path 'source-bytes-changed))
-        (unless (package-snapshot-current? packages)
-          (error "stale prepared build source" source-path 'package-metadata-changed))
+        ;; Only these byte/package observations are pure. Reuse the existing
+        ;; window for the package's regular-file probe and byte read; leave
+        ;; both owning Context calls outside it, as either can run author code.
+        ;; Independent calls still open a fresh window and read current bytes.
+        (call-with-module-source-read-cache
+          (lambda ()
+            (unless (equal? text (module-source-read source-path))
+              (error "stale prepared build source" source-path 'source-bytes-changed))
+            (unless (package-snapshot-current? packages)
+              (error "stale prepared build source" source-path 'package-metadata-changed))))
         (context-current!))
       (.o bind-these: #f path: source-path compiler-identity: id admit-current: current!
           source-inputs: (cons (cons source-path text) packages)
@@ -367,6 +398,7 @@
                 (.ref input 'compiler-forms))))
           (def row (list input target identity))
           (hash-put! inputs original row)
+          (hash-put! inputs (path-normalize target) row)
           (hash-put! inputs (string->symbol (string-append ":" (symbol->string identity))) row))
         (filter (lambda (entry) (hash-key? roles (path-normalize (.ref entry 'path)))) entries))
       (def (import-input path (reload? #f))
@@ -385,3 +417,17 @@
               context))))
       (parameterize ((current-expander-module-import import-input)
                      (compiler-source-inputs selected-sources)) (action)))))
+
+(def (build-target-name identity package-prefix)
+  ;; One root-owned language file has an explicit native package identity.
+  ;; Callers still verify its actual source path and prepared identity.
+  (if (and (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude))
+    "prelude"
+    (let ((name (symbol->string identity))
+          (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))
+    (unless (string-prefix? prefix name)
+      (error "compiler identity is outside the build package prefix" identity package-prefix))
+    (let (relative (substring name (string-length prefix) (string-length name)))
+      (unless (andmap module-source-name? (string-split relative #\/))
+        (error "compiler identity is not a relative build target" identity))
+      relative))))

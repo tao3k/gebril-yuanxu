@@ -7,8 +7,8 @@
         (only-in "../scenarios/gitea-postgresql/postgresql/types.ss" Port PostgreSQLConfigContract)
         (only-in :yuanxu/configuration/json config-json-file)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 DirectoryFixture write-source read-overrides)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" read-overrides)
         (only-in :yuanxu/admission/source call-with-source-slot-reads)
         (only-in :clan/poo/slot-layout make-slot-cache))
 (export slot-read-replay-test test-cleanup!)

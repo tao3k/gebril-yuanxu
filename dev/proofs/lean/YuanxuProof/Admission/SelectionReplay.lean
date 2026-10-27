@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "29c58aa9c5be103ba843767e3d22ef8802b79342"
+def declaredPooRevision : String := "e281ad2e33784cfb9951c684b6be78bd2f4b7fca"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
@@ -16,6 +16,17 @@ def firstError : List (Option Nat) → Option Nat
   | [] => none
   | none :: rest => firstError rest
   | some error :: _ => some error
+
+/-- One native private operation, with no callback between the two issuance
+queries. The second predicate's failure spelling is irrelevant: on failure the
+first guard has already refused, and on success both see the same native state.
+This licenses no reuse across a visitor, another record, or final replay. -/
+theorem immediate_issuance_query_redundant (authentic : Bool)
+    (unissued stale : Nat) (remaining : List (Option Nat)) :
+    firstError ((if authentic then none else some unissued) ::
+                (if authentic then none else some stale) :: remaining) =
+      firstError ((if authentic then none else some unissued) :: remaining) := by
+  cases authentic <;> rfl
 
 -- Native preparation replay, native admission replay, then revision-only
 -- policy inspection: no opaque callback or concurrent metadata writer.

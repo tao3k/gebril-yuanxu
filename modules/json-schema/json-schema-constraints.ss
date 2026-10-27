@@ -8,13 +8,8 @@
 ;;; predicates; it does not parse full schemas or emit object contracts.
 
 (import (only-in :clan/poo/object object? .all-slots .ref)
-        (only-in "./functional.ss"
-                 yuanxu-contract-all?
-                 yuanxu-contract-key->string
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-object-ref
-                 yuanxu-contract-project-list
-                 yuanxu-contract-map-pair-with-diagnostics)
+        (only-in "./functional.ss" yuanxu-contract-all? yuanxu-contract-key->string yuanxu-contract-json-object? yuanxu-contract-object-ref yuanxu-contract-map-pair-with-diagnostics)
+        (only-in :std/list/list map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node-kind
                  yuanxu-json-schema-node-value
@@ -298,7 +293,7 @@
 ;;     %
 (def (yuanxu-json-schema-constraints-predicate array-value? constraints)
   (let (predicates
-         (yuanxu-contract-project-list
+         (map
           (lambda (constraint)
             (yuanxu-json-schema-constraint-predicate array-value? constraint))
           constraints))

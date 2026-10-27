@@ -9,8 +9,8 @@
                  current-module-source-observer current-module-source-phase module-source-read)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 DirectoryFixture ServicesFixture write-source))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export source-admission-closed-tail-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)

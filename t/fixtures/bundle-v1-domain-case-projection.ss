@@ -1,6 +1,7 @@
 (export make-bundle-v1-domain-case-runtime-handoff-plan)
 
-(import :clan/poo/object
+(import (only-in :std/list/list map)
+        :clan/poo/object
         :yuanxu/utilities/functional
         :yuanxu/feature-system/domain-case/interface
         :yuanxu/feature-system/interface)
@@ -166,32 +167,32 @@
          (runtime-indexes (iota runtime-count))
          (evidence-indexes (iota evidence-count))
          (components
-          (yuanxu-map
+          (map
            (lambda (index)
              (case-component
               index runtime-count evidence-count duplicate-runtime-owner?))
            component-indexes))
          (capabilities
           (append
-           (yuanxu-map runtime-capability runtime-indexes)
+           (map runtime-capability runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-capability)
                '())
-           (yuanxu-map evidence-capability evidence-indexes)))
+           (map evidence-capability evidence-indexes)))
          (requirements
           (append
-           (yuanxu-map runtime-requirement runtime-indexes)
+           (map runtime-requirement runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-requirement)
                '())
-           (yuanxu-map evidence-requirement evidence-indexes)))
+           (map evidence-requirement evidence-indexes)))
          (requests
           (append
-           (yuanxu-map runtime-request runtime-indexes)
+           (map runtime-request runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-request)
                '())
-           (yuanxu-map evidence-request evidence-indexes)))
+           (map evidence-request evidence-indexes)))
          (feature
           (feature-descriptor
            (feature-spec-compose
@@ -222,11 +223,11 @@
            capability-catalog policy-binding))
          (handoffs
           (append
-           (yuanxu-map runtime-handoff runtime-indexes)
+           (map runtime-handoff runtime-indexes)
            (if duplicate-runtime-owner?
                (list duplicate-runtime-handoff)
                '())
-           (yuanxu-map evidence-handoff evidence-indexes)))
+           (map evidence-handoff evidence-indexes)))
          (handoff-manifest
           (feature-runtime-handoff-manifest
            'bundle-domain-case-handoffs handoffs)))

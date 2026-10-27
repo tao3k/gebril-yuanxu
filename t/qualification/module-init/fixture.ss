@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Test-only import of a freshly generated package through its real identity.
 (import (only-in :gerbil/expander core-read-module/sexp eval-syntax)
-        (only-in :yuanxu/module-system/source/init module-init-export-name))
+        (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
 (export import-fixture-init!)
 (def (import-fixture-init! path)
   ;; A fresh top context has no import transformers until its prelude is bound.

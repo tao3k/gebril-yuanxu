@@ -7,20 +7,22 @@
         (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
         (only-in :yuanxu/module-system/source/admission
                  call-with-module-source-read-cache module-source-read module-source-admit-current!)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export source-admission-test test-cleanup!)
 
 ;; Test-only instrumentation below the adapter in the native method chain.
 ;; Counting classification alone would not prove inherited .admit ran once.
-(def (counted-contract calls)
+(def (counted-contract calls (returned #f))
   (def base
     (.o (:: @ YuanxuContract.)
       (.admit (inherited)
         (lambda (candidate context)
           (vector-set! calls 0 (+ 1 (vector-ref calls 0)))
-          ((inherited) candidate context)))))
+          (def evidence ((inherited) candidate context))
+          (when returned (vector-set! returned 0 evidence))
+          evidence))))
   (.o (:: @ [SourceAdmissionContract. base])
     identity: 'test/source-admission
     .classify:
@@ -53,15 +55,20 @@
       (set! completed (+ completed 1)))
     (yuanxu-test-case "inherited admission runs exactly once on each invocation"
       (def calls (vector 0))
-      (def contract (counted-contract calls))
+      (def returned (vector #f))
+      (def contract (counted-contract calls returned))
       (def candidate (.o port: 5432))
       (def first (.call contract .admit candidate #f))
       (check-equal? (vector-ref calls 0) 1)
       (check-equal? (.get first accepted?) #t)
       (check-equal? (eq? (.get first candidate) candidate) #t)
+      (check-equal? (eq? first (vector-ref returned 0)) #t)
+      (check-equal? (.get first responsibility-evidence) '())
       (def second (.call contract .admit candidate #f))
       (check-equal? (vector-ref calls 0) 2)
       (check-equal? (.get second accepted?) #t)
+      (check-equal? (eq? second (vector-ref returned 0)) #t)
+      (check-equal? (eq? first second) #f)
       (check-equal? (eq? (.get second admission-contract) contract) #t)
       (set! completed (+ completed 1)))
     (yuanxu-test-case "preflight refusal never calls inherited admission"

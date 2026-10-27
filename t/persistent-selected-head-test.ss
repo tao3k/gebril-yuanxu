@@ -6,7 +6,8 @@
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/module-system/source/admission module-source-read)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in "./qualification/testing/directory.ss" write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
         "./qualification/build-publication/persistent-head")
 (export persistent-selected-head-test)
 (def persistent-selected-head-test

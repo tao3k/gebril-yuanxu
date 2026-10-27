@@ -16,11 +16,8 @@
                  yuanxu-contract-slot->alist
                  yuanxu-object-contract-key
                  yuanxu-object-contract-slots)
-        (only-in "./functional.ss"
-                 yuanxu-contract-any?
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-project-list
-                 yuanxu-contract-filter-map)
+        (only-in "./functional.ss" yuanxu-contract-any? yuanxu-contract-json-object?)
+        (only-in :std/list/list map filter-map)
         (only-in "./json-schema-ir.ss" yuanxu-json-schema-normalization-schema)
         (only-in "./json-schema-receipt.ss"
                  yuanxu-json-schema-contract-artifact-normalization
@@ -133,7 +130,7 @@
 
 ;; : (-> [YuanxuJsonSchemaValidationDiagnostic] Symbol [Symbol])
 (def (yuanxu-json-schema-validation-slots-by-reason diagnostics reason)
-  (yuanxu-contract-filter-map
+  (filter-map
    (lambda (diagnostic)
      (and (eq? (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
                reason)
@@ -166,7 +163,7 @@
    (cons 'valid?
          (yuanxu-json-schema-object-contract-validation-valid? validation))
    (cons 'diagnostics
-         (yuanxu-contract-project-list
+         (map
           yuanxu-json-schema-validation-diagnostic->alist
           (yuanxu-json-schema-object-contract-validation-diagnostics validation)))
    (cons 'diagnostic-count
@@ -195,7 +192,7 @@
      (yuanxu-object-contract-key object-contract)
      (yuanxu-json-schema-validation-diagnostics-valid? diagnostics)
      diagnostics
-     (yuanxu-contract-project-list
+     (map
       yuanxu-contract-slot-name
       slots)
      (yuanxu-json-schema-validation-slots-by-reason
@@ -226,7 +223,7 @@
              (yuanxu-json-schema-invalid-object-diagnostic candidate))))
          (slot-diagnostics
           (if (null? shape-diagnostics)
-            (yuanxu-contract-filter-map
+            (filter-map
              (lambda (slot-contract)
                (yuanxu-json-schema-validate-slot
                 slot-contract

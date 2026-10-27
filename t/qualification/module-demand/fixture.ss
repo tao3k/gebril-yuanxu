@@ -6,7 +6,7 @@
         (only-in :std/list/list-builder with-list-builder)
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :gerbil/expander core-read-module/sexp syntax->datum)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in "../testing/directory.ss" DirectoryFixture)
         (only-in :yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-private-source)

@@ -3,11 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Pure recursive node validation; no admission, receipts, or Core descriptors.
-(import (only-in "./functional.ss"
-                 yuanxu-contract-append-map
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-project-list
-                 yuanxu-contract-member?)
+(import (only-in "./functional.ss" yuanxu-contract-json-object? yuanxu-contract-member?)
+        (only-in :std/list/list append-map map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node?
                  yuanxu-json-schema-node-kind
@@ -105,7 +102,7 @@
 (def (yuanxu-json-schema-array-node-validate node value path)
   (let ((item-node (yuanxu-json-schema-node-value node))
         (items (yuanxu-json-schema-schema-guided-array-values value)))
-    (yuanxu-contract-append-map
+    (append-map
      (lambda (indexed-item)
        (if (and (list? item-node) (>= (cdr indexed-item) (length item-node)))
          '()
@@ -198,7 +195,7 @@
            (yuanxu-json-schema-object-pattern-properties object)
            row-key-string))
          (pattern-diagnostics
-          (yuanxu-contract-append-map
+          (append-map
            (lambda (pattern-row)
              (yuanxu-json-schema-pattern-row-validate
               pattern-row
@@ -221,11 +218,11 @@
          (properties
           (yuanxu-json-schema-object-properties object))
          (declared
-          (yuanxu-contract-project-list
+          (map
            yuanxu-json-schema-property-name
            properties))
          (property-diagnostics
-          (yuanxu-contract-append-map
+          (append-map
            (lambda (property)
              (yuanxu-json-schema-property-validate
               property
@@ -233,7 +230,7 @@
               path))
            properties))
          (map-diagnostics
-          (yuanxu-contract-append-map
+          (append-map
            (lambda (row)
              (yuanxu-json-schema-object-row-validate
               object

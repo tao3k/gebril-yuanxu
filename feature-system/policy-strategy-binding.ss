@@ -4,7 +4,8 @@
 
 ;;; Boundary: binds feature contributions to policy and strategy algebra objects.
 ;;; Invariant: contribution composition preserves declared precedence and provenance.
-(import (only-in :clan/poo/object
+(import (only-in :std/list/list fold map filter-map)
+        (only-in :clan/poo/object
                  .ref
                  object<-alist
                  object?)
@@ -111,7 +112,7 @@
 ;; : (forall (a) (-> (-> a Boolean) (List a) (List a)))
 ;; : (-> Procedure [Object] [Object])
 (def (feature-valid-contributions contribution? contributions)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (contribution)
      (and (contribution? contribution) contribution))
    contributions))
@@ -119,7 +120,7 @@
 ;; : (-> Symbol Procedure [Object] [Alist])
 (def (feature-invalid-contribution-diagnostics
       channel contribution? contributions)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (contribution)
      (and (not (contribution? contribution))
           (feature-binding-diagnostic
@@ -133,7 +134,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (yuanxu-fold-left
+     (fold
       (lambda (contribution diagnostics)
         (let (contribution-id (.ref contribution 'contribution-id))
           (cond
@@ -156,7 +157,7 @@
 (def (feature-algebra-mismatch-diagnostics
       channel algebra-id contributions)
   (if algebra-id
-    (yuanxu-filter-map
+    (filter-map
      (lambda (contribution)
        (let (observed-algebra-id (.ref contribution 'algebra-id))
          (and (not (equal? algebra-id observed-algebra-id))
@@ -189,7 +190,7 @@
         #t
         (apply role-compose
                (reverse
-                (yuanxu-map
+                (map
                  (lambda (contribution) (.ref contribution 'prototype))
                  contributions)))
         '())))))
@@ -210,7 +211,7 @@
               (feature-binding-diagnostic
                (feature-binding-code channel 'missing-algebra)
                channel
-               (yuanxu-map
+               (map
                 (lambda (contribution)
                   (.ref contribution 'contribution-id))
                 valid-contributions)))

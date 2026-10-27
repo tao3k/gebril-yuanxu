@@ -1,7 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Owns the ONLY original Core issuance. Exits before any recovery worker.
 (import :clan/poo/object
-        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in "../testing/directory.ss" write-source)
+        (only-in "../service-publication/fixtures.ss" ServicesFixture)
         (only-in :yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
                  run-build-artifact-process)
         "./projection")

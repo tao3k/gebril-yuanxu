@@ -4,10 +4,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
+        (only-in :gerbil/runtime/loader list-modules)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source))
 (export module-test-preparation-test)
 (def (forms root name body)
   (write-source (path-expand name root)
@@ -39,16 +40,53 @@
     (forms root "modules/poison/interface.ss" '((error "unselected module demanded")))
     (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 42)))
     (forms root "modules/example/tests/atomic-test.ss"
-      '((import :std/test "./shared.ss") (export atomic)
-        (def atomic (test-suite "prepared native support"
-          (test-case "compiled helper" (check-equal? answer 42))))))
+      `((import :std/test "./shared.ss") (export atomic-test)
+        (call-with-output-file ,(path-expand "harness-started" root)
+          (lambda (out) (display "native Harness import" out)))
+        (def atomic-test (test-suite "prepared native support"
+          (test-case "compiled helper"
+            (check-equal? answer 42)
+            (call-with-output-file ,(path-expand "case-finished" root)
+              (lambda (out) (display "native TestCase executed" out))))))))
     workspace))
 (def (exports-at root)
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
     (import-fixture-init! (path-expand "init.ss" root))))
+;; Observe the SDK loader itself; do not substitute a hand-maintained module
+;; table. The nonempty support Case below is the positive matcher control.
+(def (artifact-runtime-loaded?)
+  (ormap (lambda (entry)
+           (string-prefix? "yuanxu/module-system/building/artifacts" (car entry)))
+         (list-modules)))
 (def module-test-preparation-test
   (test-suite "Automatic test preparation under native publication"
+    (yuanxu-test-fixture "support-free files never demand selected declarations"
+      (workspace TestPackage)
+      (def root (.get workspace root))
+      (forms root "modules/example/types.ss" '((error "business Types were demanded")))
+      (forms root "modules/example/tests/plain-test.ss"
+        '((import :std/test) (export plain-test)
+          (def plain-test (test-suite "source-only native test"
+            (test-case "real native Case" (check-equal? (+ 1 1) 2))))))
+      (def exports (exports-at root))
+      (def tests (.call (.get exports tests) .for-files
+        (list (path-expand "modules/example/tests/plain-test.ss" root))))
+      (check-equal? ((.get tests std-make-spec)) '())
+      (check-equal? (artifact-runtime-loaded?) #f)
+      (.call tests .compile)
+      (check-equal? (artifact-runtime-loaded?) #f)
+      (check-equal?
+        (ormap (lambda (entry)
+                 (string-prefix? "yuanxu/module-system/building/test-retention" (car entry)))
+               (list-modules)) #f)
+      (check-equal? (.ref/cached tests 'selected-graph) #f)
+      (check-equal? (.ref/cached exports 'modules) #f)
+      (check-equal? (.get (.call tests .run) status) 0)
+      (check-equal? (artifact-runtime-loaded?) #f)
+      (check-equal? (.ref/cached tests 'selected-graph) #f)
+      (forms root "init.ss" '((error "changed init")))
+      (check-exception (.call tests .run) error?))
     (yuanxu-test-fixture "narrow cold/hot compilation, isolated issuance and source refusal"
       (workspace TestPackage)
       (def root (.get workspace root))
@@ -72,11 +110,20 @@
       (def build (.get tests build))
       (check (eq? (.get build selected-graph) (.get tests selected-graph)) => #t)
       (check-exception ((.get build admit-artifacts)) error?)
-      ;; The first run compiles the shared unit; the second lets std/make reuse
-      ;; the same issued native outputs. Neither run caches a passing verdict.
+      ;; Compilation is the same issuance phase used by .run, without importing
+      ;; the Suite. Neither phase may erase the captured compiler association.
       (check-exception (.call (.cc (.get tests execution) build: #f) .run) error?)
+      (check-exception (.call (.cc (.get tests execution) build: #f) .compile) error?)
+      (def prepared (.call tests .compile))
+      (check-equal? (artifact-runtime-loaded?) #t)
+      (check (eq? (.get prepared source) (.get tests source)) => #t)
+      (check-equal? (file-exists? (path-expand "harness-started" root)) #f)
+      (check-equal? (file-exists? (path-expand "case-finished" root)) #f)
+      ((.get build admit-artifacts))
       (def cold (.call tests .run))
       (check-equal? (.get cold status) 0)
+      (check-equal? (file-exists? (path-expand "harness-started" root)) #t)
+      (check-equal? (file-exists? (path-expand "case-finished" root)) #t)
       (def lib (.get build output-directory))
       (def identity (symbol->string (car (.get build compiler-identities))))
       (def output (path-expand (string-append identity ".o1") lib))
@@ -128,9 +175,9 @@
       (def root (.get workspace root))
       (def marker (path-expand "harness-started" root))
       (forms root "modules/example/tests/atomic-test.ss"
-        `((import :std/test "./shared.ss") (export atomic)
+        `((import :std/test "./shared.ss") (export atomic-test)
           (call-with-output-file ,marker (lambda (out) (display "started" out)))
-          (def atomic (test-suite "never executed" (test-case "native" (void))))))
+          (def atomic-test (test-suite "never executed" (test-case "native" (void))))))
       (forms root "modules/example/tests/shared.ss"
         '((export answer) (def answer 42)
           (begin-foreign (c-declare "#error injected-test-support-compiler-failure"))))

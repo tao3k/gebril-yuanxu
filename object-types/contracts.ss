@@ -20,9 +20,14 @@
                  define-type
                  Type
                  Type.
+                 Slot instance Bool Object
                  element?
+                 TypeError?
                  validate
                  raise-type-error)
+        (only-in :clan/poo/object-contract-flow checked-action)
+        (only-in :clan/poo/type Record Symbol List)
+        (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
         (only-in :yuanxu/object-family/read-projection
                  owned-read-leaf! owned-read-copy! owned-read-open!)
@@ -92,14 +97,6 @@
 (.defgeneric (yuanxu-contract-admit contract candidate context)
   slot: .admit)
 
-;; : (-> Object Symbol [Symbol] Boolean)
-(def (yuanxu-evidence-object? value expected-kind required-slots)
-  (and (object? value)
-       (every (cut .slot? value <>) required-slots)
-       (eq? (.ref value 'kind) expected-kind)
-       (boolean? (.ref value 'accepted?))
-       (list? (.ref value 'diagnostics))))
-
 ;; : (-> Object Boolean)
 (def (yuanxu-type-identity? value)
   (or (symbol? value)
@@ -107,41 +104,35 @@
            (list? value)
            (every yuanxu-type-identity? value))))
 
-;; : (-> Object Boolean)
-(def (yuanxu-classification-evidence-element? value)
-  (and (yuanxu-evidence-object?
-        value 'yuanxu.type.classification-evidence
-        '(kind type-identity candidate accepted? diagnostics context))
-       (yuanxu-type-identity? (.ref value 'type-identity))))
+(define-type (EvidenceIdentity @ Type.) .element?: yuanxu-type-identity?)
+;; These are required opaque REFERENCES, not configurable untyped data. Slot
+;; presence is native; normalization must not rewrite either referent. Their
+;; relation to classification/publication is checked below and at bind-evidence.
+(def EvidenceReferences
+  (.o candidate: (instance Slot) context: (instance Slot)))
+(.def (YuanxuClassificationEvidence @
+        (Record kind: [Symbol constant: 'yuanxu.type.classification-evidence]
+                type-identity: [EvidenceIdentity] accepted?: [Bool]
+                diagnostics: [(List Object)]))
+  slots: =>.+ EvidenceReferences)
 
-;;; Evidence type: accepts only classification receipts with the required typed slots.
-(define-type (YuanxuClassificationEvidence @ Type.)
-  .element?: yuanxu-classification-evidence-element?)
-
-;; : (-> Object Boolean)
-(def (yuanxu-validation-evidence-element? value)
-  (and (yuanxu-evidence-object?
-        value 'yuanxu.contract.validation-evidence
-        '(kind contract-identity admission-contract candidate classification obligation-evidence
-               accepted? diagnostics context))
-       (symbol? (.ref value 'contract-identity))
-       (object? (.ref value 'admission-contract))
-       (.slot? (.ref value 'admission-contract) 'identity)
-       (eq? (.ref value 'contract-identity)
-            (.ref (.ref value 'admission-contract) 'identity))
-       (element? YuanxuClassificationEvidence (.ref value 'classification))
-       (list? (.ref value 'obligation-evidence))
-       (equal? (.ref value 'candidate)
-               (.ref (.ref value 'classification) 'candidate))
-       (equal? (.ref value 'context)
-               (.ref (.ref value 'classification) 'context))
-       (eq? (.ref value 'accepted?)
-            (and (.ref (.ref value 'classification) 'accepted?)
-                 (null? (.ref value 'obligation-evidence))))))
-
-;;; Evidence type: accepts only validation receipts with the required typed slots.
-(define-type (YuanxuValidationEvidence @ Type.)
-  .element?: yuanxu-validation-evidence-element?)
+(.def (YuanxuValidationEvidence @
+        (Record kind: [Symbol constant: 'yuanxu.contract.validation-evidence]
+                contract-identity: [Symbol] admission-contract: [Type]
+                classification: [YuanxuClassificationEvidence]
+                obligation-evidence: [(List Object)] accepted?: [Bool]
+                diagnostics: [(List Object)]))
+  slots: =>.+ EvidenceReferences
+  ;; Only contextual relations remain here; native Slot/Record owns shape.
+  (.element? (inherited)
+    (lambda (value)
+      (and ((inherited) value)
+           (eq? (.get value contract-identity) (.get value admission-contract identity))
+           (equal? (.get value candidate) (.get value classification candidate))
+           (equal? (.get value context) (.get value classification context))
+           (eq? (.get value accepted?)
+                (and (.get value classification accepted?)
+                     (null? (.get value obligation-evidence))))))))
 
 ;; : (-> Object Object Boolean [Alist] Object YuanxuClassificationEvidence)
 (def (yuanxu-classification-evidence type-identity-value candidate-value
@@ -254,14 +245,50 @@
   (contract-admit-evidence contract candidate context owned?
     (and owned? (contract-analysis-child? pending))))
 
+;; Only the native VALUE action is inside this refusal boundary. Contextual
+;; obligations, source checks and publication callbacks are deliberately outside.
+;; Preserve native diagnostic objects/paths and the original condition itself.
+(def (native-value-refusal contract candidate context cause)
+  (def details (Error-irritants cause))
+  (def rejected
+    (match details
+      ([_where value (? list? _failures)]
+       ;; Native rebinding derives the checked root from the supplied root.
+       ;; A nested validator's child must never replace that root in evidence.
+       (if (and (object? candidate) (object? value)
+                (memq candidate (compute-precedence-list! value))) value candidate))
+      (else candidate)))
+  (def issues
+    (match details
+      ([_where value (? list? failures)]
+       (if (and (eq? value rejected) (pair? failures)
+                (every (lambda (issue)
+                         (and (object? issue) (.slot? issue 'kind) (.slot? issue 'path))) failures))
+         failures
+         (list (.o kind: 'native-type-refused path: '() cause: cause))))
+      (else (list (.o kind: 'native-type-refused path: '() cause: cause)))))
+  (def classification
+    (yuanxu-classification-evidence (.get contract identity) rejected #f issues context))
+  (.cc (yuanxu-validation-evidence contract rejected classification '() #f issues context)
+    cause: cause))
+
 (def (contract-admit-evidence contract candidate context owned? analysis?)
-  (let* ((value-contract (.ref contract 'value-contract))
-         (consume (cut contextual-contract-admit-evidence contract <> context owned? analysis?)))
-    ;; Native Type validation owns recursive Function normalization. Contextual
-    ;; admission consumes its actual result once, after the analysis edge was
-    ;; consumed above. No runtime import, wrapper or successful value is cached.
-    (if value-contract (consume (validate value-contract candidate))
-        (consume candidate))))
+  ;; Context-only descendants already receive their checked child. A missing
+  ;; value Type has no normalization stage: do not materialize its FUN cache.
+  (let/cc refuse
+    (def checked
+      (if (.get contract value-contract)
+        ;; Preparation stays outside the handler: an invalid descriptor is a
+        ;; programming error. Only this value invocation may escape on refusal.
+        (let (action (.get contract prepared-value-action))
+          (with-catch
+            (lambda (cause)
+              (if (TypeError? cause)
+                (refuse (native-value-refusal contract candidate context cause))
+                (raise cause)))
+            (cut action candidate)))
+        candidate))
+    (contextual-contract-admit-evidence contract checked context owned? analysis?)))
 
 (def (contextual-contract-admit-evidence contract candidate context owned? analysis?)
   (let* ((classification
@@ -321,6 +348,9 @@
   ;; Optional public POO Type. The single producer normalizes once before
   ;; contextual classification; its result is the evidence/publication subject.
   value-contract: #f
+  ;; Native FUN composition is prepared on the effective descriptor, not per
+  ;; candidate. It validates afresh and returns its actual normalized value.
+  prepared-value-action: (if value-contract (checked-action value-contract values) values)
   ;; Contextual child Contracts, not a duplicate map of public field Types.
   ;; Ordinary value responsibilities belong to value-contract/ObjectContract.
   responsibilities: (.o)

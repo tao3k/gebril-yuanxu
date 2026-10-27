@@ -5,6 +5,7 @@
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/source this-source-file)
         (only-in :std/list/list find)
+        (only-in :std/make make)
         (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
@@ -22,6 +23,8 @@
                  for-each-build-module yuanxu-bootstrap-contexts yuanxu-bootstrap-source-path)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :yuanxu/module-system/building/artifacts current-build-output-directory)
         (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -385,7 +388,10 @@
          ;; Register every evaluated private wrapper, a superset of role inputs;
          ;; both projections must preserve exact order and identities.
          (def canonical (make-hash-table-eq))
-         (yuanxu-bootstrap-contexts (lambda (context) (hash-put! canonical context #t)))
+         (yuanxu-bootstrap-contexts
+           (lambda (context)
+             (check-equal? (hash-key? canonical context) #f)
+             (hash-put! canonical context #t)))
          (def private (make-hash-table-eq))
          (hash-for-each
            (lambda (context _code)
@@ -585,21 +591,65 @@
            (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-exception (.get view build-graph) error?))))))
 
-    (yuanxu-test-case "prepared wrapper imports roles and exports only the Module automatically"
+    (yuanxu-test-case "prepared native interface defers roles and exports only the Module automatically"
       (with-publication-source
-       (lambda (root module-root source view)
+       (lambda (root module-root _source _view)
+         (def config-marker (path-expand "config-initialized" root))
+         (def objects-marker (path-expand "objects-initialized" root))
+         (write-file (path-expand "config.ss" module-root)
+           (call-with-output-string
+             (lambda (port)
+               (write `(def Greeting
+                         (begin (call-with-output-file (list path: ,config-marker append: #t) (cut display "once" <>)) "hello")) port)
+               (newline port) (write '(export Greeting) port))))
+         (write-file (path-expand "objects.ss" module-root)
+           (call-with-output-string
+             (lambda (port)
+               (write '(import (only-in :clan/poo/object .o)) port) (newline port)
+               (write `(def FixtureScope
+                         (begin (call-with-output-file (list path: ,objects-marker append: #t) (cut display "once" <>))
+                           (.o retained: 'upstream))) port)
+               (newline port) (write '(export FixtureScope) port))))
+         (write-file (path-expand "init.ss" root)
+           "(yuanxu! mode: explicit source: \"./modules\" :custom (example))")
+         (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+         (def source (.call (.get view context) locate 'custom/example))
          (let* ((prepared ((.get view prepare-publication) 'custom/example))
-                (wrapper (path-expand "compiled/interface.ss" root)))
+                (wrapper (path-expand
+                           (string-append "compiled/" (symbol->string (.get prepared compiler-identity)) ".ss") root)))
            (check-equal? (.get prepared binding) 'Fixture)
            (check-equal? (eq? prepared ((.get view prepare-publication) 'custom/example)) #t)
            (yuanxu-write-module-publication prepared wrapper)
-           (let (publication (native-import-value wrapper 'Fixture))
-             (check-equal? (expander-context-id (core-import-module wrapper)) (.get prepared compiler-identity))
-             (check-equal? (yuanxu-validation-evidence-accepted?
-                           (admit-module-publication! source 'custom/example publication (.o))) #t)
-             (let (scope ((.get publication core link) (.o)))
-               (check-equal? (.get scope greeting) "hello")
-               (check-equal? (.get scope retained) 'upstream)))
+           (write-file (path-expand "build.ss" root) "(void)")
+           (def projection (yuanxu-project-source-spec view '() root (path-expand "build.ss" root)))
+           (check-equal? (pair? (.get projection spec)) #t)
+           (def lib (path-expand "lib" root))
+           (.call projection .compile lib
+             (lambda ()
+               (make (.get projection spec) srcdir: root
+                 libdir: (or (current-build-output-directory) lib) optimize: #f)))
+           (def previous-path (load-path))
+           (dynamic-wind
+            (lambda () (set-load-path! (cons lib previous-path)))
+            (lambda ()
+             (let (publication
+                    (native-import-value
+                      (path-expand (string-append (symbol->string (.get prepared compiler-identity)) ".ssi") lib)
+                      'Fixture))
+               (check-equal? (file-exists? config-marker) #f)
+               (check-equal? (file-exists? objects-marker) #f)
+               (check-equal? (expander-context-id (core-import-module wrapper)) (.get prepared compiler-identity))
+               (check-equal? (yuanxu-validation-evidence-accepted?
+                             (admit-module-publication! source 'custom/example publication (.o))) #t)
+               (check-equal? (file-exists? config-marker) #f)
+               (check-equal? (file-exists? objects-marker) #f)
+               (let (scope ((.get publication core link) (.o)))
+                 (check-equal? (.get scope greeting) "hello")
+                 (check-equal? (.get scope retained) 'upstream)
+                 (check-equal? (.get scope greeting) "hello")
+                 (check-equal? (module-source-read config-marker) "once")
+                 (check-equal? (module-source-read objects-marker) "once"))))
+            (lambda () (set-load-path! previous-path)))
            (check-exception (native-import-value wrapper 'Greeting) true)
            (let* ((original (path-expand "interface.ss" module-root))
                   (text (module-source-read original)))

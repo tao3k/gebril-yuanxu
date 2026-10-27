@@ -6,19 +6,17 @@ test-file path observe="false":
     set -euo pipefail
     launcher=(gxi)
     if [[ -z "${GERBIL_PATH:-}" ]]; then
-        launcher=(gerbil env gxi)
+        launcher=(gerbil {{ gerbil_test_runtime_options }} env gxi)
     elif [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then
         export PATH="$GERBIL_PATH/bin:$PATH"
     fi
-    context="$(timeout --signal=TERM --kill-after=5s 60s "${launcher[@]}" {{ gerbil_test_runtime_options }} -e '(import :yuanxu/ops/progress)' -e '(displayln execution-total-seconds)' -e '(display (gerbil-path))')"
-    budget="${context%%$'\n'*}"
-    export GERBIL_PATH="${context#*$'\n'}"
-    if [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then export PATH="$GERBIL_PATH/bin:$PATH"; fi
-    test_lib="$GERBIL_PATH/test-lib"
-    if [[ "{{ observe }}" != false ]]; then printf 'test-entry phase=context elapsed-s=%s\n' "$SECONDS"; fi
+    # The runtime validates this cap. Do not boot another Gerbil instance just
+    # to print the same fixed value and its native package directory.
+    budget=600
+    test_lib="${GERBIL_PATH:-$PWD/.gerbil}/test-lib"
     # init and tests belong to the selected working directory, including an
     # explicitly relocated snapshot; the Justfile's location is not authority.
-    GERBIL_LOADPATH="$test_lib:$PWD/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
+    GERBIL_LOADPATH="$test_lib:$PWD/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
@@ -37,9 +35,10 @@ persistent-head-worker path operation argument="":
 test:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=(t/funflow-function-types-test.ss t/contract-function-composition-test.ss t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-declaration-value-test.ss t/module-deferred-projection-test.ss t/module-role-context-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
+    files=(t/funflow-function-types-test.ss t/contract-function-composition-test.ss t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-declaration-value-test.ss t/module-deferred-projection-test.ss t/module-role-context-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-loader-publication-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     files+=(t/module-windows-test.ss t/module-testing-isolation-test.ss t/module-test-preparation-test.ss)
     for file in "${files[@]}"; do just test-file "$file"; done
+    just test-selected-modules
     echo "[yuanxu-testing] phase=all-files-complete fileCount=${#files[@]}"
 
 # Opt-in wall/user/system timing while preserving the same bounded test path.
@@ -82,6 +81,12 @@ test-modules:
     just test-file t/module-testing-test.ss
     just test-file t/module-testing-isolation-test.ss
     just test-file t/module-testing-compiled-test.ss
+    just test-selected-modules
+
+# A complete published module test group is an external integration phase,
+# never a Case inside the test which verifies discovery/projection mechanics.
+test-selected-modules:
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} -e '(import :clan/poo/object (only-in "./init.ss" yuanxu.init.exports))' -e '(def tests (.get yuanxu.init.exports tests))' -e '(.call tests .compile)' -e '(display (.get (.call tests .run) output))'
 
 verify-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash

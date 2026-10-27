@@ -199,17 +199,9 @@ Source: [[file:../catalog/objects.ss][core/module-system/catalog/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-module-catalog-entry-prototype= | E | Extend a source/catalog family. |
-| =make-yuanxu-module-catalog-entry= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-entry?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-entry-source= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-entry-module= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =ModuleSourceBinding= | D/E | Native Record; construct with make-instance, inspect slots, refine the Type. |
 | =yuanxu-module-catalog-entry->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-prototype= | E | Extend a source/catalog family. |
-| =make-yuanxu-module-catalog= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog?= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-name= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =yuanxu-module-catalog-entries= | D | Inert immutable construction, identity lookup or inspection; no source load. |
+| =ModuleCatalog= | D/E | Native Record of ordered entries; ordinary slot extension retains inherited fields. |
 | =yuanxu-module-catalog-source-refs= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-modules= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-add= | D | Inert immutable construction, identity lookup or inspection; no source load. |
@@ -275,47 +267,31 @@ Source: [[file:../loader/load-path.ss][core/module-system/loader/load-path.ss]].
 | =yuanxu-module-load-path-collections= | D | Inspect a maintained LoadPath/source collection. |
 | =yuanxu-module-load-path-locate= | R | Invokes owned source-collection callbacks; effects are not inferred away. |
 
+* core/module-system/loader/types.ss
+
+Source: [[file:../loader/types.ss][core/module-system/loader/types.ss]].
+
+| Existing export | Surface | Placement reason |
+|-----------------+---------+------------------|
+| =ModuleLoaderBackend= | D/E | Symbol identity/kind, checked Function and typed annotations. |
+| =LoaderMetadata= | D/E | Symbol-keyed scalar annotations; no arbitrary values. |
+| =LazyLoadPlan= | D/E | Native data Record; opaque Backend values are not recursively Function-normalized. |
+| =ModuleLoadReceipt= | D/E | Native defaults, scalar fields and message Type checks; not source authentication. |
+
 * core/module-system/loader/objects.ss
 
 Source: [[file:../loader/objects.ss][core/module-system/loader/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-module-loader-entry-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-yuanxu-module-loader-entry= | E | Loader Backend/plan/receipt authoring. |
-| =yuanxu-module-loader-entry?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-entry-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-entry-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-backend-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-yuanxu-module-loader-backend= | E | Loader Backend/plan/receipt authoring. |
-| =yuanxu-module-loader-backend?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-backend-source-kind= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-loader-backend-load= | E | Exposes a behavior callback; not configurable noun data. |
-| =yuanxu-module-loader-backend-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-yuanxu-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
-| =yuanxu-lazy-load-plan?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-backends= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-forced?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-receipt= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-plan-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-prototype= | E | Loader Backend/plan/receipt authoring. |
-| =make-yuanxu-module-load-receipt= | E | Loader Backend/plan/receipt authoring. |
-| =yuanxu-module-load-receipt?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-source= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-module= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-backend-name= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-loaded?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-code= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-messages= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-module-load-receipt-metadata= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
+| =ModuleSourceBinding= | D/E | Same native Record exported by source/types and Catalog; construction never invokes a Loader. |
+| =ModuleLoaderBackend= | D/E | Native Record with checked Function; construction/admission do not invoke its callback. |
+| =LazyLoadPlan= | D/E | Native Record of source/backends/receipt; construction does not invoke backend load. |
+| =ModuleLoadReceipt= | D/E | Native Record defaults and field validation; source authentication remains publication-owned. |
 | =yuanxu-module-static-loader= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-module-loader-backend-supports?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
-| =yuanxu-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
+| =yuanxu-lazy-load-source-receipt= | D | Constructs a deferred receipt without invoking a Loader. |
 | =yuanxu-make-lazy-load-plan= | E | Loader Backend/plan/receipt authoring. |
-| =yuanxu-force-lazy-load-source-receipt= | R | Invokes loading/forcing callbacks. |
 | =yuanxu-force-lazy-load-plan= | R | Invokes loading/forcing callbacks. |
 | =yuanxu-module-load-source-receipt= | R | Invokes loading/forcing callbacks. |
 | =yuanxu-module-load-source-receipts= | R | Invokes loading/forcing callbacks. |
@@ -360,31 +336,11 @@ Source: [[file:../projection/option-objects.ss][core/module-system/projection/op
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-module-option-config-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-yuanxu-module-option-config= | E | Construct an Interface-bound option/receipt projection. |
-| =yuanxu-module-option-config?= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-config-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-config-value= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-config-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-config-metadata= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-schema-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-yuanxu-module-option-schema= | E | Construct an Interface-bound option/receipt projection. |
-| =yuanxu-module-option-schema?= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-schema-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-schema-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-schema-type= | D | Inspect or validate supplied Interface-bound option values. |
+| =ModuleOptionSchema= | E | Native Record containing the original effective Slot and module identity. |
+| =yuanxu-module-option-schema-contract= | D | Project a native Record over the selected effective Slot. |
 | =yuanxu-module-option-schema-rule= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-value= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-metadata= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-prototype= | E | Construct an Interface-bound option/receipt projection. |
-| =make-yuanxu-module-option-validation-receipt= | E | Construct an Interface-bound option/receipt projection. |
-| =yuanxu-module-option-validation-receipt?= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-id= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-source-module= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-valid?= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-code= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-messages= | D | Inspect or validate supplied Interface-bound option values. |
-| =yuanxu-module-option-validation-receipt-metadata= | D | Inspect or validate supplied Interface-bound option values. |
 
 * core/module-system/projection/option-validation.ss
 
@@ -396,6 +352,7 @@ Source: [[file:../projection/option-validation.ss][core/module-system/projection
 | =yuanxu-module-missing-schema-receipt= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-validation-receipt= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-options-validate= | D | Inspect or validate supplied Interface-bound option values. |
+| =yuanxu-module-config-validation-receipts= | D | Diagnose the original Record once; project missing-field and whole-value failures without issuing admission evidence. |
 
 * core/module-system/schema/interface.ss
 
@@ -718,6 +675,14 @@ Source: [[file:../schema/validation.ss][core/module-system/schema/validation.ss]
 | =yuanxu-module-objects-validation-summary= | E | Owner schema validation; does not define an ordinary root vocabulary. |
 | =yuanxu-require-module-object-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
 | =yuanxu-require-module-objects-validation!= | E | Owner schema validation; does not define an ordinary root vocabulary. |
+
+* core/module-system/source/types.ss
+
+Source: [[file:../source/types.ss][core/module-system/source/types.ss]].
+
+| Existing export | Surface | Placement reason |
+|-----------------+---------+------------------|
+| =ModuleSourceBinding= | D/E | One source/Module pair Type shared by static Loader and ordered Catalog; native construction and slot access. |
 
 * core/module-system/source/objects.ss
 

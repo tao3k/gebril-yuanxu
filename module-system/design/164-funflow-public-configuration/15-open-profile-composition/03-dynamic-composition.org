@@ -117,7 +117,7 @@ Seven tasks are a fixture outcome only.
     records))
 
 (def (cicd-selected-nodes scenario-value context-value prepared-value)
-  (yuanxu-append-map
+  (append-map
     (lambda (record)
       (let* ((binding-name (.get record binding))
              (profile-value (.get record profile))
@@ -125,7 +125,7 @@ Seven tasks are a fixture outcome only.
              (modules (.get association-value plan-modules)))
         (unless (nonempty-unique-symbols? modules)
           (error "invalid-plan-module-selection" binding-name modules))
-        (yuanxu-append-map
+        (append-map
           (lambda (module-name)
             (unless (and (.slot? profile-value module-name)
                          (.slot? (.get association-value module-policies) module-name)
@@ -153,7 +153,7 @@ Seven tasks are a fixture outcome only.
     (cicd-assert-preparation scenario-value context-value prepared-value)))
 
 (def (cicd-node-at nodes path-value)
-  (yuanxu-find (lambda (node) (equal? (.get node path) path-value)) nodes))
+  (find (lambda (node) (equal? (.get node path) path-value)) nodes))
 
 (def (cicd-linked-nodes nodes handoffs)
   (for-each
@@ -183,7 +183,7 @@ Seven tasks are a fixture outcome only.
     (if (null? remaining)
       (reverse result)
       (let ((ready
-             (yuanxu-find
+             (find
                (lambda (node)
                  (every (lambda (dependency) (if (member dependency completed) #t #f))
                         (.get node after)))

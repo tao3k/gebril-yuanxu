@@ -1,0 +1,113 @@
+#+title: 13.25 Doctor Demand Boundaries
+
+* Source findings
+
+Following the whole-Record cutover, two consumers still crossed the boundary
+between metadata discovery and value inspection:
+
+1. Duplicate-option diagnostics collected all option values before extracting
+   keys. Contribution summaries likewise read options merely to count them.
+   Both paths could evaluate an unclaimed field that the actual Record diagnostic
+   deliberately leaves cold.
+2. Root doctor construction read evaluation.validation-receipts in its outer
+   let, before the returned POO preview was inspected. Asking only for identity
+   therefore triggered field diagnostics.
+
+The source audit found no use of these preview receipts as execution/admission
+credentials. No new admission wrapper was warranted. Product source owners are
+module-authoring/module-descriptor.ss and workflow/scenario/configuration's
+module-diagnostics.ss and doctor-presentation.ss.
+
+* One inventory function and native demand
+
+The product descriptor now exports a real metadata operation, rather than an
+alias to a value getter:
+
+#+begin_src scheme
+(def (agentic-ai-lab-module-option-names module)
+  (if (object? (agentic-ai-lab-module-interface-object module))
+    (let (config (agentic-ai-lab-module-config module))
+      (if (object? config) (.all-slots config) '()))
+    (map car (agentic-ai-lab-module-options module))))
+#+end_src
+
+This follows the existing constructor's interface/config authority rule. A shared
+or Core-style Interface object does not need a product brand to be inspected
+without reading its values. An invalid Interface-backed config has no enumerable
+names; its whole-Record diagnostic still reports expected-object separately.
+Descriptors without an Interface retain legacy row order and duplicate keys.
+An explicit options override is not allowed to redefine the authoritative native
+config inventory silently.
+
+Duplicate detection now uses standard append-map over this inventory. Its old
+private recursive key extractor is removed. Contribution counts use the same
+operation. Existing missing-import and duplicate/empty-module warnings remain
+metadata diagnostics, not a complete config validity status.
+
+Doctor construction no longer reads validation-receipts in its outer let. The
+existing result object's count slot owns the demand:
+
+#+begin_src scheme
+;; Inside the existing doctor preview; evaluation-value is the ordinary existing
+;; evaluation object, not a new cache owner or execution wrapper.
+validation-receipt-count:
+(length (.ref evaluation-value 'validation-receipts))
+#+end_src
+
+Native POO slot evaluation/caching supplies this behavior. There is no registry,
+restore protocol, accepted-verdict cache, hand-written self/super hook or new
+preview-node family. Metadata graph traversal and structural doctor work are
+not claimed to be wholly deferred by this change.
+
+* Qualified observations
+
+The actual user-interface regression constructs an Interface, config, catalog
+and doctor through existing APIs. Its config contains a counted endpoint value,
+a Function field, and an unclaimed value that throws if forced. The Record's
+whole-membership method counts checks. This is a controlled probe, not a new
+production Contract policy.
+
+| Demand | Endpoint evaluations | Whole membership checks | Handler body calls |
+|--------+----------------------+-------------------------+--------------------|
+| Construct doctor; inspect kind | 0 | 0 | 0 |
+| Read contribution option count (3) | 0 | 0 | 0 |
+| First validation-receipt count (3) | 1 | 1 | 0 |
+| Repeat that count on the same preview | 1 | 1 | 0 |
+| Construct a fresh preview | 1 | 1 | 0 |
+| Demand the fresh preview's diagnostic count | 1 | 2 | 0 |
+
+The Function descriptor uses native String input/output Types. After inspection,
+the stored handler remains eq? to the original procedure. Diagnostics recognize
+it but do not normalize it into an invocation wrapper or run its body. The
+unclaimed payload remains cold throughout. A shared-Interface control verifies
+that inventory does not regress to materializing the options value view.
+
+Four default serial Just gates passed against fixed gerbil-poo 85a7673 with the
+installed compiler: user-interface integration, module-system diagnostics,
+module owner contracts and all eleven Gitea/PostgreSQL publication controls.
+Final logs have MODULE-OK, HARNESS-OK and OK without harness errors or heap/stack
+overflow. Legacy duplicate keys, default/whole-Record errors, parent-cache
+isolation, both service requirements and source-change refusal remain covered.
+No timeout/heap limit, compiler source or dependency REV was changed.
+
+* Reflection and remaining work
+
+The benefit is a concrete UX boundary: metadata can be shown even when a config
+contains unknown values that must not be evaluated. Type diagnostics remain an
+explicit demand. The count cached inside one preview is display data, not
+approval. A fresh preview checks the current in-memory config again; it does not
+promise to reload changed files or replace source currentness certification.
+Publication .admit and before-return checks remain independent.
+
+Source inspection also showed separate root/aggregate diagnostic paths in
+module-runtime-presentation.ss's workflow. That specific duplicate is now
+qualified together with closure ownership in
+[[file:13.26-workflow-preview-sharing.org][13.26 Unified Preview Ownership]]. That design now owns evaluation, workflow,
+doctor and already-closed diagnostic algorithms as one dataflow and acceptance
+unit. Neither change introduces a process-global memo or manual purity flag, or
+claims a measured memory/throughput improvement.
+
+The fixed source correspondence for demand is
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/object.ss][native object slot/read semantics]]. Function recognition versus wrapping is
+owned by [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/mop.ss][the native Function Type]]. No new Lean/QNT theorem, full CI or 10k-module
+capacity qualification is asserted by these focused consumer regressions.

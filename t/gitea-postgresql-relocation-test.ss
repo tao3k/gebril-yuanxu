@@ -3,9 +3,8 @@
 (import :std/test :clan/poo/object
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-               ServicesFixture RelocatedServicesFixture relocate-services
-               write-source read-overrides refused)
+        (only-in "./qualification/testing/directory.ss" write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture RelocatedServicesFixture relocate-services read-overrides refused)
         (only-in :yuanxu/module-system/source/admission module-source-read))
 (export relocation-test test-cleanup!)
 (def completed 0)

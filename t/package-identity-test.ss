@@ -4,7 +4,7 @@ prelude: :gerbil/core
 (import :std/test
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander core-import-module expander-context-id)
-        (only-in :yuanxu/utilities/functional yuanxu-map)
+        (only-in :yuanxu/utilities/functional yuanxu-stable-duplicates)
         (only-in :yuanxu/module-system/building/source-closure
                  yuanxu-bootstrap-source-path for-each-build-module))
 (export package-identity-test)
@@ -12,8 +12,8 @@ prelude: :gerbil/core
 (def package-identity-test
   (test-suite "One Yuanxu package root"
     (test-case "ordinary explicit import does not require a package prelude"
-      (check-equal? (yuanxu-map number->string '(5432 5440))
-                    '("5432" "5440")))
+      (check-equal? (yuanxu-stable-duplicates '(a b a c b))
+                    '(a b)))
     (test-case "compiler identities map back to the same root source"
       (def context (core-import-module ':yuanxu/module-system/source/declaration))
       (def root (path-expand ".." (path-directory (this-source-file))))

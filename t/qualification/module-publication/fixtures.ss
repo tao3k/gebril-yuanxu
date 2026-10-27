@@ -4,7 +4,7 @@
 (import (only-in :clan/poo/object .def .o .get .ref .+)
         (only-in :std/test check-equal?)
         (only-in :std/source this-source-file)
-        (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/module-system/source/admission module-source-type)
@@ -16,11 +16,7 @@
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
 
-(def (remove-tree path)
-  (if (eq? (module-source-type path) 'directory)
-    (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
-           (delete-directory path))
-    (delete-file path)))
+(def remove-tree clear-temporary-file!)
 
 (def publication-roles
   (.o

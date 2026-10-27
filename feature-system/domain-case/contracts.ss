@@ -16,15 +16,11 @@
         :yuanxu/object-family/role-syntax
         :yuanxu/composition/roles
         (only-in :yuanxu/utilities/functional
-                 yuanxu-fold-left
-                 yuanxu-fold-right
-                 yuanxu-map
-                 yuanxu-filter-map
-                 yuanxu-append-map
                  yuanxu-all?
                  yuanxu-stable-duplicates
                  yuanxu-member?
-                 yuanxu-list-of?))
+                 yuanxu-list-of?)
+        (only-in :std/list/list fold fold-right map filter-map append-map))
 
 (def +yuanxu-case-slot-contract-kind+ 'yuanxu.case-slot-contract.v1)
 (def +yuanxu-case-type-contract-kind+ 'yuanxu.case-type-contract.v1)
@@ -295,18 +291,18 @@
         (cons 'parents (.ref value 'parent-component-ids))
         (case-type-contract-normalize (.ref value 'type-contract))
         (cons 'slots
-              (yuanxu-map
+              (map
                case-slot-contract-normalize
                (domain-case-sort (.ref value 'slot-contracts)
                                  (lambda (slot) (.ref slot 'slot-id)))))
         (cons 'contracts
-              (yuanxu-map
+              (map
                case-method-contract-normalize
                (domain-case-sort
                 (.ref value 'method-contracts)
                 (lambda (contract) (.ref contract 'contract-id)))))
         (cons 'projections
-              (yuanxu-map
+              (map
                case-projection-normalize
                (domain-case-sort
                 (.ref value 'projections)
@@ -322,9 +318,9 @@
   (list +yuanxu-domain-case-key-domain+
         (list 'schema-id schema-id-value)
         (list 'schema-version schema-version-value)
-        (cons 'components (yuanxu-map case-component-normalize components))
+        (cons 'components (map case-component-normalize components))
         (cons 'local-overrides
-              (yuanxu-map
+              (map
                case-slot-contract-normalize
                (domain-case-sort local-overrides
                                  (lambda (slot) (.ref slot 'slot-id)))))
@@ -369,7 +365,7 @@
   (vector-set! entry 1 #f))
 
 (def (domain-case-resolution-values entries-rev)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (entry)
      (and (domain-case-resolution-entry-active? entry)
           (domain-case-resolution-entry-value entry)))
@@ -501,7 +497,7 @@
 (def (domain-case-single-algebra components slot code)
   (let (algebras
         (domain-case-unique
-         (yuanxu-filter-map
+         (filter-map
           (lambda (component) (.ref component slot))
           components)))
     (if (> (length algebras) 1)
@@ -573,7 +569,7 @@
            (hash-put! projection-index id (vector 1 projection)))))
      projections)
     (let (catalog+diagnostics
-        (yuanxu-fold-right
+        (fold-right
          (lambda (id state)
            (let* ((catalog (car state))
                   (diagnostics (cdr state))

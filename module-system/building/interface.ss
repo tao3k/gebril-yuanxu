@@ -45,6 +45,13 @@
     (parameterize ((current-expander-context (make-top-context)))
       (eval-syntax '(import :yuanxu/module-system/building/build-projection))
       (eval-syntax 'yuanxu-project-source-spec))))
+;; Source discovery is demanded separately from compilation/signing.
+(def test-source-projector
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :gerbil/core))
+      (eval-syntax '(import (only-in :yuanxu/module-system/source/build module-test-source-spec)))
+      (eval-syntax 'module-test-source-spec))))
 (def artifact-cleaners
   (delay
     (parameterize ((current-expander-context (make-top-context)))
@@ -67,11 +74,10 @@
       (.+ source-value
         (.o (:: tests) source: source-value
             build:
-            ((force build-projector) (lambda () (selected!))
-              (if (.slot? source-value 'native-build-spec)
-                (.get source-value native-build-spec) '())
+            ((force test-source-projector) (lambda () (selected!)) source-value
               (path-directory init-file) init-file
-              demand: source-value)
+              (if (.slot? source-value 'std-make-spec)
+                (.get source-value std-make-spec) '()))
             std-make-spec: (lambda ()
                              ((.get build admit-current))
                              (.get build spec))
@@ -137,11 +143,11 @@
         ;; there is no import, caller handoff or execution requiring a recheck.
         (hash-put! tests key projection)
         projection)))
-  (def (file-tests files (inputs '()) (native-build-spec '()))
+  (def (file-tests files (inputs '()) (std-make-spec '()))
     ;; The caller supplies existing package-owned native declarations. They
     ;; refine only demanded support targets; they never expand the test roster.
     (source-tests (.cc (module-test-file-source files inputs)
-                    native-build-spec: native-build-spec)))
+                    std-make-spec: std-make-spec)))
   (def (directory-tests directory (excluded '()))
     (source-tests (module-test-directory-source
                    (path-expand directory (path-directory init-file)) excluded)))
@@ -196,7 +202,7 @@
       ((current-build-spec-consumer) value
         (lambda (dispatch args libdir)
           (run-spec value dispatch args libdir
-            (.get prepared native-make-specs)))))
+            (.get prepared std-make-specs)))))
     value)
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.

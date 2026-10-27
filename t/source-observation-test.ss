@@ -6,13 +6,15 @@
         (only-in :clan/poo/number IntegerRange)
         (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
-        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
+        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
         (only-in :yuanxu/module-system/source/admission
                  current-module-source-observer call-with-module-source-read-cache
-                 module-source-admit-current! module-source-type)
+                 module-source-admit-current! module-source-type
+                 call-with-module-source-operation-measurement call-with-collected-module-sources)
+        (only-in :yuanxu/observability/testing-case yuanxu-default-testing-case-profile)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 DirectoryFixture write-source read-overrides))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" read-overrides))
 (export source-observation-test test-cleanup!)
 
 ;; Actual SDK expansion of a temporary Scheme file attaches native slot origins.
@@ -35,7 +37,46 @@
 (def source-observation-test
   (test-suite "Collect actual source checks without a field list"
     (yuanxu-test-fixture "replay shares one pure pass but never a preceding effect window"
+      profile: yuanxu-default-testing-case-profile
       (fixture DirectoryFixture)
+      ;; Exercise the closed path naturally, without disabling an observer.
+      ;; The native Case/resource watchdog remains enabled by this Profile.
+      (check-equal? (current-module-source-observer) #f)
+      (def batch-path (path-expand "batch.json" (.get fixture root)))
+      (write-source batch-path "{}")
+      (def batch (list (cons batch-path "{}")))
+      (def outer-current #f)
+      (def inner-current #f)
+      (defvalues (_result counts)
+        (call-with-module-source-operation-measurement
+          (lambda ()
+            (call-with-module-source-read-cache
+              (lambda ()
+                (call-with-collected-module-sources
+                  (lambda (current!)
+                    (set! outer-current current!)
+                    (module-source-admit-current! batch "first batch source changed")
+                    (module-source-admit-current! batch "later batch source changed")
+                    (call-with-collected-module-sources
+                      (lambda (nested-current!)
+                        (set! inner-current nested-current!)
+                        (module-source-admit-current! batch "nested batch source changed")))
+                    (check-exception
+                      (module-source-admit-current! (list (cons batch-path "conflicting")))
+                      error?)))))
+            (call-with-module-source-read-cache
+              (lambda () (module-source-admit-current! batch))))))
+      ;; The repeated batch is omitted only in the same collector/window.
+      ;; The nested collector still runs, and the independent window rereads.
+      (check-equal? (hash-get counts '(source reads)) 2)
+      (check-equal? (hash-get counts '(source source-comparison-hits)) 1)
+      (write-source batch-path "changed")
+      (check-exception (inner-current)
+        (lambda (failure) (and (Error? failure)
+          (string=? (Error-message failure) "nested batch source changed"))))
+      (check-exception (outer-current)
+        (lambda (failure) (and (Error? failure)
+          (string=? (Error-message failure) "first batch source changed"))))
       ;; Missing files remain ordinary absence. Malformed queries must retain
       ;; their native error, including inside the pure source-read window.
       (check-equal? (module-source-type (path-expand "missing.ss" (.get fixture root))) #f)
@@ -50,6 +91,20 @@
       ;; Already-cached values still carry both original slot dependencies.
       (check-equal? (.get candidate port) 5432)
       (check-equal? (.get candidate client) 5432)
+      (check-equal? (eq? (cdr (assq 'port (object-slots candidate)))
+                         (cdr (assq 'client (object-slots candidate)))) #f)
+      (defvalues (_fields field-counts)
+        (call-with-module-source-operation-measurement
+          (lambda ()
+            (call-with-collected-module-sources
+              (lambda (_current!)
+                (call-with-module-source-read-cache
+                  (lambda ()
+                    (admit-field-sources! candidate '((port) (client))))))))))
+      ;; Actual macro-produced specifications share their file's private
+      ;; batch; this is not only a manually reused list in the control above.
+      (check-equal? (hash-get field-counts '(source reads)) 1)
+      (check-equal? (hash-get field-counts '(source source-comparison-hits)) #f)
       (def replay-reads 0)
       (def (read-fields) (+ (.get candidate port) (.get candidate client)))
       (parameterize ((current-module-source-observer

@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list fold)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/utilities/functional
@@ -16,7 +17,7 @@
 (def +byte-offsets/u64+ '(0 1 2 3 4 5 6 7))
 
 (def (read-unsigned-le bytes offset byte-offsets)
-  (yuanxu-fold-left
+  (fold
    (lambda (byte-offset state)
      (+ state
         (* (u8vector-ref bytes (+ offset byte-offset))

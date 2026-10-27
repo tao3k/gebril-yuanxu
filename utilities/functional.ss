@@ -11,28 +11,18 @@
                  assoc
                  any
                  every
-                 find
                  filter
                  filter-map
                  fold
                  fold-right
-                 map
                  member
                  remove
                  delete-duplicates/hash
-                 duplicates
-                 flatten1)
+                 duplicates)
         (only-in :std/string/misc
                  string-drop))
 
-(export yuanxu-fold-left
-        yuanxu-fold-right
-        yuanxu-map
-        yuanxu-find
-        yuanxu-filter-map
-        yuanxu-remove
-        yuanxu-append-map
-        yuanxu-any?
+(export yuanxu-any?
         yuanxu-all?
         yuanxu-member?
         yuanxu-set-subset?
@@ -48,119 +38,6 @@
         yuanxu-alist-select
         yuanxu-alist-delete-key
         yuanxu-alist-merge-right)
-
-;; yuanxu-fold-left
-;;   : (-> Procedure Object [Object] Object)
-;;   | doc m%
-;;       `yuanxu-fold-left` delegates ordinary left folds to SRFI-1 while
-;;       keeping shared control-plane algorithms behind a project-owned name.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-fold-left cons '() '(a b))
-;;       ;; => (b a)
-;;       ```
-;;     %
-(def (yuanxu-fold-left combine seed values)
-  (fold combine seed values))
-
-;; yuanxu-fold-right
-;;   : (-> Procedure Object [Object] Object)
-;;   | doc m%
-;;       `yuanxu-fold-right` preserves right-associated list construction and
-;;       projection order without hand-written recursive loops in callers.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-fold-right cons '() '(a b))
-;;       ;; => (a b)
-;;       ```
-;;     %
-(def (yuanxu-fold-right combine seed values)
-  (fold-right combine seed values))
-
-;; yuanxu-map
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       `yuanxu-map` is the project-level pure projection boundary for
-;;       keeping field extraction and manifest row construction out of
-;;       hand-written recursion.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-map (lambda (value) (* value 2)) '(1 2 3))
-;;       ;; => (2 4 6)
-;;       ```
-;;     %
-(def (yuanxu-map project values)
-  (map project values))
-
-;; yuanxu-find
-;;   : (-> Procedure [Object] Object)
-;;   | doc m%
-;;       `yuanxu-find` is the project-level pure lookup boundary for
-;;       replacing recursive scans that return the matching value.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-find odd? '(2 4 5 6))
-;;       ;; => 5
-;;       ```
-;;     %
-(def (yuanxu-find predicate values)
-  (find predicate values))
-
-;; yuanxu-filter-map
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       `yuanxu-filter-map` is the default projection helper when a mapper
-;;       may reject rows by returning `#f`.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-filter-map (lambda (x) (and (odd? x) x)) '(1 2 3))
-;;       ;; => (1 3)
-;;       ```
-;;     %
-(def (yuanxu-filter-map project values)
-  (filter-map project values))
-
-;; yuanxu-remove
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       `yuanxu-remove` delegates negative filtering to SRFI-1 `remove` so
-;;       callers do not hand-roll `(filter (lambda (...) (not ...)) ...)`.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-remove even? '(1 2 3))
-;;       ;; => (1 3)
-;;       ```
-;;     %
-(def (yuanxu-remove predicate values)
-  (remove predicate values))
-
-;; yuanxu-append-map
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       `yuanxu-append-map` flattens one projection layer and should replace
-;;       local map/append loops in ordinary list expansion code.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-append-map (lambda (x) (list x x)) '(a b))
-;;       ;; => (a a b b)
-;;       ```
-;;     %
-(def (yuanxu-append-map project values)
-  (flatten1 (map project values)))
 
 ;; yuanxu-any?
 ;;   : (-> Procedure [Object] Boolean)
@@ -369,7 +246,7 @@
 ;;     %
 (def (yuanxu-predicate-exactly-one predicates)
   (lambda (value)
-    (= (yuanxu-fold-left
+    (= (fold
         (lambda (predicate count)
           (if (predicate value)
             (+ count 1)
@@ -412,7 +289,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-alist-select keys alist)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (key)
      (let (entry (assoc key alist))
        (and entry
@@ -434,7 +311,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-alist-delete-key key alist)
-  (yuanxu-remove
+  (remove
    (lambda (entry)
      (equal? key (car entry)))
    alist))
@@ -454,7 +331,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-alist-merge-right left right)
-  (yuanxu-fold-right
+  (fold-right
    (lambda (entry merged)
      (cons entry
            (yuanxu-alist-delete-key (car entry) merged)))

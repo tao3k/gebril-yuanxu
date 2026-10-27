@@ -4,7 +4,8 @@
 
 ;;; Boundary: declarative Bundle v1 wire-model constructors and validators;
 ;;; lowering algorithms and arena mutation remain in their dedicated owners.
-(import (only-in :std/crypto/digest sha256)
+(import (only-in :std/list/list fold)
+        (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
         :yuanxu/utilities/functional)
@@ -240,7 +241,7 @@
 
 ;; : (-> U8Vector Integer Integer)
 (def (digest-segment->uint64 digest start)
-  (yuanxu-fold-left
+  (fold
    (lambda (byte accumulator)
      (modulo (+ (* accumulator 256) byte)
              +feature-bundle-v1-uint64-modulus+))
@@ -381,7 +382,7 @@
 ;; : (-> [PooFeatureBundleV1NativeSymbol] [PooFeatureBundleV1NativeSymbol])
 (def (assign-symbol-offsets values)
   (let (state
-        (yuanxu-fold-left
+        (fold
          (lambda (value state)
            (let ((byte-offset (car state))
                  (out (cdr state)))

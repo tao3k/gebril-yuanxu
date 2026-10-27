@@ -1,6 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+prelude: :gerbil/core
 ;;; Execution liveness, not observation emission, admission or a result cache.
 (import (only-in :std/encoding/json read-json write-json make-JSONReadOptions
                  current-json-read-options)

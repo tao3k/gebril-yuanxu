@@ -4,7 +4,8 @@
 
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
-(import (only-in :clan/poo/object .ref)
+(import (only-in :std/list/list fold fold-right map filter-map)
+        (only-in :clan/poo/object .ref)
         :yuanxu/feature-system/model
         :yuanxu/utilities/functional)
 
@@ -26,7 +27,7 @@
     (values
      index
      (reverse
-      (yuanxu-fold-left
+      (fold
        (lambda (selection diagnostics)
          (let ((feature-id (selection-id selection)))
            (if (hash-key? index feature-id)
@@ -41,12 +42,12 @@
        selections)))))
 
 (def (missing-dependency-diagnostics selections index)
-  (yuanxu-fold-right
+  (fold-right
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
        (append
-        (yuanxu-filter-map
+        (filter-map
          (lambda (required-id)
            (and (not (hash-key? index required-id))
                 (feature-diagnostic
@@ -57,12 +58,12 @@
    selections))
 
 (def (conflict-diagnostics selections index)
-  (yuanxu-fold-right
+  (fold-right
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
        (append
-        (yuanxu-filter-map
+        (filter-map
          (lambda (conflict-id)
            (and (hash-key? index conflict-id)
                 (feature-diagnostic
@@ -74,11 +75,11 @@
 
 (def (selected-dependencies descriptor index)
   (append
-   (yuanxu-filter-map
+   (filter-map
     (lambda (required-id)
       (and (hash-key? index required-id) required-id))
     (.ref descriptor 'requires))
-   (yuanxu-filter-map
+   (filter-map
     (lambda (optional-id)
       (and (hash-key? index optional-id) optional-id))
     (.ref descriptor 'optional-requires))))
@@ -130,5 +131,5 @@
            profile
            status
            ordered
-           (yuanxu-map selection-id ordered)
+           (map selection-id ordered)
            diagnostics))))))

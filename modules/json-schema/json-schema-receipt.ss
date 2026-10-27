@@ -25,10 +25,8 @@
                  yuanxu-json-schema-normalization-schema
                  yuanxu-json-schema-normalization-diagnostics
                  yuanxu-json-schema-normalization->alist)
-        (only-in "./functional.ss"
-                 yuanxu-contract-any?
-                 yuanxu-contract-option
-                 yuanxu-contract-project-list)
+        (only-in "./functional.ss" yuanxu-contract-any? yuanxu-contract-option)
+        (only-in :std/list/list map)
         (only-in "./json-schema-normalize.ss"
                  yuanxu-json-schema-normalize)
         (only-in "./json-schema-emit.ss"
@@ -120,18 +118,18 @@
          (yuanxu-object-contract->alist
           (yuanxu-json-schema-contract-artifact-object-contract artifact)))
    (cons 'diagnostics
-         (yuanxu-contract-project-list
+         (map
           yuanxu-observability-diagnostic->alist
           (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
    (cons 'diagnostic-count
          (length
           (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
    (cons 'type-facts
-         (yuanxu-contract-project-list
+         (map
           yuanxu-type-fact-contract->alist
           (yuanxu-json-schema-contract-artifact-type-facts artifact)))
    (cons 'lean-fact-contracts
-         (yuanxu-contract-project-list
+         (map
           yuanxu-lean-fact-contract->alist
           (yuanxu-json-schema-contract-artifact-lean-fact-contracts artifact)))
    (cons 'runtime-executed
@@ -163,7 +161,7 @@
            object-kind
            object-key))
          (diagnostics
-          (yuanxu-contract-project-list
+          (map
            yuanxu-json-schema-diagnostic->observability
            (yuanxu-json-schema-normalization-diagnostics normalization)))
          (type-facts

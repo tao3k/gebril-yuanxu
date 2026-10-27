@@ -6,7 +6,7 @@
         (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture write-source))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source))
 (export mop-serial-use-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)

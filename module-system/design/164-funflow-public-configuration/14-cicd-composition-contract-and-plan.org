@@ -185,7 +185,7 @@ arbitrary mutable getters.
       (.get scenario composition participants))))
 
 (def (cicd-node-at nodes path-value)
-  (yuanxu-find (lambda (node) (equal? (.get node path) path-value)) nodes))
+  (find (lambda (node) (equal? (.get node path) path-value)) nodes))
 
 (def (cicd-linked-nodes nodes handoffs)
   (for-each
@@ -215,7 +215,7 @@ arbitrary mutable getters.
     (if (null? remaining)
       (reverse result)
       (let ((ready
-             (yuanxu-find
+             (find
                (lambda (node)
                  (every (lambda (dependency) (if (member dependency completed) #t #f))
                         (.get node after)))

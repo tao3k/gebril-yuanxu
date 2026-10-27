@@ -14,15 +14,8 @@
                  object?)
         (only-in :gerbil/runtime/hash
                  list->hash-table-eq)
-        (only-in "./functional.ss"
-                 yuanxu-contract-all?
-                 yuanxu-contract-any?
-                 yuanxu-contract-member?
-                 yuanxu-contract-key->string
-                 yuanxu-contract-key->symbol
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-object-ref
-                 yuanxu-contract-project-list)
+        (only-in "./functional.ss" yuanxu-contract-all? yuanxu-contract-any? yuanxu-contract-member? yuanxu-contract-key->string yuanxu-contract-key->symbol yuanxu-contract-json-object? yuanxu-contract-object-ref)
+        (only-in :std/list/list map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node?
                  yuanxu-json-schema-node-kind
@@ -64,7 +57,7 @@
    ((yuanxu-contract-json-object? candidate)
     candidate)
    ((object? candidate)
-    (yuanxu-contract-project-list
+    (map
      (lambda (slot)
        (cons slot (.ref candidate slot)))
      (.all-slots candidate)))

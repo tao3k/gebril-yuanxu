@@ -4,9 +4,8 @@
         (only-in :std/error Error-irritants)
         (only-in :yuanxu/observability/testing-fixture
                  yuanxu-test-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 DirectoryFixture DirectoryFailureFixture ServicesFixture RelocatedServicesFixture write-source
-                 current-service-source-root))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture DirectoryFailureFixture write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture RelocatedServicesFixture current-service-source-root))
 (export service-publication-fixture-test)
 (def (check-distinct-verification-state first second releases)
   (check-equal? (eq? first second) #f)

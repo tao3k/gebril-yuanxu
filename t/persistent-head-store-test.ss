@@ -6,7 +6,7 @@
         (only-in :yuanxu/ops/objects ProcessScript.)
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         "./qualification/build-publication/persistent-head")
 (export persistent-head-store-test)
 (def persistent-head-store-test

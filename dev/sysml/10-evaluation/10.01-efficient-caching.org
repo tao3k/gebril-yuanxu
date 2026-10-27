@@ -723,3 +723,46 @@ Formal qualification ran after the timing samples, with no local proof worker
 overlapping them. SysML remains a reviewed architectural model. This is local
 focused qualification through the stated dependency overlay, not full CI or a
 clean package installation. Raw logs/receipts stay outside Git.
+
+* Publication-window correspondence (2026-10-26)
+
+The existing model now names =PublicationWindowOwnership= and
+=PublishWithSourceAdmission=. The measured correspondence is recorded in
+[[file:../../../docs/10-19-design/13-module-loading/13.26-workflow-preview-sharing.org][13.26 Unified Preview]]: six separate 9052-visit reader certifications, seven
+59-path source passes and four entry/exit JSON reads. Real window/path events
+show that 819 byte requests already share down to 417 physical reads; no
+active window reads the same path twice. A window label is not a purity proof.
+
+Lean owns sound byte reuse, exact requirements and ordered diagnostics through
+SourceWindows, ReturnWindows, ReplayBoundary and RootChild. QNT owns effect and
+callback schedules through those existing families, including accepting witnesses
+and matched negative controls. The Scheme cohort owns the native correspondence,
+including an inner meaning callback that writes AFTER checking and is rejected
+by the outer return meaning. Runtime measurement owns costs. No additional QNT
+copy of a Lean structural law is introduced.
+
+No count-reduction edit is justified by this receipt alone. Retaining the native
+graph representation must not retain approval; an independent admission or
+callback return obtains fresh source observations. A future convergence must
+preserve all original obligations, evidence identities, callback ordering and
+collector enrollment before it can change the production caller graph.
+
+The native follow-up in the same 13.26 document names =ReplayPhaseAccounting=.
+It separates topology lookup/DFS, fresh issuance, route/live-state inspection,
+visitor execution and final certification on original records. Lean
+=SelectionReplay.immediate_issuance_query_redundant= owns only the contiguous
+duplicate-query equivalence; QNT's existing SelectionReplay family retains the
+mutation/frame counterexamples. Runtime weak identity census and VM/GC accounts
+own measurement, with negative allocation samples explicitly unqualified.
+Removing a duplicate predicate inside a closed native operation is distinct from
+reusing any currentness verdict across those phases. Diagnostic producer copies
+and public production qualification are separate evidence cuts.
+
+The CPU/wall follow-up in 13.26 adds =ReplayCostAttribution=: ordinary fixed
+source cuts and diagnostic probes are separate cohorts. Generated code and
+actual issuance multiplicity qualify the cut; copied-output timestamps do not.
+Quiet microprobes disable only the diagnostic hook, never production observers
+or independent authentication. Runtime owns GC/process-switch/fault evidence
+and its uncertainty. Lean owns the existing query/shape laws; QNT owns the
+existing callback/frame schedules, including the fewer-checks latency
+counterexample. No model claims exact scheduling duration or physical bytes.

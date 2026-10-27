@@ -55,6 +55,46 @@ package YuanxuCaching {
                change observer order. A miss need not be retained as a value. */
     }
 
+    part def AdmissionRetentionSample {
+        attribute producerRevision : String;
+        attribute kernelRevision : String;
+        attribute survivingOriginalReads : Integer;
+        attribute sharedEvidenceSchemaReads : Integer;
+        attribute identityUnionBodyBytes : Integer;
+        attribute receiverShellBodyBytes : Integer;
+        attribute opaqueFrontiers : Integer;
+        attribute processLiveBefore : Integer;
+        attribute processLiveHeld : Integer;
+        doc /* Compare the same producer, input and native workload. Classify
+               descriptor preparation separately from candidate-owned receipts.
+               Schema ownership is an overlapping partition of original reads,
+               not an extra additive cost or a per-module multiplier. Compare
+               whole source/library cohorts, never substituted ABI fragments.
+               Native lengths with the installed ABI supply body bytes; identity union
+               charges shared payload once. Code, type descriptors, opaque POO
+               referents and GC-table policy remain explicit frontiers. Only
+               environments belonging to the actual native issuer code family
+               are traversed; arbitrary callback environments remain opaque.
+               Malformed inspection edges fail the census, rather than being
+               counted as successfully inspected payload. Header
+               bytes, padding and exclusive/dominator size are not inferred.
+               Process-wide post-GC deltas are a separate observation, never
+               assigned to individual records. Neither census authorizes
+               pruning a read edge, skipping a callback or reusing a verdict. */
+    }
+
+    requirement def ContextOnlyAdmission {
+        attribute hasValueType : Boolean;
+        attribute preparesValueAction : Boolean;
+        require constraint { hasValueType or not preparesValueAction }
+        doc /* The actual value-contract slot, not a purity tag, selects the
+               value stage. Without a Type, pass the same child to contextual
+               classification and obligations. Source entry/replay/return
+               certification and both contribution requirements still run.
+               Empty diagnostic decoration returns this call's fresh receipt;
+               it is never a recovered approval from a previous admission. */
+    }
+
     part def ReplayStructure {
         ref part orderedRoots : ReadDependency[0..*];
         ref part preorder : ReadDependency[0..*];
@@ -284,6 +324,98 @@ package YuanxuCaching {
         action runHarness;
         then checkBeforeReturn;
         action checkBeforeReturn;
+        then done;
+    }
+
+    requirement def PublicationWindowOwnership {
+        doc /* SourceWindows/ReturnWindows Lean own sound byte reuse, exact
+               requirement composition and first-diagnostic preservation via
+               ReplayBoundary. RootChild retains exact candidate/receiver and
+               both requirements. QNT owns callback writes, fresh post-callback
+               checks, independent admissions and matched stale-parent controls.
+               Runtime phase/window events establish actual source correspondence;
+               a phase name or observer label is never a purity certificate.
+               Qualification tooling observes actual output from its owned
+               backend as well as the CLI; progress never renews wall time.
+               No successful admission or token-current verdict is reused. */
+    }
+
+    requirement def ReplayPhaseAccounting {
+        doc /* Native call-with-issued-reads owns lookup, identity DFS and the
+               immutable projection. SelectionReplay Lean proves exact selected
+               preorder and native cache lookup refinement; QNT owns callbacks,
+               eviction/mutation, frames and independent final certification.
+               Acquisition includes fresh issuance, even on projection hits.
+               Cold DFS interleaves issuance with traversal: measure that joint
+               interval without regrouping checks or changing the first failure.
+               Issuance and route/live-state microprobes run only on ORIGINAL
+               issued records inside their native protected frame. Their batch
+               costs are diagnostic, not additive slices of ordinary replay.
+               Reuse shape and private receiver sets, NEVER a currentness or
+               admission verdict. Install/unwind a fresh frame on every call.
+               Runtime owns VM accounts, post-GC live deltas and weak identity
+               survival; none independently gives exclusive SDK/procedure bytes.
+               Diagnostic native builds are separate source cuts, not releases.
+               Candidate: require-current! already issued the record; use the
+               existing private route/live-state primitives immediately instead
+               of calling a public predicate which issues it again. Lean owns
+               first-error equivalence for the SAME closed native operation.
+               No callback, observer or second record may intervene. Public
+               standalone predicates retain their own issuance check; acquisition,
+               before-visitor and final phases each remain freshly authenticated.
+               The source-call graph, not a producer purity flag, supplies this
+               native closed-operation premise. QNT still owns effect schedules. */
+    }
+
+    requirement def ReplayCostAttribution {
+        doc /* Runtime owns repeated fixed-source ordinary 16/32 and service
+               cohorts, plus separate diagnostic stage probes. Alternate source
+               cuts across fresh processes; do not mix preparation with demand.
+               Match emitted code and actual issuance multiplicity to each cut;
+               copied-output mtimes alone do not establish producer identity.
+               Report CPU including GC, GC CPU/wall, process switches, faults,
+               block I/O and residual wall separately. A context-switch count
+               is NOT elapsed scheduling time; GC and CPU are not additive.
+               Measure the SAME original issuance payload with the diagnostic
+               hook enabled and disabled inside its actual protected frame.
+               A probe may allocate: do not attribute probe cost to the payload.
+               Invalid VM allocation deltas stay invalid, not clamped. Weak
+               identity survival and process-wide live bytes are not exclusive
+               retained bytes. Retain original rejection controls and budgets.
+               Lean owns ordered-query refinement and structural cache laws;
+               existing QNT models own callback, eviction and frame schedules.
+               Neither proves a host timing result. No new cache or verdict
+               reuse is licensed by measurement or observer quieting. */
+    }
+
+    action def PublishWithSourceAdmission {
+        first start;
+        then checkEntry;
+        action checkEntry;
+        then analyzeRoot;
+        action analyzeRoot {
+            doc /* Retains source entry/exit, every child obligation and
+                   contribution callback's independent before/after checks,
+                   including the replaceable Context currentness callback.
+                   Analysis is not an indivisible pure interval. */
+        }
+        then replayObservedSources;
+        action replayObservedSources;
+        then checkCollectedSources;
+        action checkCollectedSources;
+        then bindExactEvidence;
+        action bindExactEvidence;
+        then invokeBoundContract;
+        action invokeBoundContract {
+            doc /* Includes its output, dependent meaning and exact evidence
+                   identity. Open meaning may write AFTER checking sources. */
+        }
+        then completeOuterInvocation;
+        action completeOuterInvocation {
+            doc /* Native metadata.publish still checks output and dependent
+                   meaning after the bound invocation returns. Do not merge
+                   these checks based on the meaning procedure's name. */
+        }
         then done;
     }
 

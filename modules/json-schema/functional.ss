@@ -7,7 +7,7 @@
 ;;; Invariant: this module owns contract data plumbing, not JSON Schema
 ;;; semantics, object contracts, or runtime execution.
 
-(import (only-in :std/list/list append-map)
+(import (only-in :std/list/list fold-right)
         (only-in :std/string/misc
                  string-drop))
 
@@ -23,10 +23,6 @@
         yuanxu-contract-member?
         yuanxu-contract-any?
         yuanxu-contract-all?
-        yuanxu-contract-project-list
-        yuanxu-contract-filter-map
-        yuanxu-contract-append-map
-        yuanxu-contract-remove
         yuanxu-contract-map-pair-with-diagnostics)
 
 ;; yuanxu-contract-key->string
@@ -205,70 +201,6 @@
 ;;     %
 (def (yuanxu-contract-member? value values)
   (if (member value values) #t #f))
-
-;; yuanxu-contract-project-list
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       Project a list through SRFI-1 `map` at the contract boundary so schema
-;;       owners do not call generic list primitives directly.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-contract-project-list symbol->string '(a b))
-;;       ;; => ("a" "b")
-;;       ```
-;;     %
-(def (yuanxu-contract-project-list projector values)
-  (map projector values))
-
-;; yuanxu-contract-filter-map
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       Project and drop rejected rows through SRFI-1 `filter-map`, preserving
-;;       encounter order for diagnostics and generated contract slots.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-contract-filter-map (lambda (x) (and x x)) '(#f a))
-;;       ;; => (a)
-;;       ```
-;;     %
-(def (yuanxu-contract-filter-map projector values)
-  (filter-map projector values))
-
-;; yuanxu-contract-append-map
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       Flatten one projected list layer through SRFI-1 `append-map` for
-;;       contract facts that expand one input node into many output rows.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-contract-append-map (lambda (x) (list x x)) '(a b))
-;;       ;; => (a a b b)
-;;       ```
-;;     %
-(def (yuanxu-contract-append-map projector values)
-  (append-map projector values))
-
-;; yuanxu-contract-remove
-;;   : (-> Procedure [Object] [Object])
-;;   | doc m%
-;;       Remove rows matching a predicate through SRFI-1 `remove`, usually for
-;;       bounded contract projections that need explicit deletion semantics.
-;;
-;;       # Examples
-;;
-;;       ```scheme
-;;       (yuanxu-contract-remove string? '(a "b" c))
-;;       ;; => (a c)
-;;       ```
-;;     %
-(def (yuanxu-contract-remove predicate values)
-  (remove predicate values))
 
 ;; yuanxu-contract-map-pair-with-diagnostics
 ;;   : (-> Procedure [Object] [Diagnostic] Pair)

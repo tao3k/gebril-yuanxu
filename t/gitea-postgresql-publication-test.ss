@@ -3,8 +3,10 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-               ServicesFixture RepositoryServicesFixture write-source refused)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
+        (only-in :yuanxu/admission/publication AdmissionPublication.)
+        (only-in "./qualification/testing/directory.ss" write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture RepositoryServicesFixture refused)
         (only-in :yuanxu/module-system/source/admission module-source-read))
 (export gitea-postgresql-publication-test test-cleanup!)
 (def completed 0)
@@ -15,7 +17,14 @@
   (test-suite "Maintained Gitea and PostgreSQL publications"
     (yuanxu-test-fixture "repository module sources publish their actual defaults"
       (fixture RepositoryServicesFixture)
-      (with-slots (publication) fixture
+      (with-slots (publication selection) fixture
+        (def rebound (.call AdmissionPublication. .for-export selection
+                        'applications/gitea-postgresql 'Application))
+        (yuanxu-test-checkpoint 'service-publication-rebound)
+        (check-equal? (eq? (.get publication graph) (.get rebound graph)) #t)
+        (check-equal? (eq? (.get publication contract) (.get rebound contract)) #t)
+        (check-equal? (eq? (.get publication context) (.get rebound context)) #f)
+        (check-equal? (eq? (.get publication value) (.get rebound value)) #t)
         (def parent (.get publication value))
         (defvalues (receipt next failure) (.call publication .publish parent parent))
         (check-equal? failure #f)

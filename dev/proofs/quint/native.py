@@ -38,7 +38,7 @@ class QuintCLI:
             os.close(writer)
         return self
 
-    def request(self, args, wall=5, idle=5, emit=False):
+    def request(self, args, wall=5, idle=5, emit=False, backend_progress=None):
         if self.cancelled:
             raise RuntimeError("Quint CLI worker was cancelled; start a new worker")
         started = last_output = time.monotonic()
@@ -61,6 +61,11 @@ class QuintCLI:
             selector.register(self.control, selectors.EVENT_READ, "control")
             while not control.endswith(b"\n"):
                 now = time.monotonic()
+                # A serial owned backend may report actual compilation progress
+                # on its own stream while the CLI waits on gRPC. Callers may
+                # bridge that stream; neither deadline is extended by a tick.
+                if backend_progress is not None:
+                    last_output = max(last_output, backend_progress())
                 remaining = min(wall - (now - started), idle - (now - last_output))
                 if remaining <= 0:
                     # A deadline invalidates the in-flight response. Stop this

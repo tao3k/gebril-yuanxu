@@ -17,7 +17,8 @@
         feature-bundle-v1-project-domain-case
         require-feature-bundle-v1-domain-case-projection)
 
-(import (only-in :std/list/list iota)
+(import (only-in :std/list/list map filter-map append-map)
+        (only-in :std/list/list iota)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
         :yuanxu/utilities/functional
         :yuanxu/feature-system/domain-case/interface
@@ -222,9 +223,9 @@
 
 ;; : (-> Symbol [PooCaseComponent] [PooFeatureBundleV1Edge])
 (def (project-component-edges case-id components)
-  (yuanxu-append-map
+  (append-map
    (lambda (component)
-     (yuanxu-map
+     (map
       (lambda (indexed-parent)
         (feature-bundle-v1-edge
          case-id
@@ -237,7 +238,7 @@
 
 ;; : (-> Symbol [PooFeatureResolvedRuntimeHandoff] [PooFeatureBundleV1Evidence])
 (def (project-evidence-obligations case-id resolved-handoffs)
-  (yuanxu-map
+  (map
    (lambda (indexed-handoff)
      (let ((index (car indexed-handoff))
            (handoff (cadr indexed-handoff)))
@@ -249,7 +250,7 @@
         (.ref handoff 'provider-module-id)
         index)))
    (indexed-values
-    (yuanxu-filter-map
+    (filter-map
      (lambda (handoff)
        (and (resolved-handoff-kind?
              handoff +feature-evidence-obligation-kind+)
@@ -292,7 +293,7 @@
          (resolved-handoffs
           (.ref runtime-handoff-plan 'resolved-handoffs))
          (bundle-handoffs
-          (yuanxu-filter-map
+          (filter-map
            (lambda (handoff)
              (and (resolved-handoff-kind?
                    handoff +feature-runtime-bundle-handoff-kind+)
@@ -300,10 +301,10 @@
            resolved-handoffs))
          (component-entries
           (sorted-entries
-           (yuanxu-map component-entry (indexed-values components))))
+           (map component-entry (indexed-values components))))
          (handoff-entries
           (sorted-entries
-           (yuanxu-map bundle-handoff-entry bundle-handoffs)))
+           (map bundle-handoff-entry bundle-handoffs)))
          (policy-id
           (effective-algebra-id
            policy-strategy-binding 'policy-binding

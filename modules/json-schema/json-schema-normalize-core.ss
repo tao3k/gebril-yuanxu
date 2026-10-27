@@ -11,13 +11,8 @@
 (import (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node-record
                  yuanxu-json-schema-diagnostic-record)
-        (only-in "./functional.ss"
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-json-array->list
-                 yuanxu-contract-object-ref
-                 yuanxu-contract-string-drop-prefix
-                 yuanxu-contract-filter-map
-                 yuanxu-contract-map-pair-with-diagnostics))
+        (only-in "./functional.ss" yuanxu-contract-json-object? yuanxu-contract-json-array->list yuanxu-contract-object-ref yuanxu-contract-string-drop-prefix yuanxu-contract-map-pair-with-diagnostics)
+        (only-in :std/list/list filter-map))
 
 (export +yuanxu-json-schema-missing+
         yuanxu-json-schema-parse
@@ -262,7 +257,7 @@
     (yuanxu-json-schema-result
      (yuanxu-json-schema-node-record
       'one-of
-      (yuanxu-contract-filter-map
+      (filter-map
        (lambda (node)
          (and (not (eq? node +yuanxu-json-schema-missing+)) node))
        (car parsed-types))
@@ -384,7 +379,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-json-schema-filter-missing entries)
-  (yuanxu-contract-filter-map
+  (filter-map
    (lambda (entry)
      (and (not (eq? (cdr entry) +yuanxu-json-schema-missing+)) entry))
    entries))

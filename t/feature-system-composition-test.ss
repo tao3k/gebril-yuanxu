@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list map)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
@@ -63,7 +64,7 @@
   (from-bundle composition-empty-bundle))
 
 (def (composition-manifest-feature-ids plan)
-  (yuanxu-map (lambda (manifest) (.ref manifest 'feature-id))
+  (map (lambda (manifest) (.ref manifest 'feature-id))
                 (.ref plan 'manifests)))
 
 (def (composition-stress-id prefix index)

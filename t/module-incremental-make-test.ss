@@ -3,7 +3,7 @@
 ;;; and real .ssi/.o1 outputs. No compiler, cache protocol or Builder substitute.
 (import :std/test :clan/poo/object
         (only-in :std/make make)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-incremental-make-test)
 (def (write-source root name content)

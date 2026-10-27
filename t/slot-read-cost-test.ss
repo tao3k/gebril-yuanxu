@@ -3,15 +3,14 @@
 (import :std/test :std/iter :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!
                  slot-read-dependencies)
-        (only-in :clan/poo/t/closure-measure measure)
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-                 ServicesFixture write-source))
+        (only-in "./qualification/testing/directory.ss" write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export slot-read-cost-test test-cleanup!)
 
 (def completed 0)
@@ -19,6 +18,18 @@
   (unless (= completed 3) (error "incomplete slot cost controls" completed))
   (displayln "SLOT-READ-COST: 3 cases completed"))
 (def (report row) (write row) (newline))
+;; This consumer owns its diagnostic timing. A dependency's private test tools
+;; are not installed library APIs. Use the installed VM's own frame correction,
+;; retaining named signed statistics rather than another vector-index table.
+(def (measure action repetitions)
+  (def stats
+    (##exec-stats
+      (lambda () (for/fold (last #f) (_ (in-range repetitions)) (action)))))
+  (values (cdr (assq 'result stats))
+    (map (lambda (row)
+           (if (eq? (car row) 'bytes-allocated)
+             (cons 'vm-account (cdr row)) row))
+         (filter (lambda (row) (not (eq? (car row) 'result))) stats))))
 (def (counted-obligations previous calls)
   (lambda (candidate context)
     (set-box! calls (+ 1 (unbox calls)))

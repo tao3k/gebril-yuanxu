@@ -26,7 +26,7 @@
         current-build-output-directory run-build-artifact-process
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
-        build-artifact-handoff require-build-artifacts! test-build-publication
+        build-artifact-handoff require-build-artifacts! test-build-publication test-build-projection
         current-build-phase-times repair-build-products! require-build-products!)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
@@ -527,3 +527,24 @@
       (apply values results)))))
   (if reusable? (complete libdir)
     (call-with-temporary-directory "core-build-output-" complete)))
+
+;; Attach the existing issuer to an observed, nonempty native test spec.
+;; Source discovery owns the values; this owner retains signing and execution.
+(def (test-build-projection source)
+  (unless (pair? (.get source spec))
+    (error "empty test support has no build publication"))
+  (def current! (.get source admit-current))
+  (def (selected-graph!) (.get source selected-graph))
+  (def publication (delay (test-build-publication projection)))
+  (def endpoint
+    (.o selected-graph: (selected-graph!) generation: (.ref (selected-graph!) 'generation)
+        build-publication: (force publication)
+        compiler-current: (lambda () (current!) (.call (force publication) .current))))
+  (def projection
+    (.o (:: projection [source])
+        build-graph: endpoint
+        output-directory: (.get (force publication) artifact)
+        compile-output: current-build-output-directory
+        .compile: (lambda (libdir action) (call-with-build-artifact-issuance projection libdir action))
+        admit-artifacts: (lambda () (current!) (require-build-artifacts! endpoint) (current!))))
+  projection)

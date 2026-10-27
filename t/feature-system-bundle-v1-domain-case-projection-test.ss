@@ -4,7 +4,8 @@
 
 (export feature-system-bundle-v1-domain-case-projection-test)
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list find)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/utilities/functional
@@ -35,13 +36,13 @@
            (lowering (.ref projection 'lowering-plan))
            (descriptor (.ref lowering 'descriptor))
            (base
-            (yuanxu-find
+            (find
              (lambda (component)
                (eq? (.ref component 'component-id)
                     'bundle-component-0))
              components))
            (child
-            (yuanxu-find
+            (find
              (lambda (component)
                (eq? (.ref component 'component-id)
                     'bundle-component-1))

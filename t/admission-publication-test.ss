@@ -1,6 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :clan/poo/mop Object)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
@@ -206,13 +207,16 @@
               (and (Error? exception)
                    (string=? (Error-message exception) "contribution object changed")))))))
     (yuanxu-test-case "route-free indexing still checks sources before a cold Contract handler"
-      (with-inputs
+      (for-each
+       (lambda (schema?)
+        (with-inputs
         (lambda (source schema)
           (def handlers 0)
           (def selection
             (assembly-selection source schema void
               (lambda (base)
                 (.o (:: @ base)
+                  value-contract: (if schema? (.get base value-contract) Object)
                   .contribution-obligations:
                   (begin (set! handlers (+ handlers 1))
                          (lambda (_candidate _rows _context) '()))))))
@@ -231,6 +235,7 @@
           (check-equal? handlers 0)
           (check-equal? (Error? refusal) #t)
           (check-equal? (Error-message refusal) "assembly source changed"))))
+       '(#t #f)))
     (yuanxu-test-case "the enclosing assembly check refuses changes made while resolving Schema metadata"
       (with-inputs
         (lambda (source schema)
@@ -244,16 +249,23 @@
                    (string=? (Error-message exception) "assembly source changed")))))))
     (yuanxu-test-case "selected Context source collection cannot bypass entry or final request policy"
       (for-each
-        (lambda (refuse-at)
+        (lambda (schema? refuse-at)
           (with-inputs
             (lambda (source schema)
               (def requests 0)
               (def schemas 0)
+              (def handlers 0)
               (def selection
-                (assembly-selection source schema (lambda () (set! schemas (+ schemas 1)))))
+                (assembly-selection source schema (lambda () (set! schemas (+ schemas 1)))
+                  (lambda (base)
+                    (.o (:: @ base)
+                      value-contract: (if schema? (.get base value-contract) Object)
+                      .contribution-obligations:
+                      (begin (set! handlers (+ handlers 1))
+                        (lambda (_candidate _rows _context) '()))))))
               ;; A replaceable request is a deliberate negative injector. It is
               ;; still called by the complete export entry and bound return.
-              (def guarded
+              (def guarded-base
                 (.cc (.get selection build-graph)
                   external-packages:
                   (list (.o source-inputs: '()
@@ -262,15 +274,23 @@
                             (set! requests (+ requests 1))
                             (when (= requests refuse-at)
                               (error "assembly request policy rejected")))))))
+              (def guarded
+                (if (zero? refuse-at)
+                  (.cc guarded-base compiler-current:
+                    (lambda () (error "assembly compiler policy rejected")))
+                  guarded-base))
               (check-exception
                 (.call AdmissionPublication. .for-export
                   (.cc selection build-graph: guarded) 'app/web 'Scenario)
                 (lambda (exception)
                   (and (Error? exception)
-                       (string=? (Error-message exception) "assembly request policy rejected"))))
-              (check-equal? requests refuse-at)
-              (check-equal? schemas (if (= refuse-at 1) 0 1)))))
-        '(1 2)))
+                       (string=? (Error-message exception)
+                         (if (zero? refuse-at) "assembly compiler policy rejected"
+                           "assembly request policy rejected")))))
+              (check-equal? requests (if (zero? refuse-at) 1 refuse-at))
+              (check-equal? handlers (if (<= refuse-at 1) 0 1))
+              (check-equal? schemas (if (or (not schema?) (<= refuse-at 1)) 0 1)))))
+        '(#t #t #t #t #f #f #f #f) '(0 1 2 3 0 1 2 3)))
     (yuanxu-test-case "intermediate source collection checks request inputs before cold Schema getters"
       (with-inputs
         (lambda (source schema)

@@ -16,8 +16,8 @@
         (only-in :yuanxu/graph/algorithms
                  yuanxu-graph-loop-analysis-receipt)
         (only-in :yuanxu/utilities/functional
-                 yuanxu-filter-map
                  yuanxu-stable-duplicates)
+        (only-in :std/list/list filter-map)
         :yuanxu/modules/funflow/check-types
         :yuanxu/modules/funflow/check-objects
         :yuanxu/modules/funflow/projection-syntax)
@@ -93,7 +93,7 @@
      (yuanxu-cicd-check-map-name check-map)
      (map (lambda (name) (yuanxu-graph-node name))
           (yuanxu-cicd-graph-index-node-names index))
-     (yuanxu-filter-map
+     (filter-map
       (lambda (edge)
         (and (hash-key? node-index (car edge))
              (yuanxu-graph-edge (car edge) (cdr edge))))
@@ -108,7 +108,7 @@
      (lambda (component)
        (for-each (lambda (name) (hash-put! cycle-index name #t)) component))
      (.ref analysis 'cyclic-components))
-    (yuanxu-filter-map
+    (filter-map
      (lambda (name) (and (hash-key? cycle-index name) name))
      (yuanxu-cicd-graph-index-node-names index))))
 
@@ -120,12 +120,12 @@
 (def (yuanxu-cicd-index-unordered-nodes index ready-order)
   (let (ready-index (make-hash-table-eq))
     (for-each (lambda (name) (hash-put! ready-index name #t)) ready-order)
-    (yuanxu-filter-map
+    (filter-map
      (lambda (name) (and (not (hash-key? ready-index name)) name))
      (yuanxu-cicd-graph-index-node-names index))))
 
 (def (yuanxu-cicd-dependency-graph-diagnostics duplicate-nodes unresolved cycle-nodes)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (row) (and (pair? (car row)) (cdr row)))
    (list (cons duplicate-nodes 'duplicate-nodes)
          (cons unresolved 'unresolved-dependency-refs)

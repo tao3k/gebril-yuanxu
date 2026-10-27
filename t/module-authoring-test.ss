@@ -2,8 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/type Record)
-        (only-in :clan/poo/object .o .ref .cc .put!)
-        (only-in :clan/poo/mop element?)
+        (only-in :clan/poo/object .o .ref .cc .put! .get)
+        (only-in :clan/poo/mop element? make-instance)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         :yuanxu/module-system/source/interface
@@ -182,15 +182,13 @@
     (yuanxu-test-case "source graph and deferred projection never activate a backend"
       (let* ((calls 0)
              (source (make-yuanxu-module-local-source "example/interface.ss"))
-             (backend (make-yuanxu-module-loader-backend
-                       'example 'local
-                       (lambda (_source) (set! calls (+ calls 1)) (.o name: 'example))
-                       '()))
+             (backend (make-instance ModuleLoaderBackend name: 'example source-kind: 'local
+                        load: (lambda (_source) (set! calls (+ calls 1)) (.o name: 'example))))
              (plans (yuanxu-module-source-refs->lazy-load-plans
                      (list backend) (list source) '((owner . example))))
              (graph (yuanxu-module-auto-imports-resolve (list source) '())))
         (check-equal? calls 0)
-        (check-equal? (yuanxu-lazy-load-plan-forced? (car plans)) #f)
+        (check-equal? (.get (car plans) forced?) #f)
         (check-equal? (yuanxu-module-auto-imports-result-source-refs graph)
                       (list source))
         (check-equal? calls 0)))

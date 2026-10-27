@@ -5,7 +5,7 @@
                  make-module-import module-import? module-import-source
                  make-module-export module-export? module-export-context
                  make-import-set import-set? import-set-source)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module yuanxu-bootstrap-contexts)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
 (export module-context-walk-test)
 
@@ -29,6 +29,19 @@
     (make-import-set (make-module-export context 'key 0 'key #f) 1 '()) 'key 1 #f))
 (def module-context-walk-test
   (test-suite "SDK Context traversal correspondence"
+    (yuanxu-test-case "bootstrap collection preserves exact contexts behind the name projection"
+      (def contexts (make-hash-table-eq))
+      (def visits 0)
+      (def names
+        (yuanxu-bootstrap-contexts
+          (lambda (context)
+            (check-equal? (hash-key? contexts context) #f)
+            (hash-put! contexts context #t)
+            (set! visits (+ visits 1)))))
+      (check-equal? visits (hash-length contexts))
+      (check-equal? (>= visits (hash-length names)) #t)
+      (hash-for-each
+        (lambda (_name context) (check-equal? (hash-key? contexts context) #t)) names))
     (yuanxu-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
       (def nodes (list->vector (map (lambda (_) (context-node)) (iota 6))))
       (def (node n) (vector-ref nodes n))

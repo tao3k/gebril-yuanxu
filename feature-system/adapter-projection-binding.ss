@@ -4,7 +4,8 @@
 
 ;;; Boundary: binds resolved feature requirements to adapter and projection objects.
 ;;; Invariant: binding consumes declared capabilities without widening requested policy.
-(import (only-in :clan/poo/object
+(import (only-in :std/list/list fold filter-map)
+        (only-in :clan/poo/object
                  .ref
                  object<-alist
                  object?)
@@ -52,7 +53,7 @@
 ;; : (-> [Object] Procedure Symbol Symbol Symbol [Alist])
 (def (feature-invalid-value-diagnostics
       values predicate code channel expected-kind)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (value)
      (and (not (predicate value))
           (feature-capability-binding-diagnostic
@@ -62,7 +63,7 @@
 ;; : (forall (a) (-> (List a) (-> a Boolean) (List a)))
 ;; : (-> [Object] Procedure [Object])
 (def (feature-valid-values values predicate)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (value) (and (predicate value) value))
    values))
 
@@ -72,7 +73,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (yuanxu-fold-left
+     (fold
       (lambda (value diagnostics)
         (let (semantic-id (.ref value id-slot))
           (cond
@@ -214,7 +215,7 @@
     (if (pair? input-diagnostics)
       (list '() input-diagnostics)
       (let (state
-            (yuanxu-fold-left
+            (fold
              (lambda (requirement state)
                (let ((bindings (car state))
                      (diagnostics (cadr state))
@@ -291,7 +292,7 @@
                (.ref domain-case 'projection-catalog)
                'projection-id))
              (state
-              (yuanxu-fold-left
+              (fold
                (lambda (request state)
                  (let ((bindings (car state))
                        (diagnostics (cadr state))

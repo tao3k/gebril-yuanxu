@@ -3,6 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/list/list iota)
         (only-in :std/source this-source-file)
+        (only-in :gerbil/runtime/loader list-modules)
         (only-in :clan/poo/mop call-with-slot-read-observer)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
         (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
@@ -31,6 +32,10 @@
     (yuanxu-test-fixture "the hygienic policy expression is evaluated once"
       profile: (begin (set! policy-evaluations (+ policy-evaluations 1)) Observed)
       (resource Resource)
+      (check-equal?
+        (ormap (lambda (entry)
+                 (string-prefix? "yuanxu/module-system/building/test-retention" (car entry)))
+               (list-modules)) #t)
       (def active-profile 'author-value)
       (check-equal? (unbox (current-module-process-trace-budget)) 4)
       ;; This is observation state, not author fixture code or a global quota.

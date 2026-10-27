@@ -3,10 +3,12 @@
 ;;; The resolver is captured once by an admitted private wrapper, never a user
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import :clan/poo/object
-        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier)
+        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
+                 import-module current-expander-context expander-context-id)
+        (only-in :gerbil/runtime/loader load-module)
         (only-in :std/list/list delete-duplicates/hash append-map)
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
-(export module-deferred-role-exports include-deferred-declaration module-role-values
+(export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
         current-module-role-resolver)
 (def current-module-role-resolver (make-parameter #f))
 (def (closed-rows body)
@@ -45,7 +47,7 @@
       ([(? symbol? head) . _]
        ;; Syntax exports and phase initializers are not runtime tuple fields.
        ;; Keep their original native contexts and one-time expansion owner.
-       (unless (memq head '(export def defvalues defstruct defclass
+       (unless (memq head '(export def defvalues defstruct defclass define-type
                            .def .defgeneric .defmethod))
          (error "open role declaration requires guarded reader" role head)))
       (else (error "open role body requires guarded reader" role)))) forms)
@@ -72,6 +74,16 @@
     (map (lambda (name)
            (cons name (eval-syntax (datum->syntax #f name))))
       fields)))
+;; Native import owns context identity and its one-time initializer. The POO
+;; role slot owns demand; this function has no loaded-state or result registry.
+(def (module-import-role-values path names)
+  ;; Import supplies lexical bindings; only the official runtime loader
+  ;; initializes the compiled role. A context left by std/make's expansion is
+  ;; metadata, not permission to interpret its body a second time.
+  (def context (import-module path))
+  (load-module (symbol->string (expander-context-id context)))
+  (parameterize ((current-expander-context context))
+    (module-role-values names)))
 (def (module-deferred-role-exports interface-text role-texts)
   ;; Only inspect the already guarded byte snapshots. No source initializer,
   ;; macro expander, native Type predicate or role loader runs here.
@@ -196,7 +208,9 @@
                   (else (wrap value core-reference shadows)))))))
               (syntax/loc form (head name . slots)))))))
        (with-syntax ((loader loader)
-                     (resolver (datum->syntax (stx-car (car forms)) (stx-e #'resolver))))
+                     (resolver (if (identifier? #'resolver)
+                                 (datum->syntax (stx-car (car forms)) (stx-e #'resolver))
+                                 #'resolver)))
          (syntax-local-rewrap
            (stx-wrap-source
              (core-cons 'begin

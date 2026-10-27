@@ -4,7 +4,8 @@
 (import :clan/poo/object
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
-        (only-in :clan/poo/object-diagnostics diagnostic-then)
+        (prefix-in (only-in :clan/poo/method-combination
+                           prepare-standard around primary) combination.)
         (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-validation-evidence call-with-contract-analysis-root)
         (only-in :yuanxu/configuration/slot-origin admit-field-sources!)
@@ -53,13 +54,13 @@
     (module-source-admit-current! (.get contract source-inputs)
       "configuration source changed"))
   (sources-current!)
-  (def failures ((.get contract prepared-preflight) candidate '()))
+  (def failures ((.get contract .preflight) candidate '()))
   (def evidence
     (if (null? failures)
       ;; The inherited kernel includes arbitrary obligations. Do not keep a
       ;; source-byte window open across their calls or nested admissions.
       (call-with-contract-analysis-root contract candidate context
-        (cut next candidate context))
+        next)
       (let (classification
              (yuanxu-classification-evidence
                (.get contract identity) candidate #f failures context))
@@ -74,12 +75,17 @@
   (def classification-issues (locate (.get evidence classification diagnostics)))
   (def issues (locate (.get evidence diagnostics)))
   (def result
-    (.cc evidence
-      classification: (.cc (.get evidence classification) diagnostics: classification-issues)
-      diagnostics: issues))
+    ;; With no diagnostics, decoration has no field to change. Keep the fresh
+    ;; inherited receipt, not another pair of identical persistent wrappers.
+    ;; All source observations and exit certification below still run.
+    (if (and (null? classification-issues) (null? issues)) evidence
+      (.cc evidence
+        classification: (.cc (.get evidence classification) diagnostics: classification-issues)
+        diagnostics: issues)))
   ;; This protocol slot is replaceable: do not classify it as a pure inspector
   ;; or carry its source bytes into the independent final collector check.
-  (when (and (null? failures) (object? context) (.slot? context 'admit-current))
+  (when (and (.get evidence classification accepted?)
+             (object? context) (.slot? context 'admit-current))
     ((.get context admit-current)))
   (sources-current!)
   result)
@@ -89,22 +95,27 @@
   source-inputs: '()
   .preflight: (lambda (_candidate _path) '())
   .locate-diagnostic: (lambda (_candidate diagnostic) diagnostic)
-  ;; Field-demand guards precede the native whole-value diagnosis. Recognition
-  ;; does not normalize; the inherited producer still validates exactly once.
-  ;; Cache the COMPOSITION on this receiver, never a successful admission.
-  prepared-preflight:
-  (diagnostic-then .preflight
-    (if value-contract (cut diagnose value-contract <> <>)
-      (lambda (_candidate _path) '())))
+  ;; Domain guards stage dependent reads. Native FUN owns whole-value
+  ;; validation/refusal below; do not diagnose that same value a second time.
   (.admit (inherited)
-    (lambda (candidate context)
-      (call-with-module-source-fresh-reads
-        (lambda ()
-          (call-with-collected-module-sources
-            (lambda (sources-current!)
-              (def evidence
-                (call-with-source-slot-reads
-                  (cut source-contract-admit @ (inherited) candidate context)))
-              (parameterize ((current-module-source-phase 'return-currentness))
-                (sources-current!))
-              evidence)))))))
+    ;; Prepare only the method skeleton on this effective receiver. Every
+    ;; invocation supplies fresh arguments, observation scopes and certification.
+    (let (invoke
+          (combination.prepare-standard
+            (list
+              (combination.around
+                (lambda (next candidate context)
+                  (call-with-module-source-fresh-reads
+                    (lambda ()
+                      (call-with-collected-module-sources
+                        (lambda (sources-current!)
+                          (def evidence
+                            (call-with-source-slot-reads
+                              (cut source-contract-admit @ next candidate context)))
+                          (parameterize ((current-module-source-phase 'return-currentness))
+                            (sources-current!))
+                          evidence))))))
+              (combination.primary
+                (lambda (_next candidate context) ((inherited) candidate context))))
+            (lambda (_arguments) (error "missing contextual admission method"))))
+      (lambda (candidate context) (invoke (list candidate context))))))

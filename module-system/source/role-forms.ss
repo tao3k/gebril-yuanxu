@@ -1,9 +1,23 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+prelude: :gerbil/core
 ;;; SDK-only role discovery shared by publication preparation and expansion.
 (export yuanxu-module-allowed-entrypoint-roles module-publication-role-imports
-        module-regular-role-file?)
+        module-regular-role-file? module-init-export-name)
+
+;; Native owner identity is metadata, not selection or object construction.
+(def (module-init-export-name identity)
+  (unless (symbol? identity) (error "init requires a native module identity" identity))
+  (let (name (symbol->string identity))
+    (let (separator (string-rindex name #\/))
+      (string->symbol
+        (string-append
+          (if separator
+            (string-append (substring name 0 separator) "."
+                           (substring name (+ separator 1) (string-length name)))
+            name)
+          ".exports")))))
 (def yuanxu-module-allowed-entrypoint-roles '(types objects func config interface build))
 (def (module-publication-role-imports root present?)
   (filter-map

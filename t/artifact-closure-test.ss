@@ -7,7 +7,7 @@
         (only-in :gerbil/runtime/loader load-path set-load-path! load-module)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures DirectoryFixture)
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         "qualification/mop-state/artifact-closure")
 (export artifact-closure-test test-cleanup!)
 (def completed 0)

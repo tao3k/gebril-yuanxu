@@ -7,7 +7,8 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures ServicesFixture write-source)
+        (only-in "./qualification/testing/directory.ss" write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
         (only-in :yuanxu/module-system/building/artifacts
           call-with-build-artifact-issuance admit-build-artifacts!
           run-build-artifact-process)

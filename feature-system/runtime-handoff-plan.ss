@@ -4,7 +4,8 @@
 
 ;;; Boundary: projects resolved feature bindings into inert runtime handoff plans.
 ;;; Invariant: handoff planning records requirements but performs no runtime effects.
-(import (only-in :clan/poo/object
+(import (only-in :std/list/list fold filter-map)
+        (only-in :clan/poo/object
                  .ref
                  object<-alist
                  object?)
@@ -143,7 +144,7 @@
 
 ;; : (-> [Object] [Alist])
 (def (feature-runtime-handoff-invalid-diagnostics handoffs)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (handoff)
      (and (not (feature-runtime-handoff? handoff))
           (feature-runtime-handoff-diagnostic
@@ -156,7 +157,7 @@
 
 ;; : (-> [Object] [PooFeatureRuntimeHandoff])
 (def (feature-runtime-handoff-valid-values handoffs)
-  (yuanxu-filter-map
+  (filter-map
    (lambda (handoff) (and (feature-runtime-handoff? handoff) handoff))
    handoffs))
 
@@ -165,7 +166,7 @@
   (let ((seen (make-hash-table))
         (duplicates (make-hash-table)))
     (reverse
-     (yuanxu-fold-left
+     (fold
       (lambda (handoff diagnostics)
         (let (handoff-id (.ref handoff 'handoff-id))
           (cond
@@ -325,7 +326,7 @@
 ;; : (-> PooFeatureRuntimeHandoff MaybeFeatureAdapterBinding MaybeFeatureProjectionBinding [Alist])
 (def (feature-one-runtime-handoff-diagnostics
       handoff adapter-binding projection-binding)
-  (yuanxu-filter-map
+  (filter-map
    identity
    (list
     (missing-handoff-adapter-diagnostic handoff adapter-binding)
@@ -357,7 +358,7 @@
          (feature-runtime-handoff-index
           (.ref binding 'projection-bindings) 'request-id)))
     (let (state
-          (yuanxu-fold-left
+          (fold
            (lambda (handoff state)
              (let* ((resolved (car state))
                     (diagnostics (cadr state))

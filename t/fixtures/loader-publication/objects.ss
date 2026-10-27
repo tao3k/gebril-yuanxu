@@ -1,0 +1,15 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import (only-in :clan/poo/mop make-instance) "./types.ss")
+(export backend-scope)
+(def (backend-scope configuration)
+  (def invocations 0)
+  (def failure-value (.o kind: 'original-backend-failure))
+  (def load
+    (lambda (source)
+      (set! invocations (+ invocations 1))
+      (if (eq? (.get source value) 'fail) (raise failure-value)
+        (.o name: 'loaded-backend request: source))))
+  (.o Backend: (make-instance ModuleLoaderBackend name: (.get configuration name)
+                 source-kind: 'local load: load)
+      types: (.o Admission: BackendAdmission)
+      trace: (.o calls: (lambda () invocations) original: load failure: failure-value)))

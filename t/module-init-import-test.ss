@@ -43,6 +43,7 @@
           (lambda (identity) (check-equal? (and (memq identity contexts) #t) #f))
           '(yuanxu/module-system/source/reader
             yuanxu/module-system/source/link
+            yuanxu/module-system/source/build
             yuanxu/module-system/building/build-projection
             yuanxu/module-system/building/artifacts
             yuanxu/observability/testing-script))

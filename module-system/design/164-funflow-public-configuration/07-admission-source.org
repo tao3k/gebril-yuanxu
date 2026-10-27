@@ -30,7 +30,7 @@ source, a Loader integration or a new execution receipt.
 Existing dependencies are native .o/.get/.ref/.slot?/.all-slots,
 compute-precedence-list!, Core's classification/validation constructors and
 protocols, YuanxuContract., the source-ref predicate, with-catch, standard
-list/hash operations, and the existing yuanxu-append-map, yuanxu-find and
+list/hash operations, and the existing append-map, find and
 yuanxu-stable-duplicates functions from
 [[file:../../../utilities/functional.ss][utilities/functional.ss]]. named-symbol?, unique-symbols?,
 nonempty-unique-symbols?, metadata-shape? and funflow-check come from the already
@@ -246,7 +246,7 @@ source receipt. Context validation also cannot attest a caller-chosen owner.
     names))
 
 (def (ff-selection-problems profile names path-value)
-  (yuanxu-append-map
+  (append-map
     (lambda (name)
       (cond
         ((eq? name 'pipeline)
@@ -369,7 +369,7 @@ trust association, not something a candidate.contract field can authorize.
       (map car (.get candidate metadata)))))
 
 (def (ff-payload-problems check context)
-  (yuanxu-append-map
+  (append-map
     (lambda (field-name)
       (let* ((path-value (append (.get context path) (list field-name)))
              (field-context (.o (:: @ context) path: path-value))
@@ -441,7 +441,7 @@ establish source authentication or deployed readiness.
         (hash-put! dependents name '()))
       names checks)
     (let* ((missing
-            (yuanxu-append-map
+            (append-map
               (lambda (name)
                 (map
                   (lambda (dependency)
@@ -472,7 +472,7 @@ establish source authentication or deployed readiness.
               (let ((order-value (reverse order-rev)))
                 (.o order: order-value problems: duplicate-tasks))
               (let ((ready-name
-                     (yuanxu-find
+                     (find
                        (lambda (name) (zero? (hash-get indegrees name)))
                        remaining)))
                 (if ready-name

@@ -5,8 +5,8 @@
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/configuration/json config-json-file config-defaults config-field-origin)
         (only-in :yuanxu/module-system/source/admission module-source-read)
-        (only-in :yuanxu/t/qualification/service-publication/fixtures
-               DirectoryFixture ServicesFixture write-source refused))
+        (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
+        (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture refused))
 (export gitea-json-configuration-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)

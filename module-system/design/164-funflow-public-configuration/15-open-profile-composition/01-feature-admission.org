@@ -13,7 +13,7 @@ slots. Scenario names, language names and participant count are not hardcoded.
 All helpers introduced by this source are defined below. Existing dependencies
 are Core evidence/admission constructors, POO syntax/reflection, Scheme list/hash
 operations, the predicates/constants referenced in module 05, and the existing
-yuanxu-append-map, yuanxu-find and yuanxu-stable-duplicates functions.
+append-map, find and yuanxu-stable-duplicates functions.
 No hidden module load, user callback, compiler invocation or runtime effect is
 added. Source owner bindings/exports are still a future integration concern.
 
@@ -424,7 +424,7 @@ Module/prototype generation and describe them as migrated instances.
     names))
 
 (def (ff-selection-problems profile names path-value)
-  (yuanxu-append-map
+  (append-map
     (lambda (name)
       (cond
         ((eq? name 'pipeline)
@@ -529,7 +529,7 @@ Module/prototype generation and describe them as migrated instances.
       (map car (.get candidate metadata)))))
 
 (def (ff-payload-problems check context)
-  (yuanxu-append-map
+  (append-map
     (lambda (field-name)
       (let* ((path-value (append (.get context path) (list field-name)))
              (field-context (.o (:: @ context) path: path-value))
@@ -585,7 +585,7 @@ Module/prototype generation and describe them as migrated instances.
         (hash-put! dependents name '()))
       names checks)
     (let* ((missing
-            (yuanxu-append-map
+            (append-map
               (lambda (name)
                 (map
                   (lambda (dependency)
@@ -616,7 +616,7 @@ Module/prototype generation and describe them as migrated instances.
               (let ((order-value (reverse order-rev)))
                 (.o order: order-value problems: duplicate-tasks))
               (let ((ready-name
-                     (yuanxu-find
+                     (find
                        (lambda (name) (zero? (hash-get indegrees name)))
                        remaining)))
                 (if ready-name

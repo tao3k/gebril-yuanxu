@@ -20,8 +20,13 @@
   ;; Source-bound admission below must refuse an unavailable observation.
   (def inputs
     (map (lambda (path)
-           (cons path (and (eq? (module-source-type path) 'regular)
-                           (module-source-read path)))) paths))
+           ;; One private requirement batch per source file. Distinct native
+           ;; specifications/locations retain their own identities while
+           ;; sharing this unchanged snapshot, rather than reboxing its row
+           ;; once per field and repeating collector enrollment at replay.
+           (cons path (list (cons path
+             (and (eq? (module-source-type path) 'regular)
+                  (module-source-read path)))))) paths))
   (for-each
     (lambda (row)
       (let (entry (assq (car row) (object-slots object)))
@@ -30,7 +35,7 @@
             (.putslot! object (car row)
               (make-located-slot
                 (lambda (self next) ((apply-slot-spec self spec next)))
-                row (list (assoc (cadr row) inputs))))))))
+                row (cdr (assoc (cadr row) inputs))))))))
     methods)
   object)
 

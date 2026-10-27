@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list map)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
@@ -282,7 +283,7 @@
    duplicate-runtime-handoff-manifest))
 
 (def (runtime-handoff-diagnostic-codes value)
-  (yuanxu-map
+  (map
    (lambda (diagnostic) (.ref diagnostic 'code))
    (.ref value 'diagnostics)))
 
@@ -318,13 +319,13 @@
         (check (.ref runtime-handoff-ready-plan 'status) => 'ready)
         (check (.ref runtime-handoff-ready-plan 'accepted?) => #t)
         (check (length resolved) => 3)
-        (check (yuanxu-map
+        (check (map
                 (lambda (handoff) (.ref handoff 'handoff-id))
                 resolved)
                => '(runtime-bundle-handoff
                     cedar-policy-input-handoff
                     lean-evidence-obligation))
-        (check (yuanxu-map
+        (check (map
                 (lambda (handoff) (.ref handoff 'provider-module-id))
                 resolved)
                => '(yuanxu/python-runtime-cffi

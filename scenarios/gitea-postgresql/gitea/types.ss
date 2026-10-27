@@ -40,25 +40,16 @@
   (.cc ObjectContract. responsibilities: (.o config: Object plan: Object)))
 (def ConfigEnvelope
   (.cc ObjectContract. responsibilities: (.o postgresql: Object gitea: Object)))
-(def (application-value-contract database-type Port)
-  (def client-type (gitea-value-contract Port))
+(def (application-value-contract database-type client-type Port)
   (def config-type (.cc ObjectContract. responsibilities:
                     (.o postgresql: database-type gitea: client-type)))
   (def plan-type (.cc ObjectContract. responsibilities:
                   (.o configuration: Object
                       postgresql: (.cc ObjectContract. responsibilities: (.o port: Port))
                       gitea: (.cc ObjectContract. responsibilities: (.o database-port: Port)))))
-  (.cc (refine (.cc ObjectContract. identity: 'gitea/application-value
-                 responsibilities: (.o config: config-type plan: plan-type))
-               application-issues)
-  ;; Stage diagnosis so null server settings cannot force the derived client.
-  preflight:
-    (foldr diagnostic-then (lambda (_value _path) '())
-      (list (cut diagnose ApplicationEnvelope <> <>)
-            (source-diagnose-at ConfigEnvelope '(config))
-            (source-diagnose-at database-type '(config postgresql))
-            (source-diagnose-at client-type '(config gitea))
-            (source-diagnose-at plan-type '(plan))))))
+  (refine (.cc ObjectContract. identity: 'gitea/application-value
+            responsibilities: (.o config: config-type plan: plan-type))
+          application-issues))
 (def (application-issues candidate location)
   (def database (.get candidate config postgresql))
   (def client (.get candidate config gitea))
@@ -89,13 +80,24 @@
     '()
     (list (.o kind: 'unsatisfied-joint-port-requirements
               path: '(config postgresql settings port) actual: effective-port constraints: constraint-values))))
-(.def (ApplicationContract @ SourceAdmissionContract. database-contract port-type documents)
+(.def (ApplicationContract @ SourceAdmissionContract. database-contract port-type documents
+                            database-value-type client-value-type)
   source-inputs: (append (.get documents postgresql source-inputs) (.get documents gitea source-inputs))
-  .preflight: (.get value-contract preflight)
+  database-value-type: (.get database-contract value-contract)
+  client-value-type: (gitea-value-contract port-type)
+  ;; Dependency guards belong to contextual admission, not to the reusable
+  ;; native value Type. Share its actual child Types and short-circuit before
+  ;; forcing a client/plan that depends on invalid database settings.
+  .preflight:
+  (foldr diagnostic-then (lambda (_value _path) '())
+    (list (cut diagnose ApplicationEnvelope <> <>)
+          (source-diagnose-at ConfigEnvelope '(config))
+          (source-diagnose-at database-value-type '(config postgresql))
+          (source-diagnose-at client-value-type '(config gitea))))
   .locate-diagnostic: (config-diagnostic-locator documents '(config))
   identity: 'gitea/application
   value-contract:
-  (application-value-contract (.get database-contract value-contract) port-type)
+  (application-value-contract database-value-type client-value-type port-type)
   responsibilities:
   (.o config: (.cc ConfigurationAdmission. database-contract: database-contract))
   requirement-type: (.cc ObjectContract. responsibilities:

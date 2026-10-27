@@ -948,7 +948,7 @@
                       ;; observers never receive the context/syntax objects.
                       ((current-module-source-observer)
                         (list 'reader-retention
-                          (cons 'tools (hash-length tool-contexts))
+                          (cons 'tools (hash-length native-contexts))
                           (cons 'private-contexts (hash-length kernel-contexts))
                           ;; No per-root transitive topology copies are retained.
                           (cons 'dependency-closures 0)

@@ -22,19 +22,14 @@
                  yuanxu-object-contract)
         (only-in :yuanxu/utilities/functional
                  yuanxu-all?
-                 yuanxu-find
                  yuanxu-predicate-and
                  yuanxu-predicate-or
                  yuanxu-predicate-exactly-one)
+        (only-in :std/list/list find)
         (only-in "./json-schema-constraints.ss"
                  yuanxu-json-schema-apply-node-constraints)
-        (only-in "./functional.ss"
-                 yuanxu-contract-key->string
-                 yuanxu-contract-all?
-                 yuanxu-contract-json-object?
-                 yuanxu-contract-member?
-                 yuanxu-contract-project-list
-                 yuanxu-contract-filter-map)
+        (only-in "./functional.ss" yuanxu-contract-key->string yuanxu-contract-all? yuanxu-contract-json-object? yuanxu-contract-member?)
+        (only-in :std/list/list map filter-map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node?
                  yuanxu-json-schema-node-kind

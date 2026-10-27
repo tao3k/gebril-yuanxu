@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list map find)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/feature-system/interface
@@ -27,11 +28,11 @@
   (feature-selection descriptor))
 
 (def (test-profile profile-id descriptors)
-  (feature-profile profile-id (yuanxu-map select-feature descriptors)))
+  (feature-profile profile-id (map select-feature descriptors)))
 
 (def (plan-has-diagnostic? plan code)
   (and
-   (yuanxu-find
+   (find
     (lambda (diagnostic)
       (eq? (.ref diagnostic 'code) code))
     (.ref plan 'diagnostics))

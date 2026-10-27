@@ -59,7 +59,8 @@
         feature-bundle-v1-lowering/with-symbols
         require-feature-bundle-v1-lowering-plan)
 
-(import (only-in :std/crypto/digest sha256)
+(import (only-in :std/list/list map find)
+        (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
         (only-in :clan/poo/object .ref .slot? object? object<-alist)
         :yuanxu/utilities/functional)
@@ -95,7 +96,7 @@
 
 ;; : (-> [Integer] Integer)
 (def (first-nonzero-comparison comparisons)
-  (or (yuanxu-find (lambda (value) (not (= value 0))) comparisons)
+  (or (find (lambda (value) (not (= value 0))) comparisons)
       0))
 
 ;; : (-> PooFeatureBundleV1NativeEdge PooFeatureBundleV1NativeEdge Integer)
@@ -206,10 +207,10 @@
        (write
         (list +feature-bundle-v1-schema+
               (compact-id->canonical bundle-id)
-              (yuanxu-map symbol-row->canonical symbols)
-              (yuanxu-map component-row->canonical components)
-              (yuanxu-map edge-row->canonical edges)
-              (yuanxu-map evidence-row->canonical evidence))
+              (map symbol-row->canonical symbols)
+              (map component-row->canonical components)
+              (map edge-row->canonical edges)
+              (map evidence-row->canonical evidence))
         port))))))
 
 ;; : (-> [PooFeatureBundleV1NativeSymbol] U8Vector)
@@ -325,20 +326,20 @@
     (let* ((lowered-symbols
             (list-sort (lambda (left right)
                          (< (compare-symbol-rows left right) 0))
-                       (yuanxu-map lower-symbol symbols)))
+                       (map lower-symbol symbols)))
            (native-symbols (assign-symbol-offsets lowered-symbols))
            (native-components
             (list-sort (lambda (left right)
                          (< (compare-component-rows left right) 0))
-                       (yuanxu-map lower-component components)))
+                       (map lower-component components)))
            (native-edges
             (list-sort (lambda (left right)
                          (< (compare-edge-rows left right) 0))
-                       (yuanxu-map lower-edge edges)))
+                       (map lower-edge edges)))
            (native-evidence
             (list-sort (lambda (left right)
                          (< (compare-evidence-rows left right) 0))
-                       (yuanxu-map lower-evidence evidence))))
+                       (map lower-evidence evidence))))
       (cond
        ((not (strictly-ordered? native-symbols compare-symbol-rows))
         (rejected-plan 'duplicate-symbol-key bundle-id

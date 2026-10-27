@@ -367,15 +367,13 @@ flowchart LR
     Cache --> Closed
 #+end_src
 
-The implementation imports the project-owned combinators from
-=src/utilities/functional.ss=.  Normalization, lookup, flattening, validation,
-duplicate detection, ordered parent/type diagnostics, projection selection,
-closure diagnostics, and instance diagnostics use =yuanxu-fold-left=,
-=yuanxu-fold-right=, =yuanxu-map=, =yuanxu-find=,
-=yuanxu-filter-map=, =yuanxu-append-map=, =yuanxu-remove=,
-=yuanxu-all?=, =yuanxu-member?=, and =yuanxu-list-of?= instead of local
-list algorithms.  The only remaining hand-written recursion owns the two pure
-ordered state machines for slot precedence and method-contract refinement.
+The implementation imports ordinary folds, maps, lookup and filtering directly
+from =:std/list/list=. =utilities/functional.ss= retains only combinators with
+additional semantics, including strict-Boolean results, stable duplicate
+ordering and proper-list guards. Native =fold=, =fold-right=, =map=, =find=,
+=filter-map=, =append-map= and =remove= replace the former prefixed aliases.
+The remaining explicit recursion owns the ordered state machines for slot
+precedence and method-contract refinement.
 Their encounter order is semantic and is therefore not hidden behind an
 unordered generic merge.
 

@@ -4,7 +4,8 @@
 
 ;;; Boundary: owns the POO prototypes for features, profiles, selections, and receipts.
 ;;; Invariant: model objects remain inert values; resolution and runtime effects live elsewhere.
-(import (only-in :clan/poo/object
+(import (only-in :std/list/list map)
+        (only-in :clan/poo/object
                  .ref
                  .slot?
                  object<-alist)
@@ -64,7 +65,7 @@
   (one-feature-slot 'conflicts feature-ids))
 
 (def (feature-descriptor-ids descriptors)
-  (yuanxu-map
+  (map
    (lambda (descriptor) (.ref descriptor 'feature-id))
    descriptors))
 
@@ -126,7 +127,7 @@
     default-value))
 
 (def (copy-feature-values values)
-  (yuanxu-map (lambda (value) value) values))
+  (map (lambda (value) value) values))
 
 (def (feature-descriptor spec)
   (unless (.slot? spec 'feature-id)

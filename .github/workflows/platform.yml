@@ -39,7 +39,7 @@ jobs:
             .gerbil/pkg
             .gerbil/lib/clan
             .gerbil/bin
-          key: yuanxu-gerbil-${{ runner.os }}-${{ runner.arch }}-v0.19-1cfb032-${{ hashFiles('gerbil.pkg') }}
+          key: yuanxu-gerbil-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gerbil.pkg', '.github/actions/setup-gerbil/action.yml') }}
       - name: Install pinned dependencies
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
@@ -47,7 +47,7 @@ jobs:
       - name: Check Yuanxu package namespace
         run: just check-package-namespace
       - name: Build Yuanxu
-        run: just build
+        run: GERBIL_BUILD_VERBOSE=1 gerbil build
       - name: Test public Yuanxu prelude
         run: just test-yuanxu-prelude
       - name: Qualify source-only selected build bootstrap
@@ -91,3 +91,6 @@ jobs:
         run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
       - name: Run complete group with serial 2 GiB workers
         run: just test-directory '${{ matrix.group }}'
+      - name: Run published module TestSuites outside mechanism Cases
+        if: matrix.group == 'modules'
+        run: just test-selected-modules

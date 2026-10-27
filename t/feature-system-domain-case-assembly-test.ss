@@ -2,7 +2,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :std/list/list map)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
@@ -166,7 +167,7 @@
   (from-plan domain-case-raw-projection-plan))
 
 (def (domain-case-assembly-diagnostic-codes assembly)
-  (yuanxu-map (lambda (diagnostic) (.ref diagnostic 'code))
+  (map (lambda (diagnostic) (.ref diagnostic 'code))
                 (.ref assembly 'diagnostics)))
 
 (def (domain-case-stress-id prefix index)

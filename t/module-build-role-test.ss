@@ -4,14 +4,19 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :gerbil/expander core-import-module
+        (only-in :std/make make)
+        (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path! load-module)
+        (only-in :gerbil/expander core-import-module eval-syntax
                  current-expander-context make-top-context)
         (only-in :yuanxu/module-system/source/preparation yuanxu-write-module-publication
                  yuanxu-prepare-module-retained-source call-with-module-compiler-inputs module-compiler-source-input)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/source/admission module-source-read module-source-type
+                 call-with-module-source-operation-measurement)
         (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
+(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :yuanxu/module-system/building/artifacts current-build-output-directory))
 (export module-build-role-test)
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -48,6 +53,49 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "prepared source shares only local probes, never its owning callbacks"
+      (call-with-temporary-directory "module-source-local-check"
+        (lambda (root)
+          (def file (path-expand "source.ss" root))
+          (def package (path-expand "gerbil.pkg" root))
+          (write-source package "(package: local-source-check)\n")
+          (write-source file "(export value) (def value 1)\n")
+          (def calls 0)
+          (def change? #f)
+          ;; Reference the previous unwindowed local probe order, without
+          ;; substituting a fixture for the actual prepared-source guard below.
+          (defvalues (_reference reference-counts)
+            (call-with-module-source-operation-measurement
+              (lambda ()
+                (for-each (lambda (_)
+                            (module-source-read file)
+                            (module-source-type package)
+                            (module-source-read package)) '(first second)))))
+          (check-equal? (hash-get reference-counts '(source reads)) 4)
+          (check-equal? (hash-get reference-counts '(source stats)) 6)
+          (def input
+            (yuanxu-prepare-module-retained-source file
+              (lambda ()
+                (set! calls (+ calls 1))
+                (when change? (write-source file "(export value) (def value 2)\n")))))
+          (set! calls 0)
+          (defvalues (_ counts)
+            (call-with-module-source-operation-measurement
+              (lambda ()
+                ((.get input admit-current))
+                ((.get input admit-current)))))
+          ;; Two independent checks read source + package twice. The package's
+          ;; explicit regular-file probe and byte read share one physical stat.
+          (check-equal? calls 4)
+          (check-equal? (hash-get counts '(source reads)) 4)
+          (check-equal? (hash-get counts '(source stats)) 4)
+          (set! change? #t)
+          (check-exception ((.get input admit-current)) error?)
+          (check-equal? calls 5)
+          (set! change? #f)
+          (write-source file "(export value) (def value 1)\n")
+          (write-source package "(package: changed-source-check)\n")
+          (check-exception ((.get input admit-current)) error?))))
     (yuanxu-test-case "compiler enrollment does not duplicate admission; every access rechecks"
       (let ((checks 0) (valid? #t))
         (def selected-path (path-expand "selected-retained.ss"))
@@ -211,6 +259,57 @@
           (call-with-output-file (list path: (path-expand "shared.ss" owner) append: #t)
             (cut display "\n;; changed imported source\n" <>))
           (check-exception ((.get view admit-current)) error?))))
+    (yuanxu-test-case "issued native compilation preserves lazy runtime roles in the Harness"
+      (call-with-temporary-directory "compiled-role-demand"
+        (lambda (root)
+          (def marker (path-expand "config-demanded" root))
+          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          ;; This Case concerns inert runtime roles. The existing Cases below
+          ;; separately cover operational Build's declared role dependencies.
+          (delete-file (path-expand "build.ss" owner))
+          (write-source (path-expand "interface.ss" owner)
+            "(.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: (.o config: Config)) features: (.o))")
+          (write-source (path-expand "build.ss" root) "(void)")
+          (write-source (path-expand "types.ss" owner)
+            "(import (only-in :clan/poo/mop define-type Object) (only-in :yuanxu/object-types/contracts YuanxuContract.)) (define-type (Scope @ YuanxuContract.) identity: 'scope value-contract: Object) (export Scope)")
+          (write-source (path-expand "objects.ss" owner)
+            "(def Defaults (error \"unused objects role initialized\")) (export Defaults)")
+          (write-source (path-expand "config.ss" owner)
+            (call-with-output-string
+              (lambda (port)
+                (write `(def Config
+                          (begin (call-with-output-file (list path: ,marker append: #t) (cut display "once" <>))
+                            (.o value: 42))) port))))
+          (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
+          (def projection (yuanxu-project-source-spec selection '() root (path-expand "build.ss" root)))
+          (def lib (path-expand "lib" root))
+          (.call projection .compile lib
+            (lambda ()
+              (make (.get projection spec) srcdir: root
+                libdir: (or (current-build-output-directory) lib) optimize: #f)))
+          (check-equal? (file-exists? marker) #f)
+          (def publication (.call selection prepare-publication 'app/example))
+          (def id (symbol->string (.get publication compiler-identity)))
+          (def previous (load-path))
+          (dynamic-wind
+            (lambda () (set-load-path! (cons lib previous)))
+            (lambda ()
+              (parameterize ((current-expander-context (make-top-context)))
+                (eval-syntax `(import ,(path-expand (string-append id ".ssi") lib)))
+                (def loaded (eval-syntax 'Example))
+                (check-equal? (file-exists? marker) #f)
+                (def scope (.call (.get loaded core) link (.o)))
+                (check-equal? (file-exists? marker) #f)
+                (def configuration (.get scope config))
+                (check-equal? (.get configuration value) 42)
+                (check-equal? (eq? configuration (.get scope config)) #t)
+                (check-equal? (load-module id) (load-module id))
+                (check-equal? (module-source-read marker) "once")
+                (def file (path-expand "config.ss" owner))
+                (write-source file (string-append (module-source-read file) "\n; changed after native load\n"))
+                (check-exception (.call projection admit-current) error?)
+                (check-equal? (.get configuration value) 42)))
+            (lambda () (set-load-path! previous))))))
     (yuanxu-test-case "original interface compiler gets the lazy phase-bound Build binding"
       (call-with-temporary-directory "module-raw-build-binding"
         (lambda (root)

@@ -11,7 +11,8 @@
 (import (for-syntax
           (only-in :gerbil/expander current-expander-context core-context-top
                    module-context? expander-context-id)
-          (only-in :yuanxu/module-system/source/init module-init-intent module-init-export-name)))
+          (only-in :yuanxu/module-system/source/init module-init-intent)
+          (only-in :yuanxu/module-system/source/role-forms module-init-export-name)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
