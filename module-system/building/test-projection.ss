@@ -37,7 +37,7 @@
   (def observations
     (map (lambda (path) (cons path (module-source-read path)))
       (delete-duplicates/hash (append paths (map path-expand inputs)))))
-  (.o spec: paths
+  (.o spec: paths source-inputs: observations
       admit-current: (lambda ()
                        (module-source-admit-current! observations "explicit test source changed"))))
 
@@ -85,6 +85,7 @@
   ;; those same bytes, including the check after execution.
   (def source (delay (module-test-file-source files)))
   (.o spec: files
+      source-inputs: (.ref (force source) 'source-inputs)
       admit-current:
       (lambda ()
         (for-each
@@ -198,4 +199,4 @@
         (call-with-module-source-read-cache sources-current!))))
   (current!)
   (.o selected-graph: (.ref selection 'selected-graph)
-      spec: (reverse paths) admit-current: current!))
+      spec: (reverse paths) source-inputs: observations admit-current: current!))

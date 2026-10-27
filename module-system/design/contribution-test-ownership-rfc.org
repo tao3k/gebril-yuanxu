@@ -69,3 +69,13 @@ The executable build-graph Scenario checks those boundaries together with the
 original changed-source refusal and successful restoration. A later test
 publication in the same process must not inherit a deleted compiler path.
 This lifecycle check does not close the separate 10K declaration capacity gate.
+
+* Native source observation projection
+
+File, directory and selected-module test publications expose =source-inputs=
+from the observations already captured by their native source guards. Reading
+this metadata neither invents a source inventory nor demands a business Graph.
+Suite bytes and compiler support remain distinct native owners. A receipt may
+combine their original observations through =unique-build-inputs=; admission
+still calls both original guards. Summary hashes do not authorize compilation
+or replace the Nix Source's transitive currentness checks.

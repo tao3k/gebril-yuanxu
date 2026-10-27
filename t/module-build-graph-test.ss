@@ -21,6 +21,7 @@
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source
                  call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
+        (only-in :yuanxu/module-system/building/test-projection module-test-file-source)
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :std/io/tempfile call-with-temporary-directory)
@@ -89,6 +90,27 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "native test source publishes its original guarded observations"
+      (call-with-temporary-directory "test-source-observations"
+        (lambda (root)
+          (def suite-path (path-expand "suite-test.ss" root))
+          (def helper-path (path-expand "helper.ss" root))
+          (write-file suite-path "(export suite-test)\n")
+          (write-file helper-path "(export Helper)\n")
+          (def source (module-test-file-source (list suite-path) (list helper-path)))
+          (def original-inputs (.get source source-inputs))
+          (check-equal? (eq? (.get source source-inputs) original-inputs) #t)
+          (check-equal? original-inputs
+            (list (cons suite-path "(export suite-test)\n")
+                  (cons helper-path "(export Helper)\n")))
+          ((.get source admit-current))
+          (dynamic-wind
+            (lambda () (write-file helper-path "(export Changed)\n"))
+            (lambda () (check-exception ((.get source admit-current)) error?))
+            (lambda () (write-file helper-path "(export Helper)\n")))
+          ((.get source admit-current))
+          (check-equal? (.get source source-inputs) original-inputs))))
+
     (yuanxu-test-case "compiler role aliases end with their temporary source extent"
       (call-with-temporary-directory "compiler-role-lifetime"
         (lambda (root)

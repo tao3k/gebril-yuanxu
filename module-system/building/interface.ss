@@ -101,6 +101,7 @@
           ;; .select must not first discover every eligible owner's sources.
           (executable-tests
             (.o source-root: (path-directory (path-expand source))
+                source-inputs: (.get (test-source #f 'qualification) source-inputs)
                 selected-graph: (.get (selected!) selected-graph)
                 spec: (.get (test-source #f 'qualification) spec)
                 admit-current: (lambda () (test-source #f 'qualification)))
@@ -164,6 +165,9 @@
     (admit-init-declaration! (cdr init-input))
     (executable-tests
       (.o (:: @ file-source)
+        ;; Publish the exact observations already owned by the source guard.
+        ;; Consumers project evidence; they do not guess files or reread a tree.
+        source-inputs: (cons init-input (.get file-source source-inputs))
         source-root: (path-directory init-file)
         selected-graph:
         (let (view (selected!))
@@ -186,6 +190,7 @@
   (def test-source-value
     (executable-tests
       (.o source-root: (path-directory (path-expand source))
+        source-inputs: (.get (test-source) source-inputs)
         selected-graph: (.get (selected!) selected-graph)
         spec: (test-spec)
         admit-current: test-current!
