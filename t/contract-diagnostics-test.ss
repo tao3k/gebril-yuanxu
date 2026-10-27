@@ -1,9 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/number IntegerRange)
-        (only-in :clan/poo/mop validate TypeError?)
+        (only-in :clan/poo/mop validate TypeError? element?)
+        (only-in :yuanxu/module-system/schema/relations SemanticSymbol)
+        (only-in :yuanxu/modules/json-schema/contracts schema-value-contract ProjectionContract.)
+        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics
+                 yuanxu-json-schema-validation-diagnostic?)
         (only-in :std/error Error Error?)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts
+                 YuanxuContract. yuanxu-predicate-contract YuanxuValidationEvidence)
         (only-in :yuanxu/admission/source SourceAdmissionContract.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-diagnostics-test)
@@ -15,6 +20,35 @@
       (def scope (.o payload: (error "unselected scope payload forced")))
       (check-equal? (.get (.call Contract .admit scope #f) accepted?) #t)
       (check-equal? (.get (.call Contract .admit (.o) #f) accepted?) #f))
+    (yuanxu-test-case "semantic scalar refusal remains typed POO evidence with its original code"
+      (def refused (.call SemanticSymbol .admit 42 #f))
+      (check-equal? (element? YuanxuValidationEvidence refused) #t)
+      (check-equal? (.get refused accepted?) #f)
+      (check-equal? (.get refused candidate) 42)
+      (check-equal? (eq? (.get refused admission-contract) SemanticSymbol) #t)
+      (check-equal? (length (.get refused diagnostics)) 1)
+      (check-equal? (.get (car (.get refused diagnostics)) code) 'expected-symbol))
+    (yuanxu-test-case "Schema and projection refusal retain precise original diagnostics and cause"
+      (def Schema (schema-value-contract 'test/schema
+                    '((type . "object")
+                      (properties . ((port . ((type . "integer"))))))))
+      (for-each
+        (lambda (value-type)
+          (.def (Contract @ YuanxuContract.)
+            identity: 'test/schema-admission value-contract: value-type)
+          (def candidate (.o port: "not-an-integer"))
+          (def refused (.call Contract .admit candidate #f))
+          (check-equal? (element? YuanxuValidationEvidence refused) #t)
+          (check-equal? (.get refused accepted?) #f)
+          (check-equal? (eq? (.get refused candidate) candidate) #t)
+          (check-equal? (TypeError? (.get refused cause)) #t)
+          (check-equal? (length (.get refused diagnostics)) 1)
+          (def issue (car (.get refused diagnostics)))
+          (check-equal? (.get issue kind) 'schema-rejected)
+          (check-equal? (.get issue path) '(port))
+          (check-equal? (yuanxu-json-schema-validation-diagnostic? (.get issue diagnostic)) #t)
+          (check-equal? (eq? issue (car (.get refused classification diagnostics))) #t))
+        (list Schema (.cc ProjectionContract. constraint: Schema project: (lambda (value) value)))))
     (yuanxu-test-case "shape normalization runs once without a no-op classifier"
       (def calls 0)
       (def diagnoses 0)

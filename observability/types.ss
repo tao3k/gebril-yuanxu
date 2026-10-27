@@ -224,10 +224,15 @@
 
 ;;; Framework foundation: explicit native prototypes, independent of legacy
 ;;; feedback receipts and strict module-system presentation structs.
+;; Typed evidence carries native POO diagnostics. Codes remain owned by
+;; their producing Contract; this constructor is not a code registry.
+(def (observation-denial code)
+  (.o code: code))
+
 (def (yuanxu-observation-scalar-classify identity predicate candidate context)
   (let (accepted? (predicate candidate))
     (yuanxu-classification-evidence identity candidate accepted?
-      (if accepted? '() '(invalid-observation-field)) context)))
+      (if accepted? '() (list (observation-denial 'invalid-observation-field))) context)))
 
 ;;; Invariant: symbolic observation fields remain closed over Scheme symbols.
 (define-type (ObservationSymbol @ YuanxuContract.)
@@ -370,7 +375,7 @@
                (and (> (.ref value 'inspected-count) 0)
                     (or (.ref value 'accepted?) (pair? (.ref value 'failures)))))
            (>= (.ref value 'inspected-count) (length (.ref value 'failures))))
-    '() '(inconsistent-admission-observation)))
+    '() (list (observation-denial 'inconsistent-admission-observation))))
 
 ;;; Invariant: admission facts must reconcile their decision, counts, and bounded failures.
 (define-type (YuanxuAdmissionObservationFactsContract @ YuanxuObservationFactsContract)
@@ -474,7 +479,7 @@
        (not (.ref observation 'accepted?))
        (not (.ref observation 'runtime-executed?)))
     '()
-    '(inconsistent-authoring-observation)))
+    (list (observation-denial 'inconsistent-authoring-observation))))
 
 ;;; Boundary: source inspection retains only symbolic owner and repair facts.
 ;;; It never retains the source datum, expanded syntax, object, or slot value.
@@ -528,7 +533,7 @@
 (def (yuanxu-debug-slot-policy-obligations policy _context)
   (if (> (.ref policy 'maximum-depth) 0)
     '()
-    '(non-positive-maximum-slot-depth)))
+    (list (observation-denial 'non-positive-maximum-slot-depth))))
 
 ;;; Boundary: this Contract owns debug-slot admission configuration only.
 ;;; A separate call policy cannot silently widen or disable its slot budget.
@@ -579,7 +584,7 @@
                (eq? (.ref receipt 'accepted?) expected-accepted?)
                (eq? (.ref receipt 'reason) expected-reason))
         '()
-        '(inconsistent-debug-slot-receipt)))))
+        (list (observation-denial 'inconsistent-debug-slot-receipt))))))
 
 ;;; Boundary: slot receipts retain receiver/slot symbols and an active symbol
 ;;; path only.  The object, computed value, and original exception stay out.
@@ -645,7 +650,7 @@
     (if (and (eq? (.ref receipt 'reason) expected-reason)
              (eq? (.ref receipt 'accepted?) expected-accepted?))
       '()
-      '(inconsistent-debug-memory-receipt))))
+      (list (observation-denial 'inconsistent-debug-memory-receipt)))))
 
 ;;; Invariant: a receipt binds one policy to two samples and a derived verdict.
 ;;; Negative deltas are normalized to zero by the pure constructor.

@@ -9,13 +9,15 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
+        (only-in :gerbil/runtime/syntax syntax-error? SyntaxError-irritants
+                 source-location-path? source-location-path)
         (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
                  replay-slot-reads! object-read-issued?)
         (only-in :clan/poo/mop Type.)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
-                 core-import-module core-expand expander-context-id
+                 core-import-module core-expand expander-context-id stx-source
                  current-expander-eval module-context? module-context-path module-context-code
                  core-context-prelude core-module->prelude-context expander-context-table)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
@@ -735,8 +737,17 @@
                 (prepared (yuanxu-prepare-module-publication fresh-source))
                 (wrapper (path-expand "invalid/interface.ss" root)))
            (yuanxu-write-module-publication prepared wrapper)
-           (let (message (exception-message (lambda () (core-import-module wrapper))))
-             (unless (string-contains message (path-expand "interface.ss" module-root))
-               (displayln "MACRO-ERROR-ORIGIN " message) (force-output))
-             (check-equal? (if (string-contains message (path-expand "interface.ss" module-root)) #t #f) #t))))))
+           ;; Compiler formatting may make the same source path relative to
+           ;; cwd. Check the original syntax location itself, not pretty-print
+           ;; spelling, and never accept the generated wrapper as the origin.
+           (check-exception (core-import-module wrapper)
+             (lambda (exception)
+               (and (syntax-error? exception)
+                    (find
+                      (lambda (form)
+                        (let (location (stx-source form))
+                          (and location (source-location-path? location)
+                               (equal? (path-normalize (source-location-path location))
+                                       (path-normalize (path-expand "interface.ss" module-root))))))
+                      (SyntaxError-irritants exception)))))))))
     ))
