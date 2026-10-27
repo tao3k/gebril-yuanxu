@@ -326,7 +326,13 @@
         (publish-products (observed-files (.get consumer compiler-identities) source)
           source (current-build-output-directory))
         ((.get producer admit-artifacts)))))
-  ((.get consumer admit-artifacts)))
+  ((.get consumer admit-artifacts))
+  ;; The package-owned approval is the retained subset publication. The loop's
+  ;; temporary receiver need not keep a completion head (and its source graph)
+  ;; alive after transfer. A later demand restores and verifies the approval;
+  ;; eviction grants no admission and does not remove any signed output.
+  (unless (eq? (.get producer build-graph) (.get consumer build-graph))
+    (hash-remove! issued (.get consumer build-graph))))
 (def (invalidate-build-artifacts! graph)
   (retain-issued-state! graph 'build-required))
 (def (retain-inputs inputs)

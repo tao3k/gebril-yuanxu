@@ -1783,3 +1783,11 @@ operation-local source snapshot bound to that digest. Currentness still rejects
 approval/record changes, including a semantically inert approval edit. The codec,
 issuer, storage policy and output checks remain. Full integration must pass under
 the original2GiB/two-worker envelope; no cached admission is introduced.
+
+Subset publication also evicts its temporary receiver from the existing issued
+state table after the final source/output check. Its package-owned approval and
+outputs remain. Later use must restore and verify that exact approval rather
+than inherit a live completion head. A focused control transfers a subset,
+recovers the same receiver and checks that output mtime is unchanged. This
+bounds native graph lifetime across a full-package publication; it neither
+invalidates the persisted approval nor grants a cached test/admission result.

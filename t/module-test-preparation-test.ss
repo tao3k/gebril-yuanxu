@@ -112,6 +112,17 @@
       (check-equal? (.get fresh-build output-directory) lib)
       (check-equal? (.get (.call fresh .run) status) 0)
       (check-equal? (time->seconds (file-info-last-modification-time (file-info output))) before)
+      ;; Subset publication releases its temporary receiver state. Explicit
+      ;; reuse must recover the original approval without recompiling outputs.
+      (def transfer
+        (parameterize ((current-expander-context (make-top-context)))
+          (eval-syntax '(import :gerbil/core))
+          (eval-syntax '(import (only-in :yuanxu/module-system/building/artifacts
+                                        retain-test-support-subset!)))
+          (eval-syntax 'retain-test-support-subset!)))
+      (transfer build fresh-build)
+      ((.get fresh-build admit-artifacts))
+      (check-equal? (time->seconds (file-info-last-modification-time (file-info output))) before)
       ;; A joint product/sidecar replacement cannot rewrite the package-owned
       ;; approval. Restore bytes in cleanup even if the refusal assertion fails.
       (def source (.get fresh-build build-graph build-publication))
