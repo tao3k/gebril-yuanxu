@@ -177,7 +177,9 @@
       ;; Preparation admits the existing Gerbil build publication. Testing never
       ;; starts a compiler, invents a command, or blesses unissued disk files.
       (unless reused?
-        (error "build-required: run gerbil build before native tests" files))
+        (error "build-required: run gerbil build before native tests" files
+          (list 'support (.get build output-directory)
+                'native-targets (length (.get build spec)))))
       (def compilation #f)
       (when (.get script profile emit?)
         (displayln "test-prepare phase=compile seconds=" (- (real-time) started)

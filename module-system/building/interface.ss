@@ -206,6 +206,9 @@
     (def build (.get tests build))
     ((.get build admit-current))
     (cond
+      ;; Empty support owns no products or issuer. Preserve the ordinary
+      ;; command and source guard without demanding artifact machinery.
+      ((null? (.get build spec)) (dispatch '() args))
       ((or (null? args) (equal? (car args) "compile"))
        (def source (.get (.get build build-graph) build-publication))
        (if (.call source .available?)
@@ -223,7 +226,8 @@
        (for-each
          (lambda (file)
            (def consumer (.get (file-tests (list file) '() retained) build))
-           (transfer build consumer))
+           (when (pair? (.get consumer spec))
+             (transfer build consumer)))
          (.get tests spec)))
       ((equal? (car args) "spec") (dispatch (.get build spec) args))
       (else (error "test support lifecycle requires Gerbil compile or spec" args)))

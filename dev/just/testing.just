@@ -4,13 +4,14 @@
 test-file path observe="false": build-test-fixtures (_test-file path observe)
 
 # The official Gerbil owns compilation before the native Case process starts.
-# These three small, versioned packages qualify support reuse/options/admission;
+# Three versioned compiler Fixtures qualify support reuse/options/admission.
+# The fourth package consumes init's existing module qualification declaration;
 # source mutation and product tampering remain in their original Scheme Cases.
 build-test-fixtures:
     #!/usr/bin/env bash
     set -euo pipefail
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}max-heap={{ gerbil_test_max_heap }},debug={{ gerbil_test_debug }}"
-    for package in native-shared native-options native-preparation; do
+    for package in native-shared native-options native-preparation native-module-support; do
         (cd "{{ justfile_directory() }}/t/qualification/$package" && timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} build)
     done
 
@@ -154,7 +155,10 @@ test-files group="all":
 
 # Supply the existing compilation fixture before invoking its std/test facade.
 # These suites inspect issued AOT callbacks, not interpreted substitutes.
-test-discovered-file path:
+test-discovered-file path: build-test-fixtures (_test-discovered-file path)
+
+[private]
+_test-discovered-file path:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ path }}" in
@@ -163,10 +167,10 @@ test-discovered-file path:
         trap 'rm -rf "$fixture"' EXIT
         just compile-mop-store-boundary "$fixture"
         if [[ "{{ path }}" == t/artifact-closure-test.ss ]]; then
-          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file "{{ path }}"
+          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just _test-file "{{ path }}"
         else
           printf 'AOT-SUITE %s facade=t/mop-store-boundary-driver-test.ss\n' "{{ path }}"
-          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file t/mop-store-boundary-driver-test.ss
+          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just _test-file t/mop-store-boundary-driver-test.ss
         fi
         shasum -a 256 -c "$fixture/callback-artifacts.sha256"
         shasum -a 256 -c "$fixture/inputs.sha256"
@@ -180,12 +184,12 @@ test-discovered-file path:
       t/artifact-authority-test.ss|t/source-loader-authority-test.ss)
         fixture=$(mktemp -d)
         trap 'rm -rf "$fixture"' EXIT
-        CORE_STORE_ROOT="$fixture" just test-file "{{ path }}"
+        CORE_STORE_ROOT="$fixture" just _test-file "{{ path }}"
         ;;
-      *) just test-file "{{ path }}" ;;
+      *) just _test-file "{{ path }}" ;;
     esac
 
-test-directory group="all":
+test-directory group="all": build-test-fixtures
     #!/usr/bin/env bash
     set -euo pipefail
     export LC_ALL=C
@@ -197,7 +201,9 @@ test-directory group="all":
     printf '%s\n' "${files[@]}"
     failed=()
     for file in "${files[@]}"; do
-      if ! just test-discovered-file "$file"; then
+      # Match the complete test entry: prepare shared support once, then keep
+      # every original file in its independently heap-fenced native worker.
+      if ! just _test-discovered-file "$file"; then
         failed+=("$file")
       fi
     done

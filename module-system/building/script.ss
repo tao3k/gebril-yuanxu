@@ -18,12 +18,20 @@
                     (let loop ((keys (syntax->list #'(key ...)))
                                (bindings (syntax->list #'(option ...))))
                       (cond ((null? keys) '())
-                            ((eq? (stx-e (car keys)) libdir:)
+                            ((memq (stx-e (car keys)) '(libdir: srcdir:))
                              (loop (cddr keys) (cddr bindings)))
                             (else (cons (car bindings) (loop (cdr keys) (cdr bindings))))))))
        #'(def (entry . args)
            (let ((source origin) (option key) ...)
              (def options (list option ...))
+             ;; std/build-script derives srcdir from this-source-file and
+             ;; supplies it to Make itself. Consume the standard setting here
+             ;; instead of forwarding a duplicate keyword. The declaration's
+             ;; original source remains available separately for its guards.
+             (def make-source
+               (if (memq srcdir: options)
+                 (path-expand (path-strip-directory source) (pgetq srcdir: options))
+                 source))
              (call-with-init-build-spec
                (lambda () build-spec)
                (lambda (value arguments (native-prefix #f) (native-libdir #f))
@@ -32,14 +40,14 @@
                           native-prefix (pgetq prefix: options)))
                  (if native-prefix
                    (let ()
-                     (def (this-source-file) source)
+                     (def (this-source-file) make-source)
                      (gerbil-build.defbuild-script value prefix: native-prefix
                        libdir: (or native-libdir (pgetq libdir: options)
                                    (path-expand "lib" (gerbil-path))) build-option ...)
                      (apply main arguments))
                    (let ()
-                     ;; Preserve the Gerbil macro's source binding at the caller.
-                     (def (this-source-file) source)
+                     ;; Keep the selected Make root in the standard macro.
+                     (def (this-source-file) make-source)
                      (gerbil-build.defbuild-script value
                        libdir: (or native-libdir (pgetq libdir: options)
                                    (path-expand "lib" (gerbil-path))) build-option ...)

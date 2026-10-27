@@ -76,7 +76,7 @@ Reuse existing consumer Cases to qualify
 that wiring rather than introducing another compiler qualification suite.
 
 The existing =init.exports.tests.std-make-spec= can be consumed directly by a
-standard =defbuild-script= entry. The Gerbil owns Make and compilation. TestingScript
+standard =defbuild-script= entry. =std/make= schedules the =gxc= compiler. TestingScript
 only admits an already issued support publication; missing approval requires
 =gerbil build=, and corrupt products/approvals are rejected rather than repaired
 at test execution time. Native CLI policy may use the existing guarded file
@@ -89,6 +89,14 @@ inside a Case to prove a real injected compiler failure. This test-only effect
 is not available to business code or TestingScript. Restore mutated source and
 product/record bytes even when the refusal check throws. Never install fake
 compiler/interpreter executables or private Harness dispatchers.
+
+Module qualification support consumes the existing
+=init.exports.tests.qualification.std-make-spec= through the same standard
+build entry. Prepare shared support once per complete queue or CI group, then
+run every file through its original resource and receipt gate. Installed
+libraries precede source fallback, so preparation and execution derive the
+same support closure. Empty support has no products or issuer. Reusing a signed
+publication still verifies its original source inputs and product digests.
 
 A cached support library does not cache a test verdict. Report support discovery
 and preparation, harness startup, and Case execution separately. A hot atomic
