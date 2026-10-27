@@ -62,8 +62,12 @@
   (def approval-root (path-expand ".yuanxu-test-publications" (path-expand "lib" prefix)))
   (def approval-directory (path-expand key approval-root))
   (def approved (path-expand "issuance.ss" approval-directory))
-  (def approved-input #f)
-  (def approved-packet #f)
+  ;; Every leaf publication may contain megabytes of source observations.
+  ;; Retain only integrity references, never a second text/decoded packet per
+  ;; leaf. Restores decode one digest-bound snapshot for that operation.
+  (def approved-digest #f)
+  (def approved-record #f)
+  (def approved-record-digest #f)
   (def (regular-or-absent! path kind)
     (let (actual (module-source-type path))
       (when (and actual (not (eq? actual kind)))
@@ -72,33 +76,42 @@
     (regular-or-absent! approval-root 'directory)
     (regular-or-absent! approval-directory 'directory)
     (regular-or-absent! approved 'regular))
+  (def (read-approved-packet)
+    (def text (module-source-read approved))
+    (def digest (hex-encode (sha256 (string->utf8 text))))
+    (when (and approved-digest (not (equal? digest approved-digest)))
+      (error "test approval source changed" approved))
+    (def packet (call-with-input-string text
+      (lambda (port) (parameterize ((current-input-port port)) (read-build-artifact-handoff)))))
+    (unless approved-digest
+      (set! approved-digest digest)
+      (set! approved-record (string-copy (list-ref packet 5)))
+      (set! approved-record-digest (string-copy (list-ref packet 6))))
+    packet)
   (def (bind-approval!)
-    (unless approved-input
+    (unless approved-digest
       (storage-current!)
-      (let (input (cons approved (module-source-read approved)))
-        (def packet (call-with-input-string (cdr input)
-          (lambda (port) (parameterize ((current-input-port port)) (read-build-artifact-handoff)))))
-        (set! approved-input input)
-        (set! approved-packet packet))))
+      (read-approved-packet)))
   (.o (:: source)
     artifact: (string-copy directory)
     reference: (string-copy approved)
     .current:
     (lambda ()
       (storage-current!)
-      (when approved-input
-          (module-source-admit-current! (list approved-input) "test approval source changed")
-          (unless (equal? (digest-file (list-ref approved-packet 5)) (list-ref approved-packet 6))
+      (when approved-digest
+          (unless (equal? (digest-file approved) approved-digest)
+            (error "test approval source changed" approved))
+          (unless (equal? (digest-file approved-record) approved-record-digest)
             (error "test approved issuance record changed"))))
     .available?: (lambda () (storage-current!) (eq? (module-source-type approved) 'regular))
     .restore-build:
     (lambda (graph)
       (bind-approval!)
       (.call source .current)
-      ;; bind-approval! has decoded this exact retained input with the same
-      ;; public codec. Reuse its private syntax value, never its admission.
+      ;; Decode the exact digest-bound snapshot, not a mutable path read after
+      ;; admission or an indefinitely retained copy of every leaf's sources.
       (accept-build-artifact-handoff/read! projection directory
-        (lambda () approved-packet) (cut .call source .current) void)
+        read-approved-packet (cut .call source .current) void)
       (.call source .current))
     .retain-build:
     (lambda (graph)

@@ -3,7 +3,7 @@
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/error Error? Error-message)
-        (only-in :std/misc/ports read-all-as-u8vector)
+        (only-in :std/misc/ports read-all-as-u8vector read-all-as-string)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -134,6 +134,18 @@
                 (lambda (port) (write-subu8vector (cdr row) 0 (u8vector-length (cdr row)) port))))
             originals)))
       ((.get build admit-artifacts))
+      ;; Even a semantically inert edit of an approved packet is a different
+      ;; source. Digest-bound restoration must not accept a reparsed equivalent.
+      (def approval (.get source reference))
+      (def approval-text (call-with-input-file approval read-all-as-string))
+      (dynamic-wind
+        (lambda () (write-source approval (string-append approval-text "\n; replaced approval\n")))
+        (lambda ()
+          (def failure (with-catch values (lambda () ((.get fresh-build admit-artifacts)))))
+          (check (Error? failure) => #t)
+          (check-equal? (Error-message failure) "test approval source changed"))
+        (lambda () (write-source approval approval-text)))
+      ((.get fresh-build admit-artifacts))
       (check-equal? (.ref/cached exports 'std-make-spec) #f)
       (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 43)))
       (check-exception (.call tests .run) error?)

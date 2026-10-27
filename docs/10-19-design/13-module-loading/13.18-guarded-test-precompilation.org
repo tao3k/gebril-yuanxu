@@ -1773,3 +1773,13 @@ adding a separate retained build list. The two-case atomic suite passed through
 still reads a child's command while its unused task remains cold. An earlier
 unobserved invocation hit the unchanged idle gate; it remains a failed receipt,
 so this focused pass does not establish cold-path timing or full CI closure.
+
+* Bounded retained approval state, 2026-10-27
+Parser's full native support publication reached81 leaf approvals (~308MB of
+serialized approval files) before its2GiB Gerbil heap overflowed. Each publication
+retained both complete text and a decoded handoff. Publication objects now retain
+only the approved text digest and issuance record path/digest. Restore decodes an
+operation-local source snapshot bound to that digest. Currentness still rejects
+approval/record changes, including a semantically inert approval edit. The codec,
+issuer, storage policy and output checks remain. Full integration must pass under
+the original2GiB/two-worker envelope; no cached admission is introduced.
