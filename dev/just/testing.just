@@ -28,9 +28,9 @@ _test-file path observe="false":
     if [[ "{{ observe }}" != false ]]; then printf 'test-entry phase=context elapsed-s=%s\n' "$SECONDS"; fi
     # init and tests belong to the selected working directory, including an
     # explicitly relocated snapshot; the Justfile's location is not authority.
-    # Native symbol imports need the actual package root after removal of the
-    # nested t/gerbil.pkg. Prefer compiled support/libraries; source is fallback.
-    GERBIL_LOADPATH="$test_lib:${GERBIL_PATH:-$PWD/.gerbil}/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
+    # Preserve explicit native overlays before the host library fallback.
+    # The real source package root replaces the removed nested t/gerbil.pkg.
+    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
