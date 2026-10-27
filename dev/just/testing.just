@@ -16,7 +16,9 @@ test-file path observe="false":
     test_lib="${GERBIL_PATH:-$PWD/.gerbil}/test-lib"
     # init and tests belong to the selected working directory, including an
     # explicitly relocated snapshot; the Justfile's location is not authority.
-    GERBIL_LOADPATH="$test_lib:$PWD/t${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
+    # Native symbol imports need the actual package root after removal of the
+    # nested t/gerbil.pkg. Prefer compiled support/libraries; source is fallback.
+    GERBIL_LOADPATH="$test_lib:${GERBIL_PATH:-$PWD/.gerbil}/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash

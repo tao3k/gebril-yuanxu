@@ -49,11 +49,15 @@
         (def checked (.get (yuanxu-contract-admit (.get scope types scope)
                             (.cc scope 'compile (lambda () 7)) #f) candidate))
         (check-exception (.call checked compile) TypeError?)
-        (check-exception
-          (yuanxu-contract-admit (.get scope types scope)
-            (.+ scope (.o defaults: (.o scheam: '()))) #f) TypeError?)
-        (check-exception
-          (yuanxu-contract-admit (.get scope types scope)
-            (.+ scope (.o compile: 7)) #f) TypeError?)
+        ;; Value failures become native admission refusals; invocation of an
+        ;; admitted Function still raises TypeError at its actual call boundary.
+        (for-each
+          (lambda (candidate)
+            (def refused (yuanxu-contract-admit (.get scope types scope) candidate #f))
+            (check-equal? (yuanxu-validation-evidence-accepted? refused) #f)
+            (check-equal? (pair? (.get refused diagnostics)) #t)
+            (check-equal? (eq? (.get refused admission-contract) (.get scope types scope)) #t))
+          (list (.+ scope (.o defaults: (.o scheam: '())))
+                (.+ scope (.o compile: 7))))
         (check-equal? (.get scope defaults schema) '((type . "object")))))
 ))

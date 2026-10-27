@@ -7,7 +7,7 @@
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :std/source this-source-file)
-        (only-in :clan/poo/object .get .call .o)
+        (only-in :clan/poo/object .get .call .o .cc)
         (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
@@ -56,4 +56,17 @@
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
-                       (yuanxu-contract-admit contract (.o value: 7) #f)) #f)))))
+                       (yuanxu-contract-admit contract (.o value: 7) #f)) #f)
+        (def parent-type (.get contract value-contract))
+        (def restricted-type
+          (.cc (.get contract value-type)
+            '.element? (lambda (_value) #f)
+            '.diagnose (lambda (_value location)
+                         (list (.o kind: 'test-policy path: location)))))
+        (def child (.cc contract 'value-type restricted-type))
+        (check-equal? (eq? (.get child value-contract) restricted-type) #t)
+        (check-equal? (eq? (.get contract value-contract) parent-type) #t)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit child (.o value: "pass") #f)) #f)
+        (check-equal? (yuanxu-validation-evidence-accepted?
+                       (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)))))

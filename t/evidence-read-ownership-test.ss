@@ -30,8 +30,8 @@
     (yuanxu-test-case "receipts retain actual candidate Contract Context and child identities"
       (def candidate (.o port: 443))
       (def context (.o generation: 'current))
-      (def contract (.o identity: 'actual-contract))
-      (def diagnostics (list '(notice retained)))
+      (def contract (.cc YuanxuContract. identity: 'actual-contract))
+      (def diagnostics (list (.o kind: 'notice detail: 'retained)))
       (def children (list (.o child: #t)))
       (def classification
         (yuanxu-classification-evidence 'actual-type candidate 'truthy diagnostics context))
@@ -48,6 +48,14 @@
       (check-equal? (.get evidence accepted?) #f)
       (check-equal? (yuanxu-classification-evidence? classification) #t)
       (check-equal? (yuanxu-validation-evidence? evidence) #t)
+      ;; The ownership fixture must satisfy the actual Record boundaries.
+      ;; Raw diagnostic lists and merely named objects are not valid evidence.
+      (check-equal?
+        (yuanxu-classification-evidence?
+          (.cc classification diagnostics: (list '(notice retained)))) #f)
+      (check-equal?
+        (yuanxu-validation-evidence?
+          (.cc evidence admission-contract: (.o identity: 'actual-contract))) #f)
       (check-equal? (eq? (.get evidence admission-contract) contract) #t)
       (check-equal? (eq? (.get evidence classification) classification) #t)
       (check-equal? (eq? (.get evidence obligation-evidence) children) #t)

@@ -836,6 +836,44 @@ these focused results.
 
 ** Original integration boundary
 
+*** Root-package CI repair
+
+Removing =t/gerbil.pkg= remains the intended package architecture. The default
+test entry now exposes the actual package source root after compiled support
+and library paths. Official native symbol resolution can therefore locate
+=:yuanxu/t/...= and generated support without a nested package or a parallel
+resolver. Both source and compiled-role controls keep the same role inventory:
+the source-only control uses the existing guarded reader, while =std/make=
+qualifies compiler frames and the native compiled-role loader.
+
+Cold-source Fixtures preserve installed dependency namespaces, excluding Core's
+own namespaces. They do not replace every dependency artifact with a leaf
+symlink or choose copying rules by artifact suffix. Compiled interfaces are
+still real compiler inputs and remain covered by currentness checks; native
+code identity and dependency layout are preserved without editing any product.
+
+The JSON Schema adapter now applies its Schema Type through the existing
+=value-contract= protocol instead of returning private backend diagnostics
+from a custom classifier. Native admission returns rejected evidence, while
+admitted Function invocations retain their TypeError boundary. Lexical
+=value-type= binding also keeps a derived Contract's effective Type independent
+of a previously cached parent. Ownership controls use real Contracts and POO
+diagnostics and explicitly reject the old malformed values.
+
+These repairs retain the 2 GiB heap, independent source checks, compilation
+issuance and the existing watchdogs. Focused passes are recorded separately
+from remote CI; a successful platform build is not a successful complete suite.
+The root-source fallback was qualified without injecting a source root through
+the caller's =GERBIL_LOADPATH=: shared test inputs (59.75 s), deferred roles
+(29.36 s), demanded-role projection (30.89 s), the closed source tail (37.89 s)
+and root collection (24.16 s) completed with all Harness markers. Further
+controls passed native evidence ownership (8.92 s), optional-printer laziness
+(13.43 s), source-role projection (19.68 s), the final Schema/derived-Type
+bootstrap (16.58 s) and the module's own Schema tests (11.04 s).
+The composite source-build/compiled-import integration completed in 134.65 s;
+this includes building the isolated Core, compiling import consumers and running
+the selected module tests. It is not an atomic Case performance receipt.
+
 *** Local prepared-source checks in cold Graph construction
 
 The remaining cold Graph work was traced through =.for-export=, selected-Graph

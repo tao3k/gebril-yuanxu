@@ -35,6 +35,15 @@
     (yuanxu-test-fixture "fixtures load the existing watchdog without optional printers"
       (resource Resource)
       (def identities '())
+      (def contract-identities '())
+      (for-each
+        (lambda (root)
+          (for-each-build-module
+            (core-import-module root)
+            (lambda (context)
+              (set! contract-identities
+                (cons (expander-context-id context) contract-identities)))))
+        '(:clan/poo/object :yuanxu/observability/types))
       (for-each-build-module
         (core-import-module ':yuanxu/observability/testing-fixture)
         (lambda (context)
@@ -44,7 +53,14 @@
         (lambda (id) (check-equal? (memq id identities) #f))
         '(yuanxu/observability/debug yuanxu/observability/slot-debug
           yuanxu/module-system/building/test-observation
-          clan/poo/debug clan/poo/type clan/poo/number)))
+          clan/poo/debug))
+      ;; Memory policy/receipt Contracts use native Types after the refactor.
+      ;; No additional Type family may enter beyond those required contracts.
+      (for-each
+        (lambda (id)
+          (check-equal? (and (memq id identities) #t)
+                        (and (memq id contract-identities) #t)))
+        '(clan/poo/type clan/poo/number)))
     (test-case "a fresh native worker qualifies the raw allocation counter"
       ;; A prior watchdog's lifetime can invalidate this VM counter stream.
       ;; Preserve the positive payload control in a fresh native test process;

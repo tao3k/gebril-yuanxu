@@ -10,6 +10,7 @@
         (only-in :yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
         (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-publication
                  yuanxu-prepare-module-build-source call-with-module-compiler-inputs))
 (export module-role-projection-test)
@@ -59,17 +60,12 @@
           (def prepared (yuanxu-prepare-module-publication source))
           (check-equal? (map path-strip-directory (.get prepared role-sources))
                         (map path-strip-directory imports))
-          (def entries
-            (cons (.o path: (path-expand "interface.ss" root) input: prepared)
-              (map (lambda (file)
-                     (.o path: file input: (yuanxu-prepare-module-build-source file void)))
-                (.get prepared role-sources))))
-          (call-with-module-compiler-inputs entries
-           (lambda ()
             (parameterize ((current-expander-context (make-top-context)))
             (eval-syntax '(import :gerbil/core))
-            (eval-syntax `(import ,(path-expand "interface.ss" root)))
-            (def published (eval-syntax 'Published))
+            ;; Compiler frames deliberately use the compiled role loader. This
+            ;; source-only half consumes the existing guarded source reader;
+            ;; the next Case qualifies those frames through actual std/make.
+            (def published ((.get (module-publication-reader) read) source))
             (def effective ((.get published core link) (.o)))
             (check-equal? (.get published identity) 'fixture)
             (check-equal? (.get effective answer) 42)
@@ -77,7 +73,7 @@
                           (path-normalize (path-expand "objects.ss" root)))
             (check-equal? (.get effective config mode) 'check)
             (check-equal? (with-catch (lambda (_e) #t)
-                            (lambda () (eval-syntax 'Config) #f)) #t)))))))
+                            (lambda () (eval-syntax 'Config) #f)) #t)))))
     (test-case "native Make consumes the same role frames without nested package metadata"
       (with-module
         (lambda (root prefix)

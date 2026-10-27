@@ -49,16 +49,7 @@
       ;; Create the empty destination without manufacturing compiled artifacts.
       (create-directory* (path-expand "lib" fixture-state))
       (when (file-exists? lib)
-        (copy-fixture-tree lib (path-expand "lib" fixture-state)
-          (lambda (path name _kind)
-            (not (or (equal? path (path-expand "core" lib))
-                     (equal? path (path-expand "yuanxu" lib))
-                     (equal? path (path-expand "tao3k/yuanxu" lib))
-                     (and (equal? (path-directory path) (path-expand "static/" lib))
-                          (or (string-prefix? "core__" name)
-                              (string-prefix? "yuanxu__" name)
-                              (string-prefix? "tao3k__yuanxu__" name))))))
-          create-symbolic-link))
+        (link-fixture-dependencies lib (path-expand "lib" fixture-state)))
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)
@@ -70,3 +61,28 @@
           (write '(def core-public-roots '()) port) (newline port)
           (write '(def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
+
+(def (link-fixture-dependencies source target)
+  ;; Preserve installed dependency namespaces intact, instead of replacing
+  ;; every compiled input with a new leaf symlink. Neither metadata nor native
+  ;; code is copied or rewritten. Partition only namespaces containing Core.
+  (def (excluded? relative)
+    (or (member relative '("core" "yuanxu" "tao3k/yuanxu"))
+        (and (equal? (path-directory relative) "static/")
+             (let (name (path-strip-directory relative))
+               (or (string-prefix? "core__" name)
+                   (string-prefix? "yuanxu__" name)
+                   (string-prefix? "tao3k__yuanxu__" name))))))
+  (def (link! relative)
+    (unless (excluded? relative)
+      (let ((from (path-expand relative source))
+            (to (path-expand relative target)))
+      (if (member relative '("" "tao3k" "static"))
+        (begin
+          (create-directory* to)
+          (for-each (lambda (name)
+                      (link! (if (string-empty? relative) name
+                               (string-append relative "/" name))))
+                    (directory-files from)))
+        (create-symbolic-link from to)))))
+  (link! ""))
