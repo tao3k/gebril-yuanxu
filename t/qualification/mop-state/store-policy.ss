@@ -55,7 +55,7 @@
         (lambda (owner) (check-object-edit owner (object-%state owner)))
         (specification-owners target)))))
 
-;; The derived SDK bodies are generated/compiled from the ACTIVE SDK, not .data.
+;; The derived Gerbil bodies are generated/compiled from the ACTIVE Gerbil, not .data.
 (let (root (getenv "CORE_STORE_ROOT" #f))
   (unless root (error "missing isolated store compilation root"))
   (load (path-expand "store-runtime.o1" root)))

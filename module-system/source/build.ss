@@ -493,7 +493,7 @@
           (ormap (lambda (package) (string-prefix? (car package) datum)) packages) datum)))
     (cond
      ;; A compiled library owns its native import closure. Rewriting imports
-     ;; inside its interface made discovery depend on which SDK modules had
+     ;; inside its interface made discovery depend on which Gerbil modules had
      ;; already been loaded, and rebuilt library sources as test support.
      ((and (string? datum) (string=? (path-extension datum) ".ssi"))
       (parameterize ((current-expander-module-import native-import))

@@ -17,7 +17,7 @@
         (only-in "./qualification/service-publication/fixtures.ss" read-overrides))
 (export source-observation-test test-cleanup!)
 
-;; Actual SDK expansion of a temporary Scheme file attaches native slot origins.
+;; Actual Gerbil expansion of a temporary Scheme file attaches native slot origins.
 ;; No fabricated location rows or caller-maintained observation sets.
 (def (observed-config path text)
   (write-source path text)

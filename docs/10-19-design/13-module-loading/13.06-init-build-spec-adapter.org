@@ -26,7 +26,7 @@ the ordinary module-spec list. It is not a new build-spec type.
 * Internal adapter expression and the native source anchor
 
 The following bounded qualification frame uses actual retained Core roots.
-It explains the internal SDK bridge; authors do not repeat this frame in
+It explains the internal Gerbil bridge; authors do not repeat this frame in
 build.ss. The maintained root entry now delegates to Module System Building,
 as described in [[file:13.07-core-build-entry.org][06]].
 
@@ -49,13 +49,13 @@ as described in [[file:13.07-core-build-entry.org][06]].
     main))
 #+end_src
 
-The adapter infers the native package prefix from the SDK reader's identity for
+The adapter infers the native package prefix from the Gerbil reader's identity for
 init.ss. For Core that prefix is core. Prepared filenames are owner-relative,
 such as modules/json-schema/types and types. Generated gerbil.pkg carries the
 same package prefix. Native output identities remain core/modules/json-schema/types
 and core/types; no temporary-directory component becomes a library identity.
 
-The lexical source anchor is still necessary because the unmodified SDK macro
+The lexical source anchor is still necessary because the unmodified Gerbil macro
 derives its source directory from this-source-file. Returning a list cannot
 change the caller's source location. The outer main above returns the native
 dispatcher closure; it is not another dispatch protocol. A bare append executed
@@ -64,7 +64,7 @@ The generated build.ss is a compiler artifact, not an independently maintained
 or separately invoked bootstrap.ss.
 
 This example is a bounded two-retained-root entry, not migration of the whole
-live Core build.ss. Source-capable SDK/package imports and the public library
+live Core build.ss. Source-capable Gerbil/package imports and the public library
 dependencies remain prerequisites; no precompiled Core cache is required.
 
 * Deduplication and refusal before compilation
@@ -127,11 +127,11 @@ and compilation must not accidentally mix original and generated Context epochs.
 The real JsonSchema gate (retired control) exercises the init-path API and compares its plain
 list with the prepared-artifact API. It asserts that the original selected Graph
 is retained by identity; no combined-graph extension or test-side input merging
-remains. It then appends the retained native list directly under the SDK macro.
+remains. It then appends the retained native list directly under the Gerbil macro.
 
 The gate checks native source/output identities, selected/retained deduplication,
 conflicting options, invalid retained paths, duplicate retained targets, source
-and generated-entry drift, and SDK spec/compile/clean. The cold source snapshot
+and generated-entry drift, and Gerbil spec/compile/clean. The cold source snapshot
 has no root bootstrap.ss/build.ss and the isolated dependency cache has no Core
 binaries. Qualification uses serial heap-fenced Justfile recipes; results must
 include clean harness markers AND natural exit 0 under the unchanged timeout.
@@ -177,7 +177,7 @@ harness markers and natural exit 0. All focused tests ran serially.
 
 At this recorded source epoch the live Core build.ss had not yet been migrated.
 The later integration in [[file:13.07-core-build-entry.org][06]] keeps both spec owners explicit
-at the root; Building captures source context and returns the standard SDK main
+at the root; Building captures source context and returns the standard Gerbil main
 through an ordinary init.build-entry function, with checks around each command.
 The receipt above remains
 bounded adapter evidence, not qualification of every Core target or native form.

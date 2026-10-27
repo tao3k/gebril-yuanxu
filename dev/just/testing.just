@@ -3,7 +3,7 @@
 # gxtest owns package setup. Keep the actual test VM in the watchdog group.
 test-file path observe="false": build-test-fixtures (_test-file path observe)
 
-# The official SDK owns compilation before the native Case process starts.
+# The official Gerbil owns compilation before the native Case process starts.
 # These three small, versioned packages qualify support reuse/options/admission;
 # source mutation and product tampering remain in their original Scheme Cases.
 build-test-fixtures:
@@ -18,7 +18,7 @@ build-test-fixtures:
 _test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    # The existing process envelope is 600 seconds; the SDK owns package
+    # The existing process envelope is 600 seconds; the Gerbil owns package
     # setup. No interpreter expression is needed to rediscover these defaults.
     budget=600
     export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
@@ -98,8 +98,7 @@ test-modules:
 
 # A complete published module test group is an external integration phase,
 # never a Case inside the test which verifies discovery/projection mechanics.
-test-selected-modules:
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} -e '(import :clan/poo/object (only-in "./init.ss" yuanxu.init.exports))' -e '(def tests (.get yuanxu.init.exports tests))' -e '(.call tests .compile)' -e '(display (.get (.call tests .run) output))'
+test-selected-modules: (_test-file "--selected-modules")
 
 verify-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash

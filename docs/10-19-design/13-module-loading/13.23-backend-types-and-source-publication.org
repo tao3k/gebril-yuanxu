@@ -116,7 +116,7 @@ they do not prove lower retained memory. Function normalization allocates a
 wrapper per admitted candidate. Repeated admission remains independent work;
 successful conclusions are not cached. Plans retain opaque Backend values to
 avoid accidental repeated Function normalization through nested data checks.
-No SDK source, heap budget, timeout, issuer or cache protocol was changed.
+No Gerbil source, heap budget, timeout, issuer or cache protocol was changed.
 The 10k-module gate is not qualified by these source-control experiments.
 
 * Qualification receipt

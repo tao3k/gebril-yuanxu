@@ -4,11 +4,11 @@
 invalidation-closure boundary described by [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.35-replay-receiver-ownership.org][32.35]]. Its pure laws require complete
 identity membership and native parameterize/unwinding correctness. Runtime cases
 must independently establish those premises. The retained raw-write history law
-does not claim that receiver frames mediate SDK structure setters.
+does not claim that receiver frames mediate Gerbil structure setters.
 
 The =Admission/RouteMutation.lean= follow-up is documented in
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.34-metadata-write-boundary.org][32.34]]. It proves endpoint indistinguishability and conditional rejection
-under complete monotonic write tracking. The current SDK does not provide that
+under complete monotonic write tracking. The current Gerbil does not provide that
 tracking: the raw restoration counterexample is preserved, not discharged by
 an assumed purity annotation or a generated Birth.
 

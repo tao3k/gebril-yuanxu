@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Existing declaration binding; bounded adjacent-role discovery uses SDK file metadata.
+;;; Existing declaration binding; bounded adjacent-role discovery uses Gerbil file metadata.
 (import (only-in "../bootstrap/body-inclusion.ss" include-module-body)
         (prefix-in (only-in :clan/poo/object
                             .def/ctx .o/ctx .o .ref) native-)

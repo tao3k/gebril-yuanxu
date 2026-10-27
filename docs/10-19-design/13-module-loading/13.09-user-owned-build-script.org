@@ -25,7 +25,7 @@ The required consumer remains the standard library invocation:
 #+end_src
 
 Module infrastructure must not replace main, supply a source alias to the
-consumer or modify the SDK to support this interface. The current production
+consumer or modify the Gerbil to support this interface. The current production
 entry from [[file:13.08-in-process-build-entry.org][the preceding integration]] still returns main; this note records a
 subsequent isolated alternative, not a completed production migration.
 
@@ -64,8 +64,8 @@ the value's responsibility. The failed run remains a local artifact.
 * Verified scope
 
 [[file:../../../t/module-source-spec-test.ss][The executable control]] evaluates the actual isolated build.ss and invokes its
-SDK-generated main in the current process. It does not define an alternative
-main or wrap the SDK command entry. It checks identical list identity on repeated
+Gerbil-generated main in the current process. It does not define an alternative
+main or wrap the Gerbil command entry. It checks identical list identity on repeated
 spec requests, unique target identities, original source existence, canonical
 core/ outputs, and their removal by clean.
 
@@ -76,7 +76,7 @@ and cleaned with MODULE-OK, HARNESS-OK, final OK, no failure markers and natural
 exit 0 under the unchanged heap-fenced 120-second recipe. There was no compiled
 Core cache before the run. Eight public dependency units were freshly compiled
 from the clean locked gerbil-poo revision
-099b381588360a8a49fd772f666a1a00351366f5. The SDK was neither edited nor copied.
+099b381588360a8a49fd772f666a1a00351366f5. The Gerbil was neither edited nor copied.
 
 The control confirms that .gerbil/module-build and bootstrap.ss do not exist.
 It rejects edits to the user's build.ss, the retained manifest and tool input
@@ -90,13 +90,13 @@ restoration. Diagnostics are matched against exception messages, not backtraces.
 (current!)                 ; explicit acceptance-time input recheck
 #+end_src
 
-The spec expression is evaluated for every SDK command, so its admission checks
-run before compile or clean. The unchanged SDK macro does not call current!
+The spec expression is evaluated for every Gerbil command, so its admission checks
+run before compile or clean. The unchanged Gerbil macro does not call current!
 after the command. A completed command followed by a module source edit is
 rejected by the later explicit check. This is not automatic concurrent-change
 detection or publication authority, and rejection does not undo compiler writes.
 
-* Reproduce without changing the checkout or SDK
+* Reproduce without changing the checkout or Gerbil
 
 Follow the fresh source-only snapshot and locked-dependency setup from
 [[file:13.07-core-build-entry.org][the repository qualification]], inserting the Core-only overlay before loading
@@ -127,4 +127,4 @@ their work. Those consumers remain outside this control.
 
 Production migration must preserve these source and contribution boundaries
 without reintroducing consumer aliases, hidden compiler hooks, a command parser
-or an SDK fork. No runtime Loader or full Core compilation is involved here.
+or an Gerbil fork. No runtime Loader or full Core compilation is involved here.

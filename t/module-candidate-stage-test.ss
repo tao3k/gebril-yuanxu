@@ -32,7 +32,7 @@
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
-    (yuanxu-test-case "SDK enrollment follows first closure discovery, not repeated imports"
+    (yuanxu-test-case "Gerbil enrollment follows first closure discovery, not repeated imports"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root first other view)
@@ -52,7 +52,7 @@
             (def first-enrolled enrolled)
             (def first-requested requested)
             (.call reader read-candidate (lambda () other) 'custom/other (.get view context))
-            ;; Both declarations really execute their roles. Repeated SDK
+            ;; Both declarations really execute their roles. Repeated Gerbil
             ;; demands retain fresh admission, without re-enrolling topology.
             (check-equal? (> first-enrolled 0) #t)
             (check-equal? (> requested first-requested) #t)
@@ -65,7 +65,7 @@
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root _first _other _view)
-          ;; Exercise the real directory owner without the reader/SDK's
+          ;; Exercise the real directory owner without the reader/Gerbil's
           ;; independent closure. This is a work control, not a capacity gate.
           (def context (module-directory-context (path-expand "modules" root) #f
                          publication-prepares-source?: #t))

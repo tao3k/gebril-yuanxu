@@ -45,7 +45,7 @@
             ((.get right admit-current))
             (check-equal? requests 2))
           ;; A closer package appeared after the window. Its earlier negative
-          ;; observation must still reject, before trusting a cached SDK lookup.
+          ;; observation must still reject, before trusting a cached Gerbil lookup.
           (write-source (path-expand "gerbil.pkg" nested) "(package: replacement)")
           (check-exception ((.get right admit-current)) error?)
           (write-source package "(package: changed)")

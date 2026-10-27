@@ -191,7 +191,7 @@ consumer verification and product-wide dependency closure are separate gates.
 The default local package cache exposed an older compiled POO API that rejects
 =unique-roots?:=. Qualification therefore uses the installed, unchanged Gerbil
 with the exact declared gerbil-poo build and the current owned Yuanxu artifacts
-in a private package state. This is dependency isolation, not a replacement SDK
+in a private package state. This is dependency isolation, not a replacement Gerbil
 or compatibility runtime. It does not overwrite another session's package cache.
 The cold child still excludes both Yuanxu namespaces, and each normal-build
 child clears =GERBIL_LOADPATH= so that an overlay cannot mask missing inputs.
@@ -382,7 +382,7 @@ Script limits, read guards and negative compilation assertions are unchanged.
 ** Focused qualification after the partition repairs
 
 The issued AOT store facade passes all twelve cases with MODULE-OK, HARNESS-OK
-and final OK. Compiler inputs, SDK inputs and independently compiled callback
+and final OK. Compiler inputs, Gerbil inputs and independently compiled callback
 hashes pass the post-run checks. The old unprocessed callback remains an explicit
 negative control. No installed compiler/runtime source is modified.
 

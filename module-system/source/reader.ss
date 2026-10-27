@@ -64,7 +64,7 @@
 (def (publication-metadata-current policy-current? preparation-current!
                                    (admission-current! void) (location-current! void))
   ;; Only the fixed producer's semantic reads, plus the actual pre-role
-  ;; policy identities. Preserve open producer traces without replaying SDK
+  ;; policy identities. Preserve open producer traces without replaying Gerbil
   ;; constructor scratch reads as if they were enduring Graph requirements.
   (lambda ()
     (location-current!)
@@ -110,10 +110,10 @@
                                (cons 'identities (length roots))) 1))
   (if failed? (raise failure) (apply values guarded-results)))
 (def (reader-evaluation-observers owned completed)
-  ;; SDK runtime imports bypass current-expander-module-eval. Pair the exact
+  ;; Gerbil runtime imports bypass current-expander-module-eval. Pair the exact
   ;; phi-zero module body with its compiled program, then observe successful
   ;; evaluation of that same program. Macro-phase or partial evaluation alone
-  ;; grants no release capability. Delegate all SDK results without alteration.
+  ;; grants no release capability. Delegate all Gerbil results without alteration.
   (def native-compile (current-expander-compile))
   (def native-eval (current-expander-eval))
   (def pending (make-hash-table-eq))
@@ -214,9 +214,9 @@
      ((and (pair? tail) (memq (car tail) '(package: namespace:)))
       (loop (cddr tail) prelude))
      (else (append prelude imports tail)))))
-;; Keep the compile anchor lexical: an installed SDK may outlive its compiler
+;; Keep the compile anchor lexical: an installed Gerbil may outlive its compiler
 ;; sandbox. The existing bootstrap source projection checks file presence before
-;; guarding source; compiled contexts retain their native SDK trust boundary.
+;; guarding source; compiled contexts retain their native Gerbil trust boundary.
 (def compiler-core-root
   (let* ((source-directory (path-directory (this-source-file)))
          (module-directory (path-directory (path-strip-trailing-directory-separator source-directory))))
@@ -242,7 +242,7 @@
                 (core-resolve-library-module-path
                   (string->symbol (string-append ":" (symbol->string identity))))))))))
     (and (string? resolved) (equal? (path-normalize path) (path-normalize resolved)) input)))
-;; Check the demanded SDK dependency subgraph, not every selected role on each
+;; Check the demanded Gerbil dependency subgraph, not every selected role on each
 ;; import edge. Complete role/asset guards still bracket expansion/evaluation.
 (def (admit-compiler-inputs! context inputs-for (visit (lambda (_input) (void))))
   (call-with-module-source-read-cache
@@ -252,7 +252,7 @@
           (module-source-admit-current! (.ref input 'source-inputs))
           (visit input))
         (inputs-for context)))))
-;; Preparation is determined by an actual SDK context and its observed source.
+;; Preparation is determined by an actual Gerbil context and its observed source.
 ;; Keep the projection, never an admission result. Every reuse checks bytes and
 ;; native package identity again; changed code needs a fresh compiler context.
 (def compiler-tool-inputs (make-hash-table-eq weak-keys: #t))
@@ -301,7 +301,7 @@
     ;; These are immutable expected bytes; every guard still reads current bytes.
     (record-source-observations! tool-observations (.ref input 'source-inputs)))
   (def (inputs-for context)
-    ;; Cache only the immutable SDK import graph for this reader snapshot.
+    ;; Cache only the immutable Gerbil import graph for this reader snapshot.
     ;; Every caller above still checks the actual source observations; no
     ;; acceptance or initializer result is stored in this structural index.
     (when (current-module-source-observer)
@@ -334,7 +334,7 @@
             ordered)
           (hash-put! dependency-index context ordered)
           ordered))))
-  ;; Reuse only exact SDK-observed compiler contexts. A source path or Core-like
+  ;; Reuse only exact Gerbil-observed compiler contexts. A source path or Core-like
   ;; identity alone grants no exemption from publication source confinement.
   (parameterize ((current-module-source-phase 'compiler-tools))
    (call-with-module-source-read-cache
@@ -346,10 +346,10 @@
                  (path (if (and (string? native-path) (string=? (path-extension native-path) ".ss"))
                          native-path
                          (yuanxu-bootstrap-source-path context compiler-core-root))))
-            ;; The captured native SDK closure also contains gerbil-poo and
+            ;; The captured native Gerbil closure also contains gerbil-poo and
             ;; other source libraries. Guard those actual inputs in the SAME
             ;; dependency index, rather than importing them again as unknown
-            ;; public initializers for every Module. Compiled SDK contexts keep
+            ;; public initializers for every Module. Compiled Gerbil contexts keep
             ;; their existing package/runtime trust boundary.
             (when (and (symbol? id) (string? native-path)
                        (string=? (path-extension native-path) ".ssi"))
@@ -665,7 +665,7 @@
              (parameterize ((current-module-source-phase 'compiler-import))
                (admit-compiler-inputs! context tool-dependencies
                  (lambda (input)
-                   ;; The explicit SDK bootstrap includes shared JSON artifact
+                   ;; The explicit Gerbil bootstrap includes shared JSON artifact
                    ;; definitions beside the JSON Module. Directory ownership
                    ;; alone does not make those canonical libraries a role.
                    ;; Actual publication roles (including deferred Build) must
@@ -678,12 +678,12 @@
                    (when (candidate)
                      (record-source-observations! (candidate-support-tools (candidate))
                        (.ref input 'source-inputs)))
-                   ;; SDK tool sources remain guarded in tool-observations.
+                   ;; Gerbil tool sources remain guarded in tool-observations.
                    ;; Only this repository's sources become compiler entries;
-                   ;; a contribution must not rebuild its installed Core SDK.
+                   ;; a contribution must not rebuild its installed Core Gerbil.
                    (when (and kernel-root
                               (within? kernel-root (path-normalize (.ref input 'path)))
-                              ;; A linked SDK can be nested in a consumer's
+                              ;; A linked Gerbil can be nested in a consumer's
                               ;; .data tree. Filesystem containment does not
                               ;; transfer its native compiler package ownership.
                               (let (prefix (core-library-package-path-prefix kernel-root))
@@ -718,7 +718,7 @@
                                   ((current-module-source-observer)
                                     (list 'native-source-import-end path
                                           (expander-context-id context)) 1))
-                                ;; A canonical SDK context must never acquire
+                                ;; A canonical Gerbil context must never acquire
                                 ;; private-source registration. The closure cut
                                 ;; relies on this identity invariant, not a name.
                                 (when (captured-tool-context? native-contexts context)
@@ -762,7 +762,7 @@
                  (shared-context original-path kernel-root reload?))
                 (else
                  ;; Public dependencies may expand a relative source import
-                 ;; before an SDK context has been cached. Reuse the canonical
+                 ;; before an Gerbil context has been cached. Reuse the canonical
                  ;; library only if its declared identity resolves to this exact
                  ;; source; a namespace label or arbitrary external path is not
                  ;; sufficient. Core sources still use the confined paths above.
@@ -775,7 +775,7 @@
                    (let* ((id (.ref input 'compiler-identity))
                           (known (hash-get tool-contexts id))
                           (known-path (and known (module-context-path known))))
-                     ;; SDK catalog membership is an exact context + path
+                     ;; Gerbil catalog membership is an exact context + path
                      ;; capability, not a namespace spelling. Returning this
                      ;; already imported context cannot run a new initializer.
                      (if (and known (string? known-path)
@@ -793,7 +793,7 @@
                                      (tool-context child #f))
                                     ((and (string? file) (string=? (path-extension file) ".ss"))
                                      (unless (prepare-public-dependency (path-normalize file))
-                                       (error "SDK dependency source identity changed" file)))))))))
+                                       (error "Gerbil dependency source identity changed" file)))))))))
                          known)
                        (begin
                          ;; A new canonical public initializer is OPEN before
@@ -817,7 +817,7 @@
                         ;; Reuse the exact admitted publication closure, including
                         ;; its kernel dependencies. Restricting this to owner roles
                         ;; loses their transitive imports once interception remains
-                        ;; active. SDK tools retain their canonical checked contexts.
+                        ;; active. Gerbil tools retain their canonical checked contexts.
                         (not (hash-key? tool-paths (path-normalize (.ref entry 'path))))
                         (not (member (path-normalize (.ref entry 'path))
                                      (map path-normalize (.ref prepared 'role-sources))))))
@@ -831,7 +831,7 @@
               ((and (string? path) (string=? (path-extension path) ".ss"))
                (source-context path reload?))
               (else
-               ;; Compiled libraries must retain their canonical SDK
+               ;; Compiled libraries must retain their canonical Gerbil
                ;; import closure. Redirect only the caller's source
                ;; binding, never imports inside a compiled library.
                (when (candidate)
@@ -927,7 +927,7 @@
                     (set! evaluated-interface-bindings
                       (+ evaluated-interface-bindings (release-reader-expansions! completed)))
                     (when (current-module-source-observer)
-                      ;; Geometric, cache-free attribution of actual SDK roots.
+                      ;; Geometric, cache-free attribution of actual Gerbil roots.
                       ;; Inspect only existing tables/code pointers; do not walk
                       ;; binding values, force promises or clear compiler state.
                       (let (count (- (hash-length preparations) public-prepared-count))
@@ -1080,7 +1080,7 @@
          (owned (make-hash-table)) (completed (make-hash-table-eq))
          (native-import (current-expander-module-import)))
     (defvalues (compile evaluate) (reader-evaluation-observers owned completed))
-    ;; An admitted outer reader already owns this exact SDK catalogue/index.
+    ;; An admitted outer reader already owns this exact Gerbil catalogue/index.
     ;; Share its structural maps, not a source-currentness or admission result.
     ;; Standalone role readers still acquire their own native compiler closure.
     (defvalues (tool-contexts tool-paths tool-dependencies tool-observations native-contexts)

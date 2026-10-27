@@ -5,6 +5,13 @@
 
 ;;; A POO policy around native std/test cases.  This does not own test
 ;;; discovery, assertion semantics, or the gxtest runner.
+(import (for-syntax
+          (only-in :yuanxu/observability/testing-source install-test-source-observation!)))
+(begin-syntax
+  ;; The Gerbil's existing observation feature also covers genuine cold imports
+  ;; before its Harness starts. Cached imports never renew the idle budget.
+  (install-test-source-observation!))
+
 (import (only-in :std/test test-case)
         (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!
                  execution-idle-seconds execution-total-seconds)
@@ -96,7 +103,7 @@
                               (jiffies-per-second))
                     (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
                     ;; Includes native source imports before the Case begins.
-                    ;; This is the existing SDK process counter, not a probe or
+                    ;; This is the existing Gambit process counter, not a probe or
                     ;; a claim that parent and worker CPU clocks share an epoch.
                     (quotient (yuanxu-debug-cpu-microseconds) 1000))
                   (def allocated (.ref (.ref receipt 'after) 'allocated-bytes))

@@ -89,7 +89,7 @@
       (call-with-prepared-package (path-expand "t/qualification/native-options" root)
         (lambda (directory)
           (def tests (prepared-package-tests directory))
-          ;; The Just phase compiled this real, independent SDK package.
+          ;; The Just phase compiled this real, independent Gerbil package.
           ;; The native C declaration still rejects a missing compiler option.
           (def support (path-expand "support.ss" directory))
           (def file (path-expand "probe-test.ss" directory))

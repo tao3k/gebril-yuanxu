@@ -117,7 +117,7 @@
 
 ;; gxtest owns package-environment setup. Freeze an existing package root and
 ;; its bin priority into the Ops request instead of spawning gxpkg just for PATH.
-;; Missing package context still delegates discovery to the original SDK.
+;; Missing package context still delegates discovery to the original Gerbil.
 (def (testing-execution-script script files)
   (def native-command
     (append '("gerbil") (.get script runtime-options) '("test")
@@ -174,7 +174,7 @@
       (defvalues (current-build-phase-times require-build-artifacts!)
         (apply values (force testing-build-api)))
       (def reused? (admit-retained-testing-support? build))
-      ;; Preparation admits the existing SDK build publication. Testing never
+      ;; Preparation admits the existing Gerbil build publication. Testing never
       ;; starts a compiler, invents a command, or blesses unissued disk files.
       (unless reused?
         (error "build-required: run gerbil build before native tests" files))

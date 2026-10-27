@@ -80,10 +80,10 @@ Model files do not carry trusted currentness results into runtime.
 - [[file:20-module-loading/20.06-indirect-environments-and-specification-trees.org][20.06 Indirect Environments and Specification Trees]] — identity-union accounting, indirect captures and sharing exclusions.
 - [[file:20-module-loading/20.07-fixture-preparation-and-native-make.org][20.07 Fixture Preparation and Native Make]] — cold-generation work, native target reuse, currentness and host-contaminated timing.
 
-[[file:20-module-loading/20.08-owner-shell-retention.org][20.08 Owner Shell Retention]] deepens receiver/SDK frontiers without charging shared nodes twice.
+[[file:20-module-loading/20.08-owner-shell-retention.org][20.08 Owner Shell Retention]] deepens receiver/Gerbil frontiers without charging shared nodes twice.
 [[file:20-module-loading/20.09-fixture-compiler-budget.org][20.09 Fixture Native Compiler Budget]] separates source authentication, native compile work and wall/CPU residuals.
 
-[[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared SDK graphs,
+[[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared Gerbil graphs,
 observable thunk identities and removable issuer-private wrapper allocations.
 
 [[file:20-module-loading/20.11-thunk-demand-and-capture-retention.org][20.11 Receiver Thunk Demand]] separates cached values, shared function identities

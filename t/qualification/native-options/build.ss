@@ -6,7 +6,7 @@
         (only-in :yuanxu/module-system/building/script defbuild-script)
         (only-in "./init.ss" yuanxu-native-options.init.exports))
  ;; Native spec discovery precedes Make; expose this package's authored
- ;; libraries through the SDK's ordinary source-path lookup for that phase.
+ ;; libraries through the Gerbil's ordinary source-path lookup for that phase.
 (add-load-path! (path-directory (this-source-file)))
 (def tests
   (.call (.get yuanxu-native-options.init.exports tests) .for-files

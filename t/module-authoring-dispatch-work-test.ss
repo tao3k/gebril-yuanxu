@@ -47,7 +47,7 @@
   (test-suite "Actual authoring dispatch policy work"
     (yuanxu-test-case "warm datum admission still reads nested carrier policies"
       (def interface (yuanxu-module-interface "work-probe" (Record) '()))
-      ;; Warm only through the actual operation; never clear or replace SDK state.
+      ;; Warm only through the actual operation; never clear or replace Gerbil state.
       (policy-deliveries interface 1)
       (def one (policy-deliveries interface 1))
       (def four (policy-deliveries interface 4))

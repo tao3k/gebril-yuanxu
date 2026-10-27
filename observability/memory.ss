@@ -35,7 +35,7 @@
 (def DebugDurationReceipt. (.ref YuanxuDebugDurationReceiptContract 'proto))
 (def (yuanxu-debug-cpu-microseconds)
   ;; Process CPU is distinct from elapsed wall time and from last-GC memory.
-  ;; Use the SDK clock directly; no sampler, environment probe or subprocess.
+  ;; Use the Gambit monotonic clock directly; no sampler, environment probe or subprocess.
   (let (times (##process-times))
     (inexact->exact
       (round (* 1000000 (+ (f64vector-ref times 0) (f64vector-ref times 1)))))))

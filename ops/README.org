@@ -12,7 +12,7 @@ and Funflow is part of the Core implementation itself. Funflow imports that
 library normally and does not declare a selectable =ops= requirement.
 
 =core-spec.ss= owns the library compilation roots. =ops/= has no nested Module
-package or second source-selection entry. The existing SDK compiler and package
+package or second source-selection entry. The existing Gerbil compiler and package
 namespace remain authoritative. This change introduces no alternate Loader,
 Builder, process runner, or cache protocol.
 

@@ -10,7 +10,7 @@ build entry. Registering inside init.build-spec would also be too late:
 Gerbil expands init's imports before evaluating that function.
 
 Core now enters its declaration compiler through a relative source import.
-Existing for-syntax and begin-syntax forms invoke an SDK-only Building function
+Existing for-syntax and begin-syntax forms invoke an Gerbil-only Building function
 before the declaration compiler imports Core:
 
 #+begin_src scheme
@@ -27,7 +27,7 @@ before the declaration compiler imports Core:
     (path-expand "../.." (path-directory (this-source-file))) 'core))
 ;; Existing Core imports and yuanxu! follow.
 
-;; build.ss -- unchanged, user-owned SDK dispatcher.
+;; build.ss -- unchanged, user-owned Gerbil dispatcher.
 (import (only-in :std/build-script defbuild-script)
         (only-in "./init.ss" init.build-spec)
         (only-in "./core-spec.ss" core-spec))
@@ -39,7 +39,7 @@ uses a snapshot selecting real JsonSchema and three retained roots; it does
 not compile those other modules or the complete Core inventory.
 
 [[file:../../../module-system/building/source-package.ss][source-package.ss]] validates gerbil.pkg's package identity before calling
-the existing add-load-path!. The SDK package-prefix resolver confines priority
+the existing add-load-path!. The Gerbil package-prefix resolver confines priority
 to Core; other packages retain compiled dependency lookup. Public dependencies
 must already be installed. The relative entry remains reachable without Core
 binary interfaces. No replacement resolver, new public macro, generated build
@@ -51,12 +51,12 @@ authorize changed tool bytes or weaken publication source confinement.
 
 * Graph and validity
 
-init.build-spec still prepares one selected Graph and caches one ordinary SDK
+init.build-spec still prepares one selected Graph and caches one ordinary Gerbil
 spec list per imported init epoch. Equal retained roots reuse that list;
 different roots reject. Registration creates no second Graph or compiler spec.
 
 Before-use guards remain. A publisher or test must explicitly invoke
-init.build-current! after command completion before accepting outputs. The SDK
+init.build-current! after command completion before accepting outputs. The Gerbil
 dispatcher has no post-command hook. This change does not promise atomic builds
 or automatic after-command acceptance. A new process constructs a fresh Graph
 from current inputs; it does not share in-memory object identity with its parent.
@@ -91,7 +91,7 @@ Ops owns literal argv execution, directory, environment, timeout and status:
 (.call Build .run "clean")
 #+end_src
 
-The test reads every generated .ssi with the SDK core-read-module/sexp and
+The test reads every generated .ssi with the Gerbil core-read-module/sexp and
 checks its declared module identity against core/<selected-target>. It compares
 the two complete identity inventories, checking absence after each clean.
 The second compile starts a new OS process with the same Script, source tree
@@ -110,7 +110,7 @@ a new runner or input-validation protocol.
 The two compile commands are sequential. The Script does not override
 GERBIL_BUILD_CORES: it inherits the normal project setting, whose existing
 Justfile default discovers online CPUs with getconf _NPROCESSORS_ONLN. The
-SDK owns the worker pool; test processes are not run concurrently. The earlier forced
+Gerbil owns the worker pool; test processes are not run concurrently. The earlier forced
 single-worker configuration completed its assertions but exceeded the unchanged
 120-second file watchdog (exit 124), so it is a failed qualification despite
 success markers. Individual compile times were about 54 and 50 seconds, plus
@@ -171,7 +171,7 @@ remain out of scope.
 
 The current test includes two compiles of the complete 36-target spec, both cleans, native
 .ssi identity comparisons and the existing input-change controls in one suite
-invocation. A diagnostic run with two SDK workers completed all of these with
+invocation. A diagnostic run with two Gerbil workers completed all of these with
 MODULE-OK, HARNESS-OK, final OK and natural exit 0. That diagnostic setting is
 not retained: the Script now inherits the normal available-CPU configuration
 and asserts that its environment object does not pin GERBIL_BUILD_CORES.
@@ -202,7 +202,7 @@ One invocation of just test-bootstrap then inherited the discovered 12 CPUs,
 used the exact existing Fixture and GERBIL_PATH, and completed all controls:
 
 - spec;
-- first compile and SDK-read identity checks for all 36 outputs;
+- first compile and Gerbil-read identity checks for all 36 outputs;
 - clean, with every expected .ssi absent and residual loader .scm retained;
 - a new-process compile rebuilding those 36 outputs with identical identities;
 - final clean and absence checks;

@@ -15,7 +15,7 @@
   (write-source (path-expand name root)
     (call-with-output-string (lambda (out) (for-each (cut pretty-print <> out) body)))))
 (def TestPackage
-  ;; The canonical Just build stage prepared this SDK package. The Fixture
+  ;; The canonical Just build stage prepared this Gerbil package. The Fixture
   ;; restores source bytes after fault injection, even when an assertion fails.
   (prepared-package-fixture
     (path-expand "qualification/native-preparation" (path-directory (this-source-file)))))
@@ -23,8 +23,8 @@
   (add-load-path! root)
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
-    (import-fixture-init! (path-expand "init.ss" root))))
-;; Observe the SDK loader itself; do not substitute a hand-maintained module
+    (import-fixture-init! (path-expand "init.ss" root) #t)))
+;; Observe the Gerbil loader itself; do not substitute a hand-maintained module
 ;; table. The nonempty support Case below is the positive matcher control.
 (def (artifact-runtime-loaded?)
   (ormap (lambda (entry)
@@ -81,7 +81,7 @@
       (def build (.get tests build))
       (check (eq? (.get build selected-graph) (.get tests selected-graph)) => #t)
       (check-exception ((.get build admit-artifacts)) error?)
-      ;; SDK build issued the native support before either run. Both runs
+      ;; Gerbil build issued the native support before either run. Both runs
       ;; execute their Cases; admission never substitutes a cached verdict.
       (check-exception (.call (.cc (.get tests execution) build: #f) .run) error?)
       (check-exception (.call (.cc (.get tests execution) build: #f) .compile) error?)

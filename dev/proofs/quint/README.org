@@ -109,7 +109,7 @@ functional subject/refusal laws and repeated constructor-trace accounting.
 Neither is a native capacity result. See
 [[file:../../../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/34-authoring-construction-and-admission.org][the source-only semantic and declaration controls]].
 
-* SDK enrollment versus fresh admission
+* Gerbil enrollment versus fresh admission
 
 [[file:CompilerEnrollment.qnt][CompilerEnrollment]] checks complete structural enrollment and fresh demand
 admission under source changes. Reusing a successful approval and dropping
@@ -158,7 +158,7 @@ GC or byte-capacity theorem. See [[file:../../../docs/10-19-design/12-contracts-
 
 [[file:PublicationReads.qnt][PublicationReads]] owns finite return/failure, mutation and replay controls for
 original read-root normalization. Lean's PublicationReads proves arbitrary-graph
-demand/currentness equivalence. Neither proves SDK capacity. See
+demand/currentness equivalence. Neither proves Gerbil capacity. See
 [[file:../../../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/22-reader-binding-ownership.org][Reader binding ownership and the retained native capacity result]].
 
 [[file:ReaderProjection.qnt][ReaderProjection]] owns finite current-registration, source-change and scratch
@@ -167,7 +167,7 @@ lists under explicit native traversal premises. Neither proves collector heap
 capacity or public value-Contract behavior. See
 [[file:../../../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/18-reader-retained-roots.org][retained roots and the native validation boundary]].
 
-* SDK Context traversal order
+* Gerbil Context traversal order
 
 [[file:ContextWalk.qnt][ContextWalk]] owns finite callback-order, sharing and cut controls for the Core
 explicit-frame walker. Its eight expected outcomes are separate from Lean's
@@ -236,15 +236,15 @@ remain separate obligations.
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.42-source-built-loader-call-edges.org][32.42]] adds eight scoped =SourceLoader= outcomes. Native-source compilation
 puts checks inside both load and reload entries before procedure capture;
 the actual saved-entry, direct-entry and reload observations feed an independent
-Lean decoder. Old SDK edges remain a negative control. Retry coverage is a
-source/call-edge model, not a concurrent native scheduling proof; complete SDK,
+Lean decoder. Old Gerbil edges remain a negative control. Retry coverage is a
+source/call-edge model, not a concurrent native scheduling proof; complete Gerbil,
 compiler-output and bootstrap closure remain production obligations.
 
 * Issuer-bound native consumption
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.41-issuer-bound-native-loading.org][32.41]] adds eleven scoped =IssuedLoading= outcomes. Nine native controls and
 an independent Lean decoder distinguish original compiler issuance, handoff
-checks and private byte snapshots. Original-SDK cached dispatch, late public
+checks and private byte snapshots. Original-Gerbil cached dispatch, late public
 currentness and a late private writer remain explicit limitations; the scoped
 positive model is not production entrypoint closure or an OS isolation proof.
 
@@ -284,9 +284,9 @@ The final Core source cut includes the helper itself.
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.37-metadata-allocation-and-shared-authority.org][32.37]] adds eight scoped =MetadataAllocation= checks. Native tests reproduce
 shared self-slot function replacement/restoration with a retained cold-child
-cache, and show that export hiding/opaque final structures do not block SDK
+cache, and show that export hiding/opaque final structures do not block Gerbil
 reflection. The private allocation ledger is a proposed MOP design, not an
-implemented SDK ownership barrier. Run =--case-prefix MetadataAllocation
+implemented Gerbil ownership barrier. Run =--case-prefix MetadataAllocation
 --typecheck-scope selected=. A Lean decoder consumes actual native observations;
 scope, raw-write counterexamples and existing domain guarantees remain distinct.
 
@@ -294,22 +294,22 @@ scope, raw-write counterexamples and existing domain guarantees remain distinct.
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.36-metadata-ownership-and-write-boundary.org][32.36]] adds nine scoped =MetadataOwnership= checks. An isolation gateway
 derives metadata owners from genuine selected reads and reuses the production
-receiver guard. Raw generated and SDK reflective setters remain reachable
+receiver guard. Raw generated and Gerbil reflective setters remain reachable
 counterexamples; this is NOT an installed universal write barrier. Run with
 =--case-prefix MetadataOwnership --typecheck-scope selected=. Unknown targets
 fail closed; missing backend association has a separate coverage control.
 Two requirements, child-plan identity, laziness and acceptance retain matched
-controls. Runtime alias-coverage and SDK store mediation remain explicit premises.
+controls. Runtime alias-coverage and Gerbil store mediation remain explicit premises.
 
 * Replay receiver ownership
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.35-replay-receiver-ownership.org][32.35]] adds the scoped =ReplayOwnership= family. Its ten checks distinguish
 selected-receiver pre-write refusal, ancestor preflight, nested frame retention,
 exceptional unwinding, two requirements, child-plan identity and laziness. A
-normal-model =NoRawCallbacks= counterexample is required: SDK raw setters do not
+normal-model =NoRawCallbacks= counterexample is required: Gerbil raw setters do not
 enter the supported POO write protocol. Use =--case-prefix ReplayOwnership=;
 the same 45-second case, five-second output and typecheck deadlines remain.
-This model does not establish runtime SDK confinement or concurrent exclusion.
+This model does not establish runtime Gerbil confinement or concurrent exclusion.
 
 For a focused owner qualification, =--typecheck-scope selected= checks each
 selected entry and its transitive imports through Quint's own resolver. It
@@ -325,7 +325,7 @@ source hashes and final source-cut rejection.
 counterexample/witness checks. Run =python3 dev/proofs/quint/check.py --case-prefix
 RouteMutation --receipt /private/tmp/route-mutation.ss=. The epoch policy assumes
 all relevant route writes advance an owned, non-resettable generation. This is
-NOT an implemented SDK barrier. The =endpoint= and =untracked= counterexamples
+NOT an implemented Gerbil barrier. The =endpoint= and =untracked= counterexamples
 retain raw modification/restoration as an actual open boundary. Removing the
 second requirement, child plan ownership or laziness has matched controls.
 The native isolation test and actual domain consumer regression remain separate

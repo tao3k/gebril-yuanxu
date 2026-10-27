@@ -185,7 +185,7 @@
         (write-datum record (compiler-code-facts entry '())))
       (lambda ()
         (attempt "cached-record-replacement" (cut load-module entry) "issued source or record changed")
-        ;; Measurement, not a claimed safe route: an SDK procedure value saved
+        ;; Measurement, not a claimed safe route: an Gerbil procedure value saved
         ;; before installation may retain an old compiled internal call edge.
         (def before (length (.get (authority-status state) events)))
         (def result (with-catch values (cut captured-sdk-entry entry)))

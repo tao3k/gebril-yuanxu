@@ -17,7 +17,7 @@
     (cut test-build-publication projection)
     (cut setenv "GERBIL_PATH" previous)))
 (def build-product-recovery-test
-  (test-suite "SDK product completion and selected marker recovery"
+  (test-suite "Gerbil product completion and selected marker recovery"
     (test-case "a missing dynamic phase invalidates only its own marker"
       (call-with-temporary-directory "product-recovery"
         (lambda (root)
@@ -29,7 +29,7 @@
           (repair-build-products! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #f)
           (check-equal? (file-exists? (path-expand "static/fixture__unselected.scm" root)) #t)
-          ;; Completed phases leave an ordinary SDK marker reusable.
+          ;; Completed phases leave an ordinary Gerbil marker reusable.
           (write-product root "fixture/unit~1.o1")
           (write-product root "static/fixture__unit.scm")
           (require-build-products! '(fixture/unit) root)
@@ -43,7 +43,7 @@
           (create-directory* (path-expand "fixture/unit.o1" root))
           (check-exception (repair-build-products! '(fixture/unit) root) error?)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
-    (test-case "SDK directory aliases share one publication identity without crossing prefixes"
+    (test-case "Gerbil directory aliases share one publication identity without crossing prefixes"
       (call-with-temporary-directory "publication-prefix"
         (lambda (root)
           (def prefix (path-expand "state" root))

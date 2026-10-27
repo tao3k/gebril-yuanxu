@@ -87,7 +87,7 @@
   (module-source-observe check-package-snapshot-current? entries))
 (def (check-package-snapshot-current? entries)
   ;; Sibling sources have different negative ancestor lists but share the same
-  ;; positive gerbil.pkg entry. Reuse its pure byte/SDK-identity check inside
+  ;; positive gerbil.pkg entry. Reuse its pure byte/Gerbil-identity check inside
   ;; the EXISTING read window; do not reparse it once per source guard.
   (andmap (lambda (entry) (module-source-observe check-package-entry-current? entry)) entries))
 (def (check-package-entry-current? entry)
@@ -159,7 +159,7 @@
           (context-current!))
         ;; The interpreter redirects original sources through its admitted reader;
         ;; standalone compiler input imports adjacent prepared role projections.
-        ;; The existing POO prelude is one SDK-owned weak binding frame. Do not
+        ;; The existing POO prelude is one Gerbil-owned weak binding frame. Do not
         ;; copy its full export set into every generated interface's strong
         ;; import table. Explicit role/import bindings still override the prelude.
         ;; A contributor's custom prelude keeps the original explicit imports.
@@ -267,7 +267,7 @@
 ;;; headers. Internal native inclusion retains the original source locations.
 (def (yuanxu-prepare-module-build-source source-path context-current!)
   (prepare-build-source source-path context-current! #f))
-;; Only SDK-observed tool sources use native inclusion. In particular the
+;; Only Gerbil-observed tool sources use native inclusion. In particular the
 ;; declaration compiler cannot import its own include-module-body binding.
 (def (yuanxu-prepare-module-tool-source source-path context-current!)
   (prepare-build-source source-path context-current! #t))
@@ -356,7 +356,7 @@
             (when (pair? (cdr parts)) (walk next (cdr parts))))))))
     (yuanxu-prepare-module-build-source path context-current!)))
 
-;; The native compiler and Make coordinator both call the SDK's public import
+;; The native compiler and Make coordinator both call the Gerbil's public import
 ;; parameter. Redirect only the selected prepared inputs, preserving their native
 ;; identity and original included syntax. Make still owns original source targets
 ;; and dependency/product timestamps; generated frames are not new build targets.

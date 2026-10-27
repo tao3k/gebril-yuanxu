@@ -69,7 +69,7 @@
   (yuanxu-test-case "generated setter refuses before a first store"
     (refusal "generated" generated-store!)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "SDK reflective store body shares the same refusal"
+  (yuanxu-test-case "Gerbil reflective store body shares the same refusal"
     (refusal "reflective" reflective-store!)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "constructor inlining cannot erase the store check"

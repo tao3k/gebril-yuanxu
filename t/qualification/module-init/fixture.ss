@@ -3,7 +3,7 @@
 (import :clan/poo/object
         (only-in :std/list/list append-map)
         (only-in :std/misc/ports read-all-as-u8vector)
-        (only-in :gerbil/expander core-read-module/sexp eval-syntax
+        (only-in :gerbil/expander core-read-module/sexp eval-syntax import-module
                  current-expander-context make-top-context)
         (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :yuanxu/ops/process-script ProcessScript.)
@@ -12,16 +12,20 @@
         (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
 (export import-fixture-init! prepared-package-fixture call-with-prepared-package prepared-package-tests
         build-prepared-package!)
-(def (import-fixture-init! path)
+(def (import-fixture-init! path (fresh? #f))
   ;; A fresh top context has no import transformers until its prelude is bound.
   (eval-syntax '(import :gerbil/core))
+  ;; Static Gerbil packages keep a stable compiler identity across Cases. Ask the
+  ;; Gerbil for a new source context at this explicit Fixture boundary, rather
+  ;; than sharing the previous Case's realized init object or weakening guards.
+  (when fresh? (import-module path #t #t))
   (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
     (let (binding (module-init-export-name identity))
       (eval-syntax
         `(import (rename-in (only-in ,path ,binding) (,binding FixtureExports))))
       (eval-syntax 'FixtureExports))))
 
-;; The Just build phase prepares these versioned SDK packages. Scheme owns
+;; The Just build phase prepares these versioned Gerbil packages. Scheme owns
 ;; only reversible fault injection and admission; it never invokes a Builder.
 (def (package-files root-value)
   (append-map
@@ -60,11 +64,11 @@
   ;; the actual child execution receives its admitted native publication first.
   (add-load-path! root-value)
   (parameterize ((current-expander-context (make-top-context)))
-    (.get (import-fixture-init! (path-expand "init.ss" root-value)) tests)))
+    (.get (import-fixture-init! (path-expand "init.ss" root-value) #t) tests)))
 
 ;; Explicitly authorized compiler qualification only. Ordinary preparation is
-;; the Just SDK build phase. This effect proves a real injected compiler error;
-;; it neither generates a runner nor replaces the SDK's build/test dispatcher.
+;; the Just Gerbil build phase. This effect proves a real injected compiler error;
+;; it neither generates a runner nor replaces the Gerbil's build/test dispatcher.
 (def (build-prepared-package! root-value options)
   (def inherited (getenv "GAMBOPT" ""))
   (run-script

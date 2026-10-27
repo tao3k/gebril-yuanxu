@@ -150,6 +150,6 @@ The AWS endpoint still fails after explicitly requesting its first complete
 build Graph, before Schema-transition checks. See
 [[file:../12-contracts-types/12.27-aws-schema-transition-costs.org][the retained native qualification results]].
 These model results cannot turn that failure into a native acceptance result.
-The next correspondence layer, actual SDK-context observations and the
+The next correspondence layer, actual Gerbil-context observations and the
 watchdog signal diagnosis are maintained in
 [[file:13.15-import-and-source-guard-correspondence.org][Native Import and Source Guard Correspondence]].

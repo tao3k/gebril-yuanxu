@@ -105,7 +105,7 @@ about arbitrary custom protocol effects or costs is made.
 * Relocated Scenario control
 
 The actual [[file:../../../t/gitea-postgresql-relocation-test.ss][Core integration suite]] packages the maintained selected modules, relocates them,
-removes the originals and reads this real operators.ss with the SDK:
+removes the originals and reads this real operators.ss with the Gerbil:
 
 #+begin_src scheme
 (def (overlay)

@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Bounded lowering experiment over actual SDK-emitted Scheme. No source patch.
+;;; Bounded lowering experiment over actual Gerbil-emitted Scheme. No source patch.
 (import :gerbil/compiler :gerbil/compiler/compile
         (only-in :gerbil/expander import-module module-context-export module-export-name module-export-phi)
         (only-in :gerbil/runtime/system gerbil-runtime-smp?)
@@ -97,7 +97,7 @@
     (else (rewrite-list form))))
 (create-directory* output)
 ;; Build the native SOURCE in an isolated namespace, including its own cache,
-;; recursive edges and reload entry. No live SDK binding is replaced here.
+;; recursive edges and reload entry. No live Gerbil binding is replaced here.
 (def native-loader-source (path-expand "src/gerbil/runtime/loader.ss" sdk))
 (observe-input! native-loader-source)
 (def source-loader-path (path-expand "source-loader.ss" root))
@@ -232,4 +232,4 @@
     (let (path (path-expand name root)) (cons path (file-digest path))))
     '("compiler-inputs.ss" "compiler-closure.ss" "forbidden-bindings.ss"))))
 (newline)
-(displayln "STORE-LOWERING-COMPILED: " (length selected) " SDK/setter bindings; three primitive families")
+(displayln "STORE-LOWERING-COMPILED: " (length selected) " Gerbil/setter bindings; three primitive families")

@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Observe public SDK expander completion callbacks, never dispatch tests.
+;;; Observe public Gerbil expander completion callbacks, never dispatch tests.
 (import (only-in :gerbil/expander current-expander-module-import
                  current-expander-module-eval current-expander-eval
                  current-expander-context current-expander-phi module-context? expander-context-id module-context-path
@@ -12,7 +12,7 @@
 (export install-test-source-observation! stop-test-source-observation!
         test-source-observation-active?)
 
-;; One SDK invocation owns these callbacks and bounded weak observations.
+;; One Gerbil invocation owns these callbacks and bounded weak observations.
 ;; No timer, thread, Module context root, compiler or Harness is created here.
 (def restore #f)
 (def (test-source-observation-active?) (procedure? restore))
@@ -39,7 +39,7 @@
         (lambda (state)
           (lambda ()
             (parameterize ((current-execution-progress (list state)))
-              (execution-progress! 'sdk-module-completions count))))))
+              (execution-progress! 'gerbil-module-completions count))))))
     (def (completed seen context (phase #t))
       (when (module-context? context)
         (mutex-lock! lock)
@@ -83,7 +83,7 @@
         (def started (current-jiffy))
         (with-catch
           (lambda (failure)
-            ;; Attribute a real failed SDK evaluation without dumping source
+            ;; Attribute a real failed Gerbil evaluation without dumping source
             ;; text, swallowing the error, or counting failure as progress.
             (when active?
               (yuanxu-write-observation-line! "test-source evaluation-failed module=%s phi=%s"
@@ -95,7 +95,7 @@
               (completed-span 'body context started))))))
     (set! restore
       (lambda ()
-        ;; Do not overwrite another SDK consumer's later parameter binding.
+        ;; Do not overwrite another Gerbil consumer's later parameter binding.
         (mutex-lock! lock)
         (try
           (set! active? #f)

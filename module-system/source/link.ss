@@ -61,7 +61,7 @@
   (if (and (string? source) (not publication-reader))
      (let ((reader #f))
        ;; Namespace discovery owns only directory/init observations. Construct
-       ;; the native interpreter and its SDK support on the first publication
+       ;; the native interpreter and its Gerbil support on the first publication
        ;; demand, not while enumerating names or making inert module views.
        ;; This is the SAME reader/session, never a second Graph or approval.
        (def (reader-ref slot)
@@ -69,7 +69,7 @@
            (unless (original-current? (.ref context 'generation))
              (error "stale module scope generation" (.ref context 'generation)))
            (set! reader (module-source-measure-operation 'reader-bootstrap module-publication-reader))
-           ;; Native SDK bootstrap may initialize code. No directory approval
+           ;; Native Gerbil bootstrap may initialize code. No directory approval
            ;; crosses that boundary, even before the first candidate is read.
            (unless (original-current? (.ref context 'generation))
              (error "stale module scope generation" (.ref context 'generation))))

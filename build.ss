@@ -21,7 +21,7 @@
 
 ;; init.exports owns selected Module targets; core-spec owns library targets.
 ;; Only this entry consumes both. core-spec must never compile init itself.
-;; The adapter keeps role/currentness boundaries inside the SDK consumer.
+;; The adapter keeps role/currentness boundaries inside the Gerbil consumer.
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
 (def library-spec
   (append core-spec

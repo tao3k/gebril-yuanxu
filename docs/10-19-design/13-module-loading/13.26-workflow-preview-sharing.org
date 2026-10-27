@@ -249,7 +249,7 @@ Measurement channels remain distinct:
   retains strong record roots after its frame returns.
 - Explicit post-GC process live bytes are auxiliary process measurements. Weak
   record keys report surviving identities while the preview is held and after
-  its construction frame returns. These observations do not assign SDK memory
+  its construction frame returns. These observations do not assign Gerbil memory
   to every preview or establish exclusive transitive closure bytes.
 
 SysML 20.04's existing allocation applies: Lean PayloadSharing owns identity-union
@@ -264,7 +264,7 @@ exposed that the memory sampler's default does not collect; those initial live
 figures are not used as post-GC evidence. The qualification explicitly requests
 collection and keeps census traversal outside workload timing.
 
-Cold means first demand of a newly constructed preview, not a cold SDK process
+Cold means first demand of a newly constructed preview, not a cold Gerbil process
 or a cold filesystem. Fixture acquisition, role compilation, descriptor creation,
 explicit GC and graph census are outside workload timing. The closure-access
 subinterval includes the actual MOP lookup and cold closure computation; it is
@@ -328,16 +328,16 @@ The two released scale cohorts share the EXACT same nine remaining record
 identities. Their keys are preparation, presence, proto, slot-descriptor-class,
 =.slot.check=, =.slot.shape= and =.element?=. This establishes shared surviving
 metadata rather than 16/32 separate copies; it does not identify every transitive
-SDK byte. No observer delivery or ordered dependency occurrence was suppressed.
+Gerbil byte. No observer delivery or ordered dependency occurrence was suppressed.
 Zero reader replay in the descriptor-only cohorts does not mean zero native MOP
 cache work. Source guards can replay graphs outside the outer recording scope;
 dividing 54312 by 1086 would not establish a duplicate-work factor.
 
-Explicit-GC process live increments, relative to each already loaded SDK and
+Explicit-GC process live increments, relative to each already loaded Gerbil and
 constructed-config baseline, are 1,092,424--1,092,616 bytes (16),
 2,024,080--2,024,128 bytes (32), and 1,518,944--1,519,168 bytes (services).
 These are measured process deltas with the preview demonstrably held through
-the sample, NOT exclusive closure-environment sizes or per-module SDK costs.
+the sample, NOT exclusive closure-environment sizes or per-module Gerbil costs.
 Original read graphs are inspected only through issued dependency edges;
 unselected values and full reflective method tables are not forced for census.
 Opaque procedure-environment byte ownership remains unmeasured.
@@ -571,9 +571,9 @@ across callbacks, or an admitted result.
 At post-GC diagnostic cleanup, six root spines and 3096 distinct original
 records survived; no private projection owners survived the weak index. Native
 eviction is therefore possible even while roots remain alive, and is a legal
-cold reconstruction. The 186708664 process-live byte account includes the SDK,
+cold reconstruction. The 186708664 process-live byte account includes the Gerbil,
 fixtures and diagnostic code. It is NOT exclusive graph retention. Overlapping
-traversals and their SDK nodes must not be summed as independent allocations.
+traversals and their Gerbil nodes must not be summed as independent allocations.
 
 The baseline receipt is =replay-phase-baseline-fixed-counter.log= in the local
 artifact directory. An earlier per-record hash counter increased temporary
@@ -717,7 +717,7 @@ existing error procedure. The source continuation in =runtime/mop.ss= has
 already disappeared at this compilation boundary. Therefore an automatic
 "one continuation closure allocated per reflective access" explanation is
 incorrect. This does not prove all called primitives allocate nothing; it
-removes that specific proposed explanation without editing the SDK.
+removes that specific proposed explanation without editing the Gerbil.
 
 VM-account corrections remain those of installed =##exec-stats=, as audited in
 [[file:../../../dev/sysml/10-evaluation/10.02-runtime-accounting.org][10.02 Runtime Accounting]]. A nonnegative sample is not a physical allocation
@@ -793,7 +793,7 @@ code calls public =object-read-current?= after =require-issued!=; B calls privat
 route/live-state primitives. A's ordinary runtime was never replaced. For the
 temporary diagnostic A only, the installed native =make-clean= for =("object")=
 and native Make =force: #t= rebuilt the explicit source cut. No output fingerprint
-was patched, no source timestamp was forged and no global SDK/package was
+was patched, no source timestamp was forged and no global Gerbil/package was
 cleaned or modified. The rebuild receipt and the incorrectly copied generated
 file remain in local artifacts. Emitted-code and actual-count correspondence
 are prerequisites for a qualified comparison, not a new cache credential.
@@ -922,7 +922,7 @@ shared specifications, never equal values, record keys or receivers.
 
 Native lengths are interpreted under the installed 64-bit-word / 32-bit-character
 ABI. Headers, padding, executable code, class descriptors, opaque POO referents,
-SDK contexts and GC-table policy are not inferred. Process-wide post-GC samples
+Gerbil contexts and GC-table policy are not inferred. Process-wide post-GC samples
 remain separate; VM allocation deltas remain unqualified. A byte count cannot
 be obtained by multiplying 149 by an assumed entire receiver footprint.
 
@@ -981,7 +981,7 @@ Native qualifier registration identifies the two method contributions without
 executing arbitrary validators or guessing from a kind label.
 
 The revised memory boundary follows the actual interface backing object while
-excluding SDK method tables, compiler records and continuations. It expands
+excluding Gerbil method tables, compiler records and continuations. It expands
 closure environments only for the native issuer code family obtained from
 the ORIGINAL =object-read-issuance= checker, not a freshly copied inspection
 projection. Arbitrary callback environments remain opaque. Within this boundary,
@@ -1019,7 +1019,7 @@ Local artifacts are under =/private/tmp/yuanxu-retention-20261026/=; no raw log
 is committed. Failed exploratory runs remain there: an idle-limited diagnostic,
 full worker builds that hit their unchanged 240-second fence, a refused
 cross-package compiler prefix, and rejected FFI/undefined-binding probes.
-The final maintained probe is ordinary Scheme; no SDK source was changed.
+The final maintained probe is ordinary Scheme; no Gerbil source was changed.
 The Core consumer gate retains the normal Just heap/watchdog entry. The matched
 diagnostic additionally used a stricter 1 GiB / 120-second outer fence.
 No ten-thousand-module run, new Builder, cache protocol or admission-result

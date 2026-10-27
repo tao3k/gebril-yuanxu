@@ -11,13 +11,13 @@
                  module-source-measure-operation))
 (export yuanxu-init-build call-with-init-build-spec)
 
-;; A dynamic association for this SDK invocation only, not a spec registry or
+;; A dynamic association for this Gerbil invocation only, not a spec registry or
 ;; cached approval. The producer retains its projection and all source checks.
 (def current-build-spec-consumer (make-parameter #f))
 (def (call-with-init-build-spec prepare dispatch args libdir)
   ;; This callback mutates issuance state across prepare's dynamic boundary.
   ;; Keep that state explicit; compiler inference must not freeze its initial
-  ;; false value and classify the eventual SDK consumer as non-callable.
+  ;; false value and classify the eventual Gerbil consumer as non-callable.
   (def association (vector #f #f))
   (def spec
     (parameterize ((current-build-spec-consumer
@@ -192,7 +192,7 @@
   (def (current!)
     (unless prepared (error "init std-make-spec must prepare the source context first"))
     ((.get prepared admit-current)))
-  ;; The official SDK consumer owns both compile phases. A test source is a
+  ;; The official Gerbil consumer owns both compile phases. A test source is a
   ;; POO declaration, not a command, environment selector or executable plan.
   (def (test-build-spec tests)
     (def build (.get tests build))
@@ -226,7 +226,7 @@
            (transfer build consumer))
          (.get tests spec)))
       ((equal? (car args) "spec") (dispatch (.get build spec) args))
-      (else (error "test support lifecycle requires SDK compile or spec" args)))
+      (else (error "test support lifecycle requires Gerbil compile or spec" args)))
     ((.get build admit-current)))
   (def (build-spec roots)
     (if prepared
@@ -261,7 +261,7 @@
         (package-main spec args)))
     (cond
       ((or (null? args) (equal? (car args) "compile"))
-       ;; Ordinary SDK compilation cannot grant publication approval. Explicit
+       ;; Ordinary Gerbil compilation cannot grant publication approval. Explicit
        ;; projection .compile retains the separate artifact issuance boundary.
        (let ((products (force artifact-cleaners))
              (identities (.get prepared compiler-identities)))
@@ -273,7 +273,7 @@
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))
-         ;; Loading cleaners and invalidating issuance precede SDK cleanup.
+         ;; Loading cleaners and invalidating issuance precede Gerbil cleanup.
          ;; Retain the freshness check at that exact boundary.
          (current!)
          (begin0 (dispatch native-specs)

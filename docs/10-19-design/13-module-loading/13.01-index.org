@@ -24,7 +24,7 @@ Contract-system design remains a separate workstream and is not expanded here.
 - [[file:13.03-core-jsonschema-init-build-case.org][Core and the real JsonSchema init/build case]] uses current source files and
   retained targets, expands common-root preparation, and identifies cold-start
   and native macro/source-root qualification before removing bootstrap.ss.
-- [[file:13.04-isolated-init-build-validation.org][Isolated native validation]] records the passing SDK source-capture control and
+- [[file:13.04-isolated-init-build-validation.org][Isolated native validation]] records the passing Gerbil source-capture control and
   the historical cold publication compiler cycle. It is not end-to-end acceptance.
 - [[file:13.05-reader-tool-context-and-cold-build.org][Reader tool Context correction]] describes exact Context reuse, source guards,
   and the subsequent real JsonSchema native-build qualification and its limits.
@@ -36,9 +36,9 @@ Contract-system design remains a separate workstream and is not expanded here.
   root. Building prepares and guards inputs; it is not a selectable
   Module that loads itself through init.ss.
 
-- [[file:13.08-in-process-build-entry.org][Historical in-process SDK entry]] records the superseded experiment returning the standard main
+- [[file:13.08-in-process-build-entry.org][Historical in-process Gerbil entry]] records the superseded experiment returning the standard main
   from an ordinary function, keeping source location internal without modifying
-  the SDK or executing a second build script.
+  the Gerbil or executing a second build script.
 
 - [[file:13.09-user-owned-build-script.org][Historical user-owned build control]] records direct repository source targets and the
   JsonSchema import correction with the unchanged standard macro, without source
@@ -49,7 +49,7 @@ Contract-system design remains a separate workstream and is not expanded here.
   imports or consumer bindings. It supersedes the manual-import control.
 
 - [[file:13.11-same-state-source-reimport.org][Same-state source reimport after clean]] isolates loader/source shadowing and
-  verifies new-process import and rebuild with the same artifacts and native SDK.
+  verifies new-process import and rebuild with the same artifacts and native Gerbil.
 
 - [[file:13.12-build-owned-source-registration.org][Build-owned source registration]] replaces the launcher-only repair with
   phase-correct registration before Core imports, keeping build.ss unchanged.
@@ -72,13 +72,13 @@ integration. They include no runtime Loader implementation.
   namespace from its optional consumer language entry and documents source-only
   bootstrap, native dependency ownership and direct consumer migration.
 
-- [[file:13.17-init-exports-and-sdk-consumers.org][Init exports and SDK consumers]] proposes one lazy POO publication for
+- [[file:13.17-init-exports-and-gerbil-consumers.org][Init exports and Gerbil consumers]] proposes one lazy POO publication for
   native Make specifications and tests, reusing the current selection and
   execution owners instead of adding a separate test Builder. Current naming
   and qualification boundaries are recorded in 13.19.
 
 - [[file:13.18-guarded-test-precompilation.org][Guarded test precompilation and Harness execution]] specifies the existing
-  issuance boundary, separate product authority under one graph, bounded SDK
+  issuance boundary, separate product authority under one graph, bounded Gerbil
   compilation and final source/artifact checks. No bare-Make path is admitted;
   completed focused gates are distinguished from full CI in 13.19.
 

@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 prelude: :gerbil/core
-;;; SDK-only role discovery shared by publication preparation and expansion.
+;;; Gerbil-only role discovery shared by publication preparation and expansion.
 (export yuanxu-module-allowed-entrypoint-roles module-publication-role-imports
         module-regular-role-file? module-init-export-name)
 

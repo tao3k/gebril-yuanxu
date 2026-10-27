@@ -55,7 +55,7 @@ not discover all owners before applying its filter; only aggregate =.spec= or
 =.run= requests the complete selected owner set. Its narrow results are the
 same cached projections returned by each module's =tests.qualification=.
 Requested owner order determines harness input order, not Module inheritance
-precedence or a Funflow Job's execution order. Shared SDK/library imports are
+precedence or a Funflow Job's execution order. Shared Gerbil/library imports are
 valid dependencies and do not prove that an unselected suite or scope ran.
 
 * Namespace reflection and binding
@@ -165,11 +165,11 @@ record. No timeout or dependency-version change was needed.
    options. At each execution the policy snapshots the effective GERBIL_PATH
    and PATH, including Ops environment overrides. An existing package root gets
    its bin priority in that request; no env-dispatcher child is needed just to
-   prepend PATH. Missing package context still delegates discovery to the SDK.
+   prepend PATH. Missing package context still delegates discovery to the Gerbil.
    Explicitly different commands remain unchanged. This choice
    is not cached across executions and adds no runner or caller-side binding.
    The Justfile calls the original test VM directly; gxtest owns package setup.
-   The missing-context fallback repeats VM options for the SDK-spawned child.
+   The missing-context fallback repeats VM options for the Gerbil-spawned child.
    Batch watchdogs must signal their owned process group, not use foreground
    terminal mode. On Scheme cancellation Ops terminates its own child/group
    before std/run-process closes and waits; ESRCH is the only ignored signal

@@ -4,7 +4,7 @@
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
-        (only-in :yuanxu/t/qualification/module-demand/fixture ProjectionFixture scope-context project-metadata)
+        (only-in "./qualification/module-demand/fixture.ss" ProjectionFixture scope-context project-metadata)
         (only-in :yuanxu/module-system/source/selection select-module-graph)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  admit-module-publication! module-source-admit-current!)

@@ -159,7 +159,7 @@ inputs. Do not introduce a second handwritten target inventory or ask the user
 to invoke bootstrap.ss first. Conflicting tool/application compiler identities
 must be resolved by shared source preparation or rejected, not silently shadowed.
 
-The SDK, package source and dependency resolution must nevertheless be available
+The Gerbil, package source and dependency resolution must nevertheless be available
 to READ the build adapter. A source-capable Gerbil importer can avoid requiring
 its precompiled binary; this must be tested without cached Core artifacts.
 Missing external package dependencies remain explicit setup failures. No spec can

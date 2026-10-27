@@ -37,7 +37,7 @@
   (def started (current-jiffy))
   (def started-cpu (yuanxu-debug-cpu-microseconds))
   ;; Diagnostic counts only: bounded owner/phase rows, never source bytes,
-  ;; SDK contexts or currentness results. This cannot authorize reuse.
+  ;; Gerbil contexts or currentness results. This cannot authorize reuse.
   (def read-rows (and trace? (make-hash-table)))
   (def effect-reads (make-hash-table))
   (def graph-read-rows (make-hash-table))
@@ -209,8 +209,8 @@
         (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
         physical-reads)))
   (def (observe key amount)
-    ;; Never retain SDK objects in compound discovery keys. Only their closed
-    ;; event category contributes a counter; actual objects stay with the SDK.
+    ;; Never retain Gerbil objects in compound discovery keys. Only their closed
+    ;; event category contributes a counter; actual objects stay with the Gerbil.
     (let (category (if (pair? key) (car key) key))
       (when (symbol? category)
         (cond

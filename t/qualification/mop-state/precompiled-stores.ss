@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Compiled independently through the same primitive-store lowering as SDK
+;;; Compiled independently through the same primitive-store lowering as Gerbil
 ;;; bindings, BEFORE its consumer. No guard at the callback invocation site.
 (import :clan/poo/object
         (prefix-in (only-in :gerbil/runtime/mop slot-set!) runtime.))

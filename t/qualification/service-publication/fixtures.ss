@@ -119,7 +119,7 @@
 (.def (RelocatedServicesFixture @ ServicesFixture)
   (.prepare => relocated-preparation))
 
-;; SDK expansion of real files; no manufactured location rows.
+;; Gerbil expansion of real files; no manufactured location rows.
 (def (read-overrides path (names '(release explicit)))
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))

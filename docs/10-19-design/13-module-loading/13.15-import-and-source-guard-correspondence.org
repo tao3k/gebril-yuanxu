@@ -6,13 +6,13 @@
 
 This continues [[file:13.14-test-source-graph-model.org][the demand/admission model]] at actual Gerbil
 import and source-check boundaries. The evidence is deliberately separated:
-Lean proves the list/checking laws, native Scheme tests exercise the SDK reader,
+Lean proves the list/checking laws, native Scheme tests exercise the Gerbil reader,
 and the AWS endpoint must still complete independently.
 
 | Model value or transition | Actual Scheme producer | Executable observation |
 |---------------------------+------------------------+------------------------|
-| Demand root | =module-compiler-tools:inputs-for= | =compiler-demand= carries the actual SDK context |
-| First context discovery | =for-each-build-module= walks SDK import/export/import-set wrappers | =compiler-discovery= carries actual parent/child context objects and source path |
+| Demand root | =module-compiler-tools:inputs-for= | =compiler-demand= carries the actual Gerbil context |
+| First context discovery | =for-each-build-module= walks Gerbil import/export/import-set wrappers | =compiler-discovery= carries actual parent/child context objects and source path |
 | Context identity | Native object identity, through =make-hash-table-eq= | Per-context nested identity tables, not equality of printed module names |
 | Reused source topology | Reader-local =kernel-closures= | =kernel-closure-requests= versus =kernel-closure-walks= |
 | Current input projection | Each consumer looks up =kernel-inputs= for every cached child | Private helper remains in =reader.inputs= on both first and repeated publication |
@@ -28,8 +28,8 @@ can have similar labels. No second selected configuration Graph is constructed.
 
 * Structural reuse without input omission
 
-The reader previously traversed the SDK import graph again on every hit of a
-shared source context. The new reader-local index caches only the completed SDK
+The reader previously traversed the Gerbil import graph again on every hit of a
+shared source context. The new reader-local index caches only the completed Gerbil
 context list. It does not cache an accepted guard, an initializer result, a Nix
 result or a captured input-registration projection.
 
@@ -40,13 +40,13 @@ therefore resolves =kernel-inputs= against the cached context list again. In
 topology was first cached would be incorrect.
 
 The index has the same completed-context premise as the existing compiler-tool
-index: the SDK context import topology is stable within this reader snapshot.
+index: the Gerbil context import topology is stable within this reader snapshot.
 It is not a certificate for arbitrary out-of-band mutation of expander context
 internals. Source changes still require a fresh reader, and normal source,
 package identity and confinement guards are retained. A general proof that the
-SDK enforces immutable completed contexts remains outside these Lean models.
+Gerbil enforces immutable completed contexts remains outside these Lean models.
 
-The first native publication control now checks that each actual SDK child is
+The first native publication control now checks that each actual Gerbil child is
 discovered once per demanded closure, that repeated demands exist, and that
 kernel requests exceed first walks. The original confined macro initializer
 still runs once; the independent canonical-import negative control still fails.
@@ -73,7 +73,7 @@ The correspondence reuses =Admission.Source.checkSources=,
   used as evidence for an absent input.
 
 These laws do not prove filesystem snapshot atomicity, path authentication or
-SDK import completeness. The kind correspondence additionally assumes reliable
+Gerbil import completeness. The kind correspondence additionally assumes reliable
 metadata classification: =module-source-type= currently maps metadata exceptions
 to false, so error-versus-absence classification is not certified by this model.
 That is a specific remaining primitive boundary, not a reason to weaken guards.
@@ -691,10 +691,10 @@ The native import attribution identified nested OpenTofu =objects.ss= (5.098s),
 and CLOS syntax (1.180s). These intervals overlap. The expansion probe also
 reported a phase-2 generated helper compilation at 0.944s. This located the
 aggregate-facade dependency removed by change 3; it does not make all syntax
-compilation unnecessary. The source preparation still uses the SDK expander
+compilation unnecessary. The source preparation still uses the Gerbil expander
 and evaluates fresh declarations at the required phase boundaries.
 
-=CORE_AWS_GRAPH_TRACE= brackets the actual Graph demand with the existing SDK
+=CORE_AWS_GRAPH_TRACE= brackets the actual Graph demand with the existing Gerbil
 callback probe and restores hooks through =dynamic-wind=, including refusal.
 Each probe interval clears its own rows; startup and the second Graph cannot
 accidentally inherit the first Graph's counters. Acceptance uses the original
@@ -864,7 +864,7 @@ it cannot support per-operation allocation deltas. Heap/live fields remain
 last-GC measurements. This follows the VM's =##process-statistics= definition
 in [[https://github.com/gambit/gambit/blob/master/lib/_kernel.scm][Gambit's kernel]].
 
-The focused =t/observability-test-import-test.ss= checks the actual SDK import
+The focused =t/observability-test-import-test.ss= checks the actual Gerbil import
 closure of the fixture macro, absence of optional printer/type dependencies,
 cumulative allocation and failure cleanup. It passes in the fully source-loaded
 =fdeadfa40= environment with natural exit zero and all native harness markers.
@@ -887,7 +887,7 @@ failure cleanup and rejects the worker's misleading exit-zero harness failure.
 
 Cold imports happen before a runtime Case body. A Case watchdog alone cannot
 attribute macro-expansion retention or charge every live object to a Module.
-Any remaining SDK phase observation must be an adapter of the shared framework
+Any remaining Gerbil phase observation must be an adapter of the shared framework
 with explicit phase boundaries, rather than another AWS-specific memory system.
 Source observations, evaluated declarations and admitted evidence have distinct
 lifetimes; no cache may reuse acceptance across writes, author callbacks or Nix
@@ -896,7 +896,7 @@ effects merely to reduce this footprint.
 ** Private reader expansion lifetime
 
 The reader must distinguish its generated interpreter wrappers from canonical
-SDK contexts. A wrapper is never a compiler input: build projection prepares
+Gerbil contexts. A wrapper is never a compiler input: build projection prepares
 the guarded original source with its original compiler identity. The private
 context still owns live macro bindings, imports, phase tables and runtime values.
 Those are not disposable expansion intermediates.
@@ -906,9 +906,9 @@ The release boundary now requires all of the following:
 1. The normalized context path is an exact member of the current operation's
    generated-wrapper set. A directory prefix or a Core-looking identity is
    insufficient. Shared canonical dependencies are excluded.
-2. The SDK compiler receives the identical =module-context-code= body in phase
+2. The Gerbil compiler receives the identical =module-context-code= body in phase
    zero. An arbitrary expression evaluated in that context is insufficient.
-3. The SDK evaluator successfully returns from that exact compiled program.
+3. The Gerbil evaluator successfully returns from that exact compiled program.
    A completed macro-phase initializer or an import alone is insufficient.
 4. The requested binding returns and the operation's post-evaluation source
    guard passes. A failed guard preserves the bodies for failure inspection.
@@ -919,8 +919,8 @@ The scoped adapter delegates to the existing =current-expander-compile= and
 temporary program/body association is lifecycle tracking, not a result or
 admission cache. After the boundary it releases only the private context's
 =code= reference through Gerbil MOP and clears its own completed-work table.
-It does not alter the SDK module registry, imports, phase bindings, runtime
-promise, initializer results, or canonical library bodies. The SDK source
+It does not alter the Gerbil module registry, imports, phase bindings, runtime
+promise, initializer results, or canonical library bodies. The Gerbil source
 separates =module-context-e= (runtime evaluation) from =module-context-code=
 (expanded compiler body); both initially refer to the body. Merely removing
 one reference before evaluation would neither be safe nor prove reclamation.
@@ -961,7 +961,7 @@ publications, then overflows during Funflow publication. Source-change refusal
 and previous-value retention run before that point; final fresh publication and
 the remaining Schema-transition assertions are still unqualified. The surviving
 parent continues to reject the child harness failure and owns failure cleanup.
-No additional SDK state may be erased to turn this remaining failure into a pass.
+No additional Gerbil state may be erased to turn this remaining failure into a pass.
 The private dependency census stays at 74 contexts in the second epoch; only
 one newly evaluated interface body is released per completed publication there.
 That rules out a second complete private-dependency import as the explanation
@@ -983,8 +983,8 @@ existing fixture macro selects that Profile normally. Native slot refinement
 ~(.run => observe-module-test)~ wraps the original Case method; disabled
 observation installs no source adapter. Enabled observation forwards previous
 observers, accumulates bounded scalar work categories, emits phase receipts,
-and reports final totals on both success and failure. It roots no SDK contexts,
-syntax trees or candidate objects. No new runner or SDK-state cleanup is used.
+and reports final totals on both success and failure. It roots no Gerbil contexts,
+syntax trees or candidate objects. No new runner or Gerbil-state cleanup is used.
 
 A separate invocation of the same atomic file exposes the phase receipts;
 it is not a replacement for the independently passing Ops endpoint:
@@ -1041,7 +1041,7 @@ evaluated bodies (80), guards (47) and stat work (11062) match the passing
 receipt, while wall time is 15921 rather than 8443 milliseconds. The stat-key
 control removes a demonstrated cross-collector duplicate; these end-to-end
 counts do not demonstrate a stat reduction in that particular first Graph.
-This timeout is retained as a failure. Subsequent requalification with SDK
+This timeout is retained as a failure. Subsequent requalification with Gerbil
 process CPU time beside wall time passes the original Ops endpoint with
 natural exit zero, complete Schema transition, stale-evidence refusal and
 failure cleanup. The CPU hook adds no process, sampler, environment switch or

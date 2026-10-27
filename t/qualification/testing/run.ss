@@ -32,7 +32,13 @@
         (eval-syntax '(import (only-in :yuanxu/module-system/source/admission
                                call-with-module-source-operation-measurement)))
         (eval-syntax 'call-with-module-source-operation-measurement))))
-  (def (select-files) (.call (.get exports tests) .for-files (list file)))
+  (def (select-files)
+    ;; Reuse init's complete selected publication for the external integration
+    ;; group. The Gerbil package build has already prepared its native libraries;
+    ;; this resource-policy CLI never starts a compiler or maintains a file list.
+    (if (equal? file "--selected-modules")
+      (.get exports tests)
+      (.call (.get exports tests) .for-files (list file))))
   (defvalues (demand operation-times)
     (if measure-selection (measure-selection select-files)
       (values (select-files) #f)))
@@ -67,7 +73,7 @@
           (report-selection sample warm-times))
         (loop (+ sample 1)))))
   ;; Official package builds own native support. The CLI only guards the
-  ;; selected source and resource envelope around the SDK's gerbil test.
+  ;; selected source and resource envelope around the Gerbil's gerbil test.
   (.def (Test @ (module-test-execution (.get demand source)))
     runtime-options: (list vm-options)
     profile: =>.+

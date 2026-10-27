@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
+        (only-in "./qualification/module-scale/fixture.ss" DeclarationFixture)
         (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot yuanxu-debug-cpu-microseconds)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)

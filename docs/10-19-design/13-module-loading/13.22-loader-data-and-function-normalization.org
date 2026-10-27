@@ -10,7 +10,7 @@ Core cache or dispatcher.
 
 The inspected and exercised gerbil-poo source is PR 13 at
 =85a76738093622aff7e2a3482ad00d035ff38c1e=. The declared Core pin is unchanged.
-The fixed source was compiled with the installed Gerbil; the SDK was not edited.
+The fixed source was compiled with the installed Gerbil; the Gerbil was not edited.
 
 The concrete source chain is:
 

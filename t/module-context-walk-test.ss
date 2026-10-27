@@ -22,13 +22,13 @@
       (visit value)))))
 (def (context-node)
   ;; Same native names deliberately: graph identity is the context, not its id.
-  ;; No SDK registry, import, evaluator, syntax body or runtime promise is edited.
+  ;; No Gerbil registry, import, evaluator, syntax body or runtime promise is edited.
   (make-module-context 'walk/same-name #f "walk/same-name" "context-fixture.ss"))
 (def (wrapped context)
   (make-module-import
     (make-import-set (make-module-export context 'key 0 'key #f) 1 '()) 'key 1 #f))
 (def module-context-walk-test
-  (test-suite "SDK Context traversal correspondence"
+  (test-suite "Gerbil Context traversal correspondence"
     (yuanxu-test-case "bootstrap collection preserves exact contexts behind the name projection"
       (def contexts (make-hash-table-eq))
       (def visits 0)

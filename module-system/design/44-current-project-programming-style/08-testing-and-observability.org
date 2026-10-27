@@ -45,6 +45,12 @@ every byte to that Case alone.
 
 * Test ownership
 
+=gxc= names the Gerbil compiler. =gerbil build= is the official build command;
+=std/make= schedules its dependencies and compiler jobs. =gerbil test= owns
+test discovery and execution through =std/test=. Macro expansion belongs to
+the Gerbil expander, while threads, GC and dynamic loading belong to the Gambit
+runtime. Use these concrete owner names in code, documentation and diagnostics.
+
 Core mechanism qualifications (reader/packager internals, MOP metadata copying,
 source-currentness controls and destructive temporary-tree relocation) belong
 in =core/t/=. A real Module or Scenario used as a fixture does not transfer
@@ -70,14 +76,14 @@ Reuse existing consumer Cases to qualify
 that wiring rather than introducing another compiler qualification suite.
 
 The existing =init.exports.tests.std-make-spec= can be consumed directly by a
-standard =defbuild-script= entry. The SDK owns Make and compilation. TestingScript
+standard =defbuild-script= entry. The Gerbil owns Make and compilation. TestingScript
 only admits an already issued support publication; missing approval requires
 =gerbil build=, and corrupt products/approvals are rejected rather than repaired
 at test execution time. Native CLI policy may use the existing guarded file
 source without associating another Builder: =gerbil test= owns Suite discovery,
 registration and assertions. Its compiled library path precedes source fallback.
 
-Compiler qualifications use versioned SDK packages prepared by the Just build
+Compiler qualifications use versioned Gerbil packages prepared by the Just build
 phase. Only a compiler-qualification Fixture may invoke official =gerbil build=
 inside a Case to prove a real injected compiler failure. This test-only effect
 is not available to business code or TestingScript. Restore mutated source and

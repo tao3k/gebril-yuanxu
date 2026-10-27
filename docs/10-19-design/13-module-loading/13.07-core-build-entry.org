@@ -8,7 +8,7 @@ The library inventory and the init-selected Module inventory have distinct
 owners. =core-spec.ss= is an ordinary native library target list. It neither
 imports =init.ss= nor lists =init= as a target. =init.ss= lazily publishes the
 selected Module specification through =yuanxu.init.exports=. =build.ss= imports
-both and is the existing SDK consumer; removing that import would disconnect
+both and is the existing Gerbil consumer; removing that import would disconnect
 selected role compilation rather than separate the inventories.
 
 #+begin_src scheme
@@ -30,7 +30,7 @@ binding, which remain in the executable entry. The native dispatcher receives
 the admitted spec at this boundary. Library roots do not become module-selection
 declarations: =std-make-spec= projects the selected Graph and checks any overlap
 by source, native identity and options. A conflicting overlap is refused. A
-single SDK invocation may schedule both inventories; separation means distinct
+single Gerbil invocation may schedule both inventories; separation means distinct
 ownership, not a second Builder or two competing native dispatchers.
 
 The init file is a checked build input, not a compiled library output. Its
@@ -48,7 +48,7 @@ and caches its ordinary spec list; repeated equal retained roots reuse that same
 list. Different roots require a new init source epoch. The imported init
 statement must still match its source before first preparation.
 
-Each SDK command reevaluates the spec expression and validates init, selected
+Each Gerbil command reevaluates the spec expression and validates init, selected
 roles, package/prelude inputs, compiler tools, retained sources and build.ss.
 Changed init latches refusal of that selected session. Source restoration does
 not authorize reviving a refused selection.
@@ -58,7 +58,7 @@ not an acceptance receipt. An executor or publisher must call
 init.build-current! after completion and before accepting outputs. The control
 makes that explicit call and verifies rejection after subsequent source drift.
 This check does not roll back filesystem writes or prevent concurrent edits.
-No after-command guarantee is claimed for a user who calls only the SDK main.
+No after-command guarantee is claimed for a user who calls only the Gerbil main.
 
 Currentness guards share source observations only inside one synchronous pure
 validation boundary. The cache ends before compiler effects; a later command
@@ -68,12 +68,12 @@ or acceptance check reads inputs again. It is not a persistent validity cache.
 
 [[file:13.10-automatic-role-projection.org][Automatic role association]] keeps interface.ss declarative. The actual package
 root supplies package metadata. =yuanxu!= owns the selected role projection;
-reader publication and the SDK spec adapter consume its prepared role inventory.
+reader publication and the Gerbil spec adapter consume its prepared role inventory.
 Native compilation redirects selected roles through the same hygienic frames
 without editing author files or adding directory-level package metadata.
 See [[file:13.20-init-owned-role-compilation.org][13.20]] for native compiler integration and qualification.
 
-Building is SDK-imported Module System infrastructure under module-system/;
+Building is Gerbil-imported Module System infrastructure under module-system/;
 it is not selected through its own Module Graph. Its observed public dependency
 closure is sufficient to start preparation from source, without a Core binary
 cache or independent bootstrap.ss. Graph construction remains separate from
@@ -87,7 +87,7 @@ JsonSchema path need separate compiler controls.
 
 * Reproduce with locked public dependencies
 
-Run from Core with the installed Gerbil SDK. Use a new scratch directory and
+Run from Core with the installed Gerbil Gerbil. Use a new scratch directory and
 the revision locked in gerbil.pkg. Paths below are repository-relative or
 computed at execution time. No pre-existing compiled Core cache is used.
 

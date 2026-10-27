@@ -10,7 +10,7 @@ to repeat types/config/func/objects imports was the wrong solution. The manual
 import control in [[file:13.09-user-owned-build-script.org][08]] is superseded by this Core implementation.
 
 The consumer imports init exports at the build entry, never in the library
-inventory. The Core adapter preserves SDK macro syntax and encloses native compilation:
+inventory. The Core adapter preserves Gerbil macro syntax and encloses native compilation:
 
 #+begin_src scheme
 (import (only-in "./module-system/building/script.ss" defbuild-script)
@@ -21,7 +21,7 @@ inventory. The Core adapter preserves SDK macro syntax and encloses native compi
 (defbuild-script (modules-spec core-spec))
 #+end_src
 
-There is no consumer source alias, replacement main, SDK patch or additional
+There is no consumer source alias, replacement main, Gerbil patch or additional
 macro. The original JsonSchema interface.ss is byte-for-byte unchanged in the
 qualification. It contains its Module .def and no imports.
 
@@ -34,20 +34,20 @@ directory does not become another package merely to receive role bindings.
 
 The existing source preparer emits the declaration and ordinary role frames.
 Its admitted =role-sources= inventory serves reader publication and native Make.
-The internal compiler callback uses the SDK's public import parameter, retains
+The internal compiler callback uses the Gerbil's public import parameter, retains
 native identities and original syntax, and cleans its temporary frames. An
 explicit custom prelude remains authoritative. Native Make still owns source
 and product timestamps; plain package compilation grants no publication approval.
 
 Maintained build scripts consume =std-make-spec= through the Core
-=defbuild-script= adapter. It retains the prepared callback; importing the SDK
+=defbuild-script= adapter. It retains the prepared callback; importing the Gerbil
 macro directly and compiling bare role sources does not supply that boundary.
 Explicit =.compile= reuses the same callback inside its existing issuance guard.
 No per-directory metadata, compiler patch or new Builder is needed.
 
 * One inventory, two consumers
 
-The SDK-only role-forms module owns the existing allowed-role catalogue. The
+The Gerbil-only role-forms module owns the existing allowed-role catalogue. The
 admission module imports and re-exports that same binding. Both
 publication-forms and declaration expansion call module-publication-role-imports.
 The former supplies its admitted source snapshot; the latter checks only the
@@ -115,7 +115,7 @@ identity projection without a hard-coded Core prefix.
 The partial JsonSchema-copy controls were retired: a Module copy sharing Core
 IDs while omitting its kernel dependencies is not an isolated package. Private
 source drift and cycle rejection now run against the complete source-only
-snapshot, keeping the source-confinement checks unchanged. The bounded SDK
+snapshot, keeping the source-confinement checks unchanged. The bounded Gerbil
 compile/clean control replaces the retired materialized-tree compile controls;
 it is not evidence for unselected or generated contributions.
 
@@ -162,7 +162,7 @@ just test-file t/module-source-spec-test.ss
 #+end_src
 
 The selected Graph and spec are cached together inside the init closure.
-Every SDK command evaluates the spec expression again, which checks that source
+Every Gerbil command evaluates the spec expression again, which checks that source
 epoch before dispatch. The original macro has no after-command hook: an executor
 or publisher must explicitly call init.build-current! before accepting outputs.
 The test exercises this separate check after command completion and subsequent

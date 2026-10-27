@@ -47,7 +47,7 @@
 (def (canonical-build-inputs inputs)
   (list-sort (lambda (left right) (string<? (car left) (car right))) inputs))
 (def (test-build-publication projection)
-  ;; The SDK accepts directory aliases in GERBIL_PATH. Derive both the key and
+  ;; The Gerbil accepts directory aliases in GERBIL_PATH. Derive both the key and
   ;; the signed output location from one canonical prefix; old alias-spelled
   ;; packets must not collide with a newly selected canonical projection.
   (def prefix (path-normalize (path-expand (gerbil-path))))
@@ -190,7 +190,7 @@
       (string-append "static/" (string-join (string-split (symbol->string identity) #\/) "__")) ".scm")
     libdir))
 
-;; Ordinary SDK completion is distinct from artifact/publication issuance.
+;; Ordinary Gerbil completion is distinct from artifact/publication issuance.
 ;; std/make's static marker alone does not cover interrupted dynamic phases.
 (def (missing-build-products identities libdir)
   (def markers (map (cut static-product-path <> libdir) identities))
@@ -211,7 +211,7 @@
         (filter (lambda (file)
                   (and (string-suffix? ".scm" file) (not (member file markers)))) files)))))
 (def (repair-build-products! identities libdir)
-  ;; Invalidate only the affected unit's owned SDK marker. The installed SDK
+  ;; Invalidate only the affected unit's owned Gerbil marker. The installed Gerbil
   ;; recompiles it; no compiler replacement, output copying or approval occurs.
   (def missing (missing-build-products identities libdir))
   (for-each
@@ -289,7 +289,7 @@
 (def (observed-files identities libdir)
   (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
 
-;; The SDK's aggregate test build may publish a narrower consumer's support.
+;; The Gerbil's aggregate test build may publish a narrower consumer's support.
 ;; This transfers already admitted products, never adopts arbitrary disk files
 ;; or invokes a compiler. Both source closure and native identities must refine
 ;; the producer; its approval/digests remain guards around the transfer.
@@ -299,7 +299,7 @@
                   (.get consumer compiler-identities))
                (andmap (cut member <> (.get producer source-inputs))
                   (.get consumer source-inputs)))
-    (error "test support consumer is outside the admitted SDK build"))
+    (error "test support consumer is outside the admitted Gerbil build"))
   (def source (.get producer output-directory))
   (call-with-build-artifact-issuance consumer (.get consumer output-directory)
     (lambda ()
@@ -321,7 +321,7 @@
   (map (lambda (row)
     (def source (car row))
     (unless (string-prefix? prefix source) (error "compiler output escaped its build directory" source))
-    ;; Preserve ordinary compiler-output metadata during publication. SDK
+    ;; Preserve ordinary compiler-output metadata during publication. Gerbil
     ;; completion files are opaque outputs; only std/make interprets them.
     (def info (file-info source #f))
     (def data (call-with-input-file source read-all-as-u8vector))

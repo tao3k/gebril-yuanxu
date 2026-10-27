@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; SDK limitation controls: a source path is not an independent target identity.
+;;; Gerbil limitation controls: a source path is not an independent target identity.
 (import :std/test
         (only-in :std/make make make-clean)
         (only-in :std/text/pregexp pregexp-match)

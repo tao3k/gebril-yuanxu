@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; This owner deliberately imports only the SDK. It can discover the Core
+;;; This owner deliberately imports only the Gerbil. It can discover the Core
 ;;; build-tool closure before any application Module has been compiled.
 (import (only-in :gerbil/expander core-import-module current-expander-context make-top-context
                  current-expander-module-import expander-context-id
@@ -86,7 +86,7 @@
 ;; Closed Core tools: build projection and ordinary data construction. Published
 ;; Modules remain selected dependencies, never implicit bootstrap capabilities.
 (def bootstrap-roots '(:yuanxu/module-system/building/build-projection
-                      ;; The SDK consumer is part of the compiler trust closure.
+                      ;; The Gerbil consumer is part of the compiler trust closure.
                       :yuanxu/module-system/building/script
                       :yuanxu/module-system/building/configuration-source
                       ;; Shared graph values/algorithms are kernel data APIs.
@@ -124,7 +124,7 @@
                 (for-each-build-module root
                   (lambda (context)
                     ;; A source and compiled interface can share an identity.
-                    ;; Preserve every actual SDK context for callers that need
+                    ;; Preserve every actual Gerbil context for callers that need
                     ;; exact instance membership, rather than only an ID index.
                     (observe-context context)
                     (hash-put! ids (expander-context-id context) context))
@@ -140,7 +140,7 @@
 (def (yuanxu-library-identity? identity)
   (and (library-relative-source identity) #t))
 (def (yuanxu-bootstrap-source-path context core-root)
-  ;; A caller supplies an already SDK-observed context and the trusted Core
+  ;; A caller supplies an already Gerbil-observed context and the trusted Core
   ;; source root. This is the same source projection used by bootstrap itself.
   (let (relative (library-relative-source (expander-context-id context)))
     (and relative (let (source (path-expand relative core-root))

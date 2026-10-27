@@ -53,7 +53,7 @@ The preparation control therefore checks both a module-load marker and an
 actual TestCase marker: neither may exist after =.compile=, and both must
 exist after =.run=.
 
-SDK-only progress and role-name utilities now explicitly use =:gerbil/core=.
+Gerbil-only progress and role-name utilities now explicitly use =:gerbil/core=.
 This changes import cost, not execution policy or wire format. The focused
 support-free run passed in 30.13 seconds, followed by 24.57 seconds in a fresh
 process; neither result qualifies the compiled-support path. That path first
@@ -218,13 +218,13 @@ the user-facing =tests.compile= / =tests.run= interface is unchanged.
 
 The verification environment was rebuilt with local =gxpkg deps --install=
 at declared gerbil-poo =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=, without
-changing the shared installation. In that same prefix, the minimal SDK control
+changing the shared installation. In that same prefix, the minimal Gerbil control
 passed before and after the change: whole wall 18.73 / 7.49 seconds; projection
 3.348 / 0.990 seconds; native Harness 1.086 / 1.130 seconds. This is one local
 pair, not an independently repeated performance result.
 
 The preparation regression passed all three Cases (43.89-second whole wall).
-It observes the SDK's actual =list-modules=, requiring the artifact runtime to
+It observes the Gerbil's actual =list-modules=, requiring the artifact runtime to
 remain absent after spec inspection, =.compile= and =.run= for empty support.
 The nonempty Case supplies a positive module-presence control and retains cold
 compilation, hot/fresh receiver reuse, joint replacement refusal, source-change
@@ -256,7 +256,7 @@ The existing execution still calls the public entry directly:
 
 The next audit found that the discovery import hook remained active *inside*
 compiled =.ssi= libraries. It could redirect their native dependencies to
-package source files, depending on prior SDK imports. This reconstructed
+package source files, depending on prior Gerbil imports. This reconstructed
 library sources as test targets. The hook now delegates the complete compiled
 library import to the captured native importer, matching the existing reader
 boundary. Explicit source files/private helpers retain their original input
@@ -267,7 +267,7 @@ out to manufacture a smaller count.
 The Gitea/PostgreSQL request changed from 35 to two actual support modules.
 Native Make took 8.343 seconds and all eleven existing domain Cases passed
 (51.05-second whole invocation). The preparation controls passed again after
-this boundary change (29.41-second whole invocation), including actual SDK
+this boundary change (29.41-second whole invocation), including actual Gerbil
 module-presence controls, source refusal and publication replacement refusal.
 Those are local source-snapshot results, not full CI or scale qualification.
 
@@ -297,7 +297,7 @@ currentness remains inside those spans. The whole warm invocation still takes
 41--45 seconds, including roughly 26 seconds in the eleven-Case integration
 Harness. Zero compilation closes the duplicate-compilation claim, not the
 remaining latency problem. The first publication is cold only with respect to
-these two support products: SDK/filesystem caches were not flushed. The earlier
+these two support products: Gerbil/filesystem caches were not flushed. The earlier
 35-target result is a diagnostic baseline, not a controlled multi-round speedup
 claim.
 
@@ -374,7 +374,7 @@ lower whole-Harness latency.
 
 The default =just test-file= path and the same pinned private package prefix
 were used, with observation enabled for these rows and two native Make
-workers. Cold means missing selected support products, not flushed system/SDK
+workers. Cold means missing selected support products, not flushed system/Gerbil
 caches. All eleven domain controls passed each time: final child values after
 parent caching, both independent requirements, malformed ports/typos,
 contextual child obligations, omitted/substituted contributions and source
@@ -475,7 +475,7 @@ one private input batch per file *within one fresh object construction*, and
 each located specification retains that batch. Previously it reboxed the same
 input row separately for every field. Specifications, locations and procedures
 remain distinct; parent/child constructions do not share a mutable snapshot
-registry. The existing SDK-expansion regression verifies distinct port/client
+registry. The existing Gerbil-expansion regression verifies distinct port/client
 specifications, one physical read, and no repeated per-source comparison when
 their actual macro-produced batches are enrolled together. This qualifies the
 producer/consumer association, rather than only a synthetic shared-list fixture.
@@ -503,7 +503,7 @@ their named runtime sections). A separate final observation run restored the
 same issuance with =compile-count=0= and =make-seconds=0=: whole wall/user/system
 41.87/33.70/5.52 seconds, Harness 27.666 seconds. All eleven domain Cases and
 all three completion markers passed in every run, with no harness or overflow
-failure. Cold here does not mean flushed SDK, filesystem or Store caches.
+failure. Cold here does not mean flushed Gerbil, filesystem or Store caches.
 The four native support outputs also retained their cold-run modification
 times throughout both warm runs and the attributed run; none was rewritten.
 
@@ -695,7 +695,7 @@ The installed Gerbil source was inspected, without changing it:
   ready/loading registry.
 
 The source version is the installed
-=0.19.20261009110849.1cfb032.patch618d76f9eb72= SDK. Current Yuanxu
+=0.19.20261009110849.1cfb032.patch618d76f9eb72= Gerbil. Current Yuanxu
 =reader.ss= already delegates imports to the captured native importer and
 evaluation to =eval-syntax= / =eval-module=. The remaining cost is not evidence
 that Yuanxu wrote the whole runtime loader again. Its outer layer does create
@@ -804,7 +804,7 @@ The failed attempts are retained as local artifacts, never committed raw logs.
 The final observation pair used frozen implementation sources, the same two
 Make workers and the unchanged default =just test-file= resource limits. A fresh
 private Gerbil prefix supplied an empty support-product/approval namespace and
-reused the exact existing package dependencies; no SDK or shared cache was
+reused the exact existing package dependencies; no Gerbil or shared cache was
 deleted. Both invocations used the installed Gerbil and POO revision
 =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. The explicit library path keeps compiled
 dependencies first and includes this package's source root for normal native
@@ -914,7 +914,7 @@ call. Changing package metadata also refuses. This is a local probe reduction,
 not evidence that the large cold Graph source-read count has been solved.
 
 The resulting frozen-source pair used another fresh private support prefix,
-the same installed SDK/POO revision, two Make workers and the default bounded
+the same installed Gerbil/POO revision, two Make workers and the default bounded
 =just test-file t/gitea-postgresql-publication-test.ss true= entry. Both runs
 completed eleven real Cases with =MODULE-OK=, =HARNESS-OK= and final =OK=.
 
@@ -945,7 +945,7 @@ publication (26.77 s), native build roles (19.24 s) and Contract diagnostics
 (8.40 s). These gates do not replace complete CI or the scale qualification.
 
 This implements the =yuanxu.init.exports.tests= path in
-[[file:13.17-init-exports-and-sdk-consumers.org][13.17]]. The existing test execution owner consumes a demanded native Make
+[[file:13.17-init-exports-and-gerbil-consumers.org][13.17]]. The existing test execution owner consumes a demanded native Make
 specification through Core's existing artifact-issuance boundary, then invokes
 the existing TestingScript/Ops/native Harness path. No Builder object, build
 command dispatcher, worker source file, dependency resolver or result cache is
@@ -1141,7 +1141,7 @@ The implementation is maintained in:
   watchdog bounds discovery/preparation at
   120 seconds; the compiler uses the same pre-import heap flags and native
   =std/make=. An already frozen package/PATH pair launches =gxi= directly;
-  missing initialization still delegates to the SDK's =gerbil env=. Native Make
+  missing initialization still delegates to the Gerbil's =gerbil env=. Native Make
   import and execution are separate =-e= forms. There is no separate Builder or generated worker source file.
 
 The compiler receives native Make data, =srcdir:= and the issuer-owned staging
@@ -1233,7 +1233,7 @@ Retained failed integration attempts exposed a test-file parenthesis error,
 slot/parameter shadowing, invalid generated package metadata, stale optimized
 call-edge metadata in an intermediate qualification overlay, and comparison of
 newly allocated time objects instead of time values. The package fixture now
-uses an interned Symbol, as required by the native SDK package parser; it does
+uses an interned Symbol, as required by the native Gerbil package parser; it does
 not use an uninterned gensym or a string. These repairs did not weaken source
 currentness, compiler failures, Harness admission or budgets. A later guard
 fixture also caught declared-slot self-reference in the Script factory; its
@@ -1305,7 +1305,7 @@ An oversized upstream =build.ss library= selection was stopped, retaining its
 exit-143 record; it includes examples/test support beyond this control's demand.
 An incremental native Make invocation subsequently returned zero even though
 eleven interrupted library targets lacked their dynamic =.o1= output. The
-installed SDK's =gxc-outputs= tests =.ssi= and static =.scm=, not that complete
+installed Gerbil's =gxc-outputs= tests =.ssi= and static =.scm=, not that complete
 runtime artifact set. Only incomplete temporary targets were discarded and
 rebuilt with the existing native Make mechanism before testing. This is why
 Core's existing positive completion/file checks remain necessary: object

@@ -267,7 +267,7 @@ Lab. No compatibility aliases replace them. The remaining utility tests cover
 actual strict-Boolean, stable-duplicate, predicate and association-list behavior;
 the explicit-package-import control still imports a genuine Yuanxu operation.
 
-The fixed upstream source was compiled with the installed Gerbil, without SDK
+The fixed upstream source was compiled with the installed Gerbil, without Gerbil
 source edits. Its first cold library build reached the existing 120-second
 limit. An incremental Make invocation returned success while some dynamic
 phase products were still missing: interface/static outputs from the interrupted

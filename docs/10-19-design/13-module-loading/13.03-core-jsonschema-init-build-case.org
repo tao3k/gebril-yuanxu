@@ -34,7 +34,7 @@ Preparation and deduplication are Module System functions. The top-level
 core-spec.ss and native defbuild-script remain visible in build.ss. Execution
 and publication checks are separate consumer duties. Building is not a selectable Module under
 modules/. init.ss does not load Building through its own selection Graph.
-The SDK/source importer reads the tool implementation first. See [[file:13.07-core-build-entry.org][06]] for
+The Gerbil/source importer reads the tool implementation first. See [[file:13.07-core-build-entry.org][06]] for
 the actual root-entry qualification, separate from the bounded case below.
 
 The implementation in [[file:13.06-init-build-spec-adapter.org][05]] replaces the former combined-graph preparation sketch.
@@ -59,7 +59,7 @@ protocol is involved.
 
 * One source root and stable output identities
 
-The SDK reader gives init.ss the identity core/init. The adapter projects native
+The Gerbil reader gives init.ss the identity core/init. The adapter projects native
 entry filenames relative to that prefix, prepares all selected/retained sources
 under output, and writes matching (package: yuanxu) metadata there. Native
 defbuild-script must use that source root through its ordinary lexical
@@ -87,7 +87,7 @@ no effect authority, Contract evidence or automatic transaction semantics.
 
 The original bounded receipt in 05 excludes root build.ss and root bootstrap.ss; its
 isolated dependency cache contains the separately qualified public gerbil-poo
-tool closure and no Core binaries. The internal SDK-only helper at
+tool closure and no Core binaries. The internal Gerbil-only helper at
 module-system/building/source-closure.ss remains an imported implementation dependency.
 It is not an independent root bootstrap command and is not moved into a
 cyclic build-projection/reader dependency.

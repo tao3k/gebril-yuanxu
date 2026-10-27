@@ -56,6 +56,7 @@
             (def refused (yuanxu-contract-admit (.get scope types scope) candidate #f))
             (check-equal? (yuanxu-validation-evidence-accepted? refused) #f)
             (check-equal? (pair? (.get refused diagnostics)) #t)
+            (check-equal? (TypeError? (.get refused cause)) #t)
             (check-equal? (eq? (.get refused admission-contract) (.get scope types scope)) #t))
           (list (.+ scope (.o defaults: (.o scheam: '())))
                 (.+ scope (.o compile: 7))))

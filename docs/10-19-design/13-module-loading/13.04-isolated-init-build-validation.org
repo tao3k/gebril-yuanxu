@@ -40,7 +40,7 @@ HARNESS and a failed Just recipe. Those earlier markers do not make it a pass.
 
 * What the native positive control proves
 
-The actual SDK macro expands using the caller-context this-source-file identifier.
+The actual Gerbil macro expands using the caller-context this-source-file identifier.
 This executable control confirms that a lexical procedure binding supplies the
 source anchor used by its existing dispatcher:
 
@@ -56,7 +56,7 @@ The probe source exists only in the intended temporary source root. spec returns
 its ordinary native list without compiling; compile creates the expected
 probe.ssi in the explicit library directory; clean removes that same identity.
 No native macro/dispatcher/specification protocol was replaced. This proves the
-SDK lexical pattern for the probe, NOT the real JsonSchema source closure.
+Gerbil lexical pattern for the probe, NOT the real JsonSchema source closure.
 
 * Cold environment and the dependency prerequisite
 
@@ -66,7 +66,7 @@ local changes; this is an explicit qualification override, not validation of the
 gerbil.pkg dependency pin or an exact clean upstream revision.
 
 An all-source attempt first encountered reader rejection of an external public
-dependency source. No source authority rule was broadened. A separate SDK/native
+dependency source. No source authority rule was broadened. A separate Gerbil/native
 make control prepared only the nine gerbil-poo units observed in the tool import
 closure. The following cold-Core process used that dependency cache, not a Core
 cache. No source or binary from an unrelated installed Core package was admitted.
@@ -74,13 +74,13 @@ cache. No source or binary from an unrelated installed Core package was admitted
 Another intermediate attempt mixed a copied source root with a live Core import
 root and was refused. The final attempt uses ONE source-only Core snapshot as
 both source provider and selected root, avoiding that invalid fixture premise.
-The snapshot retains the internal SDK-only helper currently named
+The snapshot retains the internal Gerbil-only helper currently named
 modules/building/bootstrap.ss, but excludes the independent ROOT bootstrap.ss and
 ROOT build.ss. These are different dependencies and must not be conflated.
 
 The final process confirms its imported Core module context is .ss and that its
 isolated GERBIL_PATH has no lib/core before Graph demand. No root bootstrap script
-was executed. Absence of a binary cache does not mean absence of required SDK or
+was executed. Absence of a binary cache does not mean absence of required Gerbil or
 public dependency sources/binaries.
 
 * Typed root cause in the real path
@@ -103,7 +103,7 @@ bootstrap-identity exemption. preparation.ss gives ordinary private-source wrapp
 an import of include-module-body from the declaration module. Applying that generic
 wrapper route to the declaration compiler itself creates a self-dependency.
 
-The corrective boundary to investigate is the existing SDK/compiler tool-source
+The corrective boundary to investigate is the existing Gerbil/compiler tool-source
 route: recognize exact prepared tool identities AND observed source paths before
 rewrapping their compiler bindings. Do not exempt arbitrary Core-looking paths,
 trust stale native contexts, compile all Core in advance, or suppress the cycle.
@@ -137,7 +137,7 @@ before native make; equivalent shared units may be compiled once.
 - Real JsonSchema + retained-root deduplication, compile output identities and clean.
 - Init/private/retained/generated input mutation refusal in that integrated path.
   Assertions exist in the gate, but execution never reached them.
-- Moving the SDK-only helper to its lower-level owner and removing the root
+- Moving the Gerbil-only helper to its lower-level owner and removing the root
   bootstrap entry with no forwarding layer.
 - Atomic build/publication, historical cleanup and large-module performance.
 
@@ -147,7 +147,7 @@ rerun the unchanged failed route until the identified preparation boundary chang
 
 * Reproduction boundary
 
-The focused native setup is staged through the SDK-only snapshot test before
+The focused native setup is staged through the Gerbil-only snapshot test before
 starting the source-only Core process. CORE_QUALIFICATION_ROOT is the actual
 directory used both as the Core source provider and as the init selection root.
 GERBIL_PATH is isolated; its lib contains only the nine prepared public dependency

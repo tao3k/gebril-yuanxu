@@ -7,7 +7,7 @@
                  run-build-artifact-process)
         "./projection")
 (export main)
-;; Standard SDK launchers share this argument surface; issuance stays process-local.
+;; Standard Gerbil launchers share this argument surface; issuance stays process-local.
 (def (main producer-root)
 (def services (.call ServicesFixture .prepare (.o root: producer-root)))
 (def prefix (cadr (call-with-input-file (path-expand "gerbil.pkg" producer-root) read)))

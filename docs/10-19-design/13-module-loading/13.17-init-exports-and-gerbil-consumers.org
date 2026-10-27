@@ -1,4 +1,4 @@
-#+title: 13.17 Init Exports and SDK-Owned Build/Test Consumers
+#+title: 13.17 Init Exports and Gerbil-Owned Build/Test Consumers
 #+language: en
 #+date: [2026-10-22]
 #+property: STATUS implemented-interface
@@ -7,7 +7,7 @@
 
 Init owns the selected source epoch and publishes its projections through one
 POO object, =yuanxu.init.exports=. Build and testing consume those projections using
-the installed Gerbil SDK. They do not independently rediscover Modules or
+the installed Gerbil Gerbil. They do not independently rediscover Modules or
 introduce another Builder, scheduler, freshness cache or test harness.
 
 The experimental =build.ss test-support= dispatcher and its deferred
@@ -28,7 +28,7 @@ single selection, prepared build, test-source cache and guarded reuse:
 | Former binding | Preserved responsibility | Current placement |
 |-----------------+-------------------------+------------------|
 | =init.build-spec= | Native target-list projection, retained roots, currentness | =yuanxu.init.exports.std-make-spec= |
-| =init.build-run= | Before/after native-dispatch boundary | Private SDK spec consumer; no export |
+| =init.build-run= | Before/after native-dispatch boundary | Private Gerbil spec consumer; no export |
 | =init.tests= | Inert executable test/source facade | =yuanxu.init.exports.tests= |
 | =init.test-spec= | Selected test-file list | Through the tests projection |
 | =init.build-current!= | Prepared build epoch check | =yuanxu.init.exports.admit-current= |
@@ -39,7 +39,7 @@ does not require renaming those windows or creating a second module tree.
 The old flat build/test bindings are removed on migration, not retained as
 compatibility aliases alongside the object.
 
-The SDK =std/build-script= already owns =spec=, =compile=, =clean= and native
+The Gerbil =std/build-script= already owns =spec=, =compile=, =clean= and native
 option parsing. =std/make= already owns dependency scheduling, timestamp-based
 rebuild decisions, compilation and backend completion. =gxtest= already owns
 test import, registration and execution. These remain their responsibilities.
@@ -94,7 +94,7 @@ and execution boundaries must retain the existing currentness checks.
 
 * Thin native build consumer
 
-The substantive target consumer is the existing SDK dispatcher, not a new
+The substantive target consumer is the existing Gerbil dispatcher, not a new
 command branch. The current package/prelude bootstrap stays in its owner;
 the following shows the changed consumer portion only:
 
@@ -109,7 +109,7 @@ the following shows the changed consumer portion only:
 #+end_src
 
 The public build entry is the native Make specification. The Core adapter
-preserves SDK dispatch and the prepared projection's currentness and role
+preserves Gerbil dispatch and the prepared projection's currentness and role
 lowering without publishing another execution slot. Ordinary package compilation
 does not issue publication authority; explicit projection =.compile= retains
 that separate issuance boundary. Spec identity and stale-source refusal remain
@@ -159,7 +159,7 @@ The specification must be derived from actual native imports, using the
 existing source-closure projection. Root identity, native package prefix and
 source directory come from the admitted owner, not a hard-coded =yuanxu=
 prefix in a generic test runner. Shared support outputs belong to the existing
-test-only library. The SDK decides whether their sources/dependencies require
+test-only library. The Gerbil decides whether their sources/dependencies require
 recompilation. Output lookup must not let an old helper SSI hide a new source
 dependency. This is an acceptance requirement, not a solved cache assertion.
 
@@ -167,7 +167,7 @@ Installed =gxtest= imports tests in =prepare-harness= before invoking their
 setup callbacks. A =test-setup!= hook is therefore too late to precompile an
 imported Fixture. The proposed hook is in the existing =run-testing-script=
 preparation phase, outside and before the native Harness. This is an explicit
-Core adaptation, not an SDK hook claimed to exist. The design also addresses
+Core adaptation, not an Gerbil hook claimed to exist. The design also addresses
 product-scoped issuance, positive admission and runtime output-directory binding;
 the current graph-only issuance index cannot safely be reused unchanged.
 
@@ -182,7 +182,7 @@ old generation and requires a fresh one.
 Changing the namespace must preserve both independently published port
 requirements, source identity/currentness, child obligations, parent/child
 cache separation and unselected-branch laziness. It must not coalesce checks
-across callbacks or effects. Native MOP replay remains independent of SDK
+across callbacks or effects. Native MOP replay remains independent of Gerbil
 timestamp currentness; neither substitutes for the other.
 
 Keep the existing 120-second preparation bound, 60-second execution idle bound,
@@ -194,7 +194,7 @@ specification is not an admitted plan or a successful build publication.
 
 Use existing projection, namespace, build-entry, Fixture and Gitea/PostgreSQL
 consumer tests. Add a Case to its existing owner only for a new semantic
-boundary; do not repeat SDK cold/hot compilation tests in an independent suite.
+boundary; do not repeat Gerbil cold/hot compilation tests in an independent suite.
 
 Acceptance requires: import and getter laziness, one shared selection identity,
 unchanged native specification semantics, no test targets in production,

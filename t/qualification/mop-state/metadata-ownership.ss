@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Isolation experiment, NOT a production write barrier. SDK raw writes bypass it.
+;;; Isolation experiment, NOT a production write barrier. Gerbil raw writes bypass it.
 (import :clan/poo/object
         (only-in :clan/poo/slot-observation slot-read-receiver slot-read-dependencies)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.))

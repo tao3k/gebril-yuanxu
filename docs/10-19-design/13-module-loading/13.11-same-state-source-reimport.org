@@ -5,7 +5,7 @@
 * Diagnosis: source registration, not lost macro hygiene
 
 The failed source qualification put GERBIL_PATH/lib before the Core source
-package. The installed SDK's core-resolve-library-module-path searches each
+package. The installed Gerbil's core-resolve-library-module-path searches each
 load-path directory in order. Inside each directory it tries the compiled .ssi,
 then .ss, .sld and .scm. It does not search every directory for .ss before
 considering a .scm in an earlier directory.
@@ -37,7 +37,7 @@ Other packages still use their compiled public dependencies before their source
 fallback. The source-only CI launcher declares the same order explicitly:
 
 #+begin_example
-Core source package -> GERBIL_PATH/lib -> dependency source aliases -> SDK
+Core source package -> GERBIL_PATH/lib -> dependency source aliases -> Gerbil
 #+end_example
 
 This is native package registration in our launcher, not a replacement resolver,
@@ -56,7 +56,7 @@ is no global ban on .scm and no deletion of unrelated cache files.
 
 * Regression with original artifacts and one GERBIL_PATH
 
-[[file:../../../t/module-build-reimport-test.ss][The SDK-only regression entry]] imports Core inside its test cases, so a broken
+[[file:../../../t/module-build-reimport-test.ss][The Gerbil-only regression entry]] imports Core inside its test cases, so a broken
 source import is a test failure rather than an unobserved test-module bootstrap.
 It checks:
 
@@ -69,7 +69,7 @@ It checks:
 3. The unchanged user-owned build.ss generates its spec, reuses the same spec
    list within the process, compiles the bounded real JsonSchema closure, and
    cleans its expected output identities. Explicit currentness checks remain
-   outside the SDK main.
+   outside the Gerbil main.
 4. A second new process repeats import, spec, compile and clean with the same
    sources and GERBIL_PATH. The loader residue remains present. No directory
    swap, artifact quarantine, manual deletion or dependency rebuild separates

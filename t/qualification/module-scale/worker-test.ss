@@ -35,7 +35,7 @@
         (when (and (eq? category 'file-read)
                    (string-suffix? "/poo-clos/classes.ss" (caddr key)))
           (set! class-construction-reads (+ class-construction-reads amount)))
-        ;; This fixture imports only the maintained SDK and its own roles.
+        ;; This fixture imports only the maintained Gerbil and its own roles.
         ;; Fail at an unexpected fallback rather than spending the full
         ;; thousand-entry budget proving the same wrong import classification.
         ;; A warm known import need not import new code. Completion of an

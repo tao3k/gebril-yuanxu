@@ -19,7 +19,7 @@ compile-slot-read-costs directory file:
     log="$(mktemp "$CORE_REPLAY_ROOT/cost-compile-XXXXXX.log")"
     GERBIL_LOADPATH="$CORE_REPLAY_ROOT/lib:$CORE_REPLAY_ROOT/source:$(pwd):$HOME/.gerbil/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gxi {{ gerbil_test_runtime_options }} t/qualification/slot-read-replay/compile.ss > "$log" 2>&1
 
-# Process-local compiler lowering; production SDK/source untouched.
+# Process-local compiler lowering; production Gerbil/source untouched.
 compile-mop-store-boundary directory:
     #!/usr/bin/env bash
     set -euo pipefail

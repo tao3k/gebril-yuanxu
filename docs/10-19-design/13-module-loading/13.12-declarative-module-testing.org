@@ -382,7 +382,7 @@ surviving parent's responsibility.
 
 The focused =t/module-case-profile-test.ss= gate uses the same execution factory
 as init and starts the original harness in separate off/on processes. Its child
-probe reads the SDK module registry without importing the adapter, checks
+probe reads the Gerbil module registry without importing the adapter, checks
 discovery-time laziness, automatic Case association and fixture cleanup. The
 existing TestingScript tests retain before/after source-change rejection.
 
@@ -400,7 +400,7 @@ selection; it is not required for ordinary module tests.
 
 The Case owns a table of at most 64 symbolic work categories, scoped to one
 invocation. =yuanxu-test-observe= increments a natural total; an explicit zero
-queries that total. Compound source keys contribute only their category: SDK
+queries that total. Compound source keys contribute only their category: Gerbil
 contexts, syntax and candidate objects never become table keys or values.
 The existing =check-seconds= event is a duration, not a work count; the adapter
 converts finite nonnegative seconds into explicitly named =check-microseconds=
@@ -412,7 +412,7 @@ both return and failure; fixture cleanup and observer parameter restoration
 retain their existing ownership.
 
 Phase checkpoints preserve the existing typed memory receipt and also report
-work totals. The SDK process CPU clock is reported beside wall-clock elapsed
+work totals. The Gerbil process CPU clock is reported beside wall-clock elapsed
 time; it includes process threads and is not thread-local accounting. Neither
 clock includes pre-Case cold imports. Memory output includes policy identity, raw VM allocation and
 last-GC movable/still/live bytes. A Case latches allocation validity to false
@@ -582,7 +582,7 @@ The selected source retains the same init-owned root and automatic guard.
 Importing init or obtaining =init.tests= does not resolve the Graph or enumerate
 test directories. First source-field demand discovers only the requested owners.
 It reuses =selection.prepare-publication= and its existing reader/cache for those
-owners: role source validity and SDK-observed private/compiler dependencies remain
+owners: role source validity and Gerbil-observed private/compiler dependencies remain
 guarded. It does not resolve unrelated selected publications, satisfy their
 Module/Feature requirements, or admit the complete configuration Graph.
 An explicit =tests.selected-graph= demand still returns the original selection's
@@ -1062,11 +1062,11 @@ Default observation stays off. =just test-file <path> true= uses gxtest's existi
 environment variable. TestingScript obtains the existing selected Case Profile,
 so nested execution inherits the native feature without author-side Profiles.
 
-Two process lifetime defects were found: SDK =env= spawns a VM that can outlive
+Two process lifetime defects were found: Gerbil =env= spawns a VM that can outlive
 its dispatcher, and =timeout --foreground= does not supervise descendants as a
 batch process group. The Justfile now invokes gxtest directly, whose public
 entry already sets up package context. Ops freezes an existing package root's
-bin priority into the request, and preserves SDK discovery only when context is
+bin priority into the request, and preserves Gerbil discovery only when context is
 missing. Neither path changes the standard library. Ops batch deadlines own a
 group; cancellation kills that owned group before std/run-process's wait in its
 finally clause. An ESRCH race means the group has already exited; other signal
@@ -1187,7 +1187,7 @@ local Nix daemon; that permission failure is not a Contract rejection. With
 daemon access, the combined Case still exceeded its budget. Separating discovery
 and execution into atomic Cases retained both 60-second Case/worker limits and
 the 120-second outer limit, but did not produce a complete accepted run. The
-outer command returned 124; its SDK-spawned test worker and Ops worker survived
+outer command returned 124; its Gerbil-spawned test worker and Ops worker survived
 the outer deadline and were explicitly terminated. The last observed AWS effect
 was Nix evaluation for =packages-new=, not a completed final publication.
 Forced termination does not qualify fixture cleanup. The earlier isolated
@@ -1226,7 +1226,7 @@ unchanged sibling guard remains valid. Duplicate/disabled owners refuse;
 explicit owner order is retained. These source controls reuse the actual
 projection over labeled inert publication fixtures, not real domain admission.
 
-The independent compiled-import qualification still uses its SDK source-copy
+The independent compiled-import qualification still uses its Gerbil source-copy
 fixture. It is not a module test manifest and is not folded into this selector.
 Its unused selection dispatcher copy and environment-controlled failure suite
 have been removed. The older extracted control file below is no longer an
@@ -1252,7 +1252,7 @@ No timeout increase, full build, extra execution wrapper or source guard
 composition was introduced for the module entry.
 
 The independent =just test-file t/module-testing-compiled-test.ss= regression
-also passed after the shared SDK fixture cleanup. Its three positive compiled
+also passed after the shared Gerbil fixture cleanup. Its three positive compiled
 units, expected read-only assignment refusal and subsequent native import/run
 controls retain their own source/identity boundaries. This is focused compiler
 qualification, not a full Core build or module qualification file manifest.
@@ -1380,7 +1380,7 @@ The execution-library probe is absent after importing init, producing the real
 build spec and discovering suites; explicit execution makes it present. The
 selected business scope probe stays absent until explicit =scope= demand. This
 proves the runtime non-evaluation boundary in these source-only processes; it
-does not quantify every compiler-context allocation or every shared SDK import.
+does not quantify every compiler-context allocation or every shared Gerbil import.
 The final namespace/deferred-execution revision passed
 =t/module-testing-test.ss=, =t/module-testing-isolation-test.ss=,
 =t/module-directory-test.ss= and =t/testing-script-test.ss= through the existing heap-fenced Just entrypoint,

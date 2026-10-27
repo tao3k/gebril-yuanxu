@@ -23,8 +23,8 @@
         (else 0)))
 
 ;; Identity union of actual read bodies and already allocated receiver-local
-;; metadata/specification payload. POO referents, SDK contexts, type descriptors
-;; and GC tables are frontiers. Never scan the SDK through a captured closure.
+;; metadata/specification payload. POO referents, Gerbil contexts, type descriptors
+;; and GC tables are frontiers. Never scan the Gerbil through a captured closure.
 ;; This is a bounded BODY-byte census, not dominator/exclusive heap attribution.
 (def (payload-bytes reads owners)
   (def seen (make-hash-table-eq))
@@ -82,7 +82,7 @@
               (when (< index (##closure-length value))
                 (walk (##closure-ref value index)) (loop (1+ index))))
             (hash-put! frontiers value #t)))
-         ;; Interface method tables are shared SDK implementation, not this
+         ;; Interface method tables are shared Gerbil implementation, not this
          ;; receiver's payload. Follow its actual backing object only.
          ((interface-instance? value) (walk (interface-instance-object value)))
          ((##structure? value)

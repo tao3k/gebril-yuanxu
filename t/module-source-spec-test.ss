@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Source-only Core qualification: direct source targets, unchanged SDK macro.
+;;; Source-only Core qualification: direct source targets, unchanged Gerbil macro.
 (import :std/test
         (only-in :std/source this-source-file)
         (only-in :std/error Error? Error-message)
@@ -75,10 +75,10 @@
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
           (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
           (run "compile")
-          ;; This acceptance check is explicit, outside the SDK main.
+          ;; This acceptance check is explicit, outside the Gerbil main.
           (current!)
           (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
-          ;; An ordinary SDK package build must not mint a module-publication
+          ;; An ordinary Gerbil package build must not mint a module-publication
           ;; receipt. Explicit graph compilation is tested by publication cases.
           (check-equal?
             (filter (cut string-prefix? ".yuanxu-build-issuance-" <>)
@@ -91,13 +91,13 @@
           (for-each (lambda (name)
                       (check-equal? (file-exists?
                         (compiled-path root lib name)) #f)) names)
-          ;; The spec expression is evaluated for each SDK invocation.
+          ;; The spec expression is evaluated for each Gerbil invocation.
           (for-each
             (lambda (control)
               (change-source (path-expand (car control) root)
                 (lambda ()
                   (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t)
-                  ;; Guarded SDK invocation rejects before native compilation.
+                  ;; Guarded Gerbil invocation rejects before native compilation.
                   (check-equal? (rejects? (cdr control) (lambda () (run "compile"))) #t))))
             '(("build.ss" . "stale selected build input")
               ("core-spec.ss" . "stale prepared build source")

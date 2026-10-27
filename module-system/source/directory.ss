@@ -259,7 +259,7 @@
                      (make-directory-source value
                        (module-source-object-policy (list value) reject-protocols?: #f)))
                    value)))
-             ;; An explicit binding is authoritative. Never probe a local or SDK
+             ;; An explicit binding is authoritative. Never probe a local or Gerbil
              ;; fallback when it is absent, disabled, stale or malformed.
              (if origin
                (publish origin (path-directory (path-strip-trailing-directory-separator origin)))

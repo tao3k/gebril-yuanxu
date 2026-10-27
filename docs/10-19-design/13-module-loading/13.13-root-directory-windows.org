@@ -110,7 +110,7 @@ The unchanged build entry consumes an ordinary standard-library spec:
 (defbuild-script (init.build-spec core-spec))
 #+end_src
 
-Compiler tools from an installed SDK remain guarded inputs, but are not compiled
+Compiler tools from an installed Gerbil remain guarded inputs, but are not compiled
 again as contribution-package targets. Locally owned Core compiler sources still
 participate in the Core build closure. This distinction is ownership filtering,
 not an exemption from source-currentness checks.
@@ -127,11 +127,11 @@ they do not certify AWS provider behavior or a general compilation benchmark.
 The seven focused directory, window, configuration-build, build-Graph, root
 testing, selected-package and real JsonSchema-publication controls passed through
 the heap-fenced =just test-file= entry with MODULE-OK,
-HARNESS-OK, final OK and natural exit zero. The original SDK and the repository's
+HARNESS-OK, final OK and natural exit zero. The original Gerbil and the repository's
 pinned POO dependency were used; no timeout or heap allowance was increased.
-The contribution build control initially expected installed SDK tools as build
+The contribution build control initially expected installed Gerbil tools as build
 targets. Its revised assertions require both their absence from contribution
-targets and actual SDK source reads during compiler-current checking.
+targets and actual Gerbil source reads during compiler-current checking.
 
 The mounted-root AWS integration was also attempted. It hit the unchanged
 60-second Ops deadline after parent publication, Context denial and old-source

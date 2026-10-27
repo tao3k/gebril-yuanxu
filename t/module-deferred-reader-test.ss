@@ -2,7 +2,7 @@
 ;;; Integration boundary: actual native role expansion and initializer laziness.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
+        (only-in "./qualification/module-scale/fixture.ss" DeclarationFixture)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer))
 (export module-deferred-reader-test)

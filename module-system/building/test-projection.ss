@@ -112,7 +112,7 @@
     (error "test owners must be distinct eligible members of the selection" owners order))
   (def selected-owners (if owners owners order))
   ;; Reuse the selection's publication/source cache, including the reader's
-  ;; SDK-observed private and compiler dependencies. Do not resolve a second
+  ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
   ;; Graph or link a business scope. A test owner still needs valid sources;
   ;; dependency/feature composition is admitted only on explicit Graph demand.
   (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners)

@@ -64,7 +64,7 @@ survive the generated frame.
 The reader consumes the prepared forms. The native build must consume their
 corresponding materialization through the existing selected build projection.
 Returning a native target list while compiling the original bare files is not
-that correspondence. Installing directory metadata or modifying the SDK's
+that correspondence. Installing directory metadata or modifying the Gerbil's
 private module registry is not an acceptable substitute.
 
 * Native layout and reuse obligations
@@ -105,13 +105,13 @@ relabel those failures as successes.
 
 * Native compiler integration
 
-The SDK spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
+The Gerbil spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
 callback on the prepared projection. Maintained package entries consume =std-make-spec=
-through the Core SDK macro adapter. Internally this retains ordinary SDK
+through the Core Gerbil macro adapter. Internally this retains ordinary Gerbil
 incrementality without granting publication approval.
 The removed public dispatch slot is not retained as a compatibility alias;
 explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
-binds the SDK's public =current-expander-module-import= only for that action.
+binds the Gerbil's public =current-expander-module-import= only for that action.
 Both the Make coordinator and compiler driver consult this parameter. Original
 native source targets, compiler identities and Make dependency timestamps are
 unchanged. No compiler source, private registry, new Builder or persistent cache
@@ -130,11 +130,11 @@ its native =.def/ctx= lowering for non-interface roles. The no-directory-metadat
 control exposed an unbound exported object because the native reader had already
 resolved the prelude to a path; comparing that value with a source symbol never
 selected the role prelude. Classification now uses actual native context identity
-or the SDK-resolved library path, without guessing from basenames. Explicit role imports retain authority over weak
+or the Gerbil-resolved library path, without guessing from basenames. Explicit role imports retain authority over weak
 prelude bindings. Unrecognized custom preludes are not replaced.
 
 The qualification also retained the strict refusal of old unissued =.o2= files.
-The validation prefix is cleaned through the installed SDK's ordinary =clean=
+The validation prefix is cleaned through the installed Gerbil's ordinary =clean=
 entry, not by accepting those files or widening issuance. A compiled-source
 pass alone does not count as successful publication.
 
@@ -167,7 +167,7 @@ artifacts; maintained source records the controls and bounded conclusions.
 
 On 2026-10-23 the installed Gerbil =1cfb032= and pinned POO =80b590b= compiled
 all 237 Core targets in a newly created prefix containing only the POO dependency
-and its SDK manifest. Before invocation that prefix contained no =lib/yuanxu=.
+and its Gerbil manifest. Before invocation that prefix contained no =lib/yuanxu=.
 The normal =just build= completed in approximately 158 seconds with two native
 workers, under the unchanged 600-second limit. This is a local cold-build
 receipt, not a CI result or an end-to-end performance comparison.
@@ -175,7 +175,7 @@ receipt, not a CI result or an end-to-end performance comparison.
 The maintained default test entry =just test-file= is used serially. Successful
 receipts require =MODULE-OK=, =HARNESS-OK= and final =OK=, and reject failure
 markers even inside quoted child output. The role Make control compares numeric
-modification timestamps rather than identities of opaque SDK time objects.
+modification timestamps rather than identities of opaque Gerbil time objects.
 The optional source-only qualification has also been updated to mutate root
 package/prelude inputs; it no longer assumes a directory package file exists.
 
@@ -186,17 +186,17 @@ Parser, Ascent and Orgize actions completed: loading the compiled Reader tried
 to physically normalize its embedded compiler sandbox path, which Bazel had
 already removed. The failure occurred before publication admission.
 
-The Reader now derives its two lexical parent directories with SDK path
+The Reader now derives its two lexical parent directories with Gerbil path
 operations. It neither resolves a deleted path at module initialization nor
 retains unresolved =..= components. The latter are still refused by the existing
 owner-confinement gate; that negative result was retained during qualification.
 The existing bootstrap source projection checks actual file presence before
-projecting sources. Compiled SDK contexts retain their existing native runtime
+projecting sources. Compiled Gerbil contexts retain their existing native runtime
 trust boundary. No current-directory fallback, substitute source root or relaxed
 source check is introduced. Selected Module/configuration inputs retain their
 own complete currentness checks independently of the compiler's build directory.
 
-* Declarative SDK consumer
+* Declarative Gerbil consumer
 
 The maintained build entry has no user dispatcher:
 
@@ -207,7 +207,7 @@ The maintained build entry has no user dispatcher:
 
 =defbuild-script= is imported from =module-system/building/script.ss=. It is a
 thin hygienic adapter over the installed =std/build-script= macro, not a copy
-of the SDK command parser or Make scheduler. The unmodified SDK macro has no
+of the Gerbil command parser or Make scheduler. The unmodified Gerbil macro has no
 around-command hook, so importing it directly would lose selected role guards.
 The adapter evaluates the spec and keyword values once, retains the caller's
 source location, and delegates spec/compile/clean/meta/options to that macro.
@@ -217,7 +217,7 @@ projection owner through a dynamically scoped observer. The consumer verifies
 that the returned list is the exact produced spec, then delegates to the existing
 checked dispatch. This association ends with the synchronous invocation. There
 is no registry, persistent cache, new Builder, approval cache or cloned issuer.
-Ordinary SDK-only specs retain ordinary dispatch. Compilation uses the existing
+Ordinary Gerbil-only specs retain ordinary dispatch. Compilation uses the existing
 role callback and before/after currentness; explicit =.compile= keeps issuance.
 The adapter itself is included in the existing compiler-tool source closure.
 
@@ -276,7 +276,7 @@ Final-source cold qualification used a newly created prefix containing only the
 fixed POO dependency and its native package manifest, with no Yuanxu artifacts.
 Default =just build= completed all 237 targets in 213.12 seconds under the
 unchanged 600-second bound, using two native workers. Both selected JsonSchema
-and Funflow interface products and the Core SDK adapter product were present;
+and Funflow interface products and the Core Gerbil adapter product were present;
 =lib/yuanxu/init.ssi= and =init~0.o1= were absent. No directory-level
 =modules/gerbil.pkg= or =scenarios/gerbil.pkg= was restored. The earlier
 native-library-only attempt is not counted in this final qualification.
@@ -289,7 +289,7 @@ not yet aligned in that receipt; no cache shortcut or source check was disabled.
 
 * Native Make identity and product alignment
 
-The installed SDK's =std/make= computes =gxc:= product names using its invocation
+The installed Gerbil's =std/make= computes =gxc:= product names using its invocation
 =prefix:= and source target, while the compiler writes products using the
 source's declared module identity. The root package prefix =yuanxu= and target
 =prelude= therefore checked =lib/yuanxu/prelude.ssi= and
@@ -300,18 +300,18 @@ new-process Make invocation to recompile the language target.
 
 The prepared projection now derives native Make specifications from the same
 admitted compiler identities. The independently bootstrapped prelude uses the
-SDK's =prefix: "tao3k/yuanxu"=; ordinary package targets retain the package's
+Gerbil's =prefix: "tao3k/yuanxu"=; ordinary package targets retain the package's
 native prefix. Source-path confinement and the existing explicit prelude
 identity exception remain unchanged. The existing compile/clean lifecycle
 boundary invokes those specifications inside one guarded projection. Each
-invocation forwards the original arguments unchanged to the SDK macro. There
+invocation forwards the original arguments unchanged to the Gerbil macro. There
 is no additional command parser, scheduler, alias product or approval cache.
-=spec= and =meta= retain the original flat SDK result. =gerbil clean= remains
-the public SDK command, delegated through =gxpkg clean= and the package script.
+=spec= and =meta= retain the original flat Gerbil result. =gerbil clean= remains
+the public Gerbil command, delegated through =gxpkg clean= and the package script.
 
 Before/after source checks still bracket the complete compiler action. The
 ordinary package build cannot mint publication approval; explicit issued
-compilation retains its existing authority. An explicit SDK prefix which
+compilation retains its existing authority. An explicit Gerbil prefix which
 conflicts with the projection's foreign identity is rejected rather than
 silently overridden.
 
@@ -533,7 +533,7 @@ Historical frozen experiments retain their own source snapshots and receipts.
 The exact-head CI exposed a missing bootstrap-library association after the Port
 move. The temporary source gateway correctly refused a maintained Scenario's
 import of =object-types/ports.ss=: the file was outside the Scenario package and
-absent from the Reader's SDK-observed Core context catalog. Shared scalar Types
+absent from the Reader's Gerbil-observed Core context catalog. Shared scalar Types
 now join the existing =bootstrap-roots= catalog, so their exact native context,
 source identity and transitive observations use the same admission path as Core
 Contracts. This does not admit arbitrary external Yuanxu paths or selected Module
@@ -552,10 +552,10 @@ The package entry continues to expose the declarative spec consumer:
   libdir: (current-build-output-directory))
 #+end_src
 
-The init-owned consumer now passes the exact prepared spec to its private SDK
+The init-owned consumer now passes the exact prepared spec to its private Gerbil
 execution function. It no longer calls =build-spec= again during that handoff.
 This is not reuse of an admission verdict: =.with-compiler-inputs= still checks
-currentness before role materialization/SDK execution and again after return;
+currentness before role materialization/Gerbil execution and again after return;
 redirected imports retain their before/after checks. Explicit =.compile= retains
 the issuance boundary. This change adds no public build entry or Builder;
 =std-make-spec= remains the package author's declarative entry.
@@ -621,7 +621,7 @@ is made, and the memory budget/complete read dependencies remain unchanged.
 * Spec-only public build entry
 
 The init export contains =std-make-spec=, =admit-current= and the inert =tests=
-facade. It does not publish a second SDK command dispatcher. Package consumers
+facade. It does not publish a second Gerbil command dispatcher. Package consumers
 keep the existing native build declaration:
 
 #+begin_src scheme
@@ -632,7 +632,7 @@ keep the existing native build declaration:
 The internal consumer accepts only the exact specification produced during its
 current preparation. Copying the list loses its owner and is refused. Role
 lowering still checks currentness before compiler entry and after return;
-clean still invalidates issued artifacts before SDK cleanup. The adapter does
+clean still invalidates issued artifacts before Gerbil cleanup. The adapter does
 not cache an admission verdict or run test targets in the production phase.
 Explicit projection =.compile= remains the artifact-issuance boundary. A native
 package callback that returns without producing compiler outputs cannot satisfy
@@ -641,7 +641,7 @@ authority. These checks share the original projection, not a replacement Builder
 
 The graph regression checks absence of the removed slot using POO's native
 =NoApplicableMethod?= exception, exact spec identity, copied-spec rejection,
-missing-output rejection at =.compile= and stale-source rejection before SDK
+missing-output rejection at =.compile= and stale-source rejection before Gerbil
 handoff. The source-only consumer qualification invokes its generated =main=
 for spec/compile/clean and no longer obtains an execution closure from init.
 

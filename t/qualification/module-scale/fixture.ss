@@ -91,7 +91,7 @@
      (.def (Observed @ tests)
        execution.profile.emit?: #t
        ;; Capacity is checked with the normal policy, not the optional full
-       ;; read-token/SDK-context census. Worker assertions and source-event
+       ;; read-token/Gerbil-context census. Worker assertions and source-event
        ;; counters stay active; its explicit capacity policy owns the budget.
        execution.log: (.get fixture log))
      (check-equal? (eq? (.get Observed source) (.get tests source)) #t)

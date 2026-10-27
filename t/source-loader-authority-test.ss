@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native loader SOURCE compiled before procedure capture; no SDK rebinding.
+;;; Native loader SOURCE compiled before procedure capture; no Gerbil rebinding.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
@@ -88,7 +88,7 @@
         (expect-refusal "saved-hot-changed-record" saved)
         (expect-refusal "direct-hot-changed-record"
           yuanxu/t/qualification/mop-state/source-loader#load-module)
-        ;; Same-path reload is itself a cached early-return path in the SDK.
+        ;; Same-path reload is itself a cached early-return path in the Gerbil.
         (expect-refusal "reload-hot-changed-record"
           yuanxu/t/qualification/mop-state/source-loader#reload-module!))
       (lambda () (write-bytes record original-record) (write-bytes binary original-binary)))
@@ -112,7 +112,7 @@
     (check-equal? (.get Parent port) 5432)
     (check-equal? (.get Hot port) 5432)
     (check-equal? (.get Cold port) 5432)
-    (displayln "SOURCE-LOADER: saved source-built entry, direct entry and reload checked; SDK globals untouched"))))
+    (displayln "SOURCE-LOADER: saved source-built entry, direct entry and reload checked; Gerbil globals untouched"))))
 (def (test-cleanup!)
   (deactivate-authority!)
   (set-load-path! original-path)

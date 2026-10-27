@@ -113,13 +113,13 @@
             ("namespace" ";; comment\nnamespace: explicit\n(def value 7) (export value)" #f)
             ("prelude" "prelude: :gerbil/core\n(def value 7) (export value)" #f)
             ("package" "package: #f\n(def value 7) (export value)" #f)))
-         ;; This SDK rejects an explicit false namespace under gerbil.pkg.
+         ;; This Gerbil rejects an explicit false namespace under gerbil.pkg.
          ;; Preparation must preserve that native refusal rather than normalize it.
          (def path (path-expand "namespace-false.ss" root))
          (write-file path "namespace: #f\n(def value 7) (export value)")
          (check-exception (core-read-module/sexp path) syntax-error?)
          (check-exception (yuanxu-prepare-module-retained-source path void) syntax-error?))))
-    (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
+    (yuanxu-test-case "Gerbil dispatch receives the admitted spec and rejects stale input first"
       (with-source
        (lambda (root _prefix)
          (def declaration '(yuanxu! :load-modules "./modules" mode: explicit :core (schema)))
@@ -132,13 +132,13 @@
          (check-exception (.get exports std-make-run) NoApplicableMethod?)
          (def expected (spec '()))
          (def calls 0)
-         ;; Observe the ordinary SDK callback without compiling fixture files.
+         ;; Observe the ordinary Gerbil callback without compiling fixture files.
          (def (receive admitted arguments)
            (set! calls (1+ calls))
            (check-equal? (eq? admitted expected) #t)
            (check-equal? arguments '("spec"))
            'forwarded)
-         ;; The declarative SDK adapter obtains the same owner from the spec
+         ;; The declarative Gerbil adapter obtains the same owner from the spec
          ;; expression, with no user-maintained dispatcher or public registry.
          (check-equal?
            (call-with-init-build-spec (cut spec '()) receive '("spec") (path-expand "lib" root))
@@ -165,7 +165,7 @@
            (.call projection .compile (path-expand "lib" root)
              (cut uncompiled expected '("compile"))) error?)
          (check-equal? compile-calls 1)
-         ;; The SDK entry must enforce the same complete-product boundary;
+         ;; The Gerbil entry must enforce the same complete-product boundary;
          ;; a callback return value cannot authorize an absent runtime.
          (check-exception
            (call-with-init-build-spec (cut spec '()) uncompiled '("compile")
@@ -328,7 +328,7 @@
              (check-equal? (object? observed) #t)
              (check-equal? (eq? (.get entry input) observed) #t))
            (let (names (map symbol->string (entry-names graph)))
-             ;; Contribution targets belong to the contribution package. SDK
+             ;; Contribution targets belong to the contribution package. Gerbil
              ;; tools stay guarded, but must not become its compiler targets.
              (check-equal? (length (filter (lambda (name)
                                             (string-prefix? (string-append prefix "/") name)) names)) 10)
