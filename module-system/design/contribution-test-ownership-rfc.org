@@ -79,3 +79,25 @@ Suite bytes and compiler support remain distinct native owners. A receipt may
 combine their original observations through =unique-build-inputs=; admission
 still calls both original guards. Summary hashes do not authorize compilation
 or replace the Nix Source's transitive currentness checks.
+
+* Native compiled-interface observations
+
+A native imported =.ssi= is a compiler interface, not a Module source role.
+Bazel projects dependency Tree Artifact files as symlinks in its sandbox. The
+interface observation follows that native import path only when its target is a
+regular file; =module-source-read= and owner-relative =.ss= confinement retain
+their strict symlink refusal.
+
+The original observation pairs retain the imported path and original bytes.
+Each live test projection additionally guards the alias kind and followed
+filesystem device/inode before compilation, publication restore and execution.
+Equal bytes at another target do not replace an interface within that source
+epoch. This filesystem identity is a live guard, not a persistent identity
+scheme across machines or process restarts. Existing publication handoffs bind
+the original path/byte observations and require the fresh projection's guard.
+
+The native build-graph Case preserves positive import observations and negative
+controls for same-byte retargeting, byte tampering, disappearance, directory
+targets and source-role symlinks, followed by restoration of the original input.
+Actual sandbox compilation and native test execution remain separate consumer
+gates; an observation-component Case alone does not qualify those consumers.

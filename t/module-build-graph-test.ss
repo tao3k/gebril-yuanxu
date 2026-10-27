@@ -15,7 +15,7 @@
         (only-in :yuanxu/feature-system/model feature-descriptor)
         (only-in :yuanxu/feature-system/capability-model feature-projection-request)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
+        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read module-compiler-interface-source current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source
@@ -110,6 +110,55 @@
             (lambda () (write-file helper-path "(export Helper)\n")))
           ((.get source admit-current))
           (check-equal? (.get source source-inputs) original-inputs))))
+
+    (yuanxu-test-case "native interface aliases preserve target identity and original bytes"
+      (call-with-temporary-directory "native-interface-alias"
+        (lambda (root)
+          (def original (path-expand "original.ssi" root))
+          (def replacement (path-expand "replacement.ssi" root))
+          (def alias (path-expand "import.ssi" root))
+          (def source-alias (path-expand "role.ss" root))
+          (def text "(export InterfaceValue)\n")
+          (write-file original text)
+          (write-file replacement text)
+          (create-symbolic-link original alias)
+          (create-symbolic-link original source-alias)
+          ;; Native interfaces follow the importer's alias; source-role reads
+          ;; remain strict, including paths whose suffix happens to be .ssi.
+          (check-exception (module-source-read alias) error?)
+          (check-exception (module-source-read source-alias) error?)
+          (check-exception (module-compiler-interface-source source-alias) error?)
+          (def input (module-compiler-interface-source alias))
+          (def observations (.get input source-inputs))
+          (check-equal? observations (list (cons alias text)))
+          ((.get input admit-current))
+          (def (retarget! target)
+            (delete-file alias)
+            (create-symbolic-link target alias))
+          (dynamic-wind
+            (lambda () (retarget! replacement))
+            (lambda ()
+              ;; Equal bytes alone cannot detect replacement of an import.
+              (module-source-admit-current! observations)
+              (check-exception ((.get input admit-current)) error?))
+            (lambda () (retarget! original)))
+          ((.get input admit-current))
+          (dynamic-wind
+            (lambda () (write-file original "(export Tampered)\n"))
+            (lambda () (check-exception ((.get input admit-current)) error?))
+            (lambda () (write-file original text)))
+          ((.get input admit-current))
+          (dynamic-wind
+            (lambda () (delete-file alias))
+            (lambda () (check-exception ((.get input admit-current)) error?))
+            (lambda () (create-symbolic-link original alias)))
+          ((.get input admit-current))
+          (dynamic-wind
+            (lambda () (retarget! root))
+            (lambda () (check-exception ((.get input admit-current)) error?))
+            (lambda () (retarget! original)))
+          ((.get input admit-current))
+          (check-equal? (eq? observations (.get input source-inputs)) #t))))
 
     (yuanxu-test-case "compiler role aliases end with their temporary source extent"
       (call-with-temporary-directory "compiler-role-lifetime"

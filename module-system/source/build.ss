@@ -14,7 +14,7 @@
         (only-in :yuanxu/module-system/building/source-closure package-library-spec)
         (only-in :clan/poo/object .o .cc .ref .get .slot? .all-slots object?)
         (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
-        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
+        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-compiler-interface-source module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
                  build-target-name yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
@@ -474,6 +474,16 @@
   (def entries '())
   (def support-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
+  (def interfaces (make-hash-table))
+  (def (native-observation path)
+    (if (equal? (path-extension path) ".ssi")
+      (let (input (or (hash-get interfaces path)
+                     (let (value (module-compiler-interface-source path))
+                       (hash-put! interfaces path value) value)))
+        ;; Preserve the imported alias and original bytes. Its own currentness
+        ;; guard checks target identity before issuance, restore and execution.
+        (.ref input 'source-inputs))
+      (list (cons path (module-source-read path)))))
   (def native-targets (retained-build-entries retained root package-prefix '()))
   (def (input! path)
     (def normalized (path-normalize path))
@@ -562,7 +572,9 @@
             (def id (expander-context-id context))
             (def name (and (symbol? id) (symbol->string id)))
             (def path (module-context-path context))
-            (when (and (string? path) (eq? (module-source-type path) 'regular))
+            (when (and (string? path)
+                       (or (equal? (path-extension path) ".ssi")
+                           (eq? (module-source-type path) 'regular)))
               (let (package
                 (and name (find (lambda (entry)
                   (or (string-prefix? (string-append (cdr entry) "/") name)
@@ -590,7 +602,7 @@
                       (set! support-contexts (cons context support-contexts)))))
                 ;; Observe actual external interfaces, never their entire catalog.
                 (when (member (path-extension path) '(".ss" ".ssi"))
-                  (set! observations (cons (cons path (module-source-read path)) observations)))))))
+                  (set! observations (append (native-observation path) observations)))))))
           seen)) files))
   ;; A Suite is interpreted by the harness, not compiled into its support
   ;; library. Bind products to the actual compiler dependency closure instead
@@ -610,7 +622,7 @@
                     (append (.ref input 'source-inputs) compiler-observations))
                   (when (member (path-extension path) '(".ss" ".ssi"))
                     (set! compiler-observations
-                      (cons (cons path (module-source-read path)) compiler-observations)))))))
+                      (append (native-observation path) compiler-observations)))))))
           seen))
       support-contexts))
   (def inputs (unique-build-inputs observations))
@@ -628,6 +640,7 @@
     (call-with-module-source-read-cache
       (lambda ()
         (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) prepared)
+        (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) interfaces)
         (module-source-admit-current! inputs))))
   (current!)
   (def source
