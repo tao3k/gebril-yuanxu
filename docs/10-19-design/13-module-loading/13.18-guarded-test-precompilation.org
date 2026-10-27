@@ -846,6 +846,17 @@ resolver. Both source and compiled-role controls keep the same role inventory:
 the source-only control uses the existing guarded reader, while =std/make=
 qualifies compiler frames and the native compiled-role loader.
 
+Explicit =GERBIL_LOADPATH= overlays precede the host library fallback. The
+isolated source-tail gateway depends on that native lookup order: putting the
+host first silently selects its dispatcher instead of the compiled isolation
+dispatcher. Its refusal controls exposed this ordering error in Linux CI;
+the repair changes lookup precedence, not the assertions or admission policy.
+The maintained =test-discovered-file= gateway completed all seven Cases with
+=MODULE-OK=, =HARNESS-OK= and final =OK= after that repair. Its local 156.44 s
+includes compiling the isolated dispatcher and its source import closure;
+it is not an atomic Case or warm-path benchmark. Remote CI remains a separate
+qualification boundary.
+
 Cold-source Fixtures preserve installed dependency namespaces, excluding Core's
 own namespaces. They do not replace every dependency artifact with a leaf
 symlink or choose copying rules by artifact suffix. Compiled interfaces are
