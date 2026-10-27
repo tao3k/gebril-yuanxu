@@ -69,6 +69,21 @@ must not initialize unrequested production selection or activate its scopes.
 Reuse existing consumer Cases to qualify
 that wiring rather than introducing another compiler qualification suite.
 
+The existing =init.exports.tests.std-make-spec= can be consumed directly by a
+standard =defbuild-script= entry. The SDK owns Make and compilation. TestingScript
+only admits an already issued support publication; missing approval requires
+=gerbil build=, and corrupt products/approvals are rejected rather than repaired
+at test execution time. Native CLI policy may use the existing guarded file
+source without associating another Builder: =gerbil test= owns Suite discovery,
+registration and assertions. Its compiled library path precedes source fallback.
+
+Compiler qualifications use versioned SDK packages prepared by the Just build
+phase. Only a compiler-qualification Fixture may invoke official =gerbil build=
+inside a Case to prove a real injected compiler failure. This test-only effect
+is not available to business code or TestingScript. Restore mutated source and
+product/record bytes even when the refusal check throws. Never install fake
+compiler/interpreter executables or private Harness dispatchers.
+
 A cached support library does not cache a test verdict. Report support discovery
 and preparation, harness startup, and Case execution separately. A hot atomic
 Case should exercise its behavior with minimal setup; a source-relocation or

@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; A command-line projection of the maintained TestingScript policy.
 (import :clan/poo/object
+        (only-in :yuanxu/module-system/building/test-projection module-test-execution)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax core-read-module/sexp)
         (only-in :yuanxu/ops/progress execution-total-seconds)
         (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
@@ -65,7 +66,9 @@
             (error "selection probe did not reuse its native graph receiver"))
           (report-selection sample warm-times))
         (loop (+ sample 1)))))
-  (.def (Test @ (.get demand execution))
+  ;; Official package builds own native support. The CLI only guards the
+  ;; selected source and resource envelope around the SDK's gerbil test.
+  (.def (Test @ (module-test-execution (.get demand source)))
     runtime-options: (list vm-options)
     profile: =>.+
     (.o max-duration-milliseconds: (* 1000 budget)

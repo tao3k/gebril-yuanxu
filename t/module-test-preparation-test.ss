@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real init -> std/make -> issuance -> native Harness, with inert modules.
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
+        (only-in :std/source this-source-file)
         (only-in :std/error Error? Error-message)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
@@ -13,43 +14,13 @@
 (def (forms root name body)
   (write-source (path-expand name root)
     (call-with-output-string (lambda (out) (for-each (cut pretty-print <> out) body)))))
-(.def (TestPackage @ DirectoryFixture)
-  .prepare:
-  (lambda (workspace)
-    (def root (.get workspace root))
-    (def package-name (string->symbol (symbol->string (gensym 'test-package-))))
-    (forms root "gerbil.pkg" `((package: ,package-name)))
-    ;; The requested test lives in an aligned nested package. Native Make must
-    ;; still receive a root-relative target, never the absolute source path.
-    (forms root "modules/example/tests/gerbil.pkg"
-      `((package: ,(string->symbol
-                    (string-append (symbol->string package-name) "/modules/example/tests")))))
-    (forms root "init.ss"
-      '((import :yuanxu/module-system/selection/init-syntax)
-        (yuanxu! mode: explicit source: "./modules" (example))))
-    (forms root "modules/example/types.ss"
-      '((import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
-        (def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))
-        (export Scope)))
-    (forms root "modules/example/config.ss" '((def Config (.o enabled: #t))))
-    (forms root "modules/example/objects.ss" '((def Defaults #t) (export Defaults)))
-    (forms root "modules/example/interface.ss"
-      '((.def Example identity: 'example features: (.o)
-          core: (.o requires: (.o) scope-contract: Scope
-                    exports: (error "test discovery evaluated business scope")))))
-    (forms root "modules/poison/interface.ss" '((error "unselected module demanded")))
-    (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 42)))
-    (forms root "modules/example/tests/atomic-test.ss"
-      `((import :std/test "./shared.ss") (export atomic-test)
-        (call-with-output-file ,(path-expand "harness-started" root)
-          (lambda (out) (display "native Harness import" out)))
-        (def atomic-test (test-suite "prepared native support"
-          (test-case "compiled helper"
-            (check-equal? answer 42)
-            (call-with-output-file ,(path-expand "case-finished" root)
-              (lambda (out) (display "native TestCase executed" out))))))))
-    workspace))
+(def TestPackage
+  ;; The canonical Just build stage prepared this SDK package. The Fixture
+  ;; restores source bytes after fault injection, even when an assertion fails.
+  (prepared-package-fixture
+    (path-expand "qualification/native-preparation" (path-directory (this-source-file)))))
 (def (exports-at root)
+  (add-load-path! root)
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
     (import-fixture-init! (path-expand "init.ss" root))))
@@ -110,8 +81,8 @@
       (def build (.get tests build))
       (check (eq? (.get build selected-graph) (.get tests selected-graph)) => #t)
       (check-exception ((.get build admit-artifacts)) error?)
-      ;; Compilation is the same issuance phase used by .run, without importing
-      ;; the Suite. Neither phase may erase the captured compiler association.
+      ;; SDK build issued the native support before either run. Both runs
+      ;; execute their Cases; admission never substitutes a cached verdict.
       (check-exception (.call (.cc (.get tests execution) build: #f) .run) error?)
       (check-exception (.call (.cc (.get tests execution) build: #f) .compile) error?)
       (def prepared (.call tests .compile))
@@ -182,9 +153,15 @@
         '((export answer) (def answer 42)
           (begin-foreign (c-declare "#error injected-test-support-compiler-failure"))))
       (def tests (.get (exports-at root) tests))
-      (def failure (with-catch values (cut .call tests .run)))
+      ;; The test-only exception invokes the official compiler here so the
+      ;; negative is a real C compiler failure, not just absent-file admission.
+      (def failure
+        (with-catch values
+          (lambda ()
+            (build-prepared-package! root (.get (.get tests execution) runtime-options)))))
       (check (Error? failure) => #t)
       (def diagnosis
         (call-with-output-string (lambda (out) (display-exception failure out))))
       (check (not (not (string-contains diagnosis "injected-test-support-compiler-failure"))) => #t)
+      (check-exception (.call tests .run) error?)
       (check-equal? (file-exists? marker) #f))))

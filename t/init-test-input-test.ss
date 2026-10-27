@@ -5,6 +5,8 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
+        (only-in "./qualification/module-init/fixture.ss"
+                 call-with-prepared-package prepared-package-tests)
         (only-in "../init.ss" yuanxu.init.exports))
 (export init-test-input-test)
 
@@ -19,31 +21,36 @@
   (test-suite "Init-owned explicit and directory test inputs"
     (test-case "different Suites share support products but execute separate verdicts"
       (def root (path-expand ".." (path-directory (this-source-file))))
-      (call-with-temporary-directory (path-expand "t/qualification/shared-support-" root)
+      (call-with-prepared-package (path-expand "t/qualification/native-shared" root)
         (lambda (directory)
+          (def tests (prepared-package-tests directory))
           (def support (path-expand "support.ss" directory))
           (def first (path-expand "first-test.ss" directory))
           (def second (path-expand "second-test.ss" directory))
-          (def target (path-strip-extension
-                        (substring support
-                          (string-length (string-append (path-strip-trailing-directory-separator root) "/"))
-                          (string-length support))))
+          (def target "support")
           ;; Both Suites import the identical package-owned compiled module.
           ;; Their distinct assertions must still run in independent harnesses.
           (def (suite file name expected)
             (put file
-              (string-append "(import :std/test :yuanxu/" target ") (export " name "-test)\n"
+              (string-append "(import :std/test :yuanxu-native-shared/" target ") (export " name "-test)\n"
                 "(def " name "-test (test-suite \"" name "\" (test-case \"own verdict\" "
                 "(check-equal? value " (number->string expected) "))))\n")))
-          (put support "(export value) (def value 7)\n")
           (suite first "first" 7)
           (suite second "second" 7)
           (def a (.call tests .for-files (list first)))
           (def b (.call tests .for-files (list second)))
           (def directory-a (.get (.get a build) output-directory))
           (check-equal? directory-a (.get (.get b build) output-directory))
+          (check-equal? (.ref/cached (.get a source) 'selected-graph) #f)
           (check-equal? (.get (.call a .run) status) 0)
-          (def product (path-expand (string-append "yuanxu/" target ".o1") directory-a))
+          ;; Explicit native support must not acquire unrelated business
+          ;; selection merely to mint its own compiler issuance generation.
+          (check-equal? (.ref/cached (.get a source) 'selected-graph) #f)
+          ;; Identical support products do not let another source borrow this
+          ;; Script's compiler association, even before selection is acquired.
+          (check-exception
+            (.call (.cc (.get a execution) 'source (.get b source)) .compile) error?)
+          (def product (path-expand (string-append "yuanxu-native-shared/" target ".o1") directory-a))
           (def modified (time->seconds (file-info-last-modification-time (file-info product))))
           (.call b .compile)
           (check-equal? (.get (.call b .run) status) 0)
@@ -79,23 +86,18 @@
           (check-exception ((.get (.get demand build) admit-current)) error?))))
     (test-case "native support retains its package compiler declaration"
       (def root (path-expand ".." (path-directory (this-source-file))))
-      (call-with-temporary-directory (path-expand "t/qualification/native-options-" root)
+      (call-with-prepared-package (path-expand "t/qualification/native-options" root)
         (lambda (directory)
-          ;; Keep support in the real package root: native Make must use the
-          ;; package's identity and output placement, not a fabricated namespace.
+          (def tests (prepared-package-tests directory))
+          ;; The Just phase compiled this real, independent SDK package.
+          ;; The native C declaration still rejects a missing compiler option.
           (def support (path-expand "support.ss" directory))
           (def file (path-expand "probe-test.ss" directory))
           (def config (path-expand "compiler-input.txt" directory))
-          (def target (path-strip-extension
-                        (substring support
-                          (string-length (string-append (path-strip-trailing-directory-separator root) "/"))
-                          (string-length support))))
-          (put support
-            "(import (only-in :std/ffi C-declare))\n(C-declare \"#ifndef YUANXU_NATIVE_OPTIONS_PROBE\\n#error missing native compiler option\\n#endif\\n\")\n(export native-value) (def native-value 7)\n")
+          (def target "support")
           (put file
-            (string-append "(import :std/test :yuanxu/" target
+            (string-append "(import :std/test :yuanxu-native-options/" target
               ") (export probe-test)\n(def probe-test (test-suite \"native compiler options\" (test-case \"real compiled support\" (check-equal? native-value 7))))\n"))
-          (put config "-DYUANXU_NATIVE_OPTIONS_PROBE")
           (def demand
             (.call tests .for-files (list file) (list config)
               (list (list 'gxc: target "-cc-options" "-DYUANXU_NATIVE_OPTIONS_PROBE"))))

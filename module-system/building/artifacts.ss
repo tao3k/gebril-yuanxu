@@ -27,7 +27,8 @@
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
         build-artifact-handoff require-build-artifacts! test-build-publication test-build-projection
-        current-build-phase-times repair-build-products! require-build-products!)
+        current-build-phase-times repair-build-products! require-build-products!
+        retain-test-support-subset!)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
 ;; No callback runs inside a guard; disabled instrumentation allocates no table.
@@ -287,6 +288,26 @@
     (artifact-files identities libdir #f)))
 (def (observed-files identities libdir)
   (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
+
+;; The SDK's aggregate test build may publish a narrower consumer's support.
+;; This transfers already admitted products, never adopts arbitrary disk files
+;; or invokes a compiler. Both source closure and native identities must refine
+;; the producer; its approval/digests remain guards around the transfer.
+(def (retain-test-support-subset! producer consumer)
+  ((.get producer admit-artifacts))
+  (unless (and (andmap (cut member <> (.get producer compiler-identities))
+                  (.get consumer compiler-identities))
+               (andmap (cut member <> (.get producer source-inputs))
+                  (.get consumer source-inputs)))
+    (error "test support consumer is outside the admitted SDK build"))
+  (def source (.get producer output-directory))
+  (call-with-build-artifact-issuance consumer (.get consumer output-directory)
+    (lambda ()
+      ((.get producer admit-artifacts))
+      (publish-products (observed-files (.get consumer compiler-identities) source)
+        source (current-build-output-directory))
+      ((.get producer admit-artifacts))))
+  ((.get consumer admit-artifacts)))
 (def (invalidate-build-artifacts! graph)
   (retain-issued-state! graph 'build-required))
 (def (retain-inputs inputs)
@@ -536,8 +557,10 @@
   (def current! (.get source admit-current))
   (def (selected-graph!) (.get source selected-graph))
   (def publication (delay (test-build-publication projection)))
+  ;; Issuance is local to this demand. Reading its generation must not force
+  ;; business selection; explicit selected-graph reflection remains guarded.
   (def endpoint
-    (.o selected-graph: (selected-graph!) generation: (.ref (selected-graph!) 'generation)
+    (.o selected-graph: (selected-graph!) generation: (gensym 'test-support)
         build-publication: (force publication)
         compiler-current: (lambda () (current!) (.call (force publication) .current))))
   (def projection

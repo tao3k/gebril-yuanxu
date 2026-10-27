@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Explicit native compiler options fixture
+
+No business Module is selected. The standard SDK build must supply the declared
+C compiler option; a successful interpreted fallback cannot satisfy this fixture.

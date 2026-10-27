@@ -162,11 +162,11 @@
 
 (def (prepare-testing-script script files build)
   (when build
-    (unless (and (eq? (.get build demand-source) (.get script source))
-                 ;; An empty support spec grants no compilation authority.
-                 ;; Keep Graph demand lazy until there are products to issue.
-                 (or (null? (.get build spec))
-                     (eq? (.get build selected-graph) (.get script source selected-graph))))
+    ;; The exact guarded source is the compiler association. Reflecting the
+    ;; production selected-graph here unnecessarily links every business Module
+    ;; for an explicit file demand. Module-owned sources retain their own Graph
+    ;; admission in source.admit-current; support cannot authorize activation.
+    (unless (eq? (.get build demand-source) (.get script source))
       (error "test compiler projection belongs to another demand")))
   (if (or (not build) (null? (.get build spec))) script
     (let ((started (real-time))
@@ -174,70 +174,11 @@
       (defvalues (current-build-phase-times require-build-artifacts!)
         (apply values (force testing-build-api)))
       (def reused? (admit-retained-testing-support? build))
-      (def compilation
-       (and (not reused?)
-       (parameterize ((current-build-phase-times times))
-       (.call build .compile (.get build output-directory)
-        (lambda ()
-          (def expression
-            `(let (started (real-time))
-               (make ',(.get build spec) srcdir: ,(.get build source-root)
-                 libdir: ,((.get build compile-output)))
-               ,@(if times
-                   '((displayln "test-prepare phase=std-make seconds=" (- (real-time) started)))
-                   '())))
-          (when (and times (.slot? (.get script profile) 'trace-enabled?)
-                     (.get script profile trace-enabled?))
-            (displayln "test-prepare phase=make-request expression=" (object->string expression)))
-          (def environment (.get (testing-execution-script script files) environment))
-          (def prepared?
-            (and (.slot? environment 'GERBIL_PATH) (.slot? environment 'PATH)
-                 (string? (.get environment GERBIL_PATH)) (string? (.get environment PATH))
-                 (not (string-empty? (.get environment GERBIL_PATH)))
-                 (not (string-empty? (.get environment PATH)))))
-          (when times
-            (displayln "test-prepare phase=compiler-entry seconds=" (- (real-time) started)
-              " recovery-seconds=" (or (hash-get times 'recovery) 0)
-              " currentness-seconds=" (or (hash-get times 'currentness) 0)))
-          ;; Preserve the caller's native Make worker budget. A test launch
-          ;; must not silently force a different compiler scheduling mode.
-          (def receipt (run-script
-            (.cc ProcessScript.
-              'directory (.get script directory)
-              'environment (.+ environment (.o GERBIL_BUILD_VERBOSE: "1"))
-              'progress make-compiler-progress-reader
-              'timeout 120 'idle-timeout 60
-              'command
-              (append
-                ;; Native POSIX time reports child + descendant CPU separately
-                ;; from wall time. This is opt-in observation, not a new runner.
-                (if times '("/usr/bin/time" "-p") '())
-                (if prepared? '("gxi")
-                  (append '("gerbil") (.get script runtime-options) '("env" "gxi")))
-                (.get script runtime-options)
-                (append
-                  (if times '("-e" "(define test-make-started (real-time))") '())
-                  (list "-e" "(import :std/make)")
-                  (if times
-                    (list "-e" (object->string
-                      '(displayln "test-prepare phase=make-import seconds="
-                         (- (real-time) test-make-started)
-                         " cores=" (getenv "GERBIL_BUILD_CORES" "0"))))
-                    '())
-                  (list "-e" (object->string expression)))))))
-          ;; Report the actual compiler before completion admission: a refused
-          ;; new generation must not erase the producer's diagnostic counts.
-          (when times
-            (displayln "test-prepare phase=make-process seconds=" (.get receipt seconds)
-              " compile-count="
-              (length (filter (cut string-prefix? "... compile " <>)
-                        (string-split (.get receipt output) #\newline))))
-            (for-each displayln
-              (filter (lambda (line)
-                (ormap (cut string-prefix? <> line)
-                  '("test-prepare phase=" "real " "user " "sys ")))
-                (string-split (.get receipt output) #\newline))))
-          receipt)))))
+      ;; Preparation admits the existing SDK build publication. Testing never
+      ;; starts a compiler, invents a command, or blesses unissued disk files.
+      (unless reused?
+        (error "build-required: run gerbil build before native tests" files))
+      (def compilation #f)
       (when (.get script profile emit?)
         (displayln "test-prepare phase=compile seconds=" (- (real-time) started)
           " reused=" reused?

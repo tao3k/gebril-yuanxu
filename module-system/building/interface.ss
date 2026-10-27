@@ -15,19 +15,24 @@
 ;; cached approval. The producer retains its projection and all source checks.
 (def current-build-spec-consumer (make-parameter #f))
 (def (call-with-init-build-spec prepare dispatch args libdir)
-  (def produced #f)
-  (def consume #f)
+  ;; This callback mutates issuance state across prepare's dynamic boundary.
+  ;; Keep that state explicit; compiler inference must not freeze its initial
+  ;; false value and classify the eventual SDK consumer as non-callable.
+  (def association (vector #f #f))
   (def spec
     (parameterize ((current-build-spec-consumer
                     (lambda (value owner)
-                      (when (and produced (not (eq? produced value)))
+                      (when (and (vector-ref association 0)
+                                 (not (eq? (vector-ref association 0) value)))
                         (error "native build must consume one init-owned specification"))
-                      (set! produced value)
-                      (set! consume owner))))
+                      (unless (procedure? owner) (error "native build consumer must be callable"))
+                      (vector-set! association 0 value)
+                      (vector-set! association 1 owner))))
       (prepare)))
+  (def consume (vector-ref association 1))
   (if consume
     (begin
-      (unless (eq? spec produced)
+      (unless (eq? spec (vector-ref association 0))
         (error "native build specification lost its init owner"))
       (consume dispatch args libdir))
     (dispatch spec args)))
@@ -57,7 +62,8 @@
     (parameterize ((current-expander-context (make-top-context)))
       (eval-syntax '(import :yuanxu/module-system/building/artifacts))
       (eval-syntax '(list invalidate-build-artifacts! clean-build-artifacts!
-                         repair-build-products! require-build-products!)))))
+                         repair-build-products! require-build-products!
+                         retain-test-support-subset!)))))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
@@ -78,9 +84,7 @@
               (path-directory init-file) init-file
               (if (.slot? source-value 'std-make-spec)
                 (.get source-value std-make-spec) '()))
-            std-make-spec: (lambda ()
-                             ((.get build admit-current))
-                             (.get build spec))
+            std-make-spec: (lambda () (test-build-spec tests))
             execution: (module-test-execution source-value
                          (lambda () (.get tests build)))
             .run: (lambda () (.call (.get tests execution) .run))
@@ -188,6 +192,42 @@
   (def (current!)
     (unless prepared (error "init std-make-spec must prepare the source context first"))
     ((.get prepared admit-current)))
+  ;; The official SDK consumer owns both compile phases. A test source is a
+  ;; POO declaration, not a command, environment selector or executable plan.
+  (def (test-build-spec tests)
+    (def build (.get tests build))
+    ((.get build admit-current))
+    (def value (.get build spec))
+    (when (current-build-spec-consumer)
+      ((current-build-spec-consumer) value
+        (lambda (dispatch args libdir) (run-test-spec tests dispatch args libdir))))
+    value)
+  (def (run-test-spec tests dispatch args libdir)
+    (def build (.get tests build))
+    ((.get build admit-current))
+    (cond
+      ((or (null? args) (equal? (car args) "compile"))
+       (def source (.get (.get build build-graph) build-publication))
+       (if (.call source .available?)
+         ((.get build admit-artifacts))
+         (.call build .compile (.get build output-directory)
+           (lambda ()
+             (dispatch (.get build spec) args #f
+               ((.get build compile-output))))))
+       ;; Each independently selected Suite gets a proof-preserving subset of
+       ;; the one native build. No per-Case compiler or test verdict is cached.
+       (def transfer (list-ref (force artifact-cleaners) 4))
+       (def retained
+         (if (.slot? (.get tests source) 'std-make-spec)
+           (.get tests source std-make-spec) '()))
+       (for-each
+         (lambda (file)
+           (def consumer (.get (file-tests (list file) '() retained) build))
+           (transfer build consumer))
+         (.get tests spec)))
+      ((equal? (car args) "spec") (dispatch (.get build spec) args))
+      (else (error "test support lifecycle requires SDK compile or spec" args)))
+    ((.get build admit-current)))
   (def (build-spec roots)
     (if prepared
       (unless (equal? roots retained)

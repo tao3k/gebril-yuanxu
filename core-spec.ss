@@ -114,6 +114,7 @@
     "observability/testing-case"
     "observability/testing-fixture"
     "observability/testing-script"
+    "observability/testing-source"
     "poo-clos/types"
     "poo-clos/objects"
     "poo-clos/method-bundle-syntax"
