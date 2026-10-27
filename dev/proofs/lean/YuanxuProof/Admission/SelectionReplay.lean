@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "e207da75c8dff2eb747034ce8276fdeb5cb61bd6"
+def declaredPooRevision : String := "c0d47633c2aad7591944f874eaf730ee9c0e451e"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
@@ -96,7 +96,7 @@ def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb
 -- ordinary .ref; unobserved access guards receiver-local layout/cells.
 -- This digest binds the source, not a native refinement proof. PayloadSharing
 -- proves ordered model restoration; native issuance/replay tests remain gates.
-def projectionObjectDigest : String := "sha256:bc890b7dc0bd956e02adf3a9c7404f5157659661f0cb63d5acb285424f3f06c6"
+def projectionObjectDigest : String := "sha256:2bbf9334a61c80b4022af0a354b7f9a917c6504c776aff45cf2fc1696154d28e"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.
