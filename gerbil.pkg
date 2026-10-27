@@ -6,4 +6,4 @@
 (package: yuanxu
  prelude: :tao3k/yuanxu/prelude
  depend:
- ("github.com/tao3k/gerbil-poo@e281ad2e33784cfb9951c684b6be78bd2f4b7fca"))
+ ("github.com/tao3k/gerbil-poo@e207da75c8dff2eb747034ce8276fdeb5cb61bd6"))
