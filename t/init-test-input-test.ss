@@ -17,6 +17,65 @@
 (def tests (.get yuanxu.init.exports tests))
 (def init-test-input-test
   (test-suite "Init-owned explicit and directory test inputs"
+    (test-case "different Suites share support products but execute separate verdicts"
+      (def root (path-expand ".." (path-directory (this-source-file))))
+      (call-with-temporary-directory (path-expand "t/qualification/shared-support-" root)
+        (lambda (directory)
+          (def support (path-expand "support.ss" directory))
+          (def first (path-expand "first-test.ss" directory))
+          (def second (path-expand "second-test.ss" directory))
+          (def target (path-strip-extension
+                        (substring support
+                          (string-length (string-append (path-strip-trailing-directory-separator root) "/"))
+                          (string-length support))))
+          ;; Both Suites import the identical package-owned compiled module.
+          ;; Their distinct assertions must still run in independent harnesses.
+          (def (suite file name expected)
+            (put file
+              (string-append "(import :std/test :yuanxu/" target ") (export " name "-test)\n"
+                "(def " name "-test (test-suite \"" name "\" (test-case \"own verdict\" "
+                "(check-equal? value " (number->string expected) "))))\n")))
+          (put support "(export value) (def value 7)\n")
+          (suite first "first" 7)
+          (suite second "second" 7)
+          (def a (.call tests .for-files (list first)))
+          (def b (.call tests .for-files (list second)))
+          (def directory-a (.get (.get a build) output-directory))
+          (check-equal? directory-a (.get (.get b build) output-directory))
+          (check-equal? (.get (.call a .run) status) 0)
+          (def product (path-expand (string-append "yuanxu/" target ".o1") directory-a))
+          (def modified (time->seconds (file-info-last-modification-time (file-info product))))
+          (check-equal? (.get (.call b .run) status) 0)
+          (check-equal? (time->seconds (file-info-last-modification-time (file-info product))) modified)
+          ;; Changing only a Suite must refuse its old demand. A fresh demand
+          ;; may reuse support, but must execute the new (failing) assertion.
+          (suite second "second" 8)
+          (check-exception (.call b .compile) error?)
+          (def changed (.call tests .for-files (list second)))
+          (check-equal? directory-a (.get (.get changed build) output-directory))
+          (check-exception (.call changed .run) error?)
+          ;; Support changes invalidate the product and every old consumer.
+          (put support "(export value) (def value 8)\n")
+          (check-exception (.call a .compile) error?)
+          (def new-support (.call tests .for-files (list first)))
+          (check-equal? (equal? directory-a (.get (.get new-support build) output-directory)) #f))))
+    (test-case "a selected Suite used for-syntax remains a compiler input"
+      (def root (path-expand ".." (path-directory (this-source-file))))
+      (call-with-temporary-directory (path-expand "t/qualification/macro-support-" root)
+        (lambda (directory)
+          (def helper (path-expand "helper-test.ss" directory))
+          (def support (path-expand "support.ss" directory))
+          (def file (path-expand "probe-test.ss" directory))
+          (put helper "(export value) (def value 7)\n")
+          (put support "(import (for-syntax \"./helper-test.ss\")) (export answer) (def answer 7)\n")
+          (put file "(import \"./support.ss\") (export result) (def result answer)\n")
+          (def demand (.call tests .for-files (list helper file)))
+          (def inputs (.get (.get demand build) source-inputs))
+          ;; Excluding every selected file would incorrectly drop this real
+          ;; compile-time dependency. The native graph must retain its bytes.
+          (check-equal? (and (assoc (path-normalize helper) inputs) #t) #t)
+          (put helper "(export value) (def value 8)\n")
+          (check-exception ((.get (.get demand build) admit-current)) error?))))
     (test-case "native support retains its package compiler declaration"
       (def root (path-expand ".." (path-directory (this-source-file))))
       (call-with-temporary-directory (path-expand "t/qualification/native-options-" root)

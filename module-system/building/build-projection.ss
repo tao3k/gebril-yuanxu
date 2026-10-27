@@ -137,6 +137,8 @@
   (def prepared (make-hash-table))
   (def observations (.ref entry 'source-inputs))
   (def entries '())
+  (def support-contexts '())
+  (def compiler-observations (.ref entry 'source-inputs))
   ;; Reuse the production native target validator and compiler identity checks.
   ;; No selected business Graph is needed to retain package compiler options.
   (def native-targets (retained-build-entries retained root package-prefix '()))
@@ -150,7 +152,12 @@
             value)))
     ((.ref input 'admit-current))
     input)
-  (for-each (lambda (target) (input! (.get target path))) native-targets)
+  (for-each
+    (lambda (target)
+      (def input (input! (.get target path)))
+      (set! compiler-observations
+        (append (.ref input 'source-inputs) compiler-observations)))
+    native-targets)
   (def (native-spec entry)
     (def target
       (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry)))
@@ -235,12 +242,35 @@
                                         (path-expand (string-append make-target ".ss") root)))
                         (error "test dependency requires its package-owned native Make root" id expected root))
                       (set! entries
-                        (cons (cons id make-target) entries)))))
+                        (cons (cons id make-target) entries))
+                      (set! support-contexts (cons context support-contexts)))))
                 ;; Observe actual external interfaces, never their entire catalog.
                 (when (member (path-extension path) '(".ss" ".ssi"))
                   (set! observations (cons (cons path (module-source-read path)) observations)))))))
           seen)) files))
+  ;; A Suite is interpreted by the harness, not compiled into its support
+  ;; library. Bind products to the actual compiler dependency closure instead
+  ;; of the requesting Suite's bytes. Walk native contexts, rather than simply
+  ;; removing Suite paths: a Suite imported by support (including for-syntax)
+  ;; IS a compiler input and must still invalidate those products.
+  (let (seen (make-hash-table-eq))
+    (for-each
+      (lambda (context)
+        (for-each-build-module context
+          (lambda (dependency)
+            (def path (module-context-path dependency))
+            (when (string? path)
+              (let (input (hash-get prepared (path-normalize path)))
+                (if input
+                  (set! compiler-observations
+                    (append (.ref input 'source-inputs) compiler-observations))
+                  (when (member (path-extension path) '(".ss" ".ssi"))
+                    (set! compiler-observations
+                      (cons (cons path (module-source-read path)) compiler-observations)))))))
+          seen))
+      support-contexts))
   (def inputs (unique-build-inputs observations))
+  (def compiler-inputs (unique-build-inputs compiler-observations))
   (def (selected-graph!)
     ;; Explicit file demands may defer business selection until reflection asks
     ;; for the Graph. Both views must still resolve to the same admitted owner.
@@ -264,7 +294,9 @@
   (def projection
    (.o (:: projection)
       selected-graph: (selected-graph!) build-graph: endpoint demand-source: demand
-      compiler-identities: (map car (reverse entries)) source-inputs: inputs
+      ;; current! retains the full demand, including every Suite's source.
+      ;; Only native product identity is shared; no test verdict is cached.
+      compiler-identities: (map car (reverse entries)) source-inputs: compiler-inputs
       source-root: root spec: (map native-spec (reverse entries))
       output-directory:
       (.get (force publication) artifact)
