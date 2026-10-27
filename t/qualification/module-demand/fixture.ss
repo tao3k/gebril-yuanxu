@@ -1,7 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Isolated source projection. No production reader or Loader is changed.
 (import :clan/poo/object
-        (only-in ./projection-syntax include-projected-interface)
         (only-in :std/source this-source-file)
         (only-in :std/list/list-builder with-list-builder)
         (only-in :std/list/list delete-duplicates/hash)
@@ -13,7 +12,7 @@
         (only-in :yuanxu/module-system/source/reader module-prepared-source-binding)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read module-source-admit-current!))
-(export ProjectionFixture project-metadata load-role scope-context)
+(export ProjectionFixture project-metadata scope-context)
 (def sources (path-expand "sources" (path-directory (this-source-file))))
 (def (forms path)
   (let-values (((_prelude _id _namespace body) (core-read-module/sexp path)))
@@ -69,21 +68,6 @@
          (unless (andmap symbol? names) (error "nonliteral export needs original reader" path))
          (for-each emit names))
         (else (void)))) (forms path))))
-(def (load-role root name names rows)
-  (module-source-admit-current! rows "projected module source changed")
-  (def owner (path-normalize root))
-  (def prepared (yuanxu-prepare-module-private-source owner (path-expand name owner) void))
-  (def binding (string->symbol (symbol->string (gensym 'RoleValues))))
-  ;; Extend the SAME existing native include wrapper with an ordinary POO
-  ;; tuple of actual exports. Never reconstruct or replace issued read tokens.
-  (def bundled
-    (.cc prepared compiler-forms:
-      (append (.get prepared compiler-forms)
-        (list '(import :clan/poo/object)
-              `(def ,binding (.o ,@names))))))
-  (def value (module-prepared-source-binding bundled binding))
-  (module-source-admit-current! rows "projected module source changed")
-  value)
 (def (write-forms path body)
   (call-with-output-file path
     (lambda (port) (for-each (lambda (form) (write form port) (newline port)) body))))
@@ -93,6 +77,12 @@
     `((package: ,(symbol->string (gensym 'demand-)) prelude: :gerbil/core)))
   (for-each (lambda (name) (copy-file (path-expand name sources) (path-expand name root)))
     '("types.ss" "objects.ss" "config.ss" "func.ss" "interface.ss"))
+  ;; These are private compiler inputs of this isolated projection, not Core
+  ;; bootstrap tools. Copy and admit their actual bytes with the source epoch.
+  (def helpers '("projection-syntax.ss" "role-loader.ss"))
+  (for-each (lambda (name)
+              (copy-file (path-expand name (path-directory sources))
+                         (path-expand name root))) helpers)
   (def interface (path-expand "interface.ss" root))
   (def metadata (project-metadata interface))
   ;; The existing role-layout operation, not a hand-maintained exports index.
@@ -108,13 +98,13 @@
     (error "conflicting role exports" names))
   (def rows
     (map (lambda (name) (def path (path-expand name root)) (cons path (module-source-read path)))
-      (append '("gerbil.pkg" "interface.ss") (map cadr roles))))
+      (append '("gerbil.pkg" "interface.ss") helpers (map cadr roles))))
   (def wrapper (path-expand "projected.ss" root))
   (write-forms wrapper
     `((import (except-in :clan/poo/object .def)
               (only-in :yuanxu/module-system/source/declaration .def)
-              (only-in :yuanxu/t/qualification/module-demand/projection-syntax include-projected-interface)
-              (only-in :yuanxu/t/qualification/module-demand/fixture load-role))
+              (only-in "./projection-syntax.ss" include-projected-interface)
+              (only-in "./role-loader.ss" load-role))
       (def core 'outer-core-must-not-be-used)
       (def SourceRows ',rows)
       (def (make-role-bindings)
@@ -132,7 +122,11 @@
   (.o root metadata sources: rows
       module:
       (module-prepared-source-binding
-        (yuanxu-prepare-module-private-source (path-normalize root) (path-normalize wrapper) void) 'Module)))
+        (yuanxu-prepare-module-private-source (path-normalize root) (path-normalize wrapper) void) 'Module
+        private-sources:
+        (map (lambda (name)
+               (yuanxu-prepare-module-private-source
+                 (path-normalize root) (path-normalize (path-expand name root)) void)) helpers))))
 (.def (ProjectionFixture @ DirectoryFixture)
   prefix: "core-module-demand-"
   .prepare: prepare-projection)

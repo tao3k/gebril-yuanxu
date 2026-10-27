@@ -7,7 +7,7 @@
 
 Init owns the selected source epoch and publishes its projections through one
 POO object, =yuanxu.init.exports=. Build and testing consume those projections using
-the installed Gerbil Gerbil. They do not independently rediscover Modules or
+the installed Gerbil tools. They do not independently rediscover Modules or
 introduce another Builder, scheduler, freshness cache or test harness.
 
 The experimental =build.ss test-support= dispatcher and its deferred
@@ -17,6 +17,26 @@ build entry is restored to its pre-experiment form pending this redesign.
 The current implementation and focused preparation gates are described in
 [[file:13.18-guarded-test-precompilation.org][13.18]]; source-qualified export naming supersedes the unqualified spelling
 in [[file:13.19-source-qualified-init-exports.org][13.19]]. Complete product CI remains a separate gate.
+
+* Cold consumption and relocated qualification, 2026-10-27
+
+An explicit =tests.admit-current= demand selects and checks its source epoch in
+the existing read window. A cold =tests.std-make-spec= build therefore needs no
+prior namespace read or warm-up. Getting the inert =tests= object still performs
+no selection, compilation or execution.
+
+The compiled-import Fixture prepares its selected test support through an
+ordinary package =gerbil build= consuming the parent init declaration. Its
+native consumer cannot compile missing support or repair changed inputs. The
+projection experiment admits its copied macro/value helpers as private source
+inputs; those helpers gain no Core bootstrap-tool exemption.
+
+Qualification preparation follows the active working directory, including a
+relocated snapshot launched with the checkout's Justfile. Snapshot copying
+preserves executable build entries and the declared text input bytes. Completed
+package preparation has separate elapsed-time output; that output is not native
+Case progress. The current discovered CI inventory contains 192 files; the
+older 98-file curated run does not qualify that complete inventory.
 
 * What exists today
 

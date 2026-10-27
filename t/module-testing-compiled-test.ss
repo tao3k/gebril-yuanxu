@@ -80,6 +80,25 @@
                           (string-contains (.get refusal output) "set!") #t) #t)
         (check-equal? (file-exists? (path-expand "yuanxu/compiled-bindings/readonly.o1" lib)) #f)
         (yuanxu-test-checkpoint 'readonly-compilation-refused)
+        ;; The production library build is separate from the selected test
+        ;; publication. Prepare the latter through its init-owned declaration,
+        ;; before starting a consumer which deliberately cannot repair support.
+        (def support-directory (path-expand "test-support" root))
+        (create-directory support-directory)
+        ;; gerbil build requires an ordinary package at its working directory.
+        ;; The entry still consumes the parent init's source and output prefix.
+        (write-forms (path-expand "gerbil.pkg" support-directory)
+          '((package: yuanxu-compiled-test-support prelude: :gerbil/core)))
+        (copy-file (path-expand "t/qualification/module-testing/build.ss" repository)
+                   (path-expand "build.ss" support-directory))
+        (.def (SupportBuild @ ProcessScript.)
+          command: '("gerbil" "-:max-heap=2G,debug=q" "build")
+          directory: support-directory
+          environment: (.o GERBIL_PATH: state
+                           GERBIL_LOADPATH: (string-append lib ":" (path-expand ".." root)))
+          timeout: 60)
+        (.call SupportBuild .run)
+        (yuanxu-test-checkpoint 'selected-test-support-published)
         (for-each
           (lambda (name)
             (for-each

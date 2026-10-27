@@ -12,7 +12,11 @@ build-test-fixtures:
     set -euo pipefail
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}max-heap={{ gerbil_test_max_heap }},debug={{ gerbil_test_debug }}"
     for package in native-shared native-options native-preparation native-module-support; do
-        (cd "{{ justfile_directory() }}/t/qualification/$package" && timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} build)
+        prepared_at=$SECONDS
+        # Relocated qualification must build its own source epoch, not the
+        # checkout containing the Justfile used to launch that snapshot.
+        (cd "$PWD/t/qualification/$package" && timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} build)
+        printf 'test-preparation phase=complete package=%s elapsed-s=%s\n' "$package" "$((SECONDS - prepared_at))"
     done
 
 [private]

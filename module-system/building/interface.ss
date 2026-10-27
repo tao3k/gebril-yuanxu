@@ -125,10 +125,11 @@
     (module-source-measure-operation 'selection-current (.get selection admit-current))
     selection)
   (def (test-current!)
-    (unless selection (error "init tests must select their source context first"))
+    ;; Explicit admission is a real source demand, including a cold official
+    ;; build of init.tests.std-make-spec. Mere access to tests stays inert.
     (call-with-module-source-read-cache
       (lambda ()
-        ((.get selection admit-current))
+        (selected!)
         (hash-for-each (lambda (_owners projection) ((.get projection admit-current))) tests))))
   (def (test-source (owners #f) (suite #f))
     (def view (selected!))
