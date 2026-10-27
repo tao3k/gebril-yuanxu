@@ -45,6 +45,7 @@
           (check-equal? (.get (.call a .run) status) 0)
           (def product (path-expand (string-append "yuanxu/" target ".o1") directory-a))
           (def modified (time->seconds (file-info-last-modification-time (file-info product))))
+          (.call b .compile)
           (check-equal? (.get (.call b .run) status) 0)
           (check-equal? (time->seconds (file-info-last-modification-time (file-info product))) modified)
           ;; Changing only a Suite must refuse its old demand. A fresh demand

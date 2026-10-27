@@ -76,6 +76,13 @@ multi-module publication qualification must be identified as integration work,
 not used to justify slow atomic tests. Investigate repeated source expansion or
 dependency discovery before adding more independent test processes.
 
+An existing support publication may bypass another Make invocation only after
+its original approval, complete compiler inputs and native output digests have
+been admitted. Missing approval requires the native compiler; invalid approval
+or changed products require rejection. Both paths retain source checks at the
+Harness entry and return boundaries. Qualify reuse through the real native
+entrypoints, product timestamps and independent assertions.
+
 * Observability
 
 Observability reports first-event latency, active phase, elapsed time, memory

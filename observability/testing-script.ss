@@ -141,6 +141,15 @@
 
 ;; Native std/make is the sole compiler/dependency scheduler. The Script only
 ;; brackets that existing compiler with the same issuance and Fixture boundary.
+(def (admit-retained-testing-support? build)
+  (def graph (.get build build-graph))
+  (def source (and (.slot? graph 'build-publication) (.get graph build-publication)))
+  ;; Availability alone grants nothing. Recovery checks the original approval,
+  ;; complete compiler inputs and every output digest before reuse. A corrupt
+  ;; approval/product MUST raise, rather than fall back to a fresh compilation.
+  (and source (.slot? source '.available?) (.call source .available?)
+       (begin ((.get build admit-artifacts)) #t)))
+
 (def (prepare-testing-script script files build)
   (when build
     (unless (and (eq? (.get build demand-source) (.get script source))
@@ -152,7 +161,9 @@
   (if (or (not build) (null? (.get build spec))) script
     (let ((started (real-time))
           (times (and (.get script profile emit?) (make-hash-table-eq))))
+      (def reused? (admit-retained-testing-support? build))
       (def compilation
+       (and (not reused?)
        (parameterize ((current-build-phase-times times))
        (.call build .compile (.get build output-directory)
         (lambda ()
@@ -214,13 +225,15 @@
                 (ormap (cut string-prefix? <> line)
                   '("test-prepare phase=" "real " "user " "sys ")))
                 (string-split (.get receipt output) #\newline))))
-          receipt))))
+          receipt)))))
       (when (.get script profile emit?)
         (displayln "test-prepare phase=compile seconds=" (- (real-time) started)
-          " make-seconds=" (.get compilation seconds)
+          " reused=" reused?
+          " make-seconds=" (if compilation (.get compilation seconds) 0)
           " compile-count="
-          (length (filter (cut string-prefix? "... compile " <>)
-                    (string-split (.get compilation output) #\newline)))))
+          (if compilation
+            (length (filter (cut string-prefix? "... compile " <>)
+                      (string-split (.get compilation output) #\newline))) 0)))
       (parameterize ((current-build-phase-times times)) ((.get build admit-artifacts)))
       (when times
         (displayln "test-prepare phase=recovery seconds=" (or (hash-get times 'recovery) 0)
