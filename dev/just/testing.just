@@ -48,16 +48,11 @@ test-build-publication directory file="t/build-artifact-publication-test.ss":
 persistent-head-worker path operation argument="":
     @env -u SDKROOT timeout --signal=TERM --kill-after=5s 30s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/persistent-head-worker.ss "{{ path }}" "{{ operation }}" "{{ argument }}"
 
-# Give each file its existing bounded native harness and compiler context.
-# Repository-wide imports retain mutable fixtures and source-reader epochs.
-test: build-test-fixtures
-    #!/usr/bin/env bash
-    set -euo pipefail
-    files=(t/funflow-function-types-test.ss t/contract-function-composition-test.ss t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-declaration-value-test.ss t/module-deferred-projection-test.ss t/module-role-context-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-loader-publication-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
-    files+=(t/module-windows-test.ss t/module-testing-isolation-test.ss t/module-test-preparation-test.ss)
-    for file in "${files[@]}"; do just _test-file "$file"; done
+# Use the same complete discovered inventory as CI. Keep each original native
+# worker's heap/deadline and the separate published-module integration phase.
+test:
+    just test-directory all
     just test-selected-modules
-    echo "[yuanxu-testing] phase=all-files-complete fileCount=${#files[@]}"
 
 # Opt-in wall/user/system timing while preserving the same bounded test path.
 test-profile:

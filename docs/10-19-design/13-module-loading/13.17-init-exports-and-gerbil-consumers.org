@@ -37,6 +37,10 @@ preserves executable build entries and the declared text input bytes. Completed
 package preparation has separate elapsed-time output; that output is not native
 Case progress. The current discovered CI inventory contains 192 files; the
 older 98-file curated run does not qualify that complete inventory.
+The default =just test= now delegates to the same complete discovered queue,
+then runs the existing published-module integration phase. Its discovery and
+disjoint-group check cover all 192 files; that check is not a native pass.
+CI retains the original declaration-worker logs even when its scale gate fails.
 
 * What exists today
 
