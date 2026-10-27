@@ -19,6 +19,13 @@
         (only-in :std/source this-source-file)
         (only-in "./core-spec.ss" core-spec core-public-roots))
 
+;; Keep compiler children within this package invocation's heap budget.
+;; The parent package manager and its later gxtags process remain unchanged.
+(let (options (getenv "GAMBOPT" #f))
+  (setenv "GAMBOPT"
+    (string-append (if options (string-append options ",") "")
+                   "max-heap=2G,debug=q")))
+
 ;; init.exports owns selected Module targets; core-spec owns library targets.
 ;; Only this entry consumes both. core-spec must never compile init itself.
 ;; The adapter keeps role/currentness boundaries inside the Gerbil consumer.
