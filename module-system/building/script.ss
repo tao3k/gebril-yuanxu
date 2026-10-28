@@ -18,7 +18,7 @@
                     (let loop ((keys (syntax->list #'(key ...)))
                                (bindings (syntax->list #'(option ...))))
                       (cond ((null? keys) '())
-                            ((memq (stx-e (car keys)) '(libdir: srcdir:))
+                            ((memq (stx-e (car keys)) '(libdir: bindir: srcdir:))
                              (loop (cddr keys) (cddr bindings)))
                             (else (cons (car bindings) (loop (cdr keys) (cdr bindings))))))))
        #'(def (entry . args)
@@ -34,7 +34,7 @@
                  source))
              (call-with-init-build-spec
                (lambda () build-spec)
-               (lambda (value arguments (native-prefix #f) (native-libdir #f))
+               (lambda (value arguments (native-prefix #f) (native-libdir #f) (native-bindir #f))
                  (when (and native-prefix (memq prefix: options))
                    (error "native output prefix conflicts with explicit Gerbil prefix"
                           native-prefix (pgetq prefix: options)))
@@ -43,14 +43,18 @@
                      (def (this-source-file) make-source)
                      (gerbil-build.defbuild-script value prefix: native-prefix
                        libdir: (or native-libdir (pgetq libdir: options)
-                                   (path-expand "lib" (gerbil-path))) build-option ...)
+                                   (path-expand "lib" (gerbil-path)))
+                       bindir: (or native-bindir (pgetq bindir: options)
+                                   (path-expand "bin" (gerbil-path))) build-option ...)
                      (apply main arguments))
                    (let ()
                      ;; Keep the selected Make root in the standard macro.
                      (def (this-source-file) make-source)
                      (gerbil-build.defbuild-script value
                        libdir: (or native-libdir (pgetq libdir: options)
-                                   (path-expand "lib" (gerbil-path))) build-option ...)
+                                   (path-expand "lib" (gerbil-path)))
+                       bindir: (or native-bindir (pgetq bindir: options)
+                                   (path-expand "bin" (gerbil-path))) build-option ...)
                      (apply main arguments))))
                args (or (pgetq libdir: options)
                         (path-expand "lib" (gerbil-path))))))))))

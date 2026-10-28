@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
-(import (only-in :std/string/path path-absolute?)
+(import (only-in "./native-products.ss" native-target-kind native-target-spec native-program-targets)
+        (only-in :std/string/path path-absolute?)
         (only-in "./artifacts.ss" call-with-build-artifact-issuance run-build-artifact-process
                  require-build-artifacts! current-build-output-directory test-build-publication)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
@@ -33,7 +34,7 @@
         (hash-put! groups prefix '())
         (set! order (cons prefix order)))
       (hash-update! groups prefix
-        (cut cons `(gxc: ,name ,@(.get entry options)) <>) '())) entries)
+        (cut cons (native-target-spec entry name) <>) '())) entries)
   ;; The admitted cross-package prelude bootstraps independently of Core.
   (map (lambda (native-prefix)
          (.o prefix: native-prefix spec: (reverse (hash-ref groups native-prefix))))
@@ -48,6 +49,7 @@
            (let (old (hash-ref seen id))
              (unless (and (equal? (.ref old 'path) (.ref entry 'path))
                           (equal? (.ref old 'options) (.ref entry 'options))
+                          (eq? (native-target-kind old) (native-target-kind entry))
                           (equal? (.ref (.ref old 'input) 'compiler-forms)
                                   (.ref (.ref entry 'input) 'compiler-forms)))
                (error "conflicting compiler inputs" id)))
@@ -61,6 +63,10 @@
     (project-selected-source-spec source retained root entry-source)))
 
 (def (project-selected-source-spec source retained root entry-source)
+  ;; Executable issuance belongs to an explicit native test demand. Module
+  ;; Build roots retain their existing library-only public contract.
+  (when (ormap (lambda (spec) (and (pair? spec) (eq? (car spec) exe:))) retained)
+    (error "native programs require an explicit init-owned test demand"))
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
   (unless (and (string? root) (path-absolute? root)
@@ -101,7 +107,7 @@
                         (expected (path-expand (string-append name ".ss") root)))
                    (unless (equal? (path-normalize expected) (path-normalize (.ref entry 'path)))
                      (error "source target does not match repository path" name (.ref entry 'path)))
-                   `(gxc: ,name ,@(.ref entry 'options)))) entries)))
+                   (native-target-spec entry name))) entries)))
     (unless (null? (.ref graph 'other-projections))
       (error "direct source projection requires a dedicated consumer for generated contributions"))
     (def (current!)
@@ -120,6 +126,7 @@
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         std-make-specs: (project-std-make-specs entries package-prefix)
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
+        program-targets: (native-program-targets entries)
         source-inputs: observed
         ;; Ordinary package Make and issued compilation share role lowering,
         ;; not authority. A package build does not mint publication approval.

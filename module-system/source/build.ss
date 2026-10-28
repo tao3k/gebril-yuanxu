@@ -2,7 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Selected Graph/native test demand -> observed compiler inputs. No compilation or execution.
-(import (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
+(import (only-in :yuanxu/module-system/building/native-products
+                 native-target-kind native-target-spec native-program-targets)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
                  current-expander-module-import core-import-module syntax-e
                  expander-context-id module-context-path)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
@@ -417,14 +419,28 @@
     (map
      (lambda (spec)
        (let* ((parts (if (string? spec) (list spec)
-                        (if (and (pair? spec) (eq? (car spec) 'gxc:)) (cdr spec)
+                        (if (and (pair? spec) (memq (car spec) '(gxc: exe:))) (cdr spec)
                             (error "retained entry must be a native Scheme target" spec))))
               (name (and (pair? parts) (car parts)))
-              (options-value (and (pair? parts) (cdr parts))))
+              (native-kind-value (if (string? spec) 'gxc: (car spec)))
+              (raw-options (and (pair? parts) (cdr parts)))
+              (bin-name-value (and (eq? native-kind-value 'exe:) (pgetq bin: raw-options)))
+              (options-value
+                (if (eq? native-kind-value 'exe:)
+                  (let strip ((rest raw-options))
+                    (cond ((null? rest) '())
+                          ((eq? (car rest) bin:) (strip (cddr rest)))
+                          (else (cons (car rest) (strip (cdr rest))))))
+                  raw-options)))
          (unless (and (string? name) (list? options-value)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
+         ;; A program has one owned leaf name. Standard Make receives bin:,
+         ;; while compiler hooks retain only their ordinary compiler options.
+         (when (eq? native-kind-value 'exe:)
+           (unless (and (string? bin-name-value) (module-source-name? bin-name-value))
+             (error "retained program requires one safe bin name" spec)))
          ;; Check every unresolved component; normalization must not hide links.
          (def path-value
            (path-normalize
@@ -459,7 +475,10 @@
            (error "conflicting retained compiler options" identity))
          (when (and old (pair? extra))
            (error "selected target cannot acquire retained extra inputs" identity))
-         (or old (.o kind: 'source path: path-value input: prepared-input options: options-value
+         (when (and old (not (eq? native-kind-value (native-target-kind old))))
+           (error "retained target changes its native product kind" identity))
+         (or old (.o kind: 'source native-kind: native-kind-value bin-name: bin-name-value
+                     path: path-value input: prepared-input options: options-value
                      compiler-identity: identity owner: 'build contributor: 'retained)))) specs)))
 (def (module-test-source-spec view demand root entry-source (retained '()))
   ((.ref demand 'admit-current))
@@ -509,7 +528,7 @@
     native-targets)
   (def (native-spec entry)
     (def target (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry))) native-targets))
-    `(gxc: ,(cdr entry) ,@(if target (.get target options) '())))
+    (if target (native-target-spec target (cdr entry)) `(gxc: ,(cdr entry))))
   ;; Derive each demanded package from the native header/package snapshot.
   ;; External selected owners keep their own identities; no catalog is scanned.
   (def packages (list (cons root package-prefix)))
@@ -586,7 +605,13 @@
                   (unless (and (equal? (path-normalize path) (path-normalize expected))
                                (eq? id (.ref input 'compiler-identity)))
                     (error "test dependency does not match current package source" id path expected))
-                  (unless (member (path-normalize expected) files)
+                  (when (or (not (member (path-normalize expected) files))
+                            ;; Explicit program roots are real compiler inputs;
+                            ;; ordinary Harness-only Suites remain interpreted.
+                            (find (lambda (target)
+                                    (and (eq? (.get target compiler-identity) id)
+                                         (eq? (native-target-kind target) 'exe:)))
+                              native-targets))
                     ;; Native Make resolves BOTH sources and expected products
                     ;; from this projection's root/prefix. A nested gerbil.pkg
                     ;; may identify the source without changing that Make root.
@@ -645,7 +670,11 @@
   (current!)
   (def source
     (.o selected-graph: (selected-graph!) demand-source: demand
-        compiler-identities: (map car (reverse entries)) source-inputs: compiler-inputs
+        compiler-identities: (map car (reverse entries))
+        program-targets:
+        (native-program-targets
+          (filter (lambda (target) (assq (.get target compiler-identity) entries)) native-targets))
+        source-inputs: compiler-inputs
         source-root: root spec: (map native-spec (reverse entries))
         admit-current: current!))
   ;; No products means no compiler/signing authority. Keep the same source and

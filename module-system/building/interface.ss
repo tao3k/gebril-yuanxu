@@ -2,7 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :clan/poo/object .get .o .cc .+ .call .slot?)
+(import (only-in "./native-products.ss" projection-program-targets)
+        (only-in :clan/poo/object .get .o .cc .+ .call .slot?)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./test-projection.ss" module-test-projection module-test-file-source
                  module-test-directory-source module-test-execution)
@@ -221,8 +222,18 @@
          ((.get build admit-artifacts))
          (.call build .compile (.get build output-directory)
            (lambda ()
-             (dispatch (.get build spec) args #f
-               ((.get build compile-output))))))
+             (let (output ((.get build compile-output)))
+               (if (pair? (projection-program-targets build))
+                 ;; Gerbil's exe linker resolves static units through its
+                 ;; native loader path, independently of Make's libdir. Restore
+                 ;; that existing process resource on success AND failure.
+                 (let (paths (load-path))
+                   (dynamic-wind
+                     (lambda () (add-load-path! output))
+                     (lambda ()
+                       (dispatch (.get build spec) args #f output (path-expand "bin" output)))
+                     (lambda () (set-load-path! paths))))
+                 (dispatch (.get build spec) args #f output))))))
        ;; Each independently selected Suite gets a proof-preserving subset of
        ;; the one native build. No per-Case compiler or test verdict is cached.
        (def transfer (list-ref (force artifact-cleaners) 4))
@@ -277,9 +288,9 @@
              (identities (.get prepared compiler-identities)))
          (.call prepared .with-compiler-inputs
            (lambda ()
-             ((list-ref products 2) identities libdir)
+             ((list-ref products 2) identities libdir (projection-program-targets prepared))
              (begin0 (dispatch native-specs)
-               ((list-ref products 3) identities libdir))))))
+               ((list-ref products 3) identities libdir (projection-program-targets prepared)))))))
       ((equal? (car args) "clean")
        (let (cleaners (force artifact-cleaners))
          ((car cleaners) (.get prepared build-graph))
@@ -287,7 +298,7 @@
          ;; Retain the freshness check at that exact boundary.
          (current!)
          (begin0 (dispatch native-specs)
-           ((cadr cleaners) (.get prepared compiler-identities) libdir))))
+           ((cadr cleaners) (.get prepared compiler-identities) libdir (projection-program-targets prepared)))))
       (else (dispatch))))
   (values
     (.o std-make-spec: build-spec

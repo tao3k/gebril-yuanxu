@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Core-owned native build completion; never intercept Gerbil loading.
 (import :clan/poo/object
+        (only-in "./native-products.ss" projection-program-targets native-program-identity? native-program-path)
         (only-in :std/string/path path-force-extension)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
@@ -205,9 +206,10 @@
 
 ;; Ordinary Gerbil completion is distinct from artifact/publication issuance.
 ;; std/make's static marker alone does not cover interrupted dynamic phases.
-(def (missing-build-products identities libdir)
-  (def markers (map (cut static-product-path <> libdir) identities))
-  (def files (artifact-files identities libdir #f))
+(def (missing-build-products identities libdir (programs '()))
+  (def libraries (filter (lambda (id) (not (native-program-identity? id programs))) identities))
+  (def markers (map (cut static-product-path <> libdir) libraries))
+  (def files (artifact-files identities libdir #f programs))
   (def (regular? path)
     (let (type (module-source-type path))
       (when (and type (not (eq? type 'regular)))
@@ -218,15 +220,17 @@
       (foldr append '()
         (map (lambda (id)
                (let (base (path-expand (symbol->string id) libdir))
-                 (list (string-append base ".ssi") (string-append base ".o1")))) identities)))
+                 (list (string-append base ".ssi") (string-append base ".o1")))) libraries)))
+    (filter (lambda (file) (not (regular? file)))
+      (map (lambda (program) (native-program-path program libdir)) programs))
     (filter (lambda (file) (not (regular? file)))
       (map (cut path-force-extension <> ".o1")
         (filter (lambda (file)
                   (and (string-suffix? ".scm" file) (not (member file markers)))) files)))))
-(def (repair-build-products! identities libdir)
+(def (repair-build-products! identities libdir (programs '()))
   ;; Invalidate only the affected unit's owned Gerbil marker. The installed Gerbil
   ;; recompiles it; no compiler replacement, output copying or approval occurs.
-  (def missing (missing-build-products identities libdir))
+  (def missing (missing-build-products identities libdir programs))
   (for-each
     (lambda (id)
       (def base (path-expand (symbol->string id) libdir))
@@ -236,8 +240,8 @@
                          (string-prefix? (string-append base "~") path))) missing)
         (let (marker (static-product-path id libdir))
           (when (file-exists? marker) (delete-file marker))))) identities))
-(def (require-build-products! identities libdir)
-  (let (missing (missing-build-products identities libdir))
+(def (require-build-products! identities libdir (programs '()))
+  (let (missing (missing-build-products identities libdir programs))
     (unless (null? missing)
       (error "build-required: selected runtime products are incomplete" missing))))
 (def (output-stem file)
@@ -252,14 +256,14 @@
     (or (hash-key? names stem)
         (let (separator (string-rindex stem #\~))
           (and separator (selected-stem? (substring stem 0 separator) names))))))
-(def (artifact-files identities libdir (complete? #t))
+(def (artifact-files identities libdir (complete? #t) (programs '()))
   ;; Index selected names, then visit each selected directory ONCE per check.
   ;; Native named runtime sections (name~Type~0) belong to that selected unit.
   (def directories (make-hash-table))
   (for-each (lambda (identity)
     (def base (path-expand (symbol->string identity) libdir))
     (def directory (path-directory base))
-    (when (and complete?
+    (when (and complete? (not (native-program-identity? identity programs))
                (not (and (file-exists? (string-append base ".ssi"))
                          (file-exists? (string-append base ".o1")))))
       (error "build-required: selected compiler output is missing" identity))
@@ -285,12 +289,24 @@
         (error "selected compiler identities share a static output" identity))
       (hash-put! static-owners path identity)
       (let (type (module-source-type path))
-        (when (or complete? type)
+        (when (or (and complete? (not (native-program-identity? identity programs))) type)
           (unless (eq? type 'regular)
             (error "build-required: selected compiler static output is missing" identity))
           (set! files (cons path files))))) identities)
+  ;; Executables have the same publication directory and byte authority as
+  ;; libraries. Their standard bin output replaces the library-only markers.
+  (for-each
+    (lambda (program)
+      (def path (native-program-path program libdir))
+      (def type (module-source-type path))
+      (when (or complete? type)
+        (unless (eq? type 'regular)
+          (error "build-required: selected native program is missing or non-regular" path))
+        (when (and complete? (zero? (bitwise-and (file-info-mode (file-info path #f)) #o111)))
+          (error "build-required: selected native program is not executable" path))
+        (set! files (cons path files)))) programs)
   (list-sort string<? files))
-(def (clean-build-artifacts! identities libdir)
+(def (clean-build-artifacts! identities libdir (programs '()))
   ;; Native clean can leave hot-import .oN generations and obsolete named
   ;; runtime sections. Explicit Core clean owns this exact selected family.
   (for-each
@@ -298,9 +314,10 @@
       (unless (eq? (module-source-type path) 'regular)
         (error "selected compiler output is not a regular file" path))
       (delete-file path))
-    (artifact-files identities libdir #f)))
-(def (observed-files identities libdir)
-  (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
+    (artifact-files identities libdir #f programs)))
+(def (observed-files identities libdir (programs '()))
+  (map (lambda (path) (cons path (digest-file path)))
+    (artifact-files identities libdir #t programs)))
 
 ;; The Gerbil's aggregate test build may publish a narrower consumer's support.
 ;; This transfers already admitted products, never adopts arbitrary disk files
@@ -310,6 +327,12 @@
   ((.get producer admit-artifacts))
   (unless (and (andmap (cut member <> (.get producer compiler-identities))
                   (.get consumer compiler-identities))
+               (andmap
+                 (lambda (program)
+                   (let (original (native-program-identity? (.get program compiler-identity)
+                                     (projection-program-targets producer)))
+                     (and original (equal? (.get original bin-name) (.get program bin-name)))))
+                 (projection-program-targets consumer))
                (andmap (cut member <> (.get producer source-inputs))
                   (.get consumer source-inputs)))
     (error "test support consumer is outside the admitted Gerbil build"))
@@ -323,7 +346,7 @@
     (call-with-build-artifact-issuance consumer (.get consumer output-directory)
       (lambda ()
         ((.get producer admit-artifacts))
-        (publish-products (observed-files (.get consumer compiler-identities) source)
+        (publish-products (observed-files (.get consumer compiler-identities) source (projection-program-targets consumer))
           source (current-build-output-directory))
         ((.get producer admit-artifacts)))))
   ((.get consumer admit-artifacts))
@@ -356,7 +379,9 @@
     (create-directory* (path-directory target))
     (when (and (module-source-type target) (not (eq? (module-source-type target) 'regular)))
       (error "compiler output target is not a regular file" target))
-    (call-with-output-file (list path: target truncate: #t)
+    (when (file-exists? target) (delete-file target))
+    (call-with-output-file
+      (list path: target truncate: #t permissions: (bitwise-and (file-info-mode info) #o777))
       (lambda (port) (write-subu8vector data 0 (u8vector-length data) port)))
     (file-last-access-and-modification-times-set! target
       (file-info-last-access-time info) (file-info-last-modification-time info))
@@ -399,7 +424,7 @@
       (module-source-admit-current! (issued-build-inputs state) "Core compiled source changed")
       (unless (equal? (digest-file (issued-build-record state)) (issued-build-record-digest state))
         (error "Core build issuance record changed" (issued-build-record state)))
-      (unless (equal? (observed-files (issued-build-identities state) (issued-build-libdir state))
+      (unless (equal? (observed-files (issued-build-identities state) (issued-build-libdir state) (projection-program-targets graph))
                       (issued-build-files state))
         (error "Core compiled artifacts changed"))
       (module-source-admit-current! (issued-build-inputs state) "Core compiled source changed")
@@ -531,7 +556,7 @@
     (lambda results
       ((.get projection admit-current))
       (def identities (.get projection compiler-identities))
-      (def produced (observed-files identities output))
+      (def produced (observed-files identities output (projection-program-targets projection)))
       ;; This adapter owns ordinary native gxc .o1 outputs. A later generation
       ;; cannot be blessed just because it was already beside a fresh .o1.
       ;; Preserve it and require an explicit clean/rebuild; never delete another
@@ -540,7 +565,7 @@
         (error "build-required: unissued native object generation; clean selected outputs"
           (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) produced))))
       (def files (if reusable? produced (publish-products produced output libdir)))
-      (def published (observed-files identities libdir))
+      (def published (observed-files identities libdir (projection-program-targets projection)))
       (unless (equal? files published)
         (error "build-required: selected outputs outside completed build; clean selected outputs"
                (list 'missing (filter (lambda (row) (not (assoc (car row) published))) files))
@@ -586,6 +611,7 @@
   ;; business selection; explicit selected-graph reflection remains guarded.
   (def endpoint
     (.o selected-graph: (selected-graph!) generation: (gensym 'test-support)
+        program-targets: (projection-program-targets source)
         build-publication: (force publication)
         compiler-current: (lambda () (current!) (.call (force publication) .current))))
   (def projection
@@ -593,6 +619,11 @@
         build-graph: endpoint
         output-directory: (.get (force publication) artifact)
         compile-output: current-build-output-directory
+        .program: (lambda (identity)
+                    ((.get projection admit-artifacts))
+                    (let (program (native-program-identity? identity (projection-program-targets source)))
+                      (unless program (error "native program is outside this admitted build" identity))
+                      (native-program-path program (.get projection output-directory))))
         .compile: (lambda (libdir action) (call-with-build-artifact-issuance projection libdir action))
         admit-artifacts: (lambda () (current!) (require-build-artifacts! endpoint) (current!))))
   projection)
