@@ -15,7 +15,7 @@
                  core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
         (only-in :yuanxu/module-system/building/source-closure
-                 for-each-build-module build-module-dependencies)
+                 for-each-build-module build-module-dependencies package-prelude-identity)
         ;; Gerbil owns this catalog. Restore only aliases installed for this
         ;; compiler extent; never keep a second module registry or reload code.
         (only-in :gerbil/expander/module __module-registry)
@@ -477,10 +477,11 @@
                          (compiler-source-inputs selected-sources)) (action)))
         restore-staged-imports!))))
 
-(def (build-target-name identity package-prefix)
+(def (build-target-name identity package-prefix (root #f))
   ;; One root-owned language file has an explicit native package identity.
   ;; Callers still verify its actual source path and prepared identity.
-  (if (and (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude))
+  (if (or (and root (eq? identity (package-prelude-identity root)))
+          (and (not root) (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude)))
     "prelude"
     (let ((name (symbol->string identity))
           (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))

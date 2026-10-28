@@ -7,7 +7,7 @@
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
                  current-expander-module-import core-import-module syntax-e
                  expander-context-id module-context-path)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-prelude-identity)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
@@ -163,6 +163,7 @@
             (unless (symbol? package) (error "public library entries require a native package identity" owner))
             ;; Confine before expansion, including every unresolved path part.
             (def prefix (string-append (symbol->string package) "/"))
+            (def language (package-prelude-identity package-root))
             (for-each
               (lambda (entry)
                 (def path (confined-build-path package-root entry))
@@ -172,9 +173,11 @@
               entries)
             (def (admit-context context)
               (def identity (expander-context-id context))
-              (when (and (symbol? identity) (string-prefix? prefix (symbol->string identity)))
-                (let* ((relative (substring (symbol->string identity) (string-length prefix)
-                                            (string-length (symbol->string identity))))
+              (when (and (symbol? identity)
+                         (or (string-prefix? prefix (symbol->string identity)) (eq? identity language)))
+                (let* ((relative (if (eq? identity language) "prelude"
+                                   (substring (symbol->string identity) (string-length prefix)
+                                              (string-length (symbol->string identity)))))
                        (path (confined-build-path package-root relative))
                        (actual (module-context-path context)))
                   (unless (and (string? actual) (equal? path (path-normalize actual)))
@@ -466,7 +469,7 @@
                  ((.get original-input admit-current))
                  (module-source-admit-current! extra "stale retained native Make input")))))
          (def identity (.ref prepared-input 'compiler-identity))
-         (unless (equal? name (build-target-name identity package-prefix))
+         (unless (equal? name (build-target-name identity package-prefix root))
            (error "retained source path and compiler identity disagree" name identity))
          (when (hash-key? seen identity)
            (error "duplicate retained compiler target" identity))
@@ -562,8 +565,10 @@
               (and (string-prefix? prefix name)
                 (path-expand (string-append (substring name (string-length prefix)
                   (string-length name)) ".ss") (car package)))) packages))
-        (and (equal? package-prefix "yuanxu") (eq? datum ':tao3k/yuanxu/prelude)
-          (path-expand "prelude.ss" root))
+        (and (ormap (lambda (package)
+                       (let (id (package-prelude-identity (car package)))
+                         (and id (eq? datum (string->symbol (string-append ":" (symbol->string id))))
+                              (path-expand "prelude.ss" (car package))))) packages))
         (and (string? datum) (path-absolute? datum) (string=? (path-extension datum) ".ss")
           (ormap (lambda (package) (string-prefix? (car package) datum)) packages) datum)))
     (cond
@@ -597,9 +602,9 @@
               (let (package
                 (and name (find (lambda (entry)
                   (or (string-prefix? (string-append (cdr entry) "/") name)
-                      (and (equal? (cdr entry) "yuanxu") (eq? id 'tao3k/yuanxu/prelude)))) packages)))
+                      (eq? id (package-prelude-identity (car entry))))) packages)))
               (if (and package (string=? (path-extension path) ".ss"))
-                (let* ((target (build-target-name id (cdr package)))
+                (let* ((target (build-target-name id (cdr package) (car package)))
                        (expected (path-expand (string-append target ".ss") (car package)))
                        (input (input! expected)))
                   (unless (and (equal? (path-normalize path) (path-normalize expected))
@@ -617,7 +622,7 @@
                     ;; may identify the source without changing that Make root.
                     ;; Absolute targets discard libdir during path-expand and
                     ;; make valid outputs appear missing on every warm run.
-                    (let (make-target (build-target-name id package-prefix))
+                    (let (make-target (build-target-name id package-prefix root))
                       (unless (equal? (path-normalize expected)
                                       (path-normalize
                                         (path-expand (string-append make-target ".ss") root)))

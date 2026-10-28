@@ -11,11 +11,12 @@
         (only-in :clan/poo/object .o .ref .get .call)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries)
+        (only-in :yuanxu/module-system/building/source-closure package-prelude-identity)
         (only-in :yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/source/admission module-source-type
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
 (export yuanxu-project-source-spec)
-(def (project-std-make-specs entries package-prefix)
+(def (project-std-make-specs entries package-prefix root)
   ;; std/make names products using prefix + target, while gxc uses the
   ;; declared module identity. Keep those names identical for every target.
   (def groups (make-hash-table))
@@ -23,7 +24,7 @@
   (for-each
     (lambda (entry)
       (def id (.get entry compiler-identity))
-      (def name (build-target-name id package-prefix))
+      (def name (build-target-name id package-prefix root))
       (def full (symbol->string id))
       (def prefix
         (if (equal? full (if (string-empty? package-prefix) name
@@ -92,8 +93,7 @@
          (entries
            (filter (lambda (entry)
                      (let (identity (.ref entry 'compiler-identity))
-                       (or (and (equal? package-prefix "yuanxu")
-                                (eq? identity 'tao3k/yuanxu/prelude))
+                       (or (eq? identity (package-prelude-identity root))
                            (string-prefix? (string-append package-prefix "/")
                              (symbol->string identity))))) all-entries))
          (foreign? (not (= (length entries) (length all-entries))))
@@ -103,7 +103,7 @@
                          (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs)) kept)))))
          (build-value
           (map (lambda (entry)
-                 (let* ((name (build-target-name (.ref entry 'compiler-identity) package-prefix))
+                 (let* ((name (build-target-name (.ref entry 'compiler-identity) package-prefix root))
                         (expected (path-expand (string-append name ".ss") root)))
                    (unless (equal? (path-normalize expected) (path-normalize (.ref entry 'path)))
                      (error "source target does not match repository path" name (.ref entry 'path)))
@@ -124,7 +124,7 @@
         (error "selected Graph publication requires all package owners")))
     (current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
-        std-make-specs: (project-std-make-specs entries package-prefix)
+        std-make-specs: (project-std-make-specs entries package-prefix root)
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
         program-targets: (native-program-targets entries)
         source-inputs: observed

@@ -7,10 +7,22 @@
                  current-expander-module-import expander-context-id
                  module-context? module-context-import module-context-path
                  core-context-prelude prelude-context? prelude-context-import
+                 core-library-package-plist core-read-module/sexp
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source))
-(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
+(export package-prelude-identity yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
         yuanxu-bootstrap-source-path yuanxu-library-identity? package-library-spec)
+
+(def (package-prelude-identity root)
+  ;; Gerbil owns package/header resolution. Only the root's actual prelude file
+  ;; may publish an identity outside its library prefix, matching gerbil.pkg.
+  (def file (path-expand "prelude.ss" root))
+  (def selected (memq 'prelude: (core-library-package-plist root #t)))
+  (and selected (pair? (cdr selected)) (file-exists? file)
+    (let-values (((base identity namespace body) (core-read-module/sexp file)))
+      (and (eq? (cadr selected)
+                (string->symbol (string-append ":" (symbol->string identity))))
+           identity))))
 
 ;; Project an explicitly selected package's actual native import graph. This
 ;; function does not discover roots, load their runtime, or execute a build.
@@ -19,6 +31,7 @@
                           admit-context: (admit-context void)
                           exclude: (excluded '()))
   (def prefix (string-append (symbol->string package) "/"))
+  (def language (package-prelude-identity root))
   (def seen (make-hash-table-eq))
   (def paths (make-hash-table))
   (def targets '())
@@ -26,8 +39,9 @@
     (admit-context context)
     (let* ((identity (expander-context-id context))
            (name (and (symbol? identity) (symbol->string identity))))
-      (when (and name (string-prefix? prefix name))
-        (let (relative (substring name (string-length prefix) (string-length name)))
+      (when (and name (or (string-prefix? prefix name) (eq? identity language)))
+        (let (relative (if (eq? identity language) "prelude"
+                        (substring name (string-length prefix) (string-length name))))
           (unless (or (member relative excluded) (hash-key? paths relative))
             (hash-put! paths relative #t)
             (set! targets (cons relative targets)))))))
@@ -50,16 +64,20 @@
   (let* ((prelude (core-context-prelude context))
          (entries (and (prelude-context? prelude) (prelude-context-import prelude)))
          (imports (module-context-import context)))
-    (if (and entries (pair? entries))
+    (cond
+     ((module-context? prelude)
+      (cons prelude (map build-module-context imports)))
+     ((and entries (pair? entries))
       (let (owner (build-module-context (car entries)))
         (unless (and (module-context? owner)
                      (eq? (expander-context-id owner) (expander-context-id prelude)))
           (error "selected prelude export owner mismatch" (expander-context-id context)))
-        (cons owner (map build-module-context imports)))
+        (cons owner (map build-module-context imports))))
+     (else
       (begin
         (when (and (prelude-context? prelude) (expander-context-id prelude))
           (error "selected prelude has no observable export owner" (expander-context-id context)))
-        (map build-module-context imports)))))
+        (map build-module-context imports))))))
 
 (def (for-each-build-module root visit
                            (seen (make-hash-table-eq))
