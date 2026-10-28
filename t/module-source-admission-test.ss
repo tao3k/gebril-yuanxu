@@ -272,6 +272,33 @@
                 (module-source-admit-current! (list (cons file "different bytes"))) error?)))
           (write-role root "types" "(def PublicContract 'changed-after-window)")
           (check-exception (replay) error?))))
+    (yuanxu-test-case "independent frozen evidence preserves mutable-input revisions"
+      (with-module
+        (lambda (root)
+          (def file (path-expand "modules/custom/example/types.ss" root))
+          (def original (module-source-read file))
+          (def mutable (string-copy original))
+          (def input (cons file mutable))
+          (def first #f)
+          (def second #f)
+          (def (capture)
+            (call-with-collected-module-sources
+              (lambda (current!)
+                (module-source-admit-current! (list input)) current!)))
+          (set! first (capture))
+          (set! second (capture))
+          ;; Mutating the caller's original string cannot edit issued evidence.
+          (string-set! mutable 0 #\space)
+          (write-role root "types" mutable)
+          (check-exception (first) error?)
+          (check-exception (second) error?)
+          (def replacement (capture))
+          (replacement)
+          ;; Restore original bytes: only the original revision becomes current.
+          (write-role root "types" original)
+          (first)
+          (second)
+          (check-exception (replacement) error?))))
     (yuanxu-test-case "one public Module object needs no flat private re-exports"
       (with-module
        (lambda (root)

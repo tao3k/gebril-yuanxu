@@ -7,6 +7,7 @@
 ;;; Invariant: this owner checks emitted Yuanxu contracts only. It is not a
 ;;; full JSON Schema evaluator and does not fetch schemas or run workflows.
 
+(import (only-in :yuanxu/object-family/syntax defpoo-object-family))
 (import (only-in :clan/poo/object object?)
         (only-in :clan/poo/mop element?)
         (only-in :yuanxu/module-system/schema/slot-contracts
@@ -61,17 +62,33 @@
 ;;; Boundary: validation receipts store typed diagnostics internally and
 ;;; project to bounded alists at the handoff boundary.
 ;; : (-> Symbol String Symbol Boolean [Diagnostic] [Symbol] [Symbol] [Symbol] Boolean YuanxuJsonSchemaObjectContractValidation)
-(defstruct yuanxu-json-schema-object-contract-validation
-  (kind
-   schema
-   object-key
-   valid?
-   diagnostics
-   checked-slots
-   missing-required
-   invalid-slots
-   runtime-executed)
-  transparent: #t)
+;; Public validation values cross source-publication epochs. Native POO
+;; slots preserve their declared interface without a generative record type
+;; from one reader being mistaken for the record type of another reader.
+(defpoo-object-family
+  (prototype JsonSchemaObjectContractValidation
+    json-schema-object-contract-validation yuanxu-json-schema-object-contract-validation?)
+  (constructor make-yuanxu-json-schema-object-contract-validation
+    (kind-value kind)
+    (schema-value schema)
+    (object-key-value object-key)
+    (valid?-value valid?)
+    (diagnostics-value diagnostics)
+    (checked-slots-value checked-slots)
+    (missing-required-value missing-required)
+    (invalid-slots-value invalid-slots)
+    (runtime-executed-value runtime-executed))
+  (accessors
+    (yuanxu-json-schema-object-contract-validation-kind kind)
+    (yuanxu-json-schema-object-contract-validation-schema schema)
+    (yuanxu-json-schema-object-contract-validation-object-key object-key)
+    (yuanxu-json-schema-object-contract-validation-valid? valid?)
+    (yuanxu-json-schema-object-contract-validation-diagnostics diagnostics)
+    (yuanxu-json-schema-object-contract-validation-checked-slots checked-slots)
+    (yuanxu-json-schema-object-contract-validation-missing-required missing-required)
+    (yuanxu-json-schema-object-contract-validation-invalid-slots invalid-slots)
+    (yuanxu-json-schema-object-contract-validation-runtime-executed runtime-executed))
+  (projections))
 
 ;; : (-> YuanxuSlotContract JsonSchemaCandidateObject YuanxuJsonSchemaValidationDiagnostic)
 (def (yuanxu-json-schema-missing-required-diagnostic slot-contract candidate)

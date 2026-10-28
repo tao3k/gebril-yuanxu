@@ -65,5 +65,6 @@
         yuanxu-json-schema-object-node->object-type-contract
         yuanxu-json-schema-node->object-type-contract)
 
-(import :yuanxu/modules/json-schema/json-schema-emit-runtime
-        :yuanxu/modules/json-schema/json-schema-emit-contracts)
+;; Internal emitters share this publication epoch and its native IR types.
+(import "./json-schema-emit-runtime.ss"
+        "./json-schema-emit-contracts.ss")

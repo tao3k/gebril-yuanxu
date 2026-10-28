@@ -106,6 +106,17 @@
                                         SIGKILL)))))))))
          (elapsed-value (- (real-time) started)))
     (when (and (.get prepared check-status) (not (zero? exit-status)))
+      ;; A failed child may have completed Cases before failing during native
+      ;; shutdown. Expose the exit status and transcript location before raising
+      ;; the original error, whose irritants still retain the complete output.
+      ;; Do not duplicate arbitrary child output into the enclosing Harness.
+      (let (diagnostics (current-error-port))
+        (display "Ops child exit-status=" diagnostics)
+        (display (process-exit-code exit-status) diagnostics)
+        (display " log=" diagnostics)
+        (write (.get prepared log) diagnostics)
+        (newline diagnostics)
+        (force-output diagnostics))
       (error "Ops script failed" (process-exit-code exit-status)
              (.get prepared log) captured-output))
     (.o status: (process-exit-code exit-status) wait-status: exit-status seconds: elapsed-value

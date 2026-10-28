@@ -4,7 +4,7 @@
 (import (only-in :clan/poo/mop TypeError?)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
-        (only-in :clan/poo/object .get .ref .call .cc .o .+)
+        (only-in :clan/poo/object .get .ref .call .cc .o .+ object?)
         (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/modules/json-schema/json-schema-validate
                  yuanxu-json-schema-object-contract-validation?
@@ -39,6 +39,8 @@
                         '((type . "object")
                           (properties . ((port . ((type . "integer"))))))))
         (def validation (.call scope validate artifact (.o port: "bad")))
+        ;; The public result remains a POO value across fresh/native readers.
+        (check-equal? (object? validation) #t)
         (check-equal? (yuanxu-json-schema-object-contract-validation? validation) #t)
         (check-equal? (yuanxu-json-schema-object-contract-validation-valid? validation) #f)
         (check-equal?

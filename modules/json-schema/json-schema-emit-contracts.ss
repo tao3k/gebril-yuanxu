@@ -51,7 +51,7 @@
                  yuanxu-json-schema-pattern-property->alist))
 
 
-(import :yuanxu/modules/json-schema/json-schema-emit-runtime)
+(import "./json-schema-emit-runtime.ss")
 
 (export #t)
 
