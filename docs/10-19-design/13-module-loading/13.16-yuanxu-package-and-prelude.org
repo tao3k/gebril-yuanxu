@@ -39,7 +39,31 @@ The ordinary surface reexports Gerbil and gerbil-poo. Expansion phases one and
 two expose the Gerbil helpers required by native macro definitions; a macro
 that constructs POO values at compile time explicitly imports that phase's POO
 dependency. The prelude does not broadcast the whole object library at every
-phase. It neither imports the Module System nor loads user modules or executes Scripts.
+phase. Importing the prelude alone neither imports the Module System nor loads
+user modules or executes Scripts.
+
+The prelude also exposes =yuanxu!= as the public declaration entry. On use it
+introduces Gerbil's native prefixed import of the existing selection macro.
+The prefix is private to that invocation, while the delegated head preserves
+the caller's lexical context and source location. The existing macro therefore
+owns the same =init.exports= identity, source guards and lazy projections.
+There is no second declaration grammar, loader or module catalog. The prelude
+does not statically import its own Module System, avoiding a self-bootstrap
+cycle for Yuanxu packages that select this prelude.
+
+Parser and downstream packages select this language in =gerbil.pkg=:
+
+#+begin_src scheme
+(package: example prelude: :tao3k/yuanxu/prelude depend: (...))
+;; init.ss has no import of an internal selection implementation.
+(yuanxu! :load-modules "./modules" mode: explicit rename: Features (example))
+#+end_src
+
+The native prelude Suite covers an ordinary consumer in a separate process,
+absence of Module System loading, two-window init declaration over absent
+module directories, the public export identity, and existing macro phases.
+The focused three-case Suite passed with the installed SDK; complete source
+build and downstream qualification are separate gates.
 
 During a source-only build, registering the =yuanxu= library directory alone
 cannot resolve the distinct =tao3k/yuanxu= prefix. The existing build bootstrap
@@ -465,3 +489,12 @@ AWS cost counters distinguish legacy explicit registration from Flake path-info'
 combined registration/evaluation. The original total request bounds remain three
 at selection/binding and five after publication, plus exactly one realization.
 Independent before/after-effect and publication currentness checks remain present.
+
+** Public declaration prelude qualification
+
+On the installed macOS ARM64 SDK (Gerbil =1cfb032=), the updated source root
+completed native =gerbil build --optimized= under the existing 2 GiB/300-second
+fence. Native =gerbil test -v 5= then passed all nine cases in the prelude,
+module-init-import and package-identity Suites under 1 GiB/120 seconds, including
+HARNESS-OK and final OK. These results qualify the local shared entry and
+source bootstrap; they do not qualify a different released SDK or remote CI.
