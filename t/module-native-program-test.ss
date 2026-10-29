@@ -70,7 +70,11 @@
           (put root "gerbil.pkg" "(package: native-program-fixture)\n")
           (put root "init.ss"
             "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
-          (def source "(export main) (def (main . args) (displayln \"NATIVE-PROGRAM-OK\"))\n")
+          (def source
+            (string-append
+              "(import (only-in :clan/poo/object .o .get))\n"
+              "(export main) (def (main . args) "
+              "(displayln \"NATIVE-PROGRAM-OK \" (.get (.o value: 42) value)))\n"))
           (put root "probe.ss" source)
           (call-with-output-file
             (list path: (path-expand "build.ss" root) permissions: #o755)
@@ -96,6 +100,22 @@
                    (equal? (Error-message failure)
                      "native programs require an explicit init-owned test demand"))))
           (def pending (.get (demand root) build))
+          ;; The native import graph, rather than a directory inventory, owns
+          ;; the exact borrowed static inputs needed by the real executable.
+          (check-equal? (pair? (.get pending static-inputs)) #t)
+          (def borrowed (car (.get pending static-inputs)))
+          (def text (.get borrowed contents))
+          (def first-character (string-ref text 0))
+          (dynamic-wind void
+            (lambda ()
+              ;; Alter only the exposed projection, never the installed input.
+              ;; It must not rewrite the private expected source observation.
+              (string-set! text 0 (if (char=? first-character #\X) #\Y #\X))
+              (check-exception ((.get pending admit-current)) error?))
+            (lambda () (string-set! text 0 first-character)))
+          ((.get pending admit-current))
+          (.put! borrowed 'admit-current void)
+          (check-exception ((.get pending admit-current)) error?)
           (check-exception (.call pending .program 'native-program-fixture/probe) error?)
           (def built (build-prepared-package! root '("-:max-heap=2G,debug=q")))
           (check-equal? (.get built status) 0)
@@ -105,6 +125,7 @@
           (def result (.call (.cc ProcessScript. 'command (list binary "-:max-heap=2G,debug=q") 'timeout 30) .run))
           (check-equal? (.get result status) 0)
           (check-equal? (and (string-contains (.get result output) "NATIVE-PROGRAM-OK") #t) #t)
+          (check-equal? (and (string-contains (.get result output) "NATIVE-PROGRAM-OK 42") #t) #t)
           (check-exception (.call build .program 'native-program-fixture/other) error?)
           (def bytes (call-with-input-file binary read-all-as-u8vector))
           (dynamic-wind void

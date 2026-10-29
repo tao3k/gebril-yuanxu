@@ -379,6 +379,17 @@
       (eval-syntax '(import (only-in :yuanxu/module-system/building/artifacts test-build-projection)))
       (eval-syntax 'test-build-projection))))
 
+;; Production source discovery must bootstrap without evaluating native FFI.
+;; Only an explicit executable Test demand needs compiled filesystem inputs.
+;; Use the same standard isolated import boundary as the artifact projector.
+(def native-static-inputs-api
+  (delay
+    (parameterize ((current-expander-context (make-top-context)))
+      (eval-syntax '(import :gerbil/core))
+      (eval-syntax
+        '(import (only-in :yuanxu/module-system/source/static-inputs module-native-static-inputs)))
+      (eval-syntax 'module-native-static-inputs))))
+
 ;; Discover only the demanded import closure. Never project production entries,
 ;; evaluate business scopes or scan peer suites to obtain test support.
 ;; Preserve std/make's native extra-inputs plist as declaration data. Only
@@ -496,6 +507,7 @@
   (def observations (.ref entry 'source-inputs))
   (def entries '())
   (def support-contexts '())
+  (def compiler-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
   (def interfaces (make-hash-table))
   (def (native-observation path)
@@ -648,6 +660,7 @@
       (lambda (context)
         (for-each-build-module context
           (lambda (dependency)
+            (set! compiler-contexts (cons dependency compiler-contexts))
             (def path (module-context-path dependency))
             (when (string? path)
               (let (input (hash-get prepared (path-normalize path)))
@@ -659,6 +672,22 @@
                       (append (native-observation path) compiler-observations)))))))
           seen))
       support-contexts))
+  (def programs
+    (native-program-targets
+      (filter (lambda (target) (assq (.get target compiler-identity) entries)) native-targets)))
+  ;; The existing native import walk owns this finite selection. Do not scan
+  ;; installed libraries or grant their writable copies publication authority.
+  (def static-input-values
+    (if (pair? programs)
+      ((force native-static-inputs-api) compiler-contexts (map car entries)) '()))
+  (def static-observations
+    (map (lambda (input) (cons (.get input path) (.get input contents))) static-input-values))
+  ;; Retain the original guard procedures before exposing their POO views.
+  ;; Replacing a view's method cannot replace the source owner's authority.
+  (def static-input-checks
+    (map (lambda (input) (.get input admit-current)) static-input-values))
+  (set! observations (append static-observations observations))
+  (set! compiler-observations (append static-observations compiler-observations))
   (def inputs (unique-build-inputs observations))
   (def compiler-inputs (unique-build-inputs compiler-observations))
   (def (selected-graph!)
@@ -675,14 +704,13 @@
       (lambda ()
         (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) prepared)
         (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) interfaces)
+        (for-each (lambda (check!) (check!)) static-input-checks)
         (module-source-admit-current! inputs))))
   (current!)
   (def source
     (.o selected-graph: (selected-graph!) demand-source: demand
         compiler-identities: (map car (reverse entries))
-        program-targets:
-        (native-program-targets
-          (filter (lambda (target) (assq (.get target compiler-identity) entries)) native-targets))
+        program-targets: programs static-inputs: static-input-values
         source-inputs: compiler-inputs
         source-root: root spec: (map native-spec (reverse entries))
         admit-current: current!))

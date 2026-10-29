@@ -64,7 +64,7 @@
       (eval-syntax '(import :yuanxu/module-system/building/artifacts))
       (eval-syntax '(list invalidate-build-artifacts! clean-build-artifacts!
                          repair-build-products! require-build-products!
-                         retain-test-support-subset!)))))
+                         retain-test-support-subset! call-with-native-static-inputs)))))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
@@ -231,7 +231,12 @@
                    (dynamic-wind
                      (lambda () (add-load-path! output))
                      (lambda ()
-                       (dispatch (.get build spec) args #f output (path-expand "bin" output)))
+                       ;; Borrowed static Scheme remains source-bound; only
+                       ;; Gambit's derived C/objects use a private write extent.
+                       ((list-ref (force artifact-cleaners) 5) build
+                         (lambda ()
+                           (dispatch (.get build spec) args #f output
+                                     (path-expand "bin" output)))))
                      (lambda () (set-load-path! paths))))
                  (dispatch (.get build spec) args #f output))))))
        ;; Each independently selected Suite gets a proof-preserving subset of

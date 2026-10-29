@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Core-owned native build completion; never intercept Gerbil loading.
 (import :clan/poo/object
+        (only-in :gerbil/compiler/base execute-pending-compile-jobs!)
         (only-in "./native-products.ss" projection-program-targets native-program-identity? native-program-path)
         (only-in :std/string/path path-force-extension)
         (only-in :std/crypto/digest sha256)
@@ -29,7 +30,7 @@
         build-artifact-publication-current admit-build-artifact-publication!
         build-artifact-handoff require-build-artifacts! test-build-publication test-build-projection
         current-build-phase-times repair-build-products! require-build-products!
-        retain-test-support-subset!)
+        retain-test-support-subset! call-with-native-static-inputs)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
 ;; No callback runs inside a guard; disabled instrumentation allocates no table.
@@ -192,6 +193,54 @@
 ;; Native make consumes an output DIRECTORY, not an asserted trust flag. Fresh
 ;; ownership makes missing outputs trigger the installed compiler naturally.
 (def current-build-output-directory (make-parameter #f))
+
+;; Gambit's linker generates C and object files beside user-library Scheme.
+;; Imported packages may be immutable Bazel inputs. Keep the exact observed
+;; Scheme in a private compiler extent; never chmod or rewrite its producer.
+;; No dynamic library, interface, result or admission verdict is copied here.
+(def (call-with-native-static-inputs projection action)
+  (def inputs (if (.slot? projection 'static-inputs) (.get projection static-inputs) '()))
+  (def (current!)
+    (for-each (lambda (input) ((.get input admit-current))) inputs))
+  (if (null? inputs) (action)
+    (call-with-temporary-directory "core-native-static-"
+      (lambda (directory)
+        (current!)
+        (def target (path-expand "static" directory))
+        (create-directory target)
+        (def staged
+          (map
+            (lambda (input)
+              (def name (.get input name))
+              (unless (and (string? name) (string-suffix? ".scm" name)
+                           (equal? name (path-strip-directory name)))
+                (error "native static compiler input requires a filename" name))
+              (def path (path-expand name target))
+              (when (file-exists? path)
+                (error "native static compiler inputs share an output" path))
+              (def text (.get input contents))
+              (call-with-output-file path (cut display text <>))
+              (cons path text)) inputs))
+        (def paths (load-path))
+        (dynamic-wind
+          (lambda () (add-load-path! directory))
+          (lambda ()
+            (try
+              (module-source-admit-current! staged "staged native compiler input changed")
+              (begin0 (action)
+                (module-source-admit-current! staged "staged native compiler input changed")
+                (current!))
+              (catch (cause)
+                ;; An early make refusal can leave compiler jobs queued. Drain
+                ;; the official executor before its input directory is removed.
+                (with-catch
+                  (lambda (cleanup)
+                    (unless (eq? cause cleanup)
+                      (error "compiler failure and job drain failure" cause cleanup)))
+                  execute-pending-compile-jobs!)
+                (raise cause))))
+          (lambda () (set-load-path! paths)))))))
+
 (def (digest-file path)
   (unless (eq? (module-source-type path) 'regular)
     (error "compiled artifact is missing, non-regular or a symlink" path))

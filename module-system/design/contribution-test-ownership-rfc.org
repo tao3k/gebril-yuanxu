@@ -101,3 +101,32 @@ controls for same-byte retargeting, byte tampering, disappearance, directory
 targets and source-role symlinks, followed by restoration of the original input.
 Actual sandbox compilation and native test execution remain separate consumer
 gates; an observation-component Case alone does not qualify those consumers.
+
+* Borrowed static compiler inputs
+
+Gambit's native executable linker writes derived C and objects beside imported
+user-library Scheme. A dependency's published static Scheme can be read-only.
+The existing init-owned Test demand selects these inputs from the native import
+graph and compiler namespace encoding. Owned modules and the compiler's prebuilt
+runtime stay with their original owners; no directory inventory is introduced.
+
+Each selected input retains its original bytes and live filesystem origin.
+Tree Artifact aliases additionally retain their original link kind and followed
+target identity; observations bind the canonical regular input. Same-byte
+retargeting, missing or directory targets are refused. Ordinary Module source
+roles keep their strict symlink refusal.
+Its public POO projection cannot replace the private source guard or mutate
+the private expected text. Source and compiler observations bind that original
+evidence into existing publication identity and currentness admission.
+
+The existing Make dispatch creates one temporary static-input extent, restores
+the exact prior load path on every exit, and removes derived files afterwards.
+On early refusal the official compiler executor drains before retiring inputs.
+Interfaces, dynamic libraries and publication approval are never copied into
+this writable extent. The producer's installed library remains unchanged.
+
+Native resource Cases cover return, exception, a real pending compiler job,
+changed originals and changed staged Scheme. The executable Scenario imports
+an actual POO dependency and preserves changed-source and executable-tampering
+refusals. Projection-text mutation and replacement of a public guard are also
+refused. Independent read-only Bazel compilation remains a separate gate.
