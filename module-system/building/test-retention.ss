@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Explicit trace only; ordinary module tests do not initialize retention probes.
 (import :clan/poo/object
+        (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
         (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
@@ -427,7 +428,7 @@
              (precedence (object-%precedence-list receiver))
              (has-protocol (and (pair? precedence) (ormap object-%protocol precedence)))
              (has-declarations (and (pair? precedence)
-               (ormap (lambda (parent) (pair? (object-%declarations parent))) precedence))))
+               (ormap (lambda (parent) (positive? (prototype-map-length (object-%declarations parent)))) precedence))))
         (when (and table (not (hash-key? metadata-tables table)))
           (hash-put! metadata-tables table #t)
           (set! metadata-entries (+ metadata-entries (&raw-table-count table)))

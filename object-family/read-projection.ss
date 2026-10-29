@@ -3,6 +3,7 @@
 ;;; Call-local retention projection; native MOP still owns read validity.
 (import (only-in :clan/poo/object .all-slots object? object-%precedence-list object-protocol replay-slot-reads!
                  object-revision object-supers object-%protocol object-%declarations)
+        (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation
                  %call-with-recorded-slot-reads %deliver-slot-read slot-read-value
                  slot-read-receiver slot-read-dependencies
@@ -30,7 +31,7 @@
   (when (current-region)
     (unless (and (null? (object-supers receiver))
                  (not (object-%protocol receiver))
-                 (null? (object-%declarations receiver)))
+                 (zero? (prototype-map-length (object-%declarations receiver))))
       (owned-read-open!)))
   (owned-read-value! receiver))
 (def (owned-read-derived! receiver)
@@ -42,10 +43,10 @@
         (unless (hash-key? parents parent)
           (hash-put! parents parent (object-revision parent))
           (.all-slots parent)
-          (when (or (object-%protocol parent) (pair? (object-%declarations parent)))
+          (when (or (object-%protocol parent) (positive? (prototype-map-length (object-%declarations parent))))
             (owned-read-open!))
           (for-each visit (object-supers parent))))
-      (when (or (object-%protocol receiver) (pair? (object-%declarations receiver)))
+      (when (or (object-%protocol receiver) (positive? (prototype-map-length (object-%declarations receiver))))
         (owned-read-open!))
       (for-each visit (object-supers receiver))))
   (owned-read-value! receiver))

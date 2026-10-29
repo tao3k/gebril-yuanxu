@@ -16,12 +16,7 @@
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match)
-        (only-in :yuanxu/module-system/schema/slot-contracts
-                 yuanxu-contract-slot
-                 yuanxu-contract-value-type
-                 yuanxu-object-contract)
         (only-in :yuanxu/utilities/functional
-                 yuanxu-all?
                  yuanxu-predicate-and
                  yuanxu-predicate-or
                  yuanxu-predicate-exactly-one)

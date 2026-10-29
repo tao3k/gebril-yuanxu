@@ -8,28 +8,12 @@
 ;;; emitting contracts; value validation reuses those closures without walking
 ;;; the normalized schema again.
 
-(import (only-in :clan/poo/object
-                 .alist
-                 .ref
-                 .slot?
-                 object?)
-        (only-in :std/text/pregexp
-                 pregexp
-                 pregexp-match)
+(import (only-in :clan/poo/object object?)
         (only-in :yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
                  yuanxu-object-contract)
-        (only-in :yuanxu/utilities/functional
-                 yuanxu-all?
-                 yuanxu-predicate-and
-                 yuanxu-predicate-or
-                 yuanxu-predicate-exactly-one)
-        (only-in :std/list/list find)
-        (only-in "./json-schema-constraints.ss"
-                 yuanxu-json-schema-apply-node-constraints)
-        (only-in "./functional.ss" yuanxu-contract-key->string yuanxu-contract-all? yuanxu-contract-json-object? yuanxu-contract-member?)
-        (only-in :std/list/list map filter-map)
+        (only-in :std/list/list map)
         (only-in "./json-schema-ir.ss"
                  yuanxu-json-schema-node?
                  yuanxu-json-schema-node-kind
@@ -51,7 +35,7 @@
                  yuanxu-json-schema-pattern-property->alist))
 
 
-(import "./json-schema-emit-runtime.ss")
+(import :yuanxu/modules/json-schema/json-schema-emit-runtime)
 
 (export #t)
 

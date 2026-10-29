@@ -74,3 +74,35 @@ refactors. Publication layers only this dependency/binding update and the
 qualified public validation-method fix onto the concurrent remote history.
 Remote CI must validate that integrated source independently; local results
 are not a claim that the entire remote queue passed.
+
+* CI integration findings
+
+The first integrated CI passed all Lean/Quint shards and the Linux build. Its
+objects shard exposed one remaining representation assumption: source diagnosis
+applied assq to object-%declarations, now a native persistent prototype map.
+Use native point lookup with an absence sentinel so an explicit false
+specification remains an attribution barrier. Keep currentness and original
+source locations; do not skip diagnostics on the error path.
+
+The scale shard independently stopped at its existing closed-boundary negative
+control. owned-read-leaf! used null? on that same native declaration map,
+classifying an empty map as open; pair? also missed nonempty maps in derived
+receivers. Replace list representation tests with native prototype-map-length.
+The compact/tree regression checks empty and nonempty catalogs without forcing
+a declaration descriptor, retaining the open boundary for genuine declarations.
+This fixes representation classification, not the unresolved scale memory cost;
+full scale acceptance still requires the unchanged CI gate.
+
+The modules shard also exposed copied native names spines: the actual issued
+read and receiver/instance/revision must retain identity, while a names snapshot
+compares its finite symbolic sequence. Only the names key uses this rule;
+ordinary cached field values still require eq?. The existing dependency
+continuation regression requires the original observed records and refuses a
+changed cold leaf without invoking it.
+
+The macOS cold build failed its existing 60-second child limit at 64.07
+seconds including termination, after a separate 21.53-second spec projection.
+The runner exposed three compiler workers. This failure is retained; no timeout
+is increased. Remove copied unused imports from the JSON Schema emission
+facade and its implementation headers, and revalidate through the unchanged
+source-only bootstrap rather than shrinking its selected spec or roots.

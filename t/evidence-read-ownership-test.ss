@@ -4,7 +4,9 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-dependencies)
         (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
-                 owned-read-copy! owned-read-derived!)
+                 owned-read-copy! owned-read-derived! owned-read-leaf!
+                 current-owned-read-open-guard)
+        (only-in :clan/poo/prototype-map prototype-map)
         (only-in :clan/poo/validation-rebinding rebind-validation)
         (only-in :clan/poo/mop Type. define-type validate object-read-issued?)
         (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
@@ -27,6 +29,28 @@
   (and (pair? reads) (andmap original? reads)))
 (def evidence-read-ownership-test
   (test-suite "Native evidence read ownership"
+    (yuanxu-test-case "persistent declaration catalogs retain the open boundary without demanding descriptors"
+      (for-each
+        (lambda (policy)
+          (def opened 0)
+          (parameterize ((current-owned-read-open-guard (lambda () (set! opened (1+ opened)))))
+          (call-with-owned-read-projection '() (lambda () #t)
+            (lambda ()
+              (owned-read-leaf! (make-object declarations: (prototype-map '() policy: policy)))
+              (check-equal? opened 0)
+              (def descriptor (.o .type: (error "declaration inspection forced a descriptor")))
+              (owned-read-leaf! (make-object declarations:
+                (prototype-map (list (cons 'port descriptor)) policy: policy)))
+              (check-equal? opened 1)))
+          (call-with-owned-read-projection '() (lambda () #t)
+            (lambda ()
+              (def parent (make-object declarations:
+                (prototype-map (list (cons 'port (.o))) policy: policy)))
+              ;; A direct declaration must open the scope before a child or
+              ;; descriptor is prepared. No snapshot list is used as a flag.
+              (owned-read-derived! parent)
+              (check-equal? opened 2)))))
+        '(compact tree)))
     (yuanxu-test-case "receipts retain actual candidate Contract Context and child identities"
       (def candidate (.o port: 443))
       (def context (.o generation: 'current))

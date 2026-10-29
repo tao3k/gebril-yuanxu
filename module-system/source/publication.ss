@@ -76,6 +76,16 @@
 (def publication-contract-revision (object-revision ModulePublicationContract))
 (def (module-publication-contract-current?)
   (= publication-contract-revision (object-revision ModulePublicationContract)))
+;; Native names records own a separate spine. Compare only finite symbolic
+;; sequences; malformed/cyclic snapshots fall back without invoking a getter.
+;; Ordinary cached values still require identity, not structural equivalence.
+(def (same-slot-names? left right)
+  (and (list? left) (list? right)
+    (let loop ((left left) (right right))
+      (cond ((null? left) (null? right))
+            ((null? right) #f)
+            (else (and (symbol? (car left)) (eq? (car left) (car right))
+                       (loop (cdr left) (cdr right))))))))
 (def (module-publication-dependency-projection value observed?)
   ;; Read ONLY native cache/token storage. No .ref, MOP query, replay callback
   ;; or observer delivery may execute after the producer in this probe.
@@ -87,7 +97,9 @@
            (and read (observed? read)
                 (= (slot-read-revision read) (object-revision receiver))
                 (eq? (slot-read-instance read) (object-%instance receiver))
-                (eq? (slot-read-value read) value)))))
+                (if (equal? key '(names))
+                  (same-slot-names? (slot-read-value read) value)
+                  (eq? (slot-read-value read) value))))))
   (def (cached receiver key)
     (and (object? receiver) (object-%instance receiver)
          (let (value (hash-get (object-%instance receiver) key))

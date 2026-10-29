@@ -1,13 +1,17 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Private provenance lives on native specifications, not in a field registry.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
+        (only-in :clan/poo/prototype-map prototype-map-ref)
         (only-in :std/list/list delete-duplicates/hash every)
         (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-admit-current!
                  call-with-module-source-read-cache))
 (export source-object-slots field-slot-origins/value admit-field-sources!)
 (defstruct (located-slot $computed-slot-spec) (location inputs) final: #t)
+;; False metadata is still a present attribution barrier. Use a private absence
+;; identity, never a value predicate or a second index of public field names.
+(def absent-specification (gensym 'absent-specification))
 
 ;; Called only on a fresh authoring object. Wrapping a specification does not
 ;; invoke it, its inherited computation, or any other field.
@@ -29,13 +33,12 @@
                   (module-source-read path)))))) paths))
   (for-each
     (lambda (row)
-      (let (entry (assq (car row) (object-slots object)))
-        (when (and entry (cadr row))
-          (let (spec (cdr entry))
-            (.putslot! object (car row)
-              (make-located-slot
-                (lambda (self next) ((apply-slot-spec self spec next)))
-                row (cdr (assoc (cadr row) inputs))))))))
+      (let (spec (prototype-map-ref (object-%slots object) (car row) absent-specification))
+        (when (and (not (eq? spec absent-specification)) (cadr row))
+          (.putslot! object (car row)
+            (make-located-slot
+              (lambda (self next) ((apply-slot-spec self spec next)))
+              row (cdr (assoc (cadr row) inputs)))))))
     methods)
   object)
 
@@ -44,20 +47,27 @@
 ;; unknown winning specification is an attribution barrier, not an older source.
 ;; Retain observed ancestor specifications for conservative currentness checks.
 (def (slot-origins object name)
-  (compute-precedence-list! object)
+  ;; Read-only traversal borrows existing native metadata. Do not allocate a
+  ;; public snapshot merely to discard it; cold preparation still owns hooks.
+  (unless (object-%precedence-list object)
+    (compute-precedence-list! object))
   (def assigned? (and (object-%overrides object) (hash-key? (object-%overrides object) name)))
   (let loop ((parents (object-%precedence-list object))
              (visible '()) (observed '()) (open? (not assigned?)) (declared? assigned?))
     (if (null? parents)
       (make-slot-sources (reverse visible) (reverse observed)
         (and declared? (null? visible)))
-      (let* ((parent (car parents)) (entry (assq name (object-slots parent)))
-             (declaration (and (not entry) (assq name (object-%declarations parent)))))
+      (let* ((parent (car parents))
+             (spec (prototype-map-ref (object-%slots parent) name absent-specification))
+             (method? (not (eq? spec absent-specification)))
+             (declaration? (and (not method?)
+               (not (eq? (prototype-map-ref (object-%declarations parent) name absent-specification)
+                         absent-specification)))))
         (cond
-         ((and entry (located-slot? (cdr entry)))
-          (loop (cdr parents) (if open? (cons (cdr entry) visible) visible)
-                (cons (cdr entry) observed) open? #t))
-         ((or entry declaration)
+         ((and method? (located-slot? spec))
+          (loop (cdr parents) (if open? (cons spec visible) visible)
+                (cons spec observed) open? #t))
+         ((or method? declaration?)
           (loop (cdr parents) visible observed #f #t))
          (else (loop (cdr parents) visible observed open? declared?)))))))
 
