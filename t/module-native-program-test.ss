@@ -5,6 +5,7 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/error Error? Error-message)
+        (only-in :gerbil/expander core-import-module)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -20,6 +21,47 @@
     '((exe: "probe" bin: "probe-test"))))
 (def module-native-program-test
   (test-suite "Init-owned standard native executable publication"
+    (yuanxu-test-case "cached foreign source retains native package lookup authority"
+      (call-with-temporary-directory "cached-native-package"
+        (lambda (root)
+          (put root "gerbil.pkg" "(package: cached-native-consumer)\n")
+          (put root "init.ss"
+            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+          (def manifest "(package: cached-native-foreign)\n")
+          (put root "foreign/gerbil.pkg" manifest)
+          (put root "foreign/sub/helper.ss" "(export answer) (def answer 42)\n")
+          (put root "support.ss"
+            "(import \"./foreign/sub/helper\") (export supported-answer) (def supported-answer answer)\n")
+          (put root "probe.ss"
+            "(import \"./support\") (export probe) (def (probe) supported-answer)\n")
+          ;; Populate Gerbil's native registry before discovering this demand.
+          ;; A reused context must retain the same package evidence as a cold one.
+          (core-import-module (path-expand "foreign/sub/helper.ss" root))
+          (def tests (.call (prepared-package-tests root) .for-files
+                       (list (path-expand "probe.ss" root))))
+          (def build (.get tests build))
+          (def package-path (path-normalize (path-expand "foreign/gerbil.pkg" root)))
+          (def closer (path-normalize (path-expand "foreign/sub/gerbil.pkg" root)))
+          (unless (assoc package-path (.get build source-inputs))
+            (display "NATIVE-PACKAGE-OBSERVATION-REFUSED ")
+            (write (list (.get build spec) (map car (.get build source-inputs))))
+            (newline) (force-output))
+          (check-equal? (cdr (assoc package-path (.get build source-inputs))) manifest)
+          (check-equal? (and (assoc closer (.get build source-inputs)) #t) #t)
+          (check-equal? (cdr (assoc closer (.get build source-inputs))) #f)
+          ((.get build admit-current))
+          (dynamic-wind void
+            (lambda ()
+              (put root "foreign/gerbil.pkg" "(package: substituted-native-foreign)\n")
+              (check-exception ((.get build admit-current)) error?))
+            (lambda () (put root "foreign/gerbil.pkg" manifest)))
+          ((.get build admit-current))
+          (dynamic-wind void
+            (lambda ()
+              (put root "foreign/sub/gerbil.pkg" "(package: nearer-native-foreign)\n")
+              (check-exception ((.get build admit-current)) error?))
+            (lambda () (delete-file closer)))
+          ((.get build admit-current)))))
     (yuanxu-test-case "real program publication rejects stale source and altered executable"
       (call-with-temporary-directory "native-program-publication"
         (lambda (root)

@@ -12,8 +12,10 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
+                 check-exception
                  test-suite)
-        :yuanxu/graph/interface)
+        :yuanxu/graph/interface
+        (only-in :yuanxu/graph/payload-operations yuanxu-graph-slots-merge))
 
 (export module-extension-resolution-test graph-unification-test graph-native-operation-test)
 
@@ -109,6 +111,18 @@
         (check-equal? (length (yuanxu-graph-reachable-ids resolved '((root)))) 5)
         (check-equal? (extension-slot-value (car (yuanxu-graph-root-children left)) 'value) 7)
         (check-equal? (extension-slot-value (car (yuanxu-graph-root-children right)) 'value) 0)))
+    (yuanxu-test-case "unchanged root IDs still normalize noncanonical contained paths"
+      ;; A same-ID fast path must inspect the facts rather than silently retain
+      ;; a foreign prefix. The caller's original object remains untouched.
+      (def original-node (yuanxu-graph-node '(foreign child) '((kept . 1))))
+      (def child
+        (yuanxu-graph '(root child) (list original-node) '() '((source . retained))))
+      (def root (yuanxu-graph-rooted 'root '() (list child)))
+      (def attached (car (yuanxu-graph-root-children root)))
+      (check-equal? (yuanxu-graph-node-ids attached) '((root child)))
+      (check-equal? (yuanxu-graph-metadata child) '((source . retained)))
+      (check-equal? (yuanxu-graph-node-id original-node) '(foreign child))
+      (check-equal? (extension-slot-value attached 'kept) 1))
     (yuanxu-test-case "removal drops the complete contained subtree"
       (let* ((root (yuanxu-graph-rooted 'root '()
                     (list (yuanxu-graph-rooted 'old '()
@@ -173,4 +187,50 @@
         (check-equal? (extension-slot-value resolved 'custom) 'accepted)
         (check-equal? (yuanxu-graph-metadata resolved) '((owner . caller)))
         (check-equal? (yuanxu-graph-node-metadata (car (yuanxu-graph-nodes resolved)))
-                      '((origin . source)))))))
+                      '((origin . source)))))
+    (yuanxu-test-case "child views preserve fact order across shared cyclic descendants"
+      ;; Publication order deliberately differs from traversal order. A view
+      ;; includes shared reachable facts, excludes unrelated branches, and
+      ;; retains the caller's node identities and graph metadata.
+      (let* ((leaf (yuanxu-graph-node '(root leaf) '((value . kept))))
+             (base (yuanxu-graph '(root)
+                     (list leaf
+                           (yuanxu-graph-node '(root b))
+                           (yuanxu-graph-node '(root))
+                           (yuanxu-graph-node '(root a)))
+                     (list (yuanxu-graph-edge '(root a) '(root leaf))
+                           (yuanxu-graph-edge '(root) '(root b))
+                           (yuanxu-graph-edge '(root b) '(root leaf))
+                           (yuanxu-graph-edge '(root) '(root a))
+                           (yuanxu-graph-edge '(root leaf) '(root a)))
+                     '((owner . original))))
+             (children (yuanxu-graph-root-children base))
+             (left (car children))
+             (right (cadr children)))
+        (check-equal? (map yuanxu-graph-root-id children) '(b a))
+        (check-equal? (yuanxu-graph-node-ids left)
+                      '((root leaf) (root b) (root a)))
+        (check-equal? (yuanxu-graph-edge-pairs left)
+                      '(((root a) (root leaf))
+                        ((root b) (root leaf))
+                        ((root leaf) (root a))))
+        (check-equal? (yuanxu-graph-node-ids right) '((root leaf) (root a)))
+        (check-equal? (yuanxu-graph-edge-pairs right)
+                      '(((root a) (root leaf)) ((root leaf) (root a))))
+        (check-equal? (eq? (car (yuanxu-graph-nodes right)) leaf) #t)
+        (check-equal? (yuanxu-graph-metadata right) '((owner . original)))
+        (check-equal? (length (yuanxu-graph-nodes base)) 4)))
+
+    (yuanxu-test-case "slot merge retains duplicate positions and false overrides"
+      (let ((base '((kept . #t) (duplicate . initial) (duplicate . shadow)))
+            (extra '((duplicate . #f) (added . first) (added . #f) (last . final))))
+        (check-equal? (yuanxu-graph-slots-merge base extra)
+                      '((kept . #t) (duplicate . #f) (duplicate . shadow)
+                        (added . #f) (last . final)))
+        (check-equal? base '((kept . #t) (duplicate . initial) (duplicate . shadow)))
+        (check-equal? extra '((duplicate . #f) (added . first) (added . #f) (last . final))))
+      ;; Matching the first entry must never hide a malformed later declaration.
+      (check-exception
+       (yuanxu-graph-slots-merge '((duplicate . initial) malformed) '((duplicate . changed)))
+       (lambda (_) #t)))
+))

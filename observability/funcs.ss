@@ -233,7 +233,9 @@
 ;; : (-> YuanxuDebugSlotPolicy Symbol Symbol Natural [(Pair Symbol Symbol)] Symbol YuanxuDebugSlotReceipt)
 (def (yuanxu-debug-slot-receipt policy receiver-value slot-value depth-value
                                   path-value outcome-value)
-  (validate YuanxuDebugSlotPolicyContract policy)
+  ;; The receipt's native policy responsibility performs this admission.
+  ;; No policy slot is read before that Class validation; validating it again
+  ;; here repeats the same complete contract without adding a handoff boundary.
   (let* ((policy-value policy)
          (accepted-value (memq outcome-value '(admitted resolved)))
          (reason-value

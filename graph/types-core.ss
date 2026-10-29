@@ -149,10 +149,10 @@
   (yuanxu-graph-alist? value))
 
 ;; : (-> Object [Object] [Alist] YuanxuGraphNode)
-(def (yuanxu-graph-node id . maybe-payload+metadata)
+(def (yuanxu-graph-node id-value . maybe-payload+metadata)
   (yuanxu-graph-require "graph node id must be a stable id"
-                          (yuanxu-graph-id? id)
-                          id)
+                          (yuanxu-graph-id? id-value)
+                          id-value)
   (let* ((payload (if (null? maybe-payload+metadata)
                     #f
                     (car maybe-payload+metadata)))
@@ -160,14 +160,15 @@
                            (null? (cdr maybe-payload+metadata)))
                      '()
                      (cadr maybe-payload+metadata))))
-    (object<-alist
-     (list
-      (cons 'kind +yuanxu-graph-node-prototype-kind+)
-      (cons 'schema 'yuanxu.graph.node.v1)
-      (cons 'id id)
-      (cons 'payload payload)
-      (cons 'metadata metadata)
-      (cons 'runtime-executed #f)))))
+    ;; Fix the ordinary POO slot layout at expansion instead of rebuilding a
+    ;; runtime alist. Distinct lexical names preserve native receiver binding.
+    (let ((payload-value payload) (metadata-value metadata))
+      (.o kind: +yuanxu-graph-node-prototype-kind+
+          schema: 'yuanxu.graph.node.v1
+          id: id-value
+          payload: payload-value
+          metadata: metadata-value
+          runtime-executed: #f))))
 
 ;; : (-> Object Boolean)
 (def (yuanxu-graph-node? value)
@@ -214,13 +215,13 @@
   (error-message "graph node projection requires a list"))
 
 ;; : (-> Object Object Symbol [Alist] YuanxuGraphEdge)
-(def (yuanxu-graph-edge from to . maybe-kind+metadata)
+(def (yuanxu-graph-edge from-value to-value . maybe-kind+metadata)
   (yuanxu-graph-require "graph edge from must be a stable id"
-                          (yuanxu-graph-id? from)
-                          from)
+                          (yuanxu-graph-id? from-value)
+                          from-value)
   (yuanxu-graph-require "graph edge to must be a stable id"
-                          (yuanxu-graph-id? to)
-                          to)
+                          (yuanxu-graph-id? to-value)
+                          to-value)
   (let* ((edge-kind (if (null? maybe-kind+metadata)
                      'dependency
                      (car maybe-kind+metadata)))
@@ -231,15 +232,14 @@
     (yuanxu-graph-require "graph edge kind must be a symbol"
                             (symbol? edge-kind)
                             edge-kind)
-    (object<-alist
-     (list
-      (cons 'kind +yuanxu-graph-edge-prototype-kind+)
-      (cons 'schema 'yuanxu.graph.edge.v1)
-      (cons 'from from)
-      (cons 'to to)
-      (cons 'edge-kind edge-kind)
-      (cons 'metadata metadata)
-      (cons 'runtime-executed #f)))))
+    (let ((kind-value edge-kind) (metadata-value metadata))
+      (.o kind: +yuanxu-graph-edge-prototype-kind+
+          schema: 'yuanxu.graph.edge.v1
+          from: from-value
+          to: to-value
+          edge-kind: kind-value
+          metadata: metadata-value
+          runtime-executed: #f))))
 
 ;; : (-> Object Boolean)
 (def (yuanxu-graph-edge? value)

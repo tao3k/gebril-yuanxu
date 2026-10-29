@@ -118,9 +118,16 @@
                  (andmap (cut memq <> schema-names) native-names))
       (error "native contract fields require complete receipt metadata"))
     (map (lambda (schema)
-           (let (field (.ref effective (yuanxu-contract-slot-name schema)))
-             (.cc schema 'value-type (.ref field 'type)
-                         'required? (not (.ref field 'optional))))) schemas)))
+           (let* ((field (.ref effective (yuanxu-contract-slot-name schema)))
+                  (native-type (.ref field 'type))
+                  (required? (not (.ref field 'optional))))
+             ;; Reuse an unchanged immutable POO fact. Still read the receiver's
+             ;; effective native fields on every projection: child refinements
+             ;; and incomplete metadata must never inherit a cached verdict.
+             (if (and (eq? (yuanxu-contract-slot-type schema) native-type)
+                      (eq? (yuanxu-contract-slot-required? schema) required?))
+               schema
+               (.cc schema 'value-type native-type 'required? required?)))) schemas)))
 
 (def (yuanxu-object-contract-metadata contract)
   (.ref contract 'metadata))
