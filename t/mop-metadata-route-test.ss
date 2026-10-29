@@ -4,6 +4,7 @@
         (only-in :gerbil/runtime/table &raw-table-hash-set! &raw-table-test-set!)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/mop make-slot-read slot-read-key)
+        (only-in :clan/poo/slot-layout slot-value-storage)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/mop-state/checker-origin" recorded)
         "qualification/mop-state/metadata-route.ss")
@@ -22,13 +23,17 @@
 (def mop-metadata-route-test
  (test-suite "Selected metadata lookup route, not a production read-only seal"
   (yuanxu-test-case "cold and warm native reads pass without forcing an unselected getter"
-    (def calls 0)
-    (.def Root port: (begin (set! calls (+ calls 1)) 5432)
-      unused: (error "unselected branch forced"))
-    (def read (port-read Root))
-    (check-equal? (guarded-current? read) #t)
-    (check-equal? (guarded-current? (port-read Root)) #t)
-    (check-equal? calls 1)
+    (for-each
+      (lambda (storage)
+        (parameterize ((slot-value-storage storage))
+          (def calls 0)
+          (.def Root port: (begin (set! calls (+ calls 1)) 5432)
+            unused: (error "unselected branch forced"))
+          (def read (port-read Root))
+          (check-equal? (guarded-current? read) #t)
+          (check-equal? (guarded-current? (port-read Root)) #t)
+          (check-equal? calls 1)))
+      '(vector hash))
     (set! completed (+ completed 1)))
   (yuanxu-test-case "modified wrapper ref is refused without invoking it"
     (.def Root port: 5432)

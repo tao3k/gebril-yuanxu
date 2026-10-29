@@ -1,0 +1,95 @@
+#+title: 20.30 Fixed Runtime and Metadata Route Correspondence
+#+language: en
+#+filetags: :modules:currentness:qualification:
+
+* Integration authority
+
+This work starts from Core PR 19 commit
+=1934955d2b1714581d0d0a83bad025dcd240765d=. Its package already selects
+=56b474bbdc8e2a9a8c9975ef4178ba83d91a6226= of gerbil-poo. The shared checkout
+and other sessions' changes are not the acceptance source. The installed Gerbil
+compiler is used unchanged; no compiler source, new branch or PR is required.
+
+The eight failed Quint shards do not show eight semantic counterexamples:
+the runner refuses the stale =SelectionReplay.declaredPooRevision= before
+checking the selected models. Bind SelectionReplay and MetadataProjection to
+the package revision only after inspecting the actual issuer/replay path.
+PayloadSharing and SelectionReplay bind the same actual object source digest.
+A digest establishes source correspondence, not a proof of the Scheme program.
+
+* Production owner and obsolete qualification wrapper
+
+The native =read-route.ss:require-read-route!= owns both supported storage
+routes. The standard HashTable interface wraps either a symbolic hash backend
+or the receiver's vector layout. The vector route checks the lookup method,
+cells, missing sentinel, shape identity and the symbolic index table before
+calling a mutable method. Core must not duplicate this as a hash-only guard.
+
+The obsolete Core qualification accepted only the symbolic hash method identity
+for an instance and therefore rejected a genuine vector receiver before the
+first positive assertion. Replace that private copy with the producer's route
+entry. Keep read record/checker identity checks and call native
+=object-read-current?= afterwards: a valid route never authenticates a forged
+credential. Transient misses remain issued without being inserted into the
+receiver read cache.
+
+The raw-setter experiment visits the read table, vector value wrapper and shape
+index. Hash/test/seed mutations apply to the two actual raw hash backends;
+method/backend mutations also apply to the vector wrapper. This preserves and
+extends the control to twelve restored writes and three actual wrapper calls.
+It does not pretend that endpoint inspection prevents raw reflective ABA writes.
+Supported receiver writes still reject before mutation, and parent/child reads
+retain distinct credentials and values. Unselected slots remain unforced.
+
+* Assurance allocation
+
+- SysML assigns route authentication to the producer and consumer regression to
+  Core. No second metadata registry, cache protocol or admission-result cache.
+- Existing =MetadataRoute.lean= and =SelectionReplay.lean= state route/currentness
+  and ordered replay premises. They do not prove arbitrary reflection read-only.
+- The existing SelectionReplay/Topology Quint family checks observer omission,
+  order changes, false misses, stale verdicts and constructor changes. Preserve
+  matched counterexamples; do not add an identical second state model.
+- Native issued-read tests qualify real vector/index routes and issuance.
+  Core route tests and the Gitea/PostgreSQL Scenario qualify actual consumers.
+
+* Validation boundaries
+
+The fixed native package build passed its existing 300-second bound. Its
+issued-read suite passed 23 cases with MODULE-OK, HARNESS-OK and final OK.
+The source-bound SelectionReplay/Topology run matched all 11 positive/negative
+controls. The first Lean dependency build reached 106/111 jobs before its
+unchanged 120-second limit; retain that failed cold result separately from
+subsequent same-source incremental validation.
+
+Core build, focused consumer regression and remote CI remain separate gates.
+No small workload establishes thousand/ten-thousand-module acceptance. Keep the
+existing 2 GiB budget, source-change refusal, parent-cache isolation, two-party
+requirements, callback ordering and final currentness checks. Building code is
+not loading a selected module graph.
+
+The same-source incremental Lean run completed all 111 jobs within the original
+limit. The default Core build passed. One batched, serial default Just invocation
+passed the seven-case route suite, four-case mutation suite, two-case issued-read
+consumer and eleven-case Gitea/PostgreSQL publication Scenario; all four files
+reported MODULE-OK, HARNESS-OK and final OK without failure/overflow markers.
+
+* Next data-flow boundary, not a capacity claim
+
+The default Just invocation first prepared four qualification packages even
+though these four selected suites do not request those package fixtures.
+Observed preparation spans were 106, 27, 24 and 92 seconds (249 seconds total),
+before the first selected Harness. These spans include each package's own source
+selection and native build; they are not the time spent in the selected Cases,
+not a module-load benchmark and not evidence of repeated code generation.
+The source-only bootstrap's three workers and individual child/worker deadlines
+are unchanged. No manifest entry or test has been deleted to reduce this cost.
+
+A future correction must derive preparation from the requested test publication,
+using its existing std-make-spec and admission boundary. Native imports can
+close explicit library dependencies, but cannot infer arbitrary package paths
+passed as data inside a future Case. Preserve the three real package-option/
+reuse qualifications and selected-module support; do not replace this global
+loop with a second handwritten filename-to-fixture map or move a hidden build
+into every Case. This dependency edge must be represented once by its actual
+owner before removing the global prerequisite.

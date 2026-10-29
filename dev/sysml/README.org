@@ -104,3 +104,6 @@ consumer suite; no parallel QNT semantics or runtime interceptor is introduced.
 
 [[file:20-module-loading/20.29-published-issuer-and-core-alignment.org][20.29 Published Issuer Protections and Core Alignment]] records the exact
 published dependency, consumer/proof gates and timestamp-driven rebuild failure.
+
+[[file:20-module-loading/20.30-fixed-runtime-and-route-correspondence.org][20.30 Fixed Runtime and Route Correspondence]] removes a stale hash-only
+qualification wrapper and binds current proofs to the package-selected producer.
