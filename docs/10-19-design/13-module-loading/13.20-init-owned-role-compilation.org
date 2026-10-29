@@ -673,3 +673,19 @@ At the preceding exact CI head, both platform builds and both contract shards
 passed. Both ten-thousand-module capacity shards still refused excessive live
 memory growth. Removing an API slot neither closes that retention defect nor
 justifies dropping issued dependency edges, observers or public carrier checks.
+
+* macOS native executable library lookup (2026-10-29)
+
+At =c015940=, CI run =40803579691= passes both platform build/bootstrap
+jobs and proofs, but the macOS modules group fails its real native program
+Case with =ld: library crypto not found=. The immutable SDK names an older
+Homebrew Cellar location. The existing setup action now exports the installed
+OpenSSL, SQLite and zlib opt library directories through =LIBRARY_PATH=,
+matching the native prerequisites already used by Parser and Orgize.
+
+The original native executable publication Case passes locally with these
+paths, including stale-source and altered-executable refusals and natural
+final OK. The extracted Bash step passes syntax and shellcheck admission.
+This CI-only environment repair changes no SDK archive, fixture, deadline,
+heap or assertion. The Linux 10K heap refusal and macOS scale termination
+remain open and are not converted into expected successes.
