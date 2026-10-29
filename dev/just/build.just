@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 build:
-    GERBIL_BUILD_VERBOSE=1 env -u SDKROOT gerbil build
+    GERBIL_BUILD_VERBOSE=1 {{ gerbil_compiler_environment }} gerbil build
 
 # Keep optimized compiler metadata and its implementation in the same cohort.
 # A non-optimized overwrite can otherwise leave stale .ssxi entry references.

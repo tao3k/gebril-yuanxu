@@ -114,6 +114,15 @@ entrypoints, product timestamps and independent assertions.
 
 * Observability
 
+Property tests use native =:clan/poo/testing/type= generators and
+=:clan/poo/testing/property/test= assertions inside the existing native Suites
+or Fixtures. A report is data until the standard assertion admits its passed
+status. Preserve seed, bounded trials/shrinking, coverage and original failures.
+Do not silently accept unsupported Types, clone away generator prototype
+identity, or start PBT while importing production modules. Ordinary test
+discovery executes declared properties; domain relationships still need named
+properties rather than being inferred from arbitrary object fields.
+
 Observability reports first-event latency, active phase, elapsed time, memory
 and final receipt without becoming execution authority.  A timeout must show
 which admitted owner or Provider is active.  Tests may refine the observability

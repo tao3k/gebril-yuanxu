@@ -174,3 +174,54 @@ modules measured 5.116 seconds with the observer and 4.804 without it; it does
 not support blaming the dominant capacity cost on the external observer.
 Native read identities, callbacks and source checks remain intact. Temporary
 diagnostic Suites and raw sampling logs are not release or test inventory.
+
+* Actual reader stage attribution, not a capacity pass
+
+A temporary 32-declaration diagnostic used the same maintained
+=DeclarationFixture=, real =yuanxu!= entry and real =tests.selected-graph=.
+It preserved native observer delivery and checked that business scope stayed
+cold. It recorded only scalar stage clocks and file-read counts; the temporary
+Suite is not part of committed test discovery. Total Graph demand was 5.408 s
+wall, 4.789 s user and 0.608 s system. Inclusive regions were:
+
+| Existing production region | Calls | Seconds |
+|----------------------------+-------+---------|
+| reader preparation         |    32 |   0.473 |
+| reader location            |    32 |   0.055 |
+| interface import/expansion |    32 |   2.217 |
+| publication admission      |    32 |   0.563 |
+| native compilation callback |    64 |   0.013 |
+| native evaluation callback |    64 |   0.007 |
+| publication guard          |   194 |   1.142 |
+| metadata replay            |   512 |   1.002 |
+
+These regions nest and must not be summed. Interface import/expansion is the
+actual =eval-syntax (import wrapper)= region in =source/reader.ss=, not the
+separately measured native compile callback. Thus neither a compiler-only
+optimization nor the number of expanded roles explains the full elapsed cost.
+The =publication-current= phase performed 9,012 file reads, while compiler
+imports performed 486 and initial compiler support performed 99. Counts are
+demands, not unique files or independent obligations.
+
+Source inspection also rejects another tempting but incorrect attribution:
+the installed Gerbil's =core-library-package-path-prefix= uses
+=core-library-package-plist= and its native =__module-pkg-cache=. Repeating
+that query is not evidence of repeatedly parsing gerbil.pkg. No replacement
+package registry or prefix cache is justified by this observation.
+
+The real eleven-case Gitea/PostgreSQL publication regression passed again after
+the Suite ownership change, retaining both requirements, parent/child plan
+identity, source-change refusal and unused-branch laziness. The new submitted
+CI is still a separate acceptance receipt. This attribution does not establish
+a safe broader source window, permit skipping Generic/carrier validation, or
+prove the ten-thousand-module budget. Those remain production design work.
+
+The ordinary full Core =just build= was measured independently in the same
+qualified Gerbil environment after this investigation: zero compiler commands,
+20.85 seconds wall, 17.38 user and 3.09 system. A second independent default
+invocation also compiled zero targets: 20.29 wall, 17.21 user and 2.96 system.
+This is not the 41-target
+source-only Fixture. The small wall/CPU difference does not support attributing
+this particular full-build cost to host scheduling. Its startup, projection,
+Make/currentness and signing costs still need same-cohort attribution; the
+bootstrap receipt must not be presented as a full-build speedup.

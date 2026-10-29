@@ -112,6 +112,10 @@ qualification wrapper and binds current proofs to the package-selected producer.
 from declaration capacity, and moves repeated language extraction out of target
 mapping while preserving independent source authentication.
 
+[[file:20-module-loading/20.34-pbt-and-runtime-upgrade.org][20.34 PBT and Runtime Upgrade]] binds the complete producer upgrade to
+real generated service admissions, standard Harness failure propagation and
+the original source, parent-cache and capacity gates.
+
 [[file:20-module-loading/20.32-test-publication-native-compile.org][20.32 Native Test Compilation]] connects the init-owned Test publication to
 the existing guarded std/make owner before Harness execution, preserving
 cross-process signed-product reuse and refusal of stale inputs.

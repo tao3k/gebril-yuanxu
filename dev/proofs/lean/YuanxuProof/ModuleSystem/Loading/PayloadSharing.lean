@@ -5,7 +5,7 @@ import Init.Data.List.Perm
 namespace YuanxuProof.ModuleSystem.Loading.PayloadSharing
 
 def thunkConstructionDigest : String := "sha256:800d1aa25d86f6922e2682ac005c8b2dffd9be8fac461d12ca65532c6e7d4c8e"
-def projectionObjectDigest : String := "sha256:9e3fe1d53631397b298bd84c0ecb00b9c2cb0bdb4b821844dcd2c8c7d7e43773"
+def projectionObjectDigest : String := "sha256:9726f238a3c432c0f26e7a6fe85aa9455afee88ace130af2962610f9d14b868c"
 
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=

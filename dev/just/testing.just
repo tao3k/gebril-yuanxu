@@ -15,7 +15,7 @@ build-test-fixtures:
         prepared_at=$SECONDS
         # Relocated qualification must build its own source epoch, not the
         # checkout containing the Justfile used to launch that snapshot.
-        (cd "$PWD/t/qualification/$package" && timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} build)
+        (cd "$PWD/t/qualification/$package" && timeout --signal=TERM --kill-after=5s 120s {{ gerbil_compiler_environment }} gerbil {{ gerbil_test_runtime_options }} build)
         printf 'test-preparation phase=complete package=%s elapsed-s=%s\n' "$package" "$((SECONDS - prepared_at))"
     done
 
@@ -42,7 +42,7 @@ _test-file path observe="false":
     # explicitly relocated snapshot; the Justfile's location is not authority.
     # Preserve explicit native overlays before the host library fallback.
     # The real source package root replaces the removed nested t/gerbil.pkg.
-    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
+    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" {{ gerbil_compiler_environment }} timeout --signal=TERM --kill-after=5s "${budget}s" gxi {{ gerbil_test_runtime_options }} t/qualification/testing/run.ss "{{ path }}" "{{ gerbil_test_runtime_options }}" "$budget" "{{ observe }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
