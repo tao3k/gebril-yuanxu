@@ -21,6 +21,28 @@
     '((exe: "probe" bin: "probe-test"))))
 (def module-native-program-test
   (test-suite "Init-owned standard native executable publication"
+    (yuanxu-test-case "explicit library demand roots compile while Harness-only roots stay interpreted"
+      (call-with-temporary-directory "native-library-root"
+        (lambda (root)
+          (put root "gerbil.pkg" "(package: native-library-fixture)\n")
+          (put root "init.ss"
+            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+          (def source "(export answer) (def answer 42)\n")
+          (put root "probe.ss" source)
+          (def tests (prepared-package-tests root))
+          (def files (list (path-expand "probe.ss" root)))
+          (def interpreted (.get (.call tests .for-files files) build))
+          (check-equal? (.get interpreted spec) '())
+          (def library
+            (.get (.call tests .for-files files '() '((gxc: "probe"))) build))
+          (check-equal? (.get library spec) '((gxc: "probe")))
+          ((.get library admit-current))
+          (dynamic-wind void
+            (lambda ()
+              (put root "probe.ss" (string-append source "; changed\n"))
+              (check-exception ((.get library admit-current)) error?))
+            (lambda () (put root "probe.ss" source)))
+          ((.get library admit-current)))))
     (yuanxu-test-case "cached foreign source retains native package lookup authority"
       (call-with-temporary-directory "cached-native-package"
         (lambda (root)

@@ -130,3 +130,15 @@ changed originals and changed staged Scheme. The executable Scenario imports
 an actual POO dependency and preserves changed-source and executable-tampering
 refusals. Projection-text mutation and replacement of a public guard are also
 refused. Independent read-only Bazel compilation remains a separate gate.
+
+* Explicit native library demand roots
+
+A file listed in a Test demand normally supplies an interpreted Harness root.
+An explicit standard =gxc:= declaration gives that same file a compiler role,
+just as =exe:= gives an executable role. Discovery must preserve both explicit
+roles, while leaving undeclared Harness roots interpreted. The source owner
+continues to bind original bytes and package lookup before compilation.
+
+The native program Scenario checks this distinction and source mutation with
+restoration. Root's Nix worker declares its store producer as an explicit library
+because the independent Root producer links that public compiler product.

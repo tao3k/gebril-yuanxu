@@ -627,11 +627,11 @@
                                (eq? id (.ref input 'compiler-identity)))
                     (error "test dependency does not match current package source" id path expected))
                   (when (or (not (member (path-normalize expected) files))
-                            ;; Explicit program roots are real compiler inputs;
-                            ;; ordinary Harness-only Suites remain interpreted.
+                            ;; Every explicit standard Make root is compiled,
+                            ;; including a library consumed by another program.
+                            ;; Ordinary Harness-only Suites remain interpreted.
                             (find (lambda (target)
-                                    (and (eq? (.get target compiler-identity) id)
-                                         (eq? (native-target-kind target) 'exe:)))
+                                    (eq? (.get target compiler-identity) id))
                               native-targets))
                     ;; Native Make resolves BOTH sources and expected products
                     ;; from this projection's root/prefix. A nested gerbil.pkg
