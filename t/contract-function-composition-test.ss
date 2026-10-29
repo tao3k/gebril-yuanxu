@@ -48,6 +48,11 @@
       (check-exception ((.get (validate Callbacks child) retry) 3) TypeError?)
       (check-equal? (.slot? parent 'retry) #f))
     (yuanxu-test-case "native child Slot refinements also update projected type facts"
+      ;; Ordinary projection shares the original facts; extending the native
+      ;; fields below must still produce the child's current Type and policy.
+      (def unchanged (yuanxu-object-contract-slots Callbacks))
+      (check-equal? (eq? (car unchanged) CallbackSlot) #t)
+      (check-equal? (eq? (cadr unchanged) OptionalSlot) #t)
       (.get Callbacks effective-slots)
       (def child
         (.cc Callbacks slots:

@@ -506,7 +506,10 @@
         ;; Preserve the imported alias and original bytes. Its own currentness
         ;; guard checks target identity before issuance, restore and execution.
         (.ref input 'source-inputs))
-      (list (cons path (module-source-read path)))))
+      ;; Cached native source contexts still depend on their Gerbil package
+      ;; lookup. Reuse the existing preparer and its positive/negative ancestor
+      ;; observations, rather than retaining bytes without package authority.
+      (.ref (input! path) 'source-inputs)))
   (def native-targets (retained-build-entries retained root package-prefix '()))
   (def (input! path)
     (def normalized (path-normalize path))

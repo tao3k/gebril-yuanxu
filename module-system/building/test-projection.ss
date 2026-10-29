@@ -11,7 +11,18 @@
         (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source module-test-directory-source module-test-execution)
+(export module-test-projection module-test-file-source module-test-directory-source module-test-execution
+        module-test-source-binding)
+
+;; Source-owned program consumers resolve the actual caller's init binding.
+;; Standard native imports retain original package identity after relocation;
+;; the returned demand still owns all source and artifact admission.
+(def (module-test-source-binding source binding)
+  (parameterize ((current-expander-context (make-top-context))
+                 (current-expander-module-import core-import-module))
+    (eval-syntax '(import :gerbil/core))
+    (eval-syntax `(import (only-in ,(path-expand source) ,binding)))
+    (eval-syntax binding)))
 
 ;; Native Gerbil import in a private context, demanded only by explicit .run.
 ;; This is the existing Ops prototype factory, not a module/runtime Loader.

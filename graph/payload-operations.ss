@@ -38,69 +38,42 @@
 ;;     %
 (def (yuanxu-graph-slots-merge base extra)
   (let ((base-seen (make-hash-table))
-        (override-seen (make-hash-table))
-        (overrides (make-hash-table))
-        (new-seen (make-hash-table))
-        (replacement-used (make-hash-table)))
-    ;; : (-> Any Any)
-    (def (entry-slot entry)
-      (yuanxu-graph-entry-key entry))
+        (overrides (make-hash-table)))
+    ;; The complete base pass retains original validation and declaration order.
     (for-each
      (lambda (entry)
-       (hash-put! base-seen
-                  (entry-slot entry)
-                  #t))
+       (hash-put! base-seen (yuanxu-graph-entry-key entry) #t))
      base)
-    ;; : (-> Any Any)
     (def (finish-entry entry)
-      (let (slot (entry-slot entry))
-        (if (and (hash-get override-seen slot)
-                 (not (hash-get replacement-used slot)))
-          (begin
-            (hash-put! replacement-used slot #t)
-            (yuanxu-graph-entry
-             slot
-             (hash-get overrides slot)))
+      (let (slot (yuanxu-graph-entry-key entry))
+        (if (hash-key? overrides slot)
+          (let (value (hash-get overrides slot))
+            ;; Consuming this override replaces only the first duplicate base
+            ;; declaration. A false payload remains present until consumed.
+            (hash-remove! overrides slot)
+            (yuanxu-graph-entry slot value))
           entry)))
-    ;; : (-> Any Any)
     (def (finish-base/rev entries rows-rev)
       (if (null? entries)
         rows-rev
-        (finish-base/rev (cdr entries)
-                         (cons (finish-entry (car entries)) rows-rev))))
-    ;; : (-> Any Any)
+        (finish-base/rev (cdr entries) (cons (finish-entry (car entries)) rows-rev))))
     (def (finish-new/rev slots rows-rev)
       (if (null? slots)
         rows-rev
         (finish-new/rev
          (cdr slots)
-         (cons (yuanxu-graph-entry
-                (car slots)
-                (hash-get overrides (car slots)))
-               rows-rev))))
-    ;; : (-> Any Any)
-    (def (finish new-order)
-      (reverse
-       (finish-new/rev
-        (reverse new-order)
-        (finish-base/rev base '()))))
+         (cons (yuanxu-graph-entry (car slots) (hash-get overrides (car slots))) rows-rev))))
     (let loop ((entries extra) (new-order '()))
       (if (null? entries)
-        (finish new-order)
+        (reverse
+         (finish-new/rev (reverse new-order) (finish-base/rev base '())))
         (let* ((entry (car entries))
-               (slot (entry-slot entry))
-               (next-new-order
-                (if (or (hash-get base-seen slot)
-                        (hash-get new-seen slot))
-                  new-order
-                  (begin
-                    (hash-put! new-seen slot #t)
-                    (cons slot new-order)))))
-          (hash-put! override-seen slot #t)
-          (hash-put! overrides
-                     slot
-                     (yuanxu-graph-entry-value entry))
-          (loop (cdr entries) next-new-order))))))
+               (slot (yuanxu-graph-entry-key entry))
+               ;; Membership, rather than truthiness, preserves false values
+               ;; and distinguishes first appearance from repeated overrides.
+               (known? (or (hash-key? base-seen slot) (hash-key? overrides slot))))
+          (hash-put! overrides slot (yuanxu-graph-entry-value entry))
+          (loop (cdr entries) (if known? new-order (cons slot new-order))))))))
 
 ;; yuanxu-graph-node-merge
 ;;   : (-> YuanxuGraph YuanxuGraph YuanxuGraph)
