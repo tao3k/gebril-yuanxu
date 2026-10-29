@@ -10,19 +10,10 @@
                  core-library-package-plist core-read-module/sexp
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source))
-(export package-prelude-identity yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
+(import (only-in ./source-package package-prelude-identity))
+(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
         yuanxu-bootstrap-source-path yuanxu-library-identity? package-library-spec)
 
-(def (package-prelude-identity root)
-  ;; Gerbil owns package/header resolution. Only the root's actual prelude file
-  ;; may publish an identity outside its library prefix, matching gerbil.pkg.
-  (def file (path-expand "prelude.ss" root))
-  (def selected (memq 'prelude: (core-library-package-plist root #t)))
-  (and selected (pair? (cdr selected)) (file-exists? file)
-    (let-values (((base identity namespace body) (core-read-module/sexp file)))
-      (and (eq? (cadr selected)
-                (string->symbol (string-append ":" (symbol->string identity))))
-           identity))))
 
 ;; Project an explicitly selected package's actual native import graph. This
 ;; function does not discover roots, load their runtime, or execute a build.

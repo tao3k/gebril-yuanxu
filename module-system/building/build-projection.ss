@@ -11,10 +11,10 @@
         (only-in :clan/poo/object .o .ref .get .call)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries)
-        (only-in :yuanxu/module-system/building/source-closure package-prelude-identity)
         (only-in :yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/source/admission module-source-type
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache))
+(import (only-in :yuanxu/module-system/building/source-package package-prelude-identity))
 (export yuanxu-project-source-spec)
 (def (project-std-make-specs entries package-prefix root)
   ;; std/make names products using prefix + target, while gxc uses the

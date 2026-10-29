@@ -15,12 +15,13 @@
                  core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
         (only-in :yuanxu/module-system/building/source-closure
-                 for-each-build-module build-module-dependencies package-prelude-identity)
+                 for-each-build-module build-module-dependencies)
         ;; Gerbil owns this catalog. Restore only aliases installed for this
         ;; compiler extent; never keep a second module registry or reload code.
         (only-in :gerbil/expander/module __module-registry)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
+(import (only-in :yuanxu/module-system/building/source-package package-prelude-identity))
 (export build-target-name yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source

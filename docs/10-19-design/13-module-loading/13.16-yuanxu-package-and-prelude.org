@@ -527,3 +527,28 @@ not just source registration or a returned target name. Parser's native build
 produced =lib/tao3k/parser/prelude.ssi= and loadable macro artifacts, and its
 independent product-consumer tests passed. These remain local installed-SDK
 results; no remote or cold-dependency acceptance is inferred.
+
+* Infer the owned language at the existing source gateway (2026-10-29)
+
+=register-module-build-source!= now selects the root's owned language from
+native =gerbil.pkg= metadata and =prelude.ss= when no additional expected
+language is supplied. The existing explicit =prelude:= argument remains an
+independent constraint and wrong identities still refuse before changing
+lookup. Packages merely inheriting another language do not acquire an alias.
+
+The pure =package-prelude-identity= query belongs to =building/source-package=;
+its source-closure and build consumers import that owner directly. The old
+source-closure re-export is removed. Source registration still imports one
+verified native context and binds it through Gerbil; no new loader or registry
+is introduced. The package gateway retains its Gerbil-only bootstrap boundary.
+
+The existing real Module public-library test now omits the redundant language
+argument, while the separate explicit identity, wrong identity and unrelated
+namespace controls remain. Parser's research build already uses this source
+gateway, so it acquires the actual source prelude before importing init instead
+of retaining an installed =.ssi= prelude and weakening source-origin admission.
+
+Local native rebuild passes under 2 GiB/300 seconds. The same 13 Cases in
+5 Suites pass under 1 GiB/120 seconds, including inferred real Module
+publication and the unchanged explicit wrong-language/namespace refusals.
+These are focused controls, not the still-open 10K or full-CI gate.

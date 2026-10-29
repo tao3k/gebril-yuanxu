@@ -6,8 +6,8 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander current-expander-context make-top-context
                  core-import-module expander-context-id)
-        (only-in :yuanxu/module-system/building/source-package register-module-build-source!)
-        (only-in :yuanxu/module-system/building/source-closure package-prelude-identity package-library-spec)
+        (only-in :yuanxu/module-system/building/source-package register-module-build-source! package-prelude-identity)
+        (only-in :yuanxu/module-system/building/source-closure package-library-spec)
         (only-in :yuanxu/module-system/source/preparation build-target-name))
 (export package-owned-prelude-test)
 (def (write-datum file datum)
@@ -43,7 +43,7 @@
     (test-case "native Module public-library projection publishes the owned language"
       (with-product "projection"
         (lambda (root package identity)
-          (register-module-build-source! root package prelude: identity)
+          (register-module-build-source! root package)
           (call-with-output-file (path-expand "init.ss" root)
             (lambda (port)
               (display "(import :yuanxu/module-system/selection/init-syntax)\n(yuanxu! source: \"./modules\" mode: explicit (example))\n" port)))

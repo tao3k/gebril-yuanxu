@@ -7,7 +7,7 @@
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
                  current-expander-module-import core-import-module syntax-e
                  expander-context-id module-context-path)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-prelude-identity)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
@@ -23,6 +23,7 @@
         (only-in :yuanxu/feature-system/capability-model feature-projection-request?)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
+(import (only-in :yuanxu/module-system/building/source-package package-prelude-identity))
 (export module-test-source-spec module-build-graph unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract
         BuildPublicationContract)
 (def BuildPublicationContract
