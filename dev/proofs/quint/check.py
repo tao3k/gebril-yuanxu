@@ -568,7 +568,7 @@ def main():
         producer_bound = [args.producer_source / name for name in
                           ("gerbil.pkg", "object.ss", "object-state.ss", "slot-observation.ss",
                            "read-route.ss", "slot-layout.ss", "prototype-map.ss",
-                           "support/object-syntax.ss", "inheritance-hooks.ss", "t/issued-read-test.ss")]
+                           "support/object-syntax.ss", "mop.ss", "t/objects/issued-read-test.ss")]
         if not all(p.is_file() for p in producer_bound):
             parser.error("producer-source must contain the complete selected native source owners")
     args.receipt.unlink(missing_ok=True)

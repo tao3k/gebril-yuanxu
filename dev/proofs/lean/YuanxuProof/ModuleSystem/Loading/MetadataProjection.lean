@@ -9,7 +9,7 @@ namespace YuanxuProof.ModuleSystem.Loading.MetadataProjection
 open LeanPoo.Functional LeanPoo.Functional.Requirements
 
 def quintSourceDigest : String := "sha256:3cc007e7bd3f45c624c19e08ac0b4c9c4a9ed2e8a89f78251521f3fbb2dda31a"
-def declaredPooRevision : String := "c0d47633c2aad7591944f874eaf730ee9c0e451e"
+def declaredPooRevision : String := "dbbc436520d6fe4834d46cc046472783bcb1fa6c"
 def declaredLeanPooRevision : String := "5d4587a30e2333fc5f935dac6163aa56ff16a2dc"
 
 structure Dependency where

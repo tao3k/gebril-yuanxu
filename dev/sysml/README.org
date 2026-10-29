@@ -101,3 +101,6 @@ construction schedules, with no duplicate prototype or fixed-point model.
 for partial/full open-method correspondence and proves stable installed handles.
 Actual first reflection and lexical parent/child behavior use the existing native
 consumer suite; no parallel QNT semantics or runtime interceptor is introduced.
+
+[[file:20-module-loading/20.29-published-issuer-and-core-alignment.org][20.29 Published Issuer Protections and Core Alignment]] records the exact
+published dependency, consumer/proof gates and timestamp-driven rebuild failure.

@@ -39,6 +39,21 @@
   (test-suite "Core semantic Module owner"
     (yuanxu-test-case "role fields use public value Types while Role admission retains Context"
       (check-equal? (eq? (validate ModuleSourceRoleContract role) role) #t)
+      ;; The parent's validator was already forced while constructing role.
+      ;; A derived Type must select its own public method with the real input.
+      (def calls 0)
+      (def seen #f)
+      (def parent (.ref ModuleSourceRoleContract 'value-contract))
+      (.def (observed @ parent)
+        .validation-fields: =>
+        (lambda (inherited)
+          (lambda (candidate)
+            (set! calls (1+ calls))
+            (set! seen candidate)
+            (inherited candidate))))
+      (check-equal? (eq? (validate observed role) role) #t)
+      (check-equal? calls 1)
+      (check-equal? (eq? seen role) #t)
       (check-equal? (element? ModuleSourceRoleContract (.cc role 'domain-policy 'extra)) #t)
       (check-exception (validate ModuleSourceRoleContract (.cc role 'forbidden-forms '(1))) TypeError?)
       (check-exception (validate ModuleSourceRoleContract (.cc role 'recursive-root-forms? 'false)) TypeError?)

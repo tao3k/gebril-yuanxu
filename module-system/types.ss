@@ -4,7 +4,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Boundary: native Module System types and authoring role contracts.
-(import (only-in :clan/poo/object .o .cc .call object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Object Bool)
         (only-in :clan/poo/type Symbol List)
         (only-in :clan/poo/object-contract ObjectContract.)
@@ -42,20 +42,21 @@
 ;; The public library creates and supplies this exact fresh checked receiver.
 ;; Only add lifetime enrollment; its validators, result identity, normalization,
 ;; shape checks and final obligations remain the original public protocol.
-(def (prepare-role-validation descriptor)
-  (let (checks
+(def (prepare-role-validation validation-fields)
+  (lambda (candidate)
+    (let (checks
         (map (lambda (entry)
                (cons (car entry)
                  (lambda (original checked)
                    (owned-read-derived! checked)
                    ((cdr entry) original checked))))
-             (.call descriptor .validation-fields #f)))
-    (lambda (candidate) (rebind-validation candidate checks))))
-(define-type (ModuleSourceRoleValueContract @ ObjectContract.)
+             (validation-fields candidate)))
+      (rebind-validation candidate checks))))
+(define-type (ModuleSourceRoleValueContract @ ObjectContract. .validation-fields)
   identity: 'module-source-role-value
   extra-fields: 'delegate
   constraints: (list Object)
-  prepared-validation: (prepare-role-validation @)
+  prepared-validation: (prepare-role-validation .validation-fields)
   responsibilities:
   (.o identity: Symbol
       recommended-forms: RoleSymbols
