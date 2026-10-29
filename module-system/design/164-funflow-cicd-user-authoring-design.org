@@ -132,10 +132,11 @@ boundary: it should use an admitted provider/publication crossing when that
 crossing exists, while source bookkeeping and pure projection retain their
 existing owners, not a central case on provider names or a second interpreter.
 
-The current [[file:../../../modules/module-authoring/module-source-admission.ss][source-admission owner]] already defines
-ModuleAuthoringAdmissionProtocol/Generic, specializes ModuleAuthoringExecutor.
+The current [[file:../authoring/admission.ss][source-analysis owner]] defines
+ModuleAuthoringAnalysisProtocol/Generic, specializes ModuleAuthoringExecutor.
 and ModuleSourceRole./ConfigSourceRole., and composes ModuleAuthoringCoreMethods
-with .defmethod-bundle. This is an existing structural reference, not proof that
+with .defmethod-bundle. Each datum returns a freshly Type-checked diagnostic list;
+the batch admission constructs one checked receipt. This is an existing structural reference, not proof that
 Funflow's proposed source/publication or consumer crossings are implemented.
 [[file:../../poo-clos/interface.ss][Core's POO-native CLOS/MOP facade]] supplies the extension vocabulary; its
 existence is not a reason to add new Class/metaclass abstractions for a simple

@@ -4,6 +4,7 @@
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in "./native-products.ss" projection-program-targets)
         (only-in :clan/poo/object .get .o .cc .+ .call .slot?)
+        (only-in :clan/poo/io module-action)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./test-projection.ss" module-test-projection module-test-file-source
                  module-test-directory-source module-test-execution)
@@ -66,6 +67,12 @@
                          repair-build-products! require-build-products!
                          retain-test-support-subset! call-with-native-static-inputs)))))
 
+;; Native action construction loads nothing. Resolve the existing script owner
+;; only for a requested nonempty test compilation, after interface initialization.
+(def compile-test-action
+  (module-action "yuanxu/module-system/building/script"
+                 'yuanxu/module-system/building/script#compile-test-publication))
+
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
 (def (yuanxu-init-build source declaration)
@@ -89,7 +96,11 @@
             execution: (module-test-execution source-value
                          (lambda () (.get tests build)))
             .run: (lambda () (.call (.get tests execution) .run))
-            .compile: (lambda () (.call (.get tests execution) .compile))
+            .compile:
+            (lambda ()
+              (if (null? (.get tests build spec))
+                (.call (.get tests execution) .compile)
+                (compile-test-action (list tests))))
             .for-files: file-tests
             .for-directory: directory-tests
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))

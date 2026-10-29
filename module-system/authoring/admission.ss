@@ -8,6 +8,7 @@
 
 (import (only-in :clan/poo/object .def .o .ref .slot? object?)
         (only-in :clan/poo/mop Type. define-type element? validate)
+        (only-in :clan/poo/type List)
         (only-in :std/list/list any filter-map find)
         (only-in :yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
@@ -32,12 +33,15 @@
         (only-in :yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
         (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
-(export ModuleAuthoringAdmissionProtocol
-        ModuleAuthoringAdmissionGeneric
+(export ModuleAuthoringAnalysisProtocol
+        ModuleAuthoringAnalysisGeneric
         ModuleAuthoringCoreMethods
+        ModuleAuthoringDiagnostic
+        YuanxuModuleAuthoringDiagnostics
         YuanxuModuleAuthoringDiagnostic
         YuanxuModuleAuthoringAdmission
         yuanxu-module-authoring-role
+        yuanxu-module-authoring-analyze-datum
         yuanxu-module-authoring-admit-datum
         yuanxu-module-authoring-admit-datums
         yuanxu-module-authoring-admit-port
@@ -86,6 +90,9 @@
 
 (define-type (YuanxuModuleAuthoringDiagnostic @ Type.)
   .element?: yuanxu-module-authoring-diagnostic-shape?)
+
+;; A fresh native Type check for each analysis result, including contributions.
+(def YuanxuModuleAuthoringDiagnostics (List YuanxuModuleAuthoringDiagnostic))
 
 (def (yuanxu-module-authoring-admission-shape? value)
   (and (object? value)
@@ -352,33 +359,25 @@
       (yuanxu-module-authoring-default-surface-diagnostics
        interface role datum))))
 
-(def (yuanxu-module-authoring-admit/common interface role datum)
-  (yuanxu-module-authoring-admission interface role
-    (yuanxu-module-authoring-diagnostics/common interface role datum)))
-
-(def (yuanxu-module-authoring-admit/config interface role datum)
-  (yuanxu-module-authoring-admission interface role
-    (yuanxu-module-authoring-diagnostics/config interface role datum)))
-
 ;;; Executor strategy and SourceRole are independently extensible. Module
 ;;; packages can contribute a method bundle for a refined executor/role pair
 ;;; without extending a central role switch.
-(def ModuleAuthoringAdmissionProtocol
-  (poo-clos-generic-protocol 'module-system/authoring-admission))
+(def ModuleAuthoringAnalysisProtocol
+  (poo-clos-generic-protocol 'module-system/authoring-analysis))
 
-(.defgeneric module-authoring-admit (executor role interface datum)
-  (protocol ModuleAuthoringAdmissionProtocol))
+(.defgeneric module-authoring-analyze (executor role interface datum)
+  (protocol ModuleAuthoringAnalysisProtocol))
 
 ;; Keep the exported generic object: contributor bundles compose with this
 ;; exact protocol owner, rather than a separately constructed lookalike.
-(def ModuleAuthoringAdmissionGeneric
-  (poo-clos-generic-binding-current module-authoring-admit$poo-clos-generic))
+(def ModuleAuthoringAnalysisGeneric
+  (poo-clos-generic-binding-current module-authoring-analyze$poo-clos-generic))
 
 ;; One source-level rule owns the shared crossing; normal .defmethod lowering
 ;; supplies the specializers, lexical frame and lambda-list contract.
 (defrules authoring-method ()
   ((_ role-prototype admit)
-   (.defmethod (module-authoring-admit
+   (.defmethod (module-authoring-analyze
                  (executor (prototype ModuleAuthoringExecutor.))
                  (role (prototype role-prototype))
                  (interface (prototype yuanxu-module-interface-prototype))
@@ -386,12 +385,12 @@
      (admit interface role datum))))
 
 (.defmethod-bundle ModuleAuthoringCoreMethods
-  ModuleAuthoringAdmissionProtocol
-  (authoring-method ModuleSourceRole. yuanxu-module-authoring-admit/common)
-  (authoring-method ConfigSourceRole. yuanxu-module-authoring-admit/config))
+  ModuleAuthoringAnalysisProtocol
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-diagnostics/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-diagnostics/config))
 
 (poo-clos-compose-method-bundle
- ModuleAuthoringAdmissionGeneric
+ ModuleAuthoringAnalysisGeneric
  ModuleAuthoringCoreMethods)
 
 ;; The generated wrappers retain the normal public dispatch boundary. Batch
@@ -415,40 +414,43 @@
              role-name))
     (.ref authoring role-name)))
 
-;; : (-> PooModuleInterface Symbol SchemeDatum PooModuleAuthoringAdmission)
-(def (yuanxu-module-authoring-admit-datum interface role-name datum)
+;; Resolve once before invocation: an open qualifier can rebind the Profile.
+;; Preserve the role actually dispatched, then validate the full combined result.
+(def (with-authoring-analysis interface role-name datum consume)
   (let* ((authoring (yuanxu-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
          (role (yuanxu-module-authoring-role interface role-name)))
     (call-with-module-authoring-read-scope
-      (cut poo-clos-call ModuleAuthoringAdmissionGeneric
-           executor role interface datum))))
+      (lambda ()
+        (consume role
+          (validate YuanxuModuleAuthoringDiagnostics
+            (poo-clos-call ModuleAuthoringAnalysisGeneric
+              executor role interface datum)))))))
+
+(def (yuanxu-module-authoring-analyze-datum interface role-name datum)
+  (with-authoring-analysis interface role-name datum
+    (lambda (_role diagnostics) diagnostics)))
+
+;; An explicit single-value demand still constructs and validates one receipt.
+(def (yuanxu-module-authoring-admit-datum interface role-name datum)
+  (with-authoring-analysis interface role-name datum
+    (cut yuanxu-module-authoring-admission interface <> <>)))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
 (def (yuanxu-module-authoring-admit-datums interface role-name datums)
-  ;; Consume the caller's inert source snapshot. Dispatch and validation still
-  ;; run for every datum; neither method selection nor acceptance is cached.
+  ;; Every row retains native Generic dispatch, carrier validation and hooks.
+  ;; Only the discarded per-row admission receipts are no longer constructed.
   (yuanxu-module-authoring-admission
-   interface
-   (yuanxu-module-authoring-role interface role-name)
-   (foldr append '()
-          (map (lambda (datum)
-            (.ref (yuanxu-module-authoring-admit-datum interface role-name datum)
-                  'diagnostics))
-          datums))))
+    interface (yuanxu-module-authoring-role interface role-name)
+    (foldr append '()
+      (map (cut yuanxu-module-authoring-analyze-datum interface role-name <>) datums))))
 
-;; The public port API keeps its original streaming reader semantics.
-;; : (-> PooModuleInterface Symbol InputPort PooModuleAuthoringAdmission)
+;; Keep the existing streaming reader and ordered diagnostic aggregation.
 (def (yuanxu-module-authoring-admit-port interface role-name port)
   (yuanxu-module-authoring-admission
-   interface
-   (yuanxu-module-authoring-role interface role-name)
-   (yuanxu-read-datums/append-map
-    (lambda (datum)
-      (.ref (yuanxu-module-authoring-admit-datum
-             interface role-name datum)
-            'diagnostics))
-    port)))
+    interface (yuanxu-module-authoring-role interface role-name)
+    (yuanxu-read-datums/append-map
+      (cut yuanxu-module-authoring-analyze-datum interface role-name <>) port)))
 
 (def (yuanxu-module-authoring-admission? value)
   (element? YuanxuModuleAuthoringAdmission value))

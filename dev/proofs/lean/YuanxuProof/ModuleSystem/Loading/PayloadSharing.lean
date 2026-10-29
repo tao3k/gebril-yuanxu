@@ -261,4 +261,33 @@ theorem unobservedThunkProjectionPreserved (table : Nat → Option Nat)
   intro same
   exact hidden (same ▸ member)
 
+-- The new analysis protocol returns typed diagnostics, not per-datum admission
+-- objects. Each Except is the projection of an actual fresh Type validation.
+-- This model does not claim equivalence with arbitrary old receipt callbacks.
+def collectDiagnostics {Error Diagnostic : Type} :
+    List (Except Error (List Diagnostic)) → Except Error (List Diagnostic)
+  | [] => .ok []
+  | .error error :: _ => .error error
+  | .ok issues :: tail => (collectDiagnostics tail).map (issues ++ ·)
+
+theorem typedAnalysisPreservesOrder {Error Diagnostic : Type}
+    (rows : List (List Diagnostic)) :
+    collectDiagnostics (Error := Error) (rows.map Except.ok) = .ok rows.flatten := by
+  induction rows with
+  | nil => rfl
+  | cons issues tail ih => simp [collectDiagnostics, ih, Except.map, List.flatten]
+
+theorem analysisRefusalStopsAggregation {Error Diagnostic : Type}
+    (error : Error) (tail : List (Except Error (List Diagnostic))) :
+    collectDiagnostics (.error error :: tail) = .error error := rfl
+
+theorem successfulPrefixCannotHideRefusal {Error Diagnostic : Type}
+    (before : List (List Diagnostic)) (error : Error)
+    (tail : List (Except Error (List Diagnostic))) :
+    collectDiagnostics (before.map Except.ok ++ .error error :: tail) = .error error := by
+  induction before with
+  | nil => rfl
+  | cons issues rest ih => simp [collectDiagnostics, ih, Except.map]
+
+
 end YuanxuProof.ModuleSystem.Loading.PayloadSharing

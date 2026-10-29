@@ -4,8 +4,9 @@
 ;;; Preserve Gerbil syntax and dispatch; init owns selected compilation guards.
 (import (prefix-in :std/build-script gerbil-build.)
         (only-in :std/source this-source-file)
+        (only-in :clan/poo/object .get .call)
         (only-in :yuanxu/module-system/building/interface call-with-init-build-spec))
-(export defbuild-script)
+(export defbuild-script compile-test-publication)
 
 (defsyntax (defbuild-script stx)
   (syntax-case stx ()
@@ -58,3 +59,15 @@
                      (apply main arguments))))
                args (or (pgetq libdir: options)
                         (path-expand "lib" (gerbil-path))))))))))
+
+;; The existing Test publication owns the spec, source guard and issuance.
+;; Standard defbuild-script owns Make; no temporary driver or second dispatcher.
+(def (compile-test-publication tests)
+  (unless (null? (.get tests build spec))
+    (let ()
+      (defbuild-script ((.get tests std-make-spec))
+        srcdir: (.get tests source source-root))
+      (main "compile")))
+  ;; Reuse the execution contract's independent artifact/currentness admission.
+  ;; No Harness or Case is started by this explicit preparation action.
+  (.call (.get tests execution) .compile))

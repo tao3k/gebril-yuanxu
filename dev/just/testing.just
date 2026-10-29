@@ -26,6 +26,9 @@ _test-file path observe="false":
     # Each native test process keeps the same 180-second deadline.
     # Sequential fixture preparation has its own bounded native invocations.
     budget=180
+    # Native Make backends inherit the same standard Gambit envelope as this
+    # parent. The CLI options below still fence the VM before any import.
+    export GAMBOPT="${GAMBOPT:+$GAMBOPT,}max-heap={{ gerbil_test_max_heap }},debug={{ gerbil_test_debug }}"
     export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
     if [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then export PATH="$GERBIL_PATH/bin:$PATH"; fi
     test_lib="$GERBIL_PATH/test-lib"

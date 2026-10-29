@@ -6,7 +6,7 @@
         (only-in :clan/poo/type Record)
         :yuanxu/module-system/config
         (only-in :yuanxu/module-system/authoring/roles
-                 yuanxu-default-module-authoring-profile))
+                 make-default-module-authoring-profile yuanxu-default-module-authoring-profile))
 (export yuanxu-module-interface-prototype yuanxu-module-interface
         yuanxu-module-interface? yuanxu-module-interface-id
         yuanxu-module-interface-authoring)
@@ -18,7 +18,7 @@
       authoring: (yuanxu-default-module-authoring-profile)
       metadata: '()))
 (def (yuanxu-module-interface id schemas metadata
-                                 authoring: (authoring (yuanxu-default-module-authoring-profile)))
+                                 authoring: (authoring (make-default-module-authoring-profile)))
   (make-module-interface yuanxu-module-interface-prototype id schemas metadata authoring))
 (def (yuanxu-module-interface? value)
   (and (object? value) (.slot? value 'module-interface?)

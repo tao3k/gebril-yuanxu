@@ -10,7 +10,7 @@
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/authoring/admission
-                 ModuleAuthoringAdmissionGeneric ModuleAuthoringAdmissionProtocol
+                 ModuleAuthoringAnalysisGeneric ModuleAuthoringAnalysisProtocol
                  yuanxu-module-authoring-role
                  yuanxu-module-authoring-admit-datums
                  yuanxu-module-authoring-admission-accepted?)
@@ -68,7 +68,7 @@
       (def checks 0)
       (def calls 0)
       (def protocol
-        (.cc ModuleAuthoringAdmissionProtocol
+        (.cc ModuleAuthoringAnalysisProtocol
           compute-effective-method:
           (lambda (_generic _arguments _methods checked-default)
             ;; This is a passive observation of the actual policy, not a
@@ -77,15 +77,15 @@
             (set! calls (+ calls 1))
             checked-default)))
       (def open-generic
-        (.cc ModuleAuthoringAdmissionGeneric protocol: protocol
-          methods: (.get ModuleAuthoringAdmissionGeneric methods)))
+        (.cc ModuleAuthoringAnalysisGeneric protocol: protocol
+          methods: (.get ModuleAuthoringAnalysisGeneric methods)))
       (def (observe read)
         (when (and (eq? (slot-read-receiver read) ClosEffectiveMethod)
                    (eq? (slot-read-key read) '.element?))
           (set! checks (+ 1 checks))))
       (call-with-slot-read-observer observe
         (lambda ()
-          (poo-clos-compute-effective-method ModuleAuthoringAdmissionGeneric
+          (poo-clos-compute-effective-method ModuleAuthoringAnalysisGeneric
             executor role interface '(def value 1))))
       (check-equal? checks 1)
       (set! checks 0)
@@ -102,9 +102,9 @@
           (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1)))
       (def effective
-        (apply poo-clos-compute-effective-method ModuleAuthoringAdmissionGeneric arguments))
+        (apply poo-clos-compute-effective-method ModuleAuthoringAnalysisGeneric arguments))
       (def prepare
-        (%prepare-effective-method ModuleAuthoringAdmissionGeneric arguments
+        (%prepare-effective-method ModuleAuthoringAnalysisGeneric arguments
           (.get effective around) (.get effective before)
           (.get effective primary) (.get effective after)))
       (def first (prepare))
@@ -116,7 +116,7 @@
       (def interface (yuanxu-module-interface "callback-probe" (Record) '()))
       (def calls 0)
       (def protocol
-        (.cc ModuleAuthoringAdmissionProtocol
+        (.cc ModuleAuthoringAnalysisProtocol
           compute-effective-method:
           (lambda (_generic _arguments _methods checked-default)
             (set! calls (+ calls 1))
@@ -128,8 +128,8 @@
       ;; set is runtime state, not the constructor's empty default. Retain the
       ;; actual descriptors explicitly in this private hook-injection probe.
       (def generic
-        (.cc ModuleAuthoringAdmissionGeneric protocol: protocol
-          methods: (.get ModuleAuthoringAdmissionGeneric methods)))
+        (.cc ModuleAuthoringAnalysisGeneric protocol: protocol
+          methods: (.get ModuleAuthoringAnalysisGeneric methods)))
       (check-exception
         (poo-clos-call generic (.get interface authoring executor)
           (yuanxu-module-authoring-role interface 'objects)

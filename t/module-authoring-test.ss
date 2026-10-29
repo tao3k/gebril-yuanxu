@@ -4,6 +4,8 @@
 (import (only-in :clan/poo/type Record)
         (only-in :clan/poo/object .o .ref .cc .put! .get)
         (only-in :clan/poo/mop element? make-instance)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+                 slot-read-key slot-read-value slot-read-receiver)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         :yuanxu/module-system/source/interface
@@ -13,7 +15,8 @@
         :yuanxu/module-system/source/projection
         :yuanxu/module-system/loader/objects
         :yuanxu/module-system/authoring/admission
-        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.)
+        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
+                 yuanxu-default-module-authoring-profile)
         (only-in :yuanxu/poo-clos/objects
                  poo-clos-generic-protocol poo-clos-generic-function
                  poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
@@ -29,6 +32,22 @@
       forbidden-projections: '(parallel-build)))
 (def module-authoring-test
   (test-suite "Core source admission without product imports or activation"
+    (yuanxu-test-case "Interface construction owns one fresh authoring admission"
+      (def (admit-count action)
+        (defvalues (_value reads) (%call-with-recorded-slot-reads action unique-roots?: #t))
+        (def roots (make-hash-table-eq))
+        (for-each
+          (lambda (read)
+            (when (and (eq? (slot-read-key read) 'contract-identity)
+                       (eq? (slot-read-value read) 'module-authoring-profile))
+              (hash-put! roots (slot-read-receiver read) #t))) reads)
+        (hash-length roots))
+      (check-equal? (admit-count (lambda () (yuanxu-module-interface "fresh" (Record) '()))) 1)
+      (def profile (yuanxu-default-module-authoring-profile))
+      ;; An explicitly supplied, already checked value still receives a NEW
+      ;; admission. Removing duplicate default stages never caches acceptance.
+      (check-equal? (admit-count
+        (lambda () (yuanxu-module-interface "explicit" (Record) '() authoring: profile))) 1))
     (yuanxu-test-case "authoring receipt identities are stable and do not grant currentness"
       (def interface (yuanxu-module-interface "example" (Record) '()))
       (def result
@@ -45,8 +64,8 @@
     (yuanxu-test-case "declarative authoring bundle retains its owner and both dispatch axes"
       ;; Methods have already been composed by the production declaration.
       ;; Do not replay its owned descriptors into a second generic registry.
-      (def generic ModuleAuthoringAdmissionGeneric)
-      (check-equal? (eq? (.ref generic 'protocol) ModuleAuthoringAdmissionProtocol) #t)
+      (def generic ModuleAuthoringAnalysisGeneric)
+      (check-equal? (eq? (.ref generic 'protocol) ModuleAuthoringAnalysisProtocol) #t)
       (check-equal? (length (.ref generic 'methods)) 2)
       (def interface (yuanxu-module-interface "example" (Record) '()))
       (def executor (.o (:: @ ModuleAuthoringExecutor.)))
@@ -54,19 +73,13 @@
         (.o (:: @ (yuanxu-module-authoring-role interface 'objects))))
       (def config-role
         (.o (:: @ (yuanxu-module-authoring-role interface 'config))))
-      (check-equal?
-        (yuanxu-module-authoring-admission-accepted?
-          (poo-clos-call generic executor ordinary-role interface '(stage build)))
-        #t)
-      (check-equal?
-        (yuanxu-module-authoring-admission-accepted?
-          (poo-clos-call generic executor config-role interface '(stage build)))
-        #f)
+      (check-equal? (poo-clos-call generic executor ordinary-role interface '(stage build)) '())
+      (check-equal? (pair? (poo-clos-call generic executor config-role interface '(stage build))) #t)
       ;; Different protocol objects sharing a label never authorize composition.
       (check-exception
         (poo-clos-compose-method-bundle
           (poo-clos-generic-function 'wrong-owner 4
-            protocol: (poo-clos-generic-protocol 'module-system/authoring-admission))
+            protocol: (poo-clos-generic-protocol 'module-system/authoring-analysis))
           ModuleAuthoringCoreMethods)
         (lambda (failure)
           (eq? (.ref failure 'code) 'method-bundle-protocol-mismatch))))
@@ -85,14 +98,13 @@
       (check-equal? (yuanxu-module-authoring-admission-accepted? from-port) #f)
       (check-equal? (yuanxu-module-authoring-admission-accepted? from-datums) #f)
       (check-equal? (codes from-datums) (codes from-port))
-      ;; Receipt validation is extensible too. A replaced predicate must be
-      ;; invoked through the ordinary per-datum producer, before any final
-      ;; batch receipt can hide its refusal.
-      (def predicate (.ref YuanxuModuleAuthoringAdmission '.element?))
+      ;; Per-datum obligations belong to the typed analysis result. The final
+      ;; receipt cannot hide a refusal on the second datum.
+      (def predicate (.ref YuanxuModuleAuthoringDiagnostics '.element?))
       (def validations 0)
       (dynamic-wind
         (lambda ()
-          (.put! YuanxuModuleAuthoringAdmission '.element?
+          (.put! YuanxuModuleAuthoringDiagnostics '.element?
             (lambda (value)
               (set! validations (1+ validations))
               (and (not (= validations 2)) (predicate value)))))
@@ -101,7 +113,31 @@
             (yuanxu-module-authoring-admit-datums interface 'objects
               '((def First 1) (def Second 2))) error?)
           (check-equal? validations 2))
-        (lambda () (.put! YuanxuModuleAuthoringAdmission '.element? predicate)))
+        (lambda () (.put! YuanxuModuleAuthoringDiagnostics '.element? predicate)))
+      ;; Receipt shape validation still runs, once at actual aggregate creation.
+      (def receipt-predicate (.ref YuanxuModuleAuthoringAdmission '.element?))
+      (def receipts 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringAdmission '.element?
+            (lambda (value) (set! receipts (1+ receipts)) (receipt-predicate value))))
+        (lambda ()
+          (yuanxu-module-authoring-admit-datums interface 'objects '((def First 1) (def Second 2)))
+          (check-equal? receipts 1))
+        (lambda () (.put! YuanxuModuleAuthoringAdmission '.element? receipt-predicate)))
+      ;; A contributor cannot return the old receipt shape (or an arbitrary
+      ;; value) where the analysis protocol requires typed diagnostics.
+      (def malformed
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/authoring-malformed
+          'qualifier 'around
+          'body (lambda (_frame . _arguments) (list #f))))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric malformed)
+        (lambda ()
+          (check-exception
+            (yuanxu-module-authoring-admit-datums interface 'objects '((def First 1))) error?))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric malformed))
       ;; A contributed qualifier must run for every datum. The batch path must
       ;; retain full invocation after native Generic metadata changes, rather
       ;; than treat the original declarations as an acceptance cache.
@@ -112,14 +148,30 @@
           'qualifier 'before
           'body (lambda (_frame . _arguments) (set! calls (1+ calls)) #t)))
       (dynamic-wind
-        (cut poo-clos-add-method ModuleAuthoringAdmissionGeneric before)
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
         (lambda ()
           (def augmented
             (yuanxu-module-authoring-admit-datums interface 'objects
               (call-with-input-string text read-all)))
           (check-equal? calls 3)
           (check-equal? (codes augmented) (codes from-port)))
-        (cut poo-clos-remove-method ModuleAuthoringAdmissionGeneric before)))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
+    (yuanxu-test-case "single admission retains the actually dispatched role"
+      (def interface (yuanxu-module-interface "role-rebinding" (Record) '()))
+      (def profile (.get interface authoring))
+      (def original (.get profile objects))
+      (def replacement (.cc original identity: 'rebound-role))
+      (def before
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/rebind-role 'qualifier 'before
+          'body (lambda (_frame . _arguments) (.put! profile 'objects replacement))))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
+        (lambda ()
+          (def result (yuanxu-module-authoring-admit-datum interface 'objects '(def Value 1)))
+          (check-equal? (.get result role) (.get original identity))
+          (check-equal? (eq? (.get profile objects) replacement) #t))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
     (yuanxu-test-case "native Interface and final role admission"
       (let (interface (yuanxu-module-interface "example" (Record) '()))
         (check-equal? (yuanxu-module-interface? interface) #t)

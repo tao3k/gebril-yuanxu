@@ -151,7 +151,7 @@
                      (generic (and fields (hash-get fields 'generic)))
                      (metadata (and (object? generic) (object-%instance generic))))
                 (when (and metadata
-                           (eq? (hash-get metadata 'identity) 'module-authoring-admit)
+                           (eq? (hash-get metadata 'identity) 'module-authoring-analyze)
                            (= (length args) 4))
                   (hash-put! authoring-interfaces (caddr args) #t)
                   (hash-put! authoring-datums (cadddr args) #t)))))
