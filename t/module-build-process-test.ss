@@ -102,19 +102,4 @@
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
       (check-equal? (file-exists? (path-expand "yuanxu/object-family/syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
-      (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))
-    (test-case "same fixture rejects package mismatch and changed admission inputs"
-      (def result (.call InputChecks .run))
-      (def output (.get result output))
-      (display output)
-      (check-equal? (.get result status) 0)
-      (check-equal?
-        (and (member
-               (string-append "MODULE-OK "
-                 (path-normalize
-                   (path-expand "t/module-build-source-package-test.ss" (.get InputChecks directory))))
-               (string-split output #\newline)) #t) #t)
-      (check-equal? (and (string-contains output "HARNESS-OK") #t) #t)
-      (check-equal? (and (member "OK" (string-split output #\newline)) #t) #t)
-      (check-equal? (ormap (cut string-contains output <>)
-                     '("ERROR CASE" "ERROR CHECK" "ERROR HARNESS" "Heap overflow" "Stack overflow")) #f))))
+      (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))))

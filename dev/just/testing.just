@@ -23,9 +23,14 @@ build-test-fixtures:
 _test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    # Each native test process keeps the same 180-second deadline.
+    # Native test processes retain their existing individual deadlines.
     # Sequential fixture preparation has its own bounded native invocations.
     budget=180
+    # This existing Suite formerly ran as a 60-second nested InputChecks
+    # Script. Native discovery now owns it directly, under the SAME limit.
+    case "{{ path }}" in
+      t/module-build-source-package-test.ss|"$PWD/t/module-build-source-package-test.ss") budget=60 ;;
+    esac
     # Native Make backends inherit the same standard Gambit envelope as this
     # parent. The CLI options below still fence the VM before any import.
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}max-heap={{ gerbil_test_max_heap }},debug={{ gerbil_test_debug }}"
@@ -88,7 +93,7 @@ test-module-ownership:
 
 # Source-only qualification: retain installed external dependencies, remove Core.
 test-bootstrap:
-    just test-file t/module-build-process-test.ss
+    just test-file t/module-build-process-test.ss false test-file t/module-build-source-package-test.ss false
 
 # Selected module suites remain native std/test files, executed through Ops.
 test-modules:

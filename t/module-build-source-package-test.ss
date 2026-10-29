@@ -2,19 +2,34 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
+        (only-in :clan/poo/object .get .call)
+        (only-in :std/source this-source-file)
+        (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context
                  core-resolve-library-module-path))
-(export module-build-source-package-test)
-(def root (getenv "CORE_QUALIFICATION_ROOT" #f))
+(export module-build-source-package-test test-setup! test-cleanup!)
+;; Source-only registration is a native Suite, not a nested Harness invocation.
+;; The existing Fixture owns a fresh cold snapshot and its cleanup.
+(def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
+(def resource #f)
+(def root #f)
+(def (test-setup!)
+  (set! resource (.call Fixture .acquire))
+  (set! root (.get resource root)))
+(def (test-cleanup!)
+  (when resource
+    (begin0 (.call Fixture .release resource)
+      (set! resource #f) (set! root #f))))
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
 (def module-build-source-package-test
-  (if root
     (test-suite "Build-owned source package registration"
       (test-case "wrong package refuses registration without changing search order"
+        (check-equal? (.get resource cold) #t)
+        (check-equal? (file-exists? (path-expand "lib/yuanxu" (.get resource state))) #f)
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
           (eval-syntax '(import (only-in :clan/poo/object .get)))
@@ -54,5 +69,4 @@
           (dynamic-wind
             (lambda () (write-source path (string-append original "\n;; changed registration source\n")))
             (lambda () (check-exception (current!) error?))
-            (lambda () (write-source path original))))))
-    (test-suite "Build source registration (opt-in)" (void))))
+            (lambda () (write-source path original)))))))

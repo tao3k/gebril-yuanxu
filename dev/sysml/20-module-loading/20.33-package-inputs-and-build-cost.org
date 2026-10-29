@@ -133,3 +133,44 @@ This refactor addresses repeated build/test input resolution. It does not claim
 to close the declaration-capacity failure. That failure still needs production
 attribution of the actual role analysis and required source boundaries. Product
 dependency promotion remains gated on the full Core CI result.
+
+* Native Suite ownership after the submitted CI run
+
+At =9582bbb9b2b850c193ea2e4d5be1cd9fd3df469d=, both platform build jobs,
+all non-scale Linux shards, all non-bootstrap/non-scale macOS shards, Lean
+and every Quint shard passed. macOS bootstrap and both scale shards failed.
+This is not a green platform receipt and does not authorize product promotion.
+
+The macOS bootstrap failure was an ownership problem: six independently bounded
+commands took 164.126 seconds before the test started a second Harness inside
+the first test file. The enclosing native file deadline was 180 seconds.
+Each compile stayed within its original 60-second command limit. Extending the
+outer deadline would conceal the nested execution boundary.
+
+The existing source-package Suite now owns its source-only snapshot through
+official =test-setup!= / =test-cleanup!= and the existing =selection-fixture=.
+Its two actual Cases always execute, replacing the old environment-gated empty
+Suite. The process Suite retains all six build operations and all output,
+hot-zero-compile, clean, currentness and unselected-output assertions. Its
+removed Case only launched the other Suite and rechecked Harness markers.
+There is no new Fixture class, Builder or test runner.
+
+The source-package file retains the previous inner worker's 60-second deadline;
+the process file retains 180 seconds and each child still retains 60 seconds
+and 2 GiB. =just test-bootstrap= schedules both existing files serially through
+the same native entrypoint. CI's existing disjoint bootstrap shard owns them
+once; the duplicate invocation in the build job is removed. Partition checking
+still covers all 196 test files in seven disjoint groups.
+
+The default local qualification passed both Suites with all native success
+markers and no failure markers. Its unchanged 41-target lifecycle measured
+8.407 seconds spec, 20.630 cold compile, 9.540 zero-compile hot command,
+8.537 clean, 21.259 rebuild and 9.485 final clean. These are another same-source
+sample, not a controlled causal speedup claim. Source-package Cases still
+reject wrong package identity and a changed actual registration source.
+
+Scale remains a separate failed receipt. The observer-cost diagnostic at 32
+modules measured 5.116 seconds with the observer and 4.804 without it; it does
+not support blaming the dominant capacity cost on the external observer.
+Native read identities, callbacks and source checks remain intact. Temporary
+diagnostic Suites and raw sampling logs are not release or test inventory.
