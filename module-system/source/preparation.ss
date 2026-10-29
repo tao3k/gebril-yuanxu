@@ -21,7 +21,6 @@
         (only-in :gerbil/expander/module __module-registry)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
-(import (only-in :yuanxu/module-system/building/source-package package-prelude-identity))
 (export build-target-name yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
@@ -463,11 +462,14 @@
         (def row
           (hash-get inputs
             (if (string? datum) (path-normalize (path-expand datum)) datum)))
-        (if (not row) (native-import path reload?)
+        (if (not row)
+          (module-source-measure-operation 'compiler-native-import
+            (lambda () (native-import path reload?)))
           (let ((input (car row)) (target (cadr row)) (identity (caddr row)))
             (when reload? (error "prepared compiler input requires a fresh source epoch" datum))
             ((.ref input 'admit-current))
-            (let (context (native-import target #f))
+            (let (context (module-source-measure-operation 'compiler-role-import
+                             (lambda () (native-import target #f))))
               (unless (eq? identity (expander-context-id context))
                 (error "prepared compiler identity changed" datum identity))
               ((.ref input 'admit-current))
@@ -475,14 +477,15 @@
       (dynamic-wind void
         (lambda ()
           (parameterize ((current-expander-module-import import-input)
-                         (compiler-source-inputs selected-sources)) (action)))
-        restore-staged-imports!))))
+                         (compiler-source-inputs selected-sources))
+            (module-source-measure-operation 'compiler-make action)))
+        (lambda ()
+          (module-source-measure-operation 'compiler-role-restore restore-staged-imports!))))))
 
-(def (build-target-name identity package-prefix (root #f))
-  ;; One root-owned language file has an explicit native package identity.
-  ;; Callers still verify its actual source path and prepared identity.
-  (if (or (and root (eq? identity (package-prelude-identity root)))
-          (and (not root) (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude)))
+(def (build-target-name identity package-prefix (language #f))
+  ;; The projection owns the native package/header snapshot. Naming targets is
+  ;; pure; it neither rereads that header per target nor grants source approval.
+  (if (and language (eq? identity language))
     "prelude"
     (let ((name (symbol->string identity))
           (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))

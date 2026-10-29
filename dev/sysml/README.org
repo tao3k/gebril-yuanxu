@@ -108,6 +108,10 @@ published dependency, consumer/proof gates and timestamp-driven rebuild failure.
 [[file:20-module-loading/20.30-fixed-runtime-and-route-correspondence.org][20.30 Fixed Runtime and Route Correspondence]] removes a stale hash-only
 qualification wrapper and binds current proofs to the package-selected producer.
 
+[[file:20-module-loading/20.33-package-inputs-and-build-cost.org][20.33 Package Inputs and Build Cost]] separates native Make/import overhead
+from declaration capacity, and moves repeated language extraction out of target
+mapping while preserving independent source authentication.
+
 [[file:20-module-loading/20.32-test-publication-native-compile.org][20.32 Native Test Compilation]] connects the init-owned Test publication to
 the existing guarded std/make owner before Harness execution, preserving
 cross-process signed-product reuse and refusal of stale inputs.

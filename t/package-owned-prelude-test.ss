@@ -1,5 +1,6 @@
 ;;; A product language is owned by its package, not by Core's namespace list.
 (import :std/test
+        (only-in :std/misc/ports read-all-as-string)
         (only-in :clan/poo/object .get)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -34,7 +35,7 @@
         (lambda (root package identity)
           (register-module-build-source! root package prelude: identity)
           (check-equal? (package-prelude-identity root) identity)
-          (check-equal? (build-target-name identity (symbol->string package) root) "prelude")
+          (check-equal? (build-target-name identity (symbol->string package) identity) "prelude")
           (write-datum (path-expand "consumer.ss" root) '(def value 42))
           (check-equal? (expander-context-id (core-import-module (path-expand "consumer.ss" root)))
                         'product-owned/consumer)
@@ -62,7 +63,18 @@
           (def projection
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))
-          (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t))))
+          (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t)
+          ;; Holding resolved naming metadata never approves changed sources.
+          ;; The actual projected language remains part of compiler-current.
+          (def path (path-expand "prelude.ss" root))
+          (def text (call-with-input-file path read-all-as-string))
+          (def (write-language value)
+            (call-with-output-file (list path: path truncate: #t)
+              (lambda (port) (display value port))))
+          (dynamic-wind
+            (lambda () (write-language (string-append text "\n")))
+            (lambda () (check-exception ((.get projection admit-current)) error?))
+            (lambda () (write-language text))))))
     (test-case "wrong expected prelude cannot alter package lookup"
       (with-product "mismatch"
         (lambda (root package identity)
@@ -75,4 +87,4 @@
         (lambda (root package identity)
           (register-module-build-source! root package prelude: identity)
           (check-exception
-            (build-target-name 'foreign/implementation (symbol->string package) root) error?))))))
+            (build-target-name 'foreign/implementation (symbol->string package) identity) error?))))))

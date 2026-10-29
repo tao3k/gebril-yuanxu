@@ -209,7 +209,8 @@
         .select: test-source)))
   (def (current!)
     (unless prepared (error "init std-make-spec must prepare the source context first"))
-    ((.get prepared admit-current)))
+    (module-source-measure-operation 'build-current
+      (lambda () ((.get prepared admit-current)))))
   ;; The official Gerbil consumer owns both compile phases. A test source is a
   ;; POO declaration, not a command, environment selector or executable plan.
   (def (test-build-spec tests)
@@ -271,7 +272,9 @@
         (error "init build specification cannot change retained roots within one source epoch"))
       (let* ((init (path-expand source)) (root (path-directory init)))
         (set! prepared
-          ((force build-projector) (selected!) roots root (path-expand "build.ss" root)))
+          (module-source-measure-operation 'build-projection
+            (lambda ()
+              ((force build-projector) (selected!) roots root (path-expand "build.ss" root)))))
         (set! retained roots)))
     (current!)
     (def value (.get prepared spec))
@@ -289,13 +292,15 @@
   ;; guards below instead of entering build-spec again during that handoff.
   (def (run-spec spec package-main args libdir native-specs)
     (def (dispatch (groups #f))
-      (if (and groups (ormap (cut .get <> prefix) groups))
+      (module-source-measure-operation 'native-make
+        (lambda ()
+        (if (and groups (ormap (cut .get <> prefix) groups))
         (for-each
           (lambda (group)
             (if (.get group prefix)
               (package-main (.get group spec) args (.get group prefix))
               (package-main (.get group spec) args))) groups)
-        (package-main spec args)))
+        (package-main spec args)))))
     (cond
       ((or (null? args) (equal? (car args) "compile"))
        ;; Ordinary Gerbil compilation cannot grant publication approval. Explicit

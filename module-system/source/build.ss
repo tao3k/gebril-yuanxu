@@ -424,6 +424,7 @@
 (def (retained-build-entries specs root package-prefix selected)
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
+  (def language (and (pair? specs) (package-prelude-identity root)))
   (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table)))
     ;; Resolve each selected path once. Retained libraries overlap the Module
     ;; projection; a scan per library repeated both POO reads and normalization.
@@ -481,7 +482,7 @@
                  ((.get original-input admit-current))
                  (module-source-admit-current! extra "stale retained native Make input")))))
          (def identity (.ref prepared-input 'compiler-identity))
-         (unless (equal? name (build-target-name identity package-prefix root))
+         (unless (equal? name (build-target-name identity package-prefix language))
            (error "retained source path and compiler identity disagree" name identity))
          (when (hash-key? seen identity)
            (error "duplicate retained compiler target" identity))
@@ -550,7 +551,10 @@
     (if target (native-target-spec target (cdr entry)) `(gxc: ,(cdr entry))))
   ;; Derive each demanded package from the native header/package snapshot.
   ;; External selected owners keep their own identities; no catalog is scanned.
-  (def packages (list (cons root package-prefix)))
+  ;; Each already-owned package row carries its one resolved language input;
+  ;; no separate cache/index or successful currentness result is retained.
+  (def language (package-prelude-identity root))
+  (def packages (list (list root package-prefix language)))
   (for-each
     (lambda (file)
       (def input (input! file))
@@ -567,7 +571,8 @@
           (path-strip-trailing-directory-separator
             (substring id 0 (- (string-length id) (string-length relative)))))
         (unless (assoc directory packages)
-          (set! packages (cons (cons directory namespace) packages)))))) files)
+          (set! packages
+            (cons (list directory namespace (package-prelude-identity directory)) packages)))))) files)
   (def native-import (current-expander-module-import))
   (def (source-import path (reload? #f))
     (def datum (syntax-e path))
@@ -577,11 +582,13 @@
         (and name
           (ormap
             (lambda (package)
-              (def prefix (string-append ":" (cdr package) "/"))
+              (def prefix (string-append ":" (cadr package) "/"))
               (and (string-prefix? prefix name)
                 (path-expand (string-append (substring name (string-length prefix)
                   (string-length name)) ".ss") (car package)))) packages))
         (and (ormap (lambda (package)
+                       ;; Routing crosses native callbacks. Unlike pure target
+                       ;; naming, retain the live package/header lookup here.
                        (let (id (package-prelude-identity (car package)))
                          (and id (eq? datum (string->symbol (string-append ":" (symbol->string id))))
                               (path-expand "prelude.ss" (car package))))) packages))
@@ -617,10 +624,10 @@
                            (eq? (module-source-type path) 'regular)))
               (let (package
                 (and name (find (lambda (entry)
-                  (or (string-prefix? (string-append (cdr entry) "/") name)
-                      (eq? id (package-prelude-identity (car entry))))) packages)))
+                  (or (string-prefix? (string-append (cadr entry) "/") name)
+                      (eq? id (caddr entry)))) packages)))
               (if (and package (string=? (path-extension path) ".ss"))
-                (let* ((target (build-target-name id (cdr package) (car package)))
+                (let* ((target (build-target-name id (cadr package) (caddr package)))
                        (expected (path-expand (string-append target ".ss") (car package)))
                        (input (input! expected)))
                   (unless (and (equal? (path-normalize path) (path-normalize expected))
@@ -638,7 +645,7 @@
                     ;; may identify the source without changing that Make root.
                     ;; Absolute targets discard libdir during path-expand and
                     ;; make valid outputs appear missing on every warm run.
-                    (let (make-target (build-target-name id package-prefix root))
+                    (let (make-target (build-target-name id package-prefix language))
                       (unless (equal? (path-normalize expected)
                                       (path-normalize
                                         (path-expand (string-append make-target ".ss") root)))
