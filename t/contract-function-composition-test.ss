@@ -7,7 +7,7 @@
         (only-in :clan/poo/mop Function element? validate TypeError?)
         (only-in :clan/poo/number Integer)
         (only-in :clan/poo/type Record)
-        (only-in :clan/poo/object-contract-flow checked-action)
+        (only-in :clan/poo/object-contract checked-action)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :yuanxu/module-system/schema/slot-contracts
         (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit

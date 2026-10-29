@@ -25,7 +25,7 @@
                  TypeError?
                  validate
                  raise-type-error)
-        (only-in :clan/poo/object-contract-flow checked-action)
+        (only-in :clan/poo/object-contract checked-action)
         (only-in :clan/poo/type Record Symbol List)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
