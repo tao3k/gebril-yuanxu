@@ -9,7 +9,7 @@
 (import (only-in :yuanxu/module-system/config yuanxu-module-kind=? yuanxu-module-object-ref/default)
         (only-in :clan/poo/object .o .ref .all-slots object? object<-alist)
         (only-in :clan/poo/value-diagnostics diagnose-value)
-        (only-in :clan/poo/object-diagnostics checked-issues)
+        (only-in :clan/poo/object-contract checked-issues)
         :yuanxu/module-system/projection/option-objects)
 
 (export yuanxu-module-find-schema

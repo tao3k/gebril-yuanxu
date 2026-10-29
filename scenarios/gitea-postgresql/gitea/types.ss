@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop define-type Object Any)
         (only-in :yuanxu/object-types/ports Port)
         (only-in :clan/poo/type List)
-        (only-in :clan/poo/object-diagnostics diagnostic-then)
+        (only-in :clan/poo/object-contract diagnostic-then)
         (only-in :std/list/list every)
         (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract)
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at)

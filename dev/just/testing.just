@@ -23,9 +23,9 @@ build-test-fixtures:
 _test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    # The existing process envelope is 600 seconds; the Gerbil owns package
-    # setup. No interpreter expression is needed to rediscover these defaults.
-    budget=600
+    # Each native test process keeps the same 180-second deadline.
+    # Sequential fixture preparation has its own bounded native invocations.
+    budget=180
     export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
     if [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then export PATH="$GERBIL_PATH/bin:$PATH"; fi
     test_lib="$GERBIL_PATH/test-lib"

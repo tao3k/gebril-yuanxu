@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Consumer boundary of the actual native MOP, not a replacement evaluator.
-(import :std/test :clan/poo/object :clan/poo/inheritance-hooks)
+(import :std/test :clan/poo/object (only-in :clan/poo/mop with-inheritance-hooks))
 (export mop-thunk-construction-test)
 (def mop-thunk-construction-test
   (test-suite "Native construction identity and observation boundaries"

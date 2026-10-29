@@ -10,7 +10,7 @@
         (only-in :clan/poo/object-contract ObjectContract. refine)
         (only-in :clan/poo/object compute-precedence-list!)
         (only-in :clan/poo/type Pair.)
-        (only-in :clan/poo/generalized-prototype Observation.)
+        (only-in :clan/poo/fun Observation.)
         :yuanxu/modules/funflow/control-plane/signatures
         :yuanxu/modules/funflow/control-plane/roles
         :yuanxu/modules/funflow/control-plane/failure
